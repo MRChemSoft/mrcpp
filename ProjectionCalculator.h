@@ -9,6 +9,7 @@ public:
     ProjectionCalculator(RepresentableFunction<D> &inp_func)
             : func(&inp_func) { }
     virtual ~ProjectionCalculator() { }
+    virtual bool computesCoefs() const { return true; }
 
 protected:
     RepresentableFunction<D> *func;

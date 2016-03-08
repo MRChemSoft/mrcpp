@@ -93,7 +93,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
   * full support of the node. */
 template<int D>
 double FunctionNode<D>::integrate() const {
-    if (this->isForeign()) {
+    if (this->isForeign() or not this->hasCoefs()) {
         return 0.0;
     }
     if (this->isCommon() and this->getMWTree().getRankId() != 0) {

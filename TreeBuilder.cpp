@@ -48,11 +48,13 @@ void TreeBuilder<D>::build(MWTree<D> &tree) {
     endVec->clear();
 
     int iter = 0;
+    bool computesCoefs = this->calculator->computesCoefs();
+    if (not computesCoefs) tree.clearSquareNorm();
     while (workVec->size() > 0) {
         printout(10, "  -- #" << setw(3) << iter << ": Calculated   ");
         workVec = clearForeignNodes(workVec);
         this->calculator->calcNodeVector(*workVec);//set all coefficients
-        tree.calcSquareNorm(workVec);
+        if (computesCoefs) tree.calcSquareNorm(workVec);
         if (maxIterReached(iter) or this->adaptor == 0) break;
         splitVec = this->adaptor->splitNodeVector(*workVec, endVec);
         splitSet = getNodeIndexSet(*splitVec);
@@ -65,7 +67,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree) {
     }
     delete workVec;
     tree.resetEndNodeTable();
-    tree.calcSquareNorm();
+    if (computesCoefs) tree.calcSquareNorm();
 }
 
 template<int D>

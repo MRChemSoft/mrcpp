@@ -10,6 +10,8 @@ public:
     TreeCalculator() { }
     virtual ~TreeCalculator() { }
 
+    virtual bool computesCoefs() const { return false; }
+
     void calcNodeVector(MWNodeVector &nodeVec) const {
         int nNodes = nodeVec.size();
         printout(10, std::setw(6) << nNodes << " nodes\n");

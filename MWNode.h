@@ -135,6 +135,7 @@ public:
 
     friend class TreeCalculator<D>;
     friend class ProjectionCalculator<D>;
+    friend class AdditionCalculator<D>;
     friend class MWTree<D>;
 
 protected:

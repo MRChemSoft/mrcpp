@@ -31,6 +31,9 @@ void TelePrompter::printHeader(const std::string &str) {
 }
 
 void TelePrompter::init(int printLevel, bool teletype, const char *fil) {
+    SET_PRINT_PRECISION(15);
+    cout << scientific << setprecision(14);
+
     mpi::communicator world;
     int rank=world.rank();
     SET_PRINT_LEVEL(printLevel);

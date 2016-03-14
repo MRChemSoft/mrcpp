@@ -29,6 +29,7 @@ template <int D> class GridGenerator;
 template <int D> class GridCleaner;
 
 template <int D> class TreeCalculator;
+template <int D> class DefaultCalculator;
 template <int D> class ProjectionCalculator;
 template <int D> class AdditionCalculator;
 template <int D> class MultiplicationCalculator;

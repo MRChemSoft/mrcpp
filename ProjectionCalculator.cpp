@@ -23,13 +23,13 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) const {
     VectorXd &tmpvec = node.getMWTree().getTmpScalingVector();
 
     int scale = node.getScale();
-    int tDim = 1 << D;
     int kp1_d = node.getKp1_d();
 
     double scaleFactor = 1.0 / pow(2.0, scale + 1.0);
     double sqrtScaleFactor = sqrt(scaleFactor);
     double point[D];
 
+    static int tDim = 1 << D;
     for (int cIdx = 0; cIdx < tDim; cIdx++) {
         NodeIndex<D> nIdx(node.getNodeIndex(), cIdx);
         const int *l = nIdx.getTranslation();

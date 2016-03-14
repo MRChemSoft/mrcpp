@@ -71,7 +71,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
     basis.evalf(arg, val);
 
     double result = 0.0;
-#pragma omp parallel for shared(fact) reduction(+:result)
+//#pragma omp parallel for shared(fact) reduction(+:result)
     for (int i = 0; i < this->getKp1_d(); i++) {
         double temp = (*this->coefs)(i);
         for (int j = 0; j < D; j++) {
@@ -93,10 +93,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
   * full support of the node. */
 template<int D>
 double FunctionNode<D>::integrate() const {
-    if (this->isForeign() or not this->hasCoefs()) {
-        return 0.0;
-    }
-    if (this->isCommon() and this->getMWTree().getRankId() != 0) {
+    if (not this->hasCoefs()) {
         return 0.0;
     }
     switch (this->getScalingType()) {
@@ -176,7 +173,6 @@ double FunctionNode<D>::integrateInterpolating() const {
 template<int D>
 double FunctionNode<D>::dotScaling(const FunctionNode<D> &ket) const {
     const FunctionNode<D> &bra = *this;
-    if (bra.isForeign()) NOT_IMPLEMENTED_ABORT;
 
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -204,7 +200,6 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
     if (bra.isGenNode() or ket.isGenNode()) {
         return 0.0;
     }
-    if (bra.isForeign()) NOT_IMPLEMENTED_ABORT;
 
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());

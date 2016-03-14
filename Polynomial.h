@@ -30,7 +30,7 @@ public:
     virtual ~Polynomial() { }
 
     double evalf(double x) const;
-    double evalf(const double *r) { return evalf(r[0]); }
+    double evalf(const double *r) const { return evalf(r[0]); }
 
     double getScaledLowerBound() const;
     double getScaledUpperBound() const;

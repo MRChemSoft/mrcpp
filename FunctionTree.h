@@ -24,7 +24,7 @@ public:
 
     double integrate() const;
     virtual double dot(const FunctionTree<D> &ket);
-    virtual double evalf(const double *r);
+    virtual double evalf(const double *r) const;
 
     bool saveTree(const std::string &file);
     bool loadTree(const std::string &file);
@@ -41,10 +41,10 @@ public:
     FunctionTree<D>& operator +=(const FunctionTree<D> &tree);
     FunctionTree<D>& operator -=(const FunctionTree<D> &tree);
 
-    FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndNode(i)); }
+    FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndNode(i)); }
+    const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
     template<int T>

@@ -43,11 +43,9 @@ public:
     int getTDim() const { return getMWTree().getTDim(); }
     int getDepth() const { return getNodeIndex().getScale()-getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
-    int getRankId() const { return getNodeIndex().getRankId(); }
     int getNChildren() const { if (isBranchNode()) return getTDim(); return 0; }
     const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
-    NodeIndex<D> &getNodeIndex() { return this->nodeIndex; }
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
     const HilbertPath<D> &getHilbertPath() const { return this->hilbertPath; }
 
@@ -86,26 +84,6 @@ public:
     void unlockNode() { UNSET_NODE_LOCK(); }
     bool testLock() { return TEST_NODE_LOCK(); }
 
-    void setRankId(int n) { getNodeIndex().setRankId(n); }
-    bool isLocal() const {
-        if (this->getRankId() == getMWTree().getRankId()) {
-            return true;
-        }
-        return false;
-    }
-    bool isCommon() const {
-        if (this->getRankId() < 0) {
-            return true;
-        }
-        return false;
-    }
-    bool isForeign() const {
-        if (isLocal() or isCommon()) {
-            return false;
-        }
-        return true;
-    }
-
     double getSquareNorm() const { return this->squareNorm; }
     double getScalingNorm() const { return this->componentNorms[0]; }
     double getWaveletNorm() const { return calcWaveletNorm(); }
@@ -133,7 +111,9 @@ public:
     template<int T>
     friend std::ostream& operator<<(std::ostream &o, const MWNode<T> &nd);
 
-    friend class TreeCalculator<D>;
+    friend class TreeAdaptor<D>;
+    friend class TreeBuilder<D>;
+    friend class DefaultCalculator<D>;
     friend class ProjectionCalculator<D>;
     friend class MWTree<D>;
 
@@ -142,7 +122,7 @@ protected:
     MWNode<D> *parent;	    ///< Parent node
     MWNode<D> *children[1<<D];    ///< 2^D children
 
-    NodeIndex<D> nodeIndex;
+    const NodeIndex<D> nodeIndex;
     const HilbertPath<D> hilbertPath;
 
     double squareNorm;
@@ -166,7 +146,7 @@ protected:
     virtual double calcComponentNorm(int i) const;
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
-    void reCompress(bool overwrite = true);
+    void reCompress(bool overwrite);
 
     virtual void copyChildren(const MWNode<D> &node) { NOT_IMPLEMENTED_ABORT; }
     virtual void createChildren();
@@ -196,11 +176,6 @@ protected:
 
     virtual void clearGenerated();
     void deleteGenerated();
-
-    void assignDecendantTags(int rank);
-    void broadcastCoefs(int src, mpi::communicator *comm  = 0);
-    virtual mpi::request isendCoefs(int who, int tag, int comp = -1);
-    virtual mpi::request ireceiveCoefs(int who, int tag, int comp = -1);
 
     static const unsigned char FlagBranchNode = B8(00000001);
     static const unsigned char FlagGenNode    = B8(00000010);

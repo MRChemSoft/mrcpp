@@ -1,7 +1,6 @@
 #ifndef WAVELETADAPTOR_H
 #define WAVELETADAPTOR_H
 
-#include "mwrepr_declarations.h"
 #include "TreeAdaptor.h"
 
 template<int D>
@@ -16,19 +15,14 @@ public:
               absPrec(adap.absPrec),
               maxScale(adap.maxScale) { }
     virtual ~WaveletAdaptor() { }
-
     virtual TreeAdaptor<D> *copy() const { return new WaveletAdaptor<D>(*this); }
 
-    void setPrecision(double pr) { this->prec = pr; }
-    void setAbsPrec(bool abs) { this->absPrec = abs; }
-    void setMaxScale(int scale) { this->maxScale = scale; }
-
 protected:
-    double prec;
-    bool absPrec;
-    int maxScale;
+    const double prec;
+    const bool absPrec;
+    const int maxScale;
 
-    virtual bool splitNode(MWNode<D> &node) const;
+    virtual bool splitNode(const MWNode<D> &node) const;
     double getWaveletThreshold(double norm, int scale) const;
 };
 

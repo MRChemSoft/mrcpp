@@ -23,7 +23,7 @@ public:
     RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
     virtual ~RepresentableFunction();
 
-    virtual double evalf(const double *r) = 0;
+    virtual double evalf(const double *r) const = 0;
 
     void setBounds(const double *a, const double *b);
     void clearBounds();

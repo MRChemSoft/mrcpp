@@ -59,12 +59,6 @@ public:
     void crop(double thrs = -1.0, bool absPrec = true);
     void mwTransform(int type, bool overwrite = true);
 
-    MWNode<D> &getEndMWNode(int i) { return static_cast<MWNode<D> &>(this->getEndNode(i)); }
-    MWNode<D> &getRootMWNode(int i) { return static_cast<MWNode<D> &>(this->rootBox.getNode(i)); }
-
-    const MWNode<D> &getEndMWNode(int i) const { return static_cast<const MWNode<D> &>(this->getEndNode(i)); }
-    const MWNode<D> &getRootMWNode(int i) const { return static_cast<const MWNode<D> &>(this->rootBox.getNode(i)); }
-
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
@@ -79,8 +73,8 @@ public:
     MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1);
     const MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1) const;
 
-    MWNode<D> &getEndNode(int i) { return *this->endNodeTable[i]; }
-    const MWNode<D> &getEndNode(int i) const { return *this->endNodeTable[i]; }
+    MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
+    const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
 
     void deleteGenerated();
     void clearGenerated();
@@ -98,11 +92,7 @@ public:
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
-    int countMyNodes(int depth = -1);
-    void printNodeRankCount();
-
-    void checkGridOverlap(MWTree<D> &tree);
-    void checkRankOverlap(MWTree<D> &tree);
+    int countNodes(int depth = -1);
 
     template<int T>
     friend std::ostream& operator<<(std::ostream &o, MWTree<T> &tree);
@@ -154,14 +144,18 @@ protected:
     inline Eigen::VectorXd &getTmpScalingVector();
     inline Eigen::VectorXd &getTmpMWCoefs();
 
-    void calcSquareNorm(const MWNodeVector *work = 0);
+    void calcSquareNorm();
     void clearSquareNorm() { this->squareNorm = -1.0; }
 
-    void mwTransformDown(bool overwrite = true);
-    void mwTransformUp(bool overwrite = true);
+    void mwTransformDown(bool overwrite);
+    void mwTransformUp(bool overwrite);
 
-    int getRootIndex(const double *r) const { return this->rootBox.getBoxIndex(r); }
-    int getRootIndex(const NodeIndex<D> &nIdx) { return this->rootBox.getBoxIndex(nIdx); }
+    int getRootIndex(const double *r) const { 
+        return this->rootBox.getBoxIndex(r);
+    }
+    int getRootIndex(const NodeIndex<D> &nIdx) const { 
+        return this->rootBox.getBoxIndex(nIdx);
+    }
 
     void allocNodeCounters();
     void deleteNodeCounters();
@@ -174,30 +168,14 @@ protected:
     void incrementAllocGenNodeCount();
     void decrementAllocGenNodeCount();
 
-    void splitNodes(const NodeIndexSet &idxSet, MWNodeVector *nVec = 0);
-
     void makeNodeTable(MWNodeVector &nodeTable);
     void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
-
-    void makeLocalNodeTable(MWNodeVector &nodeTable, bool common = false);
-    void makeLocalNodeTable(std::vector<MWNodeVector > &nodeTable, bool common = false);
 
     MWNodeVector* copyEndNodeTable();
     MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
-
-    void findMissingNodes(MWNodeVector &nodeTable, std::set<MWNode<D> *> &missing);
-    void findMissingParents(MWNodeVector &nodeTable, std::set<MWNode<D> *> &missing);
-    void findMissingChildren(MWNodeVector &nodeTable, std::set<MWNode<D> *> &missing);
-
-    void distributeNodes(int depth = -1);
-    void deleteForeign(bool keepEndNodes = false);
-
-    void tagNodes(MWNodeVector &nodeList, int rank);
-    void tagDecendants(MWNodeVector &nodeList);
-    void distributeNodeTags(MWNodeVector &nodeList);
 
 #ifdef OPENMP
     omp_lock_t tree_lock;

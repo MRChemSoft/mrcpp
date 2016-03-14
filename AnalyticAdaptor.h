@@ -1,30 +1,20 @@
 #ifndef ANALYTICADAPTOR_H
 #define ANALYTICADAPTOR_H
 
-#include "mwrepr_declarations.h"
 #include "TreeAdaptor.h"
 
 template<int D>
 class AnalyticAdaptor : public TreeAdaptor<D> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f)
-        : func(&f) {
-    }
-
-    AnalyticAdaptor(const AnalyticAdaptor<D> &a)
-        : func(a.func) {
-    }
-
+    AnalyticAdaptor(const RepresentableFunction<D> &f) : func(&f) { }
+    AnalyticAdaptor(const AnalyticAdaptor<D> &a) : func(a.func) { }
     virtual ~AnalyticAdaptor() { }
-
-    virtual TreeAdaptor<D> *copy() const {
-        return new AnalyticAdaptor<D>(*this);
-    }
+    virtual TreeAdaptor<D> *copy() const { return new AnalyticAdaptor<D>(*this); }
 
 protected:
     const RepresentableFunction<D> *func;
 
-    virtual bool splitNode(MWNode<D> &node) const {
+    virtual bool splitNode(const MWNode<D> &node) const {
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
         if (this->func->isVisibleAtScale(scale, nQuadPts)) {

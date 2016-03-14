@@ -55,7 +55,7 @@ public:
     static Eigen::VectorXd getBinomialCoefs(unsigned int order);
 
     static void applyFilter(double *out, double *in, const Eigen::MatrixXd &filter,
-                            int kp1, int kp1_dm1, bool overwrite);
+                            int kp1, int kp1_dm1, double fac);
 
     static void tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
                                   const Eigen::MatrixXd &primitive, Eigen::VectorXd &expanded);

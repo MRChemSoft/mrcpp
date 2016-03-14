@@ -40,7 +40,7 @@ public:
         println(10, std::endl);
     }
 
-    void operator()(FunctionTree<D> &out, const FunctionTree<D> &inp) {
+    void operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
         this->adaptor = new CopyAdaptor<D>(inp);
         this->build(out);
         this->clearAdaptor();

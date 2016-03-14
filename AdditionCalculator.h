@@ -6,31 +6,29 @@
 template<int D>
 class AdditionCalculator : public TreeCalculator<D> {
 public:
- AdditionCalculator(double aInp, FunctionTree<D> &a_funcInp,
-                    double bInp, FunctionTree<D> &b_funcInp)
-        : a(aInp),
-          b(bInp),
-          a_func(&a_funcInp),
-          b_func(&b_funcInp) { }
+    AdditionCalculator(std::vector<double> &c,
+                       std::vector<FunctionTree<D> *> &f)
+            : coefs(c),
+              funcs(f) {
+        if (c.size() != f.size()) MSG_ERROR("Invalid arguments");
+    }
     virtual ~AdditionCalculator() { }
 
 protected:
-    double a, b;
-    FunctionTree<D> *a_func, *b_func;
+    std::vector<double> coefs;
+    std::vector<FunctionTree<D> *> funcs;
 
-    virtual void calcNode(MWNode<D> &node) const {
-        const NodeIndex<D> &idx = node.getNodeIndex();
-        const MWNode<D> &a_node = this->a_func->getNode(idx);
-        const MWNode<D> &b_node = this->b_func->getNode(idx);
-        const Eigen::VectorXd &aVec = a_node.getCoefs();
-        const Eigen::VectorXd &bVec = b_node.getCoefs();
-        Eigen::VectorXd &cVec = node.getCoefs();
-        cVec = this->a * aVec + this->b * bVec;
-        node.setHasCoefs();
-        node.calcNorms();
-     }
+    virtual void calcNode(MWNode<D> &outNode) const {
+        Eigen::VectorXd &outVec = outNode.getCoefs();
+        const NodeIndex<D> &idx = outNode.getNodeIndex();
+        for (int n = 0; n < this->funcs.size(); n++) {
+            const MWNode<D> &inpNode = this->funcs[n]->getNode(idx);
+            const Eigen::VectorXd &inpVec = inpNode.getCoefs();
+            outVec = outVec + this->coefs[n]*inpVec;
+        }
+        outNode.setHasCoefs();
+        outNode.calcNorms();
+    }
 };
-
-
 
 #endif // ADDITIONCALCULATOR_H

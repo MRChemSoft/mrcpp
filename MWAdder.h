@@ -15,21 +15,25 @@ public:
     MWAdder(const MultiResolutionAnalysis<D> &mra,
                 const TreeAdaptor<D> &a, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
-        NOT_IMPLEMENTED_ABORT;
+        this->adaptor = a.copy();
     }
-    virtual ~MWAdder() {
-    }
+    virtual ~MWAdder() { this->clearAdaptor(); }
 
     FunctionTree<D>* operator()(int a, FunctionTree<D> &a_tree,
                                 int b, FunctionTree<D> &b_tree) {
+        std::vector<double> coefs;
+        std::vector<FunctionTree<D> *> trees;
+        coefs.push_back(a);
+        coefs.push_back(b);
+        trees.push_back(&a_tree);
+        trees.push_back(&b_tree);
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-        (*this)(*out, a, a_tree, b, b_tree);
+        (*this)(*out, coefs, trees);
         return out;
     }
 
-    FunctionTree<D>* operator()(std::vector<int> coefs,
+    FunctionTree<D>* operator()(std::vector<double> coefs,
                                 std::vector<FunctionTree<D> *> trees) {
-        if (this->adaptor == 0) NOT_IMPLEMENTED_ABORT;
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, coefs, trees);
         return out;
@@ -38,18 +42,31 @@ public:
     void operator()(FunctionTree<D> &out,
                     int a, FunctionTree<D> &a_tree,
                     int b, FunctionTree<D> &b_tree) {
-        this->adaptor = new TreeAdaptor<D>();
-        this->calculator = new AdditionCalculator<D>(a, a_tree, b, b_tree);
-        this->build(out);
-        out.mwTransform(BottomUp);
-        this->clearCalculator();
-        this->clearAdaptor();
+        std::vector<double> coefs;
+        std::vector<FunctionTree<D> *> trees;
+        coefs.push_back(a);
+        coefs.push_back(b);
+        trees.push_back(&a_tree);
+        trees.push_back(&b_tree);
+        (*this)(out, coefs, trees);
     }
 
     void operator()(FunctionTree<D> &out,
-                    std::vector<int> coefs,
+                    std::vector<double> coefs,
                     std::vector<FunctionTree<D> *> trees) {
-        NOT_IMPLEMENTED_ABORT;
+        bool defaultAdaptor = false;
+        if (this->adaptor == 0) {
+            defaultAdaptor = true;
+            this->adaptor = new CopyAdaptor<D>(trees);
+        }
+        this->calculator = new AdditionCalculator<D>(coefs, trees);
+        this->build(out);
+        out.mwTransform(BottomUp);
+        for (int n = 0; n < trees.size(); n++) {
+            trees[n]->deleteGenerated();
+        }
+        this->clearCalculator();
+        if (defaultAdaptor) this->clearAdaptor();
     }
 };
 

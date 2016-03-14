@@ -19,8 +19,9 @@ protected:
     std::vector<FunctionTree<D> *> funcs;
 
     virtual void calcNode(MWNode<D> &outNode) const {
-        Eigen::VectorXd &outVec = outNode.getCoefs();
         const NodeIndex<D> &idx = outNode.getNodeIndex();
+        Eigen::VectorXd &outVec = outNode.getCoefs();
+        outNode.zeroCoefs();
         for (int n = 0; n < this->funcs.size(); n++) {
             const MWNode<D> &inpNode = this->funcs[n]->getNode(idx);
             const Eigen::VectorXd &inpVec = inpNode.getCoefs();

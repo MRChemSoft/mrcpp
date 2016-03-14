@@ -279,7 +279,7 @@ void MWNode<D>::mwTransform(int operation) {
     int kp1_d = this->getKp1_d();
     const MWFilter &filter = getMWTree().getMRA().getFilter();
     VectorXd &result = getMWTree().getTmpMWCoefs();
-    bool overwrite = true;
+    double overwrite = 0.0;
 
     for (int i = 0; i < D; i++) {
         int mask = 1 << i;
@@ -294,10 +294,10 @@ void MWNode<D>::mwTransform(int operation) {
                     int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
                     MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
-                    overwrite = false;
+                    overwrite = 1.0;
                 }
             }
-            overwrite = true;
+            overwrite = 0.0;
         }
         this->coefs->swap(result);
     }
@@ -394,13 +394,15 @@ void MWNode<D>::reCompress(bool overwrite) {
             copyCoefsFromChildren(*this->coefs);
             mwTransform(Compression);
         } else {
+            // Check optimization
+            NOT_IMPLEMENTED_ABORT;
             MatrixXd tmp = getCoefs();
             copyCoefsFromChildren(*this->coefs);
             mwTransform(Compression);
             getCoefs() += tmp;
         }
         this->setHasCoefs();
-        clearNorms();
+        calcNorms();
     }
 }
 
@@ -431,9 +433,9 @@ bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
     //    return false;
 }
 
-template<int D>
-mpi::request MWNode<D>::isendCoefs(int who, int tag, int comp) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//mpi::request MWNode<D>::isendCoefs(int who, int tag, int comp) {
+    //NOT_IMPLEMENTED_ABORT;
     //    assert(this->hasCoefs());
     //#ifdef HAVE_MPI
     //    int nSend = this->getNCoefs();
@@ -448,11 +450,11 @@ mpi::request MWNode<D>::isendCoefs(int who, int tag, int comp) {
     //    mpi::request dummy = 0;
     //    return dummy;
     //#endif
-}
+//}
 
-template<int D>
-mpi::request MWNode<D>::ireceiveCoefs(int who, int tag, int comp) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//mpi::request MWNode<D>::ireceiveCoefs(int who, int tag, int comp) {
+    //NOT_IMPLEMENTED_ABORT;
     //#ifdef HAVE_MPI
     //    if (not this->isAllocated()) {
     //        allocCoefs();
@@ -470,7 +472,7 @@ mpi::request MWNode<D>::ireceiveCoefs(int who, int tag, int comp) {
     //    mpi::request dummy = 0;
     //    return dummy;
     //#endif
-}
+//}
 
 template<int D>
 void MWNode<D>::createChildren() {
@@ -808,9 +810,9 @@ bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template<int D>
-void MWNode<D>::broadcastCoefs(int src, mpi::communicator *comm) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWNode<D>::broadcastCoefs(int src, mpi::communicator *comm) {
+    //NOT_IMPLEMENTED_ABORT;
     //#ifdef HAVE_MPI
 
     //    if (comm != 0) {
@@ -836,17 +838,17 @@ void MWNode<D>::broadcastCoefs(int src, mpi::communicator *comm) {
     //    comm->send(dest, tag, data, getNCoefs());
     //    this->setRedundancy(dest);
     //#endif
-}
+//}
 
-template<int D>
-void MWNode<D>::assignDecendantTags(int rank) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWNode<D>::assignDecendantTags(int rank) {
+    //NOT_IMPLEMENTED_ABORT;
     //    for (int n = 0; n < getNChildren(); n++) {
     //        MWNode<D> &child = getMWChild(n);
     //        child.setRankId(rank);
     //        child.assignDecendantTags(rank);
     //    }
-}
+//}
 template class MWNode<1>;
 template class MWNode<2>;
 template class MWNode<3>;

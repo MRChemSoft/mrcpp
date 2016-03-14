@@ -29,8 +29,8 @@ public:
 
     double calcSquareNorm();
 
+    double evalf(const double *r) const;
     double evalf(double r, int dim) const;
-    double evalf(const double *r);
 
     double calcOverlap(GaussFunc<D> &b);
     double calcOverlap(GaussPoly<D> &b);

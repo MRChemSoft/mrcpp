@@ -35,7 +35,6 @@ ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
 template<int D>
 ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
-    if (this->isForeign()) NOT_IMPLEMENTED_ABORT;
     this->allocCoefs();
     this->setIsEndNode();
 }
@@ -43,8 +42,6 @@ ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
 template<int D>
 ProjectedNode<D>::ProjectedNode(const MWNode<D> &n)
         : FunctionNode<D>(n) {
-    if (this->isForeign()) NOT_IMPLEMENTED_ABORT;
-
     this->allocCoefs();
     this->zeroCoefs();
 
@@ -62,11 +59,9 @@ template<int D>
 ProjectedNode<D>::ProjectedNode(const ProjectedNode<D> &n)
         : FunctionNode<D>(n) {
     NOT_IMPLEMENTED_ABORT;
-//    if (not this->isForeign()) {
 //        this->allocCoefs();
 //        this->zeroCoefs();
 //        this->zeroNorms();
-//    }
 }
 
 /* Recurcive node constructor*/

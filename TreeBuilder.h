@@ -20,10 +20,8 @@ protected:
     void clearCalculator();
     void clearAdaptor();
 
-    void build(MWTree<D> &tree);
-
-    MWNodeVector* clearForeignNodes(MWNodeVector *oldVec) const;
-    NodeIndexSet* getNodeIndexSet(const MWNodeVector &nodeVec) const;
+    void build(MWTree<D> &tree) const;
+    double calcTreeNorm(MWNodeVector &workVec) const;
 
     bool maxIterReached(int iter) const {
         if (this->maxIter < 0) return false;

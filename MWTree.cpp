@@ -124,35 +124,46 @@ double MWTree<D>::estimateError(bool absPrec) {
   * incomplete (e.g. within growTree), the missing nodes must be given in the
   * input work vector. Involves an MPI reduction operation. */
 template<int D>
-void MWTree<D>::calcSquareNorm(const MWNodeVector *nodeVec)  {
+void MWTree<D>::calcSquareNorm() {
     double treeNorm = 0.0;
-
-    int nNodes = 0;
-    if (nodeVec != 0) nNodes = nodeVec->size();
-
-    bool doCommon = false;
-    if (this->getRankId() == 0) doCommon = true;
-
-    for (int n = 0; n < nNodes; n++) {
-        const MWNode<D> &node = static_cast<const MWNode<D> &>(*(*nodeVec)[n]);
-        if (node.isLocal() or (node.isCommon() and doCommon)) {
-            assert(node.hasCoefs());
-            treeNorm += node.getSquareNorm();
-        }
-    }
     for (int n = 0; n < this->getNEndNodes(); n++) {
         const MWNode<D> &node = getEndMWNode(n);
-        if (node.isLocal() or (node.isCommon() and doCommon)) {
-            assert(node.hasCoefs());
-            treeNorm += node.getSquareNorm();
-        }
+        assert(node.hasCoefs());
+        treeNorm += node.getSquareNorm();
     }
-#ifdef HAVE_MPI
-    this->squareNorm = mpi::all_reduce(node_group, treeNorm, std::plus<double>());
-#else
     this->squareNorm = treeNorm;
-#endif
 }
+
+//template<int D>
+//void MWTree<D>::calcSquareNorm(const MWNodeVector *nodeVec)  {
+    //double treeNorm = 0.0;
+//
+    //int nNodes = 0;
+    //if (nodeVec != 0) nNodes = nodeVec->size();
+
+    //bool doCommon = false;
+    //if (this->getRankId() == 0) doCommon = true;
+
+    //for (int n = 0; n < nNodes; n++) {
+        //const MWNode<D> &node = static_cast<const MWNode<D> &>(*(*nodeVec)[n]);
+        //if (node.isLocal() or (node.isCommon() and doCommon)) {
+            //assert(node.hasCoefs());
+            //treeNorm += node.getSquareNorm();
+        //}
+    //}
+    //for (int n = 0; n < this->getNEndNodes(); n++) {
+        //const MWNode<D> &node = getEndMWNode(n);
+        //if (node.isLocal() or (node.isCommon() and doCommon)) {
+            //assert(node.hasCoefs());
+            //treeNorm += node.getSquareNorm();
+        //}
+    //}
+//#ifdef HAVE_MPI
+    //this->squareNorm = mpi::all_reduce(node_group, treeNorm, std::plus<double>());
+//#else
+    //this->squareNorm = treeNorm;
+//#endif
+//}
 
 /** Reduce the accuracy of the tree by deleting nodes
   * which have a higher precision than the requested precison.
@@ -208,27 +219,21 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
 template<int D>
 void MWTree<D>::mwTransformUp(bool overwrite) {
     vector<MWNodeVector > nodeTable;
-    this->makeLocalNodeTable(nodeTable, true);
-
+    this->makeNodeTable(nodeTable);
+#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
+{
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
-//        set<MWNode<D> *> missing;
-//        this->findMissingChildren(nodeTable[n], missing);
-        //communicate missing
-//        this->syncNodes(missing);
         int nNodes = nodeTable[n].size();
-#pragma omp parallel firstprivate(nNodes, overwrite) shared(nodeTable)
-        {
 #pragma omp for schedule(guided)
             for (int i = 0; i < nNodes; i++) {
-                MWNode<D> &node = static_cast<MWNode<D> &>(*nodeTable[n][i]);
-                if ((not node.isForeign()) and node.isBranchNode()) {
+                MWNode<D> &node = *nodeTable[n][i];
+                if (node.isBranchNode()) {
                     node.reCompress(overwrite);
-                    node.calcNorms();
                 }
             }
-        }
     }
+}
 }
 
 /** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
@@ -294,10 +299,8 @@ template<int D>
 void MWTree<D>::setZero() {
     HilbertIterator<D> it(this);
     while(it.next()) {
-        MWNode<D> &node = static_cast<MWNode<D> &>(it.getNode());
-        if (not node.isForeign()) {
-            node.zeroCoefs();
-        }
+        MWNode<D> &node = it.getNode();
+        node.zeroCoefs();
     }
     this->squareNorm = 0.0;
 }
@@ -323,20 +326,20 @@ void MWTree<D>::deleteNodeCounters() {
   * Given a list of NodeIndices to split, this routine creates the new children
   * nodes. The newly born (local) children nodes are collected in a MWNodeVector.
   * Children nodes are by default given the rank of their parent.*/
-template<int D>
-void MWTree<D>::splitNodes(const NodeIndexSet &idxSet, MWNodeVector *nVec) {
-    typename set<const NodeIndex<D> *>::iterator it;
-    for (it = idxSet.begin(); it != idxSet.end(); it++) {
-        MWNode<D> &node = getNode(**it);
-        node.createChildren();
-        if (nVec != 0) {
-            for (int i = 0; i < node.getNChildren(); i++) {
-                MWNode<D> *child = &node.getMWChild(i);
-                nVec->push_back(child);
-            }
-        }
-    }
-}
+//template<int D>
+//void MWTree<D>::splitNodes(const NodeIndexSet &idxSet, MWNodeVector *nVec) {
+//    typename set<const NodeIndex<D> *>::iterator it;
+//    for (it = idxSet.begin(); it != idxSet.end(); it++) {
+//        MWNode<D> &node = getNode(**it);
+//        node.createChildren();
+//        if (nVec != 0) {
+//            for (int i = 0; i < node.getNChildren(); i++) {
+//                MWNode<D> *child = &node.getMWChild(i);
+//                nVec->push_back(child);
+//            }
+//        }
+//    }
+//}
 
 /** Increment node counters for non-GenNodes. This routine is not thread
   * safe, and must NEVER be called outside a critical region in parallel.
@@ -555,10 +558,10 @@ const MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) const {
 }
 
 /** Traverse nodeTable and find all nodes of different rankId. */
-template<int D>
-void MWTree<D>::findMissingNodes(MWNodeVector &nodeTable,
-                                 set<MWNode<D> *> &missing) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::findMissingNodes(MWNodeVector &nodeTable,
+//                                 set<MWNode<D> *> &missing) {
+//    NOT_IMPLEMENTED_ABORT;
 //    for (unsigned int i = 0; i < nodeTable.size(); i++) {
 //        MWNode<D> &node = *nodeTable[i];
 //        if (not node.hasCoefs()) {
@@ -566,13 +569,13 @@ void MWTree<D>::findMissingNodes(MWNodeVector &nodeTable,
 //            missing.insert(&node);
 //        }
 //    }
-}
+//}
 
 /** Traverse nodeTable and find all nodes with parent of different rankId. */
-template<int D>
-void MWTree<D>::findMissingParents(MWNodeVector &nodeTable,
-                                   set<MWNode<D> *> &missing) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::findMissingParents(MWNodeVector &nodeTable,
+//                                   set<MWNode<D> *> &missing) {
+//    NOT_IMPLEMENTED_ABORT;
 //    for (unsigned int i = 0; i < nodeTable.size(); i++) {
 //        MWNode<D> &node = *nodeTable[i];
 //        if (node.isRoot()) {
@@ -584,13 +587,13 @@ void MWTree<D>::findMissingParents(MWNodeVector &nodeTable,
 //            missing.insert(&parent);
 //        }
 //    }
-}
+//}
 
 /** Traverse nodeTable and find all nodes with children of different rankId. */
-template<int D>
-void MWTree<D>::findMissingChildren(
-        MWNodeVector &nodeTable, set<MWNode<D> *> &missing) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::findMissingChildren(
+//        MWNodeVector &nodeTable, set<MWNode<D> *> &missing) {
+//    NOT_IMPLEMENTED_ABORT;
 //    for (unsigned int i = 0; i < nodeTable.size(); i++) {
 //        MWNode<D> &node = *nodeTable[i];
 //        if (node.isEndNode()) {
@@ -604,18 +607,16 @@ void MWTree<D>::findMissingChildren(
 //            }
 //        }
 //    }
-}
+//}
 
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
   * Returns one nodeVector for the whole tree. GenNodes disregarded. */
 template<int D>
 void MWTree<D>::makeNodeTable(MWNodeVector &nodeTable) {
     HilbertIterator<D> it(this);
+    it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
-        if (node.isGenNode()) {
-            continue;
-        }
         nodeTable.push_back(&node);
     }
 }
@@ -624,26 +625,23 @@ void MWTree<D>::makeNodeTable(MWNodeVector &nodeTable) {
   * Returns one nodeVector per scale. GenNodes disregarded. */
 template<int D>
 void MWTree<D>::makeNodeTable(std::vector<MWNodeVector > &nodeTable) {
-    NOT_IMPLEMENTED_ABORT;
-//    HilbertIterator<D> it(this);
-//    while (it.next()) {
-//        MWNode<D> &node = it.getNode();
-//        if (node.isGenNode()) {
-//            continue;
-//        }
-//        int depth = node.getDepth();
-//        if (depth + 1 > nodeTable.size()) { // Add one more element
-//            nodeTable.push_back(MWNodeVector());
-//        }
-//        nodeTable[depth].push_back(&node);
-//    }
+    HilbertIterator<D> it(this);
+    it.setReturnGenNodes(false);
+    while (it.next()) {
+        MWNode<D> &node = it.getNode();
+        int depth = node.getDepth();
+        if (depth + 1 > nodeTable.size()) { // Add one more element
+            nodeTable.push_back(MWNodeVector());
+        }
+        nodeTable[depth].push_back(&node);
+    }
 }
 
 /** Traverse tree along the Hilbert path and find nodes of local rankId.
   * Returns one nodeVector for the whole tree. GenNodes disregarded. */
-template<int D>
-void MWTree<D>::makeLocalNodeTable(MWNodeVector &nodeTable, bool common) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::makeLocalNodeTable(MWNodeVector &nodeTable, bool common) {
+//    NOT_IMPLEMENTED_ABORT;
 //    HilbertIterator<D> it(this);
 //    while (it.next()) {
 //        MWNode<D> &node = it.getNode();
@@ -654,33 +652,33 @@ void MWTree<D>::makeLocalNodeTable(MWNodeVector &nodeTable, bool common) {
 //            nodeTable.push_back(&node);
 //        }
 //    }
-}
+//}
 
 /** Traverse tree along the Hilbert path and find nodes of local rankId.
   * Returns one nodeVector per scale. GenNodes disregarded. */
-template<int D>
-void MWTree<D>::makeLocalNodeTable(std::vector<MWNodeVector > &nodeTable, bool common) {
-    HilbertIterator<D> it(this);
-    while (it.next()) {
-        MWNode<D> &node = it.getNode();
-        if (node.isGenNode()) {
-            continue;
-        }
-        int depth = node.getDepth();
-        if (depth + 1 > nodeTable.size()) { // Add one more element
-            nodeTable.push_back(MWNodeVector());
-        }
-        if (node.isLocal() or (node.isCommon() and common)) {
-            nodeTable[depth].push_back(&node);
-        }
-    }
-}
+//template<int D>
+//void MWTree<D>::makeLocalNodeTable(std::vector<MWNodeVector > &nodeTable, bool common) {
+//    HilbertIterator<D> it(this);
+//    while (it.next()) {
+//        MWNode<D> &node = it.getNode();
+//        if (node.isGenNode()) {
+//            continue;
+//        }
+//        int depth = node.getDepth();
+//        if (depth + 1 > nodeTable.size()) { // Add one more element
+//            nodeTable.push_back(MWNodeVector());
+//        }
+//        if (node.isLocal() or (node.isCommon() and common)) {
+//            nodeTable[depth].push_back(&node);
+//        }
+//    }
+//}
 
 template<int D>
 MWNodeVector* MWTree<D>::copyEndNodeTable() {
     MWNodeVector *nVec = new MWNodeVector;
     for (int n = 0; n < getNEndNodes(); n++) {
-        MWNode<D> &node = getEndNode(n);
+        MWNode<D> &node = getEndMWNode(n);
         nVec->push_back(&node);
     }
     return nVec;
@@ -722,7 +720,7 @@ int MWTree<D>::countLeafNodes(int depth) {
 
 /** Traverse tree and count nodes belonging to this rank. */
 template<int D>
-int MWTree<D>::countMyNodes(int depth) {
+int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
 //    HilbertIterator<D> it(this);
 //    int count = 0;
@@ -757,9 +755,9 @@ int MWTree<D>::countAllocNodes(int depth) {
 }
 
 /** Print the number of nodes, sorted by depth and MPI rank. */
-template<int D>
-void MWTree<D>::printNodeRankCount() {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::printNodeRankCount() {
+//    NOT_IMPLEMENTED_ABORT;
 //    int nHosts = node_group.size();
 //    int mDepth = getDepth();
 //    int count[mDepth + 1][nHosts+1];
@@ -802,11 +800,11 @@ void MWTree<D>::printNodeRankCount() {
 //        println(0, "|");
 //    }
 //    println(0, endl);
-}
+//}
 
-template<int D>
-void MWTree<D>::distributeNodes(int depth) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::distributeNodes(int depth) {
+//    NOT_IMPLEMENTED_ABORT;
 //    MWNodeVector nodeTable;
 //    HilbertIterator<D> it(this);
 //    it.setReturnGenNodes(false);
@@ -819,12 +817,12 @@ void MWTree<D>::distributeNodes(int depth) {
 //    }
 //    distributeNodeTags(nodeTable);
 //    tagDecendants(nodeTable);
-}
+//}
 
 /** Tag each node with the rank who owns it. */
-template<int D>
-void MWTree<D>::distributeNodeTags(MWNodeVector &nodeList) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::distributeNodeTags(MWNodeVector &nodeList) {
+//    NOT_IMPLEMENTED_ABORT;
 //    int start, end;
 //    int nNodes = nodeList.size();
 //    int nHosts = node_group.size();
@@ -835,33 +833,33 @@ void MWTree<D>::distributeNodeTags(MWNodeVector &nodeList) {
 //            node.setRankId(k);
 //        }
 //    }
-}
+//}
 
 /** Set the rank id (node tag) for all nodes in list. */
-template<int D>
-void MWTree<D>::tagNodes(MWNodeVector &nodeList, int rank) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::tagNodes(MWNodeVector &nodeList, int rank) {
+//    NOT_IMPLEMENTED_ABORT;
 //    for (int i = 0; i < nodeList.size(); i++) {
 //        MWNode<D> &node = *nodeList[i];
 //        node.setRankId(rank);
 //    }
-}
+//}
 
-template<int D>
-void MWTree<D>::tagDecendants(MWNodeVector &nodeList) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::tagDecendants(MWNodeVector &nodeList) {
+//    NOT_IMPLEMENTED_ABORT;
 //    int nNodes = nodeList.size();
 //    for (int i = 0; i < nNodes; i++) {
 //        MWNode<D> &node = *nodeList[i];
 //        node.assignDecendantTags(node.getRankId());
 //    }
-}
+//}
 
 /** Traverse tree and remove nodes of foreign rank.
   * Option to keep all endNodes. */
-template<int D>
-void MWTree<D>::deleteForeign(bool keepEndNodes) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::deleteForeign(bool keepEndNodes) {
+//    NOT_IMPLEMENTED_ABORT;
 //    if (not this->isScattered()) {
 //        return;
 //    }
@@ -878,12 +876,12 @@ void MWTree<D>::deleteForeign(bool keepEndNodes) {
 //        }
 //        node.clearRedundancy();
 //    }
-}
+//}
 
 template<int D>
 void MWTree<D>::deleteGenerated() {
     for (int n = 0; n < getNEndNodes(); n++) {
-        getEndNode(n).deleteGenerated();
+        getEndMWNode(n).deleteGenerated();
     }
 }
 
@@ -892,13 +890,13 @@ void MWTree<D>::deleteGenerated() {
 template<int D>
 void MWTree<D>::clearGenerated() {
     for (int i = 0; i < this->endNodeTable.size(); i++) {
-        getEndNode(i).clearGenerated();
+        getEndMWNode(i).clearGenerated();
     }
 }
 
-template<int D>
-void MWTree<D>::checkGridOverlap(MWTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::checkGridOverlap(MWTree<D> &tree) {
+//    NOT_IMPLEMENTED_ABORT;
 //    int overlapA = 0;
 //    int overlapB = 0;
 //    int onlyA = 0;
@@ -943,11 +941,11 @@ void MWTree<D>::checkGridOverlap(MWTree<D> &tree) {
 
 //    printout(0, "Overlapping nodes: ");
 //    println(0, setw(8) << onlyA << setw(8) << overlapA << setw(8) << onlyB);
-}
+//}
 
-template<int D>
-void MWTree<D>::checkRankOverlap(MWTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT;
+//template<int D>
+//void MWTree<D>::checkRankOverlap(MWTree<D> &tree) {
+//    NOT_IMPLEMENTED_ABORT;
 //    MatrixXi rankDiff = MatrixXi::Zero(2,11);
 
 //    for (int i = 0; i < 11; i++) {
@@ -993,7 +991,7 @@ void MWTree<D>::checkRankOverlap(MWTree<D> &tree) {
 //        rankDiff(1, diff)++;
 //    }
 //    println(0, rankDiff.row(1));
-}
+//}
 
 template class MWTree<1>;
 template class MWTree<2>;

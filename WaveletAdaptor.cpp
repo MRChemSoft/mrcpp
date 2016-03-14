@@ -7,7 +7,7 @@
 using namespace std;
 
 template<int D>
-bool WaveletAdaptor<D>::splitNode(MWNode<D> &node) const {
+bool WaveletAdaptor<D>::splitNode(const MWNode<D> &node) const {
     if (this->prec < 0.0) {
         return false;
     }
@@ -17,16 +17,18 @@ bool WaveletAdaptor<D>::splitNode(MWNode<D> &node) const {
         return false;
     }
     double t_norm = 1.0;
-    if (not this->absPrec) {
-        t_norm = sqrt(node.getMWTree().getSquareNorm());
+    double sq_norm = node.getMWTree().getSquareNorm();
+    if (not (sq_norm > 0.0) and not this->absPrec) {
+        t_norm = sqrt(sq_norm);
     }
     double w_norm = node.getWaveletNorm();
     double thrs = getWaveletThreshold(t_norm, scale);
 
     if (w_norm > thrs) {
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 /** Calculate the threshold for the wavelet norm.

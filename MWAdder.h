@@ -38,10 +38,12 @@ public:
     void operator()(FunctionTree<D> &out,
                     int a, FunctionTree<D> &a_tree,
                     int b, FunctionTree<D> &b_tree) {
+        this->adaptor = new TreeAdaptor<D>();
         this->calculator = new AdditionCalculator<D>(a, a_tree, b, b_tree);
         this->build(out);
         out.mwTransform(BottomUp);
         this->clearCalculator();
+        this->clearAdaptor();
     }
 
     void operator()(FunctionTree<D> &out,

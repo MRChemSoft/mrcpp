@@ -10,26 +10,26 @@ public:
     TreeAdaptor() { }
     TreeAdaptor(const TreeAdaptor<D> &adap) { }
     virtual ~TreeAdaptor() { }
-
     virtual TreeAdaptor<D> *copy() const { return new TreeAdaptor<D>(*this); }
 
-    MWNodeVector* splitNodeVector(MWNodeVector &nodeVec,
-                                  MWNodeVector *no_split = 0) const {
-        MWNodeVector *split = new MWNodeVector;
-        int nNodes = nodeVec.size();
-        for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &node = static_cast<MWNode<D> &>(*nodeVec[n]);
+    double splitNodeVector(MWNodeVector &out, MWNodeVector &inp) const {
+        double norm = 0.0;
+        for (int n = 0; n < inp.size(); n++) {
+            MWNode<D> &node = *inp[n];
             if (splitNode(node)) {
-                split->push_back(&node);
-            } else if (no_split != 0) {
-                no_split->push_back(&node);
+                node.createChildren();
+                for (int i = 0; i < node.getNChildren(); i++) {
+                    out.push_back(&node.getMWChild(i));
+                }
+            } else {
+                norm += node.getSquareNorm();
             }
         }
-        return split;
+        return std::max(norm, -1.0);
     }
 
 protected:
-    virtual bool splitNode(MWNode<D> &node) const { return false; }
+    virtual bool splitNode(const MWNode<D> &node) const { return false; }
 };
 
 #endif // TREEADAPTOR_H

@@ -98,7 +98,7 @@ GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
 }
 
 template<int D>
-double GaussExp<D>::evalf(const double *r) {
+double GaussExp<D>::evalf(const double *r) const {
     double val = 0.0;
     for (int i = 0; i < this->size(); i++) {
         val += this->getFunc(i).evalf(r);
@@ -106,17 +106,25 @@ double GaussExp<D>::evalf(const double *r) {
     return val;
 }
 
-/*
 template<int D>
-bool GaussExp<D>::checkSeedNode(MWNode<D> &node) {
+bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
     for (unsigned int i = 0; i < this->size(); i++) {
-        if (this->getFunc(i).checkSeedNode(node)) {
-            return true;
+        if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) {
+            return false;
         }
     }
-    return false;
+    return true;
 }
-*/
+
+template<int D>
+bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
+    for (unsigned int i = 0; i < this->size(); i++) {
+        if (not this->getFunc(i).isZeroOnInterval(lb, ub)) {
+            return false;
+        }
+    }
+    return true;
+}
 
 template<int D>
 void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double c) {

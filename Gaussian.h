@@ -18,6 +18,7 @@
 
 template<int D> class GaussFunc;
 template<int D> class GaussPoly;
+template<int D> class GaussExp;
 
 template<int D>
 class Gaussian: public RepresentableFunction<D> {
@@ -26,7 +27,7 @@ public:
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian();
 
-    virtual double evalf(const double *r) = 0;
+    virtual double evalf(const double *r) const = 0;
     virtual double evalf(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
@@ -91,6 +92,8 @@ public:
         }
         return o;
     }
+
+    friend class GaussExp<D>;
 protected:
     bool screen;
     int power[D];		/**< max power in each dim  */

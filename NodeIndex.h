@@ -23,7 +23,7 @@ template<int D> class NodeIndexComp;
 template<int D>
 class NodeIndex {
 public:
-    NodeIndex(int n = 0, const int *l = 0, int r = -1);
+    NodeIndex(int n = 0, const int *l = 0);
     NodeIndex(const NodeIndex<D> &idx);
     NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
     virtual ~NodeIndex() { }
@@ -33,11 +33,9 @@ public:
     inline bool operator!=(const NodeIndex<D> &idx) const;
 
     void setScale(int n) { this->N = (short int) n; }
-    void setRankId(int r) { this->rankId = (short int) r; }
     inline void setTranslation(const int *l);
 
     int getScale() const { return this->N; }
-    int getRankId() const { return this->rankId; }
     int getTranslation(int d) const { assert(d >= 0 or d < D); return this->L[d]; }
     const int *getTranslation() const {	return this->L; }
 
@@ -48,35 +46,30 @@ public:
 private:
     int L[D];
     short int N;
-    short int rankId;
 
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
         ar & L;
         ar & N;
-        ar & rankId;
     }
 };
 
 template<int D>
-NodeIndex<D>::NodeIndex(int n, const int *l, int r) {
+NodeIndex<D>::NodeIndex(int n, const int *l) {
     this->N = (short int) n;
-    this->rankId = r;
     setTranslation(l);
 }
 
 template<int D>
 NodeIndex<D>::NodeIndex(const NodeIndex<D> &idx) {
     this->N = idx.N;
-    this->rankId = idx.rankId;
     setTranslation(idx.L);
 }
 
 template<int D>
 NodeIndex<D>::NodeIndex(const NodeIndex<D> &pIdx, int cIdx) {
     this->N = pIdx.N + 1;
-    this->rankId = pIdx.rankId;
     const int *l = pIdx.getTranslation();
     for (int d = 0; d < D; d++) {
         this->L[d] = (2 * l[d]) + ((cIdx >> d) & 1);
@@ -89,7 +82,6 @@ NodeIndex<D>& NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
         return *this;
     }
     this->N = idx.N;
-    this->rankId = idx.rankId;
     setTranslation(idx.L);
     return *this;
 }
@@ -129,7 +121,7 @@ std::ostream& operator<<(std::ostream &o, const NodeIndex<D> &idx) {
     for (int d = 0; d < D - 1; d++) {
         o << idx.L[d] << ", ";
     }
-    o << idx.L[D - 1] << "] @" << idx.rankId;
+    o << idx.L[D - 1] << "]";
     return o;
 }
 
@@ -153,7 +145,6 @@ public:
             }
             return false;
         }
-        assert(a.rankId == b.rankId);
         return false;
     }
 
@@ -173,7 +164,6 @@ public:
             }
             return false;
         }
-        assert(a->rankId == b->rankId);
         return false;
     }
 };

@@ -42,7 +42,6 @@ template<int D> void broadcast_index_list(NodeIndexSet &idxSet);
 #ifdef HAVE_MPI
 
 #include <boost/mpi.hpp>
-#include <boost/mpi/timer.hpp>
 namespace mpi = boost::mpi;
 #define BOOST_MPI_HOMOGENEOUS
 
@@ -56,10 +55,6 @@ struct communicator {
 };
 struct environment {
     environment(int argc, char **argv) { }
-};
-struct timer {
-    void restart() { }
-    double elapsed() { return 0.0; }
 };
 typedef int request;
 }

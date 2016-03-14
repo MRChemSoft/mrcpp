@@ -1,8 +1,7 @@
-#ifndef TREEPROJECTOR_H
-#define TREEPROJECTOR_H
+#ifndef TREECALCULATOR_H
+#define TREECALCULATOR_H
 
 #include "mwrepr_declarations.h"
-#include "TelePrompter.h"
 
 template<int D>
 class TreeCalculator {
@@ -10,26 +9,22 @@ public:
     TreeCalculator() { }
     virtual ~TreeCalculator() { }
 
-    virtual bool computesCoefs() const { return false; }
-
-    void calcNodeVector(MWNodeVector &nodeVec) const {
+    virtual double calcNodeVector(MWNodeVector &nodeVec) const {
+        double norm = 0.0;
         int nNodes = nodeVec.size();
-        printout(10, std::setw(6) << nNodes << " nodes\n");
-#pragma omp parallel shared(nodeVec) firstprivate(nNodes)
+#pragma omp parallel shared(nodeVec) firstprivate(nNodes) reduction(+:norm)
 {
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &node = static_cast<MWNode<D> &>(*nodeVec[n]);
+            MWNode<D> &node = *nodeVec[n];
             calcNode(node);
+            norm += node.getSquareNorm();
         }
 }
+        return std::max(norm, -1.0);
     }
-
 protected:
-    virtual void calcNode(MWNode<D> &node) const {
-        node.clearHasCoefs();
-        node.clearNorms();
-    }
+    virtual void calcNode(MWNode<D> &node) const = 0;
 };
 
-#endif // TREEPROJECTOR_H
+#endif // TREECALCULATOR_H

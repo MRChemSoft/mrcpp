@@ -4,12 +4,14 @@
 #include "TreeBuilder.h"
 #include "ProjectionCalculator.h"
 #include "FunctionTree.h"
+#include "Timer.h"
 
 template<int D>
 class MWProjector : public TreeBuilder<D> {
 public:
     MWProjector(const MultiResolutionAnalysis<D> &mra)
             : TreeBuilder<D>(mra, -1) {
+        this->adaptor = new TreeAdaptor<D>();
     }
     MWProjector(const MultiResolutionAnalysis<D> &mra,
                 const TreeAdaptor<D> &a, int iter = -1)
@@ -29,7 +31,13 @@ public:
     void operator()(FunctionTree<D> &out, RepresentableFunction<D> &inp) {
         this->calculator = new ProjectionCalculator<D>(inp);
         this->build(out);
+
+        Timer trans_t;
+        trans_t.restart();
         out.mwTransform(BottomUp);
+        println(10, "Time transform      " << trans_t);
+        println(10, std::endl);
+
         this->clearCalculator();
     }
 };

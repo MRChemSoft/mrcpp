@@ -2,7 +2,7 @@
 #define GRIDGENERATOR_H
 
 #include "TreeBuilder.h"
-#include "TreeCalculator.h"
+#include "DefaultCalculator.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
 
@@ -11,7 +11,7 @@ class GridGenerator : public TreeBuilder<D> {
 public:
     GridGenerator(const MultiResolutionAnalysis<D> &mra, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
-        this->calculator = new TreeCalculator<D>();
+        this->calculator = new DefaultCalculator<D>();
     }
     virtual ~GridGenerator() {
         this->clearCalculator();
@@ -37,12 +37,14 @@ public:
         this->adaptor = new AnalyticAdaptor<D>(inp);
         this->build(out);
         this->clearAdaptor();
+        println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out, const FunctionTree<D> &inp) {
         this->adaptor = new CopyAdaptor<D>(inp);
         this->build(out);
         this->clearAdaptor();
+        println(10, std::endl);
     }
 };
 

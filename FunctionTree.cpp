@@ -198,8 +198,8 @@ double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
 }
 
 template<int D>
-double FunctionTree<D>::evalf(const double *r) {
-    double result;
+double FunctionTree<D>::evalf(const double *r) const {
+    double result = 0.0;
 #ifdef HAVE_MPI
     NOT_IMPLEMENTED_ABORT;
 //    bool iAmMaster = false;
@@ -217,11 +217,11 @@ double FunctionTree<D>::evalf(const double *r) {
 //        result = 0.0;
 //    }
 #else
-    MWNode<D> &mr_node = this->getNodeOrEndNode(r);
-    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
-    result = f_node.evalf(r);
+//    MWNode<D> &mr_node = this->getNodeOrEndNode(r);
+//    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+//    result = f_node.evalf(r);
 #endif
-    this->deleteGenerated();
+//    this->deleteGenerated();
     return result;
 }
 

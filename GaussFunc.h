@@ -39,7 +39,7 @@ public:
     double calcCoulombEnergy(GaussFunc<D> &gf);
     double calcSquareNorm();
 
-    double evalf(const double *r);
+    double evalf(const double *r) const;
     double evalf(double r, int dim) const;
 
     static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);

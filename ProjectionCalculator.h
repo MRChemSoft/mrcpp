@@ -6,13 +6,11 @@
 template<int D>
 class ProjectionCalculator : public TreeCalculator<D> {
 public:
-    ProjectionCalculator(RepresentableFunction<D> &inp_func)
-            : func(&inp_func) { }
+    ProjectionCalculator(const RepresentableFunction<D> &inp_func) : func(&inp_func) { }
     virtual ~ProjectionCalculator() { }
-    virtual bool computesCoefs() const { return true; }
 
 protected:
-    RepresentableFunction<D> *func;
+    const RepresentableFunction<D> *func;
 
     virtual void calcNode(MWNode<D> &node) const;
 };

@@ -48,10 +48,10 @@ public:
     void normalize();
 
     void calcScreening(double nStdDev = defaultScreening);
-    //bool checkSeedNode(MWNode<D> &node);
-    //void calcWaveletCoefs(MWNode<D> &node);
+    bool isVisibleAtScale(int scale, int nPts) const;
+    bool isZeroOnInterval(const double *lb, const double *ub) const;
 
-    double evalf(const double *r);
+    double evalf(const double *r) const;
 
     GaussExp<D> differentiate(int dir);
 

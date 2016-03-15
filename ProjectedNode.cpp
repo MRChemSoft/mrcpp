@@ -26,7 +26,7 @@ using namespace Eigen;
 template<int D>
 ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
         : FunctionNode<D> (t, nIdx) {
-    this->allocCoefs();
+    this->allocCoefs(this->getTDim());
     this->setIsEndNode();
 }
 
@@ -35,54 +35,13 @@ ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
 template<int D>
 ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
-    this->allocCoefs();
+    this->allocCoefs(this->getTDim());
     this->setIsEndNode();
 }
 
 template<int D>
-ProjectedNode<D>::ProjectedNode(const MWNode<D> &n)
-        : FunctionNode<D>(n) {
-    this->allocCoefs();
-    this->zeroCoefs();
-
-    const VectorXd &c = n.getCoefs();
-    int cSize = c.size();
-    assert (cSize <= this->getNCoefs());
-    this->coefs->segment(0, cSize) = c;
-    this->setHasCoefs();
-
-    this->calcNorms();
-}
-
-
-template<int D>
-ProjectedNode<D>::ProjectedNode(const ProjectedNode<D> &n)
-        : FunctionNode<D>(n) {
-    NOT_IMPLEMENTED_ABORT;
-//        this->allocCoefs();
-//        this->zeroCoefs();
-//        this->zeroNorms();
-}
-
-/* Recurcive node constructor*/
-template<int D>
-void ProjectedNode<D>::copyChildren(const MWNode<D> &node) {
-    NOT_IMPLEMENTED_ABORT;
-//    if (node.isBranchNode()) {
-//        this->allocKindergarten();
-//        this->setIsBranchNode();
-//        this->clearIsEndNode();
-//    }
-//    int myRank = this->getRankId();
-//    for (int cIdx = 0; cIdx < node.getNChildren(); cIdx++) {
-//        const MWNode<D> &yourChild = node.getMWChild(cIdx);
-//        int childRank = yourChild.getRankId();
-//        this->setRankId(childRank); //Rank is copied from parent
-//        ProjectedNode<D> *myChild = new ProjectedNode(*this, cIdx);
-//        this->setRankId(myRank);
-//        myChild->copyChildren(yourChild);
-//        this->children[cIdx] = myChild;
-//    }
+ProjectedNode<D>::~ProjectedNode() {
+    this->freeCoefs();
 }
 
 /** Allocating child node.

@@ -52,16 +52,15 @@ int GridCleaner<D>::clean(MWTree<D> &tree) const {
     this->calculator->calcNodeVector(nodeVec);//clear all coefficients
     clean_t.stop();
 
-    printout(10, "  -- #  1: Cleared      ");
-    printout(10, setw(6) << nClear << " nodes\n");
+    tree.resetEndNodeTable();
+    tree.clearSquareNorm();
 
+    println(10, "  -- #  1: Cleared      " << setw(6) << nClear << " nodes");
     println(10, "");
     println(10, "Time split          " << split_t);
     println(10, "Time clean          " << clean_t);
     println(10, endl);
 
-    tree.resetEndNodeTable();
-    tree.clearSquareNorm();
     return nSplit;
 }
 

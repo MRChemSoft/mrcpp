@@ -19,6 +19,8 @@ template<int D>
 GenNode<D>::GenNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(&p) {
+    this->allocCoefs(this->getTDim());
+    this->zeroCoefs();
     this->setIsGenNode();
     this->tree->incrementGenNodeCount();
 }
@@ -27,23 +29,16 @@ template<int D>
 GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(p.genRootNode) {
+    this->allocCoefs(this->getTDim());
+    this->zeroCoefs();
     this->setIsGenNode();
     this->tree->incrementGenNodeCount();
 }
 
 template<int D>
-GenNode<D>::GenNode(const GenNode<D> &n)
-        : FunctionNode<D> (n),
-          genRootNode(n.genRootNode) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template<int D>
 GenNode<D>::~GenNode() {
     this->tree->decrementGenNodeCount();
-    if (this->isAllocated()) {
-        this->tree->decrementAllocGenNodeCount();
-    }
+    this->freeCoefs();
 }
 
 template<int D>
@@ -64,30 +59,21 @@ void GenNode<D>::regenerateCoefs() {
 }
 
 template<int D>
-void GenNode<D>::freeCoefs() {
-    if (not this->isAllocated()) {
-        return;
-    }
-    if (this->hasCoefs()) {
-        this->calcNorms();
-    }
-    MWNode<D>::freeCoefs();
-    this->tree->decrementAllocGenNodeCount();
+void GenNode<D>::allocCoefs(int nBlocks) {
+    MWNode<D>::allocCoefs(nBlocks);
+    this->tree->incrementAllocGenNodeCount();
 }
 
 template<int D>
-void GenNode<D>::setCoefs(const VectorXd &c) {
-    SET_NODE_LOCK();
-    if (not this->isAllocated()) {
-        this->getMWTree().incrementAllocGenNodeCount();
+void GenNode<D>::freeCoefs() {
+    if (this->isAllocated()) {
+        this->tree->decrementAllocGenNodeCount();
+        MWNode<D>::freeCoefs();
     }
-    MWNode<D>::setCoefs(c);
-    UNSET_NODE_LOCK();
 }
 
 template<int D>
 VectorXd& GenNode<D>::getCoefs() {
-    NOT_IMPLEMENTED_ABORT;
     lockSiblings();
     if (not this->hasCoefs()) {
         regenerateCoefs();
@@ -120,23 +106,25 @@ void GenNode<D>::clearGenerated() {
 }
 
 template<int D>
-void GenNode<D>::mwTransform(int kind) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template<int D>
-void GenNode<D>::cvTransform(int kind) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template<int D>
 void GenNode<D>::lockSiblings() {
-    NOT_IMPLEMENTED_ABORT;
+    MWNode<D> *parent = &this->getMWParent();
+    if (parent != 0) {
+	/* Since all threads set the locks in the same order starting from 0,
+	there is no risk of a deadlock here. */
+	for (int i = 0; i < parent->getNChildren(); i++) {
+	    parent->getMWChild(i).lockNode();
+	}
+    }
 }
 
 template<int D>
 void GenNode<D>::unlockSiblings() {
-    NOT_IMPLEMENTED_ABORT;
+    MWNode<D> *parent = &this->getMWParent();
+    if (parent != 0) {
+	for (int i = 0; i < parent->getNChildren(); i++) {
+	    parent->getMWChild(i).unlockNode();
+	}
+    }
 }
 
 template class GenNode<1> ;

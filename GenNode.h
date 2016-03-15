@@ -18,26 +18,18 @@ template<int D> class ProjectedNode;
 template<int D>
 class GenNode: public FunctionNode<D> {
 public:
-    virtual ~GenNode();
-
-    void setCoefs(const Eigen::VectorXd &c);
-    Eigen::VectorXd& getCoefs();
     Eigen::VectorXd& getCoefsNoLock();
+    Eigen::VectorXd& getCoefs();
     const Eigen::VectorXd& getCoefs() const;
-
-    void mwTransform(int kind);
-    void cvTransform(int kind);
-
-    const ProjectedNode<D> *getGenRootNode() const { return this->genRootNode; }
-    ProjectedNode<D> *getGenRootNode() { return this->genRootNode; }
 
     friend class ProjectedNode<D>;
 
 protected:
     GenNode(ProjectedNode<D> &p, int cIdx);
     GenNode(GenNode<D> &p, int cIdx);
-    GenNode(const GenNode<D> &n);
+    GenNode(const GenNode<D> &n) : FunctionNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
     GenNode& operator=(const GenNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
+    virtual ~GenNode();
 
     double calcWaveletNorm() const { return 0.0; }
     double calcComponentNorm(int i) const {
@@ -48,8 +40,12 @@ protected:
         }
     }
 
+    virtual void allocCoefs(int nBlocks);
     virtual void freeCoefs();
     virtual void clearGenerated();
+
+    const ProjectedNode<D> *getGenRootNode() const { return this->genRootNode; }
+    ProjectedNode<D> *getGenRootNode() { return this->genRootNode; }
 
 private:
     ProjectedNode<D> *genRootNode;

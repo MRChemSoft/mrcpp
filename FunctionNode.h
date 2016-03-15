@@ -2,12 +2,11 @@
 #define FUNCTIONNODE_H
 
 #include "MWNode.h"
+#include "FunctionTree.h"
 
 template<int D>
 class FunctionNode : public MWNode<D> {
 public:
-    virtual ~FunctionNode() { }
-
     double evalf(const double *r);
 
     double integrate() const;
@@ -23,11 +22,11 @@ public:
     const FunctionNode<D> &getFuncChild(int i) const { return static_cast<const FunctionNode<D> &>(*this->children[i]); }
 
 protected:
-    FunctionNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx);
-    FunctionNode(FunctionNode<D> &p, int cIdx);
-    FunctionNode(const MWNode<D> &n);
-    FunctionNode(const FunctionNode<D> &n);
+    FunctionNode(FunctionTree<D> &t, const NodeIndex<D> &n) : MWNode<D>(t, n) { }
+    FunctionNode(FunctionNode<D> &p, int c) : MWNode<D>(p, c) { }
+    FunctionNode(const FunctionNode<D> &n) : MWNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
     FunctionNode& operator=(const FunctionNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
+    virtual ~FunctionNode() { }
 
     double evalScaling(const double *r) const;
     double integrateLegendre() const;

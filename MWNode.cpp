@@ -24,13 +24,13 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           squareNorm(-1.0),
           status(0),
           coefs(0) {
-    this->tree->incrementNodeCount(getScale());
-    setIsLeafNode();
-    setIsRootNode();
     clearNorms();
+    this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
+    setIsLeafNode();
+    setIsRootNode();
 #ifdef OPENMP
     omp_init_lock(&node_lock);
 #endif
@@ -47,17 +47,18 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           squareNorm(-1.0),
           status(0),
           coefs(0) {
-    this->tree->incrementNodeCount(getScale());
-    setIsLeafNode();
     clearNorms();
+    this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
+    setIsLeafNode();
 #ifdef OPENMP
     omp_init_lock(&node_lock);
 #endif
 }
 
+/** Detatched node */
 template<int D>
 MWNode<D>::MWNode(const MWNode<D> &n)
         : tree(n.tree),
@@ -67,12 +68,17 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           squareNorm(-1.0),
           status(0),
           coefs(0) {
-    this->tree->incrementNodeCount(getScale());
-    clearNorms();
-    setIsLeafNode();
+    allocCoefs(this->getTDim());
+    if (n.hasCoefs()) {
+        setCoefs(n.getCoefs());
+    } else {
+        zeroCoefs();
+    }
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
+    setIsLeafNode();
+    setIsLooseNode();
 #ifdef OPENMP
     omp_init_lock(&node_lock);
 #endif
@@ -82,32 +88,26 @@ MWNode<D>::MWNode(const MWNode<D> &n)
   * Recursive deallocation of a node and all its decendants */
 template<int D>
 MWNode<D>::~MWNode() {
-    lockNode();
-    freeCoefs();
     if (this->isBranchNode()) {
         deleteChildren();
     }
-    this->tree->decrementNodeCount(getScale());
-    unlockNode();
+    if (not this->isLooseNode()) {
+        this->tree->decrementNodeCount(getScale());
+    } else {
+        freeCoefs();
+    }
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
 #endif
 }
-/** Allocate the coefs vector. If it is already allocated, clear the
-  * HasCoefs flag and reallocate if necessary. */
+
+/** Allocate the coefs vector. */
 template<int D>
-void MWNode<D>::allocCoefs(int nCoefs) {
-    if (nCoefs < 0) {
-        nCoefs = this->getTDim() * this->getKp1_d();
-    }
-    if (this->coefs == 0) {
-        this->coefs = new VectorXd(nCoefs);
-    } else {
-        if (this->coefs->rows() != nCoefs) { // reallocate
-            delete this->coefs;
-            this->coefs = new VectorXd(nCoefs);
-        }
-    }
+void MWNode<D>::allocCoefs(int nBlocks) {
+    if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
+
+    int nCoefs = nBlocks * this->getKp1_d();
+    this->coefs = new VectorXd(nCoefs);
     this->setIsAllocated();
     this->clearHasCoefs();
 }
@@ -115,7 +115,8 @@ void MWNode<D>::allocCoefs(int nCoefs) {
 /** Deallocation of coefficients. */
 template<int D>
 void MWNode<D>::freeCoefs() {
-    if (this->coefs != 0) delete this->coefs;
+    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    delete this->coefs;
     this->coefs = 0;
     this->clearHasCoefs();
     this->clearIsAllocated();
@@ -123,9 +124,7 @@ void MWNode<D>::freeCoefs() {
 
 template<int D>
 void MWNode<D>::zeroCoefs() {
-    if (not this->isAllocated()) {
-        allocCoefs();
-    }
+    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
     this->coefs->setZero();
     this->zeroNorms();
     this->setHasCoefs();
@@ -133,24 +132,21 @@ void MWNode<D>::zeroCoefs() {
 
 /** Set coefficients of node.
   *
-  * Copies the argument vector to the coefficient vector of the node. Allocates
-  * coefficients if needed. ASSUMES that the given vector does not exceed
-  * the allocated memory of the node, and if it is smaller, trailing zeros are
-  * added. Option to lock node (only used in the GenNode version of the
-  * routine). */
+  * Copies the argument vector to the coefficient vector of the node. */
 template<int D>
 void MWNode<D>::setCoefs(const Eigen::VectorXd &c) {
-    if (not this->isAllocated()) {
-        allocCoefs();
-    }
+    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+
     int nNew = c.size();
-    assert (nNew <= this->getNCoefs());
-    if (nNew < this->getNCoefs()) {
-        this->coefs->segment(nNew, this->getNCoefs() - nNew).setZero();
+    int nEmpty = this->getNCoefs() - nNew;
+    if (nEmpty < 0) {
+        MSG_FATAL("Size mismatch");
+    } else {
+        this->coefs->segment(nNew, nEmpty).setZero();
     }
     this->coefs->segment(0, nNew) = c;
     this->setHasCoefs();
-    this->clearNorms();
+    this->calcNorms();
 }
 
 template<int D>
@@ -158,19 +154,19 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
 
-    ProjectedNode<D> copy(*this);
+    MWNode<D> copy(*this);
     copy.mwTransform(Reconstruction);
     const VectorXd &c = copy.getCoefs();
 
     int kp1_d = this->getKp1_d();
     for (int i = 0; i < this->getTDim(); i++) {
         MWNode<D> &child = this->getMWChild(i);
-        if (not child.hasCoefs()) {
+        if (overwrite) {
             child.setCoefs(c.segment(i*kp1_d, kp1_d));
-        } else if (overwrite) {
-            child.getCoefs().segment(0, kp1_d) = c.segment(i*kp1_d, kp1_d);
-        } else {
+        } else if (child.hasCoefs()) {
             child.getCoefs().segment(0, kp1_d) += c.segment(i*kp1_d, kp1_d);
+        } else {
+            MSG_FATAL("Child has no coefs");
         }
         child.calcNorms();
     }
@@ -386,10 +382,7 @@ double MWNode<D>::estimateError(bool absPrec) {
 template<int D>
 void MWNode<D>::reCompress(bool overwrite) {
     if ((not this->isGenNode()) and this->isBranchNode()) {
-        if (not this->isAllocated()) {
-            // This happens for seeded nodes and on distributed trees
-            allocCoefs();
-        }
+        if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
         if (overwrite) {
             copyCoefsFromChildren(*this->coefs);
             mwTransform(Compression);
@@ -432,47 +425,6 @@ bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
     //    }
     //    return false;
 }
-
-//template<int D>
-//mpi::request MWNode<D>::isendCoefs(int who, int tag, int comp) {
-    //NOT_IMPLEMENTED_ABORT;
-    //    assert(this->hasCoefs());
-    //#ifdef HAVE_MPI
-    //    int nSend = this->getNCoefs();
-    //    const double *data = this->coefs->data();
-    //    if (comp > 0) {
-    //        assert(comp >= 0 and comp < this->getTDim());
-    //        nSend = this->getKp1_d();
-    //        data = data + comp * this->getKp1_d();
-    //    }
-    //    return node_group.isend(who, tag, data, nSend);
-    //#else
-    //    mpi::request dummy = 0;
-    //    return dummy;
-    //#endif
-//}
-
-//template<int D>
-//mpi::request MWNode<D>::ireceiveCoefs(int who, int tag, int comp) {
-    //NOT_IMPLEMENTED_ABORT;
-    //#ifdef HAVE_MPI
-    //    if (not this->isAllocated()) {
-    //        allocCoefs();
-    //    }
-    //    int nRecv = this->getNCoefs();
-    //    double *data = this->coefs->data();
-    //    if (comp > 0) {
-    //        assert(comp >= 0 and comp < this->getTDim());
-    //        nRecv = this->getKp1_d();
-    //        data = data + comp * this->getKp1_d();
-    //    }
-    //    this->setHasCoefs();
-    //    return node_group.irecv(who, tag, data, nRecv);
-    //#else
-    //    mpi::request dummy = 0;
-    //    return dummy;
-    //#endif
-//}
 
 template<int D>
 void MWNode<D>::createChildren() {
@@ -718,12 +670,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     assert(hasCoord(r));
     // If we have reached an endNode, lock if necessary, and start generating
     // NB! retrieveNode() for GenNodes behave a bit differently.
-    SET_NODE_LOCK();
+    lockNode();
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
     }
-    UNSET_NODE_LOCK();
+    unlockNode();
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(r, depth);
@@ -742,12 +694,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
         return this;
     }
     assert(isAncestor(idx));
-    SET_NODE_LOCK();
+    lockNode();
     if (isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
     }
-    UNSET_NODE_LOCK();
+    unlockNode();
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(idx);

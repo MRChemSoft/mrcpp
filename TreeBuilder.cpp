@@ -69,12 +69,12 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
         workVec = newVec;
         if (maxIterReached(iter)) workVec->clear();
     }
+    tree.resetEndNodeTable();
+    delete workVec;
+
     println(10, "");
     println(10, "Time calc           " << calc_t);
     println(10, "Time split          " << split_t);
-
-    tree.resetEndNodeTable();
-    delete workVec;
 }
 
 template<int D>

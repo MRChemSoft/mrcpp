@@ -27,7 +27,7 @@ public:
         return out;
     }
 
-    FunctionTree<D> *operator()(const FunctionTree<D> &inp) {
+    FunctionTree<D> *operator()(FunctionTree<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);
         return out;

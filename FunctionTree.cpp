@@ -18,9 +18,6 @@ using namespace Eigen;
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
         : MWTree<D> (mra) {
-    const double *lB = this->rootBox.getLowerBounds();
-    const double *uB = this->rootBox.getUpperBounds();
-    this->setBounds(lB, uB);
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
@@ -36,9 +33,6 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
 template<int D>
 FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
         : MWTree<D> (tree) {
-    const double *lB = this->rootBox.getLowerBounds();
-    const double *uB = this->rootBox.getUpperBounds();
-    this->setBounds(lB, uB);
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
@@ -54,9 +48,6 @@ FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
 template<int D>
 FunctionTree<D>::FunctionTree(const FunctionTree<D> &tree)
         : MWTree<D> (tree) {
-    const double *lB = this->rootBox.getLowerBounds();
-    const double *uB = this->rootBox.getUpperBounds();
-    this->setBounds(lB, uB);
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);

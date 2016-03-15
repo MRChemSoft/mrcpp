@@ -13,10 +13,9 @@
 #define FUNCTIONTREE_H_
 
 #include "MWTree.h"
-#include "RepresentableFunction.h"
 
 template<int D>
-class FunctionTree: public MWTree<D>, public RepresentableFunction<D> {
+class FunctionTree: public MWTree<D> {
 public:
     virtual ~FunctionTree();
 

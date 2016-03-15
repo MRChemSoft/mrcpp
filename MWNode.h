@@ -32,10 +32,6 @@
 template<int D>
 class MWNode {
 public:
-    virtual ~MWNode();
-
-    double estimateError(bool absPrec);
-
     int getKp1() const { return getMWTree().getKp1(); }
     int getKp1_d() const { return getMWTree().getKp1_d(); }
     int getOrder() const { return getMWTree().getOrder(); }
@@ -52,6 +48,11 @@ public:
     void getCenter(double *r) const;
     void getBounds(double *lb, double *ub) const;
 
+    bool hasCoord(const double *r) const;
+    bool isCompatible(const MWNode<D> &node);
+    bool isAncestor(const NodeIndex<D> &idx) const;
+    bool isDecendant(const NodeIndex<D> &idx) const;
+
     inline bool hasCoefs() const;
     inline bool isRootNode() const;
     inline bool isEndNode() const;
@@ -59,30 +60,7 @@ public:
     inline bool isLeafNode() const;
     inline bool isAllocated() const;
     inline bool isBranchNode() const;
-
-    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
-    void setIsEndNode() { SET_BITS(status, FlagEndNode); }
-    void setIsGenNode() { SET_BITS(status, FlagGenNode); }
-    void setIsRootNode() { SET_BITS(status, FlagRootNode); }
-    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }
-    void setIsAllocated() { SET_BITS(status, FlagAllocated); }
-    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
-    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
-    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
-    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
-    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
-
-    bool hasCoord(const double *r) const;
-    bool isCompatible(const MWNode<D> &node);
-    bool isAncestor(const NodeIndex<D> &idx) const;
-    bool isDecendant(const NodeIndex<D> &idx) const;
-
-    int getChildIndex(const NodeIndex<D> &nIdx) const;
-    int getChildIndex(const double *r) const;
-
-    void lockNode() { SET_NODE_LOCK(); }
-    void unlockNode() { UNSET_NODE_LOCK(); }
-    bool testLock() { return TEST_NODE_LOCK(); }
+    inline bool isLooseNode() const;
 
     double getSquareNorm() const { return this->squareNorm; }
     double getScalingNorm() const { return this->componentNorms[0]; }
@@ -91,14 +69,8 @@ public:
     bool hasComponentNorms() const;
 
     int getNCoefs() const { return this->coefs->size(); }
-    virtual Eigen::VectorXd &getCoefs() { if (not this->isAllocated()) allocCoefs(); return *this->coefs; }
+    virtual Eigen::VectorXd &getCoefs() { return *this->coefs; }
     virtual const Eigen::VectorXd &getCoefs() const { return *this->coefs; }
-
-    virtual void setCoefs(const Eigen::VectorXd &c);
-    virtual void zeroCoefs();
-
-    virtual void cvTransform(int kind);
-    virtual void mwTransform(int kind);
 
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
@@ -117,6 +89,8 @@ public:
     friend class ProjectionCalculator<D>;
     friend class AdditionCalculator<D>;
     friend class MWTree<D>;
+    friend class GenNode<D>;
+    friend class NodeBox<D>;
 
 protected:
     MWTree<D> *tree;
@@ -134,17 +108,39 @@ protected:
     MWNode(MWNode<D> &p, int cIdx);
     MWNode(const MWNode<D> &n);
     MWNode& operator=(const MWNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
+    virtual ~MWNode();
 
-    virtual void allocCoefs(int nCoefs = -1);
+    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
+    void setIsEndNode() { SET_BITS(status, FlagEndNode); }
+    void setIsGenNode() { SET_BITS(status, FlagGenNode); }
+    void setIsRootNode() { SET_BITS(status, FlagRootNode); }
+    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }
+    void setIsAllocated() { SET_BITS(status, FlagAllocated); }
+    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
+    void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }
+    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
+    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
+    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
+    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
+
+    virtual void allocCoefs(int nBlocks);
     virtual void freeCoefs();
+
+    virtual void setCoefs(const Eigen::VectorXd &c);
+    virtual void zeroCoefs();
 
     void calcNorms();
     void zeroNorms();
     void clearNorms();
 
+    double estimateError(bool absPrec);
+
     double calcSquareNorm() const;
     virtual double calcWaveletNorm() const;
     virtual double calcComponentNorm(int i) const;
+
+    virtual void cvTransform(int kind);
+    virtual void mwTransform(int kind);
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
     void reCompress(bool overwrite);
@@ -154,11 +150,18 @@ protected:
     virtual void deleteChildren();
     void genChildren();
 
-    virtual void genChild(int cIdx) = 0;
-    virtual void createChild(int cIdx) = 0;
+    virtual void genChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
+    virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
 
     virtual void giveChildrenCoefs(bool overwrite = true);
     virtual void copyCoefsFromChildren(Eigen::VectorXd &c);
+
+    int getChildIndex(const NodeIndex<D> &nIdx) const;
+    int getChildIndex(const double *r) const;
+
+    void lockNode() { SET_NODE_LOCK(); }
+    void unlockNode() { UNSET_NODE_LOCK(); }
+    bool testLock() { return TEST_NODE_LOCK(); }
 
     bool diffBranch(const MWNode<D> &rhs) const;
     inline bool checkStatus(unsigned char mask) const;
@@ -184,6 +187,7 @@ protected:
     static const unsigned char FlagAllocated  = B8(00001000);
     static const unsigned char FlagEndNode    = B8(00010000);
     static const unsigned char FlagRootNode   = B8(00100000);
+    static const unsigned char FlagLooseNode  = B8(01000000);
 #ifdef OPENMP
     omp_lock_t node_lock;
 #endif
@@ -241,6 +245,14 @@ bool MWNode<D>::isLeafNode() const {
 template<int D>
 bool MWNode<D>::isBranchNode() const {
     if (this->status & FlagBranchNode) {
+        return true;
+    }
+    return false;
+}
+
+template<int D>
+bool MWNode<D>::isLooseNode() const {
+    if (this->status & FlagLooseNode) {
         return true;
     }
     return false;

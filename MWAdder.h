@@ -54,6 +54,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     std::vector<double> coefs,
                     std::vector<FunctionTree<D> *> trees) {
+        Timer trans_t, clean_t;
         bool defaultAdaptor = false;
         if (this->adaptor == 0) {
             defaultAdaptor = true;
@@ -61,12 +62,22 @@ public:
         }
         this->calculator = new AdditionCalculator<D>(coefs, trees);
         this->build(out);
+        this->clearCalculator();
+        if (defaultAdaptor) this->clearAdaptor();
+
+        trans_t.restart();
         out.mwTransform(BottomUp);
+        trans_t.stop();
+
+        clean_t.restart();
         for (int n = 0; n < trees.size(); n++) {
             trees[n]->deleteGenerated();
         }
-        this->clearCalculator();
-        if (defaultAdaptor) this->clearAdaptor();
+        clean_t.stop();
+
+        println(10, "Time transform      " << trans_t);
+        println(10, "Time cleaning       " << clean_t);
+        println(10, std::endl);
     }
 };
 

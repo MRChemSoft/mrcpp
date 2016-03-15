@@ -15,21 +15,16 @@
 template<int D>
 class ProjectedNode: public FunctionNode<D> {
 public:
-    virtual ~ProjectedNode() { }
-
-    double evalf(const double *r) const;
-
     friend class MWNode<D>;
     friend class FunctionTree<D>;
 
 protected:
     ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx);
     ProjectedNode(ProjectedNode<D> &p, int cIdx);
-    ProjectedNode(const MWNode<D> &n);
-    ProjectedNode(const ProjectedNode<D> &n);
+    ProjectedNode(const ProjectedNode<D> &n) : FunctionNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
     ProjectedNode& operator=(const ProjectedNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
+    virtual ~ProjectedNode();
 
-    void copyChildren(const MWNode<D> &node);
     void createChildren() { MWNode<D>::createChildren(); this->clearIsEndNode(); }
     void deleteChildren() { MWNode<D>::deleteChildren(); this->setIsEndNode(); }
 

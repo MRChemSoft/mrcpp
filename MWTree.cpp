@@ -347,6 +347,7 @@ void MWTree<D>::deleteNodeCounters() {
   * about it. */
 template<int D>
 void MWTree<D>::incrementNodeCount(int scale) {
+    lockTree();
     int depth = scale - getRootScale();
     assert(depth >= 0);
     int n = this->nodesAtDepth.size() - 1;
@@ -357,6 +358,7 @@ void MWTree<D>::incrementNodeCount(int scale) {
     }
     this->nodesAtDepth[depth]++;
     this->nNodes++;
+    unlockTree();
 }
 
 /** Decrement node counters for non-GenNodes. This routine is not thread
@@ -365,6 +367,7 @@ void MWTree<D>::incrementNodeCount(int scale) {
   * about it. */
 template<int D>
 void MWTree<D>::decrementNodeCount(int scale) {
+    lockTree();
     int depth = scale - getRootScale();
     assert(depth >= 0);
     assert(depth < this->nodesAtDepth.size());
@@ -375,6 +378,7 @@ void MWTree<D>::decrementNodeCount(int scale) {
     }
     this->nNodes--;
     assert(this->nNodes >= 0);
+    unlockTree();
 }
 
 /** Update GenNode counts in a safe way. Since GenNodes are created on the

@@ -14,25 +14,6 @@ extern "C" {
 using namespace std;
 using namespace Eigen;
 
-template<int D>
-FunctionNode<D>::FunctionNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
-        : MWNode<D>(t, nIdx) {
-}
-
-template<int D>
-FunctionNode<D>::FunctionNode(FunctionNode<D> &p, int cIdx)
-        : MWNode<D>(p, cIdx) {
-}
-
-template<int D>
-FunctionNode<D>::FunctionNode(const MWNode<D> &n)
-        : MWNode<D>(n) {
-}
-
-template<int D>
-FunctionNode<D>::FunctionNode(const FunctionNode<D> &n)
-        : MWNode<D>(n) {
-}
 
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */

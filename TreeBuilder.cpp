@@ -41,6 +41,7 @@ template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree) const {
     Timer calc_t, split_t;
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
+    if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Building tree");
 
     MWNodeVector *newVec = 0;

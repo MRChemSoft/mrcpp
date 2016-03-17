@@ -1,3 +1,4 @@
+include_directories(mwarithmetics)
 
 set(mrcpp_SOURCES
     AnalyticAdaptor.h
@@ -21,9 +22,7 @@ set(mrcpp_SOURCES
     LebesgueIterator.h
     LegendreBasis.h
     LegendrePoly.h
-    MWAdder.h
     MWFilter.h
-    MWMultiplier.h
     MWNode.h
     MWProjector.h
     MWTree.h

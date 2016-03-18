@@ -10,16 +10,25 @@ template<int D> class MWAdder;
 template<int D>
 class AdditionVector {
 public:
-    void push_back(double c, FunctionTree<D> *f) {
+    AdditionVector() { }
+    ~AdditionVector() { }
+    AdditionVector& operator=(const AdditionVector<D> &vec) {
+        this->clear();
+        for (int i = 0; i < vec.size(); i++) {
+           this->push_back(vec.getFunc(i), vec.getCoef(i));
+        }
+    }
+
+    int size() const {
+        return this->funcs.size();
+    }
+    void push_back(FunctionTree<D> &f, double c = 1.0) {
         this->coefs.push_back(c);
-        this->funcs.push_back(f);
+        this->funcs.push_back(&f);
     }
     void clear() {
         this->coefs.clear();
         this->funcs.clear();
-    }
-    int size() const {
-        return this->funcs.size();
     }
     double getCoef(int i) const {
         if (i < 0 or i >= this->coefs.size()) MSG_ERROR("Out of bounds");

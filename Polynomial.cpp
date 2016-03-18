@@ -25,7 +25,6 @@ Polynomial::Polynomial(int k, const double *a, const double *b)
 
 Polynomial::Polynomial(double c, int k, const double *a, const double *b)
         : RepresentableFunction<1>(a,b) {
-    NOT_IMPLEMENTED_ABORT;
     this->N = 1.0;
     this->L = 0.0;
     this->coefs = MathUtils::getBinomialCoefs(k);

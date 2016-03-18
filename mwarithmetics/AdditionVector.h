@@ -11,7 +11,7 @@ template<int D>
 class AdditionVector {
 public:
     AdditionVector() { }
-    ~AdditionVector() { }
+    virtual ~AdditionVector() { }
     AdditionVector& operator=(const AdditionVector<D> &vec) {
         this->clear();
         for (int i = 0; i < vec.size(); i++) {

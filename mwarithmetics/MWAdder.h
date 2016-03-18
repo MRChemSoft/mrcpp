@@ -17,7 +17,9 @@ public:
             : TreeBuilder<D>(mra, iter) {
         this->adaptor = a.copy();
     }
-    virtual ~MWAdder() { this->clearAdaptor(); }
+    virtual ~MWAdder() {
+        this->clearAdaptor();
+    }
 
     FunctionTree<D>* operator()(AdditionVector<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
@@ -46,6 +48,7 @@ public:
     }
 
 protected:
+    /** Copy the grids from the input functions */
     void initializeGrid(FunctionTree<D> &out, AdditionVector<D> &inp) {
         Timer init_t;
         init_t.restart();

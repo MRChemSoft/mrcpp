@@ -7,8 +7,9 @@
 
 #include "MWNode.h"
 #include "MWTree.h"
-#include "MathUtils.h"
 #include "ProjectedNode.h"
+#include "MathUtils.h"
+#include "QuadratureCache.h"
 
 using namespace std;
 using namespace Eigen;
@@ -200,53 +201,49 @@ void MWNode<D>::copyCoefsFromChildren(VectorXd &c) {
   *       representation, in oppose to s/d (scaling and wavelet). */
 template<int D>
 void MWNode<D>::cvTransform(int operation) {
-    NOT_IMPLEMENTED_ABORT;
-    //    const ScalingBasis &sf = this->getMWTree().getScalingFunctions();
-    //    if (sf.getType() != Interpol) {
-    //        NOT_IMPLEMENTED_ABORT;
-    //    }
+    const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
+    if (sf.getScalingType() != Interpol) {
+        NOT_IMPLEMENTED_ABORT;
+    }
 
-    //    int quadratureOrder = sf.getQuadratureOrder();
-    //    getQuadratureCache(qc);
+    int quadratureOrder = sf.getQuadratureOrder();
+    getQuadratureCache(qc);
 
-    //    double two_scale = pow(2.0, this->getScale() + 1);
-    //    VectorXd modWeights = qc.getWeights(quadratureOrder);
-    //    switch (operation) {
-    //    case Forward:
-    //        modWeights = modWeights.array().inverse();
-    //        modWeights *= two_scale;
-    //        modWeights = modWeights.array().sqrt();
-    //        break;
-    //    case Backward:
-    //        modWeights *= 1.0/two_scale;
-    //        modWeights = modWeights.array().sqrt();
-    //        break;
-    //    default:
-    //        MSG_FATAL("Invalid operation");
-    //    }
+    double two_scale = pow(2.0, this->getScale() + 1);
+    VectorXd modWeights = qc.getWeights(quadratureOrder);
+    if (operation == Forward) {
+        modWeights = modWeights.array().inverse();
+        modWeights *= two_scale;
+        modWeights = modWeights.array().sqrt();
+    } else if (operation == Backward) {
+        modWeights *= 1.0/two_scale;
+        modWeights = modWeights.array().sqrt();
+    } else {
+        MSG_FATAL("Invalid operation");
+    }
 
-    //    VectorXd &coefs = this->getCoefs();
+    VectorXd &coefs = this->getCoefs();
 
-    //    int kp1 = this->getKp1();
-    //    int kp1_d = this->getKp1_d();
-    //    int kp1_p[D];
-    //    for (int d = 0; d < D; d++) {
-    //        kp1_p[d] = MathUtils::ipow(kp1, d);
-    //    }
+    int kp1 = this->getKp1();
+    int kp1_d = this->getKp1_d();
+    int kp1_p[D];
+    for (int d = 0; d < D; d++) {
+        kp1_p[d] = MathUtils::ipow(kp1, d);
+    }
 
-    //    for (int m = 0; m < this->getTDim(); m++) {
-    //        for (int p = 0; p < D; p++) {
-    //            int n = 0;
-    //            for (int i = 0; i < kp1_p[D - p - 1]; i++) {
-    //                for (int j = 0; j < kp1; j++) {
-    //                    for (int k = 0; k < kp1_p[p]; k++) {
-    //                        coefs[m * kp1_d + n] *= modWeights[j];
-    //                        n++;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
+    for (int m = 0; m < this->getTDim(); m++) {
+        for (int p = 0; p < D; p++) {
+            int n = 0;
+            for (int i = 0; i < kp1_p[D - p - 1]; i++) {
+                for (int j = 0; j < kp1; j++) {
+                    for (int k = 0; k < kp1_p[p]; k++) {
+                        coefs[m * kp1_d + n] *= modWeights[j];
+                        n++;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /** Multiwavelet transform: fast version

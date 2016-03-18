@@ -11,7 +11,7 @@ template<int D>
 class MultiplicationVector {
 public:
     MultiplicationVector() : coef(1.0) { }
-    ~MultiplicationVector() { }
+    virtual ~MultiplicationVector() { }
     MultiplicationVector& operator=(const MultiplicationVector<D> &vec) {
         this->clear();
         this->coef = vec.getCoef();

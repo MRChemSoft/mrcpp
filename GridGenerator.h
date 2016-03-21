@@ -33,6 +33,12 @@ public:
         return out;
     }
 
+    FunctionTree<D> *operator()(FunctionTreeVector<D> &inp) {
+        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        (*this)(*out, inp);
+        return out;
+    }
+
     void operator()(FunctionTree<D> &out, const RepresentableFunction<D> &inp) {
         this->adaptor = new AnalyticAdaptor<D>(inp);
         this->build(out);
@@ -41,6 +47,12 @@ public:
     }
 
     void operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
+        this->adaptor = new CopyAdaptor<D>(inp);
+        this->build(out);
+        this->clearAdaptor();
+        println(10, std::endl);
+    }
+    void operator()(FunctionTree<D> &out, FunctionTreeVector<D> &inp) {
         this->adaptor = new CopyAdaptor<D>(inp);
         this->build(out);
         this->clearAdaptor();

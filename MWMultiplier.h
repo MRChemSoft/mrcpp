@@ -21,14 +21,14 @@ public:
         this->clearAdaptor();
     }
 
-    FunctionTree<D>* operator()(MultiplicationVector<D> &inp) {
+    FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         initializeGrid(*out, inp);
         (*this)(*out, inp);
         return out;
     }
 
-    void operator()(FunctionTree<D> &out, MultiplicationVector<D> &inp) {
+    void operator()(FunctionTree<D> &out, FunctionTreeVector<D> &inp) {
         Timer trans_t, clean_t;
         this->calculator = new MultiplicationCalculator<D>(inp);
         this->build(out);
@@ -39,7 +39,10 @@ public:
         trans_t.stop();
 
         clean_t.restart();
-        inp.clean();
+        for (int i = 0; i < inp.size(); i++) {
+            FunctionTree<D> &tree = inp.getFunc(i);
+            tree.deleteGenerated();
+        }
         clean_t.stop();
 
         println(10, "Time transform      " << trans_t);
@@ -48,14 +51,11 @@ public:
     }
 protected:
     /** Copy the grids from the input functions */
-    void initializeGrid(FunctionTree<D> &out, MultiplicationVector<D> &inp) {
+    void initializeGrid(FunctionTree<D> &out, FunctionTreeVector<D> &inp) {
         Timer init_t;
         init_t.restart();
         GridGenerator<D> G(this->MRA);
-        for (int i = 0; i < inp.size(); i++) {
-            FunctionTree<D> &func_i = inp.getFunc(i);
-            G(out, func_i);
-        }
+        G(out, inp);
         init_t.stop();
         println(10, "Time initializing   " << init_t);
     }

@@ -76,7 +76,11 @@ set(mrcpp_SOURCES
     TreeBuilder.cpp
     WaveletAdaptor.cpp
     parallel.cpp
-        )
+    MWAdder.h
+    MWMultiplier.h
+    AdditionCalculator.h
+    MultiplicationCalculator.h
+)
 
 add_library(mrcpp STATIC ${mrcpp_SOURCES})
 

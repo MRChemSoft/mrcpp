@@ -2,7 +2,7 @@
 #define ADDITIONCALCULATOR_H
 
 #include "TreeCalculator.h"
-#include "AdditionVector.h"
+#include "FunctionTreeVector.h"
 
 template<int D> class MWAdder;
 
@@ -11,7 +11,7 @@ class AdditionCalculator : public TreeCalculator<D> {
 public:
     friend class MWAdder<D>;
 protected:
-    AdditionCalculator(AdditionVector<D> &inp) : sum_vec(&inp) { }
+    AdditionCalculator(FunctionTreeVector<D> &inp) : sum_vec(&inp) { }
     virtual ~AdditionCalculator() { }
 
     virtual void calcNode(MWNode<D> &node_o) const {
@@ -30,7 +30,7 @@ protected:
     }
 
 private:
-    AdditionVector<D> *sum_vec;
+    FunctionTreeVector<D> *sum_vec;
 };
 
 #endif // ADDITIONCALCULATOR_H

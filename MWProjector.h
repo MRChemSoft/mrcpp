@@ -24,6 +24,7 @@ public:
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        initializeGrid(*out, inp);
         (*this)(*out, inp);
         return out;
     }
@@ -40,6 +41,16 @@ public:
 
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
+    }
+protected:
+    /** Build grid based on analytic input function */
+    void initializeGrid(FunctionTree<D> &out, RepresentableFunction<D> &inp) {
+        Timer init_t;
+        init_t.restart();
+        GridGenerator<D> G(this->MRA);
+        G(out, inp);
+        init_t.stop();
+        println(10, "Time initializing   " << init_t);
     }
 };
 

@@ -1,5 +1,5 @@
 #include "GridCleaner.h"
-#include "TreeAdaptor.h"
+#include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
 #include "MWTree.h"
 #include "Timer.h"
@@ -7,10 +7,11 @@
 using namespace std;
 
 template<int D>
-GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra)
-        : TreeBuilder<D>(mra, -1) {
+GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra,
+                            double prec, int iter)
+        : TreeBuilder<D>(mra, iter) {
     this->calculator = new DefaultCalculator<D>();
-    this->adaptor = new TreeAdaptor<D>();
+    this->adaptor = new WaveletAdaptor<D>(prec);
 }
 
 template<int D>

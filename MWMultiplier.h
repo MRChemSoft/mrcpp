@@ -8,9 +8,10 @@
 template<int D>
 class MWMultiplier : public TreeBuilder<D> {
 public:
-    MWMultiplier(const MultiResolutionAnalysis<D> &mra, int iter = -1)
+    MWMultiplier(const MultiResolutionAnalysis<D> &mra,
+                 double prec = -1.0,int iter = -1)
             : TreeBuilder<D>(mra, iter) {
-        this->adaptor = new TreeAdaptor<D>();
+        this->adaptor = new WaveletAdaptor<D>(prec);
     }
     MWMultiplier(const MultiResolutionAnalysis<D> &mra,
                 const TreeAdaptor<D> &a, int iter = -1)

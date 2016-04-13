@@ -9,9 +9,10 @@
 template<int D>
 class MWProjector : public TreeBuilder<D> {
 public:
-    MWProjector(const MultiResolutionAnalysis<D> &mra)
-            : TreeBuilder<D>(mra, -1) {
-        this->adaptor = new TreeAdaptor<D>();
+    MWProjector(const MultiResolutionAnalysis<D> &mra,
+                double prec = -1.0, int iter = -1)
+            : TreeBuilder<D>(mra, iter) {
+        this->adaptor = new WaveletAdaptor<D>(prec);
     }
     MWProjector(const MultiResolutionAnalysis<D> &mra,
                 const TreeAdaptor<D> &a, int iter = -1)

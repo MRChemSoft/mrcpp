@@ -8,12 +8,13 @@
 template<int D>
 class MWAdder : public TreeBuilder<D> {
 public:
-    MWAdder(const MultiResolutionAnalysis<D> &mra, int iter = -1)
+    MWAdder(const MultiResolutionAnalysis<D> &mra,
+            double prec = -1.0, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
-        this->adaptor = new TreeAdaptor<D>();
+        this->adaptor = new WaveletAdaptor<D>(prec);
     }
     MWAdder(const MultiResolutionAnalysis<D> &mra,
-                const TreeAdaptor<D> &a, int iter = -1)
+            const TreeAdaptor<D> &a, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
         this->adaptor = a.copy();
     }

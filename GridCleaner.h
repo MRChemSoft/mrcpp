@@ -6,7 +6,7 @@
 template<int D>
 class GridCleaner : public TreeBuilder<D> {
 public:
-    GridCleaner(const MultiResolutionAnalysis<D> &mra, double prec = -1.0, int iter = -1);
+    GridCleaner(const MultiResolutionAnalysis<D> &mra, double prec = -1.0);
     GridCleaner(const MultiResolutionAnalysis<D> &mra, const TreeAdaptor<D> &a);
     virtual ~GridCleaner();
 

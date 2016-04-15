@@ -7,9 +7,8 @@
 using namespace std;
 
 template<int D>
-GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra,
-                            double prec, int iter)
-        : TreeBuilder<D>(mra, iter) {
+GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra, double prec)
+        : TreeBuilder<D>(mra, 1) {
     this->calculator = new DefaultCalculator<D>();
     this->adaptor = new WaveletAdaptor<D>(prec);
 }
@@ -17,7 +16,7 @@ GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra,
 template<int D>
 GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra,
                             const TreeAdaptor<D> &a)
-        : TreeBuilder<D>(mra, -1) {
+        : TreeBuilder<D>(mra, 1) {
     this->calculator = new DefaultCalculator<D>();
     this->adaptor = a.copy();
 }

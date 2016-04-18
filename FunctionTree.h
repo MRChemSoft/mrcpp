@@ -54,6 +54,7 @@ public:
     friend class MWProjector<D>;
     friend class MWAdder<D>;
     friend class MWMultiplier<D>;
+    friend class MWOperator<D>;
 
 protected:
     FunctionTree(const MultiResolutionAnalysis<D> &mra);

@@ -18,12 +18,14 @@ set(mrcpp_SOURCES
     GridGenerator.h
     HilbertIterator.h
     HilbertPath.h
+	IdentityOperator.h
     InterpolatingBasis.h
     LebesgueIterator.h
     LegendreBasis.h
     LegendrePoly.h
     MWFilter.h
     MWNode.h
+	MWOperator.h
     MWProjector.h
     MWTree.h
     MathUtils.h

@@ -92,6 +92,7 @@ public:
     friend class MWTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
+    friend class IdentityCalculator<D>;
 
 protected:
     MWTree<D> *tree;

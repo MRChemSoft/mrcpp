@@ -17,6 +17,7 @@ set(mrcpp_SOURCES
 	GreensKernel.h
     GridCleaner.h
     GridGenerator.h
+    HelmholtzKernel.h
     HilbertIterator.h
     HilbertPath.h
     InterpolatingBasis.h
@@ -60,6 +61,7 @@ set(mrcpp_SOURCES
     GenNode.cpp
 	GreensKernel.cpp
     GridCleaner.cpp
+    HelmholtzKernel.cpp
     HilbertPath.cpp
     InterpolatingBasis.cpp
     LegendreBasis.cpp

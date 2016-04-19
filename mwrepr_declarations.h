@@ -33,7 +33,7 @@ template <int D> class DefaultCalculator;
 template <int D> class ProjectionCalculator;
 template <int D> class AdditionCalculator;
 template <int D> class MultiplicationCalculator;
-template <int D> class IdentityCalculator;
+template <int D> class OperApplicationCalculator;
 
 template <int D> class TreeAdaptor;
 template <int D> class AnalyticAdaptor;

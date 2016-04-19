@@ -2,20 +2,21 @@
 #define MWOPERATOR_H
 
 #include "TreeBuilder.h"
-#include "ProjectionCalculator.h"
 #include "FunctionTree.h"
+#include "OperApplicationCalculator.h"
+#include "OperatorTreeVector.h"
 #include "Timer.h"
 
 template<int D>
 class MWOperator : public TreeBuilder<D> {
 public:
     MWOperator(const MultiResolutionAnalysis<D> &mra,
-                double prec = -1.0, int iter = -1)
+               double prec = -1.0, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
         this->adaptor = new WaveletAdaptor<D>(prec);
     }
     MWOperator(const MultiResolutionAnalysis<D> &mra,
-                const TreeAdaptor<D> &a, int iter = -1)
+               const TreeAdaptor<D> &a, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
        this->adaptor = a.copy();
     }
@@ -31,7 +32,7 @@ public:
     }
 
     void operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
-        this->calculator = initCalculator(inp);
+        this->calculator = new OperApplicationCalculator<D>(this->oper, inp);
         this->build(out);
         this->clearCalculator();
 
@@ -44,6 +45,8 @@ public:
         println(10, std::endl);
     }
 protected:
+    OperatorTreeVector oper;
+
     /** Build grid based on analytic input function */
     void initializeGrid(FunctionTree<D> &out, FunctionTree<D> &inp) {
         Timer init_t;
@@ -53,7 +56,6 @@ protected:
         init_t.stop();
         println(10, "Time initializing   " << init_t);
     }
-    virtual TreeCalculator<D> *initCalculator(FunctionTree<D> &inp) = 0;
 };
 
 #endif // MWOPERATOR_H

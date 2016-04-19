@@ -89,10 +89,10 @@ public:
     friend class ProjectionCalculator<D>;
     friend class AdditionCalculator<D>;
     friend class MultiplicationCalculator<D>;
+    friend class OperApplicationCalculator<D>;
     friend class MWTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
-    friend class IdentityCalculator<D>;
 
 protected:
     MWTree<D> *tree;

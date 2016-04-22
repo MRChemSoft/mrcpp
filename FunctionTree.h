@@ -77,7 +77,7 @@ std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
     o << "  root scale: " << tree.getRootScale() << std::endl;
     o << "  order: " << tree.order << std::endl;
     o << "  nodes: " << tree.getNNodes() << std::endl;
-    o << "  local end nodes: " << tree.endNodeTable.size() << std::endl;
+    o << "  endNodes: " << tree.endNodeTable.size() << std::endl;
     o << "  genNodes: " << tree.getNGenNodes() <<
             " (" << tree.getNAllocGenNodes() << ")" <<std::endl;
     o << "  nodes per scale: " << std::endl;
@@ -87,6 +87,5 @@ std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
     }
     return o;
 }
-
 
 #endif /* FUNCTIONTREE_H_*/

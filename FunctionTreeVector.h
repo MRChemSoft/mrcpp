@@ -53,6 +53,14 @@ public:
         if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
         return *this->funcs[i];
     }
+    FunctionTree<D> *operator[](int i) {
+        if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
+        return this->funcs[i];
+    }
+    const FunctionTree<D> *operator[](int i) const {
+        if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
+        return this->funcs[i];
+    }
 protected:
     std::vector<double> coefs;
     std::vector<FunctionTree<D> *> funcs;

@@ -2,6 +2,7 @@ include_directories(mwarithmetics)
 
 set(mrcpp_SOURCES
     BoundingBox.cpp
+    CrossCorrelation.cpp
     FilterCache.cpp
     FunctionNode.cpp
     FunctionTree.cpp

@@ -12,7 +12,7 @@ public:
 protected:
     const RepresentableFunction<D> *func;
 
-    virtual void calcNode(MWNode<D> &node) const;
+    virtual void calcNode(MWNode<D> &node);
 };
 
 #endif // ANALYTICPROJECTOR_H

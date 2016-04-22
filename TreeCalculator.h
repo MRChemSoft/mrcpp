@@ -2,6 +2,7 @@
 #define TREECALCULATOR_H
 
 #include "mwrepr_declarations.h"
+#include "MWNode.h"
 
 template<int D>
 class TreeCalculator {
@@ -9,7 +10,7 @@ public:
     TreeCalculator() { }
     virtual ~TreeCalculator() { }
 
-    virtual double calcNodeVector(MWNodeVector &nodeVec) const {
+    virtual double calcNodeVector(MWNodeVector &nodeVec) {
         double norm = 0.0;
         int nNodes = nodeVec.size();
 #pragma omp parallel shared(nodeVec) firstprivate(nNodes) reduction(+:norm)
@@ -24,7 +25,7 @@ public:
         return std::max(norm, -1.0);
     }
 protected:
-    virtual void calcNode(MWNode<D> &node) const = 0;
+    virtual void calcNode(MWNode<D> &node) = 0;
 };
 
 #endif // TREECALCULATOR_H

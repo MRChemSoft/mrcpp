@@ -14,7 +14,7 @@ protected:
     AdditionCalculator(FunctionTreeVector<D> &inp) : sum_vec(&inp) { }
     virtual ~AdditionCalculator() { }
 
-    virtual void calcNode(MWNode<D> &node_o) const {
+    virtual void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         Eigen::VectorXd &vec_o = node_o.getCoefs();
         vec_o.setZero();

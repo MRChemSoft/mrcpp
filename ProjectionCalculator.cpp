@@ -10,7 +10,7 @@ using namespace std;
 using namespace Eigen;
 
 template<int D>
-void ProjectionCalculator<D>::calcNode(MWNode<D> &node) const {
+void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     const ScalingBasis &sf = node.getMWTree().getMRA().getScalingBasis();
     if (sf.getScalingType() != Interpol) {
         NOT_IMPLEMENTED_ABORT;

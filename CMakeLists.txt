@@ -1,53 +1,6 @@
 include_directories(mwarithmetics)
 
 set(mrcpp_SOURCES
-    AnalyticAdaptor.h
-    BoundingBox.h
-    CopyAdaptor.h
-    DefaultCalculator.h
-    FilterCache.h
-    FunctionNode.h
-    FunctionTree.h
-    GaussExp.h
-    GaussFunc.h
-    GaussPoly.h
-    GaussQuadrature.h
-    Gaussian.h
-    GenNode.h
-    GridCleaner.h
-    GridGenerator.h
-    HilbertIterator.h
-    HilbertPath.h
-	IdentityOperator.h
-    InterpolatingBasis.h
-    LebesgueIterator.h
-    LegendreBasis.h
-    LegendrePoly.h
-    MWFilter.h
-    MWNode.h
-	MWOperator.h
-    MWProjector.h
-    MWTree.h
-    MathUtils.h
-    MultiResolutionAnalysis.h
-    NodeBox.h
-    NodeIndex.h
-    ObjectCache.h
-    Polynomial.h
-    ProjectedNode.h
-    ProjectionCalculator.h
-    QuadratureCache.h
-    RepresentableFunction.h
-    ScalingBasis.h
-    ScalingCache.h
-    TelePrompter.h
-    TreeAdaptor.h
-    TreeAllocator.h
-    TreeBuilder.h
-    TreeCalculator.h
-    TreeIterator.h
-    WaveletAdaptor.h
-    parallel.h
     BoundingBox.cpp
     FilterCache.cpp
     FunctionNode.cpp
@@ -78,10 +31,6 @@ set(mrcpp_SOURCES
     TreeBuilder.cpp
     WaveletAdaptor.cpp
     parallel.cpp
-    MWAdder.h
-    MWMultiplier.h
-    AdditionCalculator.h
-    MultiplicationCalculator.h
 )
 
 add_library(mrcpp STATIC ${mrcpp_SOURCES})

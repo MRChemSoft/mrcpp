@@ -14,7 +14,7 @@ protected:
     MultiplicationCalculator(FunctionTreeVector<D> &inp) : prod_vec(&inp) { }
     virtual ~MultiplicationCalculator() { }
 
-    virtual void calcNode(MWNode<D> &node_o) const {
+    virtual void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         Eigen::VectorXd &vec_o = node_o.getCoefs();
         vec_o.setConstant(1.0);

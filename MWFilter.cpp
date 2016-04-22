@@ -15,6 +15,7 @@
 
 #include "MWFilter.h"
 #include "TelePrompter.h"
+#include "eigen_disable_warnings.h"
 
 using namespace std;
 using namespace Eigen;

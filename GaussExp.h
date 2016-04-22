@@ -88,6 +88,9 @@ public:
     Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
     const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
 
+    Gaussian<D> *operator[](int i) { return this->funcs[i]; }
+    const Gaussian<D> *operator[](int i) const { return this->funcs[i]; }
+
     void setFunc(int i, const GaussPoly<D> &g, double c = 1.0);
     void setFunc(int i, const GaussFunc<D> &g, double c = 1.0);
 

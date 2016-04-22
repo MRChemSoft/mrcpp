@@ -52,7 +52,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 
     int iter = 0;
     while (workVec->size() > 0) {
-        printout(10, "  -- #" << setw(3) << iter++ << ": Calculated   ");
+        printout(10, "  -- #" << setw(3) << iter << ": Calculated   ");
         printout(10, setw(6) << workVec->size() << " nodes\n");
 
         calc_t.restart();
@@ -68,7 +68,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 
         delete workVec;
         workVec = newVec;
-        if (maxIterReached(iter)) workVec->clear();
+        if (maxIterReached(iter++)) workVec->clear();
     }
     tree.resetEndNodeTable();
     delete workVec;

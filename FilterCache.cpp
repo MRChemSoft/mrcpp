@@ -9,6 +9,7 @@
  */
 
 #include "FilterCache.h"
+#include "constants.h"
 
 using namespace std;
 using namespace Eigen;

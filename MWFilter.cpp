@@ -10,36 +10,38 @@
 
 #include <fstream>
 
-#include "MWFilter.h"
+#include "constants.h"
 #include "config.h"
-#include "eigen_disable_warnings.h"
+
+#include "MWFilter.h"
+#include "TelePrompter.h"
 
 using namespace std;
 using namespace Eigen;
 
 string MWFilter::default_filter_lib = MW_FILTER_DIR;
 
-MWFilter::MWFilter(int k, int t, const string &lib) {
-    this->type = t;
-    this->order = k;
+MWFilter::MWFilter(int k, int t, const string &lib)
+        : type(t),
+          order(k) {
     if (this->order < 1 or this->order > MaxOrder) {
-        MSG_FATAL("Invalid filter order " << this->order);
+        MSG_FATAL("Invalid filter order: " << this->order);
     }
     switch (this->type) {
     case (Interpol):
     case (Legendre):
         break;
     default:
-        MSG_ERROR("Unknown filter type: " << type);
+        MSG_ERROR("Unknown filter type: " << this->type);
     }
     char *ep = getenv("MRCPP_FILTER_DIR");
     if (ep != 0) {
         default_filter_lib = *ep;
     }
-    int K = k + 1;
+    int K = this->order + 1;
     setFilterPaths(lib);
 
-    this->filter = MatrixXd(2 * K, 2 * K);
+    this->filter = MatrixXd(2*K, 2*K);
     this->filter.setZero();
 
     readFilterBin();
@@ -81,6 +83,71 @@ void MWFilter::fillFilterBlocks() {
     this->G1t = this->G1.transpose();
     this->H0t = this->H0.transpose();
     this->H1t = this->H1.transpose();
+}
+
+const MatrixXd& MWFilter::getSubFilter(int i, int oper) const {
+    switch (oper) {
+    case (Compression):
+        switch (i) {
+        case (0):
+            return this->H0t;
+        case (1):
+            return this->H1t;
+        case (2):
+            return this->G0t;
+        case (3):
+            return this->G1t;
+        default:
+            MSG_FATAL("Filter index out of bounds");
+        }
+        break;
+    case (Reconstruction):
+        switch (i) {
+        case (0):
+            return this->H0;
+        case (1):
+            return this->G0;
+        case (2):
+            return this->H1;
+        case (3):
+            return this->G1;
+        default:
+            MSG_FATAL("Filter index out of bounds");
+        }
+        break;
+    default:
+        MSG_FATAL("Invalid wavelet transformation");
+    }
+}
+
+const MatrixXd& MWFilter::getCompressionSubFilter(int i) const {
+    switch (i) {
+    case (0):
+        return this->H0t;
+    case (1):
+        return this->H1t;
+    case (2):
+        return this->G0t;
+    case (3):
+        return this->G1t;
+    default:
+        MSG_FATAL("Filter index out of bounds");
+    }
+}
+
+const MatrixXd& MWFilter::getReconstructionSubFilter(int i) const {
+    switch (i) {
+    case (0):
+        return this->H0;
+    case (1):
+        return this->G0;
+    case (2):
+        return this->H1;
+    case (3):
+        return this->G1;
+    default:
+        MSG_FATAL("Filter index out of bounds");
+    }
 }
 
 void MWFilter::apply(MatrixXd &data) const {

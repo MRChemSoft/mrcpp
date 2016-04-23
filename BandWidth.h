@@ -14,9 +14,13 @@
 
 class BandWidth {
 public:
-    BandWidth(int depth)
+    BandWidth(int depth = 0)
             : widths(depth + 1, 5) {
         this->clear();
+    }
+    BandWidth &operator=(const BandWidth &bw) {
+        this->widths = bw.widths;
+        return *this;
     }
     virtual ~BandWidth() { }
 
@@ -47,7 +51,7 @@ public:
         return this->widths(depth, index);
     }
 
-    int getMaxBandWidth(int depth) const {
+    int getMaxWidth(int depth) const {
         assert(depth >= 0);
         if (depth > getDepth()) { // No bw at requested depth
             return -1;

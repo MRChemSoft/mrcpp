@@ -4,6 +4,7 @@ set(mrcpp_SOURCES
     BoundingBox.cpp
     CrossCorrelation.cpp
     CrossCorrelationCache.cpp
+    CrossCorrelationCalculator.cpp
     FilterCache.cpp
     FunctionNode.cpp
     FunctionTree.cpp
@@ -23,6 +24,9 @@ set(mrcpp_SOURCES
     MWTree.cpp
     MathUtils.cpp
     NodeBox.cpp
+    OperatorNode.cpp
+    OperatorTree.cpp
+    OperatorTreeVector.cpp
     Polynomial.cpp
     ProjectedNode.cpp
     ProjectionCalculator.cpp

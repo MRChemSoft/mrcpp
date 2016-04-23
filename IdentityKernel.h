@@ -2,6 +2,7 @@
 #define IDENTITYKERNEL_H
 
 #include "GaussExp.h"
+#include "GaussFunc.h"
 
 class IdentityKernel : public GaussExp<1> {
 public:

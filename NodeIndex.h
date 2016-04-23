@@ -37,7 +37,7 @@ public:
 
     int getScale() const { return this->N; }
     int getTranslation(int d) const { assert(d >= 0 or d < D); return this->L[d]; }
-    const int *getTranslation() const {	return this->L; }
+    const int *getTranslation() const { return this->L; }
 
     template<int T>
     friend std::ostream& operator<<(std::ostream &o, const NodeIndex<T> &idx);

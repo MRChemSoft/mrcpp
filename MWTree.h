@@ -94,15 +94,13 @@ public:
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, MWTree<T> &tree);
-
     friend class MWNode<D>;
     friend class GenNode<D>;
     friend class ProjectedNode<D>;
     friend class TreeBuilder<D>;
     friend class GridCleaner<D>;
     friend class ProjectionCalculator<D>;
+    friend class OperatorState<D>;
 
 protected:
     // Parameters that are set in construction and should never change
@@ -150,10 +148,10 @@ protected:
     void mwTransformDown(bool overwrite);
     void mwTransformUp(bool overwrite);
 
-    int getRootIndex(const double *r) const { 
+    int getRootIndex(const double *r) const {
         return this->rootBox.getBoxIndex(r);
     }
-    int getRootIndex(const NodeIndex<D> &nIdx) const { 
+    int getRootIndex(const NodeIndex<D> &nIdx) const {
         return this->rootBox.getBoxIndex(nIdx);
     }
 
@@ -225,17 +223,6 @@ template<int D>
 Eigen::VectorXd& MWTree<D>::getTmpMWCoefs() {
     int thread = omp_get_thread_num();
     return *this->tmpMWCoefs[thread];
-}
-
-template<int T>
-std::ostream& operator<<(std::ostream &o, MWTree<T> &tree) {
-    o << "*MWTree: " << tree.name << std::endl;
-    o << "  order: " << tree.order << std::endl;
-    o << "  nodes: " << tree.nNodes << std::endl;
-    o << "  genNodes: " << tree.getNGenNodes() <<
-            " (" << tree.getNAllocGenNodes() << ")" << std::endl;
-    o << "  nodes per scale: " << std::endl;
-    return o;
 }
 
 #endif /* MWTREE_H_ */

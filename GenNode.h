@@ -32,9 +32,9 @@ protected:
     virtual ~GenNode();
 
     double calcWaveletNorm() const { return 0.0; }
-    double calcComponentNorm(int i) const {
+    double calcComponentNorm(int i, double thrs) const {
         if (i == 0) {
-            return MWNode<D>::calcComponentNorm(0);
+            return MWNode<D>::calcComponentNorm(0, thrs);
         } else {
             return 0.0;
         }

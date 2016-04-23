@@ -316,10 +316,10 @@ void MWNode<D>::zeroNorms() {
 
 /** Calculate and store square norm and component norms, if allocated. */
 template<int D>
-void MWNode<D>::calcNorms() {
+void MWNode<D>::calcNorms(double thrs) {
     this->squareNorm = calcSquareNorm();
     for (int i = 0; i < this->getTDim(); i++) {
-        this->componentNorms[i] = calcComponentNorm(i);
+        this->componentNorms[i] = calcComponentNorm(i, thrs);
     }
 }
 
@@ -343,7 +343,7 @@ double MWNode<D>::calcWaveletNorm() const {
 
 /** Calculate the norm of one component (NOT the squared norm!). */
 template<int D>
-double MWNode<D>::calcComponentNorm(int i) const {
+double MWNode<D>::calcComponentNorm(int i, double thrs) const {
     assert(this->isAllocated());
     assert(this->hasCoefs());
     const VectorXd &c = this->getCoefs();

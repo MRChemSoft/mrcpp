@@ -90,6 +90,7 @@ public:
     friend class AdditionCalculator<D>;
     friend class MultiplicationCalculator<D>;
     friend class OperApplicationCalculator<D>;
+    friend class CrossCorrelationCalculator;
     friend class MWTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
@@ -131,7 +132,7 @@ protected:
     virtual void setCoefs(const Eigen::VectorXd &c);
     virtual void zeroCoefs();
 
-    void calcNorms();
+    void calcNorms(double thrs = -1.0);
     void zeroNorms();
     void clearNorms();
 
@@ -139,7 +140,7 @@ protected:
 
     double calcSquareNorm() const;
     virtual double calcWaveletNorm() const;
-    virtual double calcComponentNorm(int i) const;
+    virtual double calcComponentNorm(int i, double thrs) const;
 
     virtual void cvTransform(int kind);
     virtual void mwTransform(int kind);

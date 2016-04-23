@@ -16,9 +16,13 @@ class BandWidth {
 public:
     BandWidth(int depth)
             : widths(depth + 1, 5) {
-        this->widths.setConstant(-1);
+        this->clear();
     }
     virtual ~BandWidth() { }
+
+    void clear() {
+        this->widths.setConstant(-1);
+    }
 
     int getDepth() const {
         return this->widths.rows() - 1;

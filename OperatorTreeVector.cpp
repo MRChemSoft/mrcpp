@@ -32,7 +32,7 @@ void OperatorTreeVector::calcBandWidths(double prec) {
             maxDepth = depth;
         }
     }
-    this->bandMax = VectorXi(maxDepth);
+    this->bandMax = VectorXi(maxDepth + 1);
     this->bandMax.setConstant(-1);
     // Find the largest effective bandwidth at each scale
     for (unsigned int i = 0; i < this->operComp.size(); i++) {

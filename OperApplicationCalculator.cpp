@@ -252,7 +252,6 @@ int OperApplicationCalculator<D>::getBandSizeFactor(int i, int depth,
 template<int D>
 void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     FunctionNode<D> &gNode = static_cast<FunctionNode<D> &>(node);
-    println(0, gNode);
 
     int depth = gNode.getDepth();
     OperatorState<D> os(gNode);
@@ -261,15 +260,13 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     // Get all nodes in f within the bandwith of O in g
     MWNodeVector *fBand = makeOperBand(gNode);
 
-/*
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
-    if (gThrs > 0.0) {
-        gThrs = calcThreshold(gThrs, gNode.getMWTree().getRelPrec(),
-                oper->getNTerms());
-    }
+    //if (gThrs > 0.0) {
+    //    gThrs = calcThreshold(gThrs, gNode.getMWTree().getRelPrec(),
+    //            oper->getNTerms());
+    //}
     os.gThreshold = gThrs;
-*/
 
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D> &fNode = *(*fBand)[n];
@@ -343,7 +340,6 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
         }
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
-        println(0, oNode);
         int oIdx = os.getOperIndex(i);
         double ocn = oNode.getComponentNorm(oIdx);
         if (ocn == 0.0) { // Optimization. Not very relevant. Just a little.
@@ -367,7 +363,6 @@ template<int D>
 void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     double **aux = os.getAuxData();
     double **oData = os.getOperData();
-    println(0, "applying operator");
 #ifdef HAVE_BLAS
     double mult = 0.0;
     for (int i = 0; i < D; i++) {

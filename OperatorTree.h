@@ -8,6 +8,8 @@ public:
     virtual ~OperatorTree();
 
     void calcBandWidth(double prec = -1.0);
+    void clearBandWidth();
+
     BandWidth &getBandWidth() { return *this->bandWidth; }
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 

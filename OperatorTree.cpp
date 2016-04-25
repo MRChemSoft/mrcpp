@@ -21,7 +21,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra)
 
 OperatorTree::~OperatorTree() {
     clearOperNodeCache();
-    if (this->bandWidth != 0) delete this->bandWidth;
+    clearBandWidth();
     MWNode<2> **roots = this->rootBox.getNodes();
     for (int i = 0; i < this->rootBox.size(); i++) {
         OperatorNode *node = static_cast<OperatorNode *>(roots[i]);
@@ -30,8 +30,13 @@ OperatorTree::~OperatorTree() {
     }
 }
 
-void OperatorTree::calcBandWidth(double prec) {
+void OperatorTree::clearBandWidth() {
     if (this->bandWidth != 0) delete this->bandWidth;
+    this->bandWidth = 0;
+}
+
+void OperatorTree::calcBandWidth(double prec) {
+    if (this->bandWidth != 0) MSG_ERROR("Band width not properly cleared");
     this->bandWidth = new BandWidth(getDepth());
     LebesgueIterator<2> it(this);
     double thrs = -1.0;

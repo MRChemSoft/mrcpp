@@ -14,6 +14,12 @@ int OperatorTreeVector::getMaxBandWidth(int depth) const {
     return maxWidth;
 }
 
+void OperatorTreeVector::clearBandWidths() {
+    for (unsigned int i = 0; i < this->operComp.size(); i++) {
+        this->operComp[i]->clearBandWidth();
+    }
+}
+
 void OperatorTreeVector::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component

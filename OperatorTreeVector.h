@@ -14,6 +14,7 @@ public:
 
     int getMaxBandWidth(int depth = -1) const;
     void calcBandWidths(double prec);
+    void clearBandWidths();
 
     void push_back(OperatorTree &o) { this->operComp.push_back(&o); }
     void clear() { this->operComp.clear(); }

@@ -5,6 +5,7 @@ set(mrcpp_SOURCES
     CrossCorrelation.cpp
     CrossCorrelationCache.cpp
     CrossCorrelationCalculator.cpp
+    ConvolutionOperator.cpp
     FilterCache.cpp
     FunctionNode.cpp
     FunctionTree.cpp
@@ -22,8 +23,10 @@ set(mrcpp_SOURCES
     MWFilter.cpp
     MWNode.cpp
     MWTree.cpp
+    MWOperator.cpp
     MathUtils.cpp
     NodeBox.cpp
+    OperApplicationCalculator.cpp
     OperatorNode.cpp
     OperatorTree.cpp
     OperatorTreeVector.cpp

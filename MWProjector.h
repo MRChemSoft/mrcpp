@@ -2,6 +2,7 @@
 #define MWPROJECTOR_H
 
 #include "TreeBuilder.h"
+#include "GridGenerator.h"
 #include "ProjectionCalculator.h"
 #include "FunctionTree.h"
 #include "WaveletAdaptor.h"

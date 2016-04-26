@@ -241,54 +241,21 @@ void MWTree<D>::mwTransformUp(bool overwrite) {
   * existing scaling coefficients (can be used after operator application). */
 template<int D>
 void MWTree<D>::mwTransformDown(bool overwrite) {
-    NOT_IMPLEMENTED_ABORT;
-//    this->purgeForeignNodes();
-//    if (isScattered()) {
-//        vector<MWNodeVector > nodeTable;
-//        this->makeLocalNodeTable(nodeTable);
-
-//        vector<MWNodeVector > parentTable;
-//        this->makeNodeTable(parentTable);
-
-//        set<MWNode<D> *> missing;
-//        for (int i = 1; i < nodeTable.size(); i++) {
-//            missing.clear();
-//            findMissingParents(nodeTable[i], missing);
-//            //communicate missing
-//            syncNodes(missing);
-//            for (unsigned int j = 0; j < parentTable[i-1].size(); j++) {
-//                MWNode<D> &parent = *parentTable[i-1][j];
-//                if (not parent.hasCoefs() or parent.isLeafNode()) {
-//                    continue;
-//                }
-//                parent.giveChildrenScaling(overwrite);
-//                for (int k = 0; k < parent.getNChildren(); k++) {
-//                    MWNode<D> &child = parent.getMWChild(k);
-//                    if (child.isForeign()) {
-//                        child.clearCoefs();
-//                        child.clearNorms();
-//                    }
-//                }
-//            }
-//        }
-//    } else {
-//        vector<MWNodeVector > nodeTable;
-//        makeNodeTable(nodeTable);
+    vector<MWNodeVector > nodeTable;
+    makeNodeTable(nodeTable);
 //#pragma omp parallel shared(nodeTable)
 //        {
-//            for (int n = 0; n < nodeTable.size(); n++) {
-//                int n_nodes = nodeTable[n].size();
+    for (int n = 0; n < nodeTable.size(); n++) {
+        int n_nodes = nodeTable[n].size();
 //#pragma omp for schedule(guided)
-//                for (int i = 0; i < n_nodes; i++) {
-//                    MWNode<D> &node = *nodeTable[n][i];
-//                    if (node.isBranchNode()) {
-//                        node.giveChildrenScaling(overwrite);
-//                    }
-//                }
-//            }
+        for (int i = 0; i < n_nodes; i++) {
+            MWNode<D> &node = *nodeTable[n][i];
+            if (node.isBranchNode()) {
+                node.giveChildrenCoefs(overwrite);
+            }
+        }
+    }
 //        }
-//        this->purgeForeignNodes();
-//    }
 }
 
 /** Traverse tree and set all nodes to zero.

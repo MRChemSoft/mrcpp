@@ -12,6 +12,8 @@ public:
     OperApplicationCalculator(OperatorTreeVector &o, FunctionTree<D> &f);
     virtual ~OperApplicationCalculator();
 
+    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
+
 protected:
     OperatorTreeVector *oper;
     FunctionTree<D> *fTree;

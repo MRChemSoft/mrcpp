@@ -199,7 +199,7 @@ MWNodeVector* OperApplicationCalculator<D>::makeOperBand(const MWNode<D> &gNode)
             l_end[i] = gIdx.getTranslation(i) + width;
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
-            int c_i = cIdx.getTranslation(i);
+            int c_i = cIdx.getTranslation(i) * (1 << depth);
             if (l_start[i] < c_i) {
                 l_start[i] = c_i;
             }
@@ -252,6 +252,7 @@ int OperApplicationCalculator<D>::getBandSizeFactor(int i, int depth,
 template<int D>
 void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     FunctionNode<D> &gNode = static_cast<FunctionNode<D> &>(node);
+    gNode.zeroCoefs();
 
     int depth = gNode.getDepth();
     OperatorState<D> os(gNode);
@@ -285,12 +286,7 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
             }
         }
     }
-    // If the gNode got screened, set it explicitly to zero w coefs
-    if (not gNode.hasCoefs()) {
-        gNode.zeroCoefs();
-    } else {
-        gNode.calcNorms();
-    }
+    gNode.calcNorms();
     delete fBand;
 }
 
@@ -407,6 +403,13 @@ void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
         }
     }
 #endif
+}
+
+template<int D>
+MWNodeVector* OperApplicationCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+    MWNodeVector *nodeVec = new MWNodeVector;
+    tree.makeNodeTable(*nodeVec);
+    return nodeVec;
 }
 
 template class OperApplicationCalculator<1>;

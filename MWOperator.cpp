@@ -46,6 +46,7 @@ void MWOperator<D>::operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
 
     Timer trans_t;
     trans_t.restart();
+    out.mwTransform(TopDown, false); // add coarse scale contributions
     out.mwTransform(BottomUp);
     trans_t.stop();
 

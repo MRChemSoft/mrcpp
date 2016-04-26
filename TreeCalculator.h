@@ -10,6 +10,10 @@ public:
     TreeCalculator() { }
     virtual ~TreeCalculator() { }
 
+    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const {
+        return tree.copyEndNodeTable();
+    }
+
     virtual double calcNodeVector(MWNodeVector &nodeVec) {
         double norm = 0.0;
         int nNodes = nodeVec.size();

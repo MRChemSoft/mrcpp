@@ -21,8 +21,6 @@ protected:
     void clearAdaptor();
 
     void build(MWTree<D> &tree) const;
-    double calcTreeNorm(MWNodeVector &workVec) const;
-
     bool maxIterReached(int iter) const {
         if (this->maxIter < 0) return false;
         if (this->maxIter > iter) return false;

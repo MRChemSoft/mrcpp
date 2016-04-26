@@ -99,7 +99,9 @@ public:
     friend class ProjectedNode<D>;
     friend class TreeBuilder<D>;
     friend class GridCleaner<D>;
+    friend class TreeCalculator<D>;
     friend class ProjectionCalculator<D>;
+    friend class OperApplicationCalculator<D>;
     friend class OperatorState<D>;
 
 protected:

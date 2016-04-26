@@ -7,6 +7,7 @@ using namespace std;
 using namespace Eigen;
 
 void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
+    node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
     case Interpol:

@@ -19,6 +19,7 @@ public:
         this->calculator = new CrossCorrelationCalculator(kernel, this->build_prec);
         OperatorTree *out = new OperatorTree(this->MRA);
         this->build(*out);
+        out->mwTransform(BottomUp);
         out->setupOperNodeCache();
         this->clearCalculator();
         this->clearAdaptor();

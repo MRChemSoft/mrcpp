@@ -45,7 +45,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
     println(10, " == Building tree");
 
     MWNodeVector *newVec = 0;
-    MWNodeVector *workVec = tree.copyEndNodeTable();
+    MWNodeVector *workVec = this->calculator->getInitialWorkVector(tree);
 
     double endNorm = 0.0;
     double workNorm = 0.0;
@@ -63,12 +63,13 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 
         split_t.restart();
         newVec = new MWNodeVector;
+        if (maxIterReached(iter)) workVec->clear();
         endNorm += this->adaptor->splitNodeVector(*newVec, *workVec);
         split_t.stop();
 
         delete workVec;
         workVec = newVec;
-        if (maxIterReached(iter++)) workVec->clear();
+        iter++;
     }
     tree.resetEndNodeTable();
     delete workVec;
@@ -76,18 +77,6 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
     println(10, "");
     println(10, "Time calc           " << calc_t);
     println(10, "Time split          " << split_t);
-}
-
-template<int D>
-double TreeBuilder<D>::calcTreeNorm(MWNodeVector &workVec) const {
-    double workNorm = 0.0;
-    for (int i = 0; i < workVec.size(); i++) {
-        MWNode<D> &node = *workVec[i];
-        if (node.isEndNode()) {
-            workNorm += node.getSquareNorm();
-        }
-    }
-    return workNorm;
 }
 
 template class TreeBuilder<1>;

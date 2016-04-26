@@ -3,12 +3,14 @@
 
 using namespace Eigen;
 
-OperatorNode::OperatorNode(OperatorTree &t, const NodeIndex<2> &n) : MWNode<2>(t, n) {
+OperatorNode::OperatorNode(OperatorTree &t, const NodeIndex<2> &n) 
+        : MWNode<2>(t, n) {
     this->allocCoefs(this->getTDim());
     this->setIsEndNode();
 }
 
-OperatorNode::OperatorNode(OperatorNode &p, int c) : MWNode<2>(p, c) {
+OperatorNode::OperatorNode(OperatorNode &p, int c) 
+        : MWNode<2>(p, c) {
     this->allocCoefs(this->getTDim());
     this->setIsEndNode();
 }
@@ -24,6 +26,7 @@ void OperatorNode::createChild(int cIdx) {
 }
 
 void OperatorNode::genChild(int cIdx) {
+    NOT_IMPLEMENTED_ABORT;
     assert(this->children[cIdx] == 0);
     MWNode<2> *child = new OperatorNode(*this, cIdx);
     this->children[cIdx] = child;

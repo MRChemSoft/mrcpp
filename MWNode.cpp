@@ -328,8 +328,6 @@ void MWNode<D>::calcNorms(double thrs) {
 /** Calculate and return the squared scaling norm. */
 template<int D>
 double MWNode<D>::getScalingNorm() const {
-    assert(this->isAllocated());
-    assert(this->hasCoefs());
     double sNorm = this->getComponentNorm(0);
     if (sNorm >= 0.0) {
         return sNorm*sNorm;
@@ -341,8 +339,6 @@ double MWNode<D>::getScalingNorm() const {
 /** Calculate and return the squared wavelet norm. */
 template<int D>
 double MWNode<D>::getWaveletNorm() const {
-    assert(this->isAllocated());
-    assert(this->hasCoefs());
     double wNorm = 0.0;
     for (int i = 1; i < this->getTDim(); i++) {
         double norm_i = this->getComponentNorm(i);

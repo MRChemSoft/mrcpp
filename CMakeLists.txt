@@ -15,7 +15,9 @@ set(mrcpp_SOURCES
     GaussQuadrature.cpp
     Gaussian.cpp
     GenNode.cpp
+    GreensKernel.cpp
     GridCleaner.cpp
+    HelmholtzKernel.cpp
     HilbertPath.cpp
     InterpolatingBasis.cpp
     LegendreBasis.cpp
@@ -30,6 +32,7 @@ set(mrcpp_SOURCES
     OperatorNode.cpp
     OperatorTree.cpp
     OperatorTreeVector.cpp
+    PoissonKernel.cpp
     Polynomial.cpp
     ProjectedNode.cpp
     ProjectionCalculator.cpp

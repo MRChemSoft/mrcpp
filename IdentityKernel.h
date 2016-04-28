@@ -1,19 +1,24 @@
 #ifndef IDENTITYKERNEL_H
 #define IDENTITYKERNEL_H
 
-#include "GaussExp.h"
+#include "GreensKernel.h"
 #include "GaussFunc.h"
 
-class IdentityKernel : public GaussExp<1> {
+class IdentityKernel : public GreensKernel {
 public:
-    IdentityKernel(double prec) {
-        double alpha = sqrt(1.0/prec);
-        double coef = pow(alpha/pi, 1.0/2.0);
-        double pos = 0.0;
-        GaussFunc<1> gauss(alpha, coef, &pos);
-        this->append(gauss);
+    IdentityKernel(double eps)
+            : GreensKernel(eps, -1.0, -1.0) {
+        initializeKernel();
     }
     virtual ~IdentityKernel() { }
+protected:
+    virtual void initializeKernel() {
+        double alpha = sqrt(1.0/this->epsilon);
+        double coef = pow(alpha/pi, 1.0/2.0);
+        double pos = 0.0;
+        GaussFunc<1> gFunc(alpha, coef, &pos);
+        this->append(gFunc);
+    }
 };
 
 #endif // IDENTITYKERNEL_H

@@ -15,7 +15,7 @@ protected:
     double build_prec;
     FunctionTreeVector<1> kernel;
 
-    void initializeOperator(IdentityKernel &greens_kernel);
+    void initializeOperator(GreensKernel &greens_kernel);
     void clearKernel();
 
     MultiResolutionAnalysis<1> *getKernelMRA() const;

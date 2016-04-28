@@ -2,7 +2,8 @@
 #include "CrossCorrelationGenerator.h"
 #include "MWProjector.h"
 #include "OperatorTree.h"
-#include "IdentityKernel.h"
+#include "GreensKernel.h"
+#include "Gaussian.h"
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
 
@@ -22,7 +23,7 @@ ConvolutionOperator<D>::~ConvolutionOperator() {
 }
 
 template<int D>
-void ConvolutionOperator<D>::initializeOperator(IdentityKernel &greens_kernel) {
+void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
     double proj_prec = this->build_prec/100.0;
     double ccc_prec = this->build_prec/10.0;
 
@@ -34,9 +35,6 @@ void ConvolutionOperator<D>::initializeOperator(IdentityKernel &greens_kernel) {
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
-        //            double beta = pow(greens_comp.getCoef(), 1.0/3.0);
-        //            greens_comp.setCoef(beta);
-
         FunctionTree<1> *kern_comp = Q(greens_comp);
         OperatorTree *oper_comp = G(*kern_comp);
 

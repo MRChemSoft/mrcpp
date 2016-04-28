@@ -8,25 +8,24 @@
  * \breif
  */
 
-#include "PoissonKernel.h"
-
 #include <cmath>
-#include <cassert>
+
+#include "PoissonKernel.h"
+#include "GaussFunc.h"
 
 /** generate an approximation of the 3d poisson kernel expanded in
  * gaussian functions this routine assumes that the expansion be centered
  */
-void PoissonKernel::compKernRepr() {
+void PoissonKernel::initializeKernel() {
     double r0 = this->rMin;
     double r1 = this->rMax;
-    double epsilon = this->expPrec;
 
     double t1 = 1.0L;
-    while ((2 * t1 * exp(-t1)) > epsilon) {
+    while ((2 * t1 * exp(-t1)) > this->epsilon) {
         t1 *= 1.1L;
     }
     double t2 = 1.0L;
-    while ((sqrt(t2) * exp(-t2) / r0) > epsilon) {
+    while ((sqrt(t2) * exp(-t2) / r0) > this->epsilon) {
         t2 *= 1.1L;
     }
 
@@ -36,14 +35,11 @@ void PoissonKernel::compKernRepr() {
     double s2 = log(t2 / (r0 * r0)) / 2;
 
     // Now, set the step size h for use in the trapezoidal rule for given MU
-    double h = 1 / (0.2L - 0.47L * log10(epsilon));
+    double h = 1 / (0.2L - 0.47L * log10(this->epsilon));
     int n_exp = (int) ceil((s2 - s1) / h) + 1;
 
-    if (n_exp > MAX_SEP_RANK) {
-        MSG_FATAL("Maximum separation rank exceeded.");
-    }
+    if (n_exp > MaxSepRank) MSG_FATAL("Maximum separation rank exceeded.");
 
-    this->kern = GaussExp<1> (n_exp);
     for (int i = 0; i < n_exp; i++) {
         double arg = s1 + h * i;
         double sinharg = sinh(arg);
@@ -52,21 +48,20 @@ void PoissonKernel::compKernRepr() {
 
         double alpha = 4.0L * (sinharg+log(onepexp)) * (sinharg+log(onepexp));
         double beta = h * (4.0L / root_pi) * cosharg / onepexp;
-        double pos[1] = {0.0};
-        int power[1] = {0};
+        double pos = 0.0;
 
         alpha *= 1.0/(r1*r1);
-        beta *= 1.0/r1;
+        if (i == 0 or i == (n_exp - 1)) {
+            beta *= 1.0/(2.0*r1);
+        } else {
+            beta *= 1.0/r1;
+        }
+        beta = pow(beta, 1.0/3.0);
 
-        GaussFunc<1> g(alpha, beta, pos, power);
-        this->kern.setFunc(i, g);
+        GaussFunc<1> gFunc(alpha, beta, &pos);
+        this->append(gFunc);
     }
-
-    double beta = this->kern.getCoef(0) / 2.0;
-    this->kern.setCoef(0, beta);
-    beta = this->kern.getCoef(n_exp - 1) / 2.0;
-    this->kern.setCoef(n_exp - 1, beta);
-    this->kern.calcSquareNorm();
+    this->calcSquareNorm();
 }
 
 

@@ -15,7 +15,6 @@ set(mrcpp_SOURCES
     GaussQuadrature.cpp
     Gaussian.cpp
     GenNode.cpp
-    GreensKernel.cpp
     GridCleaner.cpp
     HelmholtzKernel.cpp
     HilbertPath.cpp

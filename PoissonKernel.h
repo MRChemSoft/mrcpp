@@ -12,18 +12,16 @@
 #define POISSONKERNEL_H_
 
 #include "GreensKernel.h"
-#include "macros.h"
-#include "TelePrompter.h"
 
 class PoissonKernel: public GreensKernel {
 public:
-    template<int D>
-    PoissonKernel(const MultiResolutionAnalysis<D> &mra): GreensKernel(mra) {
-        compKernRepr();
+    PoissonKernel(double eps, double r_min, double r_max)
+            : GreensKernel(eps, r_min, r_max) {
+        initializeKernel();
     }
-    virtual ~PoissonKernel() {}
+    virtual ~PoissonKernel() { }
 protected:
-    virtual void compKernRepr();
+    virtual void initializeKernel();
 };
 
 #endif /* POISSONKERNEL_H_ */

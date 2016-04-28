@@ -14,9 +14,11 @@ extern "C" {
 using namespace Eigen;
 
 template<int D>
-OperApplicationCalculator<D>::OperApplicationCalculator(OperatorTreeVector &o,
+OperApplicationCalculator<D>::OperApplicationCalculator(double p,
+                                                        OperatorTreeVector &o,
                                                         FunctionTree<D> &f)
-        : oper(&o),
+        : prec(p),
+          oper(&o),
           fTree(&f) {
     initBandSizes();
     initNodeCounters();
@@ -263,10 +265,10 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
 
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
-    //if (gThrs > 0.0) {
-    //    gThrs = calcThreshold(gThrs, gNode.getMWTree().getRelPrec(),
-    //            oper->getNTerms());
-    //}
+    if (gThrs > 0.0) {
+        double nTerms = (double) this->oper->size();
+        gThrs = this->prec*sqrt(gThrs/nTerms);
+    }
     os.gThreshold = gThrs;
 
     for (int n = 0; n < fBand->size(); n++) {

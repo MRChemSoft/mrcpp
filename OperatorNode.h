@@ -26,6 +26,7 @@ protected:
 
     double calcComponentNorm(int i, double thrs) const;
 
+    void genChildren();
     void createChildren() { MWNode<2>::createChildren(); this->clearIsEndNode(); }
     void deleteChildren() { MWNode<2>::deleteChildren(); this->setIsEndNode(); }
 

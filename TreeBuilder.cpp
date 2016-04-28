@@ -39,7 +39,7 @@ void TreeBuilder<D>::clearCalculator() {
 
 template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree) const {
-    Timer calc_t, split_t;
+    Timer calc_t, split_t, norm_t;
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
     if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Building tree");
@@ -47,24 +47,38 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
     MWNodeVector *newVec = 0;
     MWNodeVector *workVec = this->calculator->getInitialWorkVector(tree);
 
-    double endNorm = 0.0;
-    double workNorm = 0.0;
+    double sNorm = 0.0;
+    double wNorm = 0.0;
 
     int iter = 0;
     while (workVec->size() > 0) {
-        printout(10, "  -- #" << setw(3) << iter << ": Calculated   ");
-        printout(10, setw(6) << workVec->size() << " nodes\n");
+        printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
+        printout(10, setw(6) << workVec->size() << " nodes ");
 
         calc_t.restart();
-        workNorm = this->calculator->calcNodeVector(*workVec);
+        this->calculator->calcNodeVector(*workVec);
         calc_t.stop();
 
-        tree.squareNorm = max(endNorm + workNorm, -1.0);
+        norm_t.restart();
+        if (iter == 0) {
+            sNorm = calcScalingNorm(*workVec);
+        }
+        wNorm += calcWaveletNorm(*workVec);
+
+        if (sNorm < 0.0 or wNorm < 0.0) {
+            tree.squareNorm = -1.0;
+        } else {
+            // approximate norm for thresholding only
+            // exact norm is recomputed after mwTransform
+            tree.squareNorm = sNorm + wNorm;
+        }
+        println(10, setw(25) << tree.squareNorm);
+        norm_t.stop();
 
         split_t.restart();
         newVec = new MWNodeVector;
         if (maxIterReached(iter)) workVec->clear();
-        endNorm += this->adaptor->splitNodeVector(*newVec, *workVec);
+        this->adaptor->splitNodeVector(*newVec, *workVec);
         split_t.stop();
 
         delete workVec;
@@ -76,7 +90,28 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 
     println(10, "");
     println(10, "Time calc           " << calc_t);
+    println(10, "Time norm           " << norm_t);
     println(10, "Time split          " << split_t);
+}
+
+template<int D>
+double TreeBuilder<D>::calcScalingNorm(MWNodeVector &vec) const {
+    double sNorm = 0.0;
+    for (int i = 0; i < vec.size(); i++) {
+        MWNode<D> &node = *vec[i];
+        sNorm += node.getScalingNorm();
+    }
+    return sNorm;
+}
+
+template<int D>
+double TreeBuilder<D>::calcWaveletNorm(MWNodeVector &vec) const {
+    double wNorm = 0.0;
+    for (int i = 0; i < vec.size(); i++) {
+        MWNode<D> &node = *vec[i];
+        wNorm += node.getWaveletNorm();
+    }
+    return wNorm;
 }
 
 template class TreeBuilder<1>;

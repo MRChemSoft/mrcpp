@@ -20,6 +20,9 @@ protected:
     void clearCalculator();
     void clearAdaptor();
 
+    double calcScalingNorm(MWNodeVector &vec) const;
+    double calcWaveletNorm(MWNodeVector &vec) const;
+
     void build(MWTree<D> &tree) const;
     bool maxIterReached(int iter) const {
         if (this->maxIter < 0) return false;

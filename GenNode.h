@@ -22,6 +22,8 @@ public:
     Eigen::VectorXd& getCoefs();
     const Eigen::VectorXd& getCoefs() const;
 
+    double getWaveletNorm() const { return 0.0; }
+
     friend class ProjectedNode<D>;
 
 protected:
@@ -31,7 +33,6 @@ protected:
     GenNode& operator=(const GenNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
     virtual ~GenNode();
 
-    double calcWaveletNorm() const { return 0.0; }
     double calcComponentNorm(int i, double thrs) const {
         if (i == 0) {
             return MWNode<D>::calcComponentNorm(0, thrs);

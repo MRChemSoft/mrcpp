@@ -317,28 +317,42 @@ void MWNode<D>::zeroNorms() {
 /** Calculate and store square norm and component norms, if allocated. */
 template<int D>
 void MWNode<D>::calcNorms(double thrs) {
-    this->squareNorm = calcSquareNorm();
+    this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
-        this->componentNorms[i] = calcComponentNorm(i, thrs);
+        double norm_i = calcComponentNorm(i, thrs);
+        this->componentNorms[i] = norm_i;
+        this->squareNorm += norm_i*norm_i;
     }
 }
 
-/** Calculate, store and return square norm. */
+/** Calculate and return the squared scaling norm. */
 template<int D>
-double MWNode<D>::calcSquareNorm() const {
+double MWNode<D>::getScalingNorm() const {
     assert(this->isAllocated());
     assert(this->hasCoefs());
-    return this->coefs->squaredNorm();
+    double sNorm = this->getComponentNorm(0);
+    if (sNorm >= 0.0) {
+        return sNorm*sNorm;
+    } else {
+        return -1.0;
+    }
 }
 
-/** Calculate and return wavelet norm. */
+/** Calculate and return the squared wavelet norm. */
 template<int D>
-double MWNode<D>::calcWaveletNorm() const {
+double MWNode<D>::getWaveletNorm() const {
     assert(this->isAllocated());
     assert(this->hasCoefs());
-    int nCoefs = this->getNCoefs();
-    int kp1_d = this->getKp1_d();
-    return this->coefs->segment(kp1_d, nCoefs - kp1_d).norm();
+    double wNorm = 0.0;
+    for (int i = 1; i < this->getTDim(); i++) {
+        double norm_i = this->getComponentNorm(i);
+        if (norm_i >= 0.0) {
+            wNorm += norm_i*norm_i;
+        } else {
+            wNorm = -1.0;
+        }
+    }
+    return wNorm;
 }
 
 /** Calculate the norm of one component (NOT the squared norm!). */
@@ -425,6 +439,7 @@ bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
 
 template<int D>
 void MWNode<D>::createChildren() {
+    if (this->isBranchNode()) MSG_FATAL("Node already has children");
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
         createChild(cIdx);
     }
@@ -449,6 +464,7 @@ void MWNode<D>::deleteChildren() {
 
 template<int D>
 void MWNode<D>::genChildren() {
+    if (this->isBranchNode()) MSG_FATAL("Node already has children");
     int nChildren = this->getTDim();
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         genChild(cIdx);

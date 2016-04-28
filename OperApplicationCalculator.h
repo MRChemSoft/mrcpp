@@ -9,12 +9,13 @@
 template<int D>
 class OperApplicationCalculator : public TreeCalculator<D> {
 public:
-    OperApplicationCalculator(OperatorTreeVector &o, FunctionTree<D> &f);
+    OperApplicationCalculator(double p, OperatorTreeVector &o, FunctionTree<D> &f);
     virtual ~OperApplicationCalculator();
 
     virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
+    double prec;
     OperatorTreeVector *oper;
     FunctionTree<D> *fTree;
 

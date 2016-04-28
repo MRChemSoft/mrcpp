@@ -38,19 +38,21 @@ template<int D>
 void MWOperator<D>::operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
     this->oper.calcBandWidths(this->apply_prec);
     this->adaptor = new WaveletAdaptor<D>(this->apply_prec);
-    this->calculator = new OperApplicationCalculator<D>(this->oper, inp);
+    this->calculator = new OperApplicationCalculator<D>(this->apply_prec, this->oper, inp);
     this->build(out);
     this->clearCalculator();
     this->clearAdaptor();
     this->oper.clearBandWidths();
 
-    Timer trans_t;
-    trans_t.restart();
+    Timer post_t;
+    post_t.restart();
     out.mwTransform(TopDown, false); // add coarse scale contributions
     out.mwTransform(BottomUp);
-    trans_t.stop();
+    out.calcSquareNorm();
+    inp.deleteGenerated();
+    post_t.stop();
 
-    println(10, "Time transform      " << trans_t);
+    println(10, "Time post operator  " << post_t);
     println(10, std::endl);
 }
 

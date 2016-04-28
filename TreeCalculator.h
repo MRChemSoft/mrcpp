@@ -14,8 +14,7 @@ public:
         return tree.copyEndNodeTable();
     }
 
-    virtual double calcNodeVector(MWNodeVector &nodeVec) {
-        double norm = 0.0;
+    virtual void calcNodeVector(MWNodeVector &nodeVec) {
         int nNodes = nodeVec.size();
 #pragma omp parallel shared(nodeVec) firstprivate(nNodes) reduction(+:norm)
 {
@@ -23,10 +22,8 @@ public:
         for (int n = 0; n < nNodes; n++) {
             MWNode<D> &node = *nodeVec[n];
             calcNode(node);
-            norm += node.getSquareNorm();
         }
 }
-        return std::max(norm, -1.0);
     }
 protected:
     virtual void calcNode(MWNode<D> &node) = 0;

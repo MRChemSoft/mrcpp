@@ -134,37 +134,6 @@ void MWTree<D>::calcSquareNorm() {
     this->squareNorm = treeNorm;
 }
 
-//template<int D>
-//void MWTree<D>::calcSquareNorm(const MWNodeVector *nodeVec)  {
-    //double treeNorm = 0.0;
-//
-    //int nNodes = 0;
-    //if (nodeVec != 0) nNodes = nodeVec->size();
-
-    //bool doCommon = false;
-    //if (this->getRankId() == 0) doCommon = true;
-
-    //for (int n = 0; n < nNodes; n++) {
-        //const MWNode<D> &node = static_cast<const MWNode<D> &>(*(*nodeVec)[n]);
-        //if (node.isLocal() or (node.isCommon() and doCommon)) {
-            //assert(node.hasCoefs());
-            //treeNorm += node.getSquareNorm();
-        //}
-    //}
-    //for (int n = 0; n < this->getNEndNodes(); n++) {
-        //const MWNode<D> &node = getEndMWNode(n);
-        //if (node.isLocal() or (node.isCommon() and doCommon)) {
-            //assert(node.hasCoefs());
-            //treeNorm += node.getSquareNorm();
-        //}
-    //}
-//#ifdef HAVE_MPI
-    //this->squareNorm = mpi::all_reduce(node_group, treeNorm, std::plus<double>());
-//#else
-    //this->squareNorm = treeNorm;
-//#endif
-//}
-
 /** Reduce the accuracy of the tree by deleting nodes
   * which have a higher precision than the requested precison.
   * By default, the relative precision of the tree is used. */

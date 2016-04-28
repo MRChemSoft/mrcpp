@@ -37,6 +37,7 @@ public:
 
         trans_t.restart();
         out.mwTransform(BottomUp);
+        out.calcSquareNorm();
         trans_t.stop();
 
         clean_t.restart();

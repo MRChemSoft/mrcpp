@@ -40,6 +40,7 @@ public:
         Timer trans_t;
         trans_t.restart();
         out.mwTransform(BottomUp);
+        out.calcSquareNorm();
         trans_t.stop();
 
         println(10, "Time transform      " << trans_t);

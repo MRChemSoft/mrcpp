@@ -63,8 +63,8 @@ public:
     inline bool isLooseNode() const;
 
     double getSquareNorm() const { return this->squareNorm; }
-    double getScalingNorm() const { return this->componentNorms[0]; }
-    double getWaveletNorm() const { return calcWaveletNorm(); }
+    double getScalingNorm() const;
+    virtual double getWaveletNorm() const;
     double getComponentNorm(int i) const { return this->componentNorms[i]; }
     bool hasComponentNorms() const;
 
@@ -138,8 +138,6 @@ protected:
 
     double estimateError(bool absPrec);
 
-    double calcSquareNorm() const;
-    virtual double calcWaveletNorm() const;
     virtual double calcComponentNorm(int i, double thrs) const;
 
     virtual void cvTransform(int kind);
@@ -151,7 +149,7 @@ protected:
     virtual void copyChildren(const MWNode<D> &node) { NOT_IMPLEMENTED_ABORT; }
     virtual void createChildren();
     virtual void deleteChildren();
-    void genChildren();
+    virtual void genChildren();
 
     virtual void genChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
     virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }

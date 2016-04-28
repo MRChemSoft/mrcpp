@@ -12,20 +12,18 @@ public:
     virtual ~TreeAdaptor() { }
     virtual TreeAdaptor<D> *copy() const { return new TreeAdaptor<D>(*this); }
 
-    double splitNodeVector(MWNodeVector &out, MWNodeVector &inp) const {
-        double norm = 0.0;
+    void splitNodeVector(MWNodeVector &out, MWNodeVector &inp) const {
         for (int n = 0; n < inp.size(); n++) {
             MWNode<D> &node = *inp[n];
+            // Can be BranchNode in operator application
+            if (node.isBranchNode()) continue;
             if (splitNode(node)) {
                 node.createChildren();
                 for (int i = 0; i < node.getNChildren(); i++) {
                     out.push_back(&node.getMWChild(i));
                 }
-            } else {
-                norm += node.getSquareNorm();
             }
         }
-        return std::max(norm, -1.0);
     }
 
 protected:

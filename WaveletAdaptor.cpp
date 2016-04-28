@@ -21,7 +21,7 @@ bool WaveletAdaptor<D>::splitNode(const MWNode<D> &node) const {
     if (not (sq_norm > 0.0) and not this->absPrec) {
         t_norm = sqrt(sq_norm);
     }
-    double w_norm = node.getWaveletNorm();
+    double w_norm = sqrt(node.getWaveletNorm());
     double thrs = getWaveletThreshold(t_norm, scale);
 
     if (w_norm > thrs) {

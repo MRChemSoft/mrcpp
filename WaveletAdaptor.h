@@ -6,10 +6,10 @@
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double pr = -1.0, bool abs = false, int scale = 20)
-            : prec(pr),
-              absPrec(abs),
-              maxScale(scale) { }
+    WaveletAdaptor(double p = -1.0, bool a = false, int n = 20)
+            : prec(p),
+              absPrec(a),
+              maxScale(n) { }
     WaveletAdaptor(const WaveletAdaptor<D> &adap)
             : prec(adap.prec),
               absPrec(adap.absPrec),

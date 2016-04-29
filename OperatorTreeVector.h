@@ -13,6 +13,8 @@ public:
     int size() const { return this->operComp.size(); }
 
     int getMaxBandWidth(int depth = -1) const;
+    const Eigen::VectorXi &getMaxBandWidths() const { return this->bandMax; }
+
     void calcBandWidths(double prec);
     void clearBandWidths();
 

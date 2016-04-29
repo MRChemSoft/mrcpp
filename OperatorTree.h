@@ -7,6 +7,8 @@ class OperatorTree: public MWTree<2> {
 public:
     virtual ~OperatorTree();
 
+    double getNormPrecision() const { return this->normPrec; }
+
     void calcBandWidth(double prec = -1.0);
     void clearBandWidth();
 
@@ -36,11 +38,12 @@ public:
     friend class CrossCorrelationGenerator;
 
 protected:
+    const double normPrec;
     BandWidth *bandWidth;
     OperatorNode ***nodePtrStore;  ///< Avoids tree lookups
     OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
 
-    OperatorTree(const MultiResolutionAnalysis<2> &mra);
+    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np);
 
     void setupOperNodeCache();
     void clearOperNodeCache();

@@ -24,7 +24,7 @@ protected:
     OperatorNode& operator=(const OperatorNode &n) { NOT_IMPLEMENTED_ABORT; }
     virtual ~OperatorNode();
 
-    double calcComponentNorm(int i, double thrs) const;
+    double calcComponentNorm(int i) const;
 
     void genChildren();
     void createChildren() { MWNode<2>::createChildren(); this->clearIsEndNode(); }

@@ -2,7 +2,7 @@
 #define CROSSCORRELATIONGENERATOR_H
 
 #include "TreeBuilder.h"
-#include "WaveletAdaptor.h"
+#include "OperatorAdaptor.h"
 #include "CrossCorrelationCalculator.h"
 #include "OperatorTree.h"
 #include "Timer.h"
@@ -16,13 +16,13 @@ public:
     virtual ~CrossCorrelationGenerator() { }
 
     OperatorTree *operator()(FunctionTree<1> &inp) {
-        OperatorTree *out = new OperatorTree(this->MRA);
+        OperatorTree *out = new OperatorTree(this->MRA, this->build_prec);
         (*this)(*out, inp);
         return out;
     }
 
     void operator()(OperatorTree &out, FunctionTree<1> &inp) {
-        this->adaptor = new WaveletAdaptor<2>(this->build_prec);
+        this->adaptor = new OperatorAdaptor(this->build_prec);
         this->calculator = new CrossCorrelationCalculator(inp, this->build_prec);
         this->build(out);
         this->clearCalculator();

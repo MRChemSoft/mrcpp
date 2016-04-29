@@ -2,6 +2,7 @@
 #include "MathUtils.h"
 
 using namespace Eigen;
+using namespace std;
 
 OperatorNode::OperatorNode(OperatorTree &t, const NodeIndex<2> &n)
         : MWNode<2>(t, n) {
@@ -41,20 +42,23 @@ void OperatorNode::genChildren() {
   * OperatorNorms are defined as matrix 2-norms that are expensive to calculate.
   * Thus we calculate some cheaper upper bounds for this norm for thresholding.
   * First a simple vector norm, then a product of the 1- and infinity-norm. */
-double OperatorNode::calcComponentNorm(int i, double thrs) const {
-    if (thrs < 0.0) thrs = MachineZero;
+double OperatorNode::calcComponentNorm(int i) const {
+    int depth = getDepth();
+    double prec = getOperTree().getNormPrecision();
+    double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
+
     int kp1_d = this->getKp1_d();
     const VectorXd &coefs = getCoefs().segment(i*kp1_d, kp1_d);
 
     double norm = 0.0;
-    double vectorNorm = coefs.norm();
-    if (vectorNorm > thrs) {
-        double normInf = MathUtils::matrixNormInfinity(coefs);
-        double normOne = MathUtils::matrixNorm1(coefs);
-        if (sqrt(normInf*normOne) > thrs) {
-            norm = MathUtils::matrixNorm2(coefs);
-            if (norm < thrs) {
-                norm = 0.0;
+    double vecNorm = coefs.norm();
+    if (vecNorm > thrs) {
+        double infNorm = MathUtils::matrixNormInfinity(coefs);
+        double oneNorm = MathUtils::matrixNorm1(coefs);
+        if (sqrt(infNorm*oneNorm) > thrs) {
+            double twoNorm = MathUtils::matrixNorm2(coefs);
+            if (twoNorm > thrs) {
+                norm = twoNorm;
             }
         }
     }

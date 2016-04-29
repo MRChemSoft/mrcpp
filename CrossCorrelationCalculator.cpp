@@ -28,9 +28,7 @@ void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     }
     node.mwTransform(Compression);
     node.setHasCoefs();
-    int depth = node.getDepth();
-    double thrs = std::max(MachinePrec, (0.1*this->prec)/(8.0 * (1 << depth)));
-    node.calcNorms(thrs);
+    node.calcNorms();
 }
 
 template<int T>

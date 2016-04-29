@@ -33,9 +33,9 @@ protected:
     GenNode& operator=(const GenNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
     virtual ~GenNode();
 
-    double calcComponentNorm(int i, double thrs) const {
+    double calcComponentNorm(int i) const {
         if (i == 0) {
-            return MWNode<D>::calcComponentNorm(0, thrs);
+            return MWNode<D>::calcComponentNorm(0);
         } else {
             return 0.0;
         }

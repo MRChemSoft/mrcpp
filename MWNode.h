@@ -132,13 +132,13 @@ protected:
     virtual void setCoefs(const Eigen::VectorXd &c);
     virtual void zeroCoefs();
 
-    void calcNorms(double thrs = -1.0);
+    void calcNorms();
     void zeroNorms();
     void clearNorms();
 
     double estimateError(bool absPrec);
 
-    virtual double calcComponentNorm(int i, double thrs) const;
+    virtual double calcComponentNorm(int i) const;
 
     virtual void cvTransform(int kind);
     virtual void mwTransform(int kind);

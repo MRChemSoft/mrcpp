@@ -6,8 +6,9 @@
 using namespace Eigen;
 using namespace std;
 
-OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra)
+OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         : MWTree<2>(mra),
+          normPrec(np),
           bandWidth(0),
           nodePtrStore(0),
           nodePtrAccess(0) {
@@ -42,7 +43,7 @@ void OperatorTree::calcBandWidth(double prec) {
     double thrs = -1.0;
     while (it.next()) {
         MWNode<2> &node = it.getNode();
-        const int *l = node.getNodeIndex().getTranslation();
+        const int *l = node.getTranslation();
         if (l[1] == 0) {
             int depth = node.getDepth();
             if (prec > 0.0) {

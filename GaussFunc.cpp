@@ -15,6 +15,7 @@
 #include "GaussPoly.h"
 #include "Polynomial.h"
 #include "MathUtils.h"
+#include "BoysFunction.h"
 
 using namespace Eigen;
 
@@ -282,7 +283,6 @@ double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
 /** NOTE: Gaussians must be normalized to unit charge coef = (alpha/pi)^(3/2)
  * for this to be correct!
  */
-/*
 template<>
 double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     double p = this->getExp();
@@ -305,9 +305,7 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     return sqrt(4.0*alpha/pi)*boysFac;
 }
-*/
 
-
-template class GaussFunc<1> ;
-template class GaussFunc<2> ;
-template class GaussFunc<3> ;
+template class GaussFunc<1>;
+template class GaussFunc<2>;
+template class GaussFunc<3>;

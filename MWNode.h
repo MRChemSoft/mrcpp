@@ -92,6 +92,7 @@ public:
     friend class OperApplicationCalculator<D>;
     friend class CrossCorrelationCalculator;
     friend class MWTree<D>;
+    friend class FunctionTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
 

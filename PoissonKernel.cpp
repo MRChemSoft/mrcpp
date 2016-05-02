@@ -17,7 +17,8 @@
  * gaussian functions this routine assumes that the expansion be centered
  */
 void PoissonKernel::initializeKernel() {
-    double r0 = this->rMin;
+    //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
+    double r0 = this->rMin/this->rMax;
     double r1 = this->rMax;
 
     double t1 = 1.0L;
@@ -51,12 +52,10 @@ void PoissonKernel::initializeKernel() {
         double pos = 0.0;
 
         alpha *= 1.0/(r1*r1);
+        beta *= 1.0/r1;
         if (i == 0 or i == (n_exp - 1)) {
-            beta *= 1.0/(2.0*r1);
-        } else {
-            beta *= 1.0/r1;
+            beta *= 1.0/2.0;
         }
-        beta = pow(beta, 1.0/3.0);
 
         GaussFunc<1> gFunc(alpha, beta, &pos);
         this->append(gFunc);

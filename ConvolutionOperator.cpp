@@ -6,6 +6,7 @@
 #include "Gaussian.h"
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
+#include "MathUtils.h"
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
@@ -85,6 +86,19 @@ MultiResolutionAnalysis<1>* ConvolutionOperator<D>::getKernelMRA() const {
     mra = new MultiResolutionAnalysis<1>(kern_box, *kern_basis);
     delete kern_basis;
     return mra;
+}
+
+template<int D>
+double ConvolutionOperator<D>::calcMinDistance(double epsilon) const {
+    int maxScale = this->MRA.getMaxScale();
+    return sqrt(epsilon * pow(2.0, -maxScale));
+}
+
+template<int D>
+double ConvolutionOperator<D>::calcMaxDistance() const {
+    const double *lb = this->MRA.getWorldBox().getLowerBounds();
+    const double *ub = this->MRA.getWorldBox().getUpperBounds();
+    return MathUtils::calcDistance(D, lb, ub);
 }
 
 template class ConvolutionOperator<1>;

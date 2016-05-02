@@ -6,6 +6,7 @@
 #define GREENSKERNEL_H_
 
 #include "GaussExp.h"
+#include "Gaussian.h"
 
 class GreensKernel : public GaussExp<1> {
 public:
@@ -21,6 +22,14 @@ public:
     double getEpsilon() const { return this->epsilon; }
     double getRMin() const { return this->rMin; }
     double getRMax() const { return this->rMax; }
+
+    void rescale(int d) {
+        for (int i = 0; i < this->size(); i++) {
+            Gaussian<1> &gauss = this->getFunc(i);
+            double coef = pow(gauss.getCoef(), 1.0/d);
+            gauss.setCoef(coef);
+        }
+    }
 
     friend std::ostream& operator <<(std::ostream &o, const GreensKernel &kernel) {
         o << "Kernel: " << std::endl;

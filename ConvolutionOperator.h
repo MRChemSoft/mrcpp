@@ -18,6 +18,9 @@ protected:
     void initializeOperator(GreensKernel &greens_kernel);
     void clearKernel();
 
+    double calcMinDistance(double epsilon) const;
+    double calcMaxDistance() const;
+
     MultiResolutionAnalysis<1> *getKernelMRA() const;
 };
 

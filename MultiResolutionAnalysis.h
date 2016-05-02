@@ -10,18 +10,28 @@ class MultiResolutionAnalysis {
 public:
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
             : world(mra.world),
-              basis(mra.basis) {
+              basis(mra.basis),
+              maxDepth(mra.maxDepth) {
+        if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
+        if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
         setupFilter();
     }
-    MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb)
+    MultiResolutionAnalysis(const BoundingBox<D> &bb,
+                            const ScalingBasis &sb,
+                            int depth = MaxDepth)
             : world(bb),
-              basis(sb) {
+              basis(sb),
+              maxDepth(depth) {
+        if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
+        if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
         setupFilter();
     }
     virtual ~MultiResolutionAnalysis() { }
 
-
     int getOrder() const { return this->basis.getScalingOrder(); }
+    int getMaxDepth() const { return this->maxDepth; }
+    int getMaxScale() const { return this->world.getScale() + this->maxDepth; }
+
     const MWFilter &getFilter() const { return *this->filter; }
     const ScalingBasis &getScalingBasis() const { return this->basis; }
     const BoundingBox<D> &getWorldBox() const { return this->world; }
@@ -29,11 +39,13 @@ public:
     bool operator==(const MultiResolutionAnalysis<D> &mra) const {
         if (this->basis != mra.basis) return false;
         if (this->world != mra.world) return false;
+        if (this->maxDepth != mra.maxDepth) return false;
         return true;
     }
     bool operator!=(const MultiResolutionAnalysis<D> &mra) const {
         if (this->basis != mra.basis) return true;
         if (this->world != mra.world) return true;
+        if (this->maxDepth != mra.maxDepth) return true;
         return false;
     }
 
@@ -54,6 +66,7 @@ public:
     }
     */
 protected:
+    const int maxDepth;
     const ScalingBasis basis;
     const BoundingBox<D> world;
     MWFilter *filter;

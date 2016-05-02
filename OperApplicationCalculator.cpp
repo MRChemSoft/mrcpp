@@ -16,10 +16,13 @@ using namespace Eigen;
 template<int D>
 OperApplicationCalculator<D>::OperApplicationCalculator(double p,
                                                         OperatorTreeVector &o,
-                                                        FunctionTree<D> &f)
-        : prec(p),
+                                                        FunctionTree<D> &f,
+                                                        int depth)
+        : maxDepth(depth),
+          prec(p),
           oper(&o),
           fTree(&f) {
+    if (this->maxDepth > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     initBandSizes();
     initNodeCounters();
 }
@@ -145,9 +148,9 @@ void OperApplicationCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &oTree = this->oper->getComponent(i);
         const BandWidth &bw = oTree.getBandWidth();
-        MatrixXi *bsize = new MatrixXi(MaxDepth, this->nComp2 + 1);
+        MatrixXi *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
-        for (int j = 0; j < MaxDepth; j++) {
+        for (int j = 0; j < this->maxDepth; j++) {
             calcBandSizeFactor(*bsize, j, bw);
         }
         this->bandSizes.push_back(bsize);

@@ -14,7 +14,7 @@ public:
     MWProjector(const MultiResolutionAnalysis<D> &mra,
                 double prec = -1.0, int iter = -1)
             : TreeBuilder<D>(mra, iter) {
-        this->adaptor = new WaveletAdaptor<D>(prec);
+        this->adaptor = new WaveletAdaptor<D>(prec, mra.getMaxScale());
     }
     MWProjector(const MultiResolutionAnalysis<D> &mra,
                 const TreeAdaptor<D> &a, int iter = -1)

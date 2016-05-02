@@ -1,20 +1,22 @@
 #ifndef OPERAPPLICATIONCALCULATOR_H
 #define OPERAPPLICATIONCALCULATOR_H
 
-#include <map>
-
 #include "TreeCalculator.h"
 #include "mwrepr_declarations.h"
 
 template<int D>
 class OperApplicationCalculator : public TreeCalculator<D> {
 public:
-    OperApplicationCalculator(double p, OperatorTreeVector &o, FunctionTree<D> &f);
+    OperApplicationCalculator(double p,
+                              OperatorTreeVector &o,
+                              FunctionTree<D> &f,
+                              int depth = MaxDepth);
     virtual ~OperApplicationCalculator();
 
     virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
+    int maxDepth;
     double prec;
     OperatorTreeVector *oper;
     FunctionTree<D> *fTree;

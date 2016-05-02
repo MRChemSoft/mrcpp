@@ -2,11 +2,12 @@
 #define WAVELETADAPTOR_H
 
 #include "TreeAdaptor.h"
+#include "constants.h"
 
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double p = -1.0, bool a = false, int n = 20)
+    WaveletAdaptor(double p = -1.0, int n = MaxScale, bool a = false)
             : prec(p),
               absPrec(a),
               maxScale(n) { }

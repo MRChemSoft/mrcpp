@@ -37,7 +37,7 @@ FunctionTree<D>* MWOperator<D>::operator()(FunctionTree<D> &inp) {
 template<int D>
 void MWOperator<D>::operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
     this->oper.calcBandWidths(this->apply_prec);
-    this->adaptor = new WaveletAdaptor<D>(this->apply_prec);
+    this->adaptor = new WaveletAdaptor<D>(this->apply_prec, this->MRA.getMaxScale());
     this->calculator = new OperApplicationCalculator<D>(this->apply_prec, this->oper, inp);
     this->build(out);
     this->clearCalculator();

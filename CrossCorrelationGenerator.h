@@ -22,7 +22,7 @@ public:
     }
 
     void operator()(OperatorTree &out, FunctionTree<1> &inp) {
-        this->adaptor = new OperatorAdaptor(this->build_prec);
+        this->adaptor = new OperatorAdaptor(this->build_prec, this->MRA.getMaxScale());
         this->calculator = new CrossCorrelationCalculator(inp, this->build_prec);
         this->build(out);
         this->clearCalculator();

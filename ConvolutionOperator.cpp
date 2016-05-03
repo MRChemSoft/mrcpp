@@ -50,8 +50,8 @@ template<int D>
 void ConvolutionOperator<D>::clearKernel() {
     for (int i = 0; i < this->kernel.size(); i++) {
         if (this->kernel[i] != 0) delete this->kernel[i];
-        this->kernel.clear();
     }
+    this->kernel.clear();
 }
 
 template<int D>

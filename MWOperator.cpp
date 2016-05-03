@@ -22,8 +22,8 @@ template<int D>
 void MWOperator<D>::clearOperator() {
     for (int i = 0; i < this->oper.size(); i++) {
         if (this->oper[i] != 0) delete this->oper[i];
-        this->oper.clear();
     }
+    this->oper.clear();
 }
 
 template<int D>

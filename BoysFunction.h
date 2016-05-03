@@ -50,10 +50,13 @@ public:
     }
 
     double evalf(const double *r) const {
+        int plevel = TelePrompter::getPrintLevel();
+        TelePrompter::setPrintLevel(0);
         BoysIntegrand func(this->order, *r);
         FunctionTree<1> *tree = (*this->Q)(func);
         double val = tree->integrate();
         delete tree;
+        TelePrompter::setPrintLevel(plevel);
         return val;
     }
 

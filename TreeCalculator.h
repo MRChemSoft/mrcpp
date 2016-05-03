@@ -15,9 +15,9 @@ public:
     }
 
     virtual void calcNodeVector(MWNodeVector &nodeVec) {
-        int nNodes = nodeVec.size();
-#pragma omp parallel shared(nodeVec) firstprivate(nNodes) reduction(+:norm)
+#pragma omp parallel shared(nodeVec)
 {
+        int nNodes = nodeVec.size();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
             MWNode<D> &node = *nodeVec[n];

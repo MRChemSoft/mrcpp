@@ -18,7 +18,8 @@ using namespace std;
 /** generate an approximation of the 3d helmholtz kernel expanded in gaussian functions
  */
 void HelmholtzKernel::initializeKernel() {
-    double r0 = this->rMin;
+    //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
+    double r0 = this->rMin/this->rMax;
     double r1 = this->rMax;
     double mu_tilde = this->mu*r1;
 
@@ -41,17 +42,14 @@ void HelmholtzKernel::initializeKernel() {
         double beta = (h * (2.0 / root_pi) * exp(temp2));
         double temp3 = 2.0L * arg;
         double alpha = exp(temp3);
-        double pos = 0.0;
 
         alpha *= 1.0/(r1*r1);
+        beta *= 1.0/r1;
         if (i == 0 or i == (n_exp - 1)) {
-            beta *= 1.0/(2.0*r1);
-        } else {
-            beta *= 1.0/r1;
+            beta *= 1.0/2.0;
         }
-        beta = pow(beta, 1.0/3.0);
 
-        GaussFunc<1> gFunc(alpha, beta, &pos);
+        GaussFunc<1> gFunc(alpha, beta);
         this->append(gFunc);
     }
     this->calcSquareNorm();

@@ -49,7 +49,6 @@ void PoissonKernel::initializeKernel() {
 
         double alpha = 4.0L * (sinharg+log(onepexp)) * (sinharg+log(onepexp));
         double beta = h * (4.0L / root_pi) * cosharg / onepexp;
-        double pos = 0.0;
 
         alpha *= 1.0/(r1*r1);
         beta *= 1.0/r1;
@@ -57,7 +56,7 @@ void PoissonKernel::initializeKernel() {
             beta *= 1.0/2.0;
         }
 
-        GaussFunc<1> gFunc(alpha, beta, &pos);
+        GaussFunc<1> gFunc(alpha, beta);
         this->append(gFunc);
     }
     this->calcSquareNorm();

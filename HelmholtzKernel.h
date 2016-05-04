@@ -21,10 +21,8 @@ public:
         initializeKernel();
     }
     virtual ~HelmholtzKernel() { }
-
-    double getMu() const { return this->mu; }
 protected:
-    double mu; /**< exponent */
+    const double mu; /**< exponent */
     virtual void initializeKernel();
 };
 

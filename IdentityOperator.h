@@ -12,7 +12,8 @@ public:
                      double build = -1.0,
                      int iter = -1)
             : ConvolutionOperator<D>(mra, apply, build, iter) {
-        IdentityKernel identity_kernel(this->build_prec/100.0);
+        double epsilon = this->build_prec/10.0;
+        IdentityKernel identity_kernel(epsilon);
         this->initializeOperator(identity_kernel);
     }
     virtual ~IdentityOperator() { }

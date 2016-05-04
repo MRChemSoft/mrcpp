@@ -289,6 +289,7 @@ FunctionTree<D>& FunctionTree<D>::operator*=(double c) {
         node.calcNorms();
     }
     this->mwTransform(BottomUp);
+    this->calcSquareNorm();
     return *this;
 }
 

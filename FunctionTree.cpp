@@ -253,9 +253,8 @@ void FunctionTree<D>::power(double d) {
 
 template<int D>
 void FunctionTree<D>::normalize() {
-    NOT_IMPLEMENTED_ABORT;
-//    double norm = sqrt(this->getSquareNorm());
-//    *this *= (1.0/norm);
+    double norm = sqrt(this->getSquareNorm());
+    *this *= (1.0/norm);
 }
 
 template<int D>

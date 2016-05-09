@@ -20,7 +20,8 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
 
 template<int D>
 ConvolutionOperator<D>::~ConvolutionOperator() {
-    clearKernel();
+    this->clearOperator();
+    this->clearKernel();
 }
 
 template<int D>

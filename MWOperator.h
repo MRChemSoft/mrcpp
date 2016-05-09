@@ -7,21 +7,25 @@
 template<int D>
 class MWOperator : public TreeBuilder<D> {
 public:
-    MWOperator(const MultiResolutionAnalysis<D> &mra, double prec, int iter);
-    virtual ~MWOperator();
+    MWOperator(const MultiResolutionAnalysis<D> &mra, double pr)
+        : TreeBuilder<D>(mra),
+          apply_prec(pr) {
+    }
 
-    void setApplyPrecision(double prec) { this->apply_prec = prec; }
-    void multApplyPrecision(double fac) { this->apply_prec *= fac; }
+    virtual ~MWOperator() {
+    }
+
+    void setPrecision(double pr) { this->apply_prec = pr; }
+    void multPrecision(double fac) { this->apply_prec *= fac; }
 
     FunctionTree<D> *operator()(FunctionTree<D> &inp);
-    void operator()(FunctionTree<D> &out, FunctionTree<D> &inp);
+    void operator()(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter = -1);
 
 protected:
     double apply_prec;
     OperatorTreeVector oper;
 
     void clearOperator();
-    void initializeGrid(FunctionTree<D> &out, FunctionTree<D> &inp);
     MultiResolutionAnalysis<2> *getOperatorMRA();
 };
 

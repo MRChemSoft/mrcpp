@@ -9,9 +9,8 @@ public:
     HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
                       double m,
                       double apply = -1.0,
-                      double build = -1.0,
-                      int iter = -1)
-            : ConvolutionOperator<3>(mra, apply, build, iter),
+                      double build = -1.0)
+            : ConvolutionOperator<3>(mra, apply, build),
               mu(m) {
         int plevel = TelePrompter::getPrintLevel();
         TelePrompter::setPrintLevel(0);

@@ -5,8 +5,8 @@
 
 class OperatorAdaptor : public WaveletAdaptor<2> {
 public:
-    OperatorAdaptor(double p = -1.0, int n = MaxScale, bool a = false)
-            : WaveletAdaptor<2>(p, n, a) { }
+    OperatorAdaptor(double pr = -1.0, int ms = MaxScale, bool ap = false)
+            : WaveletAdaptor<2>(pr, ms, ap) { }
     virtual ~OperatorAdaptor() { }
 
 protected:
@@ -21,12 +21,8 @@ protected:
         const int *l = node.getTranslation();
         int chkTransl = (l[0] == 0 or l[1] == 0);
 
-        int scale = node.getScale();
-        int chkScale = ((scale + 1) < this->maxScale);
-
         int split = 1;
         split *= chkTransl;
-        split *= chkScale;
         split *= chkCompNorm;
 
         return split;

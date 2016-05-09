@@ -8,38 +8,46 @@
 template<int D>
 class MWMultiplier : public TreeBuilder<D> {
 public:
-    MWMultiplier(const MultiResolutionAnalysis<D> &mra,
-                 double prec = -1.0,int iter = -1)
-            : TreeBuilder<D>(mra, iter) {
-        this->adaptor = new WaveletAdaptor<D>(prec, mra.getMaxScale());
-    }
-    MWMultiplier(const MultiResolutionAnalysis<D> &mra,
-                const TreeAdaptor<D> &a, int iter = -1)
-            : TreeBuilder<D>(mra, iter) {
-        this->adaptor = a.copy();
+    MWMultiplier(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
+            : TreeBuilder<D>(mra),
+              prec(pr) {
     }
     virtual ~MWMultiplier() {
-        this->clearAdaptor();
     }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void multPrecision(double fac) { this->prec *= fac; }
 
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-        initializeGrid(*out, inp);
+
+        Timer init_t;
+        init_t.restart();
+        GridGenerator<D> G(this->MRA);
+        G(*out, inp);
+        init_t.stop();
+        println(10, "Time initializing   " << init_t);
+
         (*this)(*out, inp);
         return out;
     }
 
-    void operator()(FunctionTree<D> &out, FunctionTreeVector<D> &inp) {
-        Timer trans_t, clean_t;
+    void operator()(FunctionTree<D> &out,
+                    FunctionTreeVector<D> &inp,
+                    int maxIter = -1) {
+        this->adaptor = new WaveletAdaptor<D>(this->prec, this->MRA.getMaxScale());
         this->calculator = new MultiplicationCalculator<D>(inp);
-        this->build(out);
+        this->build(out, maxIter);
         this->clearCalculator();
+        this->clearAdaptor();
 
+        Timer trans_t;
         trans_t.restart();
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         trans_t.stop();
 
+        Timer clean_t;
         clean_t.restart();
         for (int i = 0; i < inp.size(); i++) {
             FunctionTree<D> &tree = inp.getFunc(i);
@@ -51,17 +59,9 @@ public:
         println(10, "Time cleaning       " << clean_t);
         println(10, std::endl);
     }
-protected:
-    /** Copy the grids from the input functions */
-    void initializeGrid(FunctionTree<D> &out, FunctionTreeVector<D> &inp) {
-        Timer init_t;
-        init_t.restart();
-        GridGenerator<D> G(this->MRA);
-        G(out, inp);
-        init_t.stop();
-        println(10, "Time initializing   " << init_t);
-    }
-};
 
+protected:
+    double prec;
+};
 
 #endif // MWMULTIPLIER_H

@@ -8,10 +8,8 @@ template<int D>
 class IdentityOperator : public ConvolutionOperator<D> {
 public:
     IdentityOperator(const MultiResolutionAnalysis<D> &mra,
-                     double apply = -1.0,
-                     double build = -1.0,
-                     int iter = -1)
-            : ConvolutionOperator<D>(mra, apply, build, iter) {
+                     double apply = -1.0, double build = -1.0)
+            : ConvolutionOperator<D>(mra, apply, build) {
         double epsilon = this->build_prec/10.0;
         IdentityKernel identity_kernel(epsilon);
         this->initializeOperator(identity_kernel);

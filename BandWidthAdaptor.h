@@ -2,6 +2,7 @@
 #define BANDWIDTHADAPTOR_H
 
 #include "TreeAdaptor.h"
+#include "constants.h"
 
 /** Builds an OperatorTree with known band width (e.g. derivative and identity).
   * Assumes translational invariant and symmetric (in x - y) operator and keeps
@@ -9,10 +10,10 @@
 
 class BandWidthAdaptor : public TreeAdaptor<2> {
 public:
-    BandWidthAdaptor(int bw) : bandWidth(bw) { }
-    BandWidthAdaptor(const BandWidthAdaptor &a) : bandWidth(a.bandWidth) { }
+    BandWidthAdaptor(int bw, int ms = MaxScale)
+            : TreeAdaptor<2>(ms),
+              bandWidth(bw) { }
     virtual ~BandWidthAdaptor() { }
-    virtual TreeAdaptor<2> *copy() const { return new BandWidthAdaptor(*this); }
 
 protected:
     const int bandWidth;

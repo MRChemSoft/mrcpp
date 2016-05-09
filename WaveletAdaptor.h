@@ -7,21 +7,18 @@
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double p = -1.0, int n = MaxScale, bool a = false)
-            : prec(p),
-              absPrec(a),
-              maxScale(n) { }
-    WaveletAdaptor(const WaveletAdaptor<D> &adap)
-            : prec(adap.prec),
-              absPrec(adap.absPrec),
-              maxScale(adap.maxScale) { }
+    WaveletAdaptor(double pr = -1.0, int ms = MaxScale, bool ap = false)
+            : TreeAdaptor<D>(ms),
+              prec(pr),
+              absPrec(ap) { }
     virtual ~WaveletAdaptor() { }
-    virtual TreeAdaptor<D> *copy() const { return new WaveletAdaptor<D>(*this); }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void setAbsPrec(bool ap) { this->absPrec = ap; }
 
 protected:
-    const double prec;
-    const bool absPrec;
-    const int maxScale;
+    double prec;
+    bool absPrec;
 
     virtual bool splitNode(const MWNode<D> &node) const;
     double getWaveletThreshold(double norm, int scale) const;

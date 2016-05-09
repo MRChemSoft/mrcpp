@@ -10,21 +10,26 @@
 class CrossCorrelationGenerator : public TreeBuilder<2> {
 public:
     CrossCorrelationGenerator(const MultiResolutionAnalysis<2> &mra,
-                              double prec)
-            : TreeBuilder<2>(mra, 30),
-              build_prec(prec) { }
-    virtual ~CrossCorrelationGenerator() { }
+                              double pr = -1.0)
+            : TreeBuilder<2>(mra),
+              prec(pr) {
+    }
+    virtual ~CrossCorrelationGenerator() {
+    }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void multPrecision(double fac) { this->prec *= fac; }
 
     OperatorTree *operator()(FunctionTree<1> &inp) {
-        OperatorTree *out = new OperatorTree(this->MRA, this->build_prec);
-        (*this)(*out, inp);
+        OperatorTree *out = new OperatorTree(this->MRA, this->prec);
+        (*this)(*out, inp, -1);
         return out;
     }
 
-    void operator()(OperatorTree &out, FunctionTree<1> &inp) {
-        this->adaptor = new OperatorAdaptor(this->build_prec, this->MRA.getMaxScale());
-        this->calculator = new CrossCorrelationCalculator(inp, this->build_prec);
-        this->build(out);
+    void operator()(OperatorTree &out, FunctionTree<1> &inp, int maxIter = -1) {
+        this->adaptor = new OperatorAdaptor(this->prec, this->MRA.getMaxScale());
+        this->calculator = new CrossCorrelationCalculator(inp);
+        this->build(out, maxIter);
         this->clearCalculator();
         this->clearAdaptor();
 
@@ -39,7 +44,7 @@ public:
         println(10, std::endl);
     }
 protected:
-    const double build_prec;
+    double prec;
 };
 
 #endif // CROSSCORRELATIONGENERATOR_H

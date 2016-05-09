@@ -7,39 +7,28 @@
 #include "Timer.h"
 
 template<int D>
-MWOperator<D>::MWOperator(const MultiResolutionAnalysis<D> &mra, double prec, int iter)
-    : TreeBuilder<D>(mra, iter),
-      apply_prec(prec) {
-}
-
-template<int D>
-MWOperator<D>::~MWOperator() {
-    this->clearAdaptor();
-    this->clearOperator();
-}
-
-template<int D>
-void MWOperator<D>::clearOperator() {
-    for (int i = 0; i < this->oper.size(); i++) {
-        if (this->oper[i] != 0) delete this->oper[i];
-    }
-    this->oper.clear();
-}
-
-template<int D>
 FunctionTree<D>* MWOperator<D>::operator()(FunctionTree<D> &inp) {
     FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-    initializeGrid(*out, inp);
-    (*this)(*out, inp);
+
+    Timer init_t;
+    init_t.restart();
+    GridGenerator<D> G(this->MRA);
+    G(*out, inp);
+    init_t.stop();
+    println(10, "Time initializing   " << init_t);
+
+    (*this)(*out, inp, -1);
     return out;
 }
 
 template<int D>
-void MWOperator<D>::operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
+void MWOperator<D>::operator()(FunctionTree<D> &out,
+                               FunctionTree<D> &inp,
+                               int maxIter) {
     this->oper.calcBandWidths(this->apply_prec);
     this->adaptor = new WaveletAdaptor<D>(this->apply_prec, this->MRA.getMaxScale());
     this->calculator = new OperApplicationCalculator<D>(this->apply_prec, this->oper, inp);
-    this->build(out);
+    this->build(out, maxIter);
     this->clearCalculator();
     this->clearAdaptor();
     this->oper.clearBandWidths();
@@ -56,15 +45,12 @@ void MWOperator<D>::operator()(FunctionTree<D> &out, FunctionTree<D> &inp) {
     println(10, std::endl);
 }
 
-/** Build grid based on analytic input function */
 template<int D>
-void MWOperator<D>::initializeGrid(FunctionTree<D> &out, FunctionTree<D> &inp) {
-    Timer init_t;
-    init_t.restart();
-    GridGenerator<D> G(this->MRA);
-    G(out, inp);
-    init_t.stop();
-    println(10, "Time initializing   " << init_t);
+void MWOperator<D>::clearOperator() {
+    for (int i = 0; i < this->oper.size(); i++) {
+        if (this->oper[i] != 0) delete this->oper[i];
+    }
+    this->oper.clear();
 }
 
 template<int D>

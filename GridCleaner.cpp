@@ -1,36 +1,14 @@
 #include "GridCleaner.h"
-#include "WaveletAdaptor.h"
-#include "DefaultCalculator.h"
 #include "MWTree.h"
 #include "Timer.h"
 
 using namespace std;
 
 template<int D>
-GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra, double prec)
-        : TreeBuilder<D>(mra, 1) {
-    this->calculator = new DefaultCalculator<D>();
-    this->adaptor = new WaveletAdaptor<D>(prec);
-}
-
-template<int D>
-GridCleaner<D>::GridCleaner(const MultiResolutionAnalysis<D> &mra,
-                            const TreeAdaptor<D> &a)
-        : TreeBuilder<D>(mra, 1) {
-    this->calculator = new DefaultCalculator<D>();
-    this->adaptor = a.copy();
-}
-
-template<int D>
-GridCleaner<D>::~GridCleaner() {
-    this->clearCalculator();
-    this->clearAdaptor();
-}
-
-template<int D>
 int GridCleaner<D>::clean(MWTree<D> &tree) const {
     Timer clean_t, split_t;
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
+    if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Clearing tree");
 
     split_t.restart();

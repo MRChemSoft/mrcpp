@@ -10,8 +10,8 @@
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                                            double apply, double build, int iter)
-        : MWOperator<D>(mra, apply, iter),
+                                            double apply, double build)
+        : MWOperator<D>(mra, apply),
           build_prec(build) {
     if (this->build_prec < 0.0) {
         this->build_prec = this->apply_prec;
@@ -25,19 +25,16 @@ ConvolutionOperator<D>::~ConvolutionOperator() {
 
 template<int D>
 void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
-    double proj_prec = this->build_prec/100.0;
-    double ccc_prec = this->build_prec/10.0;
-
     MultiResolutionAnalysis<1> *kern_mra = this->getKernelMRA();
     MultiResolutionAnalysis<2> *oper_mra = this->getOperatorMRA();
 
-    MWProjector<1> Q(*kern_mra, proj_prec);
-    CrossCorrelationGenerator G(*oper_mra, ccc_prec);
+    MWProjector<1> Q(*kern_mra, this->build_prec/10.0);
+    CrossCorrelationGenerator CC(*oper_mra, this->build_prec);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
         FunctionTree<1> *kern_comp = Q(greens_comp);
-        OperatorTree *oper_comp = G(*kern_comp);
+        OperatorTree *oper_comp = CC(*kern_comp);
 
         this->kernel.push_back(*kern_comp);
         this->oper.push_back(*oper_comp);

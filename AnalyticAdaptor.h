@@ -2,14 +2,15 @@
 #define ANALYTICADAPTOR_H
 
 #include "TreeAdaptor.h"
+#include "constants.h"
 
 template<int D>
 class AnalyticAdaptor : public TreeAdaptor<D> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f) : func(&f) { }
-    AnalyticAdaptor(const AnalyticAdaptor<D> &a) : func(a.func) { }
+    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms = MaxScale)
+            : TreeAdaptor<D>(ms),
+              func(&f) { }
     virtual ~AnalyticAdaptor() { }
-    virtual TreeAdaptor<D> *copy() const { return new AnalyticAdaptor<D>(*this); }
 
 protected:
     const RepresentableFunction<D> *func;

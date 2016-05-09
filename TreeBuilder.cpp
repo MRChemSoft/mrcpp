@@ -8,11 +8,10 @@
 using namespace std;
 
 template<int D>
-TreeBuilder<D>::TreeBuilder(const MultiResolutionAnalysis<D> &mra, int iter)
+TreeBuilder<D>::TreeBuilder(const MultiResolutionAnalysis<D> &mra)
         : adaptor(0),
           calculator(0),
-          MRA(mra),
-          maxIter(iter) {
+          MRA(mra) {
 }
 
 template<int D>
@@ -38,7 +37,7 @@ void TreeBuilder<D>::clearCalculator() {
 }
 
 template<int D>
-void TreeBuilder<D>::build(MWTree<D> &tree) const {
+void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
     Timer calc_t, split_t, norm_t;
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
     if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
@@ -77,7 +76,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 
         split_t.restart();
         newVec = new MWNodeVector;
-        if (maxIterReached(iter)) workVec->clear();
+        if (iter >= maxIter and maxIter >= 0) workVec->clear();
         this->adaptor->splitNodeVector(*newVec, *workVec);
         split_t.stop();
 
@@ -95,20 +94,20 @@ void TreeBuilder<D>::build(MWTree<D> &tree) const {
 }
 
 template<int D>
-double TreeBuilder<D>::calcScalingNorm(MWNodeVector &vec) const {
+double TreeBuilder<D>::calcScalingNorm(const MWNodeVector &vec) const {
     double sNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
-        MWNode<D> &node = *vec[i];
+        const MWNode<D> &node = *vec[i];
         sNorm += node.getScalingNorm();
     }
     return sNorm;
 }
 
 template<int D>
-double TreeBuilder<D>::calcWaveletNorm(MWNodeVector &vec) const {
+double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector &vec) const {
     double wNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
-        MWNode<D> &node = *vec[i];
+        const MWNode<D> &node = *vec[i];
         wNorm += node.getWaveletNorm();
     }
     return wNorm;

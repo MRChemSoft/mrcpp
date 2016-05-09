@@ -11,19 +11,15 @@ bool WaveletAdaptor<D>::splitNode(const MWNode<D> &node) const {
     if (this->prec < 0.0) {
         return false;
     }
-    int scale = node.getScale();
-    if ((scale + 1) >= this->maxScale) {
-        println(10, "Maximum scale reached: " << scale + 1);
-        return false;
-    }
     double t_norm = 1.0;
     double sq_norm = node.getMWTree().getSquareNorm();
     if (not (sq_norm > 0.0) and not this->absPrec) {
         t_norm = sqrt(sq_norm);
     }
-    double w_norm = sqrt(node.getWaveletNorm());
+    int scale = node.getScale();
     double thrs = getWaveletThreshold(t_norm, scale);
 
+    double w_norm = sqrt(node.getWaveletNorm());
     if (w_norm > thrs) {
         return true;
     } else {

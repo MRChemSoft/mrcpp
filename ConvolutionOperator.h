@@ -8,7 +8,7 @@ template<int D>
 class ConvolutionOperator : public MWOperator<D> {
 public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                        double apply, double build, int iter);
+                        double apply, double build);
     virtual ~ConvolutionOperator();
 
 protected:

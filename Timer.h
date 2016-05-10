@@ -8,6 +8,12 @@
 class Timer {
 public:
     Timer() : nano(1.0e9) { t.stop(); }
+    Timer& operator=(const Timer &timer) {
+        if (this != &timer) {
+            this->t = timer.t;
+        }
+        return *this;
+    }
     void restart() { t.resume(); }
     void stop() { t.stop(); }
     double getWallTime() { return t.elapsed().wall/nano; }

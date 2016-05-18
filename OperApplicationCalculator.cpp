@@ -4,6 +4,7 @@
 #include "FunctionNode.h"
 #include "OperatorNode.h"
 #include "BandWidth.h"
+#include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -11,6 +12,7 @@ extern "C" {
 }
 #endif
 
+using namespace std;
 using namespace Eigen;
 
 template<int D>
@@ -18,7 +20,8 @@ OperApplicationCalculator<D>::OperApplicationCalculator(double p,
                                                         OperatorTreeVector &o,
                                                         FunctionTree<D> &f,
                                                         int depth)
-        : maxDepth(depth),
+        : applyDir(-1),
+          maxDepth(depth),
           prec(p),
           oper(&o),
           fTree(&f) {
@@ -29,7 +32,7 @@ OperApplicationCalculator<D>::OperApplicationCalculator(double p,
 
 template<int D>
 OperApplicationCalculator<D>::~OperApplicationCalculator() {
-    for (int i=0; i < this->bandSizes.size(); i++) {
+    for (int i = 0; i < this->bandSizes.size(); i++) {
         delete this->bandSizes[i];
     }
     for (int i = 0; i < this->nThreads; i++) {
@@ -327,13 +330,13 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
     double oNorm = 1.0;
     double **oData = os.getOperData();
 
-    for (int i = 0; i < D; i++) {
-        int oTransl = fTransl[i] - gTransl[i];
+    for (int d = 0; d < D; d++) {
+        int oTransl = fTransl[d] - gTransl[d];
 
 //  The following will check the actual band width in each direction.
 //  Not needed if the thresholding at the end of this routine is active.
-        int a = (os.gt & (1 << i)) >> i;
-        int b = (os.ft & (1 << i)) >> i;
+        int a = (os.gt & (1 << d)) >> d;
+        int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
         int w = oTree.getBandWidth().getWidth(depth, idx);
         if (abs(oTransl) > w) {
@@ -341,13 +344,14 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
         }
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
-        int oIdx = os.getOperIndex(i);
+        int oIdx = os.getOperIndex(d);
         double ocn = oNode.getComponentNorm(oIdx);
-        if (ocn == 0.0) { // Optimization. Not very relevant. Just a little.
-            return;
-        }
         oNorm *= ocn;
-        oData[i] = const_cast<double *>(oNode.getCoefs().data()) + oIdx*os.kp1_2;
+        if (this->applyDir < 0 or this->applyDir == d) {
+            oData[d] = const_cast<double *>(oNode.getCoefs().data()) + oIdx*os.kp1_2;
+        } else {
+            NOT_IMPLEMENTED_ABORT;
+        }
     }
     double upperBound = oNorm * os.fThreshold;
     if (upperBound > os.gThreshold) {
@@ -367,7 +371,17 @@ void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 #ifdef HAVE_BLAS
     double mult = 0.0;
     for (int i = 0; i < D; i++) {
-        if (oData[i] == 0) {
+        if (oData[i] != 0) {
+            if (i == D - 1) { // Last dir: Add up into g
+                mult = 1.0;
+            }
+            const double *f = aux[i];
+            double *g = const_cast<double *>(aux[i + 1]);
+            cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
+                    os.kp1_dm1, os.kp1, os.kp1, 1.0, f,
+                    os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
+        } else {
+            // Identity operator in direction i
             Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
             Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
             if (oData[i] == 0) {
@@ -377,33 +391,25 @@ void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
                     g = f.transpose();
                 }
             }
-        } else {
-            if (i == D - 1) { // Last dir: Add up into g
-                mult = 1.0;
-            }
-            const double *f = aux[i];
-            double *g = const_cast<double *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
-                    os.kp1_dm1, os.kp1, os.kp1, 1.0, f,
-                    os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
         }
     }
 #else
     for (int i = 0; i < D; i++) {
         Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
         Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
-        if (oData[i] == 0) {
-            if (i == D - 1) { // Last dir: Add up into g
-                g += f.transpose();
-            } else {
-                g = f.transpose();
-            }
-        } else {
+        if (oData[i] != 0) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
                 g += f.transpose() * op;
             } else {
                 g = f.transpose() * op;
+            }
+        } else {
+            // Identity operator in direction i
+            if (i == D - 1) { // Last dir: Add up into g
+                g += f.transpose();
+            } else {
+                g = f.transpose();
             }
         }
     }

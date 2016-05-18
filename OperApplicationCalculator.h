@@ -16,6 +16,7 @@ public:
     virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
+    int applyDir;
     int maxDepth;
     double prec;
     OperatorTreeVector *oper;

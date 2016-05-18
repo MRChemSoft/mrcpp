@@ -29,6 +29,7 @@ set(mrcpp_SOURCES
     NodeBox.cpp
     OperApplicationCalculator.cpp
     OperatorNode.cpp
+    OperatorStatistics.cpp
     OperatorTree.cpp
     OperatorTreeVector.cpp
     PoissonKernel.cpp

@@ -27,121 +27,15 @@ OperApplicationCalculator<D>::OperApplicationCalculator(double p,
           fTree(&f) {
     if (this->maxDepth > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     initBandSizes();
-    initNodeCounters();
 }
 
 template<int D>
 OperApplicationCalculator<D>::~OperApplicationCalculator() {
+    this->operStat.flushNodeCounters();
+    println(10, this->operStat);
     for (int i = 0; i < this->bandSizes.size(); i++) {
         delete this->bandSizes[i];
     }
-    for (int i = 0; i < this->nThreads; i++) {
-        delete this->compCount[i];
-        delete this->gNodeCount[i];
-        delete this->fNodeCount[i];
-    }
-    delete [] this->compCount;
-    delete [] this->fNodeCount;
-    delete [] this->gNodeCount;
-    delete [] this->genCount;
-}
-
-template<int D>
-void OperApplicationCalculator<D>::initNodeCounters() {
-    this->totAppNodes = 0;
-    this->totGenAppNodes = 0;
-    this->totGCount.setZero();
-    this->totFCount.setZero();
-    this->nThreads = omp_get_max_threads();
-    this->compCount = new Eigen::Matrix<int, 8, 8> *[this->nThreads];
-    this->fNodeCount = new Eigen::Vector2i *[this->nThreads];
-    this->gNodeCount = new Eigen::Vector2i *[this->nThreads];
-    this->genCount = new int[this->nThreads];
-    for (int i = 0; i < this->nThreads; i++) {
-        this->compCount[i] = new Eigen::Matrix<int, 8, 8>;
-        this->compCount[i]->setZero();
-        this->fNodeCount[i] = new Eigen::Vector2i;
-        this->fNodeCount[i]->setZero();
-        this->gNodeCount[i] = new Eigen::Vector2i;
-        this->gNodeCount[i]->setZero();
-        this->genCount[i] = 0;
-    }
-}
-
-/** Reset all counters for operator application */
-template<int D>
-void OperApplicationCalculator<D>::resetNodeCounters() {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int i = 0; i < this->nThreads; i++) {
-        this->fNodeCount[i]->setZero();
-        this->gNodeCount[i]->setZero();
-        this->compCount[i]->setZero();
-        this->genCount[0] = 0;
-    }
-    this->totAppNodes = 0;
-    this->totGenAppNodes = 0;
-    this->totFCount.setZero();
-    this->totGCount.setZero();
-    this->fTree->clearNodeWeights();
-    */
-}
-
-/** Sum all node counters from all threads. */
-template<int D>
-void OperApplicationCalculator<D>::flushNodeCounters() {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int i = 1; i < this->nThreads; i++) {
-        *this->fNodeCount[0] += *this->fNodeCount[i];
-        *this->gNodeCount[0] += *this->gNodeCount[i];
-        *this->compCount[0] += *this->compCount[i];
-        this->genCount[0] += this->genCount[i];
-        this->compCount[i]->setZero();
-        this->genCount[i] = 0;
-    }
-    this->totAppNodes = this->compCount[0]->sum();
-    this->totGenAppNodes = this->genCount[0];
-    this->totFCount = *this->fNodeCount[0];
-    this->totGCount = *this->gNodeCount[0];
-    */
-}
-
-/** Increment f-node usage counter. Needed for load balancing. */
-template<int D>
-void OperApplicationCalculator<D>::incrementFNodeCounters(MWNode<D> &gNode) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    int thread = omp_get_thread_num();
-    if (gNode.isForeign()) {
-        (*this->fNodeCount[thread])(1) += 1;
-    } else {
-        (*this->fNodeCount[thread])(0) += 1;
-    }
-    */
-}
-
-/** Increment g-node usage counter. Needed for load balancing. */
-template<int D>
-void OperApplicationCalculator<D>::incrementGNodeCounters(MWNode<D> &gNode) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    int thread = omp_get_thread_num();
-    (*this->gNodeCount[thread])(1) += 1;
-    */
-}
-
-/** Increment operator application counter. */
-template<int D>
-void OperApplicationCalculator<D>::incrementNodeCounters(int ft, int gt, bool isGenNode) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    int thread = omp_get_thread_num();
-    (*this->compCount[thread])(ft,gt) += 1;
-    if (isGenNode) {
-        this->genCount[thread]++;
-    }
-    */
 }
 
 /** Initialize the number of nodes formally within the bandwidth of an
@@ -264,7 +158,7 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
 
     int depth = gNode.getDepth();
     OperatorState<D> os(gNode);
-//    incrementGNodeCounters(gNode);
+    this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
     MWNodeVector *fBand = makeOperBand(gNode);
@@ -355,8 +249,7 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
     }
     double upperBound = oNorm * os.fThreshold;
     if (upperBound > os.gThreshold) {
-//        incrementNodeCounters(os.ft, os.gt, fNode.isGenNode());
-//        incrementFNodeCounters(gNode);
+        this->operStat.incrementFNodeCounters(fNode, os.ft, os.gt);
         tensorApplyOperComp(os);
         gNode.setHasCoefs();
     }

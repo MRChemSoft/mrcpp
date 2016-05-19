@@ -1,51 +1,34 @@
-include_directories(mwarithmetics)
+include_directories(mwanalytic)
+include_directories(mwcore)
+include_directories(mwtrees)
+include_directories(mwoperators)
+include_directories(mwbuilders)
 
-set(mrcpp_SOURCES
+add_subdirectory(mwanalytic)
+add_subdirectory(mwcore)
+add_subdirectory(mwtrees)
+add_subdirectory(mwoperators)
+add_subdirectory(mwbuilders)
+
+add_library(mrcpp STATIC 
     BoundingBox.cpp
-    CrossCorrelation.cpp
-    CrossCorrelationCache.cpp
-    CrossCorrelationCalculator.cpp
-    ConvolutionOperator.cpp
-    FilterCache.cpp
-    FunctionNode.cpp
-    FunctionTree.cpp
-    GaussExp.cpp
-    GaussFunc.cpp
-    GaussPoly.cpp
-    GaussQuadrature.cpp
-    Gaussian.cpp
-    GenNode.cpp
-    GridCleaner.cpp
-    HelmholtzKernel.cpp
     HilbertPath.cpp
-    InterpolatingBasis.cpp
-    LegendreBasis.cpp
-    LegendrePoly.cpp
-    MWFilter.cpp
-    MWNode.cpp
-    MWTree.cpp
-    MWOperator.cpp
     MathUtils.cpp
     NodeBox.cpp
-    OperApplicationCalculator.cpp
-    OperatorNode.cpp
     OperatorStatistics.cpp
-    OperatorTree.cpp
-    OperatorTreeVector.cpp
-    PoissonKernel.cpp
-    Polynomial.cpp
-    ProjectedNode.cpp
-    ProjectionCalculator.cpp
-    QuadratureCache.cpp
     RepresentableFunction.cpp
     TelePrompter.cpp
     TreeAllocator.cpp
-    TreeBuilder.cpp
-    WaveletAdaptor.cpp
     parallel.cpp
 )
 
-add_library(mrcpp STATIC ${mrcpp_SOURCES})
+target_link_libraries(mrcpp
+    mwanalytic
+    mwcore 
+    mwtrees
+    mwoperators
+    mwbuilders
+)
 
 install(TARGETS mrcpp
         ARCHIVE DESTINATION lib

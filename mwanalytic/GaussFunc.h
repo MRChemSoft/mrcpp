@@ -22,9 +22,7 @@
 #define GAUSSFUNC_H_
 
 #include "Gaussian.h"
-#include "NodeIndex.h"
 
-template<int D> class NodeIndex;
 template<int D> class GaussPoly;
 
 template<int D>

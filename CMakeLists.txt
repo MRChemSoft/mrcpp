@@ -1,14 +1,14 @@
-include_directories(mwanalytic)
-include_directories(mwcore)
-include_directories(mwtrees)
-include_directories(mwoperators)
 include_directories(mwbuilders)
+include_directories(mwoperators)
+include_directories(mwtrees)
+include_directories(mwcore)
+include_directories(mwanalytic)
 
-add_subdirectory(mwanalytic)
-add_subdirectory(mwcore)
-add_subdirectory(mwtrees)
-add_subdirectory(mwoperators)
 add_subdirectory(mwbuilders)
+add_subdirectory(mwoperators)
+add_subdirectory(mwtrees)
+add_subdirectory(mwcore)
+add_subdirectory(mwanalytic)
 
 add_library(mrcpp STATIC 
     BoundingBox.cpp

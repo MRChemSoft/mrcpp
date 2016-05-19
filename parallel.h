@@ -13,7 +13,6 @@
 
 #include <boost/serialization/serialization.hpp>
 
-#include "mwrepr_declarations.h"
 #include "config.h"
 
 int get_locale_index_range(int rank, int nWork, int &start, int &end);

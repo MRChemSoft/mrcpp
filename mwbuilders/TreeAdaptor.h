@@ -1,7 +1,7 @@
 #ifndef TREEADAPTOR_H
 #define TREEADAPTOR_H
 
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 #include "TelePrompter.h"
 
 template<int D>

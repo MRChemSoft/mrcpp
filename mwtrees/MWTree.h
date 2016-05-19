@@ -15,7 +15,7 @@
 #include <Eigen/Core>
 
 #include "parallel.h"
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 
 #include "NodeBox.h"
 #include "MWNode.h"

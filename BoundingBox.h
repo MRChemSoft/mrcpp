@@ -8,7 +8,7 @@
 #ifndef BOUNDINGBOX_H_
 #define BOUNDINGBOX_H_
 
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 #include "NodeIndex.h"
 
 template<int D>

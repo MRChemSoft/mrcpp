@@ -1,7 +1,7 @@
 #ifndef TREEBUILDER_H
 #define TREEBUILDER_H
 
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 
 template<int D>
 class TreeBuilder {

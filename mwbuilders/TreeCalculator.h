@@ -1,8 +1,8 @@
 #ifndef TREECALCULATOR_H
 #define TREECALCULATOR_H
 
-#include "mwrepr_declarations.h"
 #include "MWNode.h"
+#include "mrcpp_declarations.h"
 
 template<int D>
 class TreeCalculator {

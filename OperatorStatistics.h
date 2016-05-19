@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 
 #include "TelePrompter.h"
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 
 template<int D>
 class OperatorStatistics {

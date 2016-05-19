@@ -4,7 +4,7 @@
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
-#include "mwrepr_declarations.h"
+#include "mrcpp_declarations.h"
 
 template<int D>
 class GridCleaner : public TreeBuilder<D> {

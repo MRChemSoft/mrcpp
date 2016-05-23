@@ -20,6 +20,7 @@ add_library(mrcpp STATIC
     TelePrompter.cpp
     TreeAllocator.cpp
     parallel.cpp
+    Plot.cpp
 )
 
 target_link_libraries(mrcpp

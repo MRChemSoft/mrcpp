@@ -23,7 +23,7 @@ public:
 
     double integrate() const;
     virtual double dot(const FunctionTree<D> &ket);
-    virtual double evalf(const double *r) const;
+    virtual double evalf(const double *r);
 
     bool saveTree(const std::string &file);
     bool loadTree(const std::string &file);

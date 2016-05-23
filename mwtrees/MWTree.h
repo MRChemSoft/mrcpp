@@ -74,7 +74,10 @@ public:
     const MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1) const;
 
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
+    MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
+
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
+    const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
     void deleteGenerated();
     void clearGenerated();

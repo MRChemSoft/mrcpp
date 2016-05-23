@@ -128,9 +128,6 @@ double FunctionTree<D>::integrate() const {
         const FunctionNode<D> &fNode = getRootFuncNode(i);
         result += fNode.integrate();
     }
-#ifdef HAVE_MPI
-    result = mpi::all_reduce(node_group, result, std::plus<double>());
-#endif
     return result;
 }
 
@@ -138,14 +135,6 @@ template<int D>
 double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
     const FunctionTree<D> &bra = *this;
     if (bra.getMRA() != ket.getMRA()) MSG_FATAL("Trees not compatible");
-#ifdef HAVE_MPI
-    NOT_IMPLEMENTED_ABORT;
-//    if (this->isScattered() or rhs.isScattered()) {
-//        set<MWNode<D> *> missing;
-//        rhs.findMissingInnerProd(*this, missing);
-//        rhs.syncNodes(missing);
-//    }
-#endif
     MWNodeVector nodeTable;
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);
@@ -177,42 +166,15 @@ double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
 //#pragma omp critical
     result += locResult;
 //    }
-#ifdef HAVE_MPI
-    NOT_IMPLEMENTED_ABORT;
-//    if (this->isScattered()) {
-//        return mpi::all_reduce(node_group, result, std::plus<double>());
-//    }
-#endif
-//    this->purgeGenNodes();
-//    rhs.purgeGenNodes();
     return result;
 }
 
 template<int D>
-double FunctionTree<D>::evalf(const double *r) const {
-    double result = 0.0;
-#ifdef HAVE_MPI
-    NOT_IMPLEMENTED_ABORT;
-//    bool iAmMaster = false;
-//    if (this->getRankId() == 0) iAmMaster = true;
-//    MWNode<D> &mw_node = this->getNodeOrEndNode(r, 1);
-//    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mw_node);
-//    if (not f_node.isForeign() or (f_node.isCommon() and iAmMaster)) {
-//        result = f_node.asFuncNode().evalf(r);
-//        if (not iAmMaster) {
-//            node_group.send(0, 0, result);
-//        }
-//    } else if (iAmMaster) {
-//        node_group.recv(mpi::any_source, 0, result);
-//    } else {
-//        result = 0.0;
-//    }
-#else
-//    MWNode<D> &mr_node = this->getNodeOrEndNode(r);
-//    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
-//    result = f_node.evalf(r);
-#endif
-//    this->deleteGenerated();
+double FunctionTree<D>::evalf(const double *r) {
+    MWNode<D> &mr_node = this->getNodeOrEndNode(r);
+    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+    double result = f_node.evalf(r);
+    this->deleteGenerated();
     return result;
 }
 

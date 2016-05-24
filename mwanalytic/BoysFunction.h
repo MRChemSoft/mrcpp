@@ -10,7 +10,7 @@
 class BoysFunction : public RepresentableFunction<1> {
 public:
     BoysFunction(int n, double prec = 1.0e-10)
-            : RepresentableFunction(),
+            : RepresentableFunction<1>(),
               Q(0),
               order(n) {
         int k = 13;

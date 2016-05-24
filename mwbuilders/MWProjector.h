@@ -5,6 +5,7 @@
 #include "GridGenerator.h"
 #include "ProjectionCalculator.h"
 #include "FunctionTree.h"
+#include "AnalyticFunction.h"
 #include "WaveletAdaptor.h"
 #include "Timer.h"
 
@@ -20,6 +21,13 @@ public:
 
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
+
+    FunctionTree<D> *operator()(std::function<double (const double *r)> func) {
+        AnalyticFunction<D> inp(func);
+        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        (*this)(*out, inp);
+        return out;
+    }
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);

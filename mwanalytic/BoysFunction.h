@@ -24,8 +24,7 @@ public:
     }
 
     double evalf(const double *r) const {
-        int plevel = TelePrompter::getPrintLevel();
-        TelePrompter::setPrintLevel(0);
+        int oldlevel = TelePrompter::setPrintLevel(0);
 
         int n = this->order;
         double x = r[0];
@@ -43,7 +42,7 @@ public:
         double result = tree->integrate();
         delete tree;
 
-        TelePrompter::setPrintLevel(plevel);
+        TelePrompter::setPrintLevel(oldlevel);
         return result;
     }
 

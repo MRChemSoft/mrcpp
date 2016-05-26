@@ -10,8 +10,7 @@ public:
                     double apply = -1.0,
                     double build = -1.0)
             : ConvolutionOperator<3>(mra, apply, build) {
-        int plevel = TelePrompter::getPrintLevel();
-        TelePrompter::setPrintLevel(0);
+        int oldlevel = TelePrompter::setPrintLevel(0);
         double epsilon = this->build_prec/10.0;
         double r_min = calcMinDistance(epsilon);
         double r_max = calcMaxDistance();
@@ -19,7 +18,7 @@ public:
         // Rescale for application in 3D
         poisson_kernel.rescale(3);
         initializeOperator(poisson_kernel);
-        TelePrompter::setPrintLevel(plevel);
+        TelePrompter::setPrintLevel(oldlevel);
     }
     virtual ~PoissonOperator() { }
 };

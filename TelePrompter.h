@@ -20,11 +20,16 @@ public:
     static void init(int level = 0, bool teletype = false, const char *fil=0);
     static void printHeader(const std::string &str);
     static void setOutputStream(std::ostream &o) { out = &o; }
-    static void setPrintLevel(int i) { printLevel = i; }
-    static void setPrecision(int i) {
-        assert(i > 0);
+    static int setPrintLevel(int i) {
+        int oldLevel = printLevel;
+        printLevel = i;
+        return oldLevel;
+    }
+    static int setPrecision(int i) {
+        int oldPrec = precision;
         precision = i;
         *out << std::scientific << std::setprecision(i);
+        return oldPrec;
     }
     static int  getPrecision() { return precision; }
     static int  getPrintLevel() { return printLevel; }

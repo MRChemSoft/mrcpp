@@ -422,7 +422,7 @@ void Plot<D>::writeLineData() {
 //        o << ", ";
         o << this->values[i];
 //        o << ", ";
-        o << i;
+//        o << i;
         o << endl;
     }
 }

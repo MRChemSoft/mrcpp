@@ -10,7 +10,7 @@ public:
                       double m,
                       double apply = -1.0,
                       double build = -1.0)
-            : ConvolutionOperator<3>(mra, apply, build),
+            : ConvolutionOperator<3>(mra, apply, build, -1),
               mu(m) {
         int oldlevel = TelePrompter::setPrintLevel(0);
         double epsilon = this->build_prec/10.0;

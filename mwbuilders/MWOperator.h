@@ -7,9 +7,10 @@
 template<int D>
 class MWOperator : public TreeBuilder<D> {
 public:
-    MWOperator(const MultiResolutionAnalysis<D> &mra, double pr)
+    MWOperator(const MultiResolutionAnalysis<D> &mra, double pr, int dir)
         : TreeBuilder<D>(mra),
-          apply_prec(pr) {
+          apply_prec(pr),
+          apply_dir(dir) {
     }
 
     virtual ~MWOperator() {
@@ -22,6 +23,7 @@ public:
     void operator()(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter = -1);
 
 protected:
+    int apply_dir;
     double apply_prec;
     OperatorTreeVector oper;
 

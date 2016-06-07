@@ -9,7 +9,7 @@ class IdentityOperator : public ConvolutionOperator<D> {
 public:
     IdentityOperator(const MultiResolutionAnalysis<D> &mra,
                      double apply = -1.0, double build = -1.0)
-            : ConvolutionOperator<D>(mra, apply, build) {
+            : ConvolutionOperator<D>(mra, apply, build, -1) {
         double epsilon = this->build_prec/10.0;
         IdentityKernel identity_kernel(epsilon);
         this->initializeOperator(identity_kernel);

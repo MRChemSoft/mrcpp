@@ -8,7 +8,8 @@
 template<int D>
 class OperApplicationCalculator : public TreeCalculator<D> {
 public:
-    OperApplicationCalculator(double p,
+    OperApplicationCalculator(int dir,
+                              double p,
                               OperatorTreeVector &o,
                               FunctionTree<D> &f,
                               int depth = MaxDepth);

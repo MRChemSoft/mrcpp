@@ -16,11 +16,12 @@ using namespace std;
 using namespace Eigen;
 
 template<int D>
-OperApplicationCalculator<D>::OperApplicationCalculator(double p,
+OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
+                                                        double p,
                                                         OperatorTreeVector &o,
                                                         FunctionTree<D> &f,
                                                         int depth)
-        : applyDir(-1),
+        : applyDir(dir),
           maxDepth(depth),
           prec(p),
           oper(&o),
@@ -244,7 +245,13 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
         if (this->applyDir < 0 or this->applyDir == d) {
             oData[d] = const_cast<double *>(oNode.getCoefs().data()) + oIdx*os.kp1_2;
         } else {
-            NOT_IMPLEMENTED_ABORT;
+            if (oTransl == 0 and (oIdx == 0 or oIdx == 3)) {
+                // This will activate the identity operator in direction i
+                oData[d] = 0;
+            } else {
+                // This means that we are in a zero part of the identity operator
+                return;
+            }
         }
     }
     double upperBound = oNorm * os.fThreshold;

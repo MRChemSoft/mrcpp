@@ -15,8 +15,7 @@ protected:
     virtual void initializeKernel() {
         double alpha = sqrt(1.0/this->epsilon);
         double coef = pow(alpha/pi, 1.0/2.0);
-        double pos = 0.0;
-        GaussFunc<1> gFunc(alpha, coef, &pos);
+        GaussFunc<1> gFunc(alpha, coef);
         this->append(gFunc);
     }
 };

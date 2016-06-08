@@ -27,6 +27,8 @@ const int Y = 1;
 const int Z = 2;
 }
 
+
+enum Spin { Paired, Alpha, Beta };
 enum FuncType {	Legendre, Interpol };
 enum SplitType { ExactSplit, NormalSplit, FastSplit };
 enum CV_Transform { Forward, Backward };

@@ -8,8 +8,8 @@ template<int D>
 class DerivativeOperator : public ConvolutionOperator<D> {
 public:
     DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
-                       int dir, double apply = -1.0, double build = -1.0)
-            : ConvolutionOperator<D>(mra, apply, build, dir) {
+                       double apply = -1.0, double build = -1.0)
+            : ConvolutionOperator<D>(mra, apply, build) {
         double epsilon = this->build_prec/10.0;
         DerivativeKernel derivative_kernel(epsilon);
         this->initializeOperator(derivative_kernel);

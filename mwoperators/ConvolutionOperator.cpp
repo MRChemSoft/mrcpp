@@ -10,8 +10,8 @@
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                                            double apply, double build, int dir)
-        : MWOperator<D>(mra, apply, dir),
+                                            double apply, double build)
+        : MWOperator<D>(mra, apply),
           build_prec(build) {
     if (this->build_prec < 0.0) {
         this->build_prec = this->apply_prec;

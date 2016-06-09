@@ -15,10 +15,14 @@
 #include <string>
 #include <iomanip>
 
+class Timer;
+
 class TelePrompter {
 public:
     static void init(int level = 0, bool teletype = false, const char *fil=0);
-    static void printHeader(const std::string &str);
+    static void printSeparator(const char &sep, int newlines = 0);
+    static void printHeader(const std::string &str, int newlines = 0);
+    static void printFooter(const Timer &t, int newlines = 0);
     static void setOutputStream(std::ostream &o) { out = &o; }
     static int setPrintLevel(int i) {
         int oldLevel = printLevel;

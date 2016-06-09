@@ -16,10 +16,10 @@ public:
     }
     void restart() { t.resume(); }
     void stop() { t.stop(); }
-    double getWallTime() { return t.elapsed().wall/nano; }
-    double getUserTime() { return t.elapsed().user/nano; }
-    double getSystemTime() { return t.elapsed().system/nano; }
-    friend std::ostream& operator<<(std::ostream &o, Timer &t) {
+    double getWallTime() const { return t.elapsed().wall/nano; }
+    double getUserTime() const { return t.elapsed().user/nano; }
+    double getSystemTime() const { return t.elapsed().system/nano; }
+    friend std::ostream& operator<<(std::ostream &o, const Timer &t) {
         int old_prec;
         GET_PRINT_PRECISION(old_prec);
         SET_PRINT_PRECISION(3);

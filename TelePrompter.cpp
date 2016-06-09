@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include "TelePrompter.h"
+#include "Timer.h"
 #include "parallel.h"
 
 using namespace std;
@@ -16,18 +17,31 @@ int TelePrompter::printLevel = 0;
 int TelePrompter::precision = 12;
 std::ostream *TelePrompter::out = &std::cout;
 
-#define PRINT_SEPARATOR(A,N) for (int i=0; i < N; i++) cout << A; cout << endl;
+void TelePrompter::printSeparator(const char &sep, int newlines) {
+    int N = 60;
+    for (int i = 0; i < N; i++) {
+        cout << sep;
+    }
+    for (int i = 0; i <= newlines; i++) {
+        cout << endl;
+    }
+}
+void TelePrompter::printHeader(const string &str, int newlines) {
+    int N = 60;
+    int len = str.size();
+    printSeparator('=', 0);
+    int spaces = (N - len)/2;
+    for (int i = 0; i < spaces; i++) {
+        cout << " ";
+    }
+    cout << str << endl;
+    printSeparator('-', newlines);
+}
 
-void TelePrompter::printHeader(const std::string &str) {
-    int len = 78;
-    if (str.size() == 0 and str.size() < 74) {
-        len = str.size() + 5;
-    }
-    PRINT_SEPARATOR("=", len);
-    if (str.size() != 0) {
-        cout << str << endl;
-        PRINT_SEPARATOR("=", len);
-    }
+void TelePrompter::printFooter(const Timer &t, int newlines) {
+    printSeparator('-');
+    cout << " Elapsed time:     " << t << endl;
+    printSeparator('=', newlines);
 }
 
 void TelePrompter::init(int printLevel, bool teletype, const char *fil) {

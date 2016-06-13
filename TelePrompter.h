@@ -20,9 +20,11 @@ class Timer;
 class TelePrompter {
 public:
     static void init(int level = 0, bool teletype = false, const char *fil=0);
-    static void printSeparator(const char &sep, int newlines = 0);
-    static void printHeader(const std::string &str, int newlines = 0);
-    static void printFooter(const Timer &t, int newlines = 0);
+    static void printSeparator(int level, const char &sep, int newlines = 0);
+    static void printHeader(int level, const std::string &str, int newlines = 0);
+    static void printFooter(int level, const Timer &t, int newlines = 0);
+    static void printDouble(int level, const std::string &name, double d);
+    static void printTree(int level, const std::string &name, int n, double t);
     static void setOutputStream(std::ostream &o) { out = &o; }
     static int setPrintLevel(int i) {
         int oldLevel = printLevel;

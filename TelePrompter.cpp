@@ -48,11 +48,11 @@ void TelePrompter::printDouble(int level, const std::string &name, double d) {
     char cName[31] = "                              ";
     for (int i = 0; i < 31; i++) {
         if (i < name.size()) {
-            cName[i] = name[i];
+            cName[i+1] = name[i];
         }
     }
     int oldPrec = TelePrompter::setPrecision(5);
-    println(level, cName << setw(30) << d);
+    println(level, cName << setw(29) << d);
     TelePrompter::setPrecision(oldPrec);
 }
 
@@ -60,11 +60,11 @@ void TelePrompter::printTree(int level, const std::string &name, int n, double t
     char cName[31] = "                              ";
     for (int i = 0; i < 31; i++) {
         if (i < name.size()) {
-            cName[i] = name[i];
+            cName[i+1] = name[i];
         }
     }
     int oldPrec = TelePrompter::setPrecision(5);
-    println(level, cName << setw(12) << n << setw(18) << t);
+    println(level, cName << setw(12) << n << setw(17) << t);
     TelePrompter::setPrecision(oldPrec);
 }
 

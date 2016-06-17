@@ -33,7 +33,7 @@ enum FuncType {	Legendre, Interpol };
 enum SplitType { ExactSplit, NormalSplit, FastSplit };
 enum CV_Transform { Forward, Backward };
 enum MW_Transform { Compression, Reconstruction };
-enum XC_Type { XC_LDA, XC_GGA };
+enum XC_Type { XC_undefined, XC_lda, XC_gga };
 enum Traverse { TopDown, BottomUp };
 
 //Math constants

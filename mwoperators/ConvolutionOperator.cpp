@@ -37,8 +37,8 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         FunctionTree<1> *kern_comp = Q(greens_comp);
         OperatorTree *oper_comp = CC(*kern_comp);
 
-        this->kernel.push_back(*kern_comp);
-        this->oper.push_back(*oper_comp);
+        this->kernel.push_back(kern_comp);
+        this->oper.push_back(oper_comp);
     }
     delete kern_mra;
     delete oper_mra;

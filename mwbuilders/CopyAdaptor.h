@@ -10,7 +10,7 @@ class CopyAdaptor : public TreeAdaptor<D> {
 public:
     CopyAdaptor(FunctionTree<D> &t, int ms = MaxScale)
             : TreeAdaptor<D>(ms) {
-        tree_vec.push_back(t);
+        tree_vec.push_back(&t);
     }
     CopyAdaptor(FunctionTreeVector<D> &t, int ms = MaxScale)
             : TreeAdaptor<D>(ms),

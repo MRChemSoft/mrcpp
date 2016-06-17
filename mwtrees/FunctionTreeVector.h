@@ -29,15 +29,20 @@ public:
     int size() const {
         return this->funcs.size();
     }
-    void push_back(double c, FunctionTree<D> &f) {
+    void push_back(double c, FunctionTree<D> *f) {
         this->coefs.push_back(c);
-        this->funcs.push_back(&f);
+        this->funcs.push_back(f);
     }
-    void push_back(FunctionTree<D> &f) {
+    void push_back(FunctionTree<D> *f) {
         this->coefs.push_back(1.0);
-        this->funcs.push_back(&f);
+        this->funcs.push_back(f);
     }
-    void clear() {
+    void clear(bool dealloc = false) {
+        if (dealloc) {
+            for (int i = 0; i < this->funcs.size(); i++) {
+                if (this->funcs[i] != 0) delete this->funcs[i];
+            }
+        }
         this->coefs.clear();
         this->funcs.clear();
     }
@@ -46,10 +51,12 @@ public:
         return this->coefs[i];
     }
     FunctionTree<D> &getFunc(int i) {
+        if (this->funcs[i] == 0) MSG_ERROR("Invalid function");
         if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
         return *this->funcs[i];
     }
     const FunctionTree<D> &getFunc(int i) const {
+        if (this->funcs[i] == 0) MSG_ERROR("Invalid function");
         if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
         return *this->funcs[i];
     }

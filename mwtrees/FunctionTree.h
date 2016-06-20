@@ -25,6 +25,9 @@ public:
     virtual double dot(const FunctionTree<D> &ket);
     virtual double evalf(const double *r);
 
+    void getEndValues(Eigen::VectorXd &data);
+    void setEndValues(Eigen::VectorXd &data);
+
     bool saveTree(const std::string &file);
     bool loadTree(const std::string &file);
 

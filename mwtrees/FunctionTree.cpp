@@ -269,6 +269,36 @@ FunctionTree<D>& FunctionTree<D>::operator -=(const FunctionTree<D> &tree) {
     NOT_IMPLEMENTED_ABORT;
 }
 
+template<int D>
+void FunctionTree<D>::getEndValues(VectorXd &data) {
+    int nNodes = this->getNEndNodes();
+    int nCoefs = this->getTDim()*this->getKp1_d();
+    data = VectorXd::Zero(nNodes*nCoefs);
+    for (int i = 0; i < nNodes; i++) {
+        MWNode<D> &node = getEndFuncNode(i);
+        node.mwTransform(Reconstruction);
+        node.cvTransform(Forward);
+        data.segment(i*nCoefs, nCoefs) = node.getCoefs();
+        node.cvTransform(Backward);
+        node.mwTransform(Compression);
+    }
+}
+
+template<int D>
+void FunctionTree<D>::setEndValues(VectorXd &data) {
+    int nNodes = this->getNEndNodes();
+    int nCoefs = this->getTDim()*this->getKp1_d();
+    for (int i = 0; i < nNodes; i++) {
+        MWNode<D> &node = getEndFuncNode(i);
+        node.getCoefs() = data.segment(i*nCoefs, nCoefs);
+        node.cvTransform(Backward);
+        node.mwTransform(Compression);
+        node.setHasCoefs();
+        node.calcNorms();
+    }
+    this->mwTransform(BottomUp);
+}
+
 template class FunctionTree<1> ;
 template class FunctionTree<2> ;
 template class FunctionTree<3> ;

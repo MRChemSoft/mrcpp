@@ -19,6 +19,14 @@ public:
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
 
+    FunctionTree<D>* operator()(double c,
+                                FunctionTree<D> &tree_a,
+                                FunctionTree<D> &tree_b) {
+        FunctionTreeVector<D> tree_vec;
+        tree_vec.push_back(c, &tree_a);
+        tree_vec.push_back(1.0, &tree_b);
+        return (*this)(tree_vec);
+    }
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
 

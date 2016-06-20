@@ -297,6 +297,7 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
         node.calcNorms();
     }
     this->mwTransform(BottomUp);
+    this->calcSquareNorm();
 }
 
 template class FunctionTree<1> ;

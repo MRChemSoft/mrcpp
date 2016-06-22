@@ -4,6 +4,7 @@
 #include "TreeBuilder.h"
 #include "AdditionCalculator.h"
 #include "GridGenerator.h"
+#include "WaveletAdaptor.h"
 #include "Timer.h"
 
 template<int D>

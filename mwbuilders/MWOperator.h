@@ -20,6 +20,9 @@ public:
     void multPrecision(double fac) { this->apply_prec *= fac; }
     void setApplyDir(int dir) { this->apply_dir = dir; }
 
+    int getNTerms() const { return this->oper.size(); }
+    const OperatorTree &getComponent(int i) const { return this->oper.getComponent(i); }
+
     FunctionTree<D> *operator()(FunctionTree<D> &inp);
     void operator()(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter = -1);
 

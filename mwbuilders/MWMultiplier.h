@@ -41,6 +41,16 @@ public:
         return out;
     }
 
+    void operator()(FunctionTree<3> &out,
+                    double c,
+                    FunctionTree<D> &tree_a,
+                    FunctionTree<D> &tree_b,
+                    int maxIter = -1) {
+        FunctionTreeVector<D> tree_vec;
+        tree_vec.push_back(c, &tree_a);
+        tree_vec.push_back(1.0, &tree_b);
+        return (*this)(out, tree_vec, maxIter);
+    }
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) {

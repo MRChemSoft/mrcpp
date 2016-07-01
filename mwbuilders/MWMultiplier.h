@@ -5,6 +5,7 @@
 #include "MultiplicationCalculator.h"
 #include "GridGenerator.h"
 #include "WaveletAdaptor.h"
+#include "Timer.h"
 
 template<int D>
 class MWMultiplier : public TreeBuilder<D> {

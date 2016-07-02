@@ -17,6 +17,7 @@ public:
     virtual ~MWAdder() {
     }
 
+    double getPrecision() const { return this->prec; }
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
 

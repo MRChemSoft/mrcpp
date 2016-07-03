@@ -15,6 +15,7 @@ DerivativeOperator<D>::DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
 
 template<int D>
 DerivativeOperator<D>::~DerivativeOperator() {
+    this->clearOperator();
 }
 
 template<int D>

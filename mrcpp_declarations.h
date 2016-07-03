@@ -32,7 +32,7 @@ template <int D> class MWAdder;
 template <int D> class MWMultiplier;
 template <int D> class MWOperator;
 template <int D> class IdentityOperator;
-template <int D> class DerivativeOperator;
+template <int D> class DerivativeConvolution;
 template <int D> class ConvolutionOperator;
 class PoissonOperator;
 class HelmholtzOperator;

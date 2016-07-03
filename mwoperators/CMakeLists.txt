@@ -1,6 +1,8 @@
 
 add_library(mwoperators STATIC
     ConvolutionOperator.cpp
+    DerivativeCalculator.cpp
+    DerivativeOperator.cpp
     HelmholtzKernel.cpp
     PoissonKernel.cpp
 )

@@ -35,6 +35,7 @@ public:
         return o;
     }
 
+    friend class DerivativeGenerator;
     friend class CrossCorrelationGenerator;
 
 protected:

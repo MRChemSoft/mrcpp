@@ -1,21 +1,17 @@
-#ifndef DERIVATIVECONVOLUTION_H
-#define DERIVATIVECONVOLUTION_H
+#ifndef DERIVATIVEOPERATOR_H
+#define DERIVATIVEOPERATOR_H
 
-#include "ConvolutionOperator.h"
+#include "MWOperator.h"
+#include "MWAdder.h"
 #include "GridGenerator.h"
-#include "DerivativeKernel.h"
 
 template<int D>
-class DerivativeConvolution : public ConvolutionOperator<D> {
+class DerivativeOperator : public MWOperator<D> {
 public:
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra,
-                       double apply = -1.0, double build = -1.0)
-            : ConvolutionOperator<D>(mra, apply, build) {
-        double epsilon = this->build_prec/10.0;
-        DerivativeKernel derivative_kernel(epsilon);
-        this->initializeOperator(derivative_kernel);
-    }
-    virtual ~DerivativeConvolution() { }
+    DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
+                       double a = 0.5,
+                       double b = 0.5);
+    virtual ~DerivativeOperator();
 
     FunctionTreeVector<D> grad(FunctionTree<D> &inp) {
         GridGenerator<D> G(this->MRA);
@@ -48,9 +44,11 @@ public:
 
         return out;
     }
-    FunctionTreeVector<3> curl(FunctionTreeVector<3> &inp) {
-        NOT_IMPLEMENTED_ABORT;
-    }
+protected:
+    const double A;
+    const double B;
+
+    void initializeOperator();
 };
 
-#endif // DERIVATIVECONVOLUTION_H
+#endif // DERIVATIVEOPERATOR_H

@@ -91,6 +91,7 @@ public:
     friend class MultiplicationCalculator<D>;
     friend class OperApplicationCalculator<D>;
     friend class CrossCorrelationCalculator;
+    friend class DerivativeCalculator;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class GenNode<D>;

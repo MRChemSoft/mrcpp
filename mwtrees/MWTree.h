@@ -39,6 +39,8 @@ public:
 
     double estimateError(bool absPrec);
     double getSquareNorm() const { return this->squareNorm; }
+    void calcSquareNorm();
+    void clearSquareNorm() { this->squareNorm = -1.0; }
 
     int getOrder() const { return this->order; }
     int getKp1() const { return this->order + 1; }
@@ -146,9 +148,6 @@ protected:
     inline Eigen::MatrixXd &getTmpScalingCoefs();
     inline Eigen::VectorXd &getTmpScalingVector();
     inline Eigen::VectorXd &getTmpMWCoefs();
-
-    void calcSquareNorm();
-    void clearSquareNorm() { this->squareNorm = -1.0; }
 
     void mwTransformDown(bool overwrite);
     void mwTransformUp(bool overwrite);

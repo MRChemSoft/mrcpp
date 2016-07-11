@@ -2,9 +2,7 @@
 #define MWPROJECTOR_H
 
 #include "TreeBuilder.h"
-#include "GridGenerator.h"
 #include "ProjectionCalculator.h"
-#include "FunctionTree.h"
 #include "AnalyticFunction.h"
 #include "WaveletAdaptor.h"
 #include "Timer.h"
@@ -31,14 +29,6 @@ public:
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-
-        Timer init_t;
-        init_t.restart();
-        GridGenerator<D> G(this->MRA);
-        G(*out, inp);
-        init_t.stop();
-        println(10, "Time initializing   " << init_t);
-
         (*this)(*out, inp);
         return out;
     }

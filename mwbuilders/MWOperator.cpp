@@ -1,7 +1,6 @@
 #include "MWOperator.h"
 #include "FunctionTree.h"
 #include "WaveletAdaptor.h"
-#include "GridGenerator.h"
 #include "OperApplicationCalculator.h"
 #include "MultiResolutionAnalysis.h"
 #include "Timer.h"
@@ -9,14 +8,6 @@
 template<int D>
 FunctionTree<D>* MWOperator<D>::operator()(FunctionTree<D> &inp) {
     FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-
-    Timer init_t;
-    init_t.restart();
-    GridGenerator<D> G(this->MRA);
-    G(*out, inp);
-    init_t.stop();
-    println(10, "Time initializing   " << init_t);
-
     (*this)(*out, inp, -1);
     return out;
 }
@@ -29,8 +20,12 @@ void MWOperator<D>::operator()(FunctionTree<D> &out,
 
     pre_t.restart();
     this->oper.calcBandWidths(this->apply_prec);
-    this->adaptor = new WaveletAdaptor<D>(this->apply_prec, this->MRA.getMaxScale());
-    this->calculator = new OperApplicationCalculator<D>(this->apply_dir, this->apply_prec, this->oper, inp);
+    this->adaptor = new WaveletAdaptor<D>(this->apply_prec,
+                                          this->MRA.getMaxScale());
+    this->calculator = new OperApplicationCalculator<D>(this->apply_dir,
+                                                        this->apply_prec,
+                                                        this->oper,
+                                                        inp);
     pre_t.stop();
 
     this->build(out, maxIter);

@@ -1,5 +1,6 @@
 #include "ConvolutionOperator.h"
 #include "CrossCorrelationGenerator.h"
+#include "GridGenerator.h"
 #include "MWProjector.h"
 #include "OperatorTree.h"
 #include "GreensKernel.h"
@@ -29,12 +30,14 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
     MultiResolutionAnalysis<1> *kern_mra = this->getKernelMRA();
     MultiResolutionAnalysis<2> *oper_mra = this->getOperatorMRA();
 
+    GridGenerator<1> G(*kern_mra);
     MWProjector<1> Q(*kern_mra, this->build_prec/10.0);
     CrossCorrelationGenerator CC(*oper_mra, this->build_prec);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
-        FunctionTree<1> *kern_comp = Q(greens_comp);
+        FunctionTree<1> *kern_comp = G(greens_comp);
+        Q(*kern_comp, greens_comp);
         OperatorTree *oper_comp = CC(*kern_comp);
 
         this->kernel.push_back(kern_comp);

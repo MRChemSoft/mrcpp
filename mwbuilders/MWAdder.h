@@ -33,6 +33,15 @@ public:
         return out;
     }
 
+    void operator()(FunctionTree<3> &out,
+                    double a, FunctionTree<D> &tree_a,
+                    double b, FunctionTree<D> &tree_b,
+                    int maxIter = -1) {
+        FunctionTreeVector<D> tree_vec;
+        tree_vec.push_back(a, &tree_a);
+        tree_vec.push_back(b, &tree_b);
+        return (*this)(out, tree_vec, maxIter);
+    }
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) {

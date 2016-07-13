@@ -449,8 +449,8 @@ void MWNode<D>::deleteChildren() {
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
         if (this->children[cIdx] != 0) {
             ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(this->children[cIdx]);
-            delete node;
-            //node->~ProjectedNode();
+            //delete node;
+            node->~ProjectedNode();
             //this->children[cIdx]->~ProjectedNode();
             this->children[cIdx] = 0;
         }

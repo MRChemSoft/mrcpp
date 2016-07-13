@@ -18,6 +18,7 @@ using namespace Eigen;
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
         : MWTree<D> (mra) {
+    NOT_IMPLEMENTED_ABORT;
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
@@ -33,6 +34,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
 template<int D>
 FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
         : MWTree<D> (tree) {
+    NOT_IMPLEMENTED_ABORT;
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
@@ -48,6 +50,7 @@ FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
 template<int D>
 FunctionTree<D>::FunctionTree(const FunctionTree<D> &tree)
         : MWTree<D> (tree) {
+    NOT_IMPLEMENTED_ABORT;
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
@@ -64,6 +67,7 @@ FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
 /** FunctionTree destructor. */
 template<int D>
 FunctionTree<D>::~FunctionTree() {
+    NOT_IMPLEMENTED_ABORT;
     MWNode<D> **roots = this->rootBox.getNodes();
     for (int i = 0; i < this->rootBox.size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);

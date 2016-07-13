@@ -51,14 +51,14 @@ ProjectedNode<D>::~ProjectedNode() {
 template<int D>
 void ProjectedNode<D>::createChild(int cIdx) {
     assert(this->children[cIdx] == 0);
-//    ProjectedNode<D> *child;
-//    if (this->tree->allocator == 0){
-//        child = new ProjectedNode<D>(*this, cIdx);
-//    } else {
-//        child = new (this->tree->allocator->allocNodes(1))ProjectedNode<D>(*this, cIdx);
-//        child = new ProjectedNode<D>(*this, cIdx);
-//    }
-    ProjectedNode<D> *child = new ProjectedNode<D>(*this, cIdx);
+    ProjectedNode<D> *child;
+    if (this->tree->allocator == 0){
+        child = new ProjectedNode<D>(*this, cIdx);
+    } else {
+        child = new (this->tree->allocator->allocNodes(1))ProjectedNode<D>(*this, cIdx);
+        //child = new ProjectedNode<D>(*this, cIdx);
+    }
+    //ProjectedNode<D> *child = new ProjectedNode<D>(*this, cIdx);
     this->children[cIdx] = child;
 }
 

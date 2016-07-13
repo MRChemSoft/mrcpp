@@ -17,6 +17,7 @@ class ProjectedNode: public FunctionNode<D> {
 public:
     friend class MWNode<D>;
     friend class FunctionTree<D>;
+    friend class TreeAllocator<D>;
 
 protected:
     ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx);

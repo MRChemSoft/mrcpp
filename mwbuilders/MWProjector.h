@@ -5,6 +5,7 @@
 #include "ProjectionCalculator.h"
 #include "AnalyticFunction.h"
 #include "WaveletAdaptor.h"
+#include "TreeAllocator.h"
 #include "Timer.h"
 
 template<int D>
@@ -22,13 +23,17 @@ public:
 
     FunctionTree<D> *operator()(std::function<double (const double *r)> func) {
         AnalyticFunction<D> inp(func);
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, 1024);
+        FunctionTree<D> *out = alloc->getTree();
+        //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);
         return out;
     }
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, 1024);
+        FunctionTree<D> *out = alloc->getTree();
         (*this)(*out, inp);
         return out;
     }

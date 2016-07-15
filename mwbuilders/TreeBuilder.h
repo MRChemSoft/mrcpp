@@ -3,6 +3,8 @@
 
 #include "mrcpp_declarations.h"
 
+int const MAXALLOCNODES = 4096;
+
 template<int D>
 class TreeBuilder {
 public:

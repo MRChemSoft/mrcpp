@@ -23,7 +23,7 @@ public:
 
     FunctionTree<D> *operator()(std::function<double (const double *r)> func) {
         AnalyticFunction<D> inp(func);
-        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, 1024);
+        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
         FunctionTree<D> *out = alloc->getTree();
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);
@@ -32,7 +32,7 @@ public:
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, 1024);
+        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
         FunctionTree<D> *out = alloc->getTree();
         (*this)(*out, inp);
         return out;

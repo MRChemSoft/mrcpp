@@ -4,6 +4,7 @@
 #include "FunctionTree.h"
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
+#include "MathUtils.h"
 
 using namespace std;
 using namespace Eigen;
@@ -21,13 +22,16 @@ TreeAllocator<D>::TreeAllocator(const MultiResolutionAnalysis<D> &mra,
           maxNodes(max_nodes),
           sizeTreeMeta(0),
           sizeNode(0) {
-    println(0, "SizeNode " << sizeof(ProjectedNode<D>));
+
+    int sizeNodeCoeff =(1<<D)*(MathUtils::ipow(mra.getOrder()+1,D))*sizeof(double);
+    println(0, "SizeNode Coeff (B) " << sizeNodeCoeff);
+    println(0, "SizeNode Meta (B)  " << sizeof(ProjectedNode<D>));
 
     //The first part of the Tree is filled with metadata; reserved size:
     this->sizeTreeMeta = (sizeof(FunctionTree<D>)+7)/sizeof(double);
 
     //The dynamical part of the tree is filled with nodes of size:
-    this->sizeNode = (sizeof(ProjectedNode<D>)+7)/sizeof(double);
+    this->sizeNode = (sizeof(ProjectedNode<D>)+sizeNodeCoeff+7)/sizeof(double);
 
     //Tree is defined as array of doubles, because C++ does not like void malloc
     this->dataArray = new double[this->sizeTreeMeta + this->maxNodes*this->sizeNode];
@@ -56,11 +60,12 @@ template<int D>
 ProjectedNode<D>* TreeAllocator<D>::allocNodes(int nAlloc) {
     this->nNodes += nAlloc;
     if (this->nNodes > this->maxNodes){
-        this->nNodes -= nAlloc;
+      println(0, "maxNodes exceeded " << this->maxNodes);
+       this->nNodes -= nAlloc;
         return 0;
     } else {
         this->lastNode += nAlloc;
-        println(0, "new size " << this->nNodes);
+        //println(0, "new size " << this->nNodes);
         return this->lastNode - nAlloc;
     }
 }

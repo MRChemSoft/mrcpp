@@ -24,6 +24,7 @@ public:
 
     double getWaveletNorm() const { return 0.0; }
 
+    friend class MWNode<D>;
     friend class ProjectedNode<D>;
 
 protected:

@@ -40,6 +40,7 @@ public:
     int getDepth() const { return getNodeIndex().getScale()-getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
     int getNChildren() const { if (isBranchNode()) return getTDim(); return 0; }
+    int getRank() const { return this->NodeRank; }
     const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
@@ -104,6 +105,8 @@ protected:
 
     const NodeIndex<D> nodeIndex;
     const HilbertPath<D> hilbertPath;
+
+    int NodeRank;
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components

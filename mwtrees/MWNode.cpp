@@ -10,6 +10,7 @@
 #include "ProjectedNode.h"
 #include "MathUtils.h"
 #include "QuadratureCache.h"
+#include "GenNode.h"
 
 using namespace std;
 using namespace Eigen;
@@ -108,6 +109,9 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
 
     int nCoefs = nBlocks * this->getKp1_d();
+    //double* d_p = this->tree->allocator->allocCoeff(nBlocks);
+    //this->coefs = new (d_p ) VectorXd(nCoefs);
+    //this->coefs = new (this->tree->allocator->allocCoeff(nBlocks) ) VectorXd(nCoefs);
     this->coefs = new VectorXd(nCoefs);
     this->setIsAllocated();
     this->clearHasCoefs();
@@ -117,7 +121,8 @@ void MWNode<D>::allocCoefs(int nBlocks) {
 template<int D>
 void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-    delete this->coefs;
+    delete  this->coefs;
+
     this->coefs = 0;
     this->clearHasCoefs();
     this->clearIsAllocated();
@@ -155,10 +160,9 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
 
-    MWNode<D> copy(*this);
+   MWNode<D> copy(*this);
     copy.mwTransform(Reconstruction);
     const VectorXd &c = copy.getCoefs();
-
     int kp1_d = this->getKp1_d();
     for (int i = 0; i < this->getTDim(); i++) {
         MWNode<D> &child = this->getMWChild(i);
@@ -442,21 +446,24 @@ void MWNode<D>::createChildren() {
     this->setIsBranchNode();
 }
 
-/** Recurcive deallocation of children and all their decendants.
+/** Recursive deallocation of children and all their decendants.
   * Leaves node as LeafNode and children[] as null pointer. */
-template<int D>
-void MWNode<D>::deleteChildren() {
-    for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
-        if (this->children[cIdx] != 0) {
-            ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(this->children[cIdx]);
-            //delete node;
-            node->~ProjectedNode();
-            //this->children[cIdx]->~ProjectedNode();
-            this->children[cIdx] = 0;
-        }
-    }
+template<int D> void MWNode<D>::deleteChildren() {
+     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
+         if (this->children[cIdx] != 0) {
+             // ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(this->children[cIdx]);
+             // delete node;             // node->~ProjectedNode();
+             if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this->children[cIdx])) {
+                 node->~ProjectedNode();
+             } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this->children[cIdx])) {
+	       node->~GenNode();
+             }
+             delete this->children[cIdx];
+             this->children[cIdx] = 0;
+         }
+     } 
     this->setIsLeafNode();
-}
+ }
 
 template<int D>
 void MWNode<D>::genChildren() {
@@ -683,6 +690,8 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
+	println(0, "out giveChildrenCoefs ");
+
     }
     unlockNode();
     int cIdx = getChildIndex(r);

@@ -31,7 +31,7 @@ public:
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
       TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
       FunctionTree<D> *out = alloc->getTree();
-      //        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+       //       FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);
         return out;
     }

@@ -111,8 +111,8 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     int nCoefs = nBlocks * this->getKp1_d();
     //double* d_p = this->tree->allocator->allocCoeff(nBlocks);
     //this->coefs = new (d_p ) VectorXd(nCoefs);
-    //this->coefs = new (this->tree->allocator->allocCoeff(nBlocks) ) VectorXd(nCoefs);
-    this->coefs = new VectorXd(nCoefs);
+    this->coefs = new (this->tree->allocator->allocCoeff(nBlocks) ) VectorXd(nCoefs);
+    //this->coefs = new VectorXd(nCoefs);
     this->setIsAllocated();
     this->clearHasCoefs();
 }
@@ -121,7 +121,8 @@ void MWNode<D>::allocCoefs(int nBlocks) {
 template<int D>
 void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-    delete  this->coefs;
+    //delete this->coefs;
+    this->coefs->~VectorXd();
 
     this->coefs = 0;
     this->clearHasCoefs();
@@ -458,7 +459,7 @@ template<int D> void MWNode<D>::deleteChildren() {
              } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this->children[cIdx])) {
 	       node->~GenNode();
              }
-             delete this->children[cIdx];
+	     //             delete this->children[cIdx];
              this->children[cIdx] = 0;
          }
      } 

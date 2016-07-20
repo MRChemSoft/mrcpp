@@ -69,7 +69,12 @@ void ProjectedNode<D>::createChild(int cIdx) {
 template<int D>
 void ProjectedNode<D>::genChild(int cIdx) {
     assert(this->children[cIdx] == 0);
-    MWNode<D> *child = new GenNode<D>(*this, cIdx);
+    MWNode<D> *child;
+    if (this->tree->allocator == 0){
+      child = new GenNode<D>(*this, cIdx);
+    } else {
+      child = new (this->tree->allocator->allocNodes(1))GenNode<D>(*this, cIdx);
+    }
     this->children[cIdx] = child;
 }
 

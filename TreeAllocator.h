@@ -12,6 +12,7 @@
 
 template<int D> class MultiResolutionAnalysis;
 template<int D> class ProjectedNode;
+template<int D> class GenNode;
 template<int D> class MWTree;
 template<int D> class FunctionTree;
 template<int D> class FunctionNode;
@@ -25,6 +26,7 @@ public:
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
     ProjectedNode<D>* allocNodes(int Nalloc);
+    GenNode<D>* allocGenNodes(int Nalloc);
     double* allocCoeff(int NallocCoeff);
     double* allocGenCoeff(int NallocCoeff);
 

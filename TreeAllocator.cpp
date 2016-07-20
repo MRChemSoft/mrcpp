@@ -82,6 +82,22 @@ ProjectedNode<D>* TreeAllocator<D>::allocNodes(int nAlloc) {
         return oldlastNode;
     }
 }
+//return pointer to the last active node or NULL if failed
+template<int D>
+GenNode<D>* TreeAllocator<D>::allocGenNodes(int nAlloc) {
+    this->nNodes += nAlloc;
+    if (this->nNodes > this->maxNodes){
+      println(0, "maxNodes exceeded " << this->maxNodes);
+       this->nNodes -= nAlloc;
+        return 0;
+    } else {
+      GenNode<D>* oldlastNode  = (GenNode<D>*)this->lastNode;
+      //We can have sizeNodeMeta with different size than ProjectedNode
+      this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
+        //println(0, "new size meta " << this->nNodes);
+        return oldlastNode;
+    }
+}
 //return pointer to the Coefficients of the node or NULL if failed
 template<int D>
 double* TreeAllocator<D>::allocCoeff(int nAllocCoeff) {

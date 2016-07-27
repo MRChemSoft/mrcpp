@@ -44,6 +44,14 @@ ProjectedNode<D>::~ProjectedNode() {
     this->freeCoefs();
 }
 
+/*template<int D>
+Eigen::VectorXd&  ProjectedNode<D>::getCoefs() { 
+  println(0, "getcoef from projectnode  "<< this->tree->allocator->TempVector->size());
+     for (int i=0; i<(this->tree->allocator->TempVector->size()); i++)(*this->tree->allocator->TempVector)(i)=(*this->coefs)(i);
+     //return *this->coefs; 
+ return *this->tree->allocator->TempVector; 
+ }*/
+
 /** Allocating child node.
   *
   * Given a child index, this routine creates an empty ProjectedNode child node
@@ -55,7 +63,8 @@ void ProjectedNode<D>::createChild(int cIdx) {
     if (this->tree->allocator == 0){
         child = new ProjectedNode<D>(*this, cIdx);
     } else {
-        child = new (this->tree->allocator->allocNodes(1))ProjectedNode<D>(*this, cIdx);
+      ProjectedNode<D>* oldlastNode=this->tree->allocator->allocNodes(1);
+         child = new (oldlastNode) ProjectedNode<D>(*this, cIdx);
         //child = new ProjectedNode<D>(*this, cIdx);
     }
     //ProjectedNode<D> *child = new ProjectedNode<D>(*this, cIdx);

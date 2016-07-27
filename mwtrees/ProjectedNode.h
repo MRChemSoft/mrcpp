@@ -19,6 +19,7 @@ public:
     friend class FunctionTree<D>;
     friend class TreeAllocator<D>;
 
+    //Eigen::VectorXd &getCoefs();
 protected:
     ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx);
     ProjectedNode(ProjectedNode<D> &p, int cIdx);

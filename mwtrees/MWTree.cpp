@@ -825,6 +825,35 @@ void MWTree<D>::deleteGenerated() {
     }
 }
 
+template<int D>
+void MWTree<D>::traverse()  {
+    //traverse tree
+    int DepthMax = 100;
+    int  slen = 0, counter = 0;
+    MWNode<D>* stack[DepthMax*8];
+
+    //put root nodes on stack
+    NodeBox<D> &rBox = this->getRootBox();
+    MWNode<D> **roots = rBox.getNodes();
+    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
+        const NodeIndex<D> &nIdx = rBox.getNodeIndex(rIdx);
+
+	stack[slen++] = this->findNode(nIdx);
+    }
+ 
+    while (slen) {
+      counter++;
+      MWNode<D>* fpos = stack[--slen];
+      println(0,slen<<" Children    " << fpos->getNChildren()<<" Node Depth  " <<fpos->getDepth());
+	for (int i = 0; i < fpos->getNChildren(); i++) {
+	  stack[slen++] = fpos->children[i];
+	}
+
+    }
+      println(0, " Nodes   " <<counter);
+}
+
+
 /** Loop through endNodeTable and recursively clear all GenNode coefficients.
   * Includes a static cast of endNodes from MWNode to FunctionNode*/
 template<int D>

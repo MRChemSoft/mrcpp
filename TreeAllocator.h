@@ -10,9 +10,12 @@
 #ifndef TREEALLOCATOR_H_
 #define TREEALLOCATOR_H_
 
+#include <Eigen/Core>
+
 template<int D> class MultiResolutionAnalysis;
 template<int D> class ProjectedNode;
 template<int D> class GenNode;
+template<int D> class MWNode;
 template<int D> class MWTree;
 template<int D> class FunctionTree;
 template<int D> class FunctionNode;
@@ -26,9 +29,25 @@ public:
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
     ProjectedNode<D>* allocNodes(int Nalloc);
+    void DeAllocNodes(int NodeRank);
     GenNode<D>* allocGenNodes(int Nalloc);
-    double* allocCoeff(int NallocCoeff);
-    double* allocGenCoeff(int NallocCoeff);
+    //    double* allocCoeff(int NallocCoeff);
+    Eigen::VectorXd* allocCoeff(int NallocCoeff);
+    void DeAllocCoeff(int DeallocRank);
+    Eigen::VectorXd** CoeffStack;
+    Eigen::VectorXd* allocGenCoeff(int NallocCoeff);
+    void DeAllocGenCoeff(int DeallocRank);
+    Eigen::VectorXd** GenCoeffStack;
+
+    void SerialTreeAdd(double c, FunctionTree<D>* &TreeB);
+    int* CoeffStackStatus;
+    int* GenCoeffStackStatus;
+    
+    Eigen::VectorXd* TempVector;
+
+    friend class ProjectedNode<D>;
+    friend class MWNode<D>;
+    friend class GenNode<D>;
 
 protected:
     int sizeTreeMeta; //The first part of the Tree is filled with metadata; reserved size:
@@ -45,7 +64,6 @@ protected:
 
     double* dataArray; //Tree is defined as array of doubles, because C++ does not like void malloc
     double* GenCoeffArray; //Tree is defined as array of doubles, because C++ does not like void malloc
-
     MWTree<D>* mwTree_p;
     ProjectedNode<D>* lastNode;//pointer to the last active node
     double* lastNodeCoeff;//pointer to the last node coefficents

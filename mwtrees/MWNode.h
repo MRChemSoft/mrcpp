@@ -18,6 +18,7 @@
 
 #include "MWTree.h"
 #include "HilbertPath.h"
+#include "TreeAllocator.h"
 
 #ifdef OPENMP
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
@@ -94,6 +95,7 @@ public:
     friend class CrossCorrelationCalculator;
     friend class DerivativeCalculator;
     friend class MWTree<D>;
+    friend class TreeAllocator<D>;
     friend class FunctionTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
@@ -107,6 +109,8 @@ protected:
     const HilbertPath<D> hilbertPath;
 
     int NodeRank;
+    int NodeCoeffRank;
+    int GenNodeCoeffRank;
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components

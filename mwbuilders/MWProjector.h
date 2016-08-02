@@ -27,6 +27,13 @@ public:
         return out;
     }
 
+    void operator()(FunctionTree<D> &out,
+                    std::function<double (const double *r)> func,
+                    int maxIter = -1) {
+        AnalyticFunction<D> inp(func);
+        (*this)(out, inp, maxIter);
+    }
+
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);

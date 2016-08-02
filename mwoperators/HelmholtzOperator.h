@@ -6,8 +6,8 @@
 
 class HelmholtzOperator : public ConvolutionOperator<3> {
 public:
-    HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
-                      double m,
+    HelmholtzOperator(double m,
+                      const MultiResolutionAnalysis<3> &mra,
                       double apply = -1.0,
                       double build = -1.0)
             : ConvolutionOperator<3>(mra, apply, build),

@@ -2,7 +2,8 @@
 #include "DerivativeGenerator.h"
 
 template<int D>
-DerivativeOperator<D>::DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
+DerivativeOperator<D>::DerivativeOperator(int dir,
+                                          const MultiResolutionAnalysis<D> &mra,
                                           double a,
                                           double b)
         : MWOperator<D>(mra, -1.0),
@@ -11,6 +12,7 @@ DerivativeOperator<D>::DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
     if (this->A > MachineZero) NEEDS_TESTING;
     if (this->B > MachineZero) NEEDS_TESTING;
     initializeOperator();
+    this->setApplyDir(dir);
 }
 
 template<int D>

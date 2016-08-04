@@ -50,12 +50,13 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
     double wNorm = 0.0;
 
     int iter = 0;
+
     while (workVec->size() > 0) {
         printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
         printout(10, setw(6) << workVec->size() << " nodes ");
 
         calc_t.restart();
-        this->calculator->calcNodeVector(*workVec);
+	this->calculator->calcNodeVector(*workVec);
         calc_t.stop();
 
         norm_t.restart();
@@ -75,10 +76,10 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
         norm_t.stop();
 
         split_t.restart();
-        newVec = new MWNodeVector;
+	newVec = new MWNodeVector;
         if (iter >= maxIter and maxIter >= 0) workVec->clear();
-        this->adaptor->splitNodeVector(*newVec, *workVec);
-        split_t.stop();
+	this->adaptor->splitNodeVector(*newVec, *workVec);
+	split_t.stop();
 
         delete workVec;
         workVec = newVec;

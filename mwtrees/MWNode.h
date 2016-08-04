@@ -109,11 +109,12 @@ protected:
     const HilbertPath<D> hilbertPath;
 
     int NodeRank;
-    int NodeCoeffRank;
-    int GenNodeCoeffRank;
+    int NodeCoeffIx;
+    int GenNodeCoeffIx;
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components
+    Eigen::VectorXd coefvec;
     Eigen::VectorXd *coefs;
 
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);

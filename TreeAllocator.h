@@ -31,15 +31,17 @@ public:
     ProjectedNode<D>* allocNodes(int Nalloc);
     void DeAllocNodes(int NodeRank);
     GenNode<D>* allocGenNodes(int Nalloc);
-    //    double* allocCoeff(int NallocCoeff);
-    Eigen::VectorXd* allocCoeff(int NallocCoeff);
-    void DeAllocCoeff(int DeallocRank);
-    Eigen::VectorXd** CoeffStack;
-    Eigen::VectorXd* allocGenCoeff(int NallocCoeff);
-    void DeAllocGenCoeff(int DeallocRank);
-    Eigen::VectorXd** GenCoeffStack;
+    double* allocCoeff(int NallocCoeff);
+    void DeAllocCoeff(int DeallocIx);
+    double** CoeffStack;
+    double* allocGenCoeff(int NallocCoeff);
+    void DeAllocGenCoeff(int DeallocIx);
+    double** GenCoeffStack;
+    void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride);
+    void GenS_nodes(MWNode<D>* Node);
 
     void SerialTreeAdd(double c, FunctionTree<D>* &TreeB);
+    int* NodeStackStatus;
     int* CoeffStackStatus;
     int* GenCoeffStackStatus;
     

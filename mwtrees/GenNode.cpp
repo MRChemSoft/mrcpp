@@ -85,6 +85,8 @@ VectorXd& GenNode<D>::getCoefs() {
     }
     unlockSiblings();
     return MWNode<D>::getCoefs();
+      //return new(&CoeffVector) Map<VectorXd>(*this->coefs,GenNodeNcoeff);
+
 }
 
 /** Get coefficients of GenNode, regenerate if needed, without locking. */

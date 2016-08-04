@@ -18,7 +18,6 @@ public:
 #pragma omp parallel shared(nodeVec)
 {
         int nNodes = nodeVec.size();
-      println(0, "  calcNodeVector "<<nNodes);
 	
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {

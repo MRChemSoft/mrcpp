@@ -101,7 +101,6 @@ public:
     int countNodes(int depth = -1);
 
     TreeAllocator<D>* getAllocator() { return this->allocator; }
-    virtual void traverse();
 
     friend class MWNode<D>;
     friend class GenNode<D>;

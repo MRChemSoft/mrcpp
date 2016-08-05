@@ -34,9 +34,13 @@ bool WaveletAdaptor<D>::splitNode(const MWNode<D> &node) const {
   * square norm of the function and the requested relative accuracy. */
 template<int D>
 double WaveletAdaptor<D>::getWaveletThreshold(double norm, int scale) const {
-    double expo = (0.5 * (scale + 1));
+    double scale_fac = 1.0;
+    if (this->splitFac > MachineZero) {
+    	double expo = 0.5 * this->splitFac * (scale + 1);
+	scale_fac = pow(2.0, -expo);
+    }
     double thrs_1 = 2.0 * MachinePrec;
-    double thrs_2 = norm * this->prec * pow(2.0, -expo);
+    double thrs_2 = norm * this->prec * scale_fac;
     return max(thrs_1, thrs_2);
 }
 

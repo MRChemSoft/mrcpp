@@ -33,7 +33,7 @@ public:
         return out;
     }
 
-    void operator()(FunctionTree<3> &out,
+    void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
                     double b, FunctionTree<D> &tree_b,
                     int maxIter = -1) {

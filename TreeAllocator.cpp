@@ -4,6 +4,7 @@
 #include "FunctionTree.h"
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
+#include "GenNode.h"
 #include "MathUtils.h"
 #include "Timer.h"
 
@@ -53,6 +54,7 @@ TreeAllocator<D>::TreeAllocator(const MultiResolutionAnalysis<D> &mra,
     this->lastNode = (ProjectedNode<D>*) (this->dataArray + this->sizeTreeMeta/sizeof(double));
     //    this->lastNodeCoeff = (double*) (this->dataArray+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));
     this->lastNodeCoeff = (double*) (this->dataArray+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));//start after the metadata
+    this->firstNodeCoeff = this->lastNodeCoeff;//constant start of coeff data
     this->lastGenNodeCoeff = this->GenCoeffArray;//start at start of array
     this->nNodesCoeff=-1;//add 1 before each allocation
     this->nGenNodesCoeff=-1;//add 1 before each allocation
@@ -65,11 +67,11 @@ TreeAllocator<D>::TreeAllocator(const MultiResolutionAnalysis<D> &mra,
 
     CoeffStack = new double * [maxNodesCoeff];
     CoeffStackStatus = new int[maxNodesCoeff+1];
-    
     for (int i = 0; i <maxNodesCoeff;i++){
       CoeffStack[i] = this->lastNodeCoeff+i*this->sizeNodeCoeff/sizeof(double);
       CoeffStackStatus[i] = 0;//0=unoccupied
     }
+    println(0, "start of coeff stack at "<<CoeffStack[0]);
     CoeffStackStatus[maxNodesCoeff]=-1;//-1=unavailable
     //CoeffStackStatus[-1]=-1;//TO FIX!
 
@@ -98,7 +100,7 @@ TreeAllocator<D>::TreeAllocator(const MultiResolutionAnalysis<D> &mra,
 }
 
 template<int D>
-void TreeAllocator<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB){
+void TreeAllocator<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC){
   println(0, " SerialTreeAdd ");
   //to do: traverse from low to high rank
     int DepthMax = 100;
@@ -109,35 +111,154 @@ void TreeAllocator<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB){
     MWNode<D>* stackB[DepthMax*8];
     FunctionTree<D>* TreeA=this->getTree();
     int N_GenCoeff=TreeA->getKp1_d();
-    int N_Coeff=N_GenCoeff*TreeA->getTDim();
+    int tDim=TreeA->getTDim();
+    int N_Coeff=N_GenCoeff*tDim;
     //put root nodes on stack
     NodeBox<D> &rBoxA = TreeA->getRootBox();
     MWNode<D> **rootsA = rBoxA.getNodes();
+    NodeBox<D> &rBoxB = TreeB->getRootBox();
+    MWNode<D> **rootsB = rBoxB.getNodes();
+    int Children_Stride = this->sizeNodeCoeff/sizeof(double);
+    MWNode<D>* fposAA;
+    MWNode<D>* fposBB;
 
     int flag=1;
     double Tsum=0.0;
+
+   slenA=-1;
+   counterA=0;
+   slenB=-1;
+   counterB=0;
+    if(rBoxB.size()!=rBoxA.size())MSG_FATAL("Number of root nodes must be equal for now");
     for (int rIdxA = 0; rIdxA < rBoxA.size(); rIdxA++) {
-        const NodeIndex<D> &nIdx = rBoxA.getNodeIndex(rIdxA);
-	stackA[slenA++] = TreeA->findNode(nIdx);
-	//		println(0, "TreeA root Nodes   " <<rIdxA<<" rank "<<stackA[slenA-1]->NodeRank);
-   }
-    
-    //for (int i=0; i<20; i++)println(0,(*fposA->coefs)(i));
-    while (slenA) {
-      MWNode<D>* fposA = stackA[--slenA];
-	//      println(0, "TreeA Nodes   " <<counterA<<" rank "<<fposA->NodeRank);
-      counterA++;
-      // println(0,slenA<<" Children    " << fposA->getNChildren()<<" Node Depth  " <<fposA->getDepth());
-      if(fposA->getNChildren()){
-	for (int i = 0; i < fposA->getNChildren(); i++) {
-	  stackA[slenA++] = fposA->children[i];
-	}
-      }else{
-	for (int i=0; i<N_Coeff; i++)Tsum += (fposA->getCoefs()(i))*(fposA->getCoefs()(i));
-      }
-      //if(counterA<20)println(0, "TreeA Node  " <<counterA<<"norm    "<<fposA->getSquareNorm());
+       const NodeIndex<D> &nIdx = rBoxA.getNodeIndex(rIdxA);
+	stackA[++slenA] = TreeA->findNode(nIdx);
     }
-   println(0, "TreeA Nodes   " <<counterA<<" squarenorm "<<Tsum);
+    for (int rIdxB = 0; rIdxB < rBoxB.size(); rIdxB++) {
+        const NodeIndex<D> &nIdx = rBoxB.getNodeIndex(rIdxB);
+	stackB[++slenB] = TreeB->findNode(nIdx);
+    }
+
+    Timer timer,t0,t1,t2,t3;
+    double* cA;
+    double* cB;
+    double* cC;
+    bool downwards = true;//travers in direction children
+    timer.restart();
+    t2.restart();
+    Tsum=0.0;
+    counter=0;
+    counterA=0;
+    counterB=0;
+    while (slenA>=0) {
+      counter++;
+      MWNode<D>* fposA = stackA[slenA];
+      MWNode<D>* fposB = stackB[slenA];
+      //	println(0, slenA<<" TreeA children   " <<fposA->getNChildren()<<" TreeB children   " <<fposB->getNChildren());
+
+      //println(0, " Treating   " <<fposA->getRank()<<" counter "<<counter);
+      
+      if(fposA->getNChildren()+fposB->getNChildren() and downwards){
+	//println(0, fposA->getRank()<<" Tree children   " <<fposA->getNChildren()<<" TreeB children   " <<fposB->getNChildren()<<" counter "<<counter);
+	cA=&(fposA->getCoefs()(0));
+	//	  println(0, "NodeA orig at  "<< fposA<<" coeff at "<<cA);
+	if(fposA->getNChildren()==0){
+	  t1.restart();
+	  GenS_nodes(fposA);
+	  t1.stop();
+	}
+	if(fposB->getNChildren()==0){
+	  //println(0, slenB<<" BgenChildren()  ");
+	  t1.restart();
+	  cB=&(fposB->getCoefs()(0));
+	  GenS_nodes(fposB);
+
+	  if(flag){
+	    flag=0;
+	    cB=&(fposB->children[0]->getCoefs()(0));
+	  }
+	  t1.stop();
+
+	  //println(0, slenB<<" BgenChildren() succesful ");
+	}
+	//	println(0, slenA<<" TreeA newchildren   " <<fposA->getNChildren()<<" TreeB newchildren   " <<fposB->getNChildren());
+	for (int i = 0; i < fposA->getNChildren(); i++) {
+	  stackA[++slenA] = fposA->children[i];
+	  stackB[slenA] = fposB->children[i];
+	  //	  println(0, " child   " <<stackA[slenA]->getRank()<<" with slenA "<<slenA);
+	  downwards = true;
+	}
+	//println(0, " oldest   " <<stackA[slenA]->getRank()<<" with slenA "<<slenA);
+      }else{
+	bool youngestchild = false;
+	if(fposA->parent!=0) youngestchild = (fposA->parent->children[0]==fposA);
+	//      println(0, slenA<<"  youngestchild = "<<youngestchild);
+	if(youngestchild or slenA==0){
+	  //println(0, slenA<<" adding siblings of  "<<fposA->getRank());
+	  //all siblings are ready
+	  int siblingsize=tDim;
+	  if(slenA==0)siblingsize=rBoxA.size();
+	  for (int ichild = 0; ichild < siblingsize; ichild++) {
+	    if(fposA->parent!=0){
+	      fposAA=fposA->parent->children[ichild];
+	      fposBB=fposB->parent->children[ichild];
+	    }else{
+	      fposAA=TreeA->findNode(rBoxA.getNodeIndex(ichild));
+	      fposBB=TreeB->findNode(rBoxB.getNodeIndex(ichild));
+	    }
+	    if(fposAA->getNChildren()==0){
+	      //sum all siblings
+	      //      if(fposA->getNChildren() + fposB->getNChildren() ==0){
+	      //if(1){
+	      cA=&(fposAA->getCoefs()(0));
+	      cB=&(fposBB->getCoefs()(0));
+	      	      
+	      t2.restart();
+	      if(fposAA->isGenNode()){
+		
+		//for (int i=0; i<N_GenCoeff; i++)fposA->getCoefs()(i)+=c*fposB->getCoefs()(i);
+		for (int i=0; i<N_GenCoeff; i++)cA[i]+=c*cB[i];
+		if(fposBB->isGenNode()){
+		  //should not happen	  
+		  println(0, slenA<<" Adding two generated nodes? " );
+		  //for (int i=N_GenCoeff; i<N_Coeff; i++)fposA->coefs[i]=0.0;
+		}else{
+		  for (int i=N_GenCoeff; i<N_Coeff; i++)cA[i]=c*cB[i];
+		}	  
+	      }else{
+		if(fposBB->isGenNode()){
+		  for (int i=0; i<N_GenCoeff; i++)cA[i]+=c*cB[i];
+		}else{
+		  for (int i=0; i<N_Coeff; i++)cA[i]+=c*cB[i];
+		}	  	
+	      }
+	      t2.stop();
+	      fposAA->calcNorms();
+	      Tsum+=fposAA->getSquareNorm();
+	      counterA++;
+	    }
+	  }
+	  if(slenA>0){
+	    //make parent
+	    t3.restart();
+	    S_mwTransformBack(&(fposA->getCoefs()(0)), &(fposA->parent->getCoefs()(0)), Children_Stride); 
+	    t3.stop();
+	    //println(0, " made parent "<<fposA->parent->getRank());
+	    counterB++;
+	  }
+	  downwards = false;
+	  slenA--;
+	}else{
+	  //println(0, " did nothing for "<<stackA[slenA]->getRank());
+	  slenA--;
+	  downwards = true;
+	}
+      }
+    }
+    println(0, " summed "<<counterA<<" generated "<<counterB<<" looped "<<counter);
+    println(0, " squarenorm "<<Tsum);
+
+    /*
    slenA=0;
    counterA=0;
    slenB=0;
@@ -146,164 +267,50 @@ void TreeAllocator<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB){
        const NodeIndex<D> &nIdx = rBoxA.getNodeIndex(rIdxA);
 	stackA[slenA++] = TreeA->findNode(nIdx);
     }
-    NodeBox<D> &rBoxB = TreeB->getRootBox();
-    MWNode<D> **rootsB = rBoxB.getNodes();
-    for (int rIdxB = 0; rIdxB < rBoxB.size(); rIdxB++) {
-        const NodeIndex<D> &nIdx = rBoxB.getNodeIndex(rIdxB);
-	stackB[slenB++] = TreeB->findNode(nIdx);
+
+    MWNode<D>* stackC[DepthMax*8];
+    NodeBox<D> &rBoxC = TreeC->getRootBox();
+    MWNode<D> **rootsC = rBoxC.getNodes();
+    int slenC=0;
+    int counterC=0;
+    for (int rIdxC = 0; rIdxC < rBoxC.size(); rIdxC++) {
+      const NodeIndex<D> &nIdx = rBoxC.getNodeIndex(rIdxC);
+      stackC[slenC++] = TreeC->findNode(nIdx);
     }
- 
-    while (slenA) {
-       counterA++;
+    while (slenC) {
+      counterC++;
+      MWNode<D>* fposC = stackC[--slenC];
       MWNode<D>* fposA = stackA[--slenA];
-      // println(0,slenA<<" Children    " << fposA->getNChildren()<<" Node Depth  " <<fposA->getDepth());
-	for (int i = 0; i < fposA->getNChildren(); i++) {
+     if(fposC->getNChildren()){
+	for (int i = 0; i < fposC->getNChildren(); i++) {
+	  stackC[slenC++] = fposC->children[i];
 	  stackA[slenA++] = fposA->children[i];
 	}
-	//if(counterA<20)println(0, "TreeA Node  " <<counterA<<"norm    "<<fposA->getSquareNorm());
-    }
-    println(0, "TreeA Nodes   " <<counterA<<" nNodes "<<this->nNodes);
-
-    while (slenB) {
-      counterB++;
-      MWNode<D>* fposB = stackB[--slenB];
-      //            println(0,slenB<<" Children    " << fposB->getNChildren()<<" Node Depth  " <<fposB->getDepth());
-	for (int i = 0; i < fposB->getNChildren(); i++) {
-	  stackB[slenB++] = fposB->children[i];
-	}
-    }
-    println(0, "TreeB Nodes   " <<counterB<<" nNodes "<<TreeB->allocator->nNodes);
-    slenA=0;
-    for (int rIdxA = 0; rIdxA < rBoxA.size(); rIdxA++) {
-        const NodeIndex<D> &nIdx = rBoxA.getNodeIndex(rIdxA);
-	stackA[slenA++] = TreeA->findNode(nIdx);
-    }
-    slenB=0;
-    for (int rIdxB = 0; rIdxB < rBoxB.size(); rIdxB++) {
-        const NodeIndex<D> &nIdx = rBoxB.getNodeIndex(rIdxB);
-	stackB[slenB++] = TreeB->findNode(nIdx);
-    }
-    Timer timer,t0,t1,t2;
-    double* cA;
-    double* cB;
-    timer.restart();
-    t2.restart();
-    Tsum=0.0;
-    counter=0;
-    while (slenA+slenB) {
-      counter++;
-      MWNode<D>* fposA = stackA[--slenA];
-      MWNode<D>* fposB = stackB[--slenB];
-      //	println(0, slenA<<" TreeA children   " <<fposA->getNChildren()<<" TreeB children   " <<fposB->getNChildren());
-
-      if(fposA->getNChildren()+fposB->getNChildren()){
-	//println(0, slenA<<" TreeA children   " <<fposA->getNChildren()<<" TreeB children   " <<fposB->getNChildren());
-	  cA=&(fposA->getCoefs()(0));
-	  //	  println(0, "NodeA orig at  "<< fposA<<" coeff at "<<cA);
-	if(fposA->getNChildren()==0){
-	  //println(0, slenA<<" AcreateChild   ");
-	  t1.restart();
-	  for (int i = 0; i < fposA->getTDim(); i++)fposA->createChild(i);
-	  t1.stop();
-	  fposA->setIsBranchNode();
-	  fposA->giveChildrenCoefs();
-	//println(0, slenA<<" AgiveChildrenCoefs()succesful   ");
-	}
-	if(fposB->getNChildren()==0){
-	  //println(0, slenB<<" BgenChildren()  ");
-	  t1.restart();
-	  //fposB->genChildren();
-	  //fposB->giveChildrenCoefs();
-	  cB=&(fposB->getCoefs()(0));
-	  GenS_nodes(fposB);
-	  if(flag){
-	    flag=0;
-	    cB=&(fposB->children[0]->getCoefs()(0));
-	  }
-	  t1.stop();
-	  //for (int i = 0; i < fposB->getTDim(); i++)fposB->createChild(i);
-	  //fposB->setIsBranchNode();
-	  //fposB->giveChildrenCoefs();
-
-	  //println(0, slenB<<" BgenChildren() succesful ");
-	}
-	//	println(0, slenA<<" TreeA newchildren   " <<fposA->getNChildren()<<" TreeB newchildren   " <<fposB->getNChildren());
-
-	for (int i = 0; i < fposA->getNChildren(); i++) {
-	  stackA[slenA++] = fposA->children[i];
-	  stackB[slenB++] = fposB->children[i];
-	}
-      }
-      //      println(0, slenA<<" adding   "<<slenB);
-      //if(fposA->getNChildren() + fposB->getNChildren() ==0){
-      if(1){
-	cA=&(fposA->getCoefs()(0));
-	cB=&(fposB->getCoefs()(0));
-      t2.restart();
-      if(fposA->isGenNode()){
-	
-	//for (int i=0; i<N_GenCoeff; i++)fposA->getCoefs()(i)+=c*fposB->getCoefs()(i);
-	for (int i=0; i<N_GenCoeff; i++)cA[i]+=c*cB[i];
-	if(fposB->isGenNode()){
-	  //should not happen	  
-	  println(0, slenA<<" Adding two generated nodes? " );
-	  //for (int i=N_GenCoeff; i<N_Coeff; i++)fposA->coefs[i]=0.0;
-	}else{
-	  for (int i=N_GenCoeff; i<N_Coeff; i++)cA[i]=c*cB[i];
-	}	  
       }else{
-	if(fposB->isGenNode()){
-	  for (int i=0; i<N_GenCoeff; i++)cA[i]+=c*cB[i];
-	}else{
-	  for (int i=0; i<N_Coeff; i++)cA[i]+=c*cB[i];
-	}	  	
+	  cA=&(fposA->getCoefs()(0));
+	  cC=&(fposC->getCoefs()(0));
+	  if(fabs(cA[0]-cC[0])>4.E-3){
+	    double* val=fposC->tree->allocator->firstNodeCoeff+1598*4096;
+	    println(0, " indexA "<<fposA->getNodeIndex()<<" rankA "<<fposA->getRank()<<" indexC "<<fposC->getNodeIndex()<<" rankC "<<fposC->getRank()<<" coeffA "<<cA[0]<<" coeffC "<<cC[0]<<" at "<<&(cC[0])<<" coefix "<<fposC->NodeCoeffIx<<" val "<<val[0]);
+	  }
       }
-      t2.stop();
-      }
-      fposA->calcNorms();
-      if(fposA->getNChildren() + fposB->getNChildren() ==0)Tsum+=fposA->getSquareNorm();
-
-      // println(0, slenA<<" added   "<<slenB);
     }
-    println(0, " squarenorm "<<Tsum);
+    println(0, " Nodes counterC "<<counterC);
+
+    */
+
     this->getTree()->squareNorm=Tsum;
-    timer.stop();
-    println(0, " time Sadd     " << timer);
     println(0, " time generate     " << t1);
     println(0, " time add coef     " << t2);
+    t3.restart();
+    //this->S_mwTreeTransformUp();
+     //this->mwTree_p->mwTransform(BottomUp);
+    t3.stop();
+    println(0, " time TransformUp    " << t3);
+    timer.stop();
+    println(0, " time Sadd     " << timer);
 
-   println(0, "TreeAB Nodes   " <<counter);
-   slenA=0;
-   slenB=0;
-   counterA=0;
-   for (int rIdxA = 0; rIdxA < rBoxA.size(); rIdxA++) {
-     const NodeIndex<D> &nIdx = rBoxA.getNodeIndex(rIdxA);
-     stackA[slenA++] = TreeA->findNode(nIdx);
-   }
-   for (int rIdxB = 0; rIdxB < rBoxB.size(); rIdxB++) {
-     const NodeIndex<D> &nIdx = rBoxB.getNodeIndex(rIdxB);
-     stackB[slenB++] = TreeB->findNode(nIdx);
-    }
-   println(0, "TreeAB  root Nodes  " <<slenA);
-    Tsum=0.0;
-    while (slenA) {
-      counterA++;
-      MWNode<D>* fposA = stackA[--slenA];
-      MWNode<D>* fposB = stackB[--slenB];
-      // println(0,slenA<<" Children    " << fposA->getNChildren()<<" Node Depth  " <<fposA->getDepth());
-      if(fposA->getNChildren()){
-	for (int i = 0; i < fposA->getNChildren(); i++) {
-	  stackA[slenA++] = fposA->children[i];
-	  stackB[slenB++] = fposB->children[i];
-	}
-      }else{
-	if(fposB->getNChildren())println(0, "ERROR   " <<counterA);
-
-	for (int i=0; i<N_Coeff; i++)Tsum += fposA->getCoefs()(i)*fposA->getCoefs()(i);
-      }
-      //if(counterA<20)println(0, "TreeA Node  " <<counterA<<"norm    "<<fposA->getSquareNorm());
-    }
-    println(0, "TreeA Nodes   " <<counterA<<" squarenorm "<<Tsum);
+   println(0, "TreeAB Nodes   " <<this->nNodes<<" squarenorm "<<Tsum);
 
 }
 
@@ -318,7 +325,6 @@ void TreeAllocator<D>::GenS_nodes(MWNode<D>* Node){
   if(Node->isGenNode())ReadOnlyScalingCoeff=true;
   double* cA;
 
-
   Node->genChildren();//will make children and allocate coeffs, but without setting values for coeffs.
 
   cA=&(Node->getCoefs()(0));
@@ -331,7 +337,6 @@ void TreeAllocator<D>::GenS_nodes(MWNode<D>* Node){
   S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride);
 
 }
-
 
 
 /** Make children scaling coefficients from parent
@@ -354,7 +359,7 @@ void TreeAllocator<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool R
   double overwrite = 0.0;
   double *tmp;
   double tmpcoeff[kp1_d*tDim];
-  double tmp2coeff[kp1_d*tDim];
+  //double tmp2coeff[kp1_d*tDim];
   int ftlim=tDim;
   int ftlim2=tDim;
   int ftlim3=tDim;
@@ -369,7 +374,7 @@ void TreeAllocator<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool R
   int i = 0;
   int mask = 1;
   for (int gt = 0; gt < tDim; gt++) {
-    double *out = tmpcoeff + gt * kp1_d;
+    double *out = coeff_out + gt * kp1_d;
     for (int ft = 0; ft < ftlim; ft++) {
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
@@ -390,13 +395,13 @@ void TreeAllocator<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool R
   i++;
   mask = 2;//1 << i;
   for (int gt = 0; gt < tDim; gt++) {
-    double *out = tmp2coeff + gt * kp1_d;
+    double *out = tmpcoeff + gt * kp1_d;
     for (int ft = 0; ft < ftlim2; ft++) {
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
       if ((gt | mask) == (ft | mask)) {
-	double *in = tmpcoeff + ft * kp1_d;
+	double *in = coeff_out + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -416,7 +421,7 @@ void TreeAllocator<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool R
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
       if ((gt | mask) == (ft | mask)) {
-	double *in = tmp2coeff + ft * kp1_d;
+	double *in = tmpcoeff + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -429,12 +434,163 @@ void TreeAllocator<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool R
 
 }
 
+
+/** Regenerate all s/d-coeffs by backtransformation, starting at the bottom and
+  * thus purifying all coefficients.
+  * not yet fully optimized.
+ */
+template<int D>
+void TreeAllocator<D>::S_mwTreeTransformUp() {
+    Timer t0,t1,t2,t3;
+    int DepthMax = 100;
+    MWTree<D>* Tree=this->mwTree_p;
+    int status[this->nNodes];
+    MWNode<D>* stack[DepthMax*8];
+    int  slen = 0, counter = 0, counter2 = 0;
+    NodeBox<D> &rBox = Tree->getRootBox();
+    MWNode<D> **roots = rBox.getNodes();
+    int Children_Stride = this->sizeGenNodeCoeff/sizeof(double);
+    for (int i = 0; i < this->nNodes; i++) status[i]=0;
+    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
+       const NodeIndex<D> &nIdx = rBox.getNodeIndex(rIdx);
+	stack[++slen] = Tree->findNode(nIdx);
+	MWNode<D>* fpos = stack[slen];
+	if(fpos->getNChildren()>0){
+	  status[fpos->getRank()]=0;
+	}else {
+	  status[fpos->getRank()]=1;//finished
+	}
+    }
+    while (slen) {
+      counter++;
+	MWNode<D>* fpos = stack[slen];
+	if(fpos->getNChildren()>0 and status[fpos->getRank()]==0){
+	  int childok=0;
+	  for (int i = 0; i < fpos->getNChildren(); i++) {
+	    if(status[fpos->children[i]->getRank()]>0 or fpos->children[i]->getNChildren()==0){
+	      childok++;
+	    }else{
+	      if(fpos->children[i]->getNChildren()>0){
+		stack[++slen] = fpos->children[i];
+	      }
+	    }
+	  }
+	  if(childok==fpos->getNChildren()){
+	    //Ready to compress fpos from children
+	    t0.restart();
+	    S_mwTransformBack(&(fpos->children[0]->getCoefs()(0)), &(fpos->getCoefs()(0)), Children_Stride); 
+	    t0.stop();
+	    status[fpos->getRank()]=1;//finished     
+	    counter2++;
+	  }
+	    
+	}else {
+	  slen--;
+	  status[fpos->getRank()]=1;	  
+	}
+    }
+    println(0, " time   S_mwTransformBack   " << t0);
+    println(0, counter2<<" nodes recompressed, out of "<<this->nNodes);
+
+    
+}
+
+/** Make parent from children scaling coefficients
+ * Other node info are not used/set
+ * coeff_in is not modified.
+ * The output is read directly from the 8 children scaling coefficients. 
+ * NB: ASSUMES that the children coefficients are separated by Children_Stride!
+ */
+template<int D>
+void TreeAllocator<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride) {
+  if(D!=3)MSG_FATAL("S_mwtransform Only D=3 implemented now!");
+  int operation = Compression;
+  int kp1 = this->mwTree_p->getKp1();
+  int tDim = (1<<D);
+  int kp1_dm1 = kp1*kp1;//MathUtils::ipow(Parent->getKp1(), D - 1)
+  int kp1_d = kp1_dm1*kp1;//
+  const MWFilter &filter = this->mwTree_p->getMRA().getFilter();
+  //VectorXd &result = Parent->tree->getTmpMWCoefs();
+  double overwrite = 0.0;
+  double *tmp;
+
+  double tmpcoeff[kp1_d*tDim];
+  //double tmp2coeff[kp1_d*tDim];
+  
+
+  int ftlim=tDim;
+  int ftlim2=tDim;
+  int ftlim3=tDim;
+
+  int i = 0;
+  int mask = 1;
+  for (int gt = 0; gt < tDim; gt++) {
+    double *out = coeff_out + gt * kp1_d;
+    for (int ft = 0; ft < ftlim; ft++) {
+      /* Operate in direction i only if the bits along other
+       * directions are identical. The bit of the direction we
+       * operate on determines the appropriate filter/operator */
+      if ((gt | mask) == (ft | mask)) {
+	double *in = coeff_in + ft * Children_Stride;
+	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
+	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+
+	MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+	overwrite = 1.0;
+      }
+    }
+    overwrite = 0.0;
+  }
+  i++;
+  mask = 2;//1 << i;
+  for (int gt = 0; gt < tDim; gt++) {
+    double *out = tmpcoeff + gt * kp1_d;
+    for (int ft = 0; ft < ftlim2; ft++) {
+      /* Operate in direction i only if the bits along other
+       * directions are identical. The bit of the direction we
+       * operate on determines the appropriate filter/operator */
+      if ((gt | mask) == (ft | mask)) {
+	double *in = coeff_out + ft * kp1_d;
+	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
+	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+
+	MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+	overwrite = 1.0;
+      }
+    }
+    overwrite = 0.0;
+  }
+  i++;
+  mask = 4;//1 << i;
+  for (int gt = 0; gt < tDim; gt++) {
+    double *out = coeff_out + gt * kp1_d;
+    //double *out = coeff_out + gt * N_coeff;
+    for (int ft = 0; ft < ftlim3; ft++) {
+      /* Operate in direction i only if the bits along other
+       * directions are identical. The bit of the direction we
+       * operate on determines the appropriate filter/operator */
+      if ((gt | mask) == (ft | mask)) {
+	double *in = tmpcoeff + ft * kp1_d;
+	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
+	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+
+	MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+	overwrite = 1.0;
+      }
+    }
+    overwrite = 0.0;
+  }
+  //  if(D%2)for(int i=0; i<kp1_d*tDim; i++) coeff_out[i] = tmpcoeff[i];
+
+}
+
 //return pointer to the last active node or NULL if failed
 template<int D>
 ProjectedNode<D>* TreeAllocator<D>::allocNodes(int nAlloc) {
   this->nNodes += nAlloc;
   if (this->nNodes > this->maxNodes){
     println(0, "maxNodes exceeded " << this->maxNodes);
+    MSG_FATAL("maxNodes exceeded ");
     this->nNodes -= nAlloc;
     return 0;
   } else {
@@ -472,12 +628,19 @@ GenNode<D>* TreeAllocator<D>::allocGenNodes(int nAlloc) {
     this->nNodes += nAlloc;
     if (this->nNodes > this->maxNodes){
       println(0, "maxNodes exceeded " << this->maxNodes);
+      MSG_FATAL("maxNodes exceeded ");
        this->nNodes -= nAlloc;
         return 0;
     } else {
       GenNode<D>* oldlastNode  = (GenNode<D>*)this->lastNode;
-      //We can have sizeNodeMeta with different size than ProjectedNode
-      this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
+	this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
+	//We can have sizeNodeMeta with different size than ProjectedNode
+	for (int i = 0; i<nAlloc; i++){
+	  oldlastNode->NodeRank=this->nNodes+i-1;
+	  if (this->NodeStackStatus[this->nNodes+i-1]!=0)
+	    println(0, this->nNodes+i-1<<" NodeStackStatus: not available " << this->NodeStackStatus[this->nNodes+i-1]);
+	  this->NodeStackStatus[this->nNodes+i-1]=1;
+	}
         //println(0, "new size meta " << this->nNodes);
         return oldlastNode;
     }
@@ -491,6 +654,7 @@ double* TreeAllocator<D>::allocCoeff(int nAllocCoeff) {
     if (nAllocCoeff!=8) MSG_FATAL("Only 2**D implemented now!");
     if (this->nNodesCoeff > this->maxNodesCoeff ){
       println(0, "maxNodesCoeff exceeded " << this->maxNodesCoeff);
+      MSG_FATAL("maxNodesCoeff exceeded ");
         return 0;
     } else if( CoeffStackStatus[this->nNodesCoeff]!=0){
       println(0, this->nNodesCoeff<<" CoeffStackStatus: not available " <<CoeffStackStatus[this->nNodesCoeff] );      
@@ -498,6 +662,7 @@ double* TreeAllocator<D>::allocCoeff(int nAllocCoeff) {
     }else{
       double* coeffVectorXd=this->CoeffStack[this->nNodesCoeff];
       this->CoeffStackStatus[this->nNodesCoeff]=1;
+      for (int i = 0; i < this->sizeNodeCoeff/8; i++)coeffVectorXd[i]=0.0;
       //println(0,this->nNodesCoeff<< " Coeff returned: " << (double*)coeffVectorXd);      
       return coeffVectorXd;
     }
@@ -526,7 +691,8 @@ double* TreeAllocator<D>::allocGenCoeff(int nAllocCoeff) {
     this->nGenNodesCoeff += 1;//nAllocCoeff;
     if (this->nGenNodesCoeff > this->maxGenNodesCoeff ){
       println(0, "maxGenNodesCoeff exceeded " << this->maxGenNodesCoeff);
-       this->nGenNodesCoeff -= 1;//nAllocCoeff;
+       MSG_FATAL("maxGenNodesCoeff exceeded ");
+      this->nGenNodesCoeff -= 1;//nAllocCoeff;
         return 0;
     } else if( GenCoeffStackStatus[this->nGenNodesCoeff]!=0){
       println(0, this->nGenNodesCoeff<<" GenCoeffStackStatus: not available " <<GenCoeffStackStatus[this->nGenNodesCoeff] );      
@@ -534,6 +700,7 @@ double* TreeAllocator<D>::allocGenCoeff(int nAllocCoeff) {
     }else{
       double* coeffVectorXd=this->GenCoeffStack[this->nGenNodesCoeff];
       this->GenCoeffStackStatus[this->nGenNodesCoeff]=1;
+      for (int i = 0; i < this->sizeGenNodeCoeff/8; i++)coeffVectorXd[i]=0.0;
       return coeffVectorXd;
     }
 }

@@ -127,13 +127,25 @@ double FunctionNode<D>::integrateInterpolating() const {
         kp1_p[i] = MathUtils::ipow(qOrder, i);
     }
 
-    VectorXd coefs = this->getCoefs();
-    for (int p = 0; p < D; p++) {
+    double wcoefs[this->getKp1_d()];
+    
+    for (int p = 0; p < 1; p++) {
         int n = 0;
         for (int i = 0; i < kp1_p[D - p - 1]; i++) {
             for (int j = 0; j < qOrder; j++) {
                 for (int k = 0; k < kp1_p[p]; k++) {
-                    coefs[n] *= sqWeights[j];
+		  wcoefs[n] = sqWeights[j]* this->getCoefs()[n];
+                    n++;
+                }
+            }
+        }
+    }
+    for (int p = 1; p < D; p++) {
+        int n = 0;
+        for (int i = 0; i < kp1_p[D - p - 1]; i++) {
+            for (int j = 0; j < qOrder; j++) {
+                for (int k = 0; k < kp1_p[p]; k++) {
+                    wcoefs[n] *= sqWeights[j];
                     n++;
                 }
             }
@@ -141,7 +153,9 @@ double FunctionNode<D>::integrateInterpolating() const {
     }
     double n = (D * this->getScale()) / 2.0;
     double two_n = pow(2.0, -n);
-    double sum = coefs.segment(0, this->getKp1_d()).sum();
+    double sum=0.0;
+    for (int i = 0; i < this->getKp1_d(); i++) sum+=wcoefs[i];
+
     return two_n * sum;
 }
 

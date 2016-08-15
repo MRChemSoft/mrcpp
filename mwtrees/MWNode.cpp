@@ -124,17 +124,17 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
       //      this->coefs = this->tree->allocator->allocCoeff(nBlocks);
       *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff;
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
       this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
     } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
 	//      this->coefs = this->tree->allocator->allocGenCoeff(nBlocks);
       *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocGenCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeGenNodeCoeff;
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeGenNodeCoeff/sizeof(double);
       this->GenNodeCoeffIx = this->tree->allocator->nGenNodesCoeff;
     } else{//default is to allocate on ProjectedNode stack
 	//this->coefs = this->tree->allocator->allocCoeff(nBlocks);
       *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff;
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
       this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
     }
 
@@ -222,8 +222,10 @@ void MWNode<D>::copyCoefsFromChildren(VectorXd &c) {
         if (child.hasCoefs()) {
             VectorXd &cc = child.getCoefs();
             c.segment(i * kp1_d, kp1_d) = cc.segment(0, kp1_d);
+	   //for (int j = 0; j < kp1_d; j++) c[j+i * kp1_d]=child.getCoefs()[j];
         } else {
-            c.segment(i * kp1_d, kp1_d).setZero();
+	    c.segment(i * kp1_d, kp1_d).setZero();
+	  //   for (int j = 0; j < kp1_d; j++) c[j+i * kp1_d]=0.0;
         }
     }
 }
@@ -282,6 +284,56 @@ void MWNode<D>::cvTransform(int operation) {
                 }
             }
         }
+    }
+}
+
+/** Multiwavelet transform: fast version
+  *
+  * Application of the filters on one node to pass from a 0/1 (scaling
+  * on children 0 and 1) representation to an s/d (scaling and
+  * wavelet) representation. Bit manipulation is used in order to
+  * determine the correct filters and whether to apply them or just
+  * pass to the next couple of indexes. The starting coefficients are
+  * preserved until the application is terminated, then they are
+  * overwritten. With minor modifications this code can also be used
+  * for the inverse mw transform (just use the transpose filters) or
+  * for the application of an operator (using A, B, C and T parts of an
+  * operator instead of G1, G0, H1, H0). This is the version where the
+  * three directions are operated one after the other. Although this
+  * is formally faster than the other algorithm, the separation of the
+  * three dimensions prevent the possibility to use the norm of the
+  * operator in order to discard a priori negligible contributions.
+
+  * Luca Frediani, August 2006
+  * C++ version: Jonas Juselius, September 2009 */
+template<int D>
+void MWNode<D>::orig_mwTransform(int operation) {
+    int kp1 = this->getKp1();
+    int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
+    int kp1_d = this->getKp1_d();
+    const MWFilter &filter = getMWTree().getMRA().getFilter();
+    VectorXd &result = getMWTree().getTmpMWCoefs();
+    double overwrite = 0.0;
+
+    for (int i = 0; i < D; i++) {
+        int mask = 1 << i;
+        for (int gt = 0; gt < this->getTDim(); gt++) {
+            double *out = result.data() + gt * kp1_d;
+            for (int ft = 0; ft < this->getTDim(); ft++) {
+                /* Operate in direction i only if the bits along other
+                 * directions are identical. The bit of the direction we
+                 * operate on determines the appropriate filter/operator */
+                if ((gt | mask) == (ft | mask)) {
+                    double *in = this->coefs->data() + ft * kp1_d;
+                    int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
+                    const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
+                    MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+                    overwrite = 1.0;
+                }
+            }
+            overwrite = 0.0;
+        }
+        this->coefs->swap(result);
     }
 }
 
@@ -443,7 +495,10 @@ void MWNode<D>::reCompress(bool overwrite) {
         if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
         if (overwrite) {
             copyCoefsFromChildren(*this->coefs);
-            mwTransform(Compression);
+	    mwTransform(Compression);
+	    //            int Children_Stride = this->getMWTree().allocator->sizeGenNodeCoeff/sizeof(double);
+            //            this->getMWTree().allocator->S_mwTransformBack(&(this->children[0]->getCoefs()[0]),&(this->getCoefs()[0]),Children_Stride);
+
         } else {
             // Check optimization
             NOT_IMPLEMENTED_ABORT;

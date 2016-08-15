@@ -37,13 +37,16 @@ public:
     double* allocGenCoeff(int NallocCoeff);
     void DeAllocGenCoeff(int DeallocIx);
     double** GenCoeffStack;
-    void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride);
     void GenS_nodes(MWNode<D>* Node);
+    void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride);
+    void S_mwTreeTransformUp();
+    void S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride);
 
-    void SerialTreeAdd(double c, FunctionTree<D>* &TreeB);
+    void SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
     int* NodeStackStatus;
     int* CoeffStackStatus;
     int* GenCoeffStackStatus;
+    double* firstNodeCoeff;//pointer to the first node coefficents
     
     Eigen::VectorXd* TempVector;
 

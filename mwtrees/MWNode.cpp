@@ -574,6 +574,55 @@ int MWNode<D>::getChildIndex(const double *r) const {
     return cIdx;
 }
 
+template<int D>
+void MWNode<D>::getQuadraturePoints(MatrixXd &pts) {
+    int kp1 = this->getKp1();
+    pts = MatrixXd::Zero(2*kp1,D);
+
+    getQuadratureCache(qc);
+    const VectorXd &roots = qc.getRoots(kp1);
+
+    double sFac = pow(2.0, -(this->getScale() + 1));
+    const int *l = this->getTranslation();
+    for (int d = 0; d < D; d++) {
+        pts.col(d).segment(0, kp1) = sFac*(roots.array() + 2.0*double(l[d]));
+        pts.col(d).segment(kp1, kp1) = sFac*(roots.array() + 2.0*double(l[d]) + 1);
+    }
+}
+
+//template<int D>
+//void MWNode<D>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
+//    NOT_IMPLEMENTED_ABORT;
+//}
+
+//template<>
+//void MWNode<1>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
+//    int kp1_d = this->getKp1_d();
+//    expandedPoints = MatrixXd::Zero(kp1_d,1);
+
+//    const MatrixXd &primitivePoints = getQuadPoints();
+//    expandedPoints.col(0) = primitivePoints;
+//}
+
+//template<>
+//void MWNode<2>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
+//    NOT_IMPLEMENTED_ABORT;
+//    int kp1 = this->getKp1();
+//    int kp1_d = this->getKp1_d();
+//    const MatrixXd &primitivePoints = getQuadPoints();
+//    expandedPoints = MatrixXd::Zero(kp1_d,2);
+//    MathUtils::tensorExpandCoords_2D(kp1, primitivePoints, expandedPoints);
+//}
+
+//template<>
+//void MWNode<3>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
+//    int kp1 = this->getKp1();
+//    int kp1_d = this->getKp1_d();
+//    const MatrixXd &primitivePoints = getQuadPoints();
+//    expandedPoints = MatrixXd::Zero(kp1_d,3);
+//    MathUtils::tensorExpandCoords_3D(kp1, primitivePoints, expandedPoints);
+//}
+
 /** Const version of node retriever that NEVER generates.
   *
   * Recursive routine to find and return the node with a given NodeIndex.

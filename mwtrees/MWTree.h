@@ -66,6 +66,9 @@ public:
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
+    int getRootIndex(const double *r) const { return this->rootBox.getBoxIndex(r); }
+    int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
+
     MWNode<D> *findNode(const NodeIndex<D> &nIdx);
     const MWNode<D> *findNode(const NodeIndex<D> &nIdx) const;
 
@@ -143,13 +146,6 @@ protected:
 
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
-
-    int getRootIndex(const double *r) const {
-        return this->rootBox.getBoxIndex(r);
-    }
-    int getRootIndex(const NodeIndex<D> &nIdx) const {
-        return this->rootBox.getBoxIndex(nIdx);
-    }
 
     void allocNodeCounters();
     void deleteNodeCounters();

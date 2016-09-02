@@ -658,6 +658,21 @@ int MWTree<D>::countLeafNodes(int depth) {
 //    return nNodes;
 }
 
+/** Traverse tree and count nodes. */
+template<int D>
+void MWTree<D>::RecountNodes() {
+  int DepthMax = 100, slen = 0;
+  MWNode<D>* stack[DepthMax*8];
+  for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
+   stack[slen++] = this->getRootBox().getNodes()[rIdx];
+  }
+  this->nNodes = 0;
+  while (slen) {
+    this->nNodes++;
+    MWNode<D>* fpos = stack[--slen];
+    for (int i = 0; i < fpos->getNChildren(); i++)stack[slen++] = fpos->children[i];
+  }
+}
 /** Traverse tree and count nodes belonging to this rank. */
 template<int D>
 int MWTree<D>::countNodes(int depth) {

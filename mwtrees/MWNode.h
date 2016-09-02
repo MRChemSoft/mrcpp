@@ -18,7 +18,7 @@
 
 #include "MWTree.h"
 #include "HilbertPath.h"
-#include "TreeAllocator.h"
+#include "SerialTree.h"
 
 #ifdef OPENMP
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
@@ -63,6 +63,7 @@ public:
     inline bool isAllocated() const;
     inline bool isBranchNode() const;
     inline bool isLooseNode() const;
+    inline bool hasWCoefs() const;
 
     double getSquareNorm() const { return this->squareNorm; }
     double getScalingNorm() const;
@@ -95,7 +96,7 @@ public:
     friend class CrossCorrelationCalculator;
     friend class DerivativeCalculator;
     friend class MWTree<D>;
-    friend class TreeAllocator<D>;
+    friend class SerialTree<D>;
     friend class FunctionTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
@@ -124,6 +125,7 @@ protected:
     virtual ~MWNode();
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
+    void setHasWCoefs() { SET_BITS(status, FlagHasWCoefs); }
     void setIsEndNode() { SET_BITS(status, FlagEndNode); }
     void setIsGenNode() { SET_BITS(status, FlagGenNode); }
     void setIsRootNode() { SET_BITS(status, FlagRootNode); }
@@ -132,6 +134,7 @@ protected:
     void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
     void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }
     void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
+    void clearHasWCoefs() { CLEAR_BITS(status, FlagHasWCoefs);}
     void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
@@ -200,6 +203,7 @@ protected:
     static const unsigned char FlagEndNode    = B8(00010000);
     static const unsigned char FlagRootNode   = B8(00100000);
     static const unsigned char FlagLooseNode  = B8(01000000);
+    static const unsigned char FlagHasWCoefs  = B8(10000000);//if Wavelet coefficients are not zero
 #ifdef OPENMP
     omp_lock_t node_lock;
 #endif
@@ -233,6 +237,14 @@ bool MWNode<D>::isAllocated() const {
 template<int D>
 bool MWNode<D>::hasCoefs() const {
     if (this->status & FlagHasCoefs) {
+        return true;
+    }
+    return false;
+}
+
+template<int D>
+bool MWNode<D>::hasWCoefs() const {
+    if (this->status & FlagHasWCoefs) {
         return true;
     }
     return false;
@@ -296,7 +308,7 @@ bool MWNode<D>::checkStatus(unsigned char mask) const {
 
 template<int D>
 std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
-    std::string flags ="      ";
+    std::string flags ="       ";
     o << nd.getNodeIndex();
     if (nd.isRootNode()) {
         flags[0] = 'R';
@@ -319,6 +331,9 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     }
     if (nd.hasCoefs()) {
         flags[5] = 'C';
+	if (nd.hasWCoefs()) {
+	  flags[6] = 'W';
+	}
     }
     o << " " << flags;
     o << " sqNorm=" << nd.squareNorm;

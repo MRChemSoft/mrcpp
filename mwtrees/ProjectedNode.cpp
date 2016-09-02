@@ -10,7 +10,7 @@
 
 #include "ProjectedNode.h"
 #include "GenNode.h"
-#include "TreeAllocator.h"
+#include "SerialTree.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -28,6 +28,7 @@ ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
         : FunctionNode<D> (t, nIdx) {
     this->allocCoefs(this->getTDim());
     this->setIsEndNode();
+    this->setHasWCoefs();//default until known
 }
 
 /** ProjectedNode constructor.
@@ -37,6 +38,7 @@ ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
     this->allocCoefs(this->getTDim());
     this->setIsEndNode();
+    this->setHasWCoefs();//default until known
 }
 
 template<int D>

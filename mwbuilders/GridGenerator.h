@@ -5,7 +5,7 @@
 #include "DefaultCalculator.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
-#include "TreeAllocator.h"
+#include "SerialTree.h"
 
 template<int D>
 class GridGenerator : public TreeBuilder<D> {
@@ -17,14 +17,14 @@ public:
     }
 
     FunctionTree<D> *operator()() {
-        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
+        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
         return  alloc->getTree();
         //return new FunctionTree<D>(this->MRA);
     }
 
     FunctionTree<D> *operator()(const RepresentableFunction<D> &inp,
                                 int maxIter = -1) {
-        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
+        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
         FunctionTree<D> *out = alloc->getTree();
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp, maxIter);
@@ -33,7 +33,7 @@ public:
 
     FunctionTree<D> *operator()(FunctionTree<D> &inp,
                                 int maxIter = -1) {
-        TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
+        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
         FunctionTree<D> *out = alloc->getTree();
 	//        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp, maxIter);
@@ -42,7 +42,7 @@ public:
 
     FunctionTree<D> *operator()(FunctionTreeVector<D> &inp,
                                 int maxIter = -1) {
-      TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
+      SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
       FunctionTree<D> *out = alloc->getTree();
 	// FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp, maxIter);

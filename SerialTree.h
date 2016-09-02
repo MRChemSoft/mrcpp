@@ -21,10 +21,10 @@ template<int D> class FunctionTree;
 template<int D> class FunctionNode;
 
 template<int D>
-class TreeAllocator  {
+class SerialTree  {
 public:
-    TreeAllocator(const MultiResolutionAnalysis<D> &mra, int max_nodes);
-    virtual ~TreeAllocator();
+    SerialTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
+    virtual ~SerialTree();
 
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
@@ -43,10 +43,13 @@ public:
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride);
 
     void SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
+    void SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
+    void RewritePointers();
     int* NodeStackStatus;
     int* CoeffStackStatus;
     int* GenCoeffStackStatus;
     double* firstNodeCoeff;//pointer to the first node coefficents
+    double* firstNode;//pointer to the first node
     
     Eigen::VectorXd* TempVector;
 
@@ -54,25 +57,26 @@ public:
     friend class MWNode<D>;
     friend class GenNode<D>;
 
-protected:
+    int nNodes;       //number of nodes already defined
+    int nNodesCoeff;  //number of nodes Coeff already defined
+    int nGenNodesCoeff;  //number of nodes Gen Coeff already defined
+
+    double* SData; //Tree is defined as array of doubles, because C++ does not like void malloc
+    double* GenCoeffArray; //Tree is defined as array of doubles, because C++ does not like void malloc
+    MWTree<D>* mwTree_p;
+    MultiResolutionAnalysis<D>* mra_p;
+    ProjectedNode<D>* lastNode;//pointer to the last active node
+    double* lastNodeCoeff;//pointer to the last node coefficents
+    double* lastGenNodeCoeff;//pointer to the last node coefficents
+    int maxNodes;     //max number of nodes that can be defined
+    int maxNodesCoeff;//max number of nodes Coeff that can be defined
+    int maxGenNodesCoeff;//max number of Gen nodes Coeff that can be defined
     int sizeTreeMeta; //The first part of the Tree is filled with metadata; reserved size:
     int sizeNodeMeta; //The first part of each Node is filled with metadata; reserved size:
     int sizeNode;     //The dynamical part of the tree is filled with nodes metadata of size:
     int sizeNodeCoeff;//The dynamical part of the tree. Each Coeff set is of size:
     int sizeGenNodeCoeff;//The dynamical part of the tree. Each GenCoeff set is of size:
-    int maxNodes;     //max number of nodes that can be defined
-    int maxNodesCoeff;//max number of nodes Coeff that can be defined
-    int maxGenNodesCoeff;//max number of Gen nodes Coeff that can be defined
-    int nNodes;       //number of nodes already defined
-    int nNodesCoeff;  //number of nodes Coeff already defined
-    int nGenNodesCoeff;  //number of nodes Gen Coeff already defined
-
-    double* dataArray; //Tree is defined as array of doubles, because C++ does not like void malloc
-    double* GenCoeffArray; //Tree is defined as array of doubles, because C++ does not like void malloc
-    MWTree<D>* mwTree_p;
-    ProjectedNode<D>* lastNode;//pointer to the last active node
-    double* lastNodeCoeff;//pointer to the last node coefficents
-    double* lastGenNodeCoeff;//pointer to the last node coefficents
+protected:
 };
 
 #endif /* TREEALLOCATOR_H_*/

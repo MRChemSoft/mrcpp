@@ -17,7 +17,7 @@ class ProjectedNode: public FunctionNode<D> {
 public:
     friend class MWNode<D>;
     friend class FunctionTree<D>;
-    friend class TreeAllocator<D>;
+    friend class SerialTree<D>;
 
     //Eigen::VectorXd &getCoefs();
 protected:

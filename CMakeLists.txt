@@ -18,9 +18,11 @@ add_library(mrcpp STATIC
     OperatorStatistics.cpp
     RepresentableFunction.cpp
     TelePrompter.cpp
-    TreeAllocator.cpp
+    SerialTree.cpp
     parallel.cpp
     Plot.cpp
+    MPI.h
+    MPI.cpp
 )
 
 target_link_libraries(mrcpp
@@ -29,6 +31,7 @@ target_link_libraries(mrcpp
     mwtrees
     mwoperators
     mwbuilders
+    rt
 )
 
 install(TARGETS mrcpp

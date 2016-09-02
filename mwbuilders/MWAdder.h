@@ -5,7 +5,7 @@
 #include "AdditionCalculator.h"
 #include "WaveletAdaptor.h"
 #include "Timer.h"
-#include "TreeAllocator.h"
+#include "SerialTree.h"
 
 template<int D>
 class MWAdder : public TreeBuilder<D> {
@@ -29,7 +29,7 @@ public:
         return (*this)(tree_vec);
     }
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-      TreeAllocator<D> *alloc = new TreeAllocator<D>(this->MRA, MAXALLOCNODES);
+      SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
       FunctionTree<D> *out = alloc->getTree();
        //       FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         (*this)(*out, inp);

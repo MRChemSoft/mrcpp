@@ -20,7 +20,7 @@
 #include "NodeBox.h"
 #include "MWNode.h"
 #include "MultiResolutionAnalysis.h"
-#include "TreeAllocator.h"
+#include "SerialTree.h"
 
 #ifdef OPENMP
 #define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
@@ -99,8 +99,9 @@ public:
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
+    void RecountNodes();
 
-    TreeAllocator<D>* getAllocator() { return this->allocator; }
+    SerialTree<D>* getAllocator() { return this->allocator; }
 
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -111,7 +112,7 @@ public:
     friend class ProjectionCalculator<D>;
     friend class OperApplicationCalculator<D>;
     friend class OperatorState<D>;
-    friend class TreeAllocator<D>;
+    friend class SerialTree<D>;
 
 protected:
     // Parameters that are set in construction and should never change
@@ -129,7 +130,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    TreeAllocator<D> *allocator;
+    SerialTree<D> *allocator;
 
     // Tree data
     int nNodes;

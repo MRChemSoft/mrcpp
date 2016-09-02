@@ -128,10 +128,14 @@ void MWNode<D>::allocCoefs(int nBlocks) {
       this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
     } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
 	//      this->coefs = this->tree->allocator->allocGenCoeff(nBlocks);
-      *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocGenCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeGenNodeCoeff/sizeof(double);
-      this->GenNodeCoeffIx = this->tree->allocator->nGenNodesCoeff;
-    } else{//default is to allocate on ProjectedNode stack
+      //*((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocGenCoeff(nBlocks);
+      //*((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeGenNodeCoeff/sizeof(double);
+       // this->GenNodeCoeffIx = this->tree->allocator->nGenNodesCoeff;
+      *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
+      this->GenNodeCoeffIx = this->tree->allocator->nNodesCoeff;
+      this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
+   } else{//default is to allocate on ProjectedNode stack
 	//this->coefs = this->tree->allocator->allocCoeff(nBlocks);
       *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
       *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
@@ -151,7 +155,8 @@ void MWNode<D>::freeCoefs() {
     if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
       this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
     } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-      this->tree->allocator->DeAllocGenCoeff(this->GenNodeCoeffIx);
+      //this->tree->allocator->DeAllocGenCoeff(this->GenNodeCoeffIx);
+      this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
     } else{//default is to (de)allocate on ProjectedNode stack
       this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
     }

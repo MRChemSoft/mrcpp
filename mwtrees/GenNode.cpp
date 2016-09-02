@@ -22,6 +22,7 @@ GenNode<D>::GenNode(ProjectedNode<D> &p, int cIdx)
     this->allocCoefs(this->getTDim());
     this->zeroCoefs();
     this->setIsGenNode();
+    this->clearHasWCoefs();
     this->tree->incrementGenNodeCount();
 }
 
@@ -32,12 +33,14 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
     this->allocCoefs(this->getTDim());
     this->zeroCoefs();
     this->setIsGenNode();
+    this->clearHasWCoefs();
     this->tree->incrementGenNodeCount();
 }
 
 template<int D>
 GenNode<D>::~GenNode() {
-    this->tree->decrementGenNodeCount();
+    this->tree->decrementGenNodeCount(); //decrementNodeCount done in ~MWNode()
+    this->tree->allocator->DeAllocNodes(this->NodeRank);
     this->freeCoefs();
 }
 
@@ -53,7 +56,7 @@ void GenNode<D>::genChild(int cIdx) {
     if (this->tree->allocator == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
-      child = new (this->tree->allocator->allocGenNodes(1))GenNode<D>(*this, cIdx);
+      child = new (this->tree->allocator->allocGenNodes(1))GenNode<D>(*this, cIdx);//GenNode also calls creator of MWNode
     }
     this->children[cIdx] = child;
 }

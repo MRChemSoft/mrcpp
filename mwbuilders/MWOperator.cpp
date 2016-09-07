@@ -16,9 +16,7 @@ template<int D>
 void MWOperator<D>::operator()(FunctionTree<D> &out,
                                FunctionTree<D> &inp,
                                int maxIter) {
-    Timer pre_t, post_t;
-
-    pre_t.restart();
+    Timer pre_t;
     this->oper.calcBandWidths(this->apply_prec);
     this->adaptor = new WaveletAdaptor<D>(this->apply_prec,
                                           this->MRA.getMaxScale());
@@ -30,7 +28,7 @@ void MWOperator<D>::operator()(FunctionTree<D> &out,
 
     this->build(out, maxIter);
 
-    post_t.restart();
+    Timer post_t;
     this->clearCalculator();
     this->clearAdaptor();
     this->oper.clearBandWidths();

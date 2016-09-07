@@ -52,13 +52,11 @@ public:
         this->clearAdaptor();
 
         Timer trans_t;
-        trans_t.restart();
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         trans_t.stop();
 
         Timer clean_t;
-        clean_t.restart();
         for (int i = 0; i < inp.size(); i++) {
             FunctionTree<D> &tree = inp.getFunc(i);
             tree.deleteGenerated();

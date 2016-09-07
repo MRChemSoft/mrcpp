@@ -34,7 +34,6 @@ public:
         this->clearAdaptor();
 
         Timer trans_t;
-        trans_t.restart();
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         out.setupOperNodeCache();

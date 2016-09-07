@@ -17,8 +17,7 @@ using namespace Eigen;
   * the parameters are done in derived classes. */
 template<int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
-        : rank(node_group.rank()),
-          nThreads(omp_get_max_threads()),
+        : nThreads(omp_get_max_threads()),
           MRA(mra),
           rootBox(mra.getWorldBox()),
           order(mra.getOrder()),
@@ -38,8 +37,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
   * Takes the parameters of the input tree, not it's data */
 template<int D>
 MWTree<D>::MWTree(const MWTree<D> &tree)
-        : rank(node_group.rank()),
-          nThreads(omp_get_max_threads()),
+        : nThreads(omp_get_max_threads()),
           MRA(tree.MRA),
           rootBox(tree.rootBox),
           order(tree.order),

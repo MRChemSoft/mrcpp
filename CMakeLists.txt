@@ -19,7 +19,6 @@ add_library(mrcpp STATIC
     RepresentableFunction.cpp
     TelePrompter.cpp
     TreeAllocator.cpp
-    parallel.cpp
     Plot.cpp
 )
 

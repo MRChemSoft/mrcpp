@@ -31,12 +31,6 @@ protected:
 private:
     void createChild(int i);
     void genChild(int i);
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        ar & boost::serialization::base_object<FunctionNode<D> >(*this);
-    }
 };
 
 #endif /* PROJECTEDNODE_H_ */

@@ -1,7 +1,6 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
-#include <boost/math/special_functions/binomial.hpp>
 #include <Eigen/Eigenvalues>
 
 #include "MathUtils.h"
@@ -255,7 +254,7 @@ void MathUtils::print_vector(int n, const double *vec) {
 VectorXd MathUtils::getBinomialCoefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
     for (int k = 0; k <= order; k++) {
-        coefs[k] = boost::math::binomial_coefficient<double>(order, k);
+        coefs[k] = MathUtils::binomialCoeff(order, k);
     }
     return coefs;
 }

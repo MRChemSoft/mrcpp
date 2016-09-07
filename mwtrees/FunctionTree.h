@@ -64,13 +64,6 @@ protected:
     FunctionTree(const MWTree<D> &tree);
     FunctionTree(const FunctionTree<D> &tree);
     FunctionTree<D> &operator=(const FunctionTree<D> &tree);
-
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        NOT_IMPLEMENTED_ABORT;
-    }
 };
 
 template<int D>

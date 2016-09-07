@@ -9,8 +9,6 @@
 #define MWNODE_H_
 
 #include <Eigen/Core>
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/utility.hpp>
 
 #include "parallel.h"
 #include "macros.h"
@@ -197,17 +195,6 @@ protected:
 
 private:
     unsigned char status;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const {
-        NOT_IMPLEMENTED_ABORT
-    }
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version) {
-        NOT_IMPLEMENTED_ABORT
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER();
 };
 
 /** Allocation status of s/d-coefs is stored in the status bits for

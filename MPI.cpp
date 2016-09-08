@@ -11,21 +11,22 @@ int MPI_size = 1;
 
 /** Send or receive a serial tree using MPI
  */
-//template<int D>
 void MPI_Initializations(){
 
+#ifdef HAVE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &MPI_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &MPI_size);
+#endif
 
 }
 
-void SendRcv_SerialTree(SerialTree<1>* STree, int source, int dest, int tag, MPI_Comm comm){;}
-void SendRcv_SerialTree(SerialTree<2>* STree, int source, int dest, int tag, MPI_Comm comm){;}
-void SendRcv_SerialTree(SerialTree<3>* STree, int source, int dest, int tag, MPI_Comm comm){
+template<int D>
+void SendRcv_SerialTree(SerialTree<D>* STree, int source, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
   Timer timer;
 
 
+#ifdef HAVE_MPI
   timer.start();
   cout<<MPI_rank<<" STree  at "<<STree<<endl;
   if(MPI_rank==source){
@@ -50,12 +51,14 @@ void SendRcv_SerialTree(SerialTree<3>* STree, int source, int dest, int tag, MPI
     timer.stop();
    cout<<MPI_rank<<" allocator after rewrite pointer at "<<STree<<endl;
     cout<<" time rewrite pointers  " << timer<<endl;
+#endif
 }
 
 /** Define all the different MPI groups
  */
 void define_groups(){
 
+#ifdef HAVE_MPI
   int MPI_worldsize;
   MPI_Comm_size(MPI_COMM_WORLD, &MPI_worldsize);
   int MPI_orbital_group_size = MPI_worldsize;//temporary definition
@@ -71,6 +74,7 @@ void define_groups(){
   MPI_Comm_size(MPI_COMM_WORLD, &MPI_worldsize);
   MPI_Comm_size(MPI_COMM_WORLD, &MPI_orbital_group_size);
   println(0,"orbital group size: "<< MPI_orbital_group_size); 
+#endif
   
 }
 
@@ -108,3 +112,6 @@ void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr
 
 } */
 
+template void SendRcv_SerialTree<1>(SerialTree<1>* STree, int source, int dest, int tag, MPI_Comm comm);
+template void SendRcv_SerialTree<2>(SerialTree<2>* STree, int source, int dest, int tag, MPI_Comm comm);
+template void SendRcv_SerialTree<3>(SerialTree<3>* STree, int source, int dest, int tag, MPI_Comm comm);

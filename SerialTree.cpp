@@ -42,7 +42,6 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
     println(0, "SizeNode Meta (B)  " << this->sizeNodeMeta*sizeof(double));
 
     //The first part of the Tree is filled with metadata; reserved size:
-    //We also put here the adress og Sdata, with size sizeof(double*)  
     this->sizeTreeMeta = 16*((sizeof(FunctionTree<D>)+15)/16);//we want only multiples of 16
 
     //The dynamical part of the tree is filled with nodes of size:
@@ -55,8 +54,21 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
     this->SData = new double[mysize];
     cout<<"start of Serial Tree at "<<this->SData<<endl;
     this->GenCoeffArray = new double[ this->maxGenNodesCoeff*this->sizeGenNodeCoeff/sizeof(double)];
+
+    //indicate occupied nodes
+    this->NodeStackStatus = new int[maxNodes+1];
+
+    //NodeCoeff pointers
+    this->CoeffStack = new double * [maxNodesCoeff];
+    //indicate occupied NodeCoeff
+    this->CoeffStackStatus = new int[maxNodesCoeff+1];
+    //GenNodeCoeff pointers
+    this->GenCoeffStack = new double * [maxGenNodesCoeff];
+    //indicate occupied GenNodeCoeff
+    this->GenCoeffStackStatus = new int[maxGenNodesCoeff+1];
+
+    //some useful pointers to positions in SData
     this->lastNode = (ProjectedNode<D>*) (this->SData + this->sizeTreeMeta/sizeof(double));
-    //    this->lastNodeCoeff = (double*) (this->SData+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));
     this->firstNode = (double*)this->lastNode;//constant start of node data
     this->lastNodeCoeff = (double*) (this->SData+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));//start after the metadata
     this->firstNodeCoeff = this->lastNodeCoeff;//constant start of coeff data
@@ -64,28 +76,23 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
     this->nNodesCoeff=-1;//add 1 before each allocation
     this->nGenNodesCoeff=-1;//add 1 before each allocation
 
-    NodeStackStatus = new int[maxNodes+1];
+    //initialize stacks
     for (int i = 0; i <maxNodes;i++){
-      NodeStackStatus[i] = 0;//0=unoccupied
+      this->NodeStackStatus[i] = 0;//0=unoccupied
     }
-    NodeStackStatus[maxNodes] = -1;//=unavailable
+    this->NodeStackStatus[maxNodes] = -1;//=unavailable
 
-    CoeffStack = new double * [maxNodesCoeff];
-    CoeffStackStatus = new int[maxNodesCoeff+1];
     for (int i = 0; i <maxNodesCoeff;i++){
-      CoeffStack[i] = this->lastNodeCoeff+i*this->sizeNodeCoeff/sizeof(double);
-      CoeffStackStatus[i] = 0;//0=unoccupied
+      this->CoeffStack[i] = this->lastNodeCoeff+i*this->sizeNodeCoeff/sizeof(double);
+      this->CoeffStackStatus[i] = 0;//0=unoccupied
     }
-    CoeffStackStatus[maxNodesCoeff]=-1;//-1=unavailable
-    //CoeffStackStatus[-1]=-1;//TO FIX!
+    this->CoeffStackStatus[maxNodesCoeff]=-1;//-1=unavailable
 
-    GenCoeffStack = new double * [maxGenNodesCoeff];
-    GenCoeffStackStatus = new int[maxGenNodesCoeff+1];
     for (int i = 0; i <maxGenNodesCoeff;i++){
-      GenCoeffStack[i] = this->lastGenNodeCoeff+i*this->sizeGenNodeCoeff/sizeof(double);
-      GenCoeffStackStatus[i] = 0;//0=unoccupied
+      this->GenCoeffStack[i] = this->lastGenNodeCoeff+i*this->sizeGenNodeCoeff/sizeof(double);
+      this->GenCoeffStackStatus[i] = 0;//0=unoccupied
     }
-    GenCoeffStackStatus[maxGenNodesCoeff] = -1;//-1=unavailable
+    this->GenCoeffStackStatus[maxGenNodesCoeff] = -1;//-1=unavailable
 
     //put a MWTree at start of tree
     this->mwTree_p = new (this->SData) MWTree<D>(mra);
@@ -267,7 +274,9 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
 
     this->mwTree_p->resetEndNodeTable();
     cout<<"sending TreeAB with Nnodes "<<this->nNodes<<endl;
+#ifdef HAVE_MPI
     if(MPI_size == 2)SendRcv_SerialTree(this, 0, 1, 44, MPI_COMM_WORLD);
+#endif
 
 }
 /** Adds two trees.
@@ -875,6 +884,7 @@ SerialTree<D>::~SerialTree() {
     //    for (int i = 0; i <maxGenNodesCoeff;i++)this->GenCoeffStack[i]->~VectorXd();
     delete[] this->SData;
     delete[] this->GenCoeffArray;
+    delete[] this->NodeStackStatus;
     delete[] this->CoeffStack;
     delete[] this->CoeffStackStatus;
     delete[] this->GenCoeffStack;

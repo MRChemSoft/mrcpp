@@ -36,7 +36,7 @@ public:
         return out;
     }
 
-    void operator()(FunctionTree<3> &out,
+    void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
                     double b, FunctionTree<D> &tree_b,
                     int maxIter = -1) {
@@ -55,13 +55,11 @@ public:
         this->clearAdaptor();
 
         Timer trans_t;
-        trans_t.restart();
         out.mwTransform(BottomUp);
 	out.calcSquareNorm();
         trans_t.stop();
 
         Timer clean_t;
-        clean_t.restart();
         for (int i = 0; i < inp.size(); i++) {
             FunctionTree<D> &tree = inp.getFunc(i);
             tree.deleteGenerated();

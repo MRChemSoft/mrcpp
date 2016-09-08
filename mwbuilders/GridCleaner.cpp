@@ -6,12 +6,11 @@ using namespace std;
 
 template<int D>
 int GridCleaner<D>::clean(MWTree<D> &tree) const {
-    Timer clean_t, split_t;
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
     if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Clearing tree");
 
-    split_t.restart();
+    Timer split_t;
     MWNodeVector *newVec = new MWNodeVector;
     MWNodeVector *workVec = tree.copyEndNodeTable();
     this->adaptor->splitNodeVector(*newVec, *workVec);
@@ -23,7 +22,7 @@ int GridCleaner<D>::clean(MWTree<D> &tree) const {
     printout(10, "  -- #  0: Split        ");
     printout(10, setw(6) << nSplit << " nodes\n");
 
-    clean_t.restart();
+    Timer clean_t;
     MWNodeVector nodeVec;
     tree.makeNodeTable(nodeVec);
     int nClear = nodeVec.size();

@@ -8,7 +8,8 @@
 template<int D>
 class DerivativeOperator : public MWOperator<D> {
 public:
-    DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
+    DerivativeOperator(int dir,
+                       const MultiResolutionAnalysis<D> &mra,
                        double a = 0.5,
                        double b = 0.5);
     virtual ~DerivativeOperator();

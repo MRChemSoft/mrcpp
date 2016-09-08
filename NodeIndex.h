@@ -13,7 +13,6 @@
 #ifndef NODEINDEX_H_
 #define NODEINDEX_H_
 
-#include <boost/serialization/serialization.hpp>
 #include <iostream>
 
 #include "TelePrompter.h"
@@ -47,13 +46,6 @@ public:
 private:
     int L[D];
     short int N;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        ar & L;
-        ar & N;
-    }
 };
 
 template<int D>

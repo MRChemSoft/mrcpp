@@ -10,8 +10,6 @@
 #ifndef MWTREE_H_
 #define MWTREE_H_
 
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/utility.hpp>
 #include <Eigen/Core>
 
 #include "parallel.h"
@@ -90,7 +88,6 @@ public:
     bool testLock() { return TEST_TREE_LOCK(); }
 
     int getNThreads() const { return this->nThreads; }
-    int getRankId() const { return this->rank; }
 
     virtual bool saveTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
     virtual bool loadTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
@@ -116,7 +113,6 @@ public:
 
 protected:
     // Parameters that are set in construction and should never change
-    const int rank;
     const int nThreads;
     const MultiResolutionAnalysis<D> MRA;
 
@@ -189,33 +185,6 @@ protected:
 #ifdef OPENMP
     omp_lock_t tree_lock;
 #endif
-private:
-    friend class boost::serialization::access;
-
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const {
-        NOT_IMPLEMENTED_ABORT;
-    }
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version) {
-        NOT_IMPLEMENTED_ABORT;
-//        setupFilters(scalingType);
-//        setupScalingBasis(scalingType);
-//        freeWorkMemory();
-//        allocWorkMemory();
-
-//        if (this->isScattered()) {
-//            if (node_group.size() < 2) {
-//                MSG_WARN("Reading distributed tree in serial. " <<
-//                         "Tree is incomplete and unpure.");
-//                resetEndNodeTable();
-//                return;
-//            }
-//        }
-//        mwTransformUp();
-//        resetEndNodeTable();
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER();
 };
 
 template<int D>

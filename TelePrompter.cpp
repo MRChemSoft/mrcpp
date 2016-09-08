@@ -72,14 +72,14 @@ void TelePrompter::init(int printLevel, bool teletype, const char *fil) {
     SET_PRINT_PRECISION(15);
     cout << scientific << setprecision(14);
 
-    mpi::communicator world;
-    int rank=world.rank();
+    int rank=0;
+    int world_size = 1;
     SET_PRINT_LEVEL(printLevel);
     if (teletype and fil != 0) {
         stringstream fname;
         if (rank == 0) {
             if (printLevel < 0) {
-                if (world.size() > 1) {
+                if (world_size > 1) {
                     fname << fil << "-" << rank << ".out";
                 } else {
                     fname << fil << ".out";

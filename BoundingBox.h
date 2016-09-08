@@ -57,18 +57,6 @@ protected:
 
     void setNBoxes(const int *nb);
     void setDerivedParameters();
-
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        ar & nBoxes;
-        ar & cornerIndex;
-        ar & unitLength;
-        ar & boxLengths;
-        ar & lowerBounds;
-        ar & upperBounds;
-    }
 };
 
 template<int D>

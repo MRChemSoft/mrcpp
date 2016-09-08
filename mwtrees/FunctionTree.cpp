@@ -88,20 +88,6 @@ void FunctionTree<D>::clear() {
 template<int D>
 bool FunctionTree<D>::saveTree(const string &file) {
     NOT_IMPLEMENTED_ABORT;
-//    stringstream fname;
-//    fname << file;
-//    if (this->isScattered()) {
-//        fname << "-" << this->getRankId();
-//    }
-//    fname << ".tree";
-//    ofstream ofs(fname.str().c_str(), ios_base::binary);
-//    if (ofs == 0) {
-//        MSG_FATAL("Could not open file for writing: " << file);
-//    }
-//    boost::archive::binary_oarchive oa(ofs);
-//    this->purgeGenNodes();
-//    oa << *this;
-//    return true;
 }
 
 /** Read a previously stored tree structure from disk.
@@ -110,19 +96,6 @@ bool FunctionTree<D>::saveTree(const string &file) {
 template<int D>
 bool FunctionTree<D>::loadTree(const string &file) {
     NOT_IMPLEMENTED_ABORT;
-//    stringstream fname;
-//    fname << file;
-//    if (node_group.size() > 1 and this->isBuildDistributed()) {
-//        fname << "-" << this->getRankId();
-//    }
-//    fname << ".tree";
-//    ifstream ifs(fname.str().c_str(), ios_base::binary);
-//    if (not ifs) {
-//        return false;
-//    }
-//    boost::archive::binary_iarchive ia(ifs);
-//    ia >> *this;
-//    return true;
 }
 
 template<int D>

@@ -59,12 +59,6 @@ private:
     void unlockSiblings();
 
     void regenerateCoefs();
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        ar & boost::serialization::base_object<FunctionNode<D> >(*this);
-    }
 };
 
 

@@ -1,62 +1,77 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-//#include <boost/timer/timer.hpp>
-#include <time.h>
 #include <chrono>
-#include <mpi.h>
 
 #include "TelePrompter.h"
 
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
+
 class Timer {
 public:
-  //    Timer() : nano(1.0e9) { t.stop(); }
- Timer() {start(); }
+    Timer(bool start_timer = true) : running(false), time_used(0.0) {
+        if (start_timer) {
+            start();
+        }
+    }
     Timer& operator=(const Timer &timer) {
         if (this != &timer) {
             this->time_used = timer.time_used;
+            this->clock_start = timer.clock_start;
+            this->running = timer.running;
         }
         return *this;
     }
-    //    double clock_start;
-    //std::chrono::system_clock::time_point clock_start = std::chrono::system_clock::now();
-    /*    void restart() { t.resume(); }
-    void stop() { t.stop(); }
-    double getWallTime() const { return t.elapsed().wall/nano; }
-    double getUserTime() const { return t.elapsed().user/nano; }
-    double getSystemTime() const { return t.elapsed().system/nano; }*/
     void start() {
-      clock_start= std::chrono::system_clock::now();
-      std::chrono::duration<double> elapsed_seconds=std::chrono::system_clock::now()-clock_start;
-      time_used= (double) elapsed_seconds.count();
+        this->clock_start = now();
+        this->time_used = 0.0;
+        this->running = true;
     }
-    void restart() { clock_start=std::chrono::system_clock::now();}
+    void resume() {
+        if (this->running) MSG_WARN("Timer already running");
+        this->clock_start = now();
+        this->running = true;
+    }
     void stop() {
-      std::chrono::duration<double> elapsed_seconds=std::chrono::system_clock::now()-clock_start;
-      time_used =  time_used + (double) elapsed_seconds.count(); }
-    double getWallTime() const { return (double) time_used; }
-    double getUserTime() const { return (double) time_used; }
-    double getSystemTime() const { return (double) time_used; }
-   //  double gettime(){
-      //      return MPI_Wtime();
-      // timespec time1;
-      // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
-      // return (double) time1.tv_sec+1.0E-9*time1.tv_nsec;
-    //   return (double) time_used;
-    // }
-    friend std::ostream& operator<<(std::ostream &o, const Timer &time_used) {
+        if (not this->running) MSG_WARN("Timer not running");
+        this->time_used += diffTime(now(), this->clock_start);
+        this->running = false;
+    }
+
+    double getWallTime() const {
+        if (this->running) MSG_WARN("Timer still running");
+        return this->time_used;
+    }
+    double getUserTime() const {
+        if (this->running) MSG_WARN("Timer still running");
+        return this->time_used;
+    }
+    double getSystemTime() const {
+        if (this->running) MSG_WARN("Timer still running");
+        return this->time_used;
+    }
+
+    friend std::ostream& operator<<(std::ostream &o, const Timer &timer) {
         int old_prec;
         GET_PRINT_PRECISION(old_prec);
         SET_PRINT_PRECISION(3);
-        o << "    user   " << std::setw(6) << time_used;
-        o << "    wall   " << std::setw(6) << time_used;
+        o << "    user   " << std::setw(6) <<  timer.getUserTime();
+        o << "    wall   " << std::setw(6) <<  timer.getWallTime();
         SET_PRINT_PRECISION(old_prec);
         return o;
 	}
 private:
-    //    boost::timer::cpu_timer t;
+    bool running;
     double time_used;
-    //std::chrono::duration<double> time_used;
-    std::chrono::system_clock::time_point clock_start;
+    timeT clock_start;
+
+    timeT now(){
+        return std::chrono::high_resolution_clock::now();
+    }
+
+    double diffTime(timeT t2, timeT t1) {
+        std::chrono::duration<double> diff = t2-t1;
+        return diff.count();
+    }
 };
 #endif // TIMER_H

@@ -30,6 +30,13 @@ public:
         return out;
     }
 
+    void operator()(FunctionTree<D> &out,
+                    std::function<double (const double *r)> func,
+                    int maxIter = -1) {
+        AnalyticFunction<D> inp(func);
+        (*this)(out, inp, maxIter);
+    }
+
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
         SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
@@ -48,7 +55,6 @@ public:
         this->clearAdaptor();
 
         Timer trans_t;
-        trans_t.restart();
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         trans_t.stop();

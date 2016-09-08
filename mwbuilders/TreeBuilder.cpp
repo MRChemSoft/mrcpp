@@ -38,7 +38,7 @@ void TreeBuilder<D>::clearCalculator() {
 
 template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
-    Timer calc_t, split_t, norm_t;
+    Timer calc_t(false), split_t(false), norm_t(false);
     if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
     if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Building tree");
@@ -54,11 +54,11 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
         printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
         printout(10, setw(6) << workVec->size() << " nodes ");
 
-        calc_t.restart();
+        calc_t.resume();
         this->calculator->calcNodeVector(*workVec);
         calc_t.stop();
 
-        norm_t.restart();
+        norm_t.resume();
         if (iter == 0) {
             sNorm = calcScalingNorm(*workVec);
         }
@@ -74,7 +74,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
         println(10, setw(25) << tree.squareNorm);
         norm_t.stop();
 
-        split_t.restart();
+        split_t.resume();
         newVec = new MWNodeVector;
         if (iter >= maxIter and maxIter >= 0) workVec->clear();
         this->adaptor->splitNodeVector(*newVec, *workVec);

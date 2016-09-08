@@ -216,7 +216,7 @@ template<int D>
 void Plot<D>::gridPlot(const MWTree<D> &tree, const string &fname) {
     println(20, "----------Grid Plot-----------");
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Grid] << "." << tree.getRankId();
+    file << fname << this->suffix[Plot<D>::Grid];
     openPlot(file.str());
     writeGrid(tree);
     closePlot();

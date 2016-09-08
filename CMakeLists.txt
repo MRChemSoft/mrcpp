@@ -21,8 +21,6 @@ add_library(mrcpp STATIC
     SerialTree.cpp
     parallel.cpp
     Plot.cpp
-    MPI.h
-    MPI.cpp
 )
 
 target_link_libraries(mrcpp

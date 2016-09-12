@@ -98,6 +98,7 @@ public:
     friend class FunctionTree<D>;
     friend class GenNode<D>;
     friend class NodeBox<D>;
+    friend class ProjectedNode<D>;
 
 protected:
     MWTree<D> *tree;

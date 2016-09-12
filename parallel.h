@@ -33,7 +33,7 @@ void MPI_Initializations();
 #ifdef HAVE_MPI
 
 template<int D>
-void SendRcv_SerialTree(SerialTree<D>* STree, int source, int dest, int tag, MPI_Comm comm);
+void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MPI_Comm comm);
 //void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr);
 
 #else

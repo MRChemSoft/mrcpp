@@ -37,12 +37,15 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->sizeNodeCoeff = SizeCoefOnly;
     //NB: Gen nodes should take less space?
     this->sizeGenNodeCoeff = SizeCoefOnly;
-    println(0, "SizeNode Coeff (B) " << this->sizeNodeCoeff);
-    println(0, "SizeGenNode Coeff (B) " << this->sizeGenNodeCoeff);
-    println(0, "SizeNode Meta (B)  " << this->sizeNodeMeta*sizeof(double));
+    println(10, "SizeNode Coeff (B) " << this->sizeNodeCoeff);
+    println(10, "SizeGenNode Coeff (B) " << this->sizeGenNodeCoeff);
+    println(10, "SizeNode Meta (B)  " << this->sizeNodeMeta*sizeof(double));
 
     //The first part of the Tree is filled with metadata; reserved size:
     this->sizeTreeMeta = 16*((sizeof(FunctionTree<D>)+15)/16);//we want only multiples of 16
+
+    //FOR NOW WE DO NOT USE TREE METADATA
+    this->sizeTreeMeta = 0;
 
     //The dynamical part of the tree is filled with nodes of size:
     this->sizeNode = this->sizeNodeMeta + sizeNodeCoeff;//in units of Bytes
@@ -94,19 +97,19 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     }
     this->GenCoeffStackStatus[maxGenNodesCoeff] = -1;//-1=unavailable
 
-    //put a MWTree at start of tree
-
-    //pointer to parent tree
-    this->mwTree_p = Tree;
-    this->mwTree_p->allocator = this;
+    
+    this->mwTree_p = Tree;//pointer to parent tree
+    this->mwTree_p->serialTree_p = this;//must be defined before nodes are created
 
     //alloc root nodes
     MWNode<D> **roots = Tree->getRootBox().getNodes();
+    println(0, "start " );
     for (int rIdx = 0; rIdx < Tree->getRootBox().size(); rIdx++) {
         const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(rIdx);
 	roots[rIdx] = new (allocNodes(1)) ProjectedNode<D>(*this->getTree(), nIdx);
-	println(0, rIdx<<" Allocating root node  " <<roots[rIdx]->NodeRank); 	
+	roots[rIdx]->NodeRank = this->nNodes-1;
     }
+    println(0, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank());
 
     Tree->resetEndNodeTable();
 
@@ -142,11 +145,19 @@ void SerialTree<D>::RewritePointers(){
   if(d_p_shift>=0)this->getTree() = new (((double**)this->SData)+1) MWTree<D>(mra);
   cout<<"new NNodes "<<this->getTree()->getNNodes()<<" tag "<<d_p_shift<<endl;
   */
-  MWTree<D> &Tree = *((MWTree<D>*)(this->SData));
 
-  NodeBox<D> &rBox = Tree.getRootBox();
+  FunctionTree<D>* Tree = dynamic_cast<FunctionTree<D>*> (this->mwTree_p);
+
+  NodeBox<D> &rBox = Tree->getRootBox();
   MWNode<D> **roots = rBox.getNodes();
-
+  
+  const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(0);
+  ProjectedNode<D>* tempnode = new (allocNodes(1)) ProjectedNode<D>(*Tree, nIdx);
+  //virtual table pointer. Must be made from a locally created node.
+  char* cvptr =  *(char**)(tempnode);
+  println(0, "Node virtual table pointer "<<(double*) cvptr );  
+  delete tempnode; 
+ 
   d_p_shift = this->firstNodeCoeff-(*((double**) ((void*)&(roots[0]->coefvec))));
   n_p_shift =  ((MWNode<D> *) ( this->firstNodeCoeff)) - ((MWNode<D> *)(*((double**) ((void*)&(roots[0]->coefvec)))));
   //n_p_shift =  (d_p_shift*sizeof(double))/sizeof(MWNode<D>);//be careful with ptrdiff_t arithmetic!
@@ -170,6 +181,8 @@ void SerialTree<D>::RewritePointers(){
 	  stack[slen++] = fpos->children[i];
 	}
       }
+      //set virtual table. Assumes a Projected Node!
+      *(char**)(fpos) = cvptr;
 
       fpos->parent = (MWNode<D>*)(((double*)fpos->parent) + d_p_shift);// += n_p_shift not safe!
       //fpos->tree += t_p_shift;//NB: does not work!//(MWTree<D>*)(((double*)fpos->tree) + d_p_shift);
@@ -245,6 +258,9 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
 	counterA++;
 	cA=&(fposA->getCoefs()(0));
 	cB=&(fposB->getCoefs()(0));
+	//virtual table test
+	//char* cvptr =  *(char**)(fposA);
+	//println(0, fposA->getRank()<<" virtual pointer "<<(double*) cvptr <<" "<<fposA->NodeCoeffIx<<" "<<fposA->GenNodeCoeffIx);  
 	
 	t2.resume();
 	if(fposA->hasWCoefs()){
@@ -276,7 +292,7 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
     this->getTree()->resetEndNodeTable();
     cout<<"sending TreeAB with Nnodes "<<this->nNodes<<endl;
 #ifdef HAVE_MPI
-    if(MPI_size == 2)SendRcv_SerialTree(this, 0, 1, 44, MPI_COMM_WORLD);
+    if(MPI_size == 2)SendRcv_SerialTree(TreeA, 0, 1, 44, MPI_COMM_WORLD);
 #endif
 
 }
@@ -746,7 +762,6 @@ ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc) {
       this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
       //println(0, "new size meta " << this->nNodes);
       for (int i = 0; i<nAlloc; i++){
-	oldlastNode->NodeRank=this->nNodes+i-1;
 	if (this->NodeStackStatus[this->nNodes+i-1]!=0)
 	  println(0, this->nNodes+i-1<<" NodeStackStatus: not available " << this->NodeStackStatus[this->nNodes+i-1]);
 	this->NodeStackStatus[this->nNodes+i-1]=1;

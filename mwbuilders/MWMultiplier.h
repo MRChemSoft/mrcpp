@@ -29,7 +29,8 @@ public:
         return (*this)(tree_vec);
     }
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+      //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+      FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp);
         return out;
     }

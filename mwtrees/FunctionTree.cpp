@@ -76,7 +76,7 @@ template<int D>
 FunctionTree<D>::~FunctionTree() {
     println(0, "~FunctionTree");    
     //    NOT_IMPLEMENTED_ABORT;
-    if(this->allocator){
+    if(this->serialTree_p){
       //root nodes are created and destroyed in the Serial tree
     }else{
       MWNode<D> **roots = this->rootBox.getNodes();

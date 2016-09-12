@@ -98,7 +98,7 @@ public:
     int countNodes(int depth = -1);
     void RecountNodes();
 
-    SerialTree<D>* getAllocator() { return this->allocator; }
+    SerialTree<D>* getSerialTree() { return this->serialTree_p; }
 
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -126,7 +126,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    SerialTree<D> *allocator=0;
+    SerialTree<D> *serialTree_p;
 
     // Tree data
     int nNodes;

@@ -25,7 +25,8 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           hilbertPath(),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          NodeRank(-1){
     clearNorms();
     this->coefs = &this->coefvec;
     this->tree->incrementNodeCount(getScale());
@@ -50,7 +51,8 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           hilbertPath(p.getHilbertPath(), cIdx),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          NodeRank(-2) {
     clearNorms();
     this->coefs = &this->coefvec;
     this->tree->incrementNodeCount(getScale());
@@ -73,7 +75,8 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           hilbertPath(n.getHilbertPath()),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          NodeRank(-3) {
 
     this->coefs = &this->coefvec;
     allocCoefs(this->getTDim());
@@ -102,8 +105,10 @@ MWNode<D>::~MWNode() {
     }
     if (not this->isLooseNode()) {
         this->tree->decrementNodeCount(getScale());
-	if (this->NodeRank<0){println(0, "Node has no rank! " << this->NodeRank);
-	}else{        this->tree->allocator->DeAllocNodes(this->NodeRank);}
+	if (this->NodeRank<0 and this->tree->serialTree_p){println(0, "Node has no rank! " << this->NodeRank);
+	}else{
+	  if(this->tree->serialTree_p)this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
+	}
     } else {
         freeCoefs();
     }
@@ -122,24 +127,24 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     int nCoefs = nBlocks * this->getKp1_d();
     if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->GenNodeCoeffIx<<" Node already allocated!   "<<this->NodeCoeffIx);
     if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-      //      this->coefs = this->tree->allocator->allocCoeff(nBlocks);
-      *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
-      this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
+      *((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+      this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
     } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-	//      this->coefs = this->tree->allocator->allocGenCoeff(nBlocks);
-      //*((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocGenCoeff(nBlocks);
-      //*((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeGenNodeCoeff/sizeof(double);
-       // this->GenNodeCoeffIx = this->tree->allocator->nGenNodesCoeff;
-      *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
-      this->GenNodeCoeffIx = this->tree->allocator->nNodesCoeff;
-      this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
-   } else{//default is to allocate on ProjectedNode stack
-	//this->coefs = this->tree->allocator->allocCoeff(nBlocks);
-      *((double**) ((void*)&(this->coefvec))) = this->tree->allocator->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
-      this->NodeCoeffIx = this->tree->allocator->nNodesCoeff;
+      *((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+      this->GenNodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+      this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+   } else{
+      //      if(this->tree->serialTree_p) MSG_FATAL("Coefs should be allocated by Serial Tree");
+      if(this->tree->serialTree_p){
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+      }else{
+	//Operator Node
+	this->coefs = new VectorXd(nCoefs);
+      }
     }
 
     this->setIsAllocated();
@@ -153,12 +158,18 @@ void MWNode<D>::freeCoefs() {
     //delete this->coefs;
     //this->coefs->~VectorXd();
     if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-      this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
+      this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
     } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-      //this->tree->allocator->DeAllocGenCoeff(this->GenNodeCoeffIx);
-      this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
-    } else{//default is to (de)allocate on ProjectedNode stack
-      this->tree->allocator->DeAllocCoeff(this->NodeCoeffIx);
+      //this->tree->serialTree_p->DeAllocGenCoeff(this->GenNodeCoeffIx);
+      this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
+    } else{
+      if(this->tree->serialTree_p){
+	//default is to (de)allocate on ProjectedNode stack
+	this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
+      }else{
+	//Operator node
+	delete this->coefs;
+      }
     }
 
     
@@ -501,8 +512,8 @@ void MWNode<D>::reCompress(bool overwrite) {
         if (overwrite) {
             copyCoefsFromChildren(*this->coefs);
 	    mwTransform(Compression);
-	    //            int Children_Stride = this->getMWTree().allocator->sizeGenNodeCoeff/sizeof(double);
-            //            this->getMWTree().allocator->S_mwTransformBack(&(this->children[0]->getCoefs()[0]),&(this->getCoefs()[0]),Children_Stride);
+	    //            int Children_Stride = this->getMWTree().serialTree_p->sizeGenNodeCoeff/sizeof(double);
+            //            this->getMWTree().serialTree_p->S_mwTransformBack(&(this->children[0]->getCoefs()[0]),&(this->getCoefs()[0]),Children_Stride);
 
         } else {
             // Check optimization

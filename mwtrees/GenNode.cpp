@@ -40,7 +40,7 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
 template<int D>
 GenNode<D>::~GenNode() {
     this->tree->decrementGenNodeCount(); //decrementNodeCount done in ~MWNode()
-    this->tree->allocator->DeAllocNodes(this->NodeRank);
+    this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
     this->freeCoefs();
 }
 
@@ -53,10 +53,10 @@ template<int D>
 void GenNode<D>::genChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     MWNode<D> *child;
-    if (this->tree->allocator == 0){
+    if (this->tree->serialTree_p == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
-      child = new (this->tree->allocator->allocGenNodes(1))GenNode<D>(*this, cIdx);//GenNode also calls creator of MWNode
+      child = new (this->tree->serialTree_p->allocGenNodes(1))GenNode<D>(*this, cIdx);//GenNode also calls creator of MWNode
     }
     this->children[cIdx] = child;
 }

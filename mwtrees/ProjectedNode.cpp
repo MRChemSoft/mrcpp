@@ -43,15 +43,16 @@ ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
 
 template<int D>
 ProjectedNode<D>::~ProjectedNode() {
+    println(0, "~ProjectedNode rank" << this->NodeRank);
     this->freeCoefs();
 }
 
 /*template<int D>
 Eigen::VectorXd&  ProjectedNode<D>::getCoefs() { 
-  println(0, "getcoef from projectnode  "<< this->tree->allocator->TempVector->size());
-     for (int i=0; i<(this->tree->allocator->TempVector->size()); i++)(*this->tree->allocator->TempVector)(i)=(*this->coefs)(i);
+  println(0, "getcoef from projectnode  "<< this->tree->serialTree_p->TempVector->size());
+     for (int i=0; i<(this->tree->serialTree_p->TempVector->size()); i++)(*this->tree->serialTree_p->TempVector)(i)=(*this->coefs)(i);
      //return *this->coefs; 
- return *this->tree->allocator->TempVector; 
+ return *this->tree->serialTree_p->TempVector; 
  }*/
 
 /** Allocating child node.
@@ -62,11 +63,12 @@ template<int D>
 void ProjectedNode<D>::createChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     ProjectedNode<D> *child;
-    if (this->tree->allocator == 0){
+    if (this->tree->serialTree_p == 0){
         child = new ProjectedNode<D>(*this, cIdx);
     } else {
-      ProjectedNode<D>* oldlastNode=this->tree->allocator->allocNodes(1);
+      ProjectedNode<D>* oldlastNode=this->tree->serialTree_p->allocNodes(1);
          child = new (oldlastNode) ProjectedNode<D>(*this, cIdx);
+	 child->NodeRank = this->tree->serialTree_p->nNodes-1;
         //child = new ProjectedNode<D>(*this, cIdx);
     }
     //ProjectedNode<D> *child = new ProjectedNode<D>(*this, cIdx);
@@ -81,10 +83,11 @@ template<int D>
 void ProjectedNode<D>::genChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     MWNode<D> *child;
-    if (this->tree->allocator == 0){
+    if (this->tree->serialTree_p == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
-      child = new (this->tree->allocator->allocNodes(1))GenNode<D>(*this, cIdx);
+      child = new (this->tree->serialTree_p->allocNodes(1))GenNode<D>(*this, cIdx);
+      child->NodeRank =  this->tree->serialTree_p->nNodes-1;
     }
     this->children[cIdx] = child;
 }

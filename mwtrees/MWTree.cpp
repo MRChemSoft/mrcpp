@@ -24,10 +24,12 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
           squareNorm(-1.0),
           name("nn"),
-          nNodes(0) {
+          nNodes(0),
+          serialTree_p(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
     allocWorkMemory();
+    println(0, "new MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif
@@ -50,6 +52,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
     allocNodeCounters();
     allocWorkMemory();
     new SerialTree<D>(this, max_nodes);
+    println(0, "new Serial MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif
@@ -80,34 +83,34 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 template<int D>
 MWTree<D>::~MWTree() {
     println(0, "~MWTree");
-    if(this->allocator) {
+    if(this->serialTree_p) {
       //SerialTree removes nodes
-	this->allocator->~SerialTree();
+      delete this->serialTree_p;
     } else {
-      //Has to remove nodes here
+      //Has to remove nodes here?
       //MWNode<D> **roots = this->getRootBox().getNodes();
       //for (int i = 0; i < this->getRootBox().size(); i++) {
       //  ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
       //  node->~ProjectedNode();
       //  roots[i] = 0;
       //}
-    	this->endNodeTable.clear();
-    	if (this->nNodes != 0) {
-            MSG_ERROR("Node count != 0 -> " << this->nNodes);
-    	}
-    	if (this->nodesAtDepth.size() != 1) {
-            MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
-    	}
-    	if (this->nodesAtDepth[0] != 0) {
-            MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    	}
-    	deleteNodeCounters();
-    	freeWorkMemory();
-
-#ifdef OPENMP
-    	omp_destroy_lock(&tree_lock);
-#endif
     }
+    this->endNodeTable.clear();
+    if (this->nNodes != 0) {
+      MSG_ERROR("Node count != 0 -> " << this->nNodes);
+    }
+    if (this->nodesAtDepth.size() != 1) {
+      MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
+    }
+    if (this->nodesAtDepth[0] != 0) {
+      MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
+    }
+    deleteNodeCounters();
+    freeWorkMemory();
+    
+#ifdef OPENMP
+    omp_destroy_lock(&tree_lock);
+#endif
     println(0, "~MWTree done");
 }
 

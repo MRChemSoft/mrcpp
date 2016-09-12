@@ -40,6 +40,7 @@ public:
 
         FunctionTree<1> *tree = (*this->Q)(f);
         double result = tree->integrate();
+	println(0, " Boys tree nodes " << tree->getNNodes())
         delete tree;
 
         TelePrompter::setPrintLevel(oldlevel);

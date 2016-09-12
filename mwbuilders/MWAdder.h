@@ -29,9 +29,10 @@ public:
         return (*this)(tree_vec);
     }
     FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-      SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-      FunctionTree<D> *out = alloc->getTree();
+      //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+      //FunctionTree<D> *out = alloc->getTree();
        //       FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+      FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp);
         return out;
     }

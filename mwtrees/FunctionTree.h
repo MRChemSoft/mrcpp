@@ -12,6 +12,7 @@
 #ifndef FUNCTIONTREE_H_
 #define FUNCTIONTREE_H_
 
+#include "TreeBuilder.h"
 #include "MWTree.h"
 
 template<int D>
@@ -60,6 +61,7 @@ public:
     friend class MWOperator<D>;
 
 protected:
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES);
     FunctionTree(const MultiResolutionAnalysis<D> &mra);
     FunctionTree(const MWTree<D> &tree);
     FunctionTree(const FunctionTree<D> &tree);

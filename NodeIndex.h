@@ -44,8 +44,8 @@ public:
     friend class NodeIndexComp<D>;
 
 private:
-    int L[D];
     short int N;
+    int L[D];
 };
 
 template<int D>

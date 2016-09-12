@@ -12,6 +12,13 @@
 using namespace std;
 using namespace Eigen;
 
+/** FunctionTree constructor for Serial Tree.
+  * */
+template<int D>
+FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES)
+        : MWTree<D> (mra, MAXALLOCNODES) {
+}
+
 /** FunctionTree constructor.
   * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
   * Gives an uninitializes function. */
@@ -67,13 +74,19 @@ FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
 /** FunctionTree destructor. */
 template<int D>
 FunctionTree<D>::~FunctionTree() {
-    NOT_IMPLEMENTED_ABORT;
-    MWNode<D> **roots = this->rootBox.getNodes();
-    for (int i = 0; i < this->rootBox.size(); i++) {
+    println(0, "~FunctionTree");    
+    //    NOT_IMPLEMENTED_ABORT;
+    if(this->allocator){
+      //root nodes are created and destroyed in the Serial tree
+    }else{
+      MWNode<D> **roots = this->rootBox.getNodes();
+      for (int i = 0; i < this->rootBox.size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
         if (node != 0) delete node;
         roots[i] = 0;
+      }
     }
+    println(0, "~FunctionTree done");
 }
 
 /** Leaves the tree inn the same state as after construction*/

@@ -23,7 +23,8 @@ template<int D> class FunctionNode;
 template<int D>
 class SerialTree  {
 public:
-    SerialTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
+  SerialTree(MWTree<D>* Tree, int max_nodes);
+  //     SerialTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
     virtual ~SerialTree();
 
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
@@ -53,6 +54,7 @@ public:
     
     Eigen::VectorXd* TempVector;
 
+    friend class MWTree<D>;
     friend class ProjectedNode<D>;
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -63,6 +65,7 @@ public:
 
     double* SData; //Tree is defined as array of doubles, because C++ does not like void malloc
     double* GenCoeffArray; //Tree is defined as array of doubles, because C++ does not like void malloc
+    //    const MWTree<D>* mwTree_p;
     MWTree<D>* mwTree_p;
     MultiResolutionAnalysis<D>* mra_p;
     ProjectedNode<D>* lastNode;//pointer to the last active node

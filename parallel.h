@@ -1,17 +1,8 @@
-/*
- *
- *
- *  \date Sep 27, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- * \breif Convenience definitions for parallel builds
- */
-
 #ifndef PARALLEL_H_
 #define PARALLEL_H_
 
 #include "config.h"
+#include "SerialTree.h"
 
 #ifdef HAVE_OPENMP
 
@@ -30,4 +21,23 @@
 
 #endif
 
+#include "SerialTree.h"
+
+extern int MPI_rank;
+extern int MPI_size;
+
+void define_groups();
+void MPI_Initializations();
+
+
+#ifdef HAVE_MPI
+
+template<int D>
+void SendRcv_SerialTree(SerialTree<D>* STree, int source, int dest, int tag, MPI_Comm comm);
+//void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr);
+
+#else
+
+
+#endif
 #endif /* PARALLEL_H_ */

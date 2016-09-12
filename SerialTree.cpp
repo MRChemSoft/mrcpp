@@ -8,7 +8,7 @@
 #include "GenNode.h"
 #include "MathUtils.h"
 #include "Timer.h"
-#include "MPI.h"
+#include "parallel.h"
 
 using namespace std;
 using namespace Eigen;
@@ -17,7 +17,7 @@ using namespace Eigen;
   * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
   * Initializes rootNodes to represent the zero function. */
 template<int D>
-SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
+SerialTree<D>::SerialTree(MWTree<D>* Tree,
                                 int max_nodes)
         : nNodes(0),
           nNodesCoeff(0),
@@ -33,7 +33,7 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
 
     println(0, "max_nodes  " <<max_nodes);
     this->sizeNodeMeta =16*((sizeof(ProjectedNode<D>)+15)/16);//we want only multiples of 16
-    int SizeCoefOnly = (1<<D)*(MathUtils::ipow(mra.getOrder()+1,D))*sizeof(double);
+    int SizeCoefOnly = (1<<D)*(MathUtils::ipow(Tree->getOrder()+1,D))*sizeof(double);
     this->sizeNodeCoeff = SizeCoefOnly;
     //NB: Gen nodes should take less space?
     this->sizeGenNodeCoeff = SizeCoefOnly;
@@ -52,7 +52,7 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
     int mysize = (this->sizeTreeMeta/sizeof(double) + this->maxNodes*(this->sizeNode/sizeof(double)));
     println(0, "Allocating array of size (MB)  " << mysize*sizeof(double)/1024/1024);
     this->SData = new double[mysize];
-    cout<<"start of Serial Tree at "<<this->SData<<endl;
+
     this->GenCoeffArray = new double[ this->maxGenNodesCoeff*this->sizeGenNodeCoeff/sizeof(double)];
 
     //indicate occupied nodes
@@ -95,19 +95,20 @@ SerialTree<D>::SerialTree(const MultiResolutionAnalysis<D> &mra,
     this->GenCoeffStackStatus[maxGenNodesCoeff] = -1;//-1=unavailable
 
     //put a MWTree at start of tree
-    this->mwTree_p = new (this->SData) MWTree<D>(mra);
 
+    //pointer to parent tree
+    this->mwTree_p = Tree;
     this->mwTree_p->allocator = this;
 
     //alloc root nodes
-    NodeBox<D> &rBox = this->mwTree_p->getRootBox();
-    MWNode<D> **roots = rBox.getNodes();
-    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = rBox.getNodeIndex(rIdx);
+    MWNode<D> **roots = Tree->getRootBox().getNodes();
+    for (int rIdx = 0; rIdx < Tree->getRootBox().size(); rIdx++) {
+        const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(rIdx);
 	roots[rIdx] = new (allocNodes(1)) ProjectedNode<D>(*this->getTree(), nIdx);
+	println(0, rIdx<<" Allocating root node  " <<roots[rIdx]->NodeRank); 	
     }
 
-    this->mwTree_p->resetEndNodeTable();
+    Tree->resetEndNodeTable();
 
 }
 /** Overwrite all pointers defined in the tree.
@@ -125,7 +126,7 @@ void SerialTree<D>::RewritePointers(){
   ptrdiff_t t_p_shift = 0;//actual - written adress of tree
   cout<<"start of data at "<<this->firstNode<<" pointer at "<<" diff "<<d_p_shift<<endl;
   cout<<" number of gen coeff on stack "<< this->nGenNodesCoeff <<" tag "<<this<<endl;
-  cout<<" size tree "<< this->mwTree_p->nNodes <<" tag "<<this<<endl;
+  cout<<" size tree "<< this->getTree()->nNodes <<" tag "<<this<<endl;
 
   this->lastNodeCoeff = (double*) (this->SData+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));//start after the metadata
   for (int i = 0; i <maxNodesCoeff;i++){
@@ -138,8 +139,8 @@ void SerialTree<D>::RewritePointers(){
   Treeold .allocator = this;//Address of the class
 
   cout<<"writing new tree at "<<((double**)this->SData)+1<<" tag "<<d_p_shift<<endl;
-  if(d_p_shift>=0)this->mwTree_p = new (((double**)this->SData)+1) MWTree<D>(mra);
-  cout<<"new NNodes "<<this->mwTree_p->getNNodes()<<" tag "<<d_p_shift<<endl;
+  if(d_p_shift>=0)this->getTree() = new (((double**)this->SData)+1) MWTree<D>(mra);
+  cout<<"new NNodes "<<this->getTree()->getNNodes()<<" tag "<<d_p_shift<<endl;
   */
   MWTree<D> &Tree = *((MWTree<D>*)(this->SData));
 
@@ -159,9 +160,9 @@ void SerialTree<D>::RewritePointers(){
   for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
    stack[slen++] =  roots[rIdx];//roots address are in MWtree which is not overwritten
   }
-  this->mwTree_p->nNodes = 0;
+  this->getTree()->nNodes = 0;
   while (slen) {
-      this->mwTree_p->nNodes++;
+      this->getTree()->nNodes++;
       MWNode<D>* fpos = stack[--slen];
       if(fpos->getNChildren()){
  	for (int i = 0; i < fpos->getNChildren(); i++) {
@@ -172,13 +173,13 @@ void SerialTree<D>::RewritePointers(){
 
       fpos->parent = (MWNode<D>*)(((double*)fpos->parent) + d_p_shift);// += n_p_shift not safe!
       //fpos->tree += t_p_shift;//NB: does not work!//(MWTree<D>*)(((double*)fpos->tree) + d_p_shift);
-      fpos->tree = this->mwTree_p;
+      fpos->tree = this->getTree();
       *((double**) ((void*)&(fpos->coefvec))) = this->firstNodeCoeff+(fpos->NodeCoeffIx)*this->sizeNodeCoeff/sizeof(double);
       //*((int*) (((void*)&(fpos->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff/sizeof(double);
 
      fpos->coefs = &fpos->coefvec;
   }
-  this->mwTree_p->resetEndNodeTable();
+  this->getTree()->resetEndNodeTable();
 
 }
 /** Adds two trees.
@@ -222,13 +223,13 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
       if(fposA->getNChildren()+fposB->getNChildren()){
 	cA=&(fposA->getCoefs()(0));
 	if(fposA->getNChildren()==0){
-	  t1.restart();
+	  t1.resume();
 	  GenS_nodes(fposA);
 	  t1.stop();
 	  counterB++;
 	}
 	if(fposB->getNChildren()==0){
-	  t1.restart();
+	  t1.resume();
 	  cB=&(fposB->getCoefs()(0));
 	  GenS_nodes(fposB);
 	  counterB++;
@@ -245,7 +246,7 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
 	cA=&(fposA->getCoefs()(0));
 	cB=&(fposB->getCoefs()(0));
 	
-	t2.restart();
+	t2.resume();
 	if(fposA->hasWCoefs()){
 	  if(fposB->hasWCoefs()){for (int i=0; i<N_Coeff; i++)cA[i]+=c*cB[i];
 	  }else{for (int i=0; i<N_GenCoeff; i++)cA[i]+=c*cB[i];
@@ -272,7 +273,7 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
     timer.stop();
     println(0, " time Sadd     " << timer);
 
-    this->mwTree_p->resetEndNodeTable();
+    this->getTree()->resetEndNodeTable();
     cout<<"sending TreeAB with Nnodes "<<this->nNodes<<endl;
 #ifdef HAVE_MPI
     if(MPI_size == 2)SendRcv_SerialTree(this, 0, 1, 44, MPI_COMM_WORLD);
@@ -326,8 +327,8 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
     double* cB;
     double* cC;
     bool downwards = true;//travers in direction children
-    timer.restart();
-    t2.restart();
+    timer.resume();
+    t2.resume();
     Tsum=0.0;
     counter=0;
     counterA=0;
@@ -345,13 +346,13 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
 	cA=&(fposA->getCoefs()(0));
 	//	  println(0, "NodeA orig at  "<< fposA<<" coeff at "<<cA);
 	if(fposA->getNChildren()==0){
-	  t1.restart();
+	  t1.resume();
 	  GenS_nodes(fposA);
 	  t1.stop();
 	}
 	if(fposB->getNChildren()==0){
 	  //println(0, slenB<<" BgenChildren()  ");
-	  t1.restart();
+	  t1.resume();
 	  cB=&(fposB->getCoefs()(0));
 	  GenS_nodes(fposB);
 
@@ -395,7 +396,7 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
 	      cA=&(fposAA->getCoefs()(0));
 	      cB=&(fposBB->getCoefs()(0));
 	      	      
-	      t2.restart();
+	      t2.resume();
 	      if(fposAA->isGenNode()){
 		
 		//for (int i=0; i<N_GenCoeff; i++)fposA->getCoefs()(i)+=c*fposB->getCoefs()(i);
@@ -423,7 +424,7 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
 	  }
 	  if(slenA>0){
 	    //make parent
-	    t3.restart();
+	    t3.resume();
 	    S_mwTransformBack(&(fposA->getCoefs()(0)), &(fposA->parent->getCoefs()(0)), Children_Stride); 
 	    fposA->parent->calcNorms();
 	    t3.stop();
@@ -446,9 +447,9 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
     this->getTree()->squareNorm=Tsum;
     println(0, " time generate     " << t1);
     println(0, " time add coef     " << t2);
-    t3.restart();
+    t3.resume();
     //this->S_mwTreeTransformUp();
-     //this->mwTree_p->mwTransform(BottomUp);
+     //this->getTree()->mwTransform(BottomUp);
     t3.stop();
     println(0, " time TransformUp    " << t3);
     timer.stop();
@@ -495,11 +496,11 @@ template<int D>
 void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride) {
   if(D!=3)MSG_FATAL("S_mwtransform Only D=3 implemented now!");
   int operation = Reconstruction;
-  int kp1 = this->mwTree_p->getKp1();
+  int kp1 = this->getTree()->getKp1();
   int tDim = (1<<D);
   int kp1_dm1 = kp1*kp1;//MathUtils::ipow(Parent->getKp1(), D - 1)
   int kp1_d = kp1_dm1*kp1;//
-  const MWFilter &filter = this->mwTree_p->getMRA().getFilter();
+  const MWFilter &filter = this->getTree()->getMRA().getFilter();
   //VectorXd &result = Parent->tree->getTmpMWCoefs();
   double overwrite = 0.0;
   double *tmp;
@@ -588,7 +589,7 @@ template<int D>
 void SerialTree<D>::S_mwTreeTransformUp() {
     Timer t0,t1,t2,t3;
     int DepthMax = 100;
-    MWTree<D>* Tree=this->mwTree_p;
+    MWTree<D>* Tree=this->getTree();
     int status[this->nNodes];
     MWNode<D>* stack[DepthMax*8];
     int  slen = 0, counter = 0, counter2 = 0;
@@ -622,7 +623,7 @@ void SerialTree<D>::S_mwTreeTransformUp() {
 	  }
 	  if(childok==fpos->getNChildren()){
 	    //Ready to compress fpos from children
-	    t0.restart();
+	    t0.resume();
 	    S_mwTransformBack(&(fpos->children[0]->getCoefs()(0)), &(fpos->getCoefs()(0)), Children_Stride); 
 	    t0.stop();
 	    status[fpos->getRank()]=1;//finished     
@@ -650,11 +651,11 @@ template<int D>
 void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride) {
   if(D!=3)MSG_FATAL("S_mwtransform Only D=3 implemented now!");
   int operation = Compression;
-  int kp1 = this->mwTree_p->getKp1();
+  int kp1 = this->getTree()->getKp1();
   int tDim = (1<<D);
   int kp1_dm1 = kp1*kp1;//MathUtils::ipow(Parent->getKp1(), D - 1)
   int kp1_d = kp1_dm1*kp1;//
-  const MWFilter &filter = this->mwTree_p->getMRA().getFilter();
+  const MWFilter &filter = this->getTree()->getMRA().getFilter();
   //VectorXd &result = Parent->tree->getTmpMWCoefs();
   double overwrite = 0.0;
   double *tmp;
@@ -797,7 +798,7 @@ template<int D>
 double* SerialTree<D>::allocCoeff(int nAllocCoeff) {
 //#pragma omp critical
   this->nNodesCoeff += 1;//nAllocCoeff;
-    if (nAllocCoeff!=8) MSG_FATAL("Only 2**D implemented now!");
+  if (nAllocCoeff!=1<<D) MSG_FATAL("Only 2**D implemented now!");
     if (this->nNodesCoeff > this->maxNodesCoeff ){
       println(0, "maxNodesCoeff exceeded " << this->maxNodesCoeff);
       MSG_FATAL("maxNodesCoeff exceeded ");
@@ -834,7 +835,7 @@ template<int D>
 //VectorXd* SerialTree<D>::allocGenCoeff(int nAllocCoeff) {
 double* SerialTree<D>::allocGenCoeff(int nAllocCoeff) {
 //#pragma omp critical
-    if (nAllocCoeff!=8) MSG_FATAL("Only 2**D implemented now!");
+  if (nAllocCoeff!=1<<D) MSG_FATAL("Only 2**D implemented now!");
     this->nGenNodesCoeff += 1;//nAllocCoeff;
     if (this->nGenNodesCoeff > this->maxGenNodesCoeff ){
       println(0, "maxGenNodesCoeff exceeded " << this->maxGenNodesCoeff);
@@ -873,15 +874,14 @@ void SerialTree<D>::DeAllocGenCoeff(int DeallocIx) {
 /** SerialTree destructor. */
 template<int D>
 SerialTree<D>::~SerialTree() {
-    MWNode<D> **roots = this->mwTree_p->getRootBox().getNodes();
-    for (int i = 0; i < this->mwTree_p->getRootBox().size(); i++) {
+    println(0, "~SerialTree");
+    MWNode<D> **roots = this->getTree()->getRootBox().getNodes();
+    for (int i = 0; i < this->getTree()->getRootBox().size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
         node->~ProjectedNode();
         roots[i] = 0;
     }
-    this->mwTree_p->~MWTree();
-    //    for (int i = 0; i <maxNodesCoeff;i++)this->CoeffStack[i]->~VectorXd();
-    //    for (int i = 0; i <maxGenNodesCoeff;i++)this->GenCoeffStack[i]->~VectorXd();
+    //this->getTree()->MWTreeDestruct();
     delete[] this->SData;
     delete[] this->GenCoeffArray;
     delete[] this->NodeStackStatus;
@@ -889,6 +889,7 @@ SerialTree<D>::~SerialTree() {
     delete[] this->CoeffStackStatus;
     delete[] this->GenCoeffStack;
     delete[] this->GenCoeffStackStatus;
+    println(0, "~SerialTree done");
 }
 
 template class SerialTree<1>;

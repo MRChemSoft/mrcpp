@@ -23,9 +23,11 @@ public:
 
     FunctionTree<D> *operator()(std::function<double (const double *r)> func) {
         AnalyticFunction<D> inp(func);
-        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-        FunctionTree<D> *out = alloc->getTree();
+        //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+        //FunctionTree<D> *out = alloc->getTree();
+
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+	FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp);
         return out;
     }
@@ -38,9 +40,10 @@ public:
     }
 
     FunctionTree<D> *operator()(RepresentableFunction<D> &inp) {
+      FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
-        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-        FunctionTree<D> *out = alloc->getTree();
+        //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+        //FunctionTree<D> *out = alloc->getTree();
         (*this)(*out, inp);
         return out;
     }

@@ -17,34 +17,38 @@ public:
     }
 
     FunctionTree<D> *operator()() {
-        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-        return  alloc->getTree();
+        //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+        //return  alloc->getTree();
         //return new FunctionTree<D>(this->MRA);
+      return new FunctionTree<D>(this->MRA, MAXALLOCNODES);
     }
 
     FunctionTree<D> *operator()(const RepresentableFunction<D> &inp,
                                 int maxIter = -1) {
-        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-        FunctionTree<D> *out = alloc->getTree();
+        //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+        //FunctionTree<D> *out = alloc->getTree();
         //FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+      FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp, maxIter);
         return out;
     }
 
     FunctionTree<D> *operator()(FunctionTree<D> &inp,
                                 int maxIter = -1) {
-        SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-        FunctionTree<D> *out = alloc->getTree();
+        //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+        //FunctionTree<D> *out = alloc->getTree();
 	//        FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+	FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp, maxIter);
         return out;
     }
 
     FunctionTree<D> *operator()(FunctionTreeVector<D> &inp,
                                 int maxIter = -1) {
-      SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
-      FunctionTree<D> *out = alloc->getTree();
+      //SerialTree<D> *alloc = new SerialTree<D>(this->MRA, MAXALLOCNODES);
+      //FunctionTree<D> *out = alloc->getTree();
 	// FunctionTree<D> *out = new FunctionTree<D>(this->MRA);
+      FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
         (*this)(*out, inp, maxIter);
         return out;
     }

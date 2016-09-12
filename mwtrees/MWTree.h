@@ -126,7 +126,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    SerialTree<D> *allocator;
+    SerialTree<D> *allocator=0;
 
     // Tree data
     int nNodes;
@@ -142,6 +142,7 @@ protected:
     Eigen::VectorXd **tmpMWCoefs; ///< temp memory
 
     // Constructors are protected, use TreeBuilders
+    MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
     MWTree(const MultiResolutionAnalysis<D> &mra);
     MWTree(const MWTree<D> &tree);
 

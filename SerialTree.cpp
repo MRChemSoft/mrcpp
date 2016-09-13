@@ -31,7 +31,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
           sizeNodeMeta(0),
           sizeNode(0) {
 
-    println(0, "max_nodes  " <<max_nodes);
+    println(10, "max_nodes  " <<max_nodes);
     this->sizeNodeMeta =16*((sizeof(ProjectedNode<D>)+15)/16);//we want only multiples of 16
     int SizeCoefOnly = (1<<D)*(MathUtils::ipow(Tree->getOrder()+1,D))*sizeof(double);
     this->sizeNodeCoeff = SizeCoefOnly;
@@ -53,7 +53,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     //Tree is defined as array of doubles, because C++ does not like void malloc
     //NB: important to divide by sizeof(double) BEFORE multiplying. Otherwise we can get int overflow!
     int mysize = (this->sizeTreeMeta/sizeof(double) + this->maxNodes*(this->sizeNode/sizeof(double)));
-    println(0, "Allocating array of size (MB)  " << mysize*sizeof(double)/1024/1024);
+    println(1, "Allocating array of size (MB)  " << mysize*sizeof(double)/1024/1024);
     this->SData = new double[mysize];
 
     this->GenCoeffArray = new double[ this->maxGenNodesCoeff*this->sizeGenNodeCoeff/sizeof(double)];
@@ -108,7 +108,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
 	roots[rIdx] = new (allocNodes(1)) ProjectedNode<D>(*this->getTree(), nIdx);
 	roots[rIdx]->NodeRank = this->nNodes-1;
     }
-    println(0, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
+    println(10, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
 
     Tree->resetEndNodeTable();
 

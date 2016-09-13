@@ -17,7 +17,6 @@ OperatorNode::OperatorNode(OperatorNode &p, int c)
 }
 
 OperatorNode::~OperatorNode() {
-     println(10, "~OperatorNode");
    this->freeCoefs();
 }
 

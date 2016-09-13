@@ -29,7 +29,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
     allocWorkMemory();
-    println(0, "new MWTree ");
+    println(10, "new MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif
@@ -52,7 +52,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
     allocNodeCounters();
     allocWorkMemory();
     new SerialTree<D>(this, max_nodes);
-    println(0, "new Serial MWTree ");
+    println(10, "new Serial MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif
@@ -114,7 +114,7 @@ MWTree<D>::~MWTree() {
 #ifdef OPENMP
     omp_destroy_lock(&tree_lock);
 #endif
-    println(0, "~MWTree done");
+
 }
 
 /** Allocate work memory of the tree, for use in mwTransform and the like. */

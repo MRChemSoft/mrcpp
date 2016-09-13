@@ -566,7 +566,7 @@ void MWNode<D>::createChildren() {
     this->setIsBranchNode();
 }
 
-/** Recursive deallocation of children and all their decendants.
+/** Recursive deallocation of children and all their descendants.
   * Leaves node as LeafNode and children[] as null pointer. */
 template<int D> void MWNode<D>::deleteChildren() {
      for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
@@ -577,8 +577,10 @@ template<int D> void MWNode<D>::deleteChildren() {
                  node->~ProjectedNode();
              } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this->children[cIdx])) {
 	       node->~GenNode();
-             }
-	     //             delete this->children[cIdx];
+             }else{
+	       ProjectedNode<D> *Opnode = static_cast<ProjectedNode<D> *>(this->children[cIdx]);
+	       delete Opnode;
+	     }
              this->children[cIdx] = 0;
          }
      } 

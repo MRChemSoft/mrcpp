@@ -43,7 +43,7 @@ ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
 
 template<int D>
 ProjectedNode<D>::~ProjectedNode() {
-    println(0, "~ProjectedNode rank" << this->NodeRank);
+  //println(0, "~ProjectedNode rank" << this->NodeRank);
     this->freeCoefs();
 }
 

@@ -82,22 +82,25 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 /** MWTree destructor. */
 template<int D>
 MWTree<D>::~MWTree() {
-    println(0, "~MWTree");
+    println(10, "~MWTree");
+    SerialTree<D>* Stree(0);
     if(this->serialTree_p) {
       //SerialTree removes nodes
+      println(10, "delete serialTree_p");
+      Stree = this->serialTree_p;
       delete this->serialTree_p;
     } else {
       //Has to remove nodes here?
       //MWNode<D> **roots = this->getRootBox().getNodes();
       //for (int i = 0; i < this->getRootBox().size(); i++) {
-      //  ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
-      //  node->~ProjectedNode();
+      //  //ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
+      //  roots[i]->~MWNode();
       //  roots[i] = 0;
       //}
     }
     this->endNodeTable.clear();
     if (this->nNodes != 0) {
-      MSG_ERROR("Node count != 0 -> " << this->nNodes);
+      MSG_ERROR("Node count != 0 -> " << this->nNodes<<" STree "<<Stree);
     }
     if (this->nodesAtDepth.size() != 1) {
       MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());

@@ -37,9 +37,9 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->sizeNodeCoeff = SizeCoefOnly;
     //NB: Gen nodes should take less space?
     this->sizeGenNodeCoeff = SizeCoefOnly;
-    println(10, "SizeNode Coeff (B) " << this->sizeNodeCoeff);
-    println(10, "SizeGenNode Coeff (B) " << this->sizeGenNodeCoeff);
-    println(10, "SizeNode Meta (B)  " << this->sizeNodeMeta*sizeof(double));
+    println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff/1024);
+    println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff/1024);
+    println(10, "SizeNode Meta (kB)  " << (this->sizeNodeMeta*sizeof(double))/1024);
 
     //The first part of the Tree is filled with metadata; reserved size:
     this->sizeTreeMeta = 16*((sizeof(FunctionTree<D>)+15)/16);//we want only multiples of 16
@@ -103,13 +103,12 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
 
     //alloc root nodes
     MWNode<D> **roots = Tree->getRootBox().getNodes();
-    println(0, "start " );
     for (int rIdx = 0; rIdx < Tree->getRootBox().size(); rIdx++) {
         const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(rIdx);
 	roots[rIdx] = new (allocNodes(1)) ProjectedNode<D>(*this->getTree(), nIdx);
 	roots[rIdx]->NodeRank = this->nNodes-1;
     }
-    println(0, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank());
+    println(0, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
 
     Tree->resetEndNodeTable();
 
@@ -889,7 +888,7 @@ void SerialTree<D>::DeAllocGenCoeff(int DeallocIx) {
 /** SerialTree destructor. */
 template<int D>
 SerialTree<D>::~SerialTree() {
-    println(0, "~SerialTree");
+    println(10, "~SerialTree");
     MWNode<D> **roots = this->getTree()->getRootBox().getNodes();
     for (int i = 0; i < this->getTree()->getRootBox().size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
@@ -904,7 +903,6 @@ SerialTree<D>::~SerialTree() {
     delete[] this->CoeffStackStatus;
     delete[] this->GenCoeffStack;
     delete[] this->GenCoeffStackStatus;
-    println(0, "~SerialTree done");
 }
 
 template class SerialTree<1>;

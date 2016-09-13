@@ -17,7 +17,8 @@ OperatorNode::OperatorNode(OperatorNode &p, int c)
 }
 
 OperatorNode::~OperatorNode() {
-    this->freeCoefs();
+     println(10, "~OperatorNode");
+   this->freeCoefs();
 }
 
 void OperatorNode::createChild(int cIdx) {

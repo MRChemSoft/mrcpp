@@ -57,6 +57,7 @@ void GenNode<D>::genChild(int cIdx) {
       child = new GenNode<D>(*this, cIdx);
     } else {
       child = new (this->tree->serialTree_p->allocGenNodes(1))GenNode<D>(*this, cIdx);//GenNode also calls creator of MWNode
+      child->NodeRank =  this->tree->serialTree_p->nNodes-1;
     }
     this->children[cIdx] = child;
 }

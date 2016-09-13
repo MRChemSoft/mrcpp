@@ -105,15 +105,17 @@ MWNode<D>::~MWNode() {
     }
     if (not this->isLooseNode()) {
         this->tree->decrementNodeCount(getScale());
-	if (this->NodeRank<0 and this->tree->serialTree_p){println(0, "Node has no rank! " << this->NodeRank);
+	if (this->NodeRank<0 and this->tree->serialTree_p){println(0, "Node has no rank! " << this->NodeRank<<" STree at "<<this->tree->serialTree_p<<" coeffIx " << this->NodeCoeffIx<<" GenIx " << this->GenNodeCoeffIx);
 	}else{
 	  if(this->tree->serialTree_p)this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
 	}
     } else {
         freeCoefs();
     }
-    *((double**) ((void*)&(this->coefvec))) = NULL;
-    *((int*) (((void*)&(this->coefvec))+8)) = 0;
+    if(this->tree->serialTree_p){
+      *((double**) ((void*)&(this->coefvec))) = NULL;
+      *((int*) (((void*)&(this->coefvec))+8)) = 0;
+     }
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
 #endif

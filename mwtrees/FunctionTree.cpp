@@ -25,7 +25,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLO
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
         : MWTree<D> (mra) {
-    NOT_IMPLEMENTED_ABORT;
+  //    NOT_IMPLEMENTED_ABORT;
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);

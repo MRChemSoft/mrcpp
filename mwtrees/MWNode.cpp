@@ -134,26 +134,26 @@ void MWNode<D>::allocCoefs(int nBlocks) {
 
     int nCoefs = nBlocks * this->getKp1_d();
     if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->GenNodeCoeffIx<<" Node already allocated!   "<<this->NodeCoeffIx);
-    if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-      *((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
-      this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
-    } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-      *((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
-      *((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
-      this->GenNodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
-      this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
-   } else{
-      //      if(this->tree->serialTree_p) MSG_FATAL("Coefs should be allocated by Serial Tree");
-      if(this->tree->serialTree_p){
+    if(this->tree->serialTree_p){
+      if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
 	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
-      }else{
+      } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+	this->GenNodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+      } else{
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
+      }
+    }else{
 	//Operator Node
 	this->coefs = new VectorXd(nCoefs);
-      }
     }
+
 
     this->setIsAllocated();
     this->clearHasCoefs();
@@ -165,21 +165,13 @@ void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
     //delete this->coefs;
     //this->coefs->~VectorXd();
-    if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
+    if(this->tree->serialTree_p and this->NodeCoeffIx>=0){
+      //default is to (de)allocate on ProjectedNode stack
       this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
-    } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-      //this->tree->serialTree_p->DeAllocGenCoeff(this->GenNodeCoeffIx);
-      this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
-    } else{
-      if(this->tree->serialTree_p and this->NodeCoeffIx>=0){
-	//default is to (de)allocate on ProjectedNode stack
-	this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
-      }else{
-	//Operator node
-	delete this->coefs;
-      }
+    }else{
+      //Operator node
+      delete this->coefs;
     }
-
     
     this->coefs = 0;
     this->clearHasCoefs();
@@ -419,7 +411,7 @@ void MWNode<D>::mwTransform(int operation) {
         
     //if the loop is traversed an odd number of time the data ends in the wrong buffer
     //(but now data is in cache, so this is very fast)
-    if(D%2)for(int i=0; i<kp1_d*this->getTDim(); i++) this->coefvec[i] = data_p1[i];
+    if(D%2)for(int i=0; i<kp1_d*this->getTDim(); i++) this->getCoefs()(i) = data_p1[i];
     
 }
 

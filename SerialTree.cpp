@@ -109,7 +109,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
 	roots[rIdx]->NodeRank = this->nNodes-1;
     }
     println(10, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
-    cout<<MPI_rank<<" root 0 cvptr " << (double*)(*(char**)(roots[0]))<<endl;
+    //cout<<MPI_rank<<" root 0 cvptr " << (double*)(*(char**)(roots[0]))<<endl;
 
     Tree->resetEndNodeTable();
 

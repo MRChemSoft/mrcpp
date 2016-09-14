@@ -40,7 +40,7 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
 template<int D>
 GenNode<D>::~GenNode() {
     this->tree->decrementGenNodeCount(); //decrementNodeCount done in ~MWNode()
-    this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
+    if(this->tree->serialTree_p)this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
     this->freeCoefs();
 }
 

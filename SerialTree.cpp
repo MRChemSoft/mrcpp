@@ -149,9 +149,9 @@ void SerialTree<D>::RewritePointers(){
 
   NodeBox<D> &rBox = Tree->getRootBox();
   MWNode<D> **roots = rBox.getNodes();
-  
   const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(0);
-  ProjectedNode<D>* tempnode = new (allocNodes(1)) ProjectedNode<D>(*Tree, nIdx);
+  //ProjectedNode<D>* tempnode = new (allocNodes(1)) ProjectedNode<D>(*Tree, nIdx);//delete does not work for this
+  ProjectedNode<D>* tempnode = new ProjectedNode<D>(*Tree, nIdx);
   //virtual table pointer. Must be made from a locally created node.
   char* cvptr =  *(char**)(tempnode);
   println(0, "Node virtual table pointer "<<(double*) cvptr );  
@@ -211,7 +211,7 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
     double Tsum=0.0;
 
     if(TreeA->getRootBox().size()!= TreeB->getRootBox().size())MSG_FATAL("Number of root nodes must be equal for now");
-
+ 
     //put root nodes on stack
     for (int rIdxA = 0; rIdxA < TreeA->getRootBox().size(); rIdxA++) stackA[slenA++] = TreeA->getRootBox().getNodes()[rIdxA];
     for (int rIdxB = 0; rIdxB < TreeB->getRootBox().size(); rIdxB++) stackB[slenB++] = TreeB->getRootBox().getNodes()[rIdxB];

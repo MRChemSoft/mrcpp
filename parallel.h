@@ -1,6 +1,7 @@
 #ifndef PARALLEL_H_
 #define PARALLEL_H_
 
+#include <mpi.h>
 #include "config.h"
 #include "SerialTree.h"
 

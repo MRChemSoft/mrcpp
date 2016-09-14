@@ -26,7 +26,9 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           squareNorm(-1.0),
           status(0),
           coefs(0),
-          NodeRank(-1){
+          NodeRank(-1),
+          NodeCoeffIx(-1),
+          GenNodeCoeffIx(-1){
     clearNorms();
     this->coefs = &this->coefvec;
     this->tree->incrementNodeCount(getScale());
@@ -52,7 +54,9 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           squareNorm(-1.0),
           status(0),
           coefs(0),
-          NodeRank(-2) {
+          NodeRank(-2),
+          NodeCoeffIx(-2),
+          GenNodeCoeffIx(-2) {
     clearNorms();
     this->coefs = &this->coefvec;
     this->tree->incrementNodeCount(getScale());
@@ -76,7 +80,9 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           squareNorm(-1.0),
           status(0),
           coefs(0),
-          NodeRank(-3) {
+          NodeRank(-3),
+          NodeCoeffIx(-3),
+          GenNodeCoeffIx(-3) {
 
     this->coefs = &this->coefvec;
     allocCoefs(this->getTDim());
@@ -165,7 +171,7 @@ void MWNode<D>::freeCoefs() {
       //this->tree->serialTree_p->DeAllocGenCoeff(this->GenNodeCoeffIx);
       this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
     } else{
-      if(this->tree->serialTree_p){
+      if(this->tree->serialTree_p and this->NodeCoeffIx>=0){
 	//default is to (de)allocate on ProjectedNode stack
 	this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
       }else{

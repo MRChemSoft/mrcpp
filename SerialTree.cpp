@@ -109,6 +109,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
 	roots[rIdx]->NodeRank = this->nNodes-1;
     }
     println(10, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
+    cout<<MPI_rank<<" root 0 cvptr " << (double*)(*(char**)(roots[0]))<<endl;
 
     Tree->resetEndNodeTable();
 
@@ -131,30 +132,21 @@ void SerialTree<D>::RewritePointers(){
   cout<<" size tree "<< this->getTree()->nNodes <<" tag "<<this<<endl;
 
   this->lastNodeCoeff = (double*) (this->SData+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));//start after the metadata
-  for (int i = 0; i <maxNodesCoeff;i++){
+  for (int i = 0; i <= this->nNodesCoeff; i++){
     CoeffStack[i] += d_p_shift;
   }
-  
- /*   MWTree<D> &Treeold = *((MWTree<D>*)(((double**)this->SData)+1));
-  cout<<"NNodes "<<Treeold .getNNodes()<<" tag "<<d_p_shift<<endl;
-  cout<<" allocator at "<<this<<" pointer at "<<Treeold .allocator<<" diff "<<this-Treeold .allocator<<" tag "<<d_p_shift<<endl;
-  Treeold .allocator = this;//Address of the class
-
-  cout<<"writing new tree at "<<((double**)this->SData)+1<<" tag "<<d_p_shift<<endl;
-  if(d_p_shift>=0)this->getTree() = new (((double**)this->SData)+1) MWTree<D>(mra);
-  cout<<"new NNodes "<<this->getTree()->getNNodes()<<" tag "<<d_p_shift<<endl;
-  */
 
   FunctionTree<D>* Tree = dynamic_cast<FunctionTree<D>*> (this->mwTree_p);
 
   NodeBox<D> &rBox = Tree->getRootBox();
   MWNode<D> **roots = rBox.getNodes();
-  const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(0);
+  //const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(0);
+  NodeIndex<D> nIdx;
   //ProjectedNode<D>* tempnode = new (allocNodes(1)) ProjectedNode<D>(*Tree, nIdx);//delete does not work for this
   ProjectedNode<D>* tempnode = new ProjectedNode<D>(*Tree, nIdx);
   //virtual table pointer. Must be made from a locally created node.
   char* cvptr =  *(char**)(tempnode);
-  println(0, "Node virtual table pointer "<<(double*) cvptr );  
+  cout<<MPI_rank<<" Node virtual table pointer "<<(double*) cvptr <<endl;  
   delete tempnode; 
  
   d_p_shift = this->firstNodeCoeff-(*((double**) ((void*)&(roots[0]->coefvec))));
@@ -181,6 +173,7 @@ void SerialTree<D>::RewritePointers(){
 	}
       }
       //set virtual table. Assumes a Projected Node!
+      //cout<<"cvptr BEFORE "<<(double*)(*(char**)(fpos))<<" AFTER "<<(double*)cvptr<<endl;
       *(char**)(fpos) = cvptr;
 
       fpos->parent = (MWNode<D>*)(((double*)fpos->parent) + d_p_shift);// += n_p_shift not safe!
@@ -293,6 +286,7 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
 #ifdef HAVE_MPI
     if(MPI_size == 2)SendRcv_SerialTree(TreeA, 0, 1, 44, MPI_COMM_WORLD);
 #endif
+
 
 }
 /** Adds two trees.

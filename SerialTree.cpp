@@ -20,26 +20,33 @@ template<int D>
 SerialTree<D>::SerialTree(MWTree<D>* Tree,
                                 int max_nodes)
         : nNodes(0),
-          nNodesCoeff(0),
+	  nGenNodes(0),
+	  nNodesCoeff(0),
+	  nGenNodesCoeff(0),
           lastNode(0),
+          lastGenNode(0),
           mwTree_p(0),
           SData(0),
           maxNodes(max_nodes),
+          maxGenNodes(max_nodes),
           maxNodesCoeff(max_nodes),//to be thought of
           maxGenNodesCoeff(max_nodes),//to be thought of
           sizeTreeMeta(0),
           sizeNodeMeta(0),
-          sizeNode(0) {
+          sizeGenNodeMeta(0),
+          sizeNode(0),
+          sizeGenNode(0) {
 
     println(10, "max_nodes  " <<max_nodes);
+
     this->sizeNodeMeta =16*((sizeof(ProjectedNode<D>)+15)/16);//we want only multiples of 16
+    this->sizeGenNodeMeta =16*((sizeof(GenNode<D>)+15)/16);//we want only multiples of 16
     int SizeCoefOnly = (1<<D)*(MathUtils::ipow(Tree->getOrder()+1,D))*sizeof(double);
     this->sizeNodeCoeff = SizeCoefOnly;
     //NB: Gen nodes should take less space?
     this->sizeGenNodeCoeff = SizeCoefOnly;
     println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff/1024);
     println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff/1024);
-    println(10, "SizeNode Meta (kB)  " << (this->sizeNodeMeta*sizeof(double))/1024);
 
     //The first part of the Tree is filled with metadata; reserved size:
     this->sizeTreeMeta = 16*((sizeof(FunctionTree<D>)+15)/16);//we want only multiples of 16
@@ -48,34 +55,39 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->sizeTreeMeta = 0;
 
     //The dynamical part of the tree is filled with nodes of size:
-    this->sizeNode = this->sizeNodeMeta + sizeNodeCoeff;//in units of Bytes
+    this->sizeNode = this->sizeNodeMeta + this->sizeNodeCoeff;//in units of Bytes
+    this->sizeGenNode = this->sizeGenNodeMeta + this->sizeGenNodeCoeff;//in units of Bytes
 
     //Tree is defined as array of doubles, because C++ does not like void malloc
     //NB: important to divide by sizeof(double) BEFORE multiplying. Otherwise we can get int overflow!
     int mysize = (this->sizeTreeMeta/sizeof(double) + this->maxNodes*(this->sizeNode/sizeof(double)));
     println(1, "Allocating array of size (MB)  " << mysize*sizeof(double)/1024/1024);
     this->SData = new double[mysize];
+    //indicate occupation of nodes
+    this->NodeStackStatus = new int[this->maxNodes+1];
 
-    this->GenCoeffArray = new double[ this->maxGenNodesCoeff*this->sizeGenNodeCoeff/sizeof(double)];
-
-    //indicate occupied nodes
-    this->NodeStackStatus = new int[maxNodes+1];
+    this->SGenData = new double[(this->maxGenNodes*sizeGenNode)/sizeof(double)];
+    //indicate occupation of Gen nodes
+    this->GenNodeStackStatus = new int[this->maxGenNodes+1];
 
     //NodeCoeff pointers
-    this->CoeffStack = new double * [maxNodesCoeff];
+    this->CoeffStack = new double * [this->maxNodesCoeff];
     //indicate occupied NodeCoeff
-    this->CoeffStackStatus = new int[maxNodesCoeff+1];
+    this->CoeffStackStatus = new int[this->maxNodesCoeff+1];
     //GenNodeCoeff pointers
-    this->GenCoeffStack = new double * [maxGenNodesCoeff];
+    this->GenCoeffStack = new double * [this->maxGenNodesCoeff];
     //indicate occupied GenNodeCoeff
-    this->GenCoeffStackStatus = new int[maxGenNodesCoeff+1];
+    this->GenCoeffStackStatus = new int[this->maxGenNodesCoeff+1];
 
     //some useful pointers to positions in SData
     this->lastNode = (ProjectedNode<D>*) (this->SData + this->sizeTreeMeta/sizeof(double));
     this->firstNode = (double*)this->lastNode;//constant start of node data
     this->lastNodeCoeff = (double*) (this->SData+this->sizeTreeMeta/sizeof(double) + this->maxNodes*this->sizeNodeMeta/sizeof(double));//start after the metadata
     this->firstNodeCoeff = this->lastNodeCoeff;//constant start of coeff data
-    this->lastGenNodeCoeff = this->GenCoeffArray;//start at start of array
+
+    this->lastGenNode = (GenNode<D>*) (this->SGenData);
+    this->lastGenNodeCoeff = this->SGenData + (this->maxGenNodes*sizeGenNodeMeta)/sizeof(double);//start at after GenNode Meta part
+
     this->nNodesCoeff=-1;//add 1 before each allocation
     this->nGenNodesCoeff=-1;//add 1 before each allocation
 
@@ -85,17 +97,23 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     }
     this->NodeStackStatus[maxNodes] = -1;//=unavailable
 
-    for (int i = 0; i <maxNodesCoeff;i++){
+    //initialize stacks
+    for (int i = 0; i <this->maxGenNodes;i++){
+      this->GenNodeStackStatus[i] = 0;//0=unoccupied
+    }
+    this->GenNodeStackStatus[this->maxGenNodes] = -1;//=unavailable
+
+    for (int i = 0; i <this->maxNodesCoeff;i++){
       this->CoeffStack[i] = this->lastNodeCoeff+i*this->sizeNodeCoeff/sizeof(double);
       this->CoeffStackStatus[i] = 0;//0=unoccupied
     }
-    this->CoeffStackStatus[maxNodesCoeff]=-1;//-1=unavailable
+    this->CoeffStackStatus[this->maxNodesCoeff]=-1;//-1=unavailable
 
-    for (int i = 0; i <maxGenNodesCoeff;i++){
+    for (int i = 0; i <this->maxGenNodesCoeff;i++){
       this->GenCoeffStack[i] = this->lastGenNodeCoeff+i*this->sizeGenNodeCoeff/sizeof(double);
       this->GenCoeffStackStatus[i] = 0;//0=unoccupied
     }
-    this->GenCoeffStackStatus[maxGenNodesCoeff] = -1;//-1=unavailable
+    this->GenCoeffStackStatus[this->maxGenNodesCoeff] = -1;//-1=unavailable
 
     
     this->mwTree_p = Tree;//pointer to parent tree
@@ -771,31 +789,49 @@ void SerialTree<D>::DeAllocNodes(int NodeRank) {
   this->NodeStackStatus[NodeRank]=0;//mark as available
   if(NodeRank==this->nNodes-1){//top of stack
     int TopStack=this->nNodes;
-    while(this->NodeStackStatus[TopStack-1]==0 and TopStack>0){
+    while(this->NodeStackStatus[TopStack-1]==0){
       TopStack--;
+      if(TopStack<1)break;
     }
     this->nNodes=TopStack;//move top of stack
   }
  }
+template<int D>
+void SerialTree<D>::DeAllocGenNodes(int NodeRank) {
+  if (this->nGenNodes <0){
+    println(0, "minNodes exceeded " << this->nGenNodes);
+    this->nGenNodes++;
+  }
+  this->GenNodeStackStatus[NodeRank]=0;//mark as available
+  if(NodeRank==this->nGenNodes-1){//top of stack
+    int TopStack=this->nGenNodes;
+    while(this->GenNodeStackStatus[TopStack-1]==0){
+      TopStack--;
+      if(TopStack<1)break;
+    }
+    this->nGenNodes=TopStack;//move top of stack
+  }
+ }
+
 //return pointer to the last active node or NULL if failed
 template<int D>
 GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc) {
 //#pragma omp critical
-    this->nNodes += nAlloc;
-    if (this->nNodes > this->maxNodes){
-      println(0, "maxNodes exceeded " << this->maxNodes);
+    this->nGenNodes += nAlloc;
+    if (this->nGenNodes > this->maxGenNodes){
+      println(0, "maxNodes exceeded " << this->maxGenNodes);
       MSG_FATAL("maxNodes exceeded ");
-       this->nNodes -= nAlloc;
+       this->nGenNodes -= nAlloc;
         return 0;
     } else {
-      GenNode<D>* oldlastNode  = (GenNode<D>*)this->lastNode;
-	this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
-	//We can have sizeNodeMeta with different size than ProjectedNode
+      GenNode<D>* oldlastNode  = (GenNode<D>*)this->lastGenNode;
+	this->lastGenNode = (GenNode<D>*) ((char *) this->lastGenNode + nAlloc*this->sizeGenNodeMeta);
+	//We can have sizeGenNodeMeta with different size than ProjectedNode
 	for (int i = 0; i<nAlloc; i++){
-	  oldlastNode->NodeRank=this->nNodes+i-1;
-	  if (this->NodeStackStatus[this->nNodes+i-1]!=0)
-	    println(0, this->nNodes+i-1<<" NodeStackStatus: not available " << this->NodeStackStatus[this->nNodes+i-1]);
-	  this->NodeStackStatus[this->nNodes+i-1]=1;
+	  //oldlastNode->GenNodeRank=this->nGenNodes+i-1;
+	  if (this->GenNodeStackStatus[this->nGenNodes+i-1]!=0)
+	    println(0, this->nGenNodes+i-1<<" NodeStackStatus: not available " << this->GenNodeStackStatus[this->nGenNodes+i-1]);
+	  this->GenNodeStackStatus[this->nGenNodes+i-1]=1;
 	}
         //println(0, "new size meta " << this->nNodes);
        return oldlastNode;
@@ -831,8 +867,9 @@ void SerialTree<D>::DeAllocCoeff(int DeallocIx) {
     this->CoeffStackStatus[DeallocIx]=0;//mark as available
     if(DeallocIx==this->nNodesCoeff){//top of stack
       int TopStack=this->nNodesCoeff;
-      while(this->CoeffStackStatus[TopStack]==0 and TopStack>0){
+      while(this->CoeffStackStatus[TopStack]==0){
 	TopStack--;
+	if(TopStack<1)break;
       }
       this->nNodesCoeff=TopStack;//move top of stack
     }
@@ -871,8 +908,9 @@ void SerialTree<D>::DeAllocGenCoeff(int DeallocIx) {
       this->GenCoeffStackStatus[DeallocIx]=0;//mark as available
       if(DeallocIx==this->nGenNodesCoeff){//top of stack
 	int TopStack=this->nGenNodesCoeff;
-	while(this->CoeffStackStatus[TopStack]==0 and TopStack>0){
+	while(this->CoeffStackStatus[TopStack]==0){
 	  TopStack--;
+	  if(TopStack<1)break;
 	}
 	this->nGenNodesCoeff=TopStack;//move top of stack
       }
@@ -891,10 +929,14 @@ SerialTree<D>::~SerialTree() {
     }
     //this->getTree()->MWTreeDestruct();
     delete[] this->SData;
-    delete[] this->GenCoeffArray;
     delete[] this->NodeStackStatus;
+
+    delete[] this->SGenData;
+    delete[] this->GenNodeStackStatus;
+
     delete[] this->CoeffStack;
     delete[] this->CoeffStackStatus;
+
     delete[] this->GenCoeffStack;
     delete[] this->GenCoeffStackStatus;
 }

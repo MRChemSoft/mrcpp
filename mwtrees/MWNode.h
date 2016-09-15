@@ -110,7 +110,6 @@ protected:
 
     int NodeRank;
     int NodeCoeffIx;
-    int GenNodeCoeffIx;
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components

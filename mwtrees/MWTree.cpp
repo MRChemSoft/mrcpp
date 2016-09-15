@@ -83,11 +83,9 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 template<int D>
 MWTree<D>::~MWTree() {
     println(10, "~MWTree");
-    SerialTree<D>* Stree(0);
     if(this->serialTree_p) {
       //SerialTree removes nodes
       println(10, "delete serialTree_p");
-      Stree = this->serialTree_p;
       delete this->serialTree_p;
     } else {
       //Has to remove nodes here?
@@ -100,7 +98,7 @@ MWTree<D>::~MWTree() {
     }
     this->endNodeTable.clear();
     if (this->nNodes != 0) {
-      MSG_ERROR("Node count != 0 -> " << this->nNodes<<" STree "<<Stree);
+      MSG_ERROR("Node count != 0 -> " << this->nNodes);
     }
     if (this->nodesAtDepth.size() != 1) {
       MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());

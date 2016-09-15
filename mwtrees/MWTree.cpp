@@ -24,7 +24,8 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
           squareNorm(-1.0),
           name("nn"),
-          nNodes(0) {
+          nNodes(0),
+          tmpCoefs(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
     allocWorkMemory();
@@ -78,6 +79,13 @@ MWTree<D>::~MWTree() {
 /** Allocate work memory of the tree, for use in mwTransform and the like. */
 template<int D>
 void MWTree<D>::allocWorkMemory() {
+    int n_coefs = this->getTDim()*this->getKp1_d();
+    this->tmpCoefs = new double*[this->nThreads];
+    for (int i = 0; i < this->nThreads; i++) {
+        this->tmpCoefs[i] = new double[n_coefs];
+    }
+
+    /*
     this->tmpCoefs = new Eigen::MatrixXd *[this->nThreads];
     this->tmpVector = new Eigen::VectorXd *[this->nThreads];
     this->tmpMWCoefs = new Eigen::VectorXd *[this->nThreads];
@@ -86,11 +94,23 @@ void MWTree<D>::allocWorkMemory() {
         this->tmpVector[i] = new Eigen::VectorXd(this->kp1_d);
         this->tmpMWCoefs[i] = new Eigen::VectorXd(this->kp1_d * (1 << D));
     }
+    */
 }
 
 /** Deallocate work memory */
 template<int D>
 void MWTree<D>::freeWorkMemory() {
+    if (this->tmpCoefs != 0) {
+        for (int i = 0; i < this->nThreads; i++) {
+            if (this->tmpCoefs[i] != 0) {
+                delete[] this->tmpCoefs[i];
+                this->tmpCoefs[i] = 0;
+            }
+        }
+        delete[] this->tmpCoefs;
+        this->tmpCoefs = 0;
+    }
+    /*
     for (int i = 0; i < this->nThreads; i++) {
         delete this->tmpCoefs[i];
         delete this->tmpVector[i];
@@ -99,6 +119,7 @@ void MWTree<D>::freeWorkMemory() {
     delete[] this->tmpCoefs;
     delete[] this->tmpVector;
     delete[] this->tmpMWCoefs;
+    */
 }
 
 

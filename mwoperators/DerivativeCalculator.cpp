@@ -83,6 +83,8 @@ void DerivativeCalculator::calcKMatrix(const ScalingBasis &basis) {
 }
 
 void DerivativeCalculator::calcNode(MWNode<2> &node) {
+    NOT_IMPLEMENTED_ABORT;
+    /*
     node.zeroCoefs();
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();
@@ -141,4 +143,5 @@ void DerivativeCalculator::calcNode(MWNode<2> &node) {
     node.mwTransform(Compression);
     node.setHasCoefs();
     node.calcNorms();
+    */
 }

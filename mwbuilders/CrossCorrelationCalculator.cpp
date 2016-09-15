@@ -34,6 +34,8 @@ void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
 template<int T>
 void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
                                           CrossCorrelationCache<T> &ccc) {
+    NOT_IMPLEMENTED_ABORT;
+    /*
     const MatrixXd &lMat = ccc.getLMatrix(node.getOrder());
     const MatrixXd &rMat = ccc.getRMatrix(node.getOrder());
 
@@ -61,4 +63,5 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     }
     double factor = pow(2.0, -scale/2.0);
     node.getCoefs() *= factor;
+    */
 }

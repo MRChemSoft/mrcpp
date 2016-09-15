@@ -18,9 +18,8 @@ template<int D> class ProjectedNode;
 template<int D>
 class GenNode: public FunctionNode<D> {
 public:
-    Eigen::VectorXd& getCoefsNoLock();
-    Eigen::VectorXd& getCoefs();
-    const Eigen::VectorXd& getCoefs() const;
+    void getCoefsNoLock(Eigen::VectorXd &vec);
+    void getCoefs(Eigen::VectorXd &vec);
 
     double getWaveletNorm() const { return 0.0; }
 
@@ -41,7 +40,7 @@ protected:
         }
     }
 
-    virtual void allocCoefs(int nBlocks);
+    virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();
     virtual void clearGenerated();
 

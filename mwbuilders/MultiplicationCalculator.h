@@ -15,6 +15,8 @@ protected:
     virtual ~MultiplicationCalculator() { }
 
     virtual void calcNode(MWNode<D> &node_o) {
+        NOT_IMPLEMENTED_ABORT;
+        /*
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         Eigen::VectorXd &vec_o = node_o.getCoefs();
         vec_o.setConstant(1.0);
@@ -31,6 +33,7 @@ protected:
         node_o.mwTransform(Compression);
         node_o.setHasCoefs();
         node_o.calcNorms();
+        */
     }
 
 private:

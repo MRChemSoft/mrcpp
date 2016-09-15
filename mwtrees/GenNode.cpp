@@ -19,7 +19,7 @@ template<int D>
 GenNode<D>::GenNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(&p) {
-    this->allocCoefs(this->getTDim());
+    this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->zeroCoefs();
     this->setIsGenNode();
     this->tree->incrementGenNodeCount();
@@ -29,7 +29,7 @@ template<int D>
 GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(p.genRootNode) {
-    this->allocCoefs(this->getTDim());
+    this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->zeroCoefs();
     this->setIsGenNode();
     this->tree->incrementGenNodeCount();
@@ -59,8 +59,8 @@ void GenNode<D>::regenerateCoefs() {
 }
 
 template<int D>
-void GenNode<D>::allocCoefs(int nBlocks) {
-    MWNode<D>::allocCoefs(nBlocks);
+void GenNode<D>::allocCoefs(int n_blocks, int block_size) {
+    MWNode<D>::allocCoefs(n_blocks, block_size);
     this->tree->incrementAllocGenNodeCount();
 }
 
@@ -73,28 +73,22 @@ void GenNode<D>::freeCoefs() {
 }
 
 template<int D>
-VectorXd& GenNode<D>::getCoefs() {
+void GenNode<D>::getCoefs(VectorXd &vec) {
     lockSiblings();
     if (not this->hasCoefs()) {
         regenerateCoefs();
     }
     unlockSiblings();
-    return MWNode<D>::getCoefs();
+    MWNode<D>::getCoefs(vec);
 }
 
 /** Get coefficients of GenNode, regenerate if needed, without locking. */
 template<int D>
-VectorXd& GenNode<D>::getCoefsNoLock() {
+void GenNode<D>::getCoefsNoLock(VectorXd &vec) {
     if (not this->hasCoefs()) {
         regenerateCoefs();
     }
-    return MWNode<D>::getCoefs();
-}
-
-template<int D>
-const VectorXd& GenNode<D>::getCoefs() const {
-    assert(this->hasCoefs());
-    return MWNode<D>::getCoefs();
+    return MWNode<D>::getCoefs(vec);
 }
 
 /** Clear coefficients of generated nodes.

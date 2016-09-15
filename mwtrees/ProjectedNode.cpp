@@ -26,7 +26,7 @@ using namespace Eigen;
 template<int D>
 ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
         : FunctionNode<D> (t, nIdx) {
-    this->allocCoefs(this->getTDim());
+    this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->setIsEndNode();
 }
 
@@ -35,7 +35,7 @@ ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
 template<int D>
 ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
-    this->allocCoefs(this->getTDim());
+    this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->setIsEndNode();
 }
 

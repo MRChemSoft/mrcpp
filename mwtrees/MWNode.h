@@ -66,9 +66,12 @@ public:
     double getComponentNorm(int i) const { return this->componentNorms[i]; }
     bool hasComponentNorms() const;
 
-    int getNCoefs() const { return this->coefs->size(); }
-    virtual Eigen::VectorXd &getCoefs() { return *this->coefs; }
-    virtual const Eigen::VectorXd &getCoefs() const { return *this->coefs; }
+    int getNCoefs() const { return this->n_coefs; }
+    void getCoefs(Eigen::VectorXd &c) const;
+    void printCoefs() const;
+
+    double* getCoefs_d() { return this->d_coefs; }
+    const double* getCoefs_d() const { return this->d_coefs; }
 
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
@@ -105,7 +108,6 @@ protected:
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components
-    Eigen::VectorXd *coefs;
 
     int n_coefs;
     double *d_coefs;
@@ -129,11 +131,15 @@ protected:
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
 
-    virtual void allocCoefs(int nBlocks);
+    virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();
 
-    virtual void setCoefs(const Eigen::VectorXd &c);
+    //virtual void setCoefs(const Eigen::VectorXd &c);
     virtual void zeroCoefs();
+
+    void setCoefBlock(int block, int block_size, const double *c);
+    void addCoefBlock(int block, int block_size, const double *c);
+    void zeroCoefBlock(int block, int block_size);
 
     void calcNorms();
     void zeroNorms();
@@ -158,7 +164,7 @@ protected:
     virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
 
     virtual void giveChildrenCoefs(bool overwrite = true);
-    virtual void copyCoefsFromChildren(Eigen::VectorXd &c);
+    virtual void copyCoefsFromChildren();
 
     int getChildIndex(const NodeIndex<D> &nIdx) const;
     int getChildIndex(const double *r) const;
@@ -305,8 +311,8 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     o << " sqNorm=" << nd.squareNorm;
     if (nd.hasCoefs()) {
         o << " Coefs={";
-        o << nd.getCoefs()[0] << ", " <<
-                nd.getCoefs()[nd.getNCoefs() - 1] << "}";
+        o << nd.getCoefs_d()[0] << ", " <<
+             nd.getCoefs_d()[nd.getNCoefs() - 1] << "}";
     }
     return o;
 }

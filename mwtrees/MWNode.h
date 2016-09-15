@@ -107,6 +107,9 @@ protected:
     double componentNorms[1<<D]; ///< 2^D components
     Eigen::VectorXd *coefs;
 
+    int n_coefs;
+    double *d_coefs;
+
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
     MWNode(MWNode<D> &p, int cIdx);
     MWNode(const MWNode<D> &n);

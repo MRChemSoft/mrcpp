@@ -24,7 +24,9 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           hilbertPath(),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          n_coefs(0),
+          d_coefs(0) {
     clearNorms();
     this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
@@ -47,7 +49,9 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           hilbertPath(p.getHilbertPath(), cIdx),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          n_coefs(0),
+          d_coefs(0) {
     clearNorms();
     this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
@@ -68,7 +72,9 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           hilbertPath(n.getHilbertPath()),
           squareNorm(-1.0),
           status(0),
-          coefs(0) {
+          coefs(0),
+          n_coefs(0),
+          d_coefs(0) {
     allocCoefs(this->getTDim());
     if (n.hasCoefs()) {
         setCoefs(n.getCoefs());
@@ -111,6 +117,9 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     this->coefs = new VectorXd(nCoefs);
     this->setIsAllocated();
     this->clearHasCoefs();
+
+    this->n_coefs = nCoefs;
+    this->d_coefs = new double[this->n_coefs];
 }
 
 /** Deallocation of coefficients. */
@@ -121,6 +130,8 @@ void MWNode<D>::freeCoefs() {
     this->coefs = 0;
     this->clearHasCoefs();
     this->clearIsAllocated();
+
+    if (this->d_coefs != 0) delete[] this->d_coefs;
 }
 
 template<int D>
@@ -129,6 +140,10 @@ void MWNode<D>::zeroCoefs() {
     this->coefs->setZero();
     this->zeroNorms();
     this->setHasCoefs();
+
+    for (int i = 0; i < this->n_coefs; i++) {
+        this->d_coefs[i] = 0.0;
+    }
 }
 
 /** Set coefficients of node.
@@ -148,6 +163,11 @@ void MWNode<D>::setCoefs(const Eigen::VectorXd &c) {
     this->coefs->segment(0, nNew) = c;
     this->setHasCoefs();
     this->calcNorms();
+
+    if (c.size() != this->n_coefs) MSG_FATAL("Size mismatch");
+    for (int i = 0; i < this->n_coefs; i++) {
+        this->d_coefs[i] = c(i);
+    }
 }
 
 template<int D>
@@ -771,45 +791,6 @@ bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
-//template<int D>
-//void MWNode<D>::broadcastCoefs(int src, mpi::communicator *comm) {
-    //NOT_IMPLEMENTED_ABORT;
-    //#ifdef HAVE_MPI
-
-    //    if (comm != 0) {
-    //        comm = &node_group;
-    //    }
-    //    assert(this->isAllocated());
-    //    double *data = coefs->data();
-    //    mpi::broadcast(*comm, data, getNCoefs(), src);
-    //    this->setHasCoefs();
-    //    this->setFullRedundancy();
-    //#endif
-    //}
-
-    //template<int D>
-    //void MWNode<D>::sendCoefs(int dest, int tag,
-    //                             mpi::communicator *comm) {
-    //#ifdef HAVE_MPI
-
-    //    if (comm != 0) {
-    //        comm = &node_group;
-    //    }
-    //    const double *data = coefs->data();
-    //    comm->send(dest, tag, data, getNCoefs());
-    //    this->setRedundancy(dest);
-    //#endif
-//}
-
-//template<int D>
-//void MWNode<D>::assignDecendantTags(int rank) {
-    //NOT_IMPLEMENTED_ABORT;
-    //    for (int n = 0; n < getNChildren(); n++) {
-    //        MWNode<D> &child = getMWChild(n);
-    //        child.setRankId(rank);
-    //        child.assignDecendantTags(rank);
-    //    }
-//}
 template class MWNode<1>;
 template class MWNode<2>;
 template class MWNode<3>;

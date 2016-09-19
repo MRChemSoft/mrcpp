@@ -11,6 +11,8 @@
 #define TREEALLOCATOR_H_
 
 #include <Eigen/Core>
+#include "parallel.h"
+
 
 template<int D> class MultiResolutionAnalysis;
 template<int D> class ProjectedNode;
@@ -29,14 +31,14 @@ public:
 
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
-    ProjectedNode<D>* allocNodes(int Nalloc);
+    ProjectedNode<D>* allocNodes(int Nalloc, int* NodeIx);
     void DeAllocNodes(int NodeRank);
-    GenNode<D>* allocGenNodes(int Nalloc);
+    GenNode<D>* allocGenNodes(int Nalloc, int* NodeIx);
     void DeAllocGenNodes(int NodeRank);
-    double* allocCoeff(int NallocCoeff);
+    double* allocCoeff(int NallocCoeff, MWNode<D>* node);
     void DeAllocCoeff(int DeallocIx);
     double** CoeffStack;
-    double* allocGenCoeff(int NallocCoeff);
+    double* allocGenCoeff(int NallocCoeff, MWNode<D>* node);
     void DeAllocGenCoeff(int DeallocIx);
     double** GenCoeffStack;
     void GenS_nodes(MWNode<D>* Node);
@@ -87,6 +89,9 @@ public:
     int sizeGenNode;     //TGen nodes array is filled with Gen nodes metadata+coeff of size:
     int sizeNodeCoeff;//The dynamical part of the tree. Each Coeff set is of size:
     int sizeGenNodeCoeff;//The dynamical part of the tree. Each GenCoeff set is of size:
+#ifdef HAVE_OPENMP
+    omp_lock_t Stree_lock;
+#endif
 protected:
 };
 

@@ -30,7 +30,6 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           NodeCoeffIx(-1){
     clearNorms();
     this->coefs = &this->coefvec;
-    this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -57,7 +56,6 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           NodeCoeffIx(-2) {
     clearNorms();
     this->coefs = &this->coefvec;
-    this->tree->incrementNodeCount(getScale());
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -83,6 +81,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
 
     this->coefs = &this->coefvec;
     allocCoefs(this->getTDim());
+
     if (n.hasCoefs()) {
         setCoefs(n.getCoefs());
     } else {
@@ -107,17 +106,17 @@ MWNode<D>::~MWNode() {
         deleteChildren();
     }
     if (not this->isLooseNode()) {
-        this->tree->decrementNodeCount(getScale());
-	if (this->NodeRank<0 and this->tree->serialTree_p){println(0, "Node has no rank! " << this->NodeRank<<" STree at "<<this->tree->serialTree_p<<" coeffIx " << this->NodeCoeffIx);
-	}else{
-	  if(this->tree->serialTree_p){
-	    if(this->isGenNode()){
-	      this->tree->serialTree_p->DeAllocGenNodes(this->NodeRank);
-	    }else{
-	      this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
-	    }
+      if(!(this->isGenNode()))this->tree->decrementNodeCount(getScale());
+      if (this->NodeRank<0 and this->tree->serialTree_p){println(0, "Node has no rank! " << this->NodeRank<<" STree at "<<this->tree->serialTree_p<<" coeffIx " << this->NodeCoeffIx);
+      }else{
+	if(this->tree->serialTree_p){
+	  if(this->isGenNode()){
+	    this->tree->serialTree_p->DeAllocGenNodes(this->NodeRank);
+	  }else{
+	    this->tree->serialTree_p->DeAllocNodes(this->NodeRank);
 	  }
 	}
+      }
     } else {
         freeCoefs();
     }
@@ -139,17 +138,14 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->NodeRank<<" Node coeff already allocated!   "<<this->NodeCoeffIx);
     if(this->tree->serialTree_p){
       if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
-	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
       } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocGenCoeff(nBlocks);
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocGenCoeff(nBlocks, this);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeGenNodeCoeff/sizeof(double);
-	this->NodeCoeffIx = this->tree->serialTree_p->nGenNodesCoeff;
       } else{
-	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks);
+	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
-	this->NodeCoeffIx = this->tree->serialTree_p->nNodesCoeff;
       }
     }else{
 	//Operator Node

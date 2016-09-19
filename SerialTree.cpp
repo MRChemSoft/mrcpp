@@ -119,12 +119,17 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->mwTree_p = Tree;//pointer to parent tree
     this->mwTree_p->serialTree_p = this;//must be defined before nodes are created
 
+#ifdef HAVE_OPENMP
+    omp_init_lock(&Stree_lock);
+#endif
+
     //alloc root nodes
     MWNode<D> **roots = Tree->getRootBox().getNodes();
+    int NodeIx;
     for (int rIdx = 0; rIdx < Tree->getRootBox().size(); rIdx++) {
         const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(rIdx);
-	roots[rIdx] = new (allocNodes(1)) ProjectedNode<D>(*this->getTree(), nIdx);
-	roots[rIdx]->NodeRank = this->nNodes-1;
+	roots[rIdx] = new (allocNodes(1, &NodeIx)) ProjectedNode<D>(*this->getTree(), nIdx);
+	roots[rIdx]->NodeRank = NodeIx;
     }
     println(10, "tree at " << Tree<<" root at "<<(Tree->getRootBox().getNodes())[0]<<" root at "<<roots[0]<<" rootrank "<<(Tree->getRootBox().getNodes())[0]->getRank()<<" STree at "<<this);
     //cout<<MPI_rank<<" root 0 cvptr " << (double*)(*(char**)(roots[0]))<<endl;
@@ -759,7 +764,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
 
 //return pointer to the last active node or NULL if failed
 template<int D>
-ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc) {
+ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc, int* NodeIx) {
 //#pragma omp critical
   this->nNodes += nAlloc;
   if (this->nNodes > this->maxNodes){
@@ -768,16 +773,17 @@ ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc) {
     this->nNodes -= nAlloc;
     return 0;
   } else {
-      ProjectedNode<D>* oldlastNode  = this->lastNode;
+      ProjectedNode<D>* newNode  = this->lastNode;
       //We can have sizeNodeMeta with different size than ProjectedNode
       this->lastNode = (ProjectedNode<D>*) ((char *) this->lastNode + nAlloc*this->sizeNodeMeta);
+      *NodeIx = this->nNodes-1;
       //println(0, "new size meta " << this->nNodes);
       for (int i = 0; i<nAlloc; i++){
 	if (this->NodeStackStatus[this->nNodes+i-1]!=0)
 	  println(0, this->nNodes+i-1<<" NodeStackStatus: not available " << this->NodeStackStatus[this->nNodes+i-1]);
 	this->NodeStackStatus[this->nNodes+i-1]=1;
       }
-      return oldlastNode;
+      return newNode;
   }
 }
 template<int D>
@@ -796,8 +802,37 @@ void SerialTree<D>::DeAllocNodes(int NodeRank) {
     this->nNodes=TopStack;//move top of stack
   }
  }
+
+//return pointer to the last active node or NULL if failed
+template<int D>
+GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc, int* NodeIx) {
+
+  omp_set_lock(&Stree_lock);
+  this->nGenNodes += nAlloc;
+  if (this->nGenNodes > this->maxGenNodes){
+    println(0, "maxNodes exceeded " << this->maxGenNodes);
+    MSG_FATAL("maxNodes exceeded ");
+    this->nGenNodes -= nAlloc;
+    omp_unset_lock(&Stree_lock);
+    return 0;
+  } else {
+    GenNode<D>* newNode  = (GenNode<D>*)this->lastGenNode;
+    this->lastGenNode = (GenNode<D>*) ((char *) this->lastGenNode + nAlloc*this->sizeGenNodeMeta);
+    *NodeIx = this->nGenNodes-1;
+    for (int i = 0; i<nAlloc; i++){
+      if (this->GenNodeStackStatus[this->nGenNodes+i-1]!=0)
+	println(0, this->nGenNodes+i-1<<" NodeStackStatus: not available " << this->GenNodeStackStatus[this->nGenNodes+i-1]);
+     this->GenNodeStackStatus[this->nGenNodes+i-1]=1;
+    }
+    //println(0, "new size meta " << this->nNodes);
+    omp_unset_lock(&Stree_lock);
+    return newNode;
+  }
+}
+
 template<int D>
 void SerialTree<D>::DeAllocGenNodes(int NodeRank) {
+  omp_set_lock(&Stree_lock);
   if (this->nGenNodes <0){
     println(0, "minNodes exceeded " << this->nGenNodes);
     this->nGenNodes++;
@@ -811,110 +846,97 @@ void SerialTree<D>::DeAllocGenNodes(int NodeRank) {
     }
     this->nGenNodes=TopStack;//move top of stack
   }
+  omp_unset_lock(&Stree_lock);
  }
 
-//return pointer to the last active node or NULL if failed
-template<int D>
-GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc) {
-//#pragma omp critical
-    this->nGenNodes += nAlloc;
-    if (this->nGenNodes > this->maxGenNodes){
-      println(0, "maxNodes exceeded " << this->maxGenNodes);
-      MSG_FATAL("maxNodes exceeded ");
-       this->nGenNodes -= nAlloc;
-        return 0;
-    } else {
-      GenNode<D>* oldlastNode  = (GenNode<D>*)this->lastGenNode;
-	this->lastGenNode = (GenNode<D>*) ((char *) this->lastGenNode + nAlloc*this->sizeGenNodeMeta);
-	//We can have sizeGenNodeMeta with different size than ProjectedNode
-	for (int i = 0; i<nAlloc; i++){
-	  //oldlastNode->GenNodeRank=this->nGenNodes+i-1;
-	  if (this->GenNodeStackStatus[this->nGenNodes+i-1]!=0)
-	    println(0, this->nGenNodes+i-1<<" NodeStackStatus: not available " << this->GenNodeStackStatus[this->nGenNodes+i-1]);
-	  this->GenNodeStackStatus[this->nGenNodes+i-1]=1;
-	}
-        //println(0, "new size meta " << this->nNodes);
-       return oldlastNode;
-    }
-}
 //return pointer to the Coefficients of the node or NULL if failed
 template<int D>
-double* SerialTree<D>::allocCoeff(int nAllocCoeff) {
+double* SerialTree<D>::allocCoeff(int nAllocCoeff, MWNode<D>* node) {
 //#pragma omp critical
+  omp_set_lock(&Stree_lock);
   this->nNodesCoeff += 1;//nAllocCoeff;
   if (nAllocCoeff!=1<<D) MSG_FATAL("Only 2**D implemented now!");
-    if (this->nNodesCoeff > this->maxNodesCoeff ){
-      println(0, "maxNodesCoeff exceeded " << this->maxNodesCoeff);
-      MSG_FATAL("maxNodesCoeff exceeded ");
-        return 0;
-    } else if( CoeffStackStatus[this->nNodesCoeff]!=0){
-      println(0, this->nNodesCoeff<<" CoeffStackStatus: not available " <<CoeffStackStatus[this->nNodesCoeff] );      
-        return 0;
-    }else{
-      double* coeffVectorXd=this->CoeffStack[this->nNodesCoeff];
-      this->CoeffStackStatus[this->nNodesCoeff]=1;
-      //for (int i = 0; i < this->sizeNodeCoeff/8; i++)coeffVectorXd[i]=0.0;
-      //println(0,this->nNodesCoeff<< " Coeff returned: " << (double*)coeffVectorXd);      
-      return coeffVectorXd;
-    }
+  if (this->nNodesCoeff > this->maxNodesCoeff ){
+    println(0, "maxNodesCoeff exceeded " << this->maxNodesCoeff);
+    MSG_FATAL("maxNodesCoeff exceeded ");
+    omp_unset_lock(&Stree_lock);
+    return 0;
+  } else if( CoeffStackStatus[this->nNodesCoeff]!=0){
+    println(0, this->nNodesCoeff<<" CoeffStackStatus: not available " <<CoeffStackStatus[this->nNodesCoeff] );      
+    omp_unset_lock(&Stree_lock);
+    return 0;
+  }else{
+    double* coeffVectorXd=this->CoeffStack[this->nNodesCoeff];
+    this->CoeffStackStatus[this->nNodesCoeff]=1;
+    node->NodeCoeffIx = this->nNodesCoeff;
+    omp_unset_lock(&Stree_lock);
+    return coeffVectorXd;
+  }
 }
 
 //"Deallocate" the stack
 template<int D>
-void SerialTree<D>::DeAllocCoeff(int DeallocIx) {
-//#pragma omp critical
-    if (this->CoeffStackStatus[DeallocIx]==0)println(0, "deleting already unallocated coeff " << DeallocIx);
-    this->CoeffStackStatus[DeallocIx]=0;//mark as available
-    if(DeallocIx==this->nNodesCoeff){//top of stack
-      int TopStack=this->nNodesCoeff;
-      while(this->CoeffStackStatus[TopStack]==0){
-	TopStack--;
-	if(TopStack<1)break;
-      }
-      this->nNodesCoeff=TopStack;//move top of stack
+void SerialTree<D>::DeAllocCoeff(int DeallocIx) {  
+  omp_set_lock(&Stree_lock);
+  if (this->CoeffStackStatus[DeallocIx]==0){
+    println(0, "deleting already unallocated coeff " << DeallocIx);
+  }
+  this->CoeffStackStatus[DeallocIx]=0;//mark as available
+  if(DeallocIx==this->nNodesCoeff){//top of stack
+    int TopStack=this->nNodesCoeff;
+    while(this->CoeffStackStatus[TopStack]==0){
+      TopStack--;
+      if(TopStack<1)break;
     }
+    this->nNodesCoeff=TopStack;//move top of stack
+  }
+  omp_unset_lock(&Stree_lock);
 }
 
 //return pointer to the Coefficients of the node or NULL if failed
 template<int D>
-//VectorXd* SerialTree<D>::allocGenCoeff(int nAllocCoeff) {
-double* SerialTree<D>::allocGenCoeff(int nAllocCoeff) {
-//#pragma omp critical
+double* SerialTree<D>::allocGenCoeff(int nAllocCoeff, MWNode<D>* node) {
+  omp_set_lock(&Stree_lock);
   if (nAllocCoeff!=1<<D) MSG_FATAL("Only 2**D implemented now!");
-    this->nGenNodesCoeff += 1;//nAllocCoeff;
-    if (this->nGenNodesCoeff > this->maxGenNodesCoeff ){
-      println(0, "maxGenNodesCoeff exceeded " << this->maxGenNodesCoeff);
+  this->nGenNodesCoeff += 1;//nAllocCoeff;
+  if (this->nGenNodesCoeff > this->maxGenNodesCoeff ){
+    println(0, "maxGenNodesCoeff exceeded " << this->maxGenNodesCoeff);
        MSG_FATAL("maxGenNodesCoeff exceeded ");
-      this->nGenNodesCoeff -= 1;//nAllocCoeff;
-        return 0;
-    } else if( GenCoeffStackStatus[this->nGenNodesCoeff]!=0){
-      println(0, this->nGenNodesCoeff<<" GenCoeffStackStatus: not available " <<GenCoeffStackStatus[this->nGenNodesCoeff] );      
-        return 0;
-    }else{
-      double* coeffVectorXd=this->GenCoeffStack[this->nGenNodesCoeff];
-      this->GenCoeffStackStatus[this->nGenNodesCoeff]=1;
-      //for (int i = 0; i < this->sizeGenNodeCoeff/8; i++)coeffVectorXd[i]=0.0;
-      return coeffVectorXd;
-    }
+       this->nGenNodesCoeff -= 1;//nAllocCoeff;
+       omp_unset_lock(&Stree_lock);
+       return 0;
+  } else if( GenCoeffStackStatus[this->nGenNodesCoeff]!=0){
+    println(0, this->nGenNodesCoeff<<" GenCoeffStackStatus: not available " <<GenCoeffStackStatus[this->nGenNodesCoeff] );      
+    omp_unset_lock(&Stree_lock);
+    return 0;
+  }else{
+    double* coeffVectorXd=this->GenCoeffStack[this->nGenNodesCoeff];
+    this->GenCoeffStackStatus[this->nGenNodesCoeff]=1;
+    node->NodeCoeffIx = this->nGenNodesCoeff;
+    //for (int i = 0; i < this->sizeGenNodeCoeff/8; i++)coeffVectorXd[i]=0.0;
+    omp_unset_lock(&Stree_lock);
+    return coeffVectorXd;
+  }
 }
 
 //"Deallocate" the stack
 template<int D>
 void SerialTree<D>::DeAllocGenCoeff(int DeallocIx) {
-  //#pragma omp critical
-    if (this->GenCoeffStackStatus[DeallocIx]==0){
-      println(0, "deleting already unallocated Gencoeff " << DeallocIx);
-    }else{
-      this->GenCoeffStackStatus[DeallocIx]=0;//mark as available
-      if(DeallocIx==this->nGenNodesCoeff){//top of stack
-	int TopStack=this->nGenNodesCoeff;
-	while(this->CoeffStackStatus[TopStack]==0){
-	  TopStack--;
-	  if(TopStack<1)break;
-	}
-	this->nGenNodesCoeff=TopStack;//move top of stack
+  omp_set_lock(&Stree_lock);
+  if (this->GenCoeffStackStatus[DeallocIx]==0){
+    println(0, "deleting already unallocated Gencoeff " << DeallocIx);
+  }else{
+    this->GenCoeffStackStatus[DeallocIx]=0;//mark as available
+    if(DeallocIx==this->nGenNodesCoeff){//top of stack
+      int TopStack=this->nGenNodesCoeff;
+      while(this->CoeffStackStatus[TopStack]==0){
+	TopStack--;
+	if(TopStack<1)break;
       }
+      this->nGenNodesCoeff=TopStack;//move top of stack
     }
+  }
+  omp_unset_lock(&Stree_lock);
 }
 
 /** SerialTree destructor. */

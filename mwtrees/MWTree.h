@@ -103,6 +103,7 @@ public:
     friend class MWNode<D>;
     friend class GenNode<D>;
     friend class ProjectedNode<D>;
+    friend class OperatorNode;
     friend class TreeBuilder<D>;
     friend class GridCleaner<D>;
     friend class TreeCalculator<D>;

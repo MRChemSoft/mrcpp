@@ -7,12 +7,14 @@ using namespace std;
 OperatorNode::OperatorNode(OperatorTree &t, const NodeIndex<2> &n)
         : MWNode<2>(t, n) {
     this->allocCoefs(this->getTDim());
+    this->tree->incrementNodeCount(this->getScale());
     this->setIsEndNode();
 }
 
 OperatorNode::OperatorNode(OperatorNode &p, int c)
         : MWNode<2>(p, c) {
     this->allocCoefs(this->getTDim());
+    this->tree->incrementNodeCount(this->getScale());
     this->setIsEndNode();
 }
 

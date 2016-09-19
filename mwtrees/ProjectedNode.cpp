@@ -27,6 +27,7 @@ template<int D>
 ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
         : FunctionNode<D> (t, nIdx) {
     this->allocCoefs(this->getTDim());
+    this->tree->incrementNodeCount(this->getScale());
     this->setIsEndNode();
     this->setHasWCoefs();//default until known
 }
@@ -37,6 +38,7 @@ template<int D>
 ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
     this->allocCoefs(this->getTDim());
+    this->tree->incrementNodeCount(this->getScale());
     this->setIsEndNode();
     this->setHasWCoefs();//default until known
 }
@@ -63,15 +65,14 @@ template<int D>
 void ProjectedNode<D>::createChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     ProjectedNode<D> *child;
+    int NodeIx;
     if (this->tree->serialTree_p == 0){
         child = new ProjectedNode<D>(*this, cIdx);
     } else {
-      ProjectedNode<D>* oldlastNode=this->tree->serialTree_p->allocNodes(1);
-         child = new (oldlastNode) ProjectedNode<D>(*this, cIdx);
-	 child->NodeRank = this->tree->serialTree_p->nNodes-1;
-        //child = new ProjectedNode<D>(*this, cIdx);
+      ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx);
+         child = new (newNode) ProjectedNode<D>(*this, cIdx);
+	 child->NodeRank = NodeIx;
     }
-    //ProjectedNode<D> *child = new ProjectedNode<D>(*this, cIdx);
     this->children[cIdx] = child;
 }
 
@@ -83,11 +84,12 @@ template<int D>
 void ProjectedNode<D>::genChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     MWNode<D> *child;
+    int NodeIx;
     if (this->tree->serialTree_p == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
-      child = new (this->tree->serialTree_p->allocGenNodes(1))GenNode<D>(*this, cIdx);
-      child->NodeRank =  this->tree->serialTree_p->nGenNodes-1;
+      child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
+      child->NodeRank = NodeIx;
     }
     this->children[cIdx] = child;
 }

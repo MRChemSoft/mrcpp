@@ -199,8 +199,8 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
     return cblas_ddot(size, &a[start], 1, &b[start], 1);
 #else
     double result = 0.0;
-    for (int i = start; i < size; i++) {
-        result += a[i]*b[i];
+    for (int i = 0; i < size; i++) {
+        result += a[start+i]*b[start+i];
     }
     return result;
 #endif

@@ -15,21 +15,22 @@ protected:
     virtual ~AdditionCalculator() { }
 
     virtual void calcNode(MWNode<D> &node_o) {
-        NOT_IMPLEMENTED_ABORT;
-        /*
+        node_o.zeroCoefs();
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        Eigen::VectorXd &vec_o = node_o.getCoefs();
-        vec_o.setZero();
+        double *coefs_o = node_o.getCoefs_d();
         for (int i = 0; i < this->sum_vec->size(); i++) {
-            double coef_i = this->sum_vec->getCoef(i);
+            double c_i = this->sum_vec->getCoef(i);
             FunctionTree<D> &func_i = this->sum_vec->getFunc(i);
+            // This generates missing nodes
             const MWNode<D> &node_i = func_i.getNode(idx);
-            const Eigen::VectorXd &vec_i = node_i.getCoefs();
-            vec_o = vec_o + coef_i*vec_i;
+            const double *coefs_i = node_i.getCoefs_d();
+            int n_coefs = node_i.getNCoefs();
+            for (int j = 0; j < node_i.getNCoefs(); j++) {
+                coefs_o[j] += c_i * coefs_i[j];
+            }
         }
         node_o.setHasCoefs();
         node_o.calcNorms();
-        */
     }
 
 private:

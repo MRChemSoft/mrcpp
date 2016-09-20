@@ -54,7 +54,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
     double result = 0.0;
 //#pragma omp parallel for shared(fact) reduction(+:result)
     for (int i = 0; i < this->getKp1_d(); i++) {
-        double temp = this->d_coefs[i];
+        double temp = this->coefs[i];
         for (int j = 0; j < D; j++) {
             int k = (i % fact[j + 1]) / fact[j];
             temp *= val(k, j);
@@ -159,8 +159,8 @@ double FunctionNode<D>::dotScaling(const FunctionNode<D> &ket) const {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const double *a = bra.getCoefs_d();
-    const double *b = ket.getCoefs_d();
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
 
     int size = bra.getKp1_d();
 #ifdef HAVE_BLAS
@@ -190,8 +190,8 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const double *a = bra.getCoefs_d();
-    const double *b = ket.getCoefs_d();
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
 
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
@@ -221,7 +221,7 @@ void FunctionNode<D>::getValues(VectorXd &vec) {
     this->mwTransform(Reconstruction);
     this->cvTransform(Forward);
     for (int i = 0; i < this->n_coefs; i++) {
-        vec(i) = this->d_coefs[i];
+        vec(i) = this->coefs[i];
     }
     this->cvTransform(Backward);
     this->mwTransform(Compression);

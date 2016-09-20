@@ -70,8 +70,8 @@ public:
     void getCoefs(Eigen::VectorXd &c) const;
     void printCoefs() const;
 
-    double* getCoefs_d() { return this->d_coefs; }
-    const double* getCoefs_d() const { return this->d_coefs; }
+    double* getCoefs() { return this->coefs; }
+    const double* getCoefs() const { return this->coefs; }
 
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
@@ -110,7 +110,7 @@ protected:
     double componentNorms[1<<D]; ///< 2^D components
 
     int n_coefs;
-    double *d_coefs;
+    double *coefs;
 
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
     MWNode(MWNode<D> &p, int cIdx);

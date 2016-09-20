@@ -16,7 +16,7 @@ protected:
 
     virtual void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        double *coefs_o = node_o.getCoefs_d();
+        double *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) {
             coefs_o[j] = 1.0;
         }
@@ -27,7 +27,7 @@ protected:
             MWNode<D> node_i = func_i.getNode(idx); // Copy node
             node_i.mwTransform(Reconstruction);
             node_i.cvTransform(Forward);
-            const double *coefs_i = node_i.getCoefs_d();
+            const double *coefs_i = node_i.getCoefs();
             for (int j = 0; j < node_i.getNCoefs(); j++) {
                 coefs_o[j] *= c_i * coefs_i[j];
             }

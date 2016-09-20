@@ -218,7 +218,7 @@ FunctionTree<D>& FunctionTree<D>::operator*=(double c) {
     for (int i = 0; i < this->endNodeTable.size(); i++) {
         MWNode<D> &node = *this->endNodeTable[i];
         if (not node.hasCoefs()) MSG_FATAL("No coefs");
-        double *coefs = node.getCoefs_d();
+        double *coefs = node.getCoefs();
         for (int j = 0; j < node.getNCoefs(); j++) {
             coefs[j] *= c;
         }
@@ -253,7 +253,7 @@ void FunctionTree<D>::getEndValues(VectorXd &data) {
         MWNode<D> &node = getEndFuncNode(n);
         node.mwTransform(Reconstruction);
         node.cvTransform(Forward);
-        const double *c = node.getCoefs_d();
+        const double *c = node.getCoefs();
         for (int i = 0; i < nCoefs; i++) {
             data(n*nCoefs + i) = c[i];
         }

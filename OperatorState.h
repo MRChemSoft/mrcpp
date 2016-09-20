@@ -22,7 +22,7 @@ public:
         this->kp1_d = this->gNode->getKp1_d();
         this->kp1_2 = MathUtils::ipow(this->kp1, 2);
         this->kp1_dm1 = MathUtils::ipow(this->kp1, D - 1);
-        this->gData = this->gNode->getCoefs_d();
+        this->gData = this->gNode->getCoefs();
         this->maxDeltaL = -1;
 
         double *scr1 = this->gNode->getMWTree().getTmpCoefs();
@@ -38,7 +38,7 @@ public:
     }
     void setFNode(MWNode<D> &fn) {
         this->fNode = &fn;
-        this->fData = this->fNode->getCoefs_d();
+        this->fData = this->fNode->getCoefs();
         calcMaxDeltaL();
     }
     void setGComponent(int gt) {

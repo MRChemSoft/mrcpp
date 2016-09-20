@@ -208,12 +208,12 @@ template<int D>
 void MWTree<D>::mwTransformUp(bool overwrite) {
     vector<MWNodeVector > nodeTable;
     this->makeNodeTable(nodeTable);
-#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
-{
+//#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
+//{
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
         int nNodes = nodeTable[n].size();
-#pragma omp for schedule(guided)
+//#pragma omp for schedule(guided)
             for (int i = 0; i < nNodes; i++) {
                 MWNode<D> &node = *nodeTable[n][i];
                 if (node.isBranchNode()) {
@@ -221,7 +221,7 @@ void MWTree<D>::mwTransformUp(bool overwrite) {
                 }
             }
     }
-}
+//}
 }
 
 /** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs

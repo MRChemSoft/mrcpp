@@ -215,19 +215,18 @@ void FunctionTree<D>::map(const RepresentableFunction<1> &func) {
 
 template<int D>
 FunctionTree<D>& FunctionTree<D>::operator*=(double c) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
     for (int i = 0; i < this->endNodeTable.size(); i++) {
         MWNode<D> &node = *this->endNodeTable[i];
         if (not node.hasCoefs()) MSG_FATAL("No coefs");
-        VectorXd &coefs = node.getCoefs();
-        coefs = c*coefs;
+        double *coefs = node.getCoefs_d();
+        for (int j = 0; j < node.getNCoefs(); j++) {
+            coefs[j] *= c;
+        }
         node.calcNorms();
     }
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
     return *this;
-    */
 }
 
 template<int D>

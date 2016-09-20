@@ -206,7 +206,6 @@ void MWNode<D>::setCoefs(const Eigen::VectorXd &c) {
 template<int D>
 void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-
     for (int i = 0; i < block_size; i++) {
         this->d_coefs[block*block_size + i] = c[i];
     }
@@ -214,9 +213,7 @@ void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
 
 template<int D>
 void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
-    NOT_IMPLEMENTED_ABORT;
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-
     for (int i = 0; i < block_size; i++) {
         this->d_coefs[block*block_size + i] += c[i];
     }

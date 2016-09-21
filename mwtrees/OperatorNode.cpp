@@ -43,23 +43,21 @@ void OperatorNode::genChildren() {
   * Thus we calculate some cheaper upper bounds for this norm for thresholding.
   * First a simple vector norm, then a product of the 1- and infinity-norm. */
 double OperatorNode::calcComponentNorm(int i) const {
-    NEEDS_FIX("Optimize without Eigen");
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
     double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
 
     int kp1_d = this->getKp1_d();
-    VectorXd coefs;
-    getCoefs(coefs);
-    VectorXd comp_coefs = coefs.segment(i*kp1_d, kp1_d);
+    const double *coefs = this->getCoefs();
+    VectorXd comp_vec = VectorXd::Map(&coefs[i*kp1_d], kp1_d);
 
     double norm = 0.0;
-    double vecNorm = comp_coefs.norm();
+    double vecNorm = comp_vec.norm();
     if (vecNorm > thrs) {
-        double infNorm = MathUtils::matrixNormInfinity(comp_coefs);
-        double oneNorm = MathUtils::matrixNorm1(comp_coefs);
+        double infNorm = MathUtils::matrixNormInfinity(comp_vec);
+        double oneNorm = MathUtils::matrixNorm1(comp_vec);
         if (sqrt(infNorm*oneNorm) > thrs) {
-            double twoNorm = MathUtils::matrixNorm2(comp_coefs);
+            double twoNorm = MathUtils::matrixNorm2(comp_vec);
             if (twoNorm > thrs) {
                 norm = twoNorm;
             }

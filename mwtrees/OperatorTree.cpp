@@ -12,6 +12,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
           bandWidth(0),
           nodePtrStore(0),
           nodePtrAccess(0) {
+    if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<2> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<2> *root = new OperatorNode(*this, nIdx);
@@ -39,26 +40,29 @@ void OperatorTree::clearBandWidth() {
 void OperatorTree::calcBandWidth(double prec) {
     if (this->bandWidth != 0) MSG_ERROR("Band width not properly cleared");
     this->bandWidth = new BandWidth(getDepth());
-    LebesgueIterator<2> it(this);
-    double thrs = -1.0;
-    while (it.next()) {
-        MWNode<2> &node = it.getNode();
-        const int *l = node.getTranslation();
-        if (l[1] == 0) {
-            int depth = node.getDepth();
-            if (prec > 0.0) {
-                thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
-            }
+
+    VectorXi max_transl;
+    getMaxTranslations(max_transl);
+
+    if (prec < 0.0) prec = this->normPrec;
+    for (int depth = 0; depth < this->getDepth(); depth++) {
+        int n = getRootScale() + depth;
+        int l = 0;
+        bool done = false;
+        while (not done) {
+            done = true;
+            MWNode<2> &node = getNode(depth, l);
+            double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
             for (int k = 0; k < 4; k++) {
                 if (node.getComponentNorm(k) > thrs) {
-                    int bw = this->bandWidth->getWidth(depth, k);
-                    if (l[0] > bw) {
-                        this->bandWidth->setWidth(depth, k, l[0]);
-                    }
+                    this->bandWidth->setWidth(depth, k, l);
+                    done = false;
                 }
             }
+            if (++l > max_transl[depth]) break;
         }
     }
+    println(100, "\nOperator BandWidth" << *this->bandWidth);
 }
 
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {

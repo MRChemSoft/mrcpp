@@ -47,9 +47,11 @@ double OperatorNode::calcComponentNorm(int i) const {
     double prec = getOperTree().getNormPrecision();
     double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
 
+    VectorXd coef_vec;
+    this->getCoefs(coef_vec);
+
     int kp1_d = this->getKp1_d();
-    const double *coefs = this->getCoefs();
-    VectorXd comp_vec = VectorXd::Map(&coefs[i*kp1_d], kp1_d);
+    const VectorXd &comp_vec = coef_vec.segment(i*kp1_d, kp1_d);
 
     double norm = 0.0;
     double vecNorm = comp_vec.norm();

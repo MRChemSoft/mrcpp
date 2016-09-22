@@ -151,10 +151,7 @@ void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
     if (not this->hasCoefs()) MSG_FATAL("Node has no coefs");
     if (this->n_coefs == 0) MSG_FATAL("ncoefs == 0");
 
-    c = VectorXd::Zero(this->n_coefs);
-    for (int i = 0; i < this->n_coefs; i++) {
-        c(i) = this->coefs[i];
-    }
+    c = VectorXd::Map(this->coefs, this->n_coefs);
 }
 
 template<int D>

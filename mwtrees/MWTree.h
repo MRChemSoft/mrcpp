@@ -50,7 +50,7 @@ public:
     int getNAllocGenNodes();
     int getNGenNodes();
     int getRootScale() const { return this->rootBox.getScale(); }
-    virtual int getDepth() const { return this->nodesAtDepth.size(); }
+    int getDepth() const { return this->nodesAtDepth.size(); }
 
     NodeBox<D> &getRootBox() { return this->rootBox; }
     const NodeBox<D> &getRootBox() const { return this->rootBox; }
@@ -130,10 +130,8 @@ protected:
     MWNodeVector endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
+    // Temporary storage for MW coefficients
     double **tmpCoefs;
-    //Eigen::MatrixXd **tmpCoefs;   ///< temp memory
-    //Eigen::VectorXd **tmpVector;  ///< temp memory
-    //Eigen::VectorXd **tmpMWCoefs; ///< temp memory
 
     // Constructors are protected, use TreeBuilders
     MWTree(const MultiResolutionAnalysis<D> &mra);
@@ -142,11 +140,10 @@ protected:
     void allocWorkMemory();
     void freeWorkMemory();
 
-    inline double *getTmpCoefs();
-
-    //inline Eigen::MatrixXd &getTmpScalingCoefs();
-    //inline Eigen::VectorXd &getTmpScalingVector();
-    //inline Eigen::VectorXd &getTmpMWCoefs();
+    double *getTmpCoefs() {
+        int thread = omp_get_thread_num();
+        return this->tmpCoefs[thread];
+    }
 
     void mwTransformDown(bool overwrite);
     void mwTransformUp(bool overwrite);
@@ -182,30 +179,5 @@ protected:
     omp_lock_t tree_lock;
 #endif
 };
-
-template<int D>
-double* MWTree<D>::getTmpCoefs() {
-    int thread = omp_get_thread_num();
-    return this->tmpCoefs[thread];
-}
-/*
-template<int D>
-Eigen::MatrixXd& MWTree<D>::getTmpScalingCoefs() {
-    int thread = omp_get_thread_num();
-    return *this->tmpCoefs[thread];
-}
-
-template<int D>
-Eigen::VectorXd& MWTree<D>::getTmpScalingVector() {
-    int thread = omp_get_thread_num();
-    return *this->tmpVector[thread];
-}
-
-template<int D>
-Eigen::VectorXd& MWTree<D>::getTmpMWCoefs() {
-    int thread = omp_get_thread_num();
-    return *this->tmpMWCoefs[thread];
-}
-*/
 
 #endif /* MWTREE_H_ */

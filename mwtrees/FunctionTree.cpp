@@ -74,7 +74,7 @@ FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
 /** FunctionTree destructor. */
 template<int D>
 FunctionTree<D>::~FunctionTree() {
-    println(10, "~FunctionTree");    
+  //    println(10, "~FunctionTree");    
     //    NOT_IMPLEMENTED_ABORT;
     if(this->serialTree_p){
       //root nodes are created and destroyed in the Serial tree

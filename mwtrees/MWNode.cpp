@@ -29,7 +29,7 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           n_coefs(0),
           coefs(0) {
     clearNorms();
-    this->coefs = &this->coefvec;
+    //    this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -54,7 +54,7 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           n_coefs(0),
           coefs(0) {
     clearNorms();
-    this->coefs = &this->coefvec;
+    //    this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -76,7 +76,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           status(0),
           n_coefs(0),
           coefs(0) {
-    this->coefs = &this->coefvec;
+  //    this->coefs = &this->coefvec;
 
     allocCoefs(this->getTDim(), this->getKp1_d());
 
@@ -119,8 +119,8 @@ MWNode<D>::~MWNode() {
         freeCoefs();
     }
     if(this->tree->serialTree_p){
-      *((double**) ((void*)&(this->coefvec))) = NULL;
-      *((int*) (((void*)&(this->coefvec))+8)) = 0;
+      //      *((double**) ((void*)&(this->coefvec))) = NULL;
+      //      *((int*) (((void*)&(this->coefvec))+8)) = 0;
      }
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
@@ -134,7 +134,7 @@ void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 
     if (this->n_coefs != 0) MSG_FATAL("n_coefs should be zero");
     this->n_coefs = n_blocks * block_size;
-    if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->NodeRank<<" Node coeff already allocated!   "<<this->NodeCoeffIx);
+    //    if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->NodeRank<<" Node coeff already allocated!   "<<this->NodeCoeffIx);
     if(this->tree->serialTree_p){
       /*if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
@@ -147,15 +147,14 @@ void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff;
 	}*/
       if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-	coefs = this->tree->serialTree_p->allocCoeff(n_blocks, block_size, this);
+	coefs = this->tree->serialTree_p->allocCoeff(n_blocks,  this);
       } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-	coefs = this->tree->serialTree_p->allocGenCCoeff(n_blocks, block_size, this);
+	coefs = this->tree->serialTree_p->allocGenCoeff(n_blocks,  this);
       } else{
-	coefs = this->tree->serialTree_p->allocCoeff(n_blocks, block_size, this);
+	coefs = this->tree->serialTree_p->allocCoeff(n_blocks,  this);
       }
     }else{
 	//Operator Node
-	this->coefs = new VectorXd(nCoefs);
 	this->coefs = new double[this->n_coefs];
     }
 
@@ -458,42 +457,41 @@ void MWNode<D>::mwTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
     int kp1_d = this->getKp1_d();
+    int nCoefs = this->getTDim()*kp1_d;
     const MWFilter &filter = getMWTree().getMRA().getFilter();
-    VectorXd &result = getMWTree().getTmpMWCoefs();
     double overwrite = 0.0;
-    double *data_p1,*data_p2,*data_p3;
 
-    data_p1 = this->coefs->data();
-    data_p2 = result.data();
-        
+    double o_vec[nCoefs];
+    double *out_vec = o_vec;
+    double *in_vec = this->coefs;
+
     for (int i = 0; i < D; i++) {
-      int mask = 1 << i;
-      for (int gt = 0; gt < this->getTDim(); gt++) {
-	double *out =  data_p2 + gt * kp1_d;
-	for (int ft = 0; ft < this->getTDim(); ft++) {
-	  /* Operate in direction i only if the bits along other
-	   * directions are identical. The bit of the direction we
-	   * operate on determines the appropriate filter/operator */
-	  if ((gt | mask) == (ft | mask)) {
-	    double *in = data_p1 + ft * kp1_d;
-	    int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-	    const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
-	    MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
-	    overwrite = 1.0;
-	  }
-	}
-	overwrite = 0.0;
-      }
-      //swap pointers (but data is not copied!)
-      data_p3=data_p1;
-      data_p1=data_p2;
-      data_p2=data_p3;
+        int mask = 1 << i;
+        for (int gt = 0; gt < this->getTDim(); gt++) {
+            double *out = out_vec + gt * kp1_d;
+            for (int ft = 0; ft < this->getTDim(); ft++) {
+                /* Operate in direction i only if the bits along other
+                 * directions are identical. The bit of the direction we
+                 * operate on determines the appropriate filter/operator */
+                if ((gt | mask) == (ft | mask)) {
+                    double *in = in_vec + ft * kp1_d;
+                    int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
+                    const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
+                    MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+                    overwrite = 1.0;
+                }
+            }
+            overwrite = 0.0;
+        }
+        double *tmp = in_vec;
+        in_vec = out_vec;
+        out_vec = tmp;
     }
-        
-    //if the loop is traversed an odd number of time the data ends in the wrong buffer
-    //(but now data is in cache, so this is very fast)
-    if(D%2)for(int i=0; i<kp1_d*this->getTDim(); i++) this->getCoefs()(i) = data_p1[i];
-    
+    if (IS_ODD(D)) {
+        for (int i = 0; i < nCoefs; i++) {
+            this->coefs[i] = in_vec[i];
+        }
+    }
 }
 
 /** Set all norms to Undefined. */
@@ -925,7 +923,6 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
- 	if(D<3)println(0, D<<"genChildren  " << this->NodeRank<<"  "<<((&(this->getMWChild(0).getCoefs()(0))) - (&(this->getMWChild(1).getCoefs()(0)))));
    }
     unlockNode();
     int cIdx = getChildIndex(r);

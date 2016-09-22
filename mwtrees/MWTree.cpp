@@ -28,7 +28,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
           serialTree_p(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
-    allocWorkMemory();
+
     println(10, "new MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
@@ -50,7 +50,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
           nNodes(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
-    allocWorkMemory();
+
     new SerialTree<D>(this, max_nodes);
     println(10, "new Serial MWTree ");
 #ifdef OPENMP
@@ -81,10 +81,10 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 /** MWTree destructor. */
 template<int D>
 MWTree<D>::~MWTree() {
-    println(10, "~MWTree");
+  //println(10, "~MWTree");
     if(this->serialTree_p) {
       //SerialTree removes nodes
-      println(10, "delete serialTree_p");
+      //      println(10, "delete serialTree_p");
       delete this->serialTree_p;
     } else {
       //Has to remove nodes here?
@@ -106,12 +106,7 @@ MWTree<D>::~MWTree() {
       MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     }
     deleteNodeCounters();
-<<<<<<< HEAD
-    freeWorkMemory();
-    
-=======
 
->>>>>>> 543587dec7bf4b87c66e6cbb6d15a8ef42555c44
 #ifdef OPENMP
     omp_destroy_lock(&tree_lock);
 #endif

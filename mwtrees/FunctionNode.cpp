@@ -144,8 +144,7 @@ double FunctionNode<D>::integrateInterpolating() const {
     }
     double n = (D * this->getScale()) / 2.0;
     double two_n = pow(2.0, -n);
-    double sum=0.0;
-    for (int i = 0; i < this->getKp1_d(); i++) sum+=wcoefs[i];
+    double sum = coefs.segment(0, this->getKp1_d()).sum();
 
     return two_n * sum;
 }

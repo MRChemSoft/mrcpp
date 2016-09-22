@@ -24,7 +24,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
 OperatorTree::~OperatorTree() {
     clearOperNodeCache();
     clearBandWidth();
-    println(10, "~OperatorTree");
+    //println(10, "~OperatorTree");
     MWNode<2> **roots = this->rootBox.getNodes();
     for (int i = 0; i < this->rootBox.size(); i++) {
         OperatorNode *node = static_cast<OperatorNode *>(roots[i]);

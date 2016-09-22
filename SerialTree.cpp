@@ -171,10 +171,10 @@ void SerialTree<D>::RewritePointers(){
   cout<<MPI_rank<<" Node virtual table pointer "<<(double*) cvptr <<endl;  
   delete tempnode; 
  
-  d_p_shift = this->firstNodeCoeff-(*((double**) ((void*)&(roots[0]->coefvec))));
-  n_p_shift =  ((MWNode<D> *) ( this->firstNodeCoeff)) - ((MWNode<D> *)(*((double**) ((void*)&(roots[0]->coefvec)))));
+  d_p_shift = (this->firstNodeCoeff)-(roots[0]->coefs);
+  n_p_shift =  ((MWNode<D> *) ( this->firstNodeCoeff)) - ((MWNode<D> *)(roots[0]->coefs));
   //n_p_shift =  (d_p_shift*sizeof(double))/sizeof(MWNode<D>);//be careful with ptrdiff_t arithmetic!
-  t_p_shift =  ((MWTree<D> *) ( this->firstNodeCoeff)) - ((MWTree<D> *)(*((double**) ((void*)&(roots[0]->coefvec)))));
+  t_p_shift =  ((MWTree<D> *) ( this->firstNodeCoeff)) - ((MWTree<D> *)(roots[0]->coefs));
   cout<<"d_p_shift "<<d_p_shift<<" as tree* "<<t_p_shift<<" as node* "<<n_p_shift<<" tag "<<this<<endl;
   //test consistency: could use explicit shift instead
   //if((n_p_shift*sizeof(MWNode<D>))/sizeof(double) != d_p_shift)MSG_FATAL("Serial Tree: wrong n_p_shift");
@@ -201,17 +201,17 @@ void SerialTree<D>::RewritePointers(){
       fpos->parent = (MWNode<D>*)(((double*)fpos->parent) + d_p_shift);// += n_p_shift not safe!
       //fpos->tree += t_p_shift;//NB: does not work!//(MWTree<D>*)(((double*)fpos->tree) + d_p_shift);
       fpos->tree = this->getTree();
-      *((double**) ((void*)&(fpos->coefvec))) = this->firstNodeCoeff+(fpos->NodeCoeffIx)*this->sizeNodeCoeff;
+      fpos->coefs = this->firstNodeCoeff+(fpos->NodeCoeffIx)*this->sizeNodeCoeff;
+      //*((double**) ((void*)&(fpos->coefvec))) = this->firstNodeCoeff+(fpos->NodeCoeffIx)*this->sizeNodeCoeff;
       //*((int*) (((void*)&(fpos->coefvec))+8)) = this->tree->allocator->sizeNodeCoeff;
 
-     fpos->coefs = &fpos->coefvec;
-  }
+   }
   this->getTree()->resetEndNodeTable();
 
 }
 /** Adds two trees.
   * Generate missing nodes on the flight and adds all nodes */
-template<int D>
+/*template<int D>
 void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC){
   println(0, " SerialTreeAdd ");
     int DepthMax = 100;
@@ -306,14 +306,15 @@ void SerialTree<D>::SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTre
     this->getTree()->resetEndNodeTable();
     cout<<"sending TreeAB with Nnodes "<<this->nNodes<<endl;
 #ifdef HAVE_MPI
-    if(MPI_size == 2)SendRcv_SerialTree(TreeA, 0, 1, 44, MPI_COMM_WORLD);
+    //    if(MPI_size == 2)SendRcv_SerialTree(TreeA, 0, 1, 44, MPI_COMM_WORLD);
 #endif
 
 
-}
+}*/
+
 /** Adds two trees.
   * Generate missing nodes on the flight and "compress" the ancestor  from summed nodes also on the flight */
-template<int D>
+/*template<int D>
 void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC){
   println(0, " SerialTreeAdd ");
   //to do: traverse from low to high rank
@@ -488,7 +489,7 @@ void SerialTree<D>::SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, Function
 
    println(0, "TreeAB Nodes   " <<this->nNodes<<" squarenorm "<<Tsum);
 
-}
+   }*/
 
 /** Make 8 children nodes with scaling coefficients from parent
  * Does not put 0 on wavelets
@@ -504,11 +505,9 @@ void SerialTree<D>::GenS_nodes(MWNode<D>* Node){
 
   Node->genChildren();//will make children and allocate coeffs, but without setting values for coeffs.
 
-  cA=&(Node->getCoefs()(0));
-  cA=&(Node->children[0]->getCoefs()(0));
 
-  double* coeffin  = &(Node->getCoefs()(0));
-  double* coeffout = &(Node->children[0]->getCoefs()(0));
+  double* coeffin  = Node->coefs;
+  double* coeffout = Node->children[0]->coefs;
 
   int Children_Stride = this->sizeGenNodeCoeff;
   S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride);
@@ -643,7 +642,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool Read
   * thus purifying all coefficients.
   * not yet fully optimized.
  */
-template<int D>
+/*template<int D>
 void SerialTree<D>::S_mwTreeTransformUp() {
     Timer t0,t1,t2,t3;
     int DepthMax = 100;
@@ -697,7 +696,7 @@ void SerialTree<D>::S_mwTreeTransformUp() {
     println(0, counter2<<" nodes recompressed, out of "<<this->nNodes);
 
     
-}
+    }*/
 
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
@@ -705,7 +704,7 @@ void SerialTree<D>::S_mwTreeTransformUp() {
  * The output is read directly from the 8 children scaling coefficients. 
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template<int D>
+/*template<int D>
 void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride) {
   if(D!=3)MSG_FATAL("S_mwtransform Only D=3 implemented now!");
   int operation = Compression;
@@ -734,7 +733,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-      if ((gt | mask) == (ft | mask)) {
+/*      if ((gt | mask) == (ft | mask)) {
 	double *in = coeff_in + ft * Children_Stride;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -753,7 +752,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-      if ((gt | mask) == (ft | mask)) {
+/*     if ((gt | mask) == (ft | mask)) {
 	double *in = coeff_out + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -773,7 +772,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-      if ((gt | mask) == (ft | mask)) {
+/*     if ((gt | mask) == (ft | mask)) {
 	double *in = tmpcoeff + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -786,7 +785,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
   }
   //  if(D%2)for(int i=0; i<kp1_d*tDim; i++) coeff_out[i] = tmpcoeff[i];
 
-}
+  }*/
 
 //return pointer to the last active node or NULL if failed
 template<int D>
@@ -977,7 +976,7 @@ void SerialTree<D>::DeAllocGenCoeff(int DeallocIx) {
 /** SerialTree destructor. */
 template<int D>
 SerialTree<D>::~SerialTree() {
-    println(10, "~SerialTree");
+  //println(10, "~SerialTree");
     MWNode<D> **roots = this->getTree()->getRootBox().getNodes();
     for (int i = 0; i < this->getTree()->getRootBox().size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);

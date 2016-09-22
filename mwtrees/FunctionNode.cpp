@@ -54,7 +54,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
     double result = 0.0;
 //#pragma omp parallel for shared(fact) reduction(+:result)
     for (int i = 0; i < this->getKp1_d(); i++) {
-        double temp = (*this->coefs)(i);
+        double temp = this->coefs[i];
         for (int j = 0; j < D; j++) {
             int k = (i % fact[j + 1]) / fact[j];
             temp *= val(k, j);
@@ -101,9 +101,9 @@ double FunctionNode<D>::integrate() const {
 template<int D>
 double FunctionNode<D>::integrateLegendre() const {
     NOT_IMPLEMENTED_ABORT;
-    double n = (D * this->getScale()) / 2.0;
-    double two_n = pow(2.0, -n);
-    return two_n * this->getCoefs()[0];
+    //double n = (D * this->getScale()) / 2.0;
+    //double two_n = pow(2.0, -n);
+    //return two_n * this->getCoefs()[0];
 }
 
 /** Function integration, Interpolating basis.
@@ -127,25 +127,16 @@ double FunctionNode<D>::integrateInterpolating() const {
         kp1_p[i] = MathUtils::ipow(qOrder, i);
     }
 
-    double wcoefs[this->getKp1_d()];
-    
-    for (int p = 0; p < 1; p++) {
+
+    VectorXd coefs;
+    this->getCoefs(coefs);
+    for (int p = 0; p < D; p++) {
+
         int n = 0;
         for (int i = 0; i < kp1_p[D - p - 1]; i++) {
             for (int j = 0; j < qOrder; j++) {
                 for (int k = 0; k < kp1_p[p]; k++) {
-		  wcoefs[n] = sqWeights[j]* this->getCoefs()[n];
-                    n++;
-                }
-            }
-        }
-    }
-    for (int p = 1; p < D; p++) {
-        int n = 0;
-        for (int i = 0; i < kp1_p[D - p - 1]; i++) {
-            for (int j = 0; j < qOrder; j++) {
-                for (int k = 0; k < kp1_p[p]; k++) {
-                    wcoefs[n] *= sqWeights[j];
+                    coefs(n) *= sqWeights[j];
                     n++;
                 }
             }
@@ -172,14 +163,18 @@ double FunctionNode<D>::dotScaling(const FunctionNode<D> &ket) const {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const VectorXd &a = bra.getCoefs();
-    const VectorXd &b = ket.getCoefs();
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
 
-    int kp1_d = bra.getKp1_d();
+    int size = bra.getKp1_d();
 #ifdef HAVE_BLAS
-    return cblas_ddot(kp1_d, a.data(), 1, b.data(), 1);
+    return cblas_ddot(size, a, 1, b, 1);
 #else
-    return a.segment(0, kp1_d).dot(b.segment(0, kp1_d));
+    double result = 0.0;
+    for (int i = 0; i < size; i++) {
+        result += a[i]*b[i];
+    }
+    return result;
 #endif
 }
 
@@ -199,23 +194,25 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const VectorXd &a = bra.getCoefs();
-    const VectorXd &b = ket.getCoefs();
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
 
-    int kp1_d = bra.getKp1_d();
-    int nCoefs = (bra.getTDim() - 1) * kp1_d;
+    int start = bra.getKp1_d();
+    int size = (bra.getTDim() - 1) * start;
 #ifdef HAVE_BLAS
-    return cblas_ddot(nCoefs,
-                      a.segment(kp1_d, nCoefs).data(), 1,
-                      b.segment(kp1_d, nCoefs).data(), 1);
+    return cblas_ddot(size, &a[start], 1, &b[start], 1);
 #else
-    return a.segment(kp1_d, nCoefs).dot(b.segment(kp1_d, nCoefs));
+    double result = 0.0;
+    for (int i = 0; i < size; i++) {
+        result += a[start+i]*b[start+i];
+    }
+    return result;
 #endif
 }
 
 template<int D>
 void FunctionNode<D>::setValues(VectorXd &vec) {
-    this->getCoefs() = vec;
+    this->setCoefBlock(0, vec.size(), vec.data());
     this->cvTransform(Backward);
     this->mwTransform(Compression);
     this->setHasCoefs();
@@ -224,9 +221,12 @@ void FunctionNode<D>::setValues(VectorXd &vec) {
 
 template<int D>
 void FunctionNode<D>::getValues(VectorXd &vec) {
+    vec = VectorXd::Zero(this->n_coefs);
     this->mwTransform(Reconstruction);
     this->cvTransform(Forward);
-    vec = this->getCoefs();
+    for (int i = 0; i < this->n_coefs; i++) {
+        vec(i) = this->coefs[i];
+    }
     this->cvTransform(Backward);
     this->mwTransform(Compression);
 }

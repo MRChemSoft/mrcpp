@@ -234,8 +234,10 @@ FunctionTree<D>& FunctionTree<D>::operator*=(double c) {
     for (int i = 0; i < this->endNodeTable.size(); i++) {
         MWNode<D> &node = *this->endNodeTable[i];
         if (not node.hasCoefs()) MSG_FATAL("No coefs");
-        VectorXd &coefs = node.getCoefs();
-        coefs = c*coefs;
+        double *coefs = node.getCoefs();
+        for (int j = 0; j < node.getNCoefs(); j++) {
+            coefs[j] *= c;
+        }
         node.calcNorms();
     }
     this->mwTransform(BottomUp);
@@ -263,11 +265,14 @@ void FunctionTree<D>::getEndValues(VectorXd &data) {
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim()*this->getKp1_d();
     data = VectorXd::Zero(nNodes*nCoefs);
-    for (int i = 0; i < nNodes; i++) {
-        MWNode<D> &node = getEndFuncNode(i);
+    for (int n = 0; n < nNodes; n++) {
+        MWNode<D> &node = getEndFuncNode(n);
         node.mwTransform(Reconstruction);
         node.cvTransform(Forward);
-        data.segment(i*nCoefs, nCoefs) = node.getCoefs();
+        const double *c = node.getCoefs();
+        for (int i = 0; i < nCoefs; i++) {
+            data(n*nCoefs + i) = c[i];
+        }
         node.cvTransform(Backward);
         node.mwTransform(Compression);
     }
@@ -279,7 +284,8 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
     int nCoefs = this->getTDim()*this->getKp1_d();
     for (int i = 0; i < nNodes; i++) {
         MWNode<D> &node = getEndFuncNode(i);
-        node.getCoefs() = data.segment(i*nCoefs, nCoefs);
+        const double *c = data.segment(i*nCoefs, nCoefs).data();
+        node.setCoefBlock(0, nCoefs, c);
         node.cvTransform(Backward);
         node.mwTransform(Compression);
         node.setHasCoefs();

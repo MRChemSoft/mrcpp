@@ -26,7 +26,8 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           hilbertPath(),
           squareNorm(-1.0),
           status(0),
-          coefs(0){
+          n_coefs(0),
+          coefs(0) {
     clearNorms();
     this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
@@ -50,6 +51,7 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           hilbertPath(p.getHilbertPath(), cIdx),
           squareNorm(-1.0),
           status(0),
+          n_coefs(0),
           coefs(0) {
     clearNorms();
     this->coefs = &this->coefvec;
@@ -72,15 +74,16 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           hilbertPath(n.getHilbertPath()),
           squareNorm(-1.0),
           status(0),
+          n_coefs(0),
           coefs(0) {
-
     this->coefs = &this->coefvec;
-    allocCoefs(this->getTDim());
+
+    allocCoefs(this->getTDim(), this->getKp1_d());
 
     if (n.hasCoefs()) {
-        setCoefs(n.getCoefs());
+        setCoefBlock(0, this->n_coefs, n.getCoefs());
     } else {
-        zeroCoefs();
+        zeroCoefBlock(0, this->n_coefs);
     }
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
@@ -126,13 +129,14 @@ MWNode<D>::~MWNode() {
 
 /** Allocate the coefs vector. */
 template<int D>
-void MWNode<D>::allocCoefs(int nBlocks) {
+void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
     if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
 
-    int nCoefs = nBlocks * this->getKp1_d();
+    if (this->n_coefs != 0) MSG_FATAL("n_coefs should be zero");
+    this->n_coefs = n_blocks * block_size;
     if(*((int*) (((void*)&(this->coefvec))+8)) != 0)println(0, this->NodeRank<<" Node coeff already allocated!   "<<this->NodeCoeffIx);
     if(this->tree->serialTree_p){
-      if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
+      /*if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff;
       } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
@@ -141,10 +145,18 @@ void MWNode<D>::allocCoefs(int nBlocks) {
       } else{
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
 	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff;
+	}*/
+      if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
+	coefs = this->tree->serialTree_p->allocCoeff(n_blocks, block_size, this);
+      } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
+	coefs = this->tree->serialTree_p->allocGenCCoeff(n_blocks, block_size, this);
+      } else{
+	coefs = this->tree->serialTree_p->allocCoeff(n_blocks, block_size, this);
       }
     }else{
 	//Operator Node
 	this->coefs = new VectorXd(nCoefs);
+	this->coefs = new double[this->n_coefs];
     }
 
 
@@ -156,8 +168,7 @@ void MWNode<D>::allocCoefs(int nBlocks) {
 template<int D>
 void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-    //delete this->coefs;
-    //this->coefs->~VectorXd();
+
     if(this->tree->serialTree_p and this->NodeCoeffIx>=0){
       if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	this->tree->serialTree_p->DeAllocCoeff(this->NodeCoeffIx);
@@ -168,46 +179,82 @@ void MWNode<D>::freeCoefs() {
       }
     }else{
       //Operator node
-      delete this->coefs;
+      if (this->coefs != 0) {
+        delete[] this->coefs;
+      }
     }
     
     this->coefs = 0;
+    this->n_coefs = 0;
+
     this->clearHasCoefs();
     this->clearIsAllocated();
 }
 
 template<int D>
+void MWNode<D>::printCoefs() const {
+    if (not this->isAllocated()) MSG_FATAL("Node is not allocated");
+    //if (not this->hasCoefs()) MSG_FATAL("Node has no coefs");
+    println(0, "\nMW coefs");
+    int kp1_d = this->getKp1_d();
+    for (int i = 0; i < this->n_coefs; i++) {
+        println(0, this->coefs[i]);
+        if (i%kp1_d == 0) println(0, "\n");
+    }
+}
+
+template<int D>
+void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
+    if (not this->isAllocated()) MSG_FATAL("Node is not allocated");
+    if (not this->hasCoefs()) MSG_FATAL("Node has no coefs");
+    if (this->n_coefs == 0) MSG_FATAL("ncoefs == 0");
+
+    c = VectorXd::Map(this->coefs, this->n_coefs);
+}
+
+template<int D>
 void MWNode<D>::zeroCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-    this->coefs->setZero();
+
+    for (int i = 0; i < this->n_coefs; i++) {
+        this->coefs[i] = 0.0;
+    }
     this->zeroNorms();
     this->setHasCoefs();
 }
 
-/** Set coefficients of node.
-  *
-  * Copies the argument vector to the coefficient vector of the node. */
 template<int D>
-void MWNode<D>::setCoefs(const Eigen::VectorXd &c) {
+void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
+    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    for (int i = 0; i < block_size; i++) {
+        this->coefs[block*block_size + i] = c[i];
+    }
+}
+
+template<int D>
+void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
+    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    for (int i = 0; i < block_size; i++) {
+        this->coefs[block*block_size + i] += c[i];
+    }
+}
+
+template<int D>
+void MWNode<D>::zeroCoefBlock(int block, int block_size) {
+    NOT_IMPLEMENTED_ABORT;
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
 
-    int nNew = c.size();
-    int nEmpty = this->getNCoefs() - nNew;
-    if (nEmpty < 0) {
-        MSG_FATAL("Size mismatch");
-    } else {
-        this->coefs->segment(nNew, nEmpty).setZero();
+    for (int i = 0; i < block_size; i++) {
+        this->coefs[block*block_size + i] = 0.0;
     }
-    this->coefs->segment(0, nNew) = c;
-    this->setHasCoefs();
-    this->calcNorms();
 }
 
 template<int D>
 void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
-       if(this->tree->serialTree_p and D!=2){
+
+    if(this->tree->serialTree_p and D!=2){
        //can write directly from parent coeff into children coeff
     //    if(false){
 
@@ -219,51 +266,55 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 
       //getCoefs for GenNodes locks the siblings
       //double* coeffin  = &(this->getCoefs()(0));
-      double* coeffin  = &((this->coefvec)(0));
+//      double* coeffin  = &((this->coefvec)(0));
       //still some problem with Ix double* coeffin  = (this->tree->serialTree_p->CoeffStack[this->NodeCoeffIx]);
-      double* coeffout = &(this->getMWChild(0).getCoefs()(0));
+//      double* coeffout = &(this->getMWChild(0).getCoefs()(0));
+
+      double* coeffin  = this->coefs;
+      double* coeffout = this->getMWChild(0).coefs;
+
       this->tree->serialTree_p->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
 
       for (int i = 0; i < this->getTDim(); i++){
 	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
+	this->getMWChild(i).setHasCoefs();
       }
 
     }else{
 
-       MWNode<D> copy(*this);
-       copy.mwTransform(Reconstruction);
-       const VectorXd &c = copy.getCoefs();
-
-       int kp1_d = this->getKp1_d();
-       for (int i = 0; i < this->getTDim(); i++) {
-	 MWNode<D> &child = this->getMWChild(i);
-	 if (overwrite) {
-            child.setCoefs(c.segment(i*kp1_d, kp1_d));
-	 } else if (child.hasCoefs()) {
-	   child.getCoefs().segment(0, kp1_d) += c.segment(i*kp1_d, kp1_d);
-	 } else {
-	   MSG_FATAL("Child has no coefs");
+	 MWNode<D> copy(*this);
+	 copy.mwTransform(Reconstruction);
+	 const double *c = copy.getCoefs();
+	 
+	 int kp1_d = this->getKp1_d();
+	 int nChildren = this->getTDim();
+	 for (int i = 0; i < nChildren; i++) {
+	   MWNode<D> &child = this->getMWChild(i);
+	   if (overwrite) {
+	     child.zeroCoefs();
+	     child.setCoefBlock(0, kp1_d, &c[i*kp1_d]);
+	   } else if (child.hasCoefs()) {
+	     child.addCoefBlock(0, kp1_d, &c[i*kp1_d]);
+	   } else {
+	     MSG_FATAL("Child has no coefs");
+	   }
+	   child.setHasCoefs();
+	   child.calcNorms();
 	 }
-	 child.calcNorms();
+
        }
-    }
 }
 
 /** Takes the scaling coefficients of the children and stores them consecutively
   * in the  given vector. */
 template<int D>
-void MWNode<D>::copyCoefsFromChildren(VectorXd &c) {
+void MWNode<D>::copyCoefsFromChildren() {
     int kp1_d = this->getKp1_d();
-    for (int i = 0; i < this->getTDim(); i++) {
-        MWNode<D> &child = getMWChild(i);
-        if (child.hasCoefs()) {
-            VectorXd &cc = child.getCoefs();
-            c.segment(i * kp1_d, kp1_d) = cc.segment(0, kp1_d);
-	   //for (int j = 0; j < kp1_d; j++) c[j+i * kp1_d]=child.getCoefs()[j];
-        } else {
-	    c.segment(i * kp1_d, kp1_d).setZero();
-	  //   for (int j = 0; j < kp1_d; j++) c[j+i * kp1_d]=0.0;
-        }
+    int nChildren = this->getTDim();
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        MWNode<D> &child = getMWChild(cIdx);
+        if (not child.hasCoefs()) MSG_FATAL("Child has no coefs");
+        setCoefBlock(cIdx, kp1_d, child.getCoefs());
     }
 }
 
@@ -300,8 +351,6 @@ void MWNode<D>::cvTransform(int operation) {
         MSG_FATAL("Invalid operation");
     }
 
-    VectorXd &coefs = this->getCoefs();
-
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
     int kp1_p[D];
@@ -315,7 +364,7 @@ void MWNode<D>::cvTransform(int operation) {
             for (int i = 0; i < kp1_p[D - p - 1]; i++) {
                 for (int j = 0; j < kp1; j++) {
                     for (int k = 0; k < kp1_p[p]; k++) {
-                        coefs[m * kp1_d + n] *= modWeights[j];
+                        this->coefs[m * kp1_d + n] *= modWeights[j];
                         n++;
                     }
                 }
@@ -348,20 +397,24 @@ void MWNode<D>::orig_mwTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
     int kp1_d = this->getKp1_d();
+    int nCoefs = this->getTDim()*kp1_d;
     const MWFilter &filter = getMWTree().getMRA().getFilter();
-    VectorXd &result = getMWTree().getTmpMWCoefs();
     double overwrite = 0.0;
+
+    double o_vec[nCoefs];
+    double *out_vec = o_vec;
+    double *in_vec = this->coefs;
 
     for (int i = 0; i < D; i++) {
         int mask = 1 << i;
         for (int gt = 0; gt < this->getTDim(); gt++) {
-            double *out = result.data() + gt * kp1_d;
+            double *out = out_vec + gt * kp1_d;
             for (int ft = 0; ft < this->getTDim(); ft++) {
                 /* Operate in direction i only if the bits along other
                  * directions are identical. The bit of the direction we
                  * operate on determines the appropriate filter/operator */
                 if ((gt | mask) == (ft | mask)) {
-                    double *in = this->coefs->data() + ft * kp1_d;
+                    double *in = in_vec + ft * kp1_d;
                     int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
                     MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
@@ -370,7 +423,14 @@ void MWNode<D>::orig_mwTransform(int operation) {
             }
             overwrite = 0.0;
         }
-        this->coefs->swap(result);
+        double *tmp = in_vec;
+        in_vec = out_vec;
+        out_vec = tmp;
+    }
+    if (IS_ODD(D)) {
+        for (int i = 0; i < nCoefs; i++) {
+            this->coefs[i] = in_vec[i];
+        }
     }
 }
 
@@ -496,9 +556,20 @@ template<int D>
 double MWNode<D>::calcComponentNorm(int i) const {
     assert(this->isAllocated());
     assert(this->hasCoefs());
-    const VectorXd &c = this->getCoefs();
-    int kp1_d = this->getKp1_d();
-    return c.segment(i*kp1_d, kp1_d).norm();
+
+    const double *c = this->getCoefs();
+    int size = this->getKp1_d();
+    int start = i*size;
+
+    double sq_norm = 0.0;
+#ifdef HAVE_BLAS
+    sq_norm = cblas_ddot(size, &c[start], 1, &c[start], 1);
+#else
+    for (int i = start; i < start+size; i++) {
+        sq_norm += c[i]*c[i];
+    }
+#endif
+    return sqrt(sq_norm);
 }
 
 template<int D>
@@ -531,18 +602,17 @@ void MWNode<D>::reCompress(bool overwrite) {
     if ((not this->isGenNode()) and this->isBranchNode()) {
         if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
         if (overwrite) {
-            copyCoefsFromChildren(*this->coefs);
-	    mwTransform(Compression);
-	    //            int Children_Stride = this->getMWTree().serialTree_p->sizeGenNodeCoeff/sizeof(double);
-            //            this->getMWTree().serialTree_p->S_mwTransformBack(&(this->children[0]->getCoefs()[0]),&(this->getCoefs()[0]),Children_Stride);
+
+            copyCoefsFromChildren();
+            mwTransform(Compression);
 
         } else {
             // Check optimization
             NOT_IMPLEMENTED_ABORT;
-            MatrixXd tmp = getCoefs();
-            copyCoefsFromChildren(*this->coefs);
-            mwTransform(Compression);
-            getCoefs() += tmp;
+            //MatrixXd tmp = getCoefs();
+            //copyCoefsFromChildren(*this->coefs);
+            //mwTransform(Compression);
+            //getCoefs() += tmp;
         }
         this->setHasCoefs();
         calcNorms();
@@ -945,46 +1015,6 @@ bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
-
-//template<int D>
-//void MWNode<D>::broadcastCoefs(int src, mpi::communicator *comm) {
-    //NOT_IMPLEMENTED_ABORT;
-    //#ifdef HAVE_MPI
-
-    //    if (comm != 0) {
-    //        comm = &node_group;
-    //    }
-    //    assert(this->isAllocated());
-    //    double *data = coefs->data();
-    //    mpi::broadcast(*comm, data, getNCoefs(), src);
-    //    this->setHasCoefs();
-    //    this->setFullRedundancy();
-    //#endif
-    //}
-
-    //template<int D>
-    //void MWNode<D>::sendCoefs(int dest, int tag,
-    //                             mpi::communicator *comm) {
-    //#ifdef HAVE_MPI
-
-    //    if (comm != 0) {
-    //        comm = &node_group;
-    //    }
-    //    const double *data = coefs->data();
-    //    comm->send(dest, tag, data, getNCoefs());
-    //    this->setRedundancy(dest);
-    //#endif
-//}
-
-//template<int D>
-//void MWNode<D>::assignDecendantTags(int rank) {
-    //NOT_IMPLEMENTED_ABORT;
-    //    for (int n = 0; n < getNChildren(); n++) {
-    //        MWNode<D> &child = getMWChild(n);
-    //        child.setRankId(rank);
-    //        child.assignDecendantTags(rank);
-    //    }
-//}
 template class MWNode<1>;
 template class MWNode<2>;
 template class MWNode<3>;

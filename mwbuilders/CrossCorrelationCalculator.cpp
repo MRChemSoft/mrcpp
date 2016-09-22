@@ -38,27 +38,35 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     const MatrixXd &rMat = ccc.getRMatrix(node.getOrder());
 
     int scale = node.getScale() + 1;
-    int tDim = node.getMWTree().getTDim();
+    int t_dim = node.getMWTree().getTDim();
+    int kp1_d = node.getKp1_d();
 
+    VectorXd vec_o = VectorXd::Zero(t_dim*kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
-    for (int i = 0; i < tDim; i++) {
+    for (int i = 0; i < t_dim; i++) {
         NodeIndex<2> cIdx(idx, i);
         const int *l = cIdx.getTranslation();
-        int l1 = l[1] - l[0] - 1;
-        int l2 = l[1] - l[0];
+        int l_a = l[1] - l[0] - 1;
+        int l_b = l[1] - l[0];
 
-        NodeIndex<1> idx1(scale, &l1);
-        NodeIndex<1> idx2(scale, &l2);
+        NodeIndex<1> idx_a(scale, &l_a);
+        NodeIndex<1> idx_b(scale, &l_b);
 
-        const MWNode<1> &node1 = this->kernel->getNode(idx1);
-        const MWNode<1> &node2 = this->kernel->getNode(idx2);
+        const MWNode<1> &node_a = this->kernel->getNode(idx_a);
+        const MWNode<1> &node_b = this->kernel->getNode(idx_b);
 
-        const Eigen::VectorXd &a = node1.getCoefs().segment(0,node1.getKp1_d());
-        const Eigen::VectorXd &b = node2.getCoefs().segment(0,node2.getKp1_d());
+        VectorXd vec_a;
+        VectorXd vec_b;
+        node_a.getCoefs(vec_a);
+        node_b.getCoefs(vec_b);
 
-        int nCoefs = node.getKp1_d();
-        node.getCoefs().segment(i*nCoefs, nCoefs) = (lMat*a + rMat*b);
+        const VectorXd &seg_a = vec_a.segment(0, node_a.getKp1_d());
+        const VectorXd &seg_b = vec_b.segment(0, node_b.getKp1_d());
+        vec_o.segment(i*kp1_d, kp1_d) = (lMat*seg_a + rMat*seg_b);
     }
-    double factor = pow(2.0, -scale/2.0);
-    node.getCoefs() *= factor;
+    double *coefs = node.getCoefs();
+    double two_n = pow(2.0, -scale/2.0);
+    for (int i = 0; i < t_dim*kp1_d; i++) {
+        coefs[i] = two_n*vec_o(i);
+    }
 }

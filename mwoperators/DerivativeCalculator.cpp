@@ -88,20 +88,21 @@ void DerivativeCalculator::calcNode(MWNode<2> &node) {
     int kp1_d = node.getKp1_d();
     int l = node.getTranslation()[1] - node.getTranslation()[0];
     double two_np1 = pow(2.0, node.getScale() + 1);
+    double *coefs = node.getCoefs();
 
     double a = this->A;
     double b = this->B;
     switch (l) {
     case 1:
-        for (int i = 0; i < kp1; i++) {
-            double zero_i = this->valueZero(i);
-            for (int j = 0; j < kp1; j++) {
-                double one_j = this->valueOne(j);
-                int idx = i*kp1 + j;
-                node.getCoefs()[1*kp1_d + idx] = -b * zero_i * one_j;
+        if (b > MachineZero) {
+            for (int i = 0; i < kp1; i++) {
+                double zero_i = this->valueZero(i);
+                for (int j = 0; j < kp1; j++) {
+                    double one_j = this->valueOne(j);
+                    coefs[1*kp1_d + i*kp1 + j] = -b*zero_i*one_j;
+                }
             }
         }
-        node.getCoefs().segment(1*kp1_d, kp1_d) *= two_np1;
         break;
     case 0:
         for (int i = 0; i < kp1; i++) {
@@ -110,33 +111,35 @@ void DerivativeCalculator::calcNode(MWNode<2> &node) {
             for (int j = 0; j < kp1; j++) {
                 double K_ij = this->K(i,j);
                 double one_j = this->valueOne(j);
-                double one_ij = one_i * one_j;
+                double one_ij = one_i*one_j;
                 double zero_j = this->valueZero(j);
-                double zero_ij = zero_i * zero_j;
+                double zero_ij = zero_i*zero_j;
 
                 int idx = i*kp1 + j;
-                node.getCoefs()[0*kp1_d + idx] = (1.0-a)*one_ij - (1.0-b)*zero_ij - K_ij;
-                node.getCoefs()[1*kp1_d + idx] =  a * one_i * zero_j;
-                node.getCoefs()[2*kp1_d + idx] = -b * zero_i * one_j;
-                node.getCoefs()[3*kp1_d + idx] = (1.0-a)*one_ij - (1.0-b)*zero_ij - K_ij;
+                coefs[0*kp1_d + idx] = (1.0-a)*one_ij - (1.0-b)*zero_ij - K_ij;
+                coefs[1*kp1_d + idx] =  a * one_i * zero_j;
+                coefs[2*kp1_d + idx] = -b * zero_i * one_j;
+                coefs[3*kp1_d + idx] = (1.0-a)*one_ij - (1.0-b)*zero_ij - K_ij;
             }
         }
-        node.getCoefs() *= two_np1;
         break;
     case -1:
-        for (int i = 0; i < kp1; i++) {
-            double one_i = this->valueOne(i);
-            for (int j = 0; j < kp1; j++) {
-                double zero_j = this->valueZero(j);
-                int idx = i*kp1 + j;
-                node.getCoefs()[2*kp1_d + idx] = a * one_i * zero_j;
+        if (a > MachineZero) {
+            for (int i = 0; i < kp1; i++) {
+                double one_i = this->valueOne(i);
+                for (int j = 0; j < kp1; j++) {
+                    double zero_j = this->valueZero(j);
+                    coefs[2*kp1_d + i*kp1 + j] = a*one_i*zero_j;
+                }
             }
         }
-        node.getCoefs().segment(2*kp1_d, kp1_d) *= two_np1;
         break;
     default:
         MSG_ERROR("This translation should not occour");
         break;
+    }
+    for (int i = 0; i < node.getNCoefs(); i++) {
+        coefs[i] *= two_np1;
     }
     node.mwTransform(Compression);
     node.setHasCoefs();

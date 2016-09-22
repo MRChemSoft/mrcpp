@@ -20,7 +20,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     const VectorXd &pts = qc.getRoots(quadratureOrder);
     const VectorXd &wgts = qc.getWeights(quadratureOrder);
 
-    VectorXd &tmpvec = node.getMWTree().getTmpScalingVector();
+    double tmp_coefs[node.getNCoefs()];
 
     int scale = node.getScale();
     int kp1_d = node.getKp1_d();
@@ -46,7 +46,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
                 coef *= sqrt(wgts(indexCounter[j])) * sqrtScaleFactor;
             }
 
-            tmpvec(i) = coef * this->func->evalf(point);
+            tmp_coefs[i] = coef * this->func->evalf(point);
 
             indexCounter[0]++;
             for (int j = 0; j < D - 1; j++) {
@@ -56,7 +56,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
                 }
             }
         }
-        node.getCoefs().segment(cIdx * kp1_d, kp1_d) = tmpvec;
+        node.setCoefBlock(cIdx, kp1_d, tmp_coefs);
     }
     node.mwTransform(Compression);
     node.setHasCoefs();

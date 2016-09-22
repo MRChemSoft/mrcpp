@@ -9,8 +9,7 @@
 
 class CrossCorrelationGenerator : public TreeBuilder<2> {
 public:
-    CrossCorrelationGenerator(const MultiResolutionAnalysis<2> &mra,
-                              double pr = -1.0)
+    CrossCorrelationGenerator(const MultiResolutionAnalysis<2> &mra, double pr)
             : TreeBuilder<2>(mra),
               prec(pr) {
     }

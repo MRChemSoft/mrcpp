@@ -6,7 +6,7 @@ DerivativeOperator<D>::DerivativeOperator(int dir,
                                           const MultiResolutionAnalysis<D> &mra,
                                           double a,
                                           double b)
-        : MWOperator<D>(mra, -1.0),
+        : MWOperator<D>(mra, MachineZero),
           A(a),
           B(b) {
     if (this->A > MachineZero) NEEDS_TESTING;

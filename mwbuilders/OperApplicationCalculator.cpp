@@ -158,7 +158,8 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     gNode.zeroCoefs();
 
     int depth = gNode.getDepth();
-    OperatorState<D> os(gNode);
+    double tmpCoefs[gNode.getNCoefs()];
+    OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
@@ -243,7 +244,7 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
         double ocn = oNode.getComponentNorm(oIdx);
         oNorm *= ocn;
         if (this->applyDir < 0 or this->applyDir == d) {
-            oData[d] = const_cast<double *>(oNode.getCoefs().data()) + oIdx*os.kp1_2;
+            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx*os.kp1_2;
         } else {
             if (oTransl == 0 and (oIdx == 0 or oIdx == 3)) {
                 // This will activate the identity operator in direction i

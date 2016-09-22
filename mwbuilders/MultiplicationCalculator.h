@@ -16,16 +16,21 @@ protected:
 
     virtual void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        Eigen::VectorXd &vec_o = node_o.getCoefs();
-        vec_o.setConstant(1.0);
+        double *coefs_o = node_o.getCoefs();
+        for (int j = 0; j < node_o.getNCoefs(); j++) {
+            coefs_o[j] = 1.0;
+        }
         for (int i = 0; i < this->prod_vec->size(); i++) {
-            double coef_i = this->prod_vec->getCoef(i);
+            double c_i = this->prod_vec->getCoef(i);
             FunctionTree<D> &func_i = this->prod_vec->getFunc(i);
+            // This generates missing nodes
             MWNode<D> node_i = func_i.getNode(idx); // Copy node
             node_i.mwTransform(Reconstruction);
             node_i.cvTransform(Forward);
-            const Eigen::VectorXd &vec_i = node_i.getCoefs();
-            vec_o = coef_i * vec_o.array() * vec_i.array();
+            const double *coefs_i = node_i.getCoefs();
+            for (int j = 0; j < node_i.getNCoefs(); j++) {
+                coefs_o[j] *= c_i * coefs_i[j];
+            }
         }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);

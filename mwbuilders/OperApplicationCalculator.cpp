@@ -158,7 +158,8 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     gNode.zeroCoefs();
 
     int depth = gNode.getDepth();
-    OperatorState<D> os(gNode);
+    double tmpCoefs[gNode.getNCoefs()];
+    OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g

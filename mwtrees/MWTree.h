@@ -130,20 +130,9 @@ protected:
     MWNodeVector endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
-    // Temporary storage for MW coefficients
-    double **tmpCoefs;
-
     // Constructors are protected, use TreeBuilders
     MWTree(const MultiResolutionAnalysis<D> &mra);
     MWTree(const MWTree<D> &tree);
-
-    void allocWorkMemory();
-    void freeWorkMemory();
-
-    double *getTmpCoefs() {
-        int thread = omp_get_thread_num();
-        return this->tmpCoefs[thread];
-    }
 
     void mwTransformDown(bool overwrite);
     void mwTransformUp(bool overwrite);

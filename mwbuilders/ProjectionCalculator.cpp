@@ -20,7 +20,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     const VectorXd &pts = qc.getRoots(quadratureOrder);
     const VectorXd &wgts = qc.getWeights(quadratureOrder);
 
-    double *tmp_coefs = node.getMWTree().getTmpCoefs();
+    double tmp_coefs[node.getNCoefs()];
 
     int scale = node.getScale();
     int kp1_d = node.getKp1_d();

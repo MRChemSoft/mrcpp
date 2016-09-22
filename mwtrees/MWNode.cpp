@@ -313,7 +313,8 @@ void MWNode<D>::mwTransform(int operation) {
     const MWFilter &filter = getMWTree().getMRA().getFilter();
     double overwrite = 0.0;
 
-    double *out_vec = this->getMWTree().getTmpCoefs();
+    double o_vec[nCoefs];
+    double *out_vec = o_vec;
     double *in_vec = this->coefs;
 
     for (int i = 0; i < D; i++) {

@@ -17,7 +17,7 @@
 template<int D>
 class OperatorState {
 public:
-    OperatorState(MWNode<D> &gn) : gNode(&gn) {
+    OperatorState(MWNode<D> &gn, double *scr1) : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
         this->kp1_2 = MathUtils::ipow(this->kp1, 2);
@@ -25,7 +25,6 @@ public:
         this->gData = this->gNode->getCoefs();
         this->maxDeltaL = -1;
 
-        double *scr1 = this->gNode->getMWTree().getTmpCoefs();
         double *scr2 = scr1 + this->kp1_d;
 
         for (int i = 1; i < D; i++) {

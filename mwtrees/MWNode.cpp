@@ -205,6 +205,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     for (int i = 0; i < nChildren; i++) {
         MWNode<D> &child = this->getMWChild(i);
         if (overwrite) {
+            child.zeroCoefs();
             child.setCoefBlock(0, kp1_d, &c[i*kp1_d]);
         } else if (child.hasCoefs()) {
             child.addCoefBlock(0, kp1_d, &c[i*kp1_d]);

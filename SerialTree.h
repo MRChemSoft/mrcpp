@@ -42,7 +42,7 @@ public:
     void DeAllocGenCoeff(int DeallocIx);
     double** GenCoeffStack;
     void GenS_nodes(MWNode<D>* Node);
-    void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride);
+    void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride, bool overwrite=true);
     void S_mwTreeTransformUp();
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride);
 

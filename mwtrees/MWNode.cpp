@@ -11,6 +11,7 @@
 #include "MathUtils.h"
 #include "QuadratureCache.h"
 #include "GenNode.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace Eigen;
@@ -25,9 +26,7 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           hilbertPath(),
           squareNorm(-1.0),
           status(0),
-          coefs(0),
-          NodeRank(-1),
-          NodeCoeffIx(-1){
+          coefs(0){
     clearNorms();
     this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
@@ -51,9 +50,7 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           hilbertPath(p.getHilbertPath(), cIdx),
           squareNorm(-1.0),
           status(0),
-          coefs(0),
-          NodeRank(-2),
-          NodeCoeffIx(-2) {
+          coefs(0) {
     clearNorms();
     this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
@@ -75,9 +72,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           hilbertPath(n.getHilbertPath()),
           squareNorm(-1.0),
           status(0),
-          coefs(0),
-          NodeRank(-3),
-          NodeCoeffIx(-3) {
+          coefs(0) {
 
     this->coefs = &this->coefvec;
     allocCoefs(this->getTDim());
@@ -139,13 +134,13 @@ void MWNode<D>::allocCoefs(int nBlocks) {
     if(this->tree->serialTree_p){
       if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
-	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff;
       } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocGenCoeff(nBlocks, this);
-	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeGenNodeCoeff/sizeof(double);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeGenNodeCoeff;
       } else{
 	*((double**) ((void*)&(this->coefvec))) = this->tree->serialTree_p->allocCoeff(nBlocks, this);
-	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff/sizeof(double);
+	*((int*) (((void*)&(this->coefvec))+8)) = this->tree->serialTree_p->sizeNodeCoeff;
       }
     }else{
 	//Operator Node
@@ -212,22 +207,45 @@ template<int D>
 void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
+       if(this->tree->serialTree_p and D!=2){
+       //can write directly from parent coeff into children coeff
+    //    if(false){
 
-    MWNode<D> copy(*this);
-    copy.mwTransform(Reconstruction);
-    const VectorXd &c = copy.getCoefs();
+      //coeff of child should be have been allocated already here
+      int Children_Stride=this->tree->serialTree_p->sizeNodeCoeff;
+      if(this->getMWChild(0).isGenNode())Children_Stride=this->tree->serialTree_p->sizeGenNodeCoeff;
+      bool ReadOnlyScalingCoeff=true;
+      if(this->hasWCoefs())ReadOnlyScalingCoeff=false;
 
-    int kp1_d = this->getKp1_d();
-    for (int i = 0; i < this->getTDim(); i++) {
-        MWNode<D> &child = this->getMWChild(i);
-        if (overwrite) {
+      //getCoefs for GenNodes locks the siblings
+      //double* coeffin  = &(this->getCoefs()(0));
+      double* coeffin  = &((this->coefvec)(0));
+      //still some problem with Ix double* coeffin  = (this->tree->serialTree_p->CoeffStack[this->NodeCoeffIx]);
+      double* coeffout = &(this->getMWChild(0).getCoefs()(0));
+      this->tree->serialTree_p->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
+
+      for (int i = 0; i < this->getTDim(); i++){
+	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
+      }
+
+    }else{
+
+       MWNode<D> copy(*this);
+       copy.mwTransform(Reconstruction);
+       const VectorXd &c = copy.getCoefs();
+
+       int kp1_d = this->getKp1_d();
+       for (int i = 0; i < this->getTDim(); i++) {
+	 MWNode<D> &child = this->getMWChild(i);
+	 if (overwrite) {
             child.setCoefs(c.segment(i*kp1_d, kp1_d));
-        } else if (child.hasCoefs()) {
-            child.getCoefs().segment(0, kp1_d) += c.segment(i*kp1_d, kp1_d);
-        } else {
-            MSG_FATAL("Child has no coefs");
-        }
-        child.calcNorms();
+	 } else if (child.hasCoefs()) {
+	   child.getCoefs().segment(0, kp1_d) += c.segment(i*kp1_d, kp1_d);
+	 } else {
+	   MSG_FATAL("Child has no coefs");
+	 }
+	 child.calcNorms();
+       }
     }
 }
 
@@ -592,8 +610,32 @@ template<int D>
 void MWNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_FATAL("Node already has children");
     int nChildren = this->getTDim();
-    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        genChild(cIdx);
+
+    //NB: serial tree MUST generate all children consecutively
+    //all children must be generated at once if several threads are active
+    if (this->tree->serialTree_p){
+      int NodeIx;
+      //reserve place for nChildren
+      GenNode<D>* GenNode_p = this->tree->serialTree_p->allocGenNodes(nChildren, &NodeIx);
+      MWNode<D> *child;
+      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+	if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
+	  child = new (GenNode_p)GenNode<D>(*node, cIdx);
+	} else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)){
+	  child = new (GenNode_p)GenNode<D>(*node, cIdx);
+	}else{
+	  MSG_FATAL("genChildren error");
+	}
+ 	this->children[cIdx] = child;
+	//Noderank is written in allocGenNodes already!
+	//child->NodeRank = NodeIx;
+	GenNode_p ++;
+	NodeIx++;
+      }
+    }else{
+      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+	genChild(cIdx);
+      }
     }
     this->setIsBranchNode();
 }
@@ -797,7 +839,7 @@ MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
   *
   * Recursive routine to find and return the node with a given NodeIndex.
   * This routine always returns the appropriate node, and will generate nodes
-  * that does not exist. Recursion starts at at this node and ASSUMES the
+  * that does not exist. Recursion starts at this node and ASSUMES the
   * requested node is in fact decending from this node. */
 template<int D>
 MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
@@ -813,7 +855,8 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
-    }
+ 	if(D<3)println(0, D<<"genChildren  " << this->NodeRank<<"  "<<((&(this->getMWChild(0).getCoefs()(0))) - (&(this->getMWChild(1).getCoefs()(0)))));
+   }
     unlockNode();
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != 0);
@@ -824,7 +867,7 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
   *
   * Recursive routine to find and return the node with a given NodeIndex. This
   * routine always returns the appropriate node, and will generate nodes that
-  * does not exist. Recursion starts at at this node and ASSUMES the requested
+  * does not exist. Recursion starts at this node and ASSUMES the requested
   * node is in fact decending from this node. */
 template<int D>
 MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
@@ -835,11 +878,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     assert(isAncestor(idx));
     lockNode();
     if (isLeafNode()) {
-        genChildren();
-        giveChildrenCoefs();
-    }
+      genChildren();
+      giveChildrenCoefs();
+   }
     unlockNode();
     int cIdx = getChildIndex(idx);
+
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(idx);
 }

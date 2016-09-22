@@ -41,7 +41,7 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
     cout<<" time send     " << timer<<endl;
   }
   if(MPI_rank==dest){
-    int count =STree->firstNodeCoeff+STree->maxNodesCoeff*STree->sizeNodeCoeff - STree->SData;//max size available
+    int count =STree->firstNodeCoeff+STree->maxNodesCoeff*STree->sizeNodeCoeff/sizeof(double)- STree->SData;//max size available
     cout<<MPI_rank<<" max size receivable (number of doubles)"<<count<<endl;
     MPI_Recv(STree->firstNode, count, MPI_DOUBLE, MPI_ANY_SOURCE, tag, comm, &status);
     cout<<MPI_rank<<" received serial tree with "<<STree->nNodes<<" nodes"<<endl;

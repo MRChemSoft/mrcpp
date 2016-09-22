@@ -56,7 +56,9 @@ void GenNode<D>::genChild(int cIdx) {
     if (this->tree->serialTree_p == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
-      child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);//GenNode also calls creator of MWNode
+    //NB: serial tree MUST generate all children consecutively
+    //all children must be generated at once if several threads are active -> use genChildren
+      child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
       child->NodeRank = NodeIx;
     }
     this->children[cIdx] = child;
@@ -89,7 +91,6 @@ VectorXd& GenNode<D>::getCoefs() {
     }
     unlockSiblings();
     return MWNode<D>::getCoefs();
-      //return new(&CoeffVector) Map<VectorXd>(*this->coefs,GenNodeNcoeff);
 
 }
 

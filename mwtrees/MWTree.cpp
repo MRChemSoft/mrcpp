@@ -156,13 +156,13 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
 template<int D>
 void MWTree<D>::mwTransformUp(bool overwrite) {
     vector<MWNodeVector > nodeTable;
-    this->makeNodeTable(nodeTable);
-//#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
-//{
+    makeNodeTable(nodeTable);
+#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
+{
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
         int nNodes = nodeTable[n].size();
-//#pragma omp for schedule(guided)
+#pragma omp for schedule(guided)
             for (int i = 0; i < nNodes; i++) {
                 MWNode<D> &node = *nodeTable[n][i];
                 if (node.isBranchNode()) {
@@ -170,7 +170,7 @@ void MWTree<D>::mwTransformUp(bool overwrite) {
                 }
             }
     }
-//}
+}
 }
 
 /** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
@@ -180,11 +180,11 @@ template<int D>
 void MWTree<D>::mwTransformDown(bool overwrite) {
     vector<MWNodeVector > nodeTable;
     makeNodeTable(nodeTable);
-//#pragma omp parallel shared(nodeTable)
-//        {
+#pragma omp parallel shared(nodeTable)
+{
     for (int n = 0; n < nodeTable.size(); n++) {
         int n_nodes = nodeTable[n].size();
-//#pragma omp for schedule(guided)
+#pragma omp for schedule(guided)
         for (int i = 0; i < n_nodes; i++) {
             MWNode<D> &node = *nodeTable[n][i];
             if (node.isBranchNode()) {
@@ -192,7 +192,7 @@ void MWTree<D>::mwTransformDown(bool overwrite) {
             }
         }
     }
-//        }
+}
 }
 
 /** Traverse tree and set all nodes to zero.

@@ -134,8 +134,8 @@ protected:
     MWTree(const MultiResolutionAnalysis<D> &mra);
     MWTree(const MWTree<D> &tree);
 
-    void mwTransformDown(bool overwrite);
-    void mwTransformUp(bool overwrite);
+    virtual void mwTransformDown(bool overwrite);
+    virtual void mwTransformUp(bool overwrite);
 
     int getRootIndex(const double *r) const {
         return this->rootBox.getBoxIndex(r);

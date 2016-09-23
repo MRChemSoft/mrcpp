@@ -95,6 +95,7 @@ public:
     friend class DerivativeCalculator;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
+    friend class OperatorTree;
     friend class GenNode<D>;
     friend class NodeBox<D>;
 

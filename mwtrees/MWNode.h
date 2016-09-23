@@ -311,8 +311,8 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     o << " sqNorm=" << nd.squareNorm;
     if (nd.hasCoefs()) {
         o << " Coefs={";
-        o << nd.getCoefs_d()[0] << ", " <<
-             nd.getCoefs_d()[nd.getNCoefs() - 1] << "}";
+        o << nd.getCoefs()[0] << ", " <<
+             nd.getCoefs()[nd.getNCoefs() - 1] << "}";
     }
     return o;
 }

@@ -138,3 +138,43 @@ void OperatorTree::clearOperNodeCache() {
     }
 }
 
+/** Regenerate all s/d-coeffs by backtransformation, starting at the bottom and
+  * thus purifying all coefficients. Option to overwrite or add up existing
+  * coefficients of BranchNodes (can be used after operator application).
+  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+  * of OperatorNorm is done using random vectors, which is non-deterministic
+  * in parallel. FunctionTrees should be fine. */
+void OperatorTree::mwTransformUp(bool overwrite) {
+    vector<vector<MWNode<2> *> > nodeTable;
+    makeNodeTable(nodeTable);
+    int start = nodeTable.size() - 2;
+    for (int n = start; n >= 0; n--) {
+        int nNodes = nodeTable[n].size();
+        for (int i = 0; i < nNodes; i++) {
+            MWNode<2> &node = *nodeTable[n][i];
+            if (node.isBranchNode()) {
+                node.reCompress(overwrite);
+            }
+        }
+    }
+}
+
+/** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
+  * on coarser scales, starting at the rootNodes. Option to overwrite or add up
+  * existing scaling coefficients (can be used after operator application).
+  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+  * of OperatorNorm is done using random vectors, which is non-deterministic
+  * in parallel. FunctionTrees should be fine. */
+void OperatorTree::mwTransformDown(bool overwrite) {
+    vector<vector<MWNode<2> *> > nodeTable;
+    makeNodeTable(nodeTable);
+    for (int n = 0; n < nodeTable.size(); n++) {
+        int n_nodes = nodeTable[n].size();
+        for (int i = 0; i < n_nodes; i++) {
+            MWNode<2> &node = *nodeTable[n][i];
+            if (node.isBranchNode()) {
+                node.giveChildrenCoefs(overwrite);
+            }
+        }
+    }
+}

@@ -48,8 +48,7 @@ double MathUtils::matrixNorm2(const MatrixXd &M) {
     Eigen::VectorXd y(size);
 
     for (int i = 0; i < maxTry; i++) {
-        y = Eigen::VectorXd(size);
-        y.setRandom();
+        y = Eigen::VectorXd::Random(size);
         newNorm = sqrt(y.squaredNorm());
 
         ratio = 0.0;

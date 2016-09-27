@@ -108,8 +108,8 @@ protected:
     MWNode<D> *parent;	    ///< Parent node
     MWNode<D> *children[1<<D];    ///< 2^D children
 
-    const NodeIndex<D> nodeIndex;
-    const HilbertPath<D> hilbertPath;
+    NodeIndex<D> nodeIndex;
+    HilbertPath<D> hilbertPath;
 
     int NodeRank;
     int NodeCoeffIx;
@@ -141,6 +141,7 @@ protected:
     void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
     void clearHasWCoefs() { CLEAR_BITS(status, FlagHasWCoefs);}
     void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
+    void clearIsGenNode() { CLEAR_BITS(status, FlagGenNode); }
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
 

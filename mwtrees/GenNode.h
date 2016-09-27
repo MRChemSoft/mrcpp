@@ -25,6 +25,7 @@ public:
 
     friend class MWNode<D>;
     friend class ProjectedNode<D>;
+    friend class SerialTree<D>;
 
 protected:
     GenNode(ProjectedNode<D> &p, int cIdx);

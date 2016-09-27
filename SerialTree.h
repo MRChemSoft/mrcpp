@@ -12,6 +12,8 @@
 
 #include <Eigen/Core>
 #include "parallel.h"
+#include "NodeIndex.h"
+
 
 
 template<int D> class MultiResolutionAnalysis;
@@ -31,14 +33,20 @@ public:
 
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
+    ProjectedNode<D>* createSnode(const NodeIndex<D> &nIdx);
     ProjectedNode<D>* allocNodes(int Nalloc, int* NodeIx);
     void DeAllocNodes(int NodeRank);
     GenNode<D>* allocGenNodes(int Nalloc, int* NodeIx);
     void DeAllocGenNodes(int NodeRank);
     double* allocCoeff(int NallocCoeff, MWNode<D>* node);
+    double* allocLooseCoeff(int NallocCoeff, MWNode<D>* node);
+    double* allocCoeff(int Index);
     void DeAllocCoeff(int DeallocIx);
+    void DeAllocLooseCoeff(int DeallocIx);
     double** CoeffStack;
+    double** LooseCoeffStack;
     double* allocGenCoeff(int NallocCoeff, MWNode<D>* node);
+    double* allocGenCoeff(int Index);
     void DeAllocGenCoeff(int DeallocIx);
     double** GenCoeffStack;
     void GenS_nodes(MWNode<D>* Node);
@@ -50,12 +58,16 @@ public:
     void SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
     void RewritePointers();
     int* NodeStackStatus;
+    int* LooseNodeStackStatus;
     int* GenNodeStackStatus;
     int* CoeffStackStatus;
+    int* LooseCoeffStackStatus;
     int* GenCoeffStackStatus;
     double* firstNodeCoeff;//pointer to the first node coefficents
     double* firstNode;//pointer to the first node
-    
+    char* cvptr_ProjectedNode;//virtual table pointer for ProjectedNode
+    char* cvptr_GenNode;// virtual table pointer for GenNode
+
     Eigen::VectorXd* TempVector;
 
     friend class MWTree<D>;
@@ -66,10 +78,12 @@ public:
     int nNodes;       //number of projected nodes already defined
     int nGenNodes;       //number of gen nodes already defined
     int nNodesCoeff;  //number of nodes Coeff already defined
+    int nLooseNodesCoeff;  //number of loose nodes Coeff already defined
     int nGenNodesCoeff;  //number of Gen nodes Coeff already defined
 
-    double* SData; //Tree is defined as array of doubles, because C++ does not like void malloc
-    double* SGenData; //Tree is defined as array of doubles, because C++ does not like void malloc
+    double* SData; //Nodes and coeff. Tree is defined as array of doubles, because C++ does not like void malloc
+    double* LooseNodeCoeff; //To put coefficient of loose (temporary) nodes only
+    double* SGenData; //GenNodes and coeff
 
     //    const MWTree<D>* mwTree_p;
     MWTree<D>* mwTree_p;
@@ -81,6 +95,7 @@ public:
     int maxNodes;     //max number of nodes that can be defined
     int maxGenNodes;     //max number of Gen nodes that can be defined
     int maxNodesCoeff;//max number of nodes Coeff that can be defined
+    int maxLooseNodesCoeff;//max number of nodes Coeff that can be defined
     int maxGenNodesCoeff;//max number of Gen nodes Coeff that can be defined
     int sizeTreeMeta; //The first part of the Tree is filled with metadata; reserved size:
     int sizeNodeMeta; //The first part of each Node is filled with metadata; reserved size:

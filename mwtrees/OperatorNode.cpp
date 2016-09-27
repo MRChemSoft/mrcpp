@@ -21,7 +21,7 @@ OperatorNode::OperatorNode(OperatorNode &p, int c)
 }
 
 OperatorNode::~OperatorNode() {
-   this->freeCoefs();
+  //this->freeCoefs(); //done in ~MWNode()
 }
 
 void OperatorNode::createChild(int cIdx) {

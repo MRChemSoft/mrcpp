@@ -27,8 +27,9 @@ template<int D>
 ProjectedNode<D>::ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx)
         : FunctionNode<D> (t, nIdx) {
 
+    this->setIsLooseNode();//otherwise should not be allocated by constructor
     this->allocCoefs(this->getTDim(), this->getKp1_d());
-    this->tree->incrementNodeCount(this->getScale());//pw from merge
+    //this->tree->incrementNodeCount(this->getScale()); //loose node do not count
 
     this->setIsEndNode();
     this->setHasWCoefs();//default until known
@@ -40,8 +41,9 @@ template<int D>
 ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx) {
 
+    this->setIsLooseNode();//otherwise should not be allocated by constructor
     this->allocCoefs(this->getTDim(), this->getKp1_d());
-    this->tree->incrementNodeCount(this->getScale());//pw from merge
+    //this->tree->incrementNodeCount(this->getScale()); //loose node do not count
 
     this->setIsEndNode();
     this->setHasWCoefs();//default until known
@@ -49,8 +51,13 @@ ProjectedNode<D>::ProjectedNode(ProjectedNode<D> &p, int cIdx)
 
 template<int D>
 ProjectedNode<D>::~ProjectedNode() {
-  //println(0, "~ProjectedNode rank" << this->NodeRank);
-    this->freeCoefs();
+  //decrementNodeCount done in ~MWNode
+  if(this->tree->serialTree_p){
+    if(this->isGenNode())cout<<"~ProjectedNode but Gen node flag "<<this->NodeRank<<" "<<this->NodeCoeffIx<<endl;
+    if(not this->isLooseNode())cout<<"NOT LOOSE node! should not happen"<<endl;
+    
+    //DeAllocCoeff done in ~MWNode()
+  }
 }
 
 /*template<int D>
@@ -72,12 +79,54 @@ void ProjectedNode<D>::createChild(int cIdx) {
     int NodeIx;
     if (this->tree->serialTree_p == 0){
         child = new ProjectedNode<D>(*this, cIdx);
+	this->children[cIdx] = child;
     } else {
       ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx);
-         child = new (newNode) ProjectedNode<D>(*this, cIdx);
-	 child->NodeRank = NodeIx;
+      //      if(true){
+      if(false){
+        child = new (newNode) ProjectedNode<D>(*this, cIdx);
+	child->NodeRank = NodeIx;
+	this->children[cIdx] = child;
+      }else{
+      if(this->isGenNode())cout<<"parent is GenNode! "<<this->NodeRank<<" "<<this->NodeCoeffIx<<endl;
+	
+      *(char**)(newNode)=*(char**)(this);
+      
+      newNode->NodeRank = NodeIx;
+      newNode->tree = this->tree;
+      newNode->parent = this;
+      newNode->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
+      newNode->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
+      newNode->squareNorm = -1.0;
+      newNode->status = 0;
+      newNode->n_coefs = 0;
+      newNode->coefs = 0;
+      newNode->clearNorms();
+      for (int i = 0; i < newNode->getTDim(); i++) {
+        newNode->children[i] = 0;
+      }
+      newNode->setIsLeafNode();
+      newNode->coefs = this->tree->serialTree_p->allocCoeff(NodeIx);
+      newNode->n_coefs = this->n_coefs;
+      newNode->setIsAllocated();
+      newNode->clearHasCoefs();
+      newNode->clearIsGenNode();
+
+      newNode->NodeCoeffIx = NodeIx;
+      newNode->tree->incrementNodeCount(newNode->getScale());
+      newNode->setIsEndNode();
+      newNode->clearIsRootNode();
+      newNode->setHasWCoefs();//default until known
+
+      this->children[cIdx] = newNode;
+      
+#ifdef OPENMP
+    omp_init_lock(&(newNode->node_lock));
+#endif
+      }
+
     }
-    this->children[cIdx] = child;
+
 }
 
 /** Generating child node.
@@ -92,6 +141,7 @@ void ProjectedNode<D>::genChild(int cIdx) {
     if (this->tree->serialTree_p == 0){
       child = new GenNode<D>(*this, cIdx);
     } else {
+      MSG_FATAL("A ProjectedNodes should not be generated");
       child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
       child->NodeRank = NodeIx;
     }

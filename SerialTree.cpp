@@ -1200,6 +1200,10 @@ SerialTree<D>::~SerialTree() {
 
     delete[] this->GenCoeffStack;
     delete[] this->GenCoeffStackStatus;
+
+    delete[] this->LooseNodeCoeff;
+    delete[] this->LooseCoeffStack;
+    delete[] this->LooseCoeffStackStatus;
 }
 
 

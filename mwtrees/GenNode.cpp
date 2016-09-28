@@ -19,6 +19,8 @@ template<int D>
 GenNode<D>::GenNode(ProjectedNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(&p) {
+  
+    this->setIsLooseNode();//otherwise should not be allocated by constructor
     this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->zeroCoefs();
     this->setIsGenNode();
@@ -30,6 +32,7 @@ template<int D>
 GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(p.genRootNode) {
+    this->setIsLooseNode();//otherwise should not be allocated by constructor
     this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->zeroCoefs();
     this->setIsGenNode();
@@ -40,7 +43,11 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
 template<int D>
 GenNode<D>::~GenNode() {
     this->tree->decrementGenNodeCount(); //decrementNodeCount done in ~MWNode()
-    this->freeCoefs();
+    //DeAllocGenCoeff done in ~MWNode()
+    if(this->tree->serialTree_p){
+      assert(this->isGenNode());
+      assert(this->isLooseNode());
+    }
 }
 
 template<int D>
@@ -58,6 +65,7 @@ void GenNode<D>::genChild(int cIdx) {
     } else {
     //NB: serial tree MUST generate all children consecutively
     //all children must be generated at once if several threads are active -> use genChildren
+      MSG_FATAL("All GenNodes siblings in a Serial Tree Gen Nodes must be created at once");
       child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
       child->NodeRank = NodeIx;
     }

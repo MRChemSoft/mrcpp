@@ -47,7 +47,8 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
           squareNorm(-1.0),
           name("nn"),
-          nNodes(0) {
+          nNodes(0),
+          serialTree_p(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 

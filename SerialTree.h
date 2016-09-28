@@ -56,8 +56,6 @@ public:
     double* firstNodeCoeff;//pointer to the first node coefficents
     double* firstNode;//pointer to the first node
     
-    Eigen::VectorXd* TempVector;
-
     friend class MWTree<D>;
     friend class ProjectedNode<D>;
     friend class MWNode<D>;

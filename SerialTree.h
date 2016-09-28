@@ -68,8 +68,6 @@ public:
     char* cvptr_ProjectedNode;//virtual table pointer for ProjectedNode
     char* cvptr_GenNode;// virtual table pointer for GenNode
 
-    Eigen::VectorXd* TempVector;
-
     friend class MWTree<D>;
     friend class ProjectedNode<D>;
     friend class MWNode<D>;

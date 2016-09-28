@@ -23,6 +23,9 @@ protected:
     double prec;
     OperatorTreeVector *oper;
     FunctionTree<D> *fTree;
+    std::vector<Timer> band_t;
+    std::vector<Timer> calc_t;
+    std::vector<Timer> norm_t;
 
     OperatorStatistics<D> operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
@@ -34,11 +37,20 @@ protected:
     void fillOperBand(MWNodeVector *band, NodeIndex<D> &idx, const int *nbox, int dim);
     void freeOperBand(MWNodeVector *band, MWNode<D> &gNode);
 
+    void initTimers();
+    void clearTimers();
+    void printTimers() const;
+
     void initBandSizes();
     int getBandSizeFactor(int i, int depth,const OperatorState<D> &os) const;
     void calcBandSizeFactor(Eigen::MatrixXi &bs, int depth, const BandWidth &bw);
 
     virtual void calcNode(MWNode<D> &node);
+    virtual void postProcess() {
+        printTimers();
+        clearTimers();
+        initTimers();
+    }
 
     void applyOperComp(OperatorState<D> &os);
     void applyOperator(OperatorState<D> &os);

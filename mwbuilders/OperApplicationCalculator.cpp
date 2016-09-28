@@ -4,6 +4,7 @@
 #include "FunctionNode.h"
 #include "OperatorNode.h"
 #include "BandWidth.h"
+#include "Timer.h"
 #include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS
@@ -28,6 +29,7 @@ OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
           fTree(&f) {
     if (this->maxDepth > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     initBandSizes();
+    initTimers();
 }
 
 template<int D>
@@ -37,6 +39,49 @@ OperApplicationCalculator<D>::~OperApplicationCalculator() {
     for (int i = 0; i < this->bandSizes.size(); i++) {
         delete this->bandSizes[i];
     }
+}
+
+template<int D>
+void OperApplicationCalculator<D>::initTimers() {
+    int nThreads = omp_get_max_threads();
+    for (int i = 0; i < nThreads; i++) {
+        this->band_t.push_back(Timer(false));
+        this->calc_t.push_back(Timer(false));
+        this->norm_t.push_back(Timer(false));
+    }
+}
+
+template<int D>
+void OperApplicationCalculator<D>::clearTimers() {
+    this->band_t.clear();
+    this->calc_t.clear();
+    this->norm_t.clear();
+}
+
+template<int D>
+void OperApplicationCalculator<D>::printTimers() const {
+    int oldprec = TelePrompter::setPrecision(1);
+    int nThreads = omp_get_max_threads();
+    printout(20, endl);
+    printout(20, endl << "thread ");
+    for (int i = 0; i < nThreads; i++) {
+        printout(20, setw(9) << i);
+    }
+    printout(20, endl << "band     ");
+    for (int i = 0; i < nThreads; i++) {
+        printout(20, this->band_t[i].getWallTime() << "  ");
+    }
+    printout(20, endl << "calc     ");
+    for (int i = 0; i < nThreads; i++) {
+        printout(20, this->calc_t[i].getWallTime() << "  ");
+    }
+    printout(20, endl << "norm     ");
+    for (int i = 0; i < nThreads; i++) {
+        printout(20, this->norm_t[i].getWallTime() << "  ");
+    }
+    printout(20, endl);
+    printout(20, endl);
+    TelePrompter::setPrecision(oldprec);
 }
 
 /** Initialize the number of nodes formally within the bandwidth of an
@@ -163,7 +208,9 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
+    this->band_t[omp_get_thread_num()].resume();
     MWNodeVector *fBand = makeOperBand(gNode);
+    this->band_t[omp_get_thread_num()].stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
@@ -173,6 +220,7 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
     }
     os.gThreshold = gThrs;
 
+    this->calc_t[omp_get_thread_num()].resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D> &fNode = *(*fBand)[n];
         os.setFNode(fNode);
@@ -190,7 +238,11 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
             }
         }
     }
+    this->calc_t[omp_get_thread_num()].stop();
+
+    this->norm_t[omp_get_thread_num()].resume();
     gNode.calcNorms();
+    this->norm_t[omp_get_thread_num()].stop();
     delete fBand;
 }
 

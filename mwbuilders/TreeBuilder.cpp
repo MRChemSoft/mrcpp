@@ -53,7 +53,6 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
     while (workVec->size() > 0) {
         printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
         printout(10, setw(6) << workVec->size() << " nodes ");
-	
         calc_t.resume();
         this->calculator->calcNodeVector(*workVec);
         calc_t.stop();

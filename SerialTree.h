@@ -13,6 +13,7 @@
 #include <Eigen/Core>
 #include "parallel.h"
 #include "NodeIndex.h"
+#include <vector>
 
 
 
@@ -56,7 +57,7 @@ public:
 
     void SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
     void SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
-    void RewritePointers();
+    void RewritePointers(int* &STreeMeta);
     int* NodeStackStatus;
     int* LooseNodeStackStatus;
     int* GenNodeStackStatus;
@@ -68,7 +69,11 @@ public:
     char* cvptr_ProjectedNode;//virtual table pointer for ProjectedNode
     char* cvptr_GenNode;// virtual table pointer for GenNode
 
-    Eigen::VectorXd* TempVector;
+    std::vector<ProjectedNode<D>*>  NodeChunks;
+    std::vector<double*>  NodeCoeffChunks;
+    std::vector<GenNode<D>*>  GenNodeChunks;
+    std::vector<double*>  GenNodeCoeffChunks;
+    int maxNodesPerChunk;
 
     friend class MWTree<D>;
     friend class ProjectedNode<D>;
@@ -81,9 +86,13 @@ public:
     int nLooseNodesCoeff;  //number of loose nodes Coeff already defined
     int nGenNodesCoeff;  //number of Gen nodes Coeff already defined
 
-    double* SData; //Nodes and coeff. Tree is defined as array of doubles, because C++ does not like void malloc
+    //    double* SData; //Nodes and coeff. Tree is defined as array of doubles, because C++ does not like void malloc
+    ProjectedNode<D>* SNodes; //Serial Nodes 
+    double* SNodesCoeff; //Serial Nodes coefficients
     double* LooseNodeCoeff; //To put coefficient of loose (temporary) nodes only
-    double* SGenData; //GenNodes and coeff
+    //double* SGenData; //GenNodes and coeff
+    GenNode<D>* SGenNodes;
+    double* SGenNodesCoeff; //Serial Gen Nodes coefficients
 
     //    const MWTree<D>* mwTree_p;
     MWTree<D>* mwTree_p;
@@ -97,11 +106,6 @@ public:
     int maxNodesCoeff;//max number of nodes Coeff that can be defined
     int maxLooseNodesCoeff;//max number of nodes Coeff that can be defined
     int maxGenNodesCoeff;//max number of Gen nodes Coeff that can be defined
-    int sizeTreeMeta; //The first part of the Tree is filled with metadata; reserved size:
-    int sizeNodeMeta; //The first part of each Node is filled with metadata; reserved size:
-    int sizeGenNodeMeta; //The first part of each Gen Node is filled with metadata; reserved size:
-    int sizeNode;     //The dynamical part of the tree is filled with nodes metadata+coeff of size:
-    int sizeGenNode;     //TGen nodes array is filled with Gen nodes metadata+coeff of size:
     int sizeNodeCoeff;//The dynamical part of the tree. Each Coeff set is of size:
     int sizeGenNodeCoeff;//The dynamical part of the tree. Each GenCoeff set is of size:
 #ifdef HAVE_OPENMP

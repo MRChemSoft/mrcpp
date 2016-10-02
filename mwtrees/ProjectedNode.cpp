@@ -53,7 +53,7 @@ template<int D>
 ProjectedNode<D>::~ProjectedNode() {
   //decrementNodeCount done in ~MWNode
   if(this->tree->serialTree_p){
-    if(this->isGenNode())cout<<"~ProjectedNode but Gen node flag "<<this->NodeRank<<" "<<this->NodeCoeffIx<<endl;
+    if(this->isGenNode())cout<<"~ProjectedNode but Gen node flag "<<this->SNodeIx<<" "<<this->SNodeIx<<endl;
     if(not this->isLooseNode())cout<<"NOT LOOSE node! should not happen"<<endl;
     
     //DeAllocCoeff done in ~MWNode()
@@ -85,14 +85,14 @@ void ProjectedNode<D>::createChild(int cIdx) {
       //      if(true){
       if(false){
         child = new (newNode) ProjectedNode<D>(*this, cIdx);
-	child->NodeRank = NodeIx;
+	child->SNodeIx = NodeIx;
 	this->children[cIdx] = child;
       }else{
-      if(this->isGenNode())cout<<"parent is GenNode! "<<this->NodeRank<<" "<<this->NodeCoeffIx<<endl;
+      if(this->isGenNode())cout<<"parent is GenNode! "<<this->SNodeIx<<" "<<this->SNodeIx<<endl;
 	
       *(char**)(newNode)=*(char**)(this);
       
-      newNode->NodeRank = NodeIx;
+      newNode->SNodeIx = NodeIx;
       newNode->tree = this->tree;
       newNode->parent = this;
       newNode->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
@@ -106,13 +106,13 @@ void ProjectedNode<D>::createChild(int cIdx) {
         newNode->children[i] = 0;
       }
       newNode->setIsLeafNode();
-      newNode->coefs = this->tree->serialTree_p->allocCoeff(NodeIx);
+      //      newNode->coefs = this->tree->serialTree_p->allocCoeff(NodeIx);
+      newNode->coefs = this->tree->serialTree_p->CoeffStack[NodeIx];
       newNode->n_coefs = this->n_coefs;
       newNode->setIsAllocated();
       newNode->clearHasCoefs();
       newNode->clearIsGenNode();
 
-      newNode->NodeCoeffIx = NodeIx;
       newNode->tree->incrementNodeCount(newNode->getScale());
       newNode->setIsEndNode();
       newNode->clearIsRootNode();
@@ -143,7 +143,7 @@ void ProjectedNode<D>::genChild(int cIdx) {
     } else {
       MSG_FATAL("A ProjectedNodes should not be generated");
       child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
-      child->NodeRank = NodeIx;
+      child->SNodeIx = NodeIx;
     }
     this->children[cIdx] = child;
 }

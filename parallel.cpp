@@ -32,6 +32,15 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
   timer.start();
   cout<<MPI_rank<<" STree  at "<<STree<<endl;
   if(MPI_rank==source){
+
+    //send first metadata
+    int STreeMeta[2];
+    int count = 2;
+    STreeMeta[0]=STree->nNodes;
+    STreeMeta[1]=STree->nNodesCoeff;
+    MPI_Send(STreeMeta, count, MPI_INT, dest, tag, comm);
+    MPI_Send(STree, count, MPI_BYTE, dest, tag, comm);
+
     //size to send is adress of first unused NodesCoeff minus start of array
     //int count = STree->CoeffStack[STree->nNodesCoeff+1] - STree->firstNode;
     int count = STree->CoeffStack[STree->nNodesCoeff+1] - STree->SData;
@@ -41,7 +50,12 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
     cout<<" time send     " << timer<<endl;
   }
   if(MPI_rank==dest){
-    int count =STree->firstNodeCoeff+STree->maxNodesCoeff*STree->sizeNodeCoeff/sizeof(double)- STree->SData;//max size available
+    //get metadata
+    int STreeMeta[2];
+    int count = 2;
+    MPI_Recv(STreeMeta, count, MPI_INT, MPI_ANY_SOURCE, tag, comm, &status);
+
+    count =STree->firstNodeCoeff+STree->maxNodesCoeff*STree->sizeNodeCoeff/sizeof(double)- STree->SData;//max size available
     cout<<MPI_rank<<" max size receivable (number of doubles)"<<count<<endl;
     MPI_Recv(STree->firstNode, count, MPI_DOUBLE, MPI_ANY_SOURCE, tag, comm, &status);
     cout<<MPI_rank<<" received serial tree with "<<STree->nNodes<<" nodes"<<endl;
@@ -50,7 +64,7 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
   }
     timer.start();
    cout<<MPI_rank<<" STree after send pointer at "<<STree<<endl;
-   STree->RewritePointers();
+   STree->RewritePointers(STreeMeta);
    timer.stop();
    cout<<MPI_rank<<" STree after rewrite pointer at "<<STree<<endl;
     cout<<" time rewrite pointers  " << timer<<endl;

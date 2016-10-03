@@ -64,18 +64,11 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     //indicate occupation of Gen nodes
     this->GenNodeStackStatus = new int[this->maxGenNodes+1];
 
-    //NodeCoeff pointers
-    this->CoeffStack = new double * [this->maxNodesCoeff];
-    //indicate occupied NodeCoeff
-    this->CoeffStackStatus = new int[this->maxNodesCoeff+1];
     //LooseNodeCoeff pointers
     this->LooseCoeffStack = new double * [this->maxLooseNodesCoeff];
     //indicate occupied LooseNodeCoeff
     this->LooseCoeffStackStatus = new int[this->maxLooseNodesCoeff+1];
-    //GenNodeCoeff pointers
-    this->GenCoeffStack = new double * [this->maxGenNodesCoeff];
-    //indicate occupied GenNodeCoeff
-    this->GenCoeffStackStatus = new int[this->maxGenNodesCoeff+1];
+
 
     //some useful pointers to positions in SData
     //this->lastNode = (ProjectedNode<D>*) (this->SData + this->sizeTreeMeta/sizeof(double));
@@ -107,30 +100,12 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     }
     this->GenNodeStackStatus[this->maxGenNodes] = -1;//=unavailable
 
-    for (int i = 0; i <this->maxNodesPerChunk;i++){
-      this->CoeffStack[i] = this->SNodesCoeff+i*this->sizeNodeCoeff;
-    }
-    for (int i = 0; i <this->maxNodesCoeff;i++){
-      this->CoeffStackStatus[i] = 0;//0=unoccupied
-    }
-    this->CoeffStackStatus[this->maxNodesCoeff]=-1;//-1=unavailable
-
     for (int i = 0; i <this->maxLooseNodesCoeff;i++){
       this->LooseCoeffStack[i] = this->LooseNodeCoeff+i*this->sizeNodeCoeff;
       this->LooseCoeffStackStatus[i] = 0;//0=unoccupied
     }
     this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
 
-    for (int i = 0; i <this->maxNodesPerChunk;i++){
-      this->GenCoeffStack[i] = this->SGenNodesCoeff+i*this->sizeGenNodeCoeff;
-    }
-    for (int i = 0; i <this->maxGenNodesCoeff;i++){
-      this->GenCoeffStack[i] = this->lastGenNodeCoeff+i*this->sizeGenNodeCoeff;
-      this->GenCoeffStackStatus[i] = 0;//0=unoccupied
-    }
-    this->GenCoeffStackStatus[this->maxGenNodesCoeff] = -1;//-1=unavailable
-
-    
     this->mwTree_p = Tree;//pointer to parent tree
     this->mwTree_p->serialTree_p = this;//must be defined before nodes are created
 
@@ -214,9 +189,9 @@ void SerialTree<D>::RewritePointers(int* &STreeMeta){
   }
   this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
 
-  for (int i = 0; i <= this->nNodesCoeff; i++){
-    CoeffStack[i] += d_p_shift;
-  }
+  //  for (int i = 0; i <= this->nNodesCoeff; i++){
+  //  CoeffStack[i] += d_p_shift;
+  //}
 
   FunctionTree<D>* Tree = static_cast<FunctionTree<D>*> (this->mwTree_p);
 
@@ -848,7 +823,8 @@ template<int D>
 ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
 
   int NodeIx;
-  ProjectedNode<D>* newNode=this->allocNodes(1, &NodeIx);
+  double *coefs_p;
+  ProjectedNode<D>* newNode=this->allocNodes(1, &NodeIx, &coefs_p);
 
   *(char**)(newNode) = this->cvptr_ProjectedNode;
   newNode->SNodeIx = NodeIx;
@@ -865,8 +841,7 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
     newNode->children[i] = 0;
   }
   newNode->setIsLeafNode();
-  //  newNode->coefs = this->allocCoeff(NodeIx);
-  newNode->coefs = this->CoeffStack[NodeIx];
+  newNode->coefs = coefs_p;
   newNode->n_coefs = (1<<D)*(MathUtils::ipow(newNode->tree->getOrder()+1,D));
   newNode->setIsAllocated();
   newNode->clearHasCoefs();
@@ -886,16 +861,17 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
 
 //return pointer to the last active node or NULL if failed
 template<int D>
-ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc, int* NodeIx) {
-  *NodeIx = this->nNodes;
+ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc, int* NodeIx, double** coefs_p) {
 
-  if(*NodeIx == 0 or ((this->nNodes-1)/maxNodesPerChunk != (this->nNodes+nAlloc-1)/maxNodesPerChunk)){
+  *NodeIx = this->nNodes;
+  int ChunkIx = *NodeIx%(this->maxNodesPerChunk);
+
+  if(ChunkIx == 0  or  ChunkIx+nAlloc > maxNodesPerChunk ){
 
     if (this->nNodes+nAlloc >= this->maxNodes){
       println(0, "maxNodes exceeded " << this->maxNodes);
       MSG_FATAL("maxNodes exceeded ");
     } 
-
 
     //we want nodes allocated simultaneously to be allocated on the same pice.
     //possibly jump over the last nodes from the old chunk
@@ -909,19 +885,20 @@ ProjectedNode<D>* SerialTree<D>::allocNodes(int nAlloc, int* NodeIx) {
 	this->SNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	this->NodeChunks.push_back(this->SNodes);
         this->SNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-	for (int i = 0; i<this->maxNodesPerChunk;i++){
-	  this->CoeffStack[i+this->maxNodesPerChunk*NodeCoeffChunks.size()] = this->SNodesCoeff+i*this->sizeNodeCoeff;
-	}
         NodeCoeffChunks.push_back(SNodesCoeff);
 	if(chunk%100==99 and D==3)println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->NodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes/1024) * this->sizeNodeCoeff/128);
       }
       this->lastNode = this->NodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);	
       *NodeIx = this->nNodes;
+      ChunkIx = *NodeIx%(this->maxNodesPerChunk);
+
     }
     assert((this->nNodes+nAlloc-1)/maxNodesPerChunk < this->NodeChunks.size());
 
     ProjectedNode<D>* newNode  = this->lastNode;
     ProjectedNode<D>* newNode_cp  = newNode;
+    *coefs_p = this->SNodesCoeff + ChunkIx*this->sizeNodeCoeff;
+ 
     //We can have sizeNodeMeta with different size than ProjectedNode
     //println(0, "new size meta " << this->nNodes);
     for (int i = 0; i<nAlloc; i++){
@@ -958,15 +935,17 @@ void SerialTree<D>::DeAllocNodes(int SNodeIx) {
 
 //return pointer to the last active node or NULL if failed
 template<int D>
-GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc, int* NodeIx) {
+GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc, int* NodeIx, double** coefs_p) {
 
   omp_set_lock(&Stree_lock);
   *NodeIx = this->nGenNodes;
+  int ChunkIx = *NodeIx%(this->maxNodesPerChunk);
   
   //Not necessarily wrong, but new:
   assert(nAlloc == (1<<D));
 
-  if(*NodeIx==0 or ((this->nGenNodes-1)/maxNodesPerChunk != (this->nGenNodes+nAlloc-1)/maxNodesPerChunk)){
+  if(ChunkIx == 0  or  ChunkIx+nAlloc > maxNodesPerChunk ){
+    //start on new chunk
 
       if (this->nGenNodes+nAlloc >= this->maxGenNodes){
 	println(0, "maxNodes exceeded " << this->maxGenNodes);
@@ -985,23 +964,22 @@ GenNode<D>* SerialTree<D>::allocGenNodes(int nAlloc, int* NodeIx) {
 	this->GenNodeChunks.push_back(this->SGenNodes);
 	this->SGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
 	
-	for (int i = 0; i <this->maxNodesPerChunk;i++){
-	  this->GenCoeffStack[i+this->maxNodesPerChunk*GenNodeCoeffChunks.size()] = this->SGenNodesCoeff+i*this->sizeGenNodeCoeff;
-	}
 	GenNodeCoeffChunks.push_back(this->SGenNodesCoeff);
 	if(chunk%100==99 and D==3)println(10,endl<<" number of Gennodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->GenNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
 
       }
       this->lastGenNode = this->GenNodeChunks[chunk] + this->nGenNodes%(this->maxNodesPerChunk);
       
-      *NodeIx = this->nGenNodes;
+      *NodeIx = this->nGenNodes; 
+      ChunkIx = *NodeIx%(this->maxNodesPerChunk);
       
     }
     
-    assert((this->nGenNodes+nAlloc-1)/maxNodesPerChunk < GenNodeChunks.size());
+    assert((this->nGenNodes+nAlloc-1)/maxNodesPerChunk < this->GenNodeChunks.size());
 
     GenNode<D>* newNode  = this->lastGenNode;
     GenNode<D>* newNode_cp  = newNode;
+    *coefs_p = this->SGenNodesCoeff + ChunkIx*this->sizeGenNodeCoeff;
     for (int i = 0; i<nAlloc; i++){
       newNode_cp->SNodeIx = *NodeIx+i;//Until overwritten!
       if (this->GenNodeStackStatus[*NodeIx+i]!=0)
@@ -1074,15 +1052,13 @@ double* SerialTree<D>::allocCoeff(int nAllocCoeff, MWNode<D>* node) {
     if((this->nNodesCoeff+1)/maxNodesPerChunk >= NodeCoeffChunks.size()){
       //need to allocate new chunk
       this->SNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-      for (int i = 0; i <this->maxNodesPerChunk;i++){
-	this->CoeffStack[i+this->maxNodesPerChunk*NodeCoeffChunks.size()] = this->SNodesCoeff+i*this->sizeNodeCoeff;
-      }
+
       NodeCoeffChunks.push_back(SNodesCoeff);
       println(0, "allocated new chunk for Snodes Coeff. number of chunks now " << this->NodeCoeffChunks.size());
     }
     this->nNodesCoeff += 1;//nAllocCoeff;
 
-      double* NodeCoeff=this->CoeffStack[this->nNodesCoeff];
+      double* NodeCoeff=0;//this->CoeffStack[this->nNodesCoeff];
       this->CoeffStackStatus[this->nNodesCoeff]=1;
       node->SNodeIx = this->nNodesCoeff;
       //node->NodeCoeffIx = node->SNodeIx;
@@ -1157,14 +1133,11 @@ double* SerialTree<D>::allocCoeff(int Index) {
     if(Index >= this->maxNodesPerChunk*NodeCoeffChunks.size()){
       //need to allocate new chunk
       this->SNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-      for (int i = 0; i <this->maxNodesPerChunk;i++){
-	this->CoeffStack[i+this->maxNodesPerChunk*NodeCoeffChunks.size()] = this->SNodesCoeff+i*this->sizeNodeCoeff;
-      }
       NodeCoeffChunks.push_back(SNodesCoeff);
       println(0, "allocated new chunk for Snodes Coeff I. number of chunks now " << this->NodeCoeffChunks.size());
     }
 
-    double* NodeCoeff=this->CoeffStack[Index];
+    double* NodeCoeff=0;//this->CoeffStack[Index];
     this->CoeffStackStatus[Index]=1;
     omp_unset_lock(&Stree_lock);
     return NodeCoeff;
@@ -1175,6 +1148,7 @@ double* SerialTree<D>::allocCoeff(int Index) {
 template<int D>
 void SerialTree<D>::DeAllocCoeff(int DeallocIx) {  
   omp_set_lock(&Stree_lock);
+    println(0, "ERROR SHOULD NOT BE USED " << DeallocIx);
   if (this->CoeffStackStatus[DeallocIx]==0){
     println(0, "deleting already unallocated coeff " << DeallocIx<<" "<<this->LooseCoeffStackStatus[DeallocIx]<<" nNodes "<<this->nNodes<<" nNodesCoeff "<<this->nNodesCoeff<<" nGenNodesCoeff "<<this->nGenNodesCoeff);
   }
@@ -1239,9 +1213,6 @@ double* SerialTree<D>::allocGenCoeff(int nAllocCoeff, MWNode<D>* node) {
     if(node->SNodeIx >= this->maxNodesPerChunk*GenNodeCoeffChunks.size()){
       //need to allocate new chunk
       this->SGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
-      for (int i = 0; i <this->maxNodesPerChunk;i++){
-	this->GenCoeffStack[i+this->maxNodesPerChunk*GenNodeCoeffChunks.size()] = this->SGenNodesCoeff+i*this->sizeGenNodeCoeff;
-      }
       GenNodeCoeffChunks.push_back(SGenNodesCoeff);
       println(0, "allocated new chunk for SGennodes Coeff. number of chunks now " << this->GenNodeCoeffChunks.size());
     }
@@ -1249,7 +1220,7 @@ double* SerialTree<D>::allocGenCoeff(int nAllocCoeff, MWNode<D>* node) {
     this->nGenNodesCoeff += 1;//nAllocCoeff;
 
 
-    double* GenNodeCoeff=this->GenCoeffStack[node->SNodeIx];
+    double* GenNodeCoeff=0;//this->GenCoeffStack[node->SNodeIx];
     this->GenCoeffStackStatus[node->SNodeIx]=1;
     node->SNodeIx = node->SNodeIx;
     //for (int i = 0; i < this->sizeGenNodeCoeff; i++)coeffVectorXd[i]=0.0;
@@ -1282,14 +1253,11 @@ double* SerialTree<D>::allocGenCoeff(int Index) {
     if(Index >= this->maxNodesPerChunk*GenNodeCoeffChunks.size()){
       //need to allocate new chunk
       this->SGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
-      for (int i = 0; i <this->maxNodesPerChunk;i++){
-	this->GenCoeffStack[i+this->maxNodesPerChunk*GenNodeCoeffChunks.size()] = this->SGenNodesCoeff+i*this->sizeGenNodeCoeff;
-      }
       GenNodeCoeffChunks.push_back(SGenNodesCoeff);
       println(0, "allocated new chunk for SGennodes Coeff I. number of chunks now " << this->GenNodeCoeffChunks.size());
     }
 
-    double* GenNodeCoeff=this->GenCoeffStack[Index];
+    double* GenNodeCoeff=0;//this->GenCoeffStack[Index];
     this->GenCoeffStackStatus[Index]=1;
     omp_unset_lock(&Stree_lock);
     return GenNodeCoeff;
@@ -1342,15 +1310,15 @@ SerialTree<D>::~SerialTree() {
     delete[] this->NodeStackStatus;
     delete[] this->GenNodeStackStatus;
 
-    delete[] this->CoeffStack;
-    delete[] this->CoeffStackStatus;
+//    delete[] this->CoeffStack;
+    //    delete[] this->CoeffStackStatus;
 
     delete[] this->LooseNodeCoeff;
     delete[] this->LooseCoeffStack;
     delete[] this->LooseCoeffStackStatus;
 
-    delete[] this->GenCoeffStack;
-    delete[] this->GenCoeffStackStatus;
+    //    delete[] this->GenCoeffStack;
+    //    delete[] this->GenCoeffStackStatus;
 
   }else{
 
@@ -1365,15 +1333,15 @@ SerialTree<D>::~SerialTree() {
     this->SGenNodesCoeff=0;;
     this->GenNodeStackStatus=0;
 
-    this->CoeffStack=0;
-    this->CoeffStackStatus=0;
+//    this->CoeffStack=0;
+//    this->CoeffStackStatus=0;
 
     this->LooseNodeCoeff=0;
     this->LooseCoeffStack=0;
     this->LooseCoeffStackStatus=0;
 
-    this->GenCoeffStack=0;
-    this->GenCoeffStackStatus=0;
+    //    this->GenCoeffStack=0;
+    //    this->GenCoeffStackStatus=0;
     
   }
 }

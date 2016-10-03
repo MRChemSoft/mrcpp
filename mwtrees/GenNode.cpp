@@ -66,8 +66,6 @@ void GenNode<D>::genChild(int cIdx) {
     //NB: serial tree MUST generate all children consecutively
     //all children must be generated at once if several threads are active -> use genChildren
       MSG_FATAL("All GenNodes siblings in a Serial Tree Gen Nodes must be created at once");
-      child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
-      child->SNodeIx = NodeIx;
     }
     this->children[cIdx] = child;
 }

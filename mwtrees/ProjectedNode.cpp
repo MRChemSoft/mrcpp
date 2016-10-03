@@ -77,11 +77,12 @@ void ProjectedNode<D>::createChild(int cIdx) {
     assert(this->children[cIdx] == 0);
     ProjectedNode<D> *child;
     int NodeIx;
+    double* coefs_p;
     if (this->tree->serialTree_p == 0){
         child = new ProjectedNode<D>(*this, cIdx);
 	this->children[cIdx] = child;
     } else {
-      ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx);
+      ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx, &coefs_p);
       //      if(true){
       if(false){
         child = new (newNode) ProjectedNode<D>(*this, cIdx);
@@ -106,8 +107,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
         newNode->children[i] = 0;
       }
       newNode->setIsLeafNode();
-      //      newNode->coefs = this->tree->serialTree_p->allocCoeff(NodeIx);
-      newNode->coefs = this->tree->serialTree_p->CoeffStack[NodeIx];
+      newNode->coefs = coefs_p;
       newNode->n_coefs = this->n_coefs;
       newNode->setIsAllocated();
       newNode->clearHasCoefs();
@@ -142,8 +142,6 @@ void ProjectedNode<D>::genChild(int cIdx) {
       child = new GenNode<D>(*this, cIdx);
     } else {
       MSG_FATAL("A ProjectedNodes should not be generated");
-      child = new (this->tree->serialTree_p->allocGenNodes(1, &NodeIx))GenNode<D>(*this, cIdx);
-      child->SNodeIx = NodeIx;
     }
     this->children[cIdx] = child;
 }

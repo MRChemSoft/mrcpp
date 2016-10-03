@@ -35,9 +35,9 @@ public:
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
     ProjectedNode<D>* createSnode(const NodeIndex<D> &nIdx);
-    ProjectedNode<D>* allocNodes(int Nalloc, int* NodeIx);
+    ProjectedNode<D>* allocNodes(int Nalloc, int* NodeIx, double ** coefs_p);
     void DeAllocNodes(int NodeRank);
-    GenNode<D>* allocGenNodes(int Nalloc, int* NodeIx);
+    GenNode<D>* allocGenNodes(int Nalloc, int* NodeIx, double ** coefs_p);
     void DeAllocGenNodes(int NodeRank);
     double* allocCoeff(int NallocCoeff, MWNode<D>* node);
     double* allocLooseCoeff(int NallocCoeff, MWNode<D>* node);

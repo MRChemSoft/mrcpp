@@ -682,8 +682,9 @@ void MWNode<D>::genChildren() {
     //all children must be generated at once if several threads are active
     if (this->tree->serialTree_p){
       int NodeIx;
+      double *coefs_p;
       //reserve place for nChildren
-      GenNode<D>* GenNode_p = this->tree->serialTree_p->allocGenNodes(nChildren, &NodeIx);
+      GenNode<D>* GenNode_p = this->tree->serialTree_p->allocGenNodes(nChildren, &NodeIx, &coefs_p);
       MWNode<D> *child;
       for (int cIdx = 0; cIdx < nChildren; cIdx++) {
 	//if(true){
@@ -715,8 +716,7 @@ void MWNode<D>::genChildren() {
 	    GenNode_p->children[i] = 0;
 	  }
 	  GenNode_p->setIsLeafNode();
-	  //	  GenNode_p->coefs = this->tree->serialTree_p->allocGenCoeff(NodeIx);
-	  GenNode_p->coefs = this->tree->serialTree_p->GenCoeffStack[NodeIx];
+	  GenNode_p->coefs = coefs_p;
 	  GenNode_p->n_coefs = this->n_coefs;
 	  GenNode_p->setIsAllocated();
 	  GenNode_p->clearHasCoefs();
@@ -739,7 +739,7 @@ void MWNode<D>::genChildren() {
 
 	GenNode_p++;
 	NodeIx++;
-	
+        coefs_p += this->tree->serialTree_p->sizeGenNodeCoeff;	
 	
       }
     }else{

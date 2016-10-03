@@ -1328,21 +1328,14 @@ SerialTree<D>::~SerialTree() {
     this->SNodesCoeff=0;;
     this->NodeStackStatus=0;
 
-    //this->SGenData=0;
     this->SGenNodes=0;;
     this->SGenNodesCoeff=0;;
     this->GenNodeStackStatus=0;
-
-//    this->CoeffStack=0;
-//    this->CoeffStackStatus=0;
 
     this->LooseNodeCoeff=0;
     this->LooseCoeffStack=0;
     this->LooseCoeffStackStatus=0;
 
-    //    this->GenCoeffStack=0;
-    //    this->GenCoeffStackStatus=0;
-    
   }
 }
 

@@ -96,7 +96,6 @@ public:
 
     //    const MWTree<D>* mwTree_p;
     MWTree<D>* mwTree_p;
-    MultiResolutionAnalysis<D>* mra_p;
     ProjectedNode<D>* lastNode;//pointer to the last active node
     GenNode<D>* lastGenNode;//pointer to the last active Gen node
     double* lastNodeCoeff;//pointer to the last node coefficents

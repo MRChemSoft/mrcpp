@@ -604,7 +604,7 @@ void MWNode<D>::reCompress(bool overwrite) {
             //getCoefs() += tmp;
         }
         this->setHasCoefs();
-        calcNorms();
+        this->calcNorms();
     }
 }
 

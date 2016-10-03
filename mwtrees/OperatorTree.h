@@ -18,6 +18,9 @@ public:
     OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
+    virtual void mwTransformDown(bool overwrite);
+    virtual void mwTransformUp(bool overwrite);
+
     friend std::ostream& operator <<(std::ostream &o, OperatorTree &tree) {
         o << std::endl << "*OperatorTree: " << tree.name << std::endl;
         o << "  square norm: " << tree.squareNorm << std::endl;

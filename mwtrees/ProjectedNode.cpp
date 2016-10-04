@@ -108,7 +108,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
       }
       newNode->setIsLeafNode();
       newNode->coefs = coefs_p;
-      newNode->n_coefs = this->n_coefs;
+      newNode->n_coefs = this->tree->serialTree_p->sizeNodeCoeff;
       newNode->setIsAllocated();
       newNode->clearHasCoefs();
       newNode->clearIsGenNode();

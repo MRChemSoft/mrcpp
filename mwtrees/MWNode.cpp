@@ -81,7 +81,8 @@ MWNode<D>::MWNode(const MWNode<D> &n)
     allocCoefs(this->getTDim(), this->getKp1_d());
 
     if (n.hasCoefs()) {
-        setCoefBlock(0, this->n_coefs, n.getCoefs());
+        setCoefBlock(0, n.n_coefs, n.getCoefs());
+	if(this->n_coefs>n.n_coefs)for(int i=n.n_coefs; i<this->n_coefs; i++)this->coefs[i]=0.0; 
     } else {
         zeroCoefBlock(0, this->n_coefs);
     }
@@ -133,7 +134,7 @@ void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 
       //Only temporary nodes should be allocated here
       coefs = this->tree->serialTree_p->allocLooseCoeff(n_blocks,  this);
-
+      
     }else{
 	//Operator Node
 	this->coefs = new double[this->n_coefs];
@@ -231,9 +232,8 @@ void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
 
 template<int D>
 void MWNode<D>::zeroCoefBlock(int block, int block_size) {
-    NOT_IMPLEMENTED_ABORT;
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-
+        NOT_IMPLEMENTED_ABORT;
     for (int i = 0; i < block_size; i++) {
         this->coefs[block*block_size + i] = 0.0;
     }
@@ -262,6 +262,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 
       double* coeffin  = this->coefs;
       double* coeffout = this->getMWChild(0).coefs;
+      assert(not ( this->getMWChild(0).isGenNode() and  this->getMWChild(0).isLooseNode()));//not implemented
 
       this->tree->serialTree_p->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
 
@@ -508,7 +509,8 @@ template<int D>
 void MWNode<D>::calcNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
-        double norm_i = calcComponentNorm(i);
+      double norm_i = 0.0;
+      if(i==0 or (not this->isGenNode()))norm_i = calcComponentNorm(i);
         this->componentNorms[i] = norm_i;
         this->squareNorm += norm_i*norm_i;
     }
@@ -543,6 +545,7 @@ double MWNode<D>::getWaveletNorm() const {
 /** Calculate the norm of one component (NOT the squared norm!). */
 template<int D>
 double MWNode<D>::calcComponentNorm(int i) const {
+  assert(i==0 or (not this->isGenNode()));//GenNodes have no wavelets coefficients
     assert(this->isAllocated());
     assert(this->hasCoefs());
 
@@ -717,7 +720,7 @@ void MWNode<D>::genChildren() {
 	  }
 	  GenNode_p->setIsLeafNode();
 	  GenNode_p->coefs = coefs_p;
-	  GenNode_p->n_coefs = this->n_coefs;
+	  GenNode_p->n_coefs = this->tree->serialTree_p->sizeGenNodeCoeff;
 	  GenNode_p->setIsAllocated();
 	  GenNode_p->clearHasCoefs();
 	  GenNode_p->clearIsRootNode();

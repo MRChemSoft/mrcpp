@@ -42,16 +42,17 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
           {
 
     if(max_nodes==0)maxLooseNodesCoeff = 0;
-    int Sizeperchunk =1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
 
-    this->sizeNodeCoeff = (1<<D)*(MathUtils::ipow(Tree->getOrder()+1,D));
-    //NB: Gen nodes should take less space?
-    this->sizeGenNodeCoeff = this->sizeNodeCoeff;///(1<<D);
+    //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
+    int Sizeperchunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
+
+    this->sizeGenNodeCoeff = (MathUtils::ipow(Tree->getOrder()+1,D));//One block
+    this->sizeNodeCoeff =(1<<D)*this->sizeGenNodeCoeff;//TDim  blocks
     println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff*sizeof(double)/1024);
     println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff*sizeof(double)/1024);
 
 
-    maxNodesPerChunk = Sizeperchunk/this->sizeNodeCoeff;
+    maxNodesPerChunk = Sizeperchunk/this->sizeGenNodeCoeff;
     println(10, " max_nodes = " <<max_nodes<<", nodes per chunk = "<<maxNodesPerChunk);
 
 
@@ -842,7 +843,7 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
   }
   newNode->setIsLeafNode();
   newNode->coefs = coefs_p;
-  newNode->n_coefs = (1<<D)*(MathUtils::ipow(newNode->tree->getOrder()+1,D));
+  newNode->n_coefs = this->sizeNodeCoeff;
   newNode->setIsAllocated();
   newNode->clearHasCoefs();
   

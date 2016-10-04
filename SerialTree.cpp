@@ -545,8 +545,7 @@ void SerialTree<D>::GenS_nodes(MWNode<D>* Node){
 
 /** Make children scaling coefficients from parent
  * Other node info are not used/set
- * this routine works only for D=3.
- * coeff_in is not modified.
+ * coeff_in are not modified.
  * The output is written directly into the 8 children scaling coefficients. 
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
@@ -559,7 +558,6 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool Read
   int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
   int kp1_d = kp1_dm1*kp1;//
   const MWFilter &filter = this->getTree()->getMRA().getFilter();
-  //VectorXd &result = Parent->tree->getTmpMWCoefs();
   double overwrite = 0.0;
   double *tmp;
   double tmpcoeff[kp1_d*tDim];
@@ -728,26 +726,21 @@ void SerialTree<D>::S_mwTreeTransformUp() {
 
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
- * coeff_in is not modified.
+ * coeff_in are not modified.
  * The output is read directly from the 8 children scaling coefficients. 
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-/*template<int D>
+template<int D>
 void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride) {
-  if(D!=3)MSG_FATAL("S_mwtransform Only D=3 implemented now!");
+  assert(D==3);
   int operation = Compression;
   int kp1 = this->getTree()->getKp1();
   int tDim = (1<<D);
-  int kp1_dm1 = kp1*kp1;//MathUtils::ipow(Parent->getKp1(), D - 1)
-  int kp1_d = kp1_dm1*kp1;//
+  int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
+  int kp1_d = kp1_dm1*kp1;
   const MWFilter &filter = this->getTree()->getMRA().getFilter();
-  //VectorXd &result = Parent->tree->getTmpMWCoefs();
   double overwrite = 0.0;
-  double *tmp;
-
   double tmpcoeff[kp1_d*tDim];
-  //double tmp2coeff[kp1_d*tDim];
-  
 
   int ftlim=tDim;
   int ftlim2=tDim;
@@ -761,7 +754,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-/*      if ((gt | mask) == (ft | mask)) {
+      if ((gt | mask) == (ft | mask)) {
 	double *in = coeff_in + ft * Children_Stride;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -780,7 +773,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-/*     if ((gt | mask) == (ft | mask)) {
+     if ((gt | mask) == (ft | mask)) {
 	double *in = coeff_out + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -800,7 +793,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
       /* Operate in direction i only if the bits along other
        * directions are identical. The bit of the direction we
        * operate on determines the appropriate filter/operator */
-/*     if ((gt | mask) == (ft | mask)) {
+     if ((gt | mask) == (ft | mask)) {
 	double *in = tmpcoeff + ft * kp1_d;
 	int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
@@ -813,7 +806,7 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int C
   }
   //  if(D%2)for(int i=0; i<kp1_d*tDim; i++) coeff_out[i] = tmpcoeff[i];
 
-  }*/
+}
 
 
 /** Allocating a Projected Serial (root) node.

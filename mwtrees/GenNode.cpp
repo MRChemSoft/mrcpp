@@ -33,9 +33,9 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
         : FunctionNode<D> (p, cIdx),
           genRootNode(p.genRootNode) {
     this->setIsLooseNode();//otherwise should not be allocated by constructor
+    this->setIsGenNode();
     this->allocCoefs(this->getTDim(), this->getKp1_d());
     this->zeroCoefs();
-    this->setIsGenNode();
     this->clearHasWCoefs();
     this->tree->incrementGenNodeCount();
 }

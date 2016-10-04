@@ -249,16 +249,9 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     //    if(false){
 
       //coeff of child should be have been allocated already here
-      int Children_Stride=this->tree->serialTree_p->sizeNodeCoeff;
-      if(this->getMWChild(0).isGenNode())Children_Stride=this->tree->serialTree_p->sizeGenNodeCoeff;
+      int Children_Stride = this->getMWChild(0).n_coefs;
       bool ReadOnlyScalingCoeff=true;
       if(this->hasWCoefs())ReadOnlyScalingCoeff=false;
-
-      //getCoefs for GenNodes locks the siblings
-      //double* coeffin  = &(this->getCoefs()(0));
-//      double* coeffin  = &((this->coefvec)(0));
-      //still some problem with Ix double* coeffin  = (this->tree->serialTree_p->CoeffStack[this->SNodeIx]);
-//      double* coeffout = &(this->getMWChild(0).getCoefs()(0));
 
       double* coeffin  = this->coefs;
       double* coeffout = this->getMWChild(0).coefs;
@@ -594,10 +587,16 @@ void MWNode<D>::reCompress(bool overwrite) {
     if ((not this->isGenNode()) and this->isBranchNode()) {
         if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
         if (overwrite) {
-
+	  if(this->tree->serialTree_p and D==3){
+	    //can write directly from children coeff into parent coeff
+	    int Children_Stride = this->getMWChild(0).n_coefs;
+	    double* coeffin  = this->getMWChild(0).coefs;
+	    double* coeffout = this->coefs;
+	    this->tree->serialTree_p->S_mwTransformBack(coeffin, coeffout, Children_Stride);
+	  }else{
             copyCoefsFromChildren();
             mwTransform(Compression);
-
+	  }
         } else {
             // Check optimization
             NOT_IMPLEMENTED_ABORT;
@@ -712,9 +711,8 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
 	  GenNode_p->squareNorm = -1.0;
 	  GenNode_p->status = 0;
-	  GenNode_p->n_coefs = 0;
-	  GenNode_p->coefs = 0;
-	  GenNode_p->clearNorms();
+
+	  GenNode_p->zeroNorms();
 	  for (int i = 0; i < GenNode_p->getTDim(); i++) {
 	    GenNode_p->children[i] = 0;
 	  }
@@ -722,15 +720,13 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->coefs = coefs_p;
 	  GenNode_p->n_coefs = this->tree->serialTree_p->sizeGenNodeCoeff;
 	  GenNode_p->setIsAllocated();
-	  GenNode_p->clearHasCoefs();
-	  GenNode_p->clearIsRootNode();
-	  GenNode_p->clearIsEndNode();
+	  GenNode_p->setHasCoefs();
 
-	  GenNode_p->zeroCoefs();//SHOULD BE REMOVED!
+	  //	  GenNode_p->zeroCoefs();//SHOULD BE REMOVED!
 
 	  GenNode_p->tree->incrementGenNodeCount();
 	  GenNode_p->setIsGenNode();
-	  GenNode_p->clearHasWCoefs();//default until known
+	  //GenNode_p->clearHasWCoefs();//default until known
 	  
 	  this->children[cIdx] = GenNode_p;
 

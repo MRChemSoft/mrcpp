@@ -29,8 +29,6 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
                                 int max_nodes)
         : nNodes(0),
 	  nGenNodes(0),
-	  nNodesCoeff(0),
-	  nGenNodesCoeff(0),
           lastNode(0),
           lastGenNode(0),
           mwTree_p(0),
@@ -84,9 +82,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->lastGenNode = this->SGenNodes;
     this->lastGenNodeCoeff = this->SGenNodesCoeff;
 
-    this->nNodesCoeff=-1;//add 1 before each allocation
     this->nLooseNodesCoeff=-1;//add 1 before each allocation
-    this->nGenNodesCoeff=-1;//add 1 before each allocation
 
     //initialize stacks
     for (int i = 0; i <maxNodes;i++){
@@ -132,7 +128,6 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
         const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(rIdx);
         roots[rIdx] = createSnode(nIdx);
 	roots[rIdx]->setIsRootNode(); 
-	roots[rIdx]->clearIsGenNode(); 
 	println(10, rIdx<<" root idx "<<roots[rIdx]->nodeIndex);
 	//	roots[rIdx] = new (allocNodes(1, &NodeIx)) ProjectedNode<D>(*this->getTree(), nIdx);
 	//roots[rIdx]->SNodeIx = NodeIx;
@@ -148,92 +143,79 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
   * Necessary after sending the tree 
   * could be optimized. Should reset other counters? (GenNodes...) */
 template<int D>
-void SerialTree<D>::RewritePointers(int* &STreeMeta){
+void SerialTree<D>::RewritePointers(int Nchunks){
   int DepthMax = 100;
   MWNode<D>* stack[DepthMax*8];
   int  slen = 0, counter = 0;
 
-  this->nNodes = STreeMeta[0];
-  this->nNodesCoeff = STreeMeta[1];
   this->nGenNodes = 0;
   this->nGenNodesCoeff = -1;
   this->nLooseNodesCoeff = -1;
-
-  //  ptrdiff_t d_p_shift = this->SData - *((double**)this->SData);//actual - written adress
-  ptrdiff_t d_p_shift = 0;//actual - written adress of double
-  ptrdiff_t n_p_shift = 0;//actual - written adress of node
-  ptrdiff_t t_p_shift = 0;//actual - written adress of tree
-  cout<<"start of data at "<<this->firstNode<<" pointer at "<<" diff "<<d_p_shift<<endl;
-  cout<<" size tree "<< this->getTree()->nNodes <<" tag "<<this<<endl;
 
   //reinitialize stacks
   for (int i = 0; i <this->maxNodes;i++){
     this->NodeStackStatus[i] = 0;
   }
-  for (int i = 0; i <this->maxNodesCoeff;i++){
-    this->CoeffStackStatus[i] = 0;//0=unoccupied
-  }
-  this->CoeffStackStatus[this->maxNodesCoeff]=-1;//-1=unavailable
 
   for (int i = 0; i <this->maxGenNodes;i++){
     this->GenNodeStackStatus[i] = 0;//0=unoccupied
   }
   this->GenNodeStackStatus[this->maxGenNodes] = -1;//=unavailable
 
-  for (int i = 0; i <this->maxGenNodesCoeff;i++){
-    this->GenCoeffStackStatus[i] = 0;//0=unoccupied
-  }
-  this->GenCoeffStackStatus[this->maxGenNodesCoeff] = -1;//-1=unavailable
-
   for (int i = 0; i <this->maxLooseNodesCoeff;i++){
     this->LooseCoeffStackStatus[i] = 0;//0=unoccupied
   }
   this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
 
-  //  for (int i = 0; i <= this->nNodesCoeff; i++){
-  //  CoeffStack[i] += d_p_shift;
-  //}
 
+  this->getTree()->nNodes = 0;
+  this->getTree()->squareNorm = 0.0;
+
+  for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
+    for(int inode = 0 ; inode<this->maxNodesPerChunk ; inode++){
+      ProjectedNode<D>* Node = (this->NodeChunks[ichunk]) + inode;
+      if(Node->SNodeIx >= 0){
+	  //node is part of tree, should be processed
+	  this->getTree()->nNodes++;
+	  if(Node->isEndNode())this->getTree()->squareNorm += Node->getSquareNorm();
+	  
+	  //normally (intel) the virtual table does not change, but we overwrite anyway
+	  *(char**)(Node) = this->cvptr_ProjectedNode;
+	  
+	  Node->tree = this->getTree();
+
+	  //"adress" of coefs is the same as node, but in another array
+	  Node->coefs = this->NodeCoeffChunks[ichunk]+ inode*this->sizeNodeCoeff;
+	  
+	  //adress of parent and children must be corrected
+	  //can be on a different chunks
+	  if(Node->parentSNodeIx>=0){
+	    int n_ichunk = Node->parentSNodeIx/this->maxNodesPerChunk;
+	    int n_inode = Node->parentSNodeIx%this->maxNodesPerChunk;
+	    Node->parent = this->NodeChunks[n_ichunk] + n_inode;
+	  }else{Node->parent = 0;}
+	    
+	  for (int i = 0; i < Node->getNChildren(); i++) {
+	    int n_ichunk = (Node->childSNodeIx[i])/this->maxNodesPerChunk;
+	    int n_inode = (Node->childSNodeIx[i])%this->maxNodesPerChunk;
+	    Node->children[i] = this->NodeChunks[n_ichunk] + n_inode;
+	  }
+	  this->NodeStackStatus[Node->SNodeIx] = 1;//occupied
+	}
+
+    }
+  }
+
+  //update other MWTree data
   FunctionTree<D>* Tree = static_cast<FunctionTree<D>*> (this->mwTree_p);
 
   NodeBox<D> &rBox = Tree->getRootBox();
   MWNode<D> **roots = rBox.getNodes();
-  //const NodeIndex<D> &nIdx = Tree->getRootBox().getNodeIndex(0);
-
-  d_p_shift = (this->firstNodeCoeff)-(roots[0]->coefs);
-  n_p_shift =  ((MWNode<D> *) ( this->firstNodeCoeff)) - ((MWNode<D> *)(roots[0]->coefs));
-  //n_p_shift =  (d_p_shift*sizeof(double))/sizeof(MWNode<D>);//be careful with ptrdiff_t arithmetic!
-  t_p_shift =  ((MWTree<D> *) ( this->firstNodeCoeff)) - ((MWTree<D> *)(roots[0]->coefs));
-  cout<<"d_p_shift "<<d_p_shift<<" as tree* "<<t_p_shift<<" as node* "<<n_p_shift<<" tag "<<this<<endl;
-  //test consistency: could use explicit shift instead
-  //if((n_p_shift*sizeof(MWNode<D>))/sizeof(double) != d_p_shift)MSG_FATAL("Serial Tree: wrong n_p_shift");
-  //if((t_p_shift*sizeof(MWTree<D>))/sizeof(double) != d_p_shift)cout<<" wrong t_p_shift "<<endl;
-
 
   for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
-   stack[slen++] =  roots[rIdx];//roots address are in MWtree which is not overwritten
+    roots[rIdx] = (this->NodeChunks[0]) + rIdx;//adress of roots are at start of NodeChunks[0] array
   }
-  this->getTree()->nNodes = 0;
-  while (slen) {
-      this->getTree()->nNodes++;
-      MWNode<D>* fpos = stack[--slen];
-      if(fpos->getNChildren()){
- 	for (int i = 0; i < fpos->getNChildren(); i++) {
-	  fpos->children[i] = (MWNode<D>*)(((double*)fpos->children[i]) + d_p_shift);
-	  stack[slen++] = fpos->children[i];
-	}
-      }
-      //set virtual table. Assumes a Projected Node!
-      //cout<<"cvptr BEFORE "<<(double*)(*(char**)(fpos))<<" AFTER "<<(double*)cvptr<<endl;
-      *(char**)(fpos) = this->cvptr_ProjectedNode;
 
-      fpos->parent = (MWNode<D>*)(((double*)fpos->parent) + d_p_shift);// += n_p_shift not safe!
-      //fpos->tree += t_p_shift;//NB: does not work!//(MWTree<D>*)(((double*)fpos->tree) + d_p_shift);
-      fpos->tree = this->getTree();
-      fpos->coefs = this->firstNodeCoeff+(fpos->SNodeIx)*this->sizeNodeCoeff;
-      this->NodeStackStatus[fpos->SNodeIx] = 1;
-
-   }
   this->getTree()->resetEndNodeTable();
 
 }
@@ -824,6 +806,7 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
   newNode->SNodeIx = NodeIx;
   newNode->tree = this->mwTree_p;
   newNode->parent = 0;
+  newNode->parentSNodeIx = -1;//to indicate rootnode
   newNode->nodeIndex = nIdx;
   newNode->hilbertPath = HilbertPath<D>();
   newNode->squareNorm = -1.0;
@@ -833,6 +816,7 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
   newNode->clearNorms();
   for (int i = 0; i < (1 << D); i++) {
     newNode->children[i] = 0;
+    newNode->childSNodeIx[i] = -1;
   }
   newNode->setIsLeafNode();
   newNode->coefs = coefs_p;

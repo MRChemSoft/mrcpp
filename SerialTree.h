@@ -28,9 +28,8 @@ template<int D> class FunctionNode;
 template<int D>
 class SerialTree  {
 public:
-  SerialTree(MWTree<D>* Tree, int max_nodes);
-  //     SerialTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
-    virtual ~SerialTree();
+    SerialTree(MWTree<D>* Tree, int max_nodes);
+    ~SerialTree();
 
     FunctionTree<D>* getTree() { return static_cast<FunctionTree<D> *>(this->mwTree_p); }
 
@@ -57,7 +56,7 @@ public:
 
     void SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
     void SerialTreeAdd_Up(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
-    void RewritePointers(int* &STreeMeta);
+    void RewritePointers(int Nchunks);
     int* NodeStackStatus;
     int* LooseNodeStackStatus;
     int* GenNodeStackStatus;

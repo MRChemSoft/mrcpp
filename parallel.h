@@ -3,7 +3,9 @@
 
 #include <mpi.h>
 #include "config.h"
-#include "SerialTree.h"
+
+template<int D> class FunctionTree;
+class Orbital;
 
 #ifdef HAVE_OPENMP
 
@@ -22,7 +24,6 @@
 
 #endif
 
-#include "SerialTree.h"
 
 extern int MPI_rank;
 extern int MPI_size;
@@ -33,8 +34,10 @@ void MPI_Initializations();
 
 #ifdef HAVE_MPI
 
-//template<int D>
-//void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MPI_Comm comm);
+template<int D>
+void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MPI_Comm comm);
+
+void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag, MPI_Comm comm);
 //void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr);
 
 #else

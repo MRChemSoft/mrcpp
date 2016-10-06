@@ -96,6 +96,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
       newNode->SNodeIx = NodeIx;
       newNode->tree = this->tree;
       newNode->parent = this;
+      newNode->parentSNodeIx = this->SNodeIx;
       newNode->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
       newNode->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
       newNode->squareNorm = -1.0;
@@ -105,6 +106,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
       newNode->clearNorms();
       for (int i = 0; i < newNode->getTDim(); i++) {
         newNode->children[i] = 0;
+        newNode->childSNodeIx[i] = -1;
       }
       newNode->setIsLeafNode();
       newNode->coefs = coefs_p;
@@ -119,6 +121,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
       newNode->setHasWCoefs();//default until known
 
       this->children[cIdx] = newNode;
+      this->childSNodeIx[cIdx] = newNode->SNodeIx;
       
 #ifdef OPENMP
     omp_init_lock(&(newNode->node_lock));

@@ -244,7 +244,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
 
-    if(this->tree->serialTree_p and D!=2){
+    if(this->tree->serialTree_p and D!=2 and false){
        //can write directly from parent coeff into children coeff
     //    if(false){
 
@@ -707,6 +707,7 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->SNodeIx = NodeIx;
 	  GenNode_p->tree = this->tree;
 	  GenNode_p->parent = this;
+	  GenNode_p->parentSNodeIx = this->SNodeIx;
 	  GenNode_p->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
 	  GenNode_p->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
 	  GenNode_p->squareNorm = -1.0;
@@ -715,6 +716,7 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->zeroNorms();
 	  for (int i = 0; i < GenNode_p->getTDim(); i++) {
 	    GenNode_p->children[i] = 0;
+	    GenNode_p->childSNodeIx[i] = -1;
 	  }
 	  GenNode_p->setIsLeafNode();
 	  GenNode_p->coefs = coefs_p;
@@ -729,6 +731,7 @@ void MWNode<D>::genChildren() {
 	  //GenNode_p->clearHasWCoefs();//default until known
 	  
 	  this->children[cIdx] = GenNode_p;
+	  this->childSNodeIx[cIdx] = GenNode_p->SNodeIx;
 
 #ifdef OPENMP
 	  omp_init_lock(&GenNode_p->node_lock);

@@ -76,6 +76,10 @@ public:
     double* getCoefs() { return this->coefs; }
     const double* getCoefs() const { return this->coefs; }
 
+    int SNodeIx; //index in serial Tree
+    int parentSNodeIx; //index of parent in serial Tree, or -1 for roots
+    int childSNodeIx[1<<D]; //index of children in serial Tree, or -1 for leafnodes/endnodes
+
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
     MWNode<D>& getMWChild(int i) { return static_cast<MWNode<D> &>(*this->children[i]); }
@@ -112,13 +116,9 @@ protected:
     NodeIndex<D> nodeIndex;
     HilbertPath<D> hilbertPath;
 
-    int SNodeIx; //index in serial Tree
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components
-
-    Eigen::VectorXd oldcoefvec;
-    Eigen::VectorXd *oldcoefs;
 
     int n_coefs;
     double *coefs;

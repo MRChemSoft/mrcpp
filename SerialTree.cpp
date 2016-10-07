@@ -82,7 +82,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     this->lastGenNode = this->SGenNodes;
     this->lastGenNodeCoeff = this->SGenNodesCoeff;
 
-    this->nLooseNodesCoeff=-1;//add 1 before each allocation
+    this->nLooseNodesCoeff=0;
 
     //initialize stacks
     for (int i = 0; i <maxNodes;i++){
@@ -150,7 +150,7 @@ void SerialTree<D>::RewritePointers(int Nchunks){
 
   this->nGenNodes = 0;
   this->nGenNodesCoeff = -1;
-  this->nLooseNodesCoeff = -1;
+  this->nLooseNodesCoeff = 0;
 
   //reinitialize stacks
   for (int i = 0; i <this->maxNodes;i++){
@@ -1020,7 +1020,6 @@ double* SerialTree<D>::allocCoeff(int nAllocCoeff, MWNode<D>* node) {
       omp_unset_lock(&Stree_lock);
       return 0;
     }else{
-
     
     if((this->nNodesCoeff)/maxNodesPerChunk != (this->nNodesCoeff+1)/maxNodesPerChunk){
       //we want nodes allocated simultaneously to be allocated on the same chunk.
@@ -1054,13 +1053,10 @@ double* SerialTree<D>::allocLooseCoeff(int nAllocCoeff, MWNode<D>* node) {
 
   //Each omp thread use own part of array, no locks!
 
-#pragma omp atomic
-  (this->nLooseNodesCoeff)++;
-
-  if(this->nLooseNodesCoeff>8){
+  if(this->nLooseNodesCoeff+1>8){
     cout<<" Loose nodes now: "<<this->nLooseNodesCoeff<<endl;
   }
-  if (this->nLooseNodesCoeff >= this->maxLooseNodesCoeff ){
+  if (this->nLooseNodesCoeff+1 >= this->maxLooseNodesCoeff ){
     println(0, "maxLooseNodesCoeff exceeded " << this->maxLooseNodesCoeff);
     MSG_FATAL("maxLooseNodesCoeff exceeded ");
        // omp_unset_lock(&Stree_lock);
@@ -1082,6 +1078,9 @@ double* SerialTree<D>::allocLooseCoeff(int nAllocCoeff, MWNode<D>* node) {
     double* LooseNodeCoeff=this->LooseCoeffStack[myindex];
     this->LooseCoeffStackStatus[myindex]=1;
     node->SNodeIx = myindex;
+#pragma omp atomic
+    (this->nLooseNodesCoeff)++;
+
     return LooseNodeCoeff;
   }
 
@@ -1151,13 +1150,13 @@ void SerialTree<D>::DeAllocLooseCoeff(int DeallocIx) {
   }
   this->LooseCoeffStackStatus[DeallocIx]=0;//mark as available
   if(omp_get_num_threads()==1){
-  if(DeallocIx==this->nLooseNodesCoeff){//top of stack
-    int TopStack=this->nLooseNodesCoeff;
+  if(DeallocIx==this->nLooseNodesCoeff-1){//top of stack
+    int TopStack=this->nLooseNodesCoeff-1;
     while(this->LooseCoeffStackStatus[TopStack]==0){
       TopStack--;
-      if(TopStack<1)break;
+      if(TopStack<0)break;
     }
-    this->nLooseNodesCoeff=TopStack;//move top of stack
+    this->nLooseNodesCoeff=TopStack+1;//move top of stack
   }
   }else{
     #pragma omp atomic

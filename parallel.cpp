@@ -22,6 +22,7 @@ void MPI_Initializations(){
 #endif
 
 }
+#ifdef HAVE_MPI
 
 void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
@@ -62,7 +63,6 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
   SerialTree<D>* STree = Tree->getSerialTree();
   
 
-#ifdef HAVE_MPI
   cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<endl;
   int count = 1;
   int STreeMeta[count];
@@ -121,8 +121,8 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
     timer.stop();
     cout<<" time rewrite pointers  " << timer<<endl;
   }
-#endif
 }
+#endif
 
 /** Define all the different MPI groups
  */
@@ -182,6 +182,9 @@ void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr
 
 } */
 
+#ifdef HAVE_MPI
 template void SendRcv_SerialTree<1>(FunctionTree<1>* STree, int source, int dest, int tag, MPI_Comm comm);
 template void SendRcv_SerialTree<2>(FunctionTree<2>* STree, int source, int dest, int tag, MPI_Comm comm);
 template void SendRcv_SerialTree<3>(FunctionTree<3>* STree, int source, int dest, int tag, MPI_Comm comm);
+#endif
+

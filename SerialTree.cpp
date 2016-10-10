@@ -811,8 +811,6 @@ ProjectedNode<D>* SerialTree<D>::createSnode(const NodeIndex<D> & nIdx) {
   newNode->hilbertPath = HilbertPath<D>();
   newNode->squareNorm = -1.0;
   newNode->status = 0;
-  newNode->n_coefs = 0;
-  newNode->coefs = 0;
   newNode->clearNorms();
   for (int i = 0; i < (1 << D); i++) {
     newNode->children[i] = 0;

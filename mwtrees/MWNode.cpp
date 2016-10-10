@@ -244,7 +244,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
 
-    if(this->tree->serialTree_p and D!=2 and false){
+    if(this->tree->serialTree_p and D!=2){
        //can write directly from parent coeff into children coeff
     //    if(false){
 
@@ -592,6 +592,9 @@ void MWNode<D>::reCompress(bool overwrite) {
 	    int Children_Stride = this->getMWChild(0).n_coefs;
 	    double* coeffin  = this->getMWChild(0).coefs;
 	    double* coeffout = this->coefs;
+ 
+	    assert(coeffin+((1<<D)-1)*Children_Stride == this->getMWChild((1<<D)-1).coefs);
+ 
 	    this->tree->serialTree_p->S_mwTransformBack(coeffin, coeffout, Children_Stride);
 	  }else{
             copyCoefsFromChildren();
@@ -640,8 +643,61 @@ bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
 template<int D>
 void MWNode<D>::createChildren() {
     if (this->isBranchNode()) MSG_FATAL("Node already has children");
-    for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
+    int nChildren = this->getTDim();
+
+    //NB: serial tree MUST generate all children consecutively
+    //all children must be generated at once if several threads are active
+    if (this->tree->serialTree_p){
+      int NodeIx;
+      double *coefs_p;
+      //reserve place for nChildren
+      ProjectedNode<D>* ProjNode_p = this->tree->serialTree_p->allocNodes(nChildren, &NodeIx, &coefs_p);
+      MWNode<D> *child;
+      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+
+ 	  *(char**)(ProjNode_p)=this->tree->serialTree_p->cvptr_ProjectedNode;
+	  ProjNode_p->SNodeIx = NodeIx;
+	  ProjNode_p->tree = this->tree;
+	  ProjNode_p->parent = this;
+	  ProjNode_p->parentSNodeIx = this->SNodeIx;
+	  ProjNode_p->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
+	  ProjNode_p->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
+	  ProjNode_p->squareNorm = -1.0;
+	  ProjNode_p->status = 0;
+
+	  ProjNode_p->zeroNorms();
+	  for (int i = 0; i < ProjNode_p->getTDim(); i++) {
+	    ProjNode_p->children[i] = 0;
+	    ProjNode_p->childSNodeIx[i] = -1;
+	  }
+	  ProjNode_p->setIsLeafNode();
+	  ProjNode_p->coefs = coefs_p;
+	  ProjNode_p->n_coefs = this->tree->serialTree_p->sizeNodeCoeff;
+	  ProjNode_p->setIsAllocated();
+	  ProjNode_p->setHasCoefs();
+	  ProjNode_p->setIsEndNode();
+	  ProjNode_p->setHasWCoefs();
+
+	  //	  ProjNode_p->zeroCoefs();//SHOULD BE REMOVED!
+
+	  ProjNode_p->tree->incrementNodeCount(ProjNode_p->getScale());
+	  
+	  this->children[cIdx] = ProjNode_p;
+	  this->childSNodeIx[cIdx] = ProjNode_p->SNodeIx;
+
+#ifdef OPENMP
+	  omp_init_lock(&ProjNode_p->node_lock);
+#endif
+
+	ProjNode_p++;
+	NodeIx++;
+        coefs_p += this->tree->serialTree_p->sizeNodeCoeff;	
+	
+      }
+    }else{
+      for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
         createChild(cIdx);
+      }
     }
     this->setIsBranchNode();
 }

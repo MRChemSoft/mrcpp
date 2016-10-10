@@ -82,6 +82,7 @@ void ProjectedNode<D>::createChild(int cIdx) {
         child = new ProjectedNode<D>(*this, cIdx);
 	this->children[cIdx] = child;
     } else {
+      MSG_FATAL("All ProjectedNodes siblings should be created together");
       ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx, &coefs_p);
       //      if(true){
       if(false){

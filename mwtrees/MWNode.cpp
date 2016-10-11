@@ -16,6 +16,27 @@
 using namespace std;
 using namespace Eigen;
 
+/** MWNode default constructor. */
+template<int D>
+MWNode<D>::MWNode()
+        : tree(0),
+          parent(0),
+          nodeIndex(),
+          hilbertPath(),
+          squareNorm(-1.0),
+          status(0),
+          n_coefs(0),
+          coefs(0) {
+    clearNorms();
+    for (int i = 0; i < getTDim(); i++) {
+        this->children[i] = 0;
+    }
+
+#ifdef OPENMP
+    omp_init_lock(&node_lock);
+#endif
+}
+
 /** MWNode rootnode constructor.
   * Creates an empty rootnode given its tree and node index */
 template<int D>
@@ -101,14 +122,16 @@ MWNode<D>::MWNode(const MWNode<D> &n)
   * Recursive deallocation of a node and all its decendants */
 template<int D>
 MWNode<D>::~MWNode() {
-    if (this->isBranchNode()) {
-      deleteChildren();
+    if (this->tree != 0) {
+        if (this->isBranchNode()) {
+            deleteChildren();
+        }
+        if (not this->isLooseNode()) {
+            if(!(this->isGenNode())) this->tree->decrementNodeCount(getScale());
+            assert(!this->tree->serialTree_p);
+        }
+        this->freeCoefs();
     }
-    if (not this->isLooseNode()) {
-      if(!(this->isGenNode()))this->tree->decrementNodeCount(getScale());
-      assert(!this->tree->serialTree_p);
-    }
-    this->freeCoefs();
 
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
@@ -712,7 +735,6 @@ template<int D> void MWNode<D>::deleteChildren() {
 	   if(node->isBranchNode())node->deleteChildren();
 	   if(node->isGenNode()){
 	     this->tree->decrementGenNodeCount();
-	     this->tree->decrementAllocGenNodeCount();
 	     this->tree->serialTree_p->DeAllocGenNodes(node->SNodeIx);
 	     //	     this->tree->serialTree_p->DeAllocGenCoeff(node->SNodeIx);
 	   }else{
@@ -747,6 +769,8 @@ void MWNode<D>::genChildren() {
       for (int cIdx = 0; cIdx < nChildren; cIdx++) {
 	//if(true){
 	if(false){
+          NOT_IMPLEMENTED_ABORT;
+          /*
 	  if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	    child = new (GenNode_p)GenNode<D>(*node, cIdx);
 	  } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)){
@@ -757,6 +781,7 @@ void MWNode<D>::genChildren() {
 	  this->children[cIdx] = child;
 	  //Noderank is written in allocGenNodes already!
 	  //child->SNodeIx = NodeIx;
+          */
 	}else{
 
  	  *(char**)(GenNode_p)=this->tree->serialTree_p->cvptr_GenNode;
@@ -783,7 +808,6 @@ void MWNode<D>::genChildren() {
 	  //	  GenNode_p->zeroCoefs();//SHOULD BE REMOVED!
 
 	  GenNode_p->tree->incrementGenNodeCount();
-	  GenNode_p->tree->incrementAllocGenNodeCount();
 	  GenNode_p->setIsGenNode();
 	  //GenNode_p->clearHasWCoefs();//default until known
 	  

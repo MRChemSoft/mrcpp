@@ -123,6 +123,7 @@ protected:
     int n_coefs;
     double *coefs;
 
+    MWNode();
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
     MWNode(MWNode<D> &p, int cIdx);
     MWNode(const MWNode<D> &n);

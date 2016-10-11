@@ -115,12 +115,12 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     const NodeIndex<D> &nIdxtmp = Tree->getRootBox().getNodeIndex(0);
     ProjectedNode<D>* tempnode = new ProjectedNode<D>(*FTree, nIdxtmp);
     this->cvptr_ProjectedNode =  *(char**)(tempnode);
-    GenNode<D>* tempGenNode = new GenNode<D>(*tempnode, 0);
-    this->cvptr_ProjectedNode =  *(char**)(tempnode);
-    this->cvptr_GenNode =  *(char**)(tempGenNode);
-
     delete tempnode; 
-    delete tempGenNode; 
+
+    GenNode<D>* tmpGenNode = new GenNode<D>();
+    this->cvptr_GenNode =  *(char**)(tmpGenNode);
+    delete tmpGenNode;
+
     //alloc root nodes
     MWNode<D> **roots = Tree->getRootBox().getNodes();
     int NodeIx;

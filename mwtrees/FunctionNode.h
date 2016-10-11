@@ -21,6 +21,7 @@ public:
     friend class FunctionTree<D>;
 
 protected:
+    FunctionNode() : MWNode<D>() { }
     FunctionNode(FunctionTree<D> &t, const NodeIndex<D> &n) : MWNode<D>(t, n) { }
     FunctionNode(FunctionNode<D> &p, int c) : MWNode<D>(p, c) { }
     FunctionNode(const FunctionNode<D> &n) : MWNode<D>(n) { NOT_IMPLEMENTED_ABORT; }

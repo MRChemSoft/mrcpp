@@ -2,7 +2,6 @@
 add_library(mwtrees STATIC 
     FunctionNode.cpp
     FunctionTree.cpp
-    GenNode.cpp
     MWNode.cpp
     MWTree.cpp
     OperatorNode.cpp

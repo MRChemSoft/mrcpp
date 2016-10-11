@@ -139,15 +139,19 @@ void ProjectedNode<D>::createChild(int cIdx) {
   * translation and Hilbert path parameters. */
 template<int D>
 void ProjectedNode<D>::genChild(int cIdx) {
+    NOT_IMPLEMENTED_ABORT;
+    /*
     assert(this->children[cIdx] == 0);
     MWNode<D> *child;
     int NodeIx;
     if (this->tree->serialTree_p == 0){
-      child = new GenNode<D>(*this, cIdx);
+      NOT_IMPLEMENTED_ABORT;
+      //child = new GenNode<D>(*this, cIdx);
     } else {
       MSG_FATAL("A ProjectedNodes should not be generated");
     }
     this->children[cIdx] = child;
+    */
 }
 
 template class ProjectedNode<1> ;

@@ -48,7 +48,6 @@ public:
     int getTDim() const { return this->tDim; }
     int getNNodes(int depth = -1) const;
     int getNEndNodes() const { return this->endNodeTable.size(); }
-    int getNAllocGenNodes();
     int getNGenNodes();
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
@@ -132,7 +131,6 @@ protected:
     // Tree data
     int nNodes;
     int *nGenNodes;
-    int *nAllocGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
     MWNodeVector endNodeTable;	   ///< Final projected nodes
@@ -161,8 +159,6 @@ protected:
     void updateGenNodeCounts();
     void incrementGenNodeCount();
     void decrementGenNodeCount();
-    void incrementAllocGenNodeCount();
-    void decrementAllocGenNodeCount();
 
     void makeNodeTable(MWNodeVector &nodeTable);
     void makeNodeTable(std::vector<MWNodeVector > &nodeTable);

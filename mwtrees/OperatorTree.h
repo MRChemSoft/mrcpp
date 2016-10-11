@@ -28,8 +28,7 @@ public:
         o << "  order: " << tree.order << std::endl;
         o << "  nodes: " << tree.getNNodes() << std::endl;
         o << "  endNodes: " << tree.endNodeTable.size() << std::endl;
-        o << "  genNodes: " << tree.getNGenNodes() <<
-             " (" << tree.getNAllocGenNodes() << ")" <<std::endl;
+        o << "  genNodes: " << tree.getNGenNodes() << std::endl;
         o << "  nodes per scale: " << std::endl;
         for (int i = 0; i < tree.nodesAtDepth.size(); i++) {
             o << "    scale=" << i + tree.getRootScale() << "  nodes="

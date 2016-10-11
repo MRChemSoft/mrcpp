@@ -502,8 +502,7 @@ template<int D>
 void MWNode<D>::calcNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
-      double norm_i = 0.0;
-      if(i==0 or (not this->isGenNode()))norm_i = calcComponentNorm(i);
+        double norm_i = calcComponentNorm(i);
         this->componentNorms[i] = norm_i;
         this->squareNorm += norm_i*norm_i;
     }

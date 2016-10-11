@@ -111,11 +111,9 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
 #endif
 
     //make virtual table pointers
-    FunctionTree<D>* FTree = static_cast<FunctionTree<D>*> (this->mwTree_p);
-    const NodeIndex<D> &nIdxtmp = Tree->getRootBox().getNodeIndex(0);
-    ProjectedNode<D>* tempnode = new ProjectedNode<D>(*FTree, nIdxtmp);
-    this->cvptr_ProjectedNode =  *(char**)(tempnode);
-    delete tempnode; 
+    ProjectedNode<D>* tmpNode = new ProjectedNode<D>();
+    this->cvptr_ProjectedNode =  *(char**)(tmpNode);
+    delete tmpNode;
 
     GenNode<D>* tmpGenNode = new GenNode<D>();
     this->cvptr_GenNode =  *(char**)(tmpGenNode);

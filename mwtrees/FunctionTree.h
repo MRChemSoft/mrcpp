@@ -59,6 +59,7 @@ public:
     friend class MWAdder<D>;
     friend class MWMultiplier<D>;
     friend class MWOperator<D>;
+    friend class SCF;
 
 protected:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES);

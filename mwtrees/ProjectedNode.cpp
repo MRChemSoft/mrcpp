@@ -60,14 +60,6 @@ ProjectedNode<D>::~ProjectedNode() {
   }
 }
 
-/*template<int D>
-Eigen::VectorXd&  ProjectedNode<D>::getCoefs() { 
-  println(0, "getcoef from projectnode  "<< this->tree->serialTree_p->TempVector->size());
-     for (int i=0; i<(this->tree->serialTree_p->TempVector->size()); i++)(*this->tree->serialTree_p->TempVector)(i)=(*this->coefs)(i);
-     //return *this->coefs; 
- return *this->tree->serialTree_p->TempVector; 
- }*/
-
 /** Allocating child node.
   *
   * Given a child index, this routine creates an empty ProjectedNode child node
@@ -83,52 +75,6 @@ void ProjectedNode<D>::createChild(int cIdx) {
 	this->children[cIdx] = child;
     } else {
       MSG_FATAL("All ProjectedNodes siblings should be created together");
-      ProjectedNode<D>* newNode=this->tree->serialTree_p->allocNodes(1, &NodeIx, &coefs_p);
-      //      if(true){
-      if(false){
-        child = new (newNode) ProjectedNode<D>(*this, cIdx);
-	child->SNodeIx = NodeIx;
-	this->children[cIdx] = child;
-      }else{
-      if(this->isGenNode())cout<<"parent is GenNode! "<<this->SNodeIx<<" "<<this->SNodeIx<<endl;
-	
-      *(char**)(newNode)=*(char**)(this);
-      
-      newNode->SNodeIx = NodeIx;
-      newNode->tree = this->tree;
-      newNode->parent = this;
-      newNode->parentSNodeIx = this->SNodeIx;
-      newNode->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
-      newNode->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
-      newNode->squareNorm = -1.0;
-      newNode->status = 0;
-      newNode->n_coefs = 0;
-      newNode->coefs = 0;
-      newNode->clearNorms();
-      for (int i = 0; i < newNode->getTDim(); i++) {
-        newNode->children[i] = 0;
-        newNode->childSNodeIx[i] = -1;
-      }
-      newNode->setIsLeafNode();
-      newNode->coefs = coefs_p;
-      newNode->n_coefs = this->tree->serialTree_p->sizeNodeCoeff;
-      newNode->setIsAllocated();
-      newNode->clearHasCoefs();
-      newNode->clearIsGenNode();
-
-      newNode->tree->incrementNodeCount(newNode->getScale());
-      newNode->setIsEndNode();
-      newNode->clearIsRootNode();
-      newNode->setHasWCoefs();//default until known
-
-      this->children[cIdx] = newNode;
-      this->childSNodeIx[cIdx] = newNode->SNodeIx;
-      
-#ifdef OPENMP
-    omp_init_lock(&(newNode->node_lock));
-#endif
-      }
-
     }
 
 }

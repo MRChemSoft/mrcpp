@@ -1020,12 +1020,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     assert(hasCoord(r));
     // If we have reached an endNode, lock if necessary, and start generating
     // NB! retrieveNode() for GenNodes behave a bit differently.
-    lockNode();
+    SET_NODE_LOCK();
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
    }
-    unlockNode();
+    UNSET_NODE_LOCK();
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(r, depth);
@@ -1044,12 +1044,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
         return this;
     }
     assert(isAncestor(idx));
-    lockNode();
+    SET_NODE_LOCK();
     if (isLeafNode()) {
       genChildren();
       giveChildrenCoefs();
-   }
-    unlockNode();
+    }
+    UNSET_NODE_LOCK();
     int cIdx = getChildIndex(idx);
 
     assert(this->children[cIdx] != 0);

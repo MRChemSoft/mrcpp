@@ -55,9 +55,6 @@ private:
     void createChild(int i);
     void genChild(int i);
 
-    void lockSiblings();
-    void unlockSiblings();
-
     void regenerateCoefs();
 };
 

@@ -92,11 +92,11 @@ void GenNode<D>::freeCoefs() {
 
 template<int D>
 void GenNode<D>::getCoefs(VectorXd &vec) {
-    lockSiblings();
+    SET_NODE_LOCK();
     if (not this->hasCoefs()) {
         regenerateCoefs();
     }
-    unlockSiblings();
+    UNSET_NODE_LOCK();
 
     MWNode<D>::getCoefs(vec);
 
@@ -117,28 +117,6 @@ template<int D>
 void GenNode<D>::clearGenerated() {
     this->freeCoefs();
     MWNode<D>::clearGenerated();
-}
-
-template<int D>
-void GenNode<D>::lockSiblings() {
-    MWNode<D> *parent = &this->getMWParent();
-    if (parent != 0) {
-	/* Since all threads set the locks in the same order starting from 0,
-	there is no risk of a deadlock here. */
-	for (int i = 0; i < parent->getNChildren(); i++) {
-	    parent->getMWChild(i).lockNode();
-	}
-    }
-}
-
-template<int D>
-void GenNode<D>::unlockSiblings() {
-    MWNode<D> *parent = &this->getMWParent();
-    if (parent != 0) {
-	for (int i = 0; i < parent->getNChildren(); i++) {
-	    parent->getMWChild(i).unlockNode();
-	}
-    }
 }
 
 template class GenNode<1> ;

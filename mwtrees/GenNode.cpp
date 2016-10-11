@@ -43,6 +43,7 @@ GenNode<D>::GenNode(GenNode<D> &p, int cIdx)
 template<int D>
 GenNode<D>::~GenNode() {
     this->tree->decrementGenNodeCount(); //decrementNodeCount done in ~MWNode()
+    this->tree->decrementAllocGenNodeCount(); //decrementNodeCount done in ~MWNode()
     //DeAllocGenCoeff done in ~MWNode()
     if(this->tree->serialTree_p){
       assert(this->isGenNode());

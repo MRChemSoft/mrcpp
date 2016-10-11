@@ -713,6 +713,7 @@ template<int D> void MWNode<D>::deleteChildren() {
 	   if(node->isBranchNode())node->deleteChildren();
 	   if(node->isGenNode()){
 	     this->tree->decrementGenNodeCount();
+	     this->tree->decrementAllocGenNodeCount();
 	     this->tree->serialTree_p->DeAllocGenNodes(node->SNodeIx);
 	     //	     this->tree->serialTree_p->DeAllocGenCoeff(node->SNodeIx);
 	   }else{
@@ -783,6 +784,7 @@ void MWNode<D>::genChildren() {
 	  //	  GenNode_p->zeroCoefs();//SHOULD BE REMOVED!
 
 	  GenNode_p->tree->incrementGenNodeCount();
+	  GenNode_p->tree->incrementAllocGenNodeCount();
 	  GenNode_p->setIsGenNode();
 	  //GenNode_p->clearHasWCoefs();//default until known
 	  

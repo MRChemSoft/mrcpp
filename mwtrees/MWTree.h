@@ -82,10 +82,6 @@ public:
     void deleteGenerated();
     void clearGenerated();
 
-    void lockTree() { SET_TREE_LOCK(); }
-    void unlockTree() { UNSET_TREE_LOCK(); }
-    bool testLock() { return TEST_TREE_LOCK(); }
-
     int getNThreads() const { return this->nThreads; }
 
     virtual bool saveTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }

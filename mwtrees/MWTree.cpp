@@ -307,13 +307,13 @@ void MWTree<D>::decrementNodeCount(int scale) {
   * should be called outside of the parallel region for performance reasons. */
 template<int D>
 void MWTree<D>::updateGenNodeCounts() {
-    lockTree();
+    SET_TREE_LOCK();
     for (int i = 1; i < this->nThreads; i++) {
         this->nGenNodes[0] += this->nGenNodes[i];
         this->nGenNodes[i] = 0;
     }
     assert(this->nGenNodes[0] >= 0);
-    unlockTree();
+    UNSET_TREE_LOCK();
 }
 
 /** Adds a GenNode to the count. */

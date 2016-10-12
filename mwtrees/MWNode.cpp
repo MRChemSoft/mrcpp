@@ -636,6 +636,7 @@ void MWNode<D>::createChildren() {
       //reserve place for nChildren
       ProjectedNode<D>* ProjNode_p = this->tree->serialTree_p->allocNodes(nChildren, &NodeIx, &coefs_p);
       MWNode<D> *child;
+      this->childSNodeIx = NodeIx;//position of first child
       for (int cIdx = 0; cIdx < nChildren; cIdx++) {
 
  	  *(char**)(ProjNode_p)=this->tree->serialTree_p->cvptr_ProjectedNode;
@@ -649,9 +650,9 @@ void MWNode<D>::createChildren() {
 	  ProjNode_p->status = 0;
 
 	  ProjNode_p->zeroNorms();
+	  ProjNode_p->childSNodeIx = -1;
 	  for (int i = 0; i < ProjNode_p->getTDim(); i++) {
 	    ProjNode_p->children[i] = 0;
-	    ProjNode_p->childSNodeIx[i] = -1;
 	  }
 	  ProjNode_p->setIsLeafNode();
 	  ProjNode_p->coefs = coefs_p;
@@ -666,7 +667,6 @@ void MWNode<D>::createChildren() {
 	  ProjNode_p->tree->incrementNodeCount(ProjNode_p->getScale());
 	  
 	  this->children[cIdx] = ProjNode_p;
-	  this->childSNodeIx[cIdx] = ProjNode_p->SNodeIx;
 
 #ifdef OPENMP
 	  omp_init_lock(&ProjNode_p->node_lock);
@@ -727,6 +727,7 @@ void MWNode<D>::genChildren() {
       //reserve place for nChildren
       GenNode<D>* GenNode_p = this->tree->serialTree_p->allocGenNodes(nChildren, &NodeIx, &coefs_p);
       MWNode<D> *child;
+      this->childSNodeIx = NodeIx;//not used fro Gennodes?
       for (int cIdx = 0; cIdx < nChildren; cIdx++) {
 	//if(true){
 	if(false){
@@ -756,9 +757,9 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->status = 0;
 
 	  GenNode_p->zeroNorms();
+	  GenNode_p->childSNodeIx = -1;
 	  for (int i = 0; i < GenNode_p->getTDim(); i++) {
 	    GenNode_p->children[i] = 0;
-	    GenNode_p->childSNodeIx[i] = -1;
 	  }
 	  GenNode_p->setIsLeafNode();
 	  GenNode_p->coefs = coefs_p;
@@ -766,14 +767,12 @@ void MWNode<D>::genChildren() {
 	  GenNode_p->setIsAllocated();
 	  GenNode_p->setHasCoefs();
 
-	  //	  GenNode_p->zeroCoefs();//SHOULD BE REMOVED!
+	  //	  GenNode_p->zeroCoefs();//NB: not initialized
 
 	  GenNode_p->tree->incrementGenNodeCount();
 	  GenNode_p->setIsGenNode();
-	  //GenNode_p->clearHasWCoefs();//default until known
 	  
 	  this->children[cIdx] = GenNode_p;
-	  this->childSNodeIx[cIdx] = GenNode_p->SNodeIx;
 
 #ifdef OPENMP
 	  omp_init_lock(&GenNode_p->node_lock);

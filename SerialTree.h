@@ -40,18 +40,12 @@ public:
     void DeAllocGenNodes(int NodeRank);
     double* allocCoeff(int NallocCoeff, MWNode<D>* node);
     double* allocLooseCoeff(int NallocCoeff, MWNode<D>* node);
-    double* allocCoeff(int Index);
-    void DeAllocCoeff(int DeallocIx);
     void DeAllocLooseCoeff(int DeallocIx);
     double** CoeffStack;
     double** LooseCoeffStack;
-    double* allocGenCoeff(int NallocCoeff, MWNode<D>* node);
-    double* allocGenCoeff(int Index);
-    void DeAllocGenCoeff(int DeallocIx);
     double** GenCoeffStack;
     void GenS_nodes(MWNode<D>* Node);
     void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride, bool overwrite=true);
-    void S_mwTreeTransformUp();
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride);
 
     void SerialTreeAdd(double c, FunctionTree<D>* &TreeB, FunctionTree<D>* &TreeC);
@@ -60,11 +54,7 @@ public:
     int* NodeStackStatus;
     int* LooseNodeStackStatus;
     int* GenNodeStackStatus;
-    int* CoeffStackStatus;
     int* LooseCoeffStackStatus;
-    int* GenCoeffStackStatus;
-    double* firstNodeCoeff;//pointer to the first node coefficents
-    double* firstNode;//pointer to the first node
     char* cvptr_ProjectedNode;//virtual table pointer for ProjectedNode
     char* cvptr_GenNode;// virtual table pointer for GenNode
 
@@ -97,15 +87,11 @@ public:
     MWTree<D>* mwTree_p;
     ProjectedNode<D>* lastNode;//pointer to the last active node
     GenNode<D>* lastGenNode;//pointer to the last active Gen node
-    double* lastNodeCoeff;//pointer to the last node coefficents
-    double* lastGenNodeCoeff;//pointer to the last node coefficents
     int maxNodes;     //max number of nodes that can be defined
     int maxGenNodes;     //max number of Gen nodes that can be defined
-    int maxNodesCoeff;//max number of nodes Coeff that can be defined
-    int maxLooseNodesCoeff;//max number of nodes Coeff that can be defined
-    int maxGenNodesCoeff;//max number of Gen nodes Coeff that can be defined
-    int sizeNodeCoeff;//The dynamical part of the tree. Each Coeff set is of size:
-    int sizeGenNodeCoeff;//The dynamical part of the tree. Each GenCoeff set is of size:
+    int maxLooseNodesCoeff;//max number of loose nodes Coeff that can be defined
+    int sizeNodeCoeff;//size of coeff for one node
+    int sizeGenNodeCoeff;//size of coeff for one Gen node
 #ifdef HAVE_OPENMP
     omp_lock_t Stree_lock;
 #endif

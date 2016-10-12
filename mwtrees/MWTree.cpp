@@ -200,18 +200,18 @@ template<int D>
 void MWTree<D>::mwTransformUp() {
     vector<MWNodeVector > nodeTable;
     makeNodeTable(nodeTable);
-#pragma omp parallel firstprivate(overwrite) shared(nodeTable)
+#pragma omp parallel shared(nodeTable)
 {
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
         int nNodes = nodeTable[n].size();
 #pragma omp for schedule(guided)
-            for (int i = 0; i < nNodes; i++) {
-                MWNode<D> &node = *nodeTable[n][i];
-                if (node.isBranchNode()) {
-                    node.reCompress();
-                }
+        for (int i = 0; i < nNodes; i++) {
+            MWNode<D> &node = *nodeTable[n][i];
+            if (node.isBranchNode()) {
+                node.reCompress();
             }
+        }
     }
 }
 }

@@ -31,27 +31,36 @@ void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag, MPI_Comm comm)
   if(MPI_rank==source){
     int spin=Orb->getSpin();
     int occupancy=Orb->getOccupancy();
+    int imaginarypart=0;
+    if(Orb->hasImag())imaginarypart=1;
     double error=Orb->getError();
     MPI_Send(&spin, 1, MPI_INT, dest, 0, comm);
     MPI_Send(&occupancy, 1, MPI_INT, dest, 1, comm);
-    MPI_Send(&error, 1, MPI_DOUBLE, dest, 2, comm);
+    MPI_Send(&imaginarypart, 1, MPI_INT, dest, 2, comm);
+    MPI_Send(&error, 1, MPI_DOUBLE, dest, 3, comm);
 
     SendRcv_SerialTree(&Orb->re(), source, dest, tag, comm);
-    SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
+    if(imaginarypart)SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
   }
   if(MPI_rank==dest){
     int spin;
     int occupancy;
+    int imaginarypart;
     double error;
     MPI_Recv(&spin, 1, MPI_INT, source, 0, comm, &status);
     MPI_Recv(&occupancy, 1, MPI_INT, source, 1, comm, &status);
-    MPI_Recv(&error, 1, MPI_DOUBLE, source, 2, comm, &status);
+    MPI_Recv(&imaginarypart, 1, MPI_INT, source, 2, comm, &status);
+    MPI_Recv(&error, 1, MPI_DOUBLE, source, 3, comm, &status);
     Orb->setSpin(spin);
     Orb->setOccupancy(occupancy);
     Orb->setError(error);
 
     SendRcv_SerialTree(&Orb->re(), source, dest, tag, comm);
-    SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
+    if(imaginarypart){
+      SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
+    }else{
+      //&(Orb->im())=0;
+    }
   }
 
 

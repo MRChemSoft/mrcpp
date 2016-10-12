@@ -100,13 +100,11 @@ public:
     friend class OperApplicationCalculator<D>;
     friend class CrossCorrelationCalculator;
     friend class DerivativeCalculator;
-    friend class MWTree<D>;
     friend class SerialTree<D>;
+    friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
-    friend class GenNode<D>;
     friend class NodeBox<D>;
-    friend class ProjectedNode<D>;
 
 protected:
     MWTree<D> *tree;
@@ -115,7 +113,6 @@ protected:
 
     NodeIndex<D> nodeIndex;
     HilbertPath<D> hilbertPath;
-
 
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components
@@ -169,7 +166,6 @@ protected:
     virtual void mwTransform(int kind);
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
-    void reCompress(bool overwrite);
 
     virtual void copyChildren(const MWNode<D> &node) { NOT_IMPLEMENTED_ABORT; }
     virtual void createChildren();
@@ -179,6 +175,7 @@ protected:
     virtual void genChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
     virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
 
+    virtual void reCompress();
     virtual void giveChildrenCoefs(bool overwrite = true);
     virtual void copyCoefsFromChildren();
 

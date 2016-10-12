@@ -23,6 +23,8 @@ protected:
 
     void createChildren() { MWNode<D>::createChildren(); this->clearIsEndNode(); }
     void deleteChildren() { MWNode<D>::deleteChildren(); this->setIsEndNode(); }
+
+    void reCompress();
 };
 
 #endif /* PROJECTEDNODE_H_ */

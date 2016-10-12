@@ -185,7 +185,8 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
         mwTransformDown(overwrite);
         break;
     case BottomUp:
-        mwTransformUp(overwrite);
+        if (not overwrite) NOT_IMPLEMENTED_ABORT;
+        mwTransformUp();
         break;
     default:
         MSG_FATAL("Invalid wavelet transform");
@@ -196,7 +197,7 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
   * thus purifying all coefficients. Option to overwrite or add up existing
   * coefficients of BranchNodes (can be used after operator application). */
 template<int D>
-void MWTree<D>::mwTransformUp(bool overwrite) {
+void MWTree<D>::mwTransformUp() {
     vector<MWNodeVector > nodeTable;
     makeNodeTable(nodeTable);
 #pragma omp parallel firstprivate(overwrite) shared(nodeTable)
@@ -208,7 +209,7 @@ void MWTree<D>::mwTransformUp(bool overwrite) {
             for (int i = 0; i < nNodes; i++) {
                 MWNode<D> &node = *nodeTable[n][i];
                 if (node.isBranchNode()) {
-                    node.reCompress(overwrite);
+                    node.reCompress();
                 }
             }
     }

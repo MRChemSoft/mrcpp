@@ -16,7 +16,9 @@
 using namespace std;
 using namespace Eigen;
 
-/** MWNode default constructor. */
+/** MWNode default constructor.
+ *  Should be used only by SerialTree to obtain
+ *  virtual table pointers for the derived classes. */
 template<int D>
 MWNode<D>::MWNode()
         : tree(0),
@@ -50,7 +52,6 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           n_coefs(0),
           coefs(0) {
     clearNorms();
-    //    this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -75,7 +76,6 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           n_coefs(0),
           coefs(0) {
     clearNorms();
-    //    this->coefs = &this->coefvec;
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
@@ -97,13 +97,15 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           status(0),
           n_coefs(0),
           coefs(0) {
-  //    this->coefs = &this->coefvec;
-
     allocCoefs(this->getTDim(), this->getKp1_d());
 
     if (n.hasCoefs()) {
         setCoefBlock(0, n.n_coefs, n.getCoefs());
-	if(this->n_coefs>n.n_coefs)for(int i=n.n_coefs; i<this->n_coefs; i++)this->coefs[i]=0.0; 
+	if (this->n_coefs > n.n_coefs) {
+            for(int i = n.n_coefs; i < this->n_coefs; i++) {
+                this->coefs[i]=0.0;
+            }
+        }
     } else {
         zeroCoefBlock(0, this->n_coefs);
     }
@@ -132,7 +134,6 @@ MWNode<D>::~MWNode() {
         }
         this->freeCoefs();
     }
-
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
 #endif
@@ -142,28 +143,16 @@ MWNode<D>::~MWNode() {
 template<int D>
 void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
     if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
-
     if (this->n_coefs != 0) MSG_FATAL("n_coefs should be zero");
+
     this->n_coefs = n_blocks * block_size;
     if(this->tree->serialTree_p){
- 
-      /*if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-	coefs = this->tree->serialTree_p->allocCoeff(n_blocks,  this);
-      } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-	coefs = this->tree->serialTree_p->allocGenCoeff(n_blocks,  this);
-      } else{
-	coefs = this->tree->serialTree_p->allocCoeff(n_blocks,  this);
-	}*/
-
-      //Only temporary nodes should be allocated here
-      coefs = this->tree->serialTree_p->allocLooseCoeff(n_blocks,  this);
-      
+        //Only temporary nodes should be allocated here
+        this->coefs = this->tree->serialTree_p->allocLooseCoeff(n_blocks, this);
     }else{
 	//Operator Node
 	this->coefs = new double[this->n_coefs];
     }
-
-
     this->setIsAllocated();
     this->clearHasCoefs();
 }
@@ -173,29 +162,21 @@ template<int D>
 void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
 
-    if(this->tree->serialTree_p and this->SNodeIx>=0){
-       if(this->SNodeIx<0)cout<<"SNodeIx undefined! "<<this->SNodeIx<<endl;
-     if(this->isLooseNode()){
-	this->tree->serialTree_p->DeAllocLooseCoeff(this->SNodeIx);
-      }else if(this->isGenNode()){
-       cout<<"ERROR dealloccoeff done with nodes "<<this->SNodeIx<<endl;
-       // 	this->tree->serialTree_p->DeAllocGenCoeff(this->SNodeIx);
-     }else{
-       cout<<"ERROR  dealloccoeff done with nodes "<<this->SNodeIx<<endl;
-       //this->tree->serialTree_p->DeAllocCoeff(this->SNodeIx);
-     }
-      /*if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-	this->tree->serialTree_p->DeAllocCoeff(this->SNodeIx);
-      } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)) {
-	this->tree->serialTree_p->DeAllocGenCoeff(this->SNodeIx);
-      } else{
-	this->tree->serialTree_p->DeAllocCoeff(this->SNodeIx);
-	}*/
+    if(this->tree->serialTree_p and this->SNodeIx >= 0){
+        if(this->isLooseNode()){
+	    this->tree->serialTree_p->DeAllocLooseCoeff(this->SNodeIx);
+        }else if(this->isGenNode()){
+            cout<<"ERROR dealloccoeff done with nodes "<<this->SNodeIx<<endl;
+            //this->tree->serialTree_p->DeAllocGenCoeff(this->SNodeIx);
+        }else{
+            cout<<"ERROR dealloccoeff done with nodes "<<this->SNodeIx<<endl;
+            //this->tree->serialTree_p->DeAllocCoeff(this->SNodeIx);
+        }
     }else{
-      //Operator node
-      if (this->coefs != 0) {
-        delete[] this->coefs;
-      }
+        //Operator node
+        if (this->coefs != 0) {
+            delete[] this->coefs;
+        }
     }
     
     this->coefs = 0;
@@ -256,7 +237,7 @@ void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
 template<int D>
 void MWNode<D>::zeroCoefBlock(int block, int block_size) {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-        NOT_IMPLEMENTED_ABORT;
+    NOT_IMPLEMENTED_ABORT;
     for (int i = 0; i < block_size; i++) {
         this->coefs[block*block_size + i] = 0.0;
     }
@@ -605,31 +586,11 @@ double MWNode<D>::estimateError(bool absPrec) {
   * coefficients of the children. Option to overwrite or add up existing
   * coefficients. */
 template<int D>
-void MWNode<D>::reCompress(bool overwrite) {
-    if ((not this->isGenNode()) and this->isBranchNode()) {
+void MWNode<D>::reCompress() {
+    if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-        if (overwrite) {
-	  if(this->tree->serialTree_p and D==3){
-	    //can write directly from children coeff into parent coeff
-	    int Children_Stride = this->getMWChild(0).n_coefs;
-	    double* coeffin  = this->getMWChild(0).coefs;
-	    double* coeffout = this->coefs;
- 
-	    assert(coeffin+((1<<D)-1)*Children_Stride == this->getMWChild((1<<D)-1).coefs);
- 
-	    this->tree->serialTree_p->S_mwTransformBack(coeffin, coeffout, Children_Stride);
-	  }else{
-            copyCoefsFromChildren();
-            mwTransform(Compression);
-	  }
-        } else {
-            // Check optimization
-            NOT_IMPLEMENTED_ABORT;
-            //MatrixXd tmp = getCoefs();
-            //copyCoefsFromChildren(*this->coefs);
-            //mwTransform(Compression);
-            //getCoefs() += tmp;
-        }
+        copyCoefsFromChildren();
+        mwTransform(Compression);
         this->setHasCoefs();
         this->calcNorms();
     }

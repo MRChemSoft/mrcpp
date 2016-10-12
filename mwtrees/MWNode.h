@@ -162,7 +162,6 @@ protected:
     virtual double calcComponentNorm(int i) const;
 
     virtual void cvTransform(int kind);
-    virtual void orig_mwTransform(int kind);
     virtual void mwTransform(int kind);
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);

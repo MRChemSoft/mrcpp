@@ -381,67 +381,6 @@ void MWNode<D>::cvTransform(int operation) {
   * Luca Frediani, August 2006
   * C++ version: Jonas Juselius, September 2009 */
 template<int D>
-void MWNode<D>::orig_mwTransform(int operation) {
-    int kp1 = this->getKp1();
-    int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
-    int kp1_d = this->getKp1_d();
-    int nCoefs = this->getTDim()*kp1_d;
-    const MWFilter &filter = getMWTree().getMRA().getFilter();
-    double overwrite = 0.0;
-
-    double o_vec[nCoefs];
-    double *out_vec = o_vec;
-    double *in_vec = this->coefs;
-
-    for (int i = 0; i < D; i++) {
-        int mask = 1 << i;
-        for (int gt = 0; gt < this->getTDim(); gt++) {
-            double *out = out_vec + gt * kp1_d;
-            for (int ft = 0; ft < this->getTDim(); ft++) {
-                /* Operate in direction i only if the bits along other
-                 * directions are identical. The bit of the direction we
-                 * operate on determines the appropriate filter/operator */
-                if ((gt | mask) == (ft | mask)) {
-                    double *in = in_vec + ft * kp1_d;
-                    int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                    const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
-                    MathUtils::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
-                    overwrite = 1.0;
-                }
-            }
-            overwrite = 0.0;
-        }
-        double *tmp = in_vec;
-        in_vec = out_vec;
-        out_vec = tmp;
-    }
-    if (IS_ODD(D)) {
-        for (int i = 0; i < nCoefs; i++) {
-            this->coefs[i] = in_vec[i];
-        }
-    }
-}
-
-/** Multiwavelet transform: fast version
-  *
-  * Application of the filters on one node to pass from a 0/1 (scaling
-  * on children 0 and 1) representation to an s/d (scaling and
-  * wavelet) representation. Bit manipulation is used in order to
-  * determine the correct filters and whether to apply them or just
-  * pass to the next couple of indexes. The starting coefficients are
-  * preserved until the application is terminated, then they are
-  * overwritten. With minor modifications this code can also be used
-  * for the inverse mw transform (just use the transpose filters) or
-  * for the application of an operator (using A, B, C and T parts of an
-  * operator instead of G1, G0, H1, H0). This is the version where the
-  * three directions are operated one after the other. Although this
-  * is formally faster than the other algorithm, the separation of the
-  * three dimensions prevent the possibility to use the norm of the
-  * operator in order to discard a priori negligible contributions.
-
-  * Luca Frediani, August 2006
-  * C++ version: Jonas Juselius, September 2009 */
-template<int D>
 void MWNode<D>::mwTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = MathUtils::ipow(kp1, D - 1);

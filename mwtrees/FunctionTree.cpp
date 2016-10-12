@@ -25,13 +25,15 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLO
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
         : MWTree<D> (mra) {
-  //    NOT_IMPLEMENTED_ABORT;
+    NOT_IMPLEMENTED_ABORT;
+    /*
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
         this->rootBox.setNode(rIdx, &root);
     }
     this->resetEndNodeTable();
+    */
 }
 
 /** FunctionTree copy constructor.
@@ -42,12 +44,14 @@ template<int D>
 FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
         : MWTree<D> (tree) {
     NOT_IMPLEMENTED_ABORT;
+    /*
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
         this->rootBox.setNode(rIdx, &root);
     }
     this->resetEndNodeTable();
+    */
 }
 
 /** FunctionTree copy constructor.
@@ -58,12 +62,14 @@ template<int D>
 FunctionTree<D>::FunctionTree(const FunctionTree<D> &tree)
         : MWTree<D> (tree) {
     NOT_IMPLEMENTED_ABORT;
+    /*
     for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
         const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
         MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
         this->rootBox.setNode(rIdx, &root);
     }
     this->resetEndNodeTable();
+    */
 }
 
 template<int D>
@@ -79,12 +85,15 @@ FunctionTree<D>::~FunctionTree() {
     if(this->serialTree_p){
       //root nodes are created and destroyed in the Serial tree
     }else{
+        NOT_IMPLEMENTED_ABORT;
+        /*
       MWNode<D> **roots = this->rootBox.getNodes();
       for (int i = 0; i < this->rootBox.size(); i++) {
         ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
         if (node != 0) delete node;
         roots[i] = 0;
       }
+      */
     }
 }
 

@@ -14,7 +14,6 @@ extern "C" {
 using namespace std;
 using namespace Eigen;
 
-
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */
 template<int D>
@@ -126,7 +125,6 @@ double FunctionNode<D>::integrateInterpolating() const {
     for (int i = 0; i < D; i++) {
         kp1_p[i] = MathUtils::ipow(qOrder, i);
     }
-
 
     VectorXd coefs;
     this->getCoefs(coefs);

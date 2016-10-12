@@ -254,17 +254,14 @@ void MWTree<D>::setZero() {
 template<int D>
 void MWTree<D>::allocNodeCounters() {
     this->nGenNodes = new int[this->nThreads];
-    this->nAllocGenNodes = new int[this->nThreads];
     for (int i = 0; i < this->nThreads; i++) {
         this->nGenNodes[i] = 0;
-        this->nAllocGenNodes[i] = 0;
     }
 }
 
 template<int D>
 void MWTree<D>::deleteNodeCounters() {
     delete[] this->nGenNodes;
-    delete[] this->nAllocGenNodes;
 }
 
 /** Increment node counters for non-GenNodes. This routine is not thread
@@ -310,16 +307,13 @@ void MWTree<D>::decrementNodeCount(int scale) {
   * should be called outside of the parallel region for performance reasons. */
 template<int D>
 void MWTree<D>::updateGenNodeCounts() {
-    lockTree();
+    SET_TREE_LOCK();
     for (int i = 1; i < this->nThreads; i++) {
         this->nGenNodes[0] += this->nGenNodes[i];
-        this->nAllocGenNodes[0] += this->nAllocGenNodes[i];
         this->nGenNodes[i] = 0;
-        this->nAllocGenNodes[i] = 0;
     }
     assert(this->nGenNodes[0] >= 0);
-    assert(this->nAllocGenNodes[0] >= 0);
-    unlockTree();
+    UNSET_TREE_LOCK();
 }
 
 /** Adds a GenNode to the count. */
@@ -340,24 +334,6 @@ void MWTree<D>::decrementGenNodeCount() {
     this->nGenNodes[n]--;
 }
 
-/** Adds an allocated GenNode to the count. */
-template<int D>
-void MWTree<D>::incrementAllocGenNodeCount() {
-    int n = omp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nAllocGenNodes[n]++;
-}
-
-/** Removes an allocated GenNode from the count. */
-template<int D>
-void MWTree<D>::decrementAllocGenNodeCount() {
-    int n = omp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nAllocGenNodes[n]--;
-}
-
 /** Get Node count. */
 template<int D>
 int MWTree<D>::getNNodes(int depth) const {
@@ -368,13 +344,6 @@ int MWTree<D>::getNNodes(int depth) const {
         return 0;
     }
     return this->nodesAtDepth[depth];
-}
-
-/** Get allocated GenNode count. Includes an OMP reduction operation. */
-template<int D>
-int MWTree<D>::getNAllocGenNodes() {
-    updateGenNodeCounts();
-    return this->nAllocGenNodes[0];
 }
 
 /** Get GenNode count. Includes an OMP reduction operation. */

@@ -15,24 +15,14 @@
 template<int D>
 class ProjectedNode: public FunctionNode<D> {
 public:
-    friend class MWNode<D>;
-    friend class FunctionTree<D>;
     friend class SerialTree<D>;
 
-    //Eigen::VectorXd &getCoefs();
 protected:
-    ProjectedNode(FunctionTree<D> &t, const NodeIndex<D> &nIdx);
-    ProjectedNode(ProjectedNode<D> &p, int cIdx);
-    ProjectedNode(const ProjectedNode<D> &n) : FunctionNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
-    ProjectedNode& operator=(const ProjectedNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
-    virtual ~ProjectedNode();
+    ProjectedNode() : FunctionNode<D>() { }
+    virtual ~ProjectedNode() { assert(this->tree == 0); }
 
     void createChildren() { MWNode<D>::createChildren(); this->clearIsEndNode(); }
     void deleteChildren() { MWNode<D>::deleteChildren(); this->setIsEndNode(); }
-
-private:
-    void createChild(int i);
-    void genChild(int i);
 };
 
 #endif /* PROJECTEDNODE_H_ */

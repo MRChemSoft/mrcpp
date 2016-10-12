@@ -13,26 +13,16 @@
 
 #include "FunctionNode.h"
 
-template<int D> class ProjectedNode;
-
 template<int D>
 class GenNode: public FunctionNode<D> {
 public:
-    void getCoefsNoLock(Eigen::VectorXd &vec);
-    void getCoefs(Eigen::VectorXd &vec);
-
     double getWaveletNorm() const { return 0.0; }
 
-    friend class MWNode<D>;
-    friend class ProjectedNode<D>;
     friend class SerialTree<D>;
 
 protected:
-    GenNode(ProjectedNode<D> &p, int cIdx);
-    GenNode(GenNode<D> &p, int cIdx);
-    GenNode(const GenNode<D> &n) : FunctionNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
-    GenNode& operator=(const GenNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
-    virtual ~GenNode();
+    GenNode() : FunctionNode<D>() { }
+    virtual ~GenNode() { assert(this->tree == 0); }
 
     double calcComponentNorm(int i) const {
         if (i == 0) {
@@ -41,25 +31,6 @@ protected:
             return 0.0;
         }
     }
-
-    virtual void allocCoefs(int n_blocks, int block_size);
-    virtual void freeCoefs();
-    virtual void clearGenerated();
-
-    const ProjectedNode<D> *getGenRootNode() const { return this->genRootNode; }
-    ProjectedNode<D> *getGenRootNode() { return this->genRootNode; }
-
-private:
-    ProjectedNode<D> *genRootNode;
-
-    void createChild(int i);
-    void genChild(int i);
-
-    void lockSiblings();
-    void unlockSiblings();
-
-    void regenerateCoefs();
 };
-
 
 #endif /* GENNODE_H_ */

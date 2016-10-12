@@ -21,11 +21,8 @@ public:
     friend class FunctionTree<D>;
 
 protected:
-    FunctionNode(FunctionTree<D> &t, const NodeIndex<D> &n) : MWNode<D>(t, n) { }
-    FunctionNode(FunctionNode<D> &p, int c) : MWNode<D>(p, c) { }
-    FunctionNode(const FunctionNode<D> &n) : MWNode<D>(n) { NOT_IMPLEMENTED_ABORT; }
-    FunctionNode& operator=(const FunctionNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
-    virtual ~FunctionNode() { }
+    FunctionNode() : MWNode<D>() { }
+    virtual ~FunctionNode() { assert(this->tree == 0); }
 
     double evalf(const double *r);
 

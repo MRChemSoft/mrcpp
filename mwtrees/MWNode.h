@@ -123,6 +123,7 @@ protected:
     int n_coefs;
     double *coefs;
 
+    MWNode();
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
     MWNode(MWNode<D> &p, int cIdx);
     MWNode(const MWNode<D> &n);
@@ -183,10 +184,6 @@ protected:
 
     int getChildIndex(const NodeIndex<D> &nIdx) const;
     int getChildIndex(const double *r) const;
-
-    void lockNode() { SET_NODE_LOCK(); }
-    void unlockNode() { UNSET_NODE_LOCK(); }
-    bool testLock() { return TEST_NODE_LOCK(); }
 
     bool diffBranch(const MWNode<D> &rhs) const;
     inline bool checkStatus(unsigned char mask) const;

@@ -16,6 +16,27 @@
 using namespace std;
 using namespace Eigen;
 
+/** MWNode default constructor. */
+template<int D>
+MWNode<D>::MWNode()
+        : tree(0),
+          parent(0),
+          nodeIndex(),
+          hilbertPath(),
+          squareNorm(-1.0),
+          status(0),
+          n_coefs(0),
+          coefs(0) {
+    clearNorms();
+    for (int i = 0; i < getTDim(); i++) {
+        this->children[i] = 0;
+    }
+
+#ifdef OPENMP
+    omp_init_lock(&node_lock);
+#endif
+}
+
 /** MWNode rootnode constructor.
   * Creates an empty rootnode given its tree and node index */
 template<int D>
@@ -101,14 +122,16 @@ MWNode<D>::MWNode(const MWNode<D> &n)
   * Recursive deallocation of a node and all its decendants */
 template<int D>
 MWNode<D>::~MWNode() {
-    if (this->isBranchNode()) {
-      deleteChildren();
+    if (this->tree != 0) {
+        if (this->isBranchNode()) {
+            deleteChildren();
+        }
+        if (not this->isLooseNode()) {
+            if(!(this->isGenNode())) this->tree->decrementNodeCount(getScale());
+            assert(!this->tree->serialTree_p);
+        }
+        this->freeCoefs();
     }
-    if (not this->isLooseNode()) {
-      if(!(this->isGenNode()))this->tree->decrementNodeCount(getScale());
-      assert(!this->tree->serialTree_p);
-    }
-    this->freeCoefs();
 
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
@@ -502,8 +525,7 @@ template<int D>
 void MWNode<D>::calcNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
-      double norm_i = 0.0;
-      if(i==0 or (not this->isGenNode()))norm_i = calcComponentNorm(i);
+        double norm_i = calcComponentNorm(i);
         this->componentNorms[i] = norm_i;
         this->squareNorm += norm_i*norm_i;
     }
@@ -748,6 +770,8 @@ void MWNode<D>::genChildren() {
       for (int cIdx = 0; cIdx < nChildren; cIdx++) {
 	//if(true){
 	if(false){
+          NOT_IMPLEMENTED_ABORT;
+          /*
 	  if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
 	    child = new (GenNode_p)GenNode<D>(*node, cIdx);
 	  } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)){
@@ -758,6 +782,7 @@ void MWNode<D>::genChildren() {
 	  this->children[cIdx] = child;
 	  //Noderank is written in allocGenNodes already!
 	  //child->SNodeIx = NodeIx;
+          */
 	}else{
 
  	  *(char**)(GenNode_p)=this->tree->serialTree_p->cvptr_GenNode;
@@ -1018,12 +1043,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
     assert(hasCoord(r));
     // If we have reached an endNode, lock if necessary, and start generating
     // NB! retrieveNode() for GenNodes behave a bit differently.
-    lockNode();
+    SET_NODE_LOCK();
     if (this->isLeafNode()) {
         genChildren();
         giveChildrenCoefs();
    }
-    unlockNode();
+    UNSET_NODE_LOCK();
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(r, depth);
@@ -1042,12 +1067,12 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
         return this;
     }
     assert(isAncestor(idx));
-    lockNode();
+    SET_NODE_LOCK();
     if (isLeafNode()) {
       genChildren();
       giveChildrenCoefs();
-   }
-    unlockNode();
+    }
+    UNSET_NODE_LOCK();
     int cIdx = getChildIndex(idx);
 
     assert(this->children[cIdx] != 0);

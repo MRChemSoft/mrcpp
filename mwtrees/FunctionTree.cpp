@@ -17,6 +17,9 @@ using namespace Eigen;
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
         : MWTree<D> (mra, max_nodes) {
+    this->serialTree_p = new SerialTree<D>(this, max_nodes);
+    this->serialTree_p->allocRoots(*this);
+    this->resetEndNodeTable();
 }
 
 /** FunctionTree constructor.
@@ -80,20 +83,11 @@ FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
 /** FunctionTree destructor. */
 template<int D>
 FunctionTree<D>::~FunctionTree() {
-  //    println(10, "~FunctionTree");    
-    //    NOT_IMPLEMENTED_ABORT;
-    if(this->serialTree_p){
-      //root nodes are created and destroyed in the Serial tree
-    }else{
-        NOT_IMPLEMENTED_ABORT;
-        /*
-      MWNode<D> **roots = this->rootBox.getNodes();
-      for (int i = 0; i < this->rootBox.size(); i++) {
-        ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
-        if (node != 0) delete node;
-        roots[i] = 0;
-      }
-      */
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.dealloc();
+        this->rootBox.clearNode(i);
     }
 }
 

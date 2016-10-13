@@ -52,8 +52,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 
-    new SerialTree<D>(this, max_nodes);
-    println(10, "new Serial MWTree ");
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif

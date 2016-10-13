@@ -21,6 +21,8 @@ protected:
             coefs_o[j] = 1.0;
         }
         for (int i = 0; i < this->prod_vec->size(); i++) {
+            NOT_IMPLEMENTED_ABORT;
+            /*
             double c_i = this->prod_vec->getCoef(i);
             FunctionTree<D> &func_i = this->prod_vec->getFunc(i);
             // This generates missing nodes
@@ -31,6 +33,7 @@ protected:
             for (int j = 0; j < node_i.getNCoefs(); j++) {
                 coefs_o[j] *= c_i * coefs_i[j];
             }
+            */
         }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);

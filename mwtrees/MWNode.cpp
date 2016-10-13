@@ -51,6 +51,7 @@ MWNode<D>::MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx)
           status(0),
           n_coefs(0),
           coefs(0) {
+    NOT_IMPLEMENTED_ABORT;
     clearNorms();
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
@@ -75,6 +76,7 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
           status(0),
           n_coefs(0),
           coefs(0) {
+    NOT_IMPLEMENTED_ABORT;
     clearNorms();
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
@@ -97,6 +99,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           status(0),
           n_coefs(0),
           coefs(0) {
+    NOT_IMPLEMENTED_ABORT;
     allocCoefs(this->getTDim(), this->getKp1_d());
 
     if (n.hasCoefs()) {
@@ -125,6 +128,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
 template<int D>
 MWNode<D>::~MWNode() {
     if (this->tree != 0) {
+        NOT_IMPLEMENTED_ABORT;
         if (this->isBranchNode()) {
             deleteChildren();
         }
@@ -162,15 +166,15 @@ template<int D>
 void MWNode<D>::freeCoefs() {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
 
-    if(this->tree->serialTree_p and this->SNodeIx >= 0){
+    if(this->tree->serialTree_p and this->serialIx >= 0){
         if(this->isLooseNode()){
-	    this->tree->serialTree_p->DeAllocLooseCoeff(this->SNodeIx);
+	    this->tree->serialTree_p->deallocLooseCoeff(this->serialIx);
         }else if(this->isGenNode()){
-            cout<<"ERROR dealloccoeff done with nodes "<<this->SNodeIx<<endl;
-            //this->tree->serialTree_p->DeAllocGenCoeff(this->SNodeIx);
+            cout<<"ERROR dealloccoeff done with nodes "<<this->serialIx<<endl;
+            //this->tree->serialTree_p->deallocGenCoeff(this->serialIx);
         }else{
-            cout<<"ERROR dealloccoeff done with nodes "<<this->SNodeIx<<endl;
-            //this->tree->serialTree_p->DeAllocCoeff(this->SNodeIx);
+            cout<<"ERROR dealloccoeff done with nodes "<<this->serialIx<<endl;
+            //this->tree->serialTree_p->deallocCoeff(this->serialIx);
         }
     }else{
         //Operator node
@@ -269,7 +273,8 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
       }
 
     }else{
-
+        NOT_IMPLEMENTED_ABORT;
+        /*
 	 MWNode<D> copy(*this);
 	 copy.mwTransform(Reconstruction);
 	 const double *c = copy.getCoefs();
@@ -290,6 +295,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 	   child.calcNorms();
 	 }
 
+       */
        }
 }
 
@@ -562,174 +568,20 @@ bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
     //    return false;
 }
 
-template<int D>
-void MWNode<D>::createChildren() {
-    if (this->isBranchNode()) MSG_FATAL("Node already has children");
-    int nChildren = this->getTDim();
-
-    //NB: serial tree MUST generate all children consecutively
-    //all children must be generated at once if several threads are active
-    if (this->tree->serialTree_p){
-      int NodeIx;
-      double *coefs_p;
-      //reserve place for nChildren
-      ProjectedNode<D>* ProjNode_p = this->tree->serialTree_p->allocNodes(nChildren, &NodeIx, &coefs_p);
-      MWNode<D> *child;
-      this->childSNodeIx = NodeIx;//position of first child
-      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-
- 	  *(char**)(ProjNode_p)=this->tree->serialTree_p->cvptr_ProjectedNode;
-	  ProjNode_p->SNodeIx = NodeIx;
-	  ProjNode_p->tree = this->tree;
-	  ProjNode_p->parent = this;
-	  ProjNode_p->parentSNodeIx = this->SNodeIx;
-	  ProjNode_p->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
-	  ProjNode_p->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
-	  ProjNode_p->squareNorm = -1.0;
-	  ProjNode_p->status = 0;
-
-	  ProjNode_p->zeroNorms();
-	  ProjNode_p->childSNodeIx = -1;
-	  for (int i = 0; i < ProjNode_p->getTDim(); i++) {
-	    ProjNode_p->children[i] = 0;
-	  }
-	  ProjNode_p->setIsLeafNode();
-	  ProjNode_p->coefs = coefs_p;
-	  ProjNode_p->n_coefs = this->tree->serialTree_p->sizeNodeCoeff;
-	  ProjNode_p->setIsAllocated();
-	  ProjNode_p->setHasCoefs();
-	  ProjNode_p->setIsEndNode();
-	  ProjNode_p->setHasWCoefs();
-
-	  //	  ProjNode_p->zeroCoefs();//SHOULD BE REMOVED!
-
-	  ProjNode_p->tree->incrementNodeCount(ProjNode_p->getScale());
-	  
-	  this->children[cIdx] = ProjNode_p;
-
-#ifdef OPENMP
-	  omp_init_lock(&ProjNode_p->node_lock);
-#endif
-
-	ProjNode_p++;
-	NodeIx++;
-        coefs_p += this->tree->serialTree_p->sizeNodeCoeff;	
-	
-      }
-    }else{
-      for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
-        createChild(cIdx);
-      }
-    }
-    this->setIsBranchNode();
-}
-
 /** Recursive deallocation of children and all their descendants.
   * Leaves node as LeafNode and children[] as null pointer. */
-template<int D> void MWNode<D>::deleteChildren() {
-     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
-       if (this->children[cIdx] != 0) {
-	 if(this->tree->serialTree_p){
-	   MWNode<D> *node = this->children[cIdx];
-	   assert(!node->isLooseNode());
-	   if(node->isBranchNode())node->deleteChildren();
-	   if(node->isGenNode()){
-	     this->tree->decrementGenNodeCount();
-	     this->tree->serialTree_p->DeAllocGenNodes(node->SNodeIx);
-	     //	     this->tree->serialTree_p->DeAllocGenCoeff(node->SNodeIx);
-	   }else{
-	     this->tree->serialTree_p->DeAllocNodes(node->SNodeIx);
-	     //this->tree->serialTree_p->DeAllocCoeff(node->SNodeIx);
-	     this->tree->decrementNodeCount(node->getScale());
-	   }
-	 }else{
-	   //ProjectedNode<D> *Opnode = static_cast<ProjectedNode<D> *>(this->children[cIdx]);
-	   // delete Opnode;
-	   delete this->children[cIdx];
-	 }
-	 this->children[cIdx] = 0;
-       }
-     } 
-     this->setIsLeafNode();
-}
-
 template<int D>
-void MWNode<D>::genChildren() {
-    if (this->isBranchNode()) MSG_FATAL("Node already has children");
-    int nChildren = this->getTDim();
-
-    //NB: serial tree MUST generate all children consecutively
-    //all children must be generated at once if several threads are active
-    if (this->tree->serialTree_p){
-      int NodeIx;
-      double *coefs_p;
-      //reserve place for nChildren
-      GenNode<D>* GenNode_p = this->tree->serialTree_p->allocGenNodes(nChildren, &NodeIx, &coefs_p);
-      MWNode<D> *child;
-      this->childSNodeIx = NodeIx;//not used fro Gennodes?
-      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-	//if(true){
-	if(false){
-          NOT_IMPLEMENTED_ABORT;
-          /*
-	  if (ProjectedNode<D> *node = dynamic_cast<ProjectedNode<D> *>(this)) {
-	    child = new (GenNode_p)GenNode<D>(*node, cIdx);
-	  } else if (GenNode<D> *node = dynamic_cast<GenNode<D> *>(this)){
-	    child = new (GenNode_p)GenNode<D>(*node, cIdx);
-	  }else{
-	    MSG_FATAL("genChildren error");
-	  }
-	  this->children[cIdx] = child;
-	  //Noderank is written in allocGenNodes already!
-	  //child->SNodeIx = NodeIx;
-          */
-	}else{
-
- 	  *(char**)(GenNode_p)=this->tree->serialTree_p->cvptr_GenNode;
-	  GenNode_p->SNodeIx = NodeIx;
-	  GenNode_p->tree = this->tree;
-	  GenNode_p->parent = this;
-	  GenNode_p->parentSNodeIx = this->SNodeIx;
-	  GenNode_p->nodeIndex = NodeIndex<D>(this->getNodeIndex(),cIdx);
-	  GenNode_p->hilbertPath = HilbertPath<D>(this->getHilbertPath(), cIdx);
-	  GenNode_p->squareNorm = -1.0;
-	  GenNode_p->status = 0;
-
-	  GenNode_p->zeroNorms();
-	  GenNode_p->childSNodeIx = -1;
-	  for (int i = 0; i < GenNode_p->getTDim(); i++) {
-	    GenNode_p->children[i] = 0;
-	  }
-	  GenNode_p->setIsLeafNode();
-	  GenNode_p->coefs = coefs_p;
-	  GenNode_p->n_coefs = this->tree->serialTree_p->sizeGenNodeCoeff;
-	  GenNode_p->setIsAllocated();
-	  GenNode_p->setHasCoefs();
-
-	  //	  GenNode_p->zeroCoefs();//NB: not initialized
-
-	  GenNode_p->tree->incrementGenNodeCount();
-	  GenNode_p->setIsGenNode();
-	  
-	  this->children[cIdx] = GenNode_p;
-
-#ifdef OPENMP
-	  omp_init_lock(&GenNode_p->node_lock);
-#endif
-
+void MWNode<D>::deleteChildren() {
+    if (this->isLeafNode()) return;
+    for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
+        if (this->children[cIdx] != 0) {
+	    MWNode<D> &child = getMWChild(cIdx);
+	    child.deleteChildren();
+            child.dealloc();
 	}
-
-	GenNode_p++;
-	NodeIx++;
-        coefs_p += this->tree->serialTree_p->sizeGenNodeCoeff;	
-	
-      }
-    }else{
-      for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-	genChild(cIdx);
-      }
+	this->children[cIdx] = 0;
     }
-    this->setIsBranchNode();
+    this->setIsLeafNode();
 }
 
 /** Clear coefficients of generated nodes.
@@ -737,6 +589,8 @@ void MWNode<D>::genChildren() {
   * The node structure is kept, only the coefficients are cleared. */
 template<int D>
 void MWNode<D>::clearGenerated() {
+    NOT_IMPLEMENTED_ABORT;
+    /*
     if (this->isBranchNode()) {
         assert(this->children != 0);
         for (int cIdx = 0; cIdx < this->getTDim(); cIdx++) {
@@ -745,6 +599,7 @@ void MWNode<D>::clearGenerated() {
             }
         }
     }
+    */
 }
 
 template<int D>
@@ -754,7 +609,6 @@ void MWNode<D>::deleteGenerated() {
             this->deleteChildren();
         } else {
             for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
-                assert(this->children[cIdx] != 0);
                 this->getMWChild(cIdx).deleteGenerated();
             }
         }

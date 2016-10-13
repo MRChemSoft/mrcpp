@@ -21,8 +21,15 @@ protected:
     ProjectedNode() : FunctionNode<D>() { }
     virtual ~ProjectedNode() { assert(this->tree == 0); }
 
-    void createChildren() { MWNode<D>::createChildren(); this->clearIsEndNode(); }
-    void deleteChildren() { MWNode<D>::deleteChildren(); this->setIsEndNode(); }
+    void dealloc() {
+        this->tree->decrementNodeCount(this->getScale());
+        this->tree->serialTree_p->deallocNodes(this->getSerialIx());
+    }
+
+    void deleteChildren() {
+        MWNode<D>::deleteChildren();
+        this->setIsEndNode();
+    }
 
     void reCompress();
 };

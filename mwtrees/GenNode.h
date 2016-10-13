@@ -27,6 +27,11 @@ protected:
     GenNode() : FunctionNode<D>() { }
     virtual ~GenNode() { assert(this->tree == 0); }
 
+    virtual void dealloc() {
+	this->tree->decrementGenNodeCount();
+	this->tree->serialTree_p->deallocGenNodes(this->getSerialIx());
+    }
+
     void reCompress() { NOT_IMPLEMENTED_ABORT; }
 
     double calcComponentNorm(int i) const {

@@ -39,7 +39,7 @@ public:
     int getDepth() const { return getNodeIndex().getScale()-getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
     int getNChildren() const { if (isBranchNode()) return getTDim(); return 0; }
-    int getSNodeIx() const { return this->SNodeIx; }
+    int getSerialIx() const { return this->serialIx; }
     const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
@@ -75,10 +75,6 @@ public:
 
     double* getCoefs() { return this->coefs; }
     const double* getCoefs() const { return this->coefs; }
-
-    int SNodeIx; //index in serial Tree
-    int parentSNodeIx; //index of parent in serial Tree, or -1 for roots
-    int childSNodeIx; //index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
@@ -120,12 +116,17 @@ protected:
     int n_coefs;
     double *coefs;
 
+    int serialIx;       //index in serial Tree
+    int parentSerialIx; //index of parent in serial Tree, or -1 for roots
+    int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
+
     MWNode();
     MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
     MWNode(MWNode<D> &p, int cIdx);
     MWNode(const MWNode<D> &n);
     MWNode& operator=(const MWNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
     virtual ~MWNode();
+    virtual void dealloc() { NOT_IMPLEMENTED_ABORT; }
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
     void setHasWCoefs() { SET_BITS(status, FlagHasWCoefs); }
@@ -166,13 +167,9 @@ protected:
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
 
-    virtual void copyChildren(const MWNode<D> &node) { NOT_IMPLEMENTED_ABORT; }
-    virtual void createChildren();
+    virtual void createChildren() = 0;
+    virtual void genChildren() = 0;
     virtual void deleteChildren();
-    virtual void genChildren();
-
-    virtual void genChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
-    virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
 
     virtual void reCompress();
     virtual void giveChildrenCoefs(bool overwrite = true);

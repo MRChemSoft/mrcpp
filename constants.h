@@ -19,6 +19,8 @@ const int MaxDepth = 25; ///< Maximum depth of trees
 const int MaxScale = 31; ///< Maximum scale of trees
 const int MinScale = -31; ///< Minimum scale of trees
 const int MaxSepRank = 1000;
+const int MaxAllocNodes = 500*1024;
+
 
 namespace Axis {
 const int None = -1;

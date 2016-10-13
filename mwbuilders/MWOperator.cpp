@@ -7,7 +7,7 @@
 
 template<int D>
 FunctionTree<D>* MWOperator<D>::operator()(FunctionTree<D> &inp) {
-    FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MAXALLOCNODES);
+    FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
     (*this)(*out, inp, -1);
     return out;
 }

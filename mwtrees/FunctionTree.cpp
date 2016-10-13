@@ -15,8 +15,8 @@ using namespace Eigen;
 /** FunctionTree constructor for Serial Tree.
   * */
 template<int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES)
-        : MWTree<D> (mra, MAXALLOCNODES) {
+FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
+        : MWTree<D> (mra, max_nodes) {
 }
 
 /** FunctionTree constructor.

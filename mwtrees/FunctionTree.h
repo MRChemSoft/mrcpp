@@ -62,7 +62,7 @@ public:
     friend class SCF;
 
 protected:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
     FunctionTree(const MultiResolutionAnalysis<D> &mra);
     FunctionTree(const MWTree<D> &tree);
     FunctionTree(const FunctionTree<D> &tree);

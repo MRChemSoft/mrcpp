@@ -6,8 +6,15 @@
 #include "ProjectedNode.h"
 #include "../mrchem/qmfunctions/Orbital.h"
 #include "SerialTree.h"
+#include "InterpolatingBasis.h"
+#include "MultiResolutionAnalysis.h"
+
+#include "mrchem.h"
+
 
 using namespace std;
+
+const MultiResolutionAnalysis<3> *default_mra=0;//used to define mra when not explicitely defined
 
 int MPI_rank = 0;
 int MPI_size = 1;
@@ -22,51 +29,89 @@ void MPI_Initializations(){
 #endif
 
 }
+
+MultiResolutionAnalysis<3>* initializeMRA() {
+    // Constructing world box
+  const int D=3;
+    int scale = Input.get<int>("World.scale");
+    int max_depth = Input.get<int>("max_depth");
+    vector<int> corner = Input.getIntVec("World.corner");
+    vector<int> boxes = Input.getIntVec("World.boxes");
+    NodeIndex<D> idx(scale, corner.data());
+    BoundingBox<D> world(idx, boxes.data());
+
+    // Constructing scaling basis
+    int order = Input.get<int>("order");
+    InterpolatingBasis basis(order);
+
+    // Initializing MRA
+    return new MultiResolutionAnalysis<D>(world, basis, max_depth);
+}
+
+void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag){
 #ifdef HAVE_MPI
-
-void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
+  MPI_Comm comm=MPI_COMM_WORLD;
 
-  //for now brute force...
-  if(MPI_rank==source){
-    int spin=Orb->getSpin();
-    int occupancy=Orb->getOccupancy();
-    int imaginarypart=0;
-    if(Orb->hasImag())imaginarypart=1;
-    double error=Orb->getError();
-    MPI_Send(&spin, 1, MPI_INT, dest, 0, comm);
-    MPI_Send(&occupancy, 1, MPI_INT, dest, 1, comm);
-    MPI_Send(&imaginarypart, 1, MPI_INT, dest, 2, comm);
-    MPI_Send(&error, 1, MPI_DOUBLE, dest, 3, comm);
-
-    SendRcv_SerialTree(&Orb->re(), source, dest, tag, comm);
-    if(imaginarypart)SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
-  }
-  if(MPI_rank==dest){
+  struct Metadata{
     int spin;
     int occupancy;
-    int imaginarypart;
+    int NchunksReal;
+    int NchunksImag;
     double error;
-    MPI_Recv(&spin, 1, MPI_INT, source, 0, comm, &status);
-    MPI_Recv(&occupancy, 1, MPI_INT, source, 1, comm, &status);
-    MPI_Recv(&imaginarypart, 1, MPI_INT, source, 2, comm, &status);
-    MPI_Recv(&error, 1, MPI_DOUBLE, source, 3, comm, &status);
-    Orb->setSpin(spin);
-    Orb->setOccupancy(occupancy);
-    Orb->setError(error);
+  };
 
-    SendRcv_SerialTree(&Orb->re(), source, dest, tag, comm);
-    if(imaginarypart){
-      SendRcv_SerialTree(&Orb->im(), source, dest, tag*10000, comm);
+  Metadata Orbinfo;
+
+  if(MPI_rank==source){
+    Orbinfo.spin=Orb->getSpin();
+    Orbinfo.occupancy=Orb->getOccupancy();
+    Orbinfo.error=Orb->getError();
+    if(Orb->hasReal()){
+      Orbinfo.NchunksReal = Orb->re().getSerialTree()->NodeChunks.size();//should reduce to actual number of chunks
+    }else{Orbinfo.NchunksReal = 0;}
+    if(Orb->hasImag()){
+      Orbinfo.NchunksImag = Orb->im().getSerialTree()->NodeChunks.size();//should reduce to actual number of chunks
+    }else{Orbinfo.NchunksImag = 0;}
+
+    int count=sizeof(Metadata);
+    MPI_Send(&Orbinfo, count, MPI_BYTE, dest, 0, comm);
+
+    if(Orb->hasReal())SendRcv_SerialTree(&Orb->re(), Orbinfo.NchunksReal, source, dest, tag, comm);
+    if(Orb->hasImag())SendRcv_SerialTree(&Orb->im(), Orbinfo.NchunksImag, source, dest, tag*10000, comm);
+
+  }
+  if(MPI_rank==dest){
+    int count=sizeof(Metadata);
+    MPI_Recv(&Orbinfo, count, MPI_BYTE, source, 0, comm, &status);
+    Orb->setSpin(Orbinfo.spin);
+    Orb->setOccupancy(Orbinfo.occupancy);
+    Orb->setError(Orbinfo.error);
+
+    if(Orbinfo.NchunksReal>0){
+      if(not Orb->hasReal()){
+	//We must have a tree defined for receiving nodes. Define one:
+	if(default_mra==0){
+	  default_mra = initializeMRA();
+	  cout<<" defined new MRA with depth "<<default_mra->getMaxDepth()<<endl;
+	}
+	Orb->real = new FunctionTree<3>(*default_mra,MAXALLOCNODES);
+      }
+    SendRcv_SerialTree(&Orb->re(), Orbinfo.NchunksReal, source, dest, tag, comm);}
+
+    if(Orbinfo.NchunksImag>0){
+      SendRcv_SerialTree(&Orb->im(), Orbinfo.NchunksImag, source, dest, tag*10000, comm);
     }else{
       //&(Orb->im())=0;
     }
   }
 
+#endif
 
 }
+#ifdef HAVE_MPI
 template<int D>
-void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MPI_Comm comm){
+void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
   Timer timer;
   SerialTree<D>* STree = Tree->getSerialTree();
@@ -77,11 +122,6 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
   int STreeMeta[count];
 
   if(MPI_rank==source){
-
-    //send first metadata
-    int Nchunks = STree->NodeChunks.size();//number of chunks to send
-    STreeMeta[0] = Nchunks ;
-    MPI_Send(STreeMeta, count, MPI_INT, dest, tag, comm);
 
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
@@ -102,9 +142,7 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MP
     cout<<" time send     " << timer<<endl;
   }
   if(MPI_rank==dest){
-    MPI_Recv(STreeMeta, count, MPI_INT, source, tag, comm, &status);
-    int Nchunks =STreeMeta[0] ;//number of chunks to receive
-    
+
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
       if(ichunk<STree->NodeChunks.size()){
@@ -192,8 +230,8 @@ void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr
 } */
 
 #ifdef HAVE_MPI
-template void SendRcv_SerialTree<1>(FunctionTree<1>* STree, int source, int dest, int tag, MPI_Comm comm);
-template void SendRcv_SerialTree<2>(FunctionTree<2>* STree, int source, int dest, int tag, MPI_Comm comm);
-template void SendRcv_SerialTree<3>(FunctionTree<3>* STree, int source, int dest, int tag, MPI_Comm comm);
+template void SendRcv_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
+template void SendRcv_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
+template void SendRcv_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
 #endif
 

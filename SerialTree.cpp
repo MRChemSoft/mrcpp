@@ -53,7 +53,7 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     //indicate occupation of nodes
     this->NodeStackStatus = new int[this->maxNodes+1];
 
-    this->LooseNodeCoeff = new double[this->maxLooseNodesCoeff*this->sizeNodeCoeff];
+    this->LooseNodeCoeff = 0;//allocated when used first time
 
     //indicate occupation of Gen nodes
     this->GenNodeStackStatus = new int[this->maxGenNodes+1];
@@ -83,11 +83,6 @@ SerialTree<D>::SerialTree(MWTree<D>* Tree,
     }
     this->GenNodeStackStatus[this->maxGenNodes] = -1;//=unavailable
 
-    for (int i = 0; i <this->maxLooseNodesCoeff;i++){
-      this->LooseCoeffStack[i] = this->LooseNodeCoeff+i*this->sizeNodeCoeff;
-      this->LooseCoeffStackStatus[i] = 0;//0=unoccupied
-    }
-    this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
 
     this->mwTree_p = Tree;//pointer to parent tree
     this->mwTree_p->serialTree_p = this;//must be defined before nodes are created
@@ -664,6 +659,20 @@ double* SerialTree<D>::allocLooseCoeff(int nAllocCoeff, MWNode<D>* node) {
 
   //Each omp thread use own part of array, no locks!
 
+  if( this->LooseNodeCoeff==0){
+    if(omp_get_thread_num()==0){
+      double * LooseNodesCoeff_p = new double[this->maxLooseNodesCoeff*this->sizeNodeCoeff];
+      for (int i = 0; i <this->maxLooseNodesCoeff;i++){
+	this->LooseCoeffStack[i] = LooseNodesCoeff_p+i*this->sizeNodeCoeff;
+	this->LooseCoeffStackStatus[i] = 0;//0=unoccupied
+      }
+      this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
+      this->LooseNodeCoeff = LooseNodesCoeff_p;//MUST be set after Stack inits
+    }else{
+      //wait until allocated
+      while(this->LooseNodeCoeff==0){usleep(1000);}
+    }
+  }
 
   if (this->nLooseNodesCoeff+1 >= this->maxLooseNodesCoeff ){
     println(0, "maxLooseNodesCoeff exceeded " << this->maxLooseNodesCoeff);

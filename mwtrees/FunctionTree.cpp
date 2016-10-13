@@ -132,7 +132,12 @@ double FunctionTree<D>::integrate() const {
 template<int D>
 double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
     const FunctionTree<D> &bra = *this;
-    if (bra.getMRA() != ket.getMRA()) MSG_FATAL("Trees not compatible");
+    if (bra.getMRA() != ket.getMRA()){
+      cout<<ket.getMRA().getScalingBasis()<<" "<<bra.getMRA().getScalingBasis()<<endl;
+      cout<<ket.getMRA().getWorldBox()<<" "<<bra.getMRA().getWorldBox()<<endl;
+      cout<<ket.getMRA().getMaxDepth()<<" "<<bra.getMRA().getMaxDepth()<<endl;
+      MSG_FATAL("Trees not compatible");
+    }
     MWNodeVector nodeTable;
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);

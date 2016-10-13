@@ -15,6 +15,7 @@
 #include "TreeBuilder.h"
 #include "MWTree.h"
 
+
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
@@ -60,6 +61,7 @@ public:
     friend class MWMultiplier<D>;
     friend class MWOperator<D>;
     friend class SCF;
+    friend void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
 
 protected:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);

@@ -24,7 +24,6 @@ class Orbital;
 
 #endif
 
-
 extern int MPI_rank;
 extern int MPI_size;
 
@@ -32,12 +31,13 @@ void define_groups();
 void MPI_Initializations();
 
 
+void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
+
 #ifdef HAVE_MPI
 
 template<int D>
-void SendRcv_SerialTree(FunctionTree<D>* Tree, int source, int dest, int tag, MPI_Comm comm);
+void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
 
-void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag, MPI_Comm comm);
 //void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr);
 
 #else

@@ -18,11 +18,16 @@ class GenNode: public FunctionNode<D> {
 public:
     double getWaveletNorm() const { return 0.0; }
 
+    virtual void cvTransform(int kind) { NOT_IMPLEMENTED_ABORT; }
+    virtual void mwTransform(int kind) { NOT_IMPLEMENTED_ABORT; }
+
     friend class SerialTree<D>;
 
 protected:
     GenNode() : FunctionNode<D>() { }
     virtual ~GenNode() { assert(this->tree == 0); }
+
+    void reCompress() { NOT_IMPLEMENTED_ABORT; }
 
     double calcComponentNorm(int i) const {
         if (i == 0) {

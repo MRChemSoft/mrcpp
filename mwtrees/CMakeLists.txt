@@ -7,6 +7,7 @@ add_library(mwtrees STATIC
     OperatorNode.cpp
     OperatorTree.cpp
     OperatorTreeVector.cpp
+    ProjectedNode.cpp
 )
 
 target_link_libraries(mwtrees

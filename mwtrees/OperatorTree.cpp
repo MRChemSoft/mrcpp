@@ -144,7 +144,7 @@ void OperatorTree::clearOperNodeCache() {
   * Reimplementation of MWTree::mwTransform() without OMP, as calculation
   * of OperatorNorm is done using random vectors, which is non-deterministic
   * in parallel. FunctionTrees should be fine. */
-void OperatorTree::mwTransformUp(bool overwrite) {
+void OperatorTree::mwTransformUp() {
     vector<vector<MWNode<2> *> > nodeTable;
     makeNodeTable(nodeTable);
     int start = nodeTable.size() - 2;
@@ -153,7 +153,7 @@ void OperatorTree::mwTransformUp(bool overwrite) {
         for (int i = 0; i < nNodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
             if (node.isBranchNode()) {
-                node.reCompress(overwrite);
+                node.reCompress();
             }
         }
     }

@@ -209,23 +209,25 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
 
 template<int D>
 void FunctionNode<D>::setValues(VectorXd &vec) {
-    this->setCoefBlock(0, vec.size(), vec.data());
-    this->cvTransform(Backward);
-    this->mwTransform(Compression);
-    this->setHasCoefs();
-    this->calcNorms();
+    NOT_IMPLEMENTED_ABORT;
+    //this->setCoefBlock(0, vec.size(), vec.data());
+    //this->cvTransform(Backward);
+    //this->mwTransform(Compression);
+    //this->setHasCoefs();
+    //this->calcNorms();
 }
 
 template<int D>
 void FunctionNode<D>::getValues(VectorXd &vec) {
-    vec = VectorXd::Zero(this->n_coefs);
-    this->mwTransform(Reconstruction);
-    this->cvTransform(Forward);
-    for (int i = 0; i < this->n_coefs; i++) {
-        vec(i) = this->coefs[i];
-    }
-    this->cvTransform(Backward);
-    this->mwTransform(Compression);
+    NOT_IMPLEMENTED_ABORT;
+    //vec = VectorXd::Zero(this->n_coefs);
+    //this->mwTransform(Reconstruction);
+    //this->cvTransform(Forward);
+    //for (int i = 0; i < this->n_coefs; i++) {
+        //vec(i) = this->coefs[i];
+    //}
+    //this->cvTransform(Backward);
+    //this->mwTransform(Compression);
 }
 
 template class FunctionNode<1>;

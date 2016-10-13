@@ -138,7 +138,7 @@ protected:
     MWTree(const MWTree<D> &tree);
 
     virtual void mwTransformDown(bool overwrite);
-    virtual void mwTransformUp(bool overwrite);
+    virtual void mwTransformUp();
 
     int getRootIndex(const double *r) const {
         return this->rootBox.getBoxIndex(r);

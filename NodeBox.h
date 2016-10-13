@@ -24,6 +24,7 @@ public:
 
     void setNode(int idx, MWNode<D> **node);
     void removeNode(int idx);
+    void clearNode(int idx) { this->nodes[idx] = 0; }
 
     MWNode<D> &getNode(const NodeIndex<D> &idx);
     MWNode<D> &getNode(const double *r);

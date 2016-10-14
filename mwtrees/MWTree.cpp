@@ -112,20 +112,6 @@ MWTree<D>::~MWTree() {
 
 }
 
-template<int D>
-double MWTree<D>::estimateError(bool absPrec) {
-    NOT_IMPLEMENTED_ABORT;
-//    double error = 0.0;
-//    for (int i = 0; i < this->getNEndNodes(); i++) {
-//        MWNode<D> &node = getEndMWNode(i);
-//        error += node.estimateError(absPrec);
-//    }
-//#ifdef HAVE_MPI
-//    error = mpi::all_reduce(node_group, error, std::plus<double>());
-//#endif
-//    return error;
-}
-
 /** Calculate the squared norm of a function represented as a tree.
   *
   * Norm is calculated using endNodes only, but if your endNodeTable is

@@ -481,28 +481,6 @@ double MWNode<D>::calcComponentNorm(int i) const {
     return sqrt(sq_norm);
 }
 
-template<int D>
-double MWNode<D>::estimateError(bool absPrec) {
-    NOT_IMPLEMENTED_ABORT;
-    //    if (this->isForeign()) {
-    //        return 0.0;
-    //    }
-    //    if (this->isCommon() and this->tree->getRankId() != 0) {
-    //        return 0.0;
-    //    }
-    //    double tNorm = 1.0;
-    //    if (not absPrec) {
-    //        tNorm = sqrt(getMWTree().getSquareNorm());
-    //    }
-
-    //    int n = this->getScale();
-    //    double expo = (1.0 * (n + 1));
-    //    double scaleFactor = max(2.0* MachinePrec, pow(2.0, -expo));
-    //    double wNorm = this->calcWaveletNorm();
-    //    double error = scaleFactor * wNorm / tNorm;
-    //    return error*error;
-}
-
 /** Update the coefficients of the node by a mw transform of the scaling
   * coefficients of the children. Option to overwrite or add up existing
   * coefficients. */

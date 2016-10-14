@@ -36,7 +36,6 @@ public:
     virtual ~MWTree();
     void setZero();
 
-    double estimateError(bool absPrec);
     double getSquareNorm() const { return this->squareNorm; }
     void calcSquareNorm();
     void clearSquareNorm() { this->squareNorm = -1.0; }

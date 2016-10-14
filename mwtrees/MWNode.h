@@ -158,8 +158,6 @@ protected:
     void zeroNorms();
     void clearNorms();
 
-    double estimateError(bool absPrec);
-
     virtual double calcComponentNorm(int i) const;
 
     virtual void cvTransform(int kind);

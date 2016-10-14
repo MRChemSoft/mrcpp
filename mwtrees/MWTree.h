@@ -33,7 +33,9 @@
 template<int D>
 class MWTree {
 public:
+    MWTree(const MultiResolutionAnalysis<D> &mra);
     virtual ~MWTree();
+
     void setZero();
 
     double getSquareNorm() const { return this->squareNorm; }
@@ -78,6 +80,15 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
+    void makeNodeTable(MWNodeVector &nodeTable);
+    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
+
+    MWNodeVector* copyEndNodeTable();
+    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
+
+    void resetEndNodeTable();
+    void clearEndNodeTable() { this->endNodeTable.clear(); }
+
     void deleteGenerated();
     void clearGenerated();
 
@@ -99,11 +110,6 @@ public:
     friend class ProjectedNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;
-    friend class GridCleaner<D>;
-    friend class TreeCalculator<D>;
-    friend class ProjectionCalculator<D>;
-    friend class OperApplicationCalculator<D>;
-    friend class OperatorState<D>;
     friend class SerialTree<D>;
 
 protected:
@@ -131,11 +137,6 @@ protected:
     MWNodeVector endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
-    // Constructors are protected, use TreeBuilders
-    MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
-    MWTree(const MultiResolutionAnalysis<D> &mra);
-    MWTree(const MWTree<D> &tree);
-
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
 
@@ -154,15 +155,6 @@ protected:
     void updateGenNodeCounts();
     void incrementGenNodeCount();
     void decrementGenNodeCount();
-
-    void makeNodeTable(MWNodeVector &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
-
-    MWNodeVector* copyEndNodeTable();
-    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
-
-    void resetEndNodeTable();
-    void clearEndNodeTable() { this->endNodeTable.clear(); }
 
 #ifdef OPENMP
     omp_lock_t tree_lock;

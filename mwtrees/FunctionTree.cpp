@@ -16,68 +16,10 @@ using namespace Eigen;
   * */
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
-        : MWTree<D> (mra, max_nodes) {
+        : MWTree<D> (mra) {
     this->serialTree_p = new SerialTree<D>(this, max_nodes);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
-}
-
-/** FunctionTree constructor.
-  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
-  * Gives an uninitializes function. */
-template<int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
-        : MWTree<D> (mra) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
-    this->resetEndNodeTable();
-    */
-}
-
-/** FunctionTree copy constructor.
-  * Copy polynomial order and type, as well as the world box from the
-  * given tree, but only at root scale. Uninitialized function.
-  * Use = operator to copy data.*/
-template<int D>
-FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
-        : MWTree<D> (tree) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
-    this->resetEndNodeTable();
-    */
-}
-
-/** FunctionTree copy constructor.
-  * Copy polynomial order and type, as well as the world box from the
-  * given tree, but only at root scale. Uninitializedfunction.
-  * Use = operator to copy data.*/
-template<int D>
-FunctionTree<D>::FunctionTree(const FunctionTree<D> &tree)
-        : MWTree<D> (tree) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
-    this->resetEndNodeTable();
-    */
-}
-
-template<int D>
-FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT;
 }
 
 /** FunctionTree destructor. */

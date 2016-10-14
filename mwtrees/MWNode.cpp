@@ -228,7 +228,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
 
-    if(this->tree->serialTree_p and D!=2){
+    if(this->tree->getSerialTree() and D!=2){
        //can write directly from parent coeff into children coeff
     //    if(false){
 
@@ -241,7 +241,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
       double* coeffout = this->getMWChild(0).coefs;
       assert(not ( this->getMWChild(0).isGenNode() and  this->getMWChild(0).isLooseNode()));//not implemented
 
-      this->tree->serialTree_p->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
+      this->tree->getSerialTree()->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
 
       for (int i = 0; i < this->getTDim(); i++){
 	this->getMWChild(i).setHasCoefs();

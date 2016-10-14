@@ -12,7 +12,7 @@
 using namespace std;
 using namespace Eigen;
 
-/** MWTree constructor.
+/** MWTree constructor with SerialTree storage for nodes.
   * Creates an empty tree object. Node construction and assignment of most of
   * the parameters are done in derived classes. */
 template<int D>
@@ -29,49 +29,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 
-    println(10, "new MWTree ");
-#ifdef OPENMP
-    omp_init_lock(&tree_lock);
-#endif
-}
-
-/** MWTree constructor with SerialTree storage for nodes.
-  * Creates an empty tree object. Node construction and assignment of most of
-  * the parameters are done in derived classes. */
-template<int D>
-MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
-        : nThreads(omp_get_max_threads()),
-          MRA(mra),
-          rootBox(mra.getWorldBox()),
-          order(mra.getOrder()),
-          kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
-          squareNorm(-1.0),
-          name("nn"),
-          nNodes(0),
-          serialTree_p(0) {
-    this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
-
-#ifdef OPENMP
-    omp_init_lock(&tree_lock);
-#endif
-}
-
-/** MWTree copy constructor.
-  * Takes the parameters of the input tree, not it's data */
-template<int D>
-MWTree<D>::MWTree(const MWTree<D> &tree)
-        : nThreads(omp_get_max_threads()),
-          MRA(tree.MRA),
-          rootBox(tree.rootBox),
-          order(tree.order),
-          kp1_d(tree.kp1_d),
-          squareNorm(-1.0),
-          name("nn"),
-          nNodes(0) {
-    this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
-
 #ifdef OPENMP
     omp_init_lock(&tree_lock);
 #endif
@@ -80,30 +37,16 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 /** MWTree destructor. */
 template<int D>
 MWTree<D>::~MWTree() {
-  //println(10, "~MWTree");
-    if(this->serialTree_p) {
-      //SerialTree removes nodes
-      //      println(10, "delete serialTree_p");
-      delete this->serialTree_p;
+    if (this->serialTree_p != 0) {
+        delete this->serialTree_p;
     } else {
-      //Has to remove nodes here?
-      //MWNode<D> **roots = this->getRootBox().getNodes();
-      //for (int i = 0; i < this->getRootBox().size(); i++) {
-      //  //ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
-      //  roots[i]->~MWNode();
-      //  roots[i] = 0;
-      //}
+        MSG_FATAL("SerialTree not allocated");
     }
+
     this->endNodeTable.clear();
-    if (this->nNodes != 0) {
-      MSG_ERROR("Node count != 0 -> " << this->nNodes);
-    }
-    if (this->nodesAtDepth.size() != 1) {
-      MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
-    }
-    if (this->nodesAtDepth[0] != 0) {
-      MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    }
+    if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
+    if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
+    if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     deleteNodeCounters();
 
 #ifdef OPENMP

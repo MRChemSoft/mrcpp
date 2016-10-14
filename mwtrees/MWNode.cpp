@@ -268,8 +268,8 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
       this->tree->serialTree_p->S_mwTransform(coeffin, coeffout, ReadOnlyScalingCoeff, Children_Stride, overwrite);      
 
       for (int i = 0; i < this->getTDim(); i++){
-	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
 	this->getMWChild(i).setHasCoefs();
+	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
       }
 
     }else{

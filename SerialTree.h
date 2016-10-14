@@ -35,11 +35,10 @@ public:
     void allocChildren(FunctionNode<D> &parent);
     void allocGenChildren(FunctionNode<D> &parent);
 
+    void deallocNodes(int serialIx);
+    void deallocGenNodes(int serialIx);
+
     ProjectedNode<D>* createSnode(const NodeIndex<D> &nIdx);
-    ProjectedNode<D>* allocNodes(int Nalloc, int* NodeIx, double ** coefs_p);
-    void deallocNodes(int NodeRank);
-    GenNode<D>* allocGenNodes(int Nalloc, int* NodeIx, double ** coefs_p);
-    void deallocGenNodes(int NodeRank);
     double* allocCoeff(int NallocCoeff, MWNode<D>* node);
     double* allocLooseCoeff(int NallocCoeff, MWNode<D>* node);
     void deallocLooseCoeff(int DeallocIx);
@@ -96,6 +95,9 @@ protected:
     FunctionTree<D> *tree_p;
     ProjectedNode<D>* lastNode; //pointer to the last active node
     GenNode<D>* lastGenNode;    //pointer to the last active Gen node
+
+    ProjectedNode<D>* allocNodes(int nAlloc, int* serialIx, double **coefs_p);
+    GenNode<D>* allocGenNodes(int nAlloc, int* serialIx, double **coefs_p);
 
 private:
 #ifdef HAVE_OPENMP

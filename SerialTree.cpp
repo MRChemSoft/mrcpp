@@ -28,16 +28,13 @@ template<int D>
 SerialTree<D>::SerialTree(FunctionTree<D> *tree, int max_nodes)
         : maxNodes(max_nodes),
           maxGenNodes(max_nodes),
-          maxLooseNodesCoeff(64),
           nNodes(0),
           nGenNodes(0),
           nNodesCoeff(0),
           nGenNodesCoeff(0),
-          nLooseNodesCoeff(0),
           tree_p(tree),
           lastNode(0),
           lastGenNode(0) {
-    if (max_nodes == 0) this->maxLooseNodesCoeff = 0;
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
@@ -53,16 +50,9 @@ SerialTree<D>::SerialTree(FunctionTree<D> *tree, int max_nodes)
     //indicate occupation of nodes
     this->nodeStackStatus = new int[this->maxNodes + 1];
     this->genNodeStackStatus = new int[this->maxGenNodes + 1];
-    this->looseNodeStackStatus = new int[this->maxLooseNodesCoeff + 1];
-
-    this->looseNodeCoeff = 0;//allocated when used first time
-    this->looseCoeffStack = new double * [this->maxLooseNodesCoeff];
-
 
     this->lastNode = (ProjectedNode<D>*) this->sNodes;//position of last allocated node
     this->lastGenNode = this->sGenNodes;//position of last allocated Gen node
-
-    this->nLooseNodesCoeff=0;
 
     //initialize stacks
     for (int i = 0; i < maxNodes; i++) {
@@ -757,100 +747,6 @@ void SerialTree<D>::deallocGenNodes(int serialIx) {
     omp_unset_lock(&Stree_lock);
  }
 
-//return pointer to the Coefficients of the node or NULL if failed
-template<int D>
-double* SerialTree<D>::allocCoeff(int nAllocCoeff, MWNode<D>* node) {
-    NOT_IMPLEMENTED_ABORT;
-/*
-  if(node->isLooseNode()){
-    return this->allocLooseCoeff(nAllocCoeff, node);
-  }else{
-     MSG_FATAL("ERROR SHOULD NOT ALLOCATE COEFF HERE " );
-  }
-  */
-}
-
-//return pointer to the Coefficients of the node or NULL if failed
-template<int D>
-double* SerialTree<D>::allocLooseCoeff(int nAllocCoeff, MWNode<D>* node) {
-    NOT_IMPLEMENTED_ABORT;
-/*
-
-  if (nAllocCoeff!=1<<D) MSG_FATAL("Only 2**D implemented now!");
-
-  //Each omp thread use own part of array, no locks!
-
-  if( this->LooseNodeCoeff==0){
-    if(omp_get_thread_num()==0){
-      double * LooseNodesCoeff_p = new double[this->maxLooseNodesCoeff*this->sizeNodeCoeff];
-      for (int i = 0; i <this->maxLooseNodesCoeff;i++){
-	this->LooseCoeffStack[i] = LooseNodesCoeff_p+i*this->sizeNodeCoeff;
-	this->LooseCoeffStackStatus[i] = 0;//0=unoccupied
-      }
-      this->LooseCoeffStackStatus[this->maxLooseNodesCoeff]=-1;//-1=unavailable
-      this->LooseNodeCoeff = LooseNodesCoeff_p;//MUST be set after Stack inits
-    }else{
-      //wait until allocated
-      while(this->LooseNodeCoeff==0){usleep(1000);}
-    }
-  }
-
-  if (this->nLooseNodesCoeff+1 >= this->maxLooseNodesCoeff ){
-    println(0, "maxLooseNodesCoeff exceeded " << this->maxLooseNodesCoeff);
-    MSG_FATAL("maxLooseNodesCoeff exceeded ");
-       // omp_unset_lock(&Stree_lock);
-    return 0;
-  } else if( LooseCoeffStackStatus[this->nLooseNodesCoeff]!=0 and omp_get_num_threads()==1){
-    println(0, this->nLooseNodesCoeff<<" LooseCoeffStackStatus: not available " <<LooseCoeffStackStatus[this->nLooseNodesCoeff] <<" tree at "<<this->mwTree_p);     
-    return 0;
-  }else{
-    int myindex = this->nLooseNodesCoeff;//default for one thread
-    if(omp_get_num_threads()>1){
-      //find the lowest available index that are on own part of stack
-      myindex=omp_get_thread_num();
-      while(this->LooseCoeffStackStatus[myindex]==1){
-	myindex += omp_get_num_threads();
-	if(myindex>this->maxLooseNodesCoeff)MSG_FATAL("maxLooseNodesCoeff exceeded for one thread ");	
-      }
-   
-    }
-    double* LooseNodeCoeff=this->LooseCoeffStack[myindex];
-    this->LooseCoeffStackStatus[myindex]=1;
-    node->SNodeIx = myindex;
-#pragma omp atomic
-    (this->nLooseNodesCoeff)++;
-
-    return LooseNodeCoeff;
-  }
-*/
-}
-
-
-//"Deallocate" the stack
-template<int D>
-void SerialTree<D>::deallocLooseCoeff(int DeallocIx) {
-    NOT_IMPLEMENTED_ABORT;
-/*
-  if (this->LooseCoeffStackStatus[DeallocIx]==0){
-    println(0, "deleting already unallocated loose coeff " << DeallocIx);
-  }
-  this->LooseCoeffStackStatus[DeallocIx]=0;//mark as available
-  if(omp_get_num_threads()==1){
-  if(DeallocIx==this->nLooseNodesCoeff-1){//top of stack
-    int TopStack=this->nLooseNodesCoeff-1;
-    while(this->LooseCoeffStackStatus[TopStack]==0){
-      TopStack--;
-      if(TopStack<0)break;
-    }
-    this->nLooseNodesCoeff=TopStack+1;//move top of stack
-  }
-  }else{
-    #pragma omp atomic
-    (this->nLooseNodesCoeff)--;
-  }
-  */
-}
-
 /** SerialTree destructor. */
 template<int D>
 SerialTree<D>::~SerialTree() {
@@ -861,10 +757,6 @@ SerialTree<D>::~SerialTree() {
 
     delete[] this->nodeStackStatus;
     delete[] this->genNodeStackStatus;
-    delete[] this->looseNodeStackStatus;
-
-    delete[] this->looseNodeCoeff;
-    delete[] this->looseCoeffStack;
 }
 
 template class SerialTree<1>;

@@ -126,7 +126,7 @@ protected:
     MWNode(const MWNode<D> &n);
     MWNode& operator=(const MWNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
     virtual ~MWNode();
-    virtual void dealloc() { NOT_IMPLEMENTED_ABORT; }
+    virtual void dealloc() { NOT_REACHED_ABORT; }
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
     void setHasWCoefs() { SET_BITS(status, FlagHasWCoefs); }
@@ -167,8 +167,8 @@ protected:
 
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
 
-    virtual void createChildren() = 0;
-    virtual void genChildren() = 0;
+    virtual void createChildren() { NOT_REACHED_ABORT; }
+    virtual void genChildren() { NOT_REACHED_ABORT; }
     virtual void deleteChildren();
 
     virtual void reCompress();

@@ -39,9 +39,6 @@ public:
     void deallocGenNodes(int serialIx);
 
     ProjectedNode<D>* createSnode(const NodeIndex<D> &nIdx);
-    double* allocCoeff(int NallocCoeff, MWNode<D>* node);
-    double* allocLooseCoeff(int NallocCoeff, MWNode<D>* node);
-    void deallocLooseCoeff(int DeallocIx);
     void GenS_nodes(MWNode<D>* Node);
     void S_mwTransform(double* coeff_in, double* coeff_out, bool ReadOnlyScalingCoeff, int Children_Stride, bool overwrite=true);
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int Children_Stride);
@@ -59,7 +56,6 @@ public:
 protected:
     int maxNodes;               //max number of nodes that can be defined
     int maxGenNodes;            //max number of Gen nodes that can be defined
-    int maxLooseNodesCoeff;     //max number of loose nodes Coeff that can be defined
     int sizeNodeCoeff;          //size of coeff for one node
     int sizeGenNodeCoeff;       //size of coeff for one Gen node
 
@@ -67,15 +63,12 @@ protected:
     int nGenNodes;              //number of GenNodes already defined
     int nNodesCoeff;            //number of nodes coeff already defined
     int nGenNodesCoeff;         //number of GenNodes coeff already defined
-    int nLooseNodesCoeff;       //number of loose nodes coeff already defined
 
     double **coeffStack;
-    double **looseCoeffStack;
     double **genCoeffStack;
 
     int *nodeStackStatus;
     int *genNodeStackStatus;
-    int *looseNodeStackStatus;
 
     char *cvptr_ProjectedNode;//virtual table pointer for ProjectedNode
     char *cvptr_GenNode;// virtual table pointer for GenNode
@@ -90,7 +83,6 @@ protected:
     GenNode<D> *sGenNodes;      //serial GenNodes
     double *sNodesCoeff;        //serial ProjectedNodes coefficients
     double *sGenNodesCoeff;     //serial GenNodes coefficients
-    double *looseNodeCoeff;     //to put coefficient of loose (temporary) nodes only
 
     FunctionTree<D> *tree_p;
     ProjectedNode<D>* lastNode; //pointer to the last active node

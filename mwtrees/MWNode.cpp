@@ -29,6 +29,9 @@ MWNode<D>::MWNode()
           status(0),
           n_coefs(0),
           coefs(0) {
+    setIsLeafNode();
+    setIsLooseNode();
+
     clearNorms();
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
@@ -88,7 +91,7 @@ MWNode<D>::MWNode(MWNode<D> &p, int cIdx)
 #endif
 }
 
-/** Detatched node */
+/** Create loose node */
 template<int D>
 MWNode<D>::MWNode(const MWNode<D> &n)
         : tree(n.tree),
@@ -99,24 +102,27 @@ MWNode<D>::MWNode(const MWNode<D> &n)
           status(0),
           n_coefs(0),
           coefs(0) {
-    NOT_IMPLEMENTED_ABORT;
+    setIsLeafNode();
+    setIsLooseNode();
+
     allocCoefs(this->getTDim(), this->getKp1_d());
 
     if (n.hasCoefs()) {
         setCoefBlock(0, n.n_coefs, n.getCoefs());
 	if (this->n_coefs > n.n_coefs) {
             for(int i = n.n_coefs; i < this->n_coefs; i++) {
-                this->coefs[i]=0.0;
+                this->coefs[i] = 0.0;
             }
         }
+        this->setHasCoefs();
+        this->calcNorms();
     } else {
-        zeroCoefBlock(0, this->n_coefs);
+        this->clearHasCoefs();
+        this->clearNorms();
     }
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
-    setIsLeafNode();
-    setIsLooseNode();
 
 #ifdef OPENMP
     omp_init_lock(&node_lock);
@@ -127,17 +133,7 @@ MWNode<D>::MWNode(const MWNode<D> &n)
   * Recursive deallocation of a node and all its decendants */
 template<int D>
 MWNode<D>::~MWNode() {
-    if (this->tree != 0) {
-        NOT_IMPLEMENTED_ABORT;
-        if (this->isBranchNode()) {
-            deleteChildren();
-        }
-        if (not this->isLooseNode()) {
-            if(!(this->isGenNode())) this->tree->decrementNodeCount(getScale());
-            assert(!this->tree->serialTree_p);
-        }
-        this->freeCoefs();
-    }
+    if (this->isLooseNode()) this->freeCoefs();
 #ifdef OPENMP
     omp_destroy_lock(&node_lock);
 #endif
@@ -146,17 +142,13 @@ MWNode<D>::~MWNode() {
 /** Allocate the coefs vector. */
 template<int D>
 void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
-    if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
     if (this->n_coefs != 0) MSG_FATAL("n_coefs should be zero");
+    if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
+    if (not this->isLooseNode()) MSG_FATAL("Only loose nodes here!");
 
     this->n_coefs = n_blocks * block_size;
-    if(this->tree->serialTree_p){
-        //Only temporary nodes should be allocated here
-        this->coefs = this->tree->serialTree_p->allocLooseCoeff(n_blocks, this);
-    }else{
-	//Operator Node
-	this->coefs = new double[this->n_coefs];
-    }
+    this->coefs = new double[this->n_coefs];
+
     this->setIsAllocated();
     this->clearHasCoefs();
 }
@@ -164,25 +156,10 @@ void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 /** Deallocation of coefficients. */
 template<int D>
 void MWNode<D>::freeCoefs() {
-    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    if (not this->isLooseNode()) MSG_FATAL("Only loose nodes here!");
 
-    if(this->tree->serialTree_p and this->serialIx >= 0){
-        if(this->isLooseNode()){
-	    this->tree->serialTree_p->deallocLooseCoeff(this->serialIx);
-        }else if(this->isGenNode()){
-            cout<<"ERROR dealloccoeff done with nodes "<<this->serialIx<<endl;
-            //this->tree->serialTree_p->deallocGenCoeff(this->serialIx);
-        }else{
-            cout<<"ERROR dealloccoeff done with nodes "<<this->serialIx<<endl;
-            //this->tree->serialTree_p->deallocCoeff(this->serialIx);
-        }
-    }else{
-        //Operator node
-        if (this->coefs != 0) {
-            delete[] this->coefs;
-        }
-    }
-    
+    if (this->coefs != 0) delete[] this->coefs;
+
     this->coefs = 0;
     this->n_coefs = 0;
 
@@ -241,7 +218,6 @@ void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
 template<int D>
 void MWNode<D>::zeroCoefBlock(int block, int block_size) {
     if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-    NOT_IMPLEMENTED_ABORT;
     for (int i = 0; i < block_size; i++) {
         this->coefs[block*block_size + i] = 0.0;
     }

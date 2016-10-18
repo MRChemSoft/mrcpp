@@ -14,25 +14,34 @@ public:
     const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
     const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
 
+    void createChildren() {
+        MWNode<2>::createChildren();
+        this->clearIsEndNode();
+    }
+    void genChildren() {
+        MWNode<2>::createChildren();
+        this->clearIsEndNode();
+        this->giveChildrenCoefs();
+    }
+    void deleteChildren() {
+        MWNode<2>::deleteChildren();
+        this->setIsEndNode();
+    }
+
     friend class MWNode<2>;
     friend class OperatorTree;
+    friend class SerialOperatorTree;
 
 protected:
-    OperatorNode(OperatorTree &t, const NodeIndex<2> &n);
-    OperatorNode(OperatorNode &p, int c);
-    OperatorNode(const OperatorNode &n) : MWNode<2>(n) { NOT_IMPLEMENTED_ABORT; }
-    OperatorNode& operator=(const OperatorNode &n) { NOT_IMPLEMENTED_ABORT; }
-    virtual ~OperatorNode();
+    OperatorNode() : MWNode<2>() { }
+    virtual ~OperatorNode() { }
 
     double calcComponentNorm(int i) const;
 
-    void genChildren();
-    void createChildren() { MWNode<2>::createChildren(); this->clearIsEndNode(); }
-    void deleteChildren() { MWNode<2>::deleteChildren(); this->setIsEndNode(); }
-
-private:
-    void createChild(int i);
-    void genChild(int i);
+    void dealloc() {
+        this->tree->decrementNodeCount(this->getScale());
+        this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+    }
 };
 
 #endif // OPERATORNODE_H

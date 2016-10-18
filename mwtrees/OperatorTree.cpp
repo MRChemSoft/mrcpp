@@ -1,36 +1,36 @@
 #include "OperatorTree.h"
+#include "SerialOperatorTree.h"
 #include "OperatorNode.h"
+#include "SerialTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
 
 using namespace Eigen;
 using namespace std;
 
-OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
+OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, int max_nodes)
         : MWTree<2>(mra),
           normPrec(np),
           bandWidth(0),
           nodePtrStore(0),
           nodePtrAccess(0) {
     if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<2> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<2> *root = new OperatorNode(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
+
+    this->serialTree_p = new SerialOperatorTree(this, max_nodes);
+    this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
 
 OperatorTree::~OperatorTree() {
     clearOperNodeCache();
     clearBandWidth();
-    //println(10, "~OperatorTree");
-    MWNode<2> **roots = this->rootBox.getNodes();
     for (int i = 0; i < this->rootBox.size(); i++) {
-        OperatorNode *node = static_cast<OperatorNode *>(roots[i]);
-        if (node != 0) delete node;
-        roots[i] = 0;
+        MWNode<2> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.dealloc();
+        this->rootBox.clearNode(i);
     }
+    delete this->serialTree_p;
 }
 
 void OperatorTree::clearBandWidth() {

@@ -30,6 +30,9 @@
 #define TEST_TREE_LOCK() false
 #endif
 
+template<int D> class SerialFunctionTree;
+class SerialOperatorTree;
+
 template<int D>
 class MWTree {
 public:
@@ -90,7 +93,6 @@ public:
     void clearEndNodeTable() { this->endNodeTable.clear(); }
 
     void deleteGenerated();
-    void clearGenerated();
 
     int getNThreads() const { return this->nThreads; }
 
@@ -111,6 +113,8 @@ public:
     friend class OperatorNode;
     friend class TreeBuilder<D>;
     friend class SerialTree<D>;
+    friend class SerialFunctionTree<D>;
+    friend class SerialOperatorTree;
 
 protected:
     // Parameters that are set in construction and should never change

@@ -18,7 +18,6 @@ add_library(mrcpp STATIC
     OperatorStatistics.cpp
     RepresentableFunction.cpp
     TelePrompter.cpp
-    SerialTree.cpp
     parallel.cpp
     Plot.cpp
 )

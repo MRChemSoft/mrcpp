@@ -56,7 +56,7 @@ void NodeBox<D>::deleteNodes() {
         return;
     }
     for (int n = 0; n < this->size(); n++) {
-        removeNode(n);
+        clearNode(n);
     }
     delete [] this->nodes;
     this->nodes = 0;
@@ -66,24 +66,11 @@ template<int D>
 void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
     assert(bIdx >= 0);
     assert(bIdx < this->nBoxes[D]);
-    removeNode(bIdx);
+    clearNode(bIdx);
     this->nodes[bIdx] = *node;
     this->nOccupied++;
     assert(this->nOccupied > 0);
     *node = 0;
-}
-
-/** Remove a node from the box **/
-template<int D>
-void NodeBox<D>::removeNode(int bIdx) {
-    assert(bIdx >= 0);
-    assert(bIdx < this->nBoxes[D]);
-    if (this->nodes[bIdx] != 0 ) {
-        delete nodes[bIdx];
-        this->nodes[bIdx] = 0;
-        this->nOccupied--;
-    }
-    assert(this->nOccupied >= 0);
 }
 
 template<int D>

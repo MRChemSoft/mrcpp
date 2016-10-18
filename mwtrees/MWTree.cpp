@@ -24,8 +24,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
           squareNorm(-1.0),
           name("nn"),
-          nNodes(0),
-          serialTree_p(0) {
+          nNodes(0) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 
@@ -37,12 +36,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
 /** MWTree destructor. */
 template<int D>
 MWTree<D>::~MWTree() {
-    if (this->serialTree_p != 0) {
-        delete this->serialTree_p;
-    } else {
-        MSG_FATAL("SerialTree not allocated");
-    }
-
     this->endNodeTable.clear();
     if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
@@ -507,16 +500,6 @@ template<int D>
 void MWTree<D>::deleteGenerated() {
     for (int n = 0; n < getNEndNodes(); n++) {
         getEndMWNode(n).deleteGenerated();
-    }
-}
-
-
-/** Loop through endNodeTable and recursively clear all GenNode coefficients.
-  * Includes a static cast of endNodes from MWNode to FunctionNode*/
-template<int D>
-void MWTree<D>::clearGenerated() {
-    for (int i = 0; i < this->endNodeTable.size(); i++) {
-        getEndMWNode(i).clearGenerated();
     }
 }
 

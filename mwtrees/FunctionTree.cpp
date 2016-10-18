@@ -5,6 +5,7 @@
  */
 
 #include "FunctionTree.h"
+#include "SerialFunctionTree.h"
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
 #include "HilbertIterator.h"
@@ -17,7 +18,7 @@ using namespace Eigen;
 template<int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
         : MWTree<D> (mra) {
-    this->serialTree_p = new SerialTree<D>(this, max_nodes);
+    this->serialTree_p = new SerialFunctionTree<D>(this, max_nodes);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
@@ -31,6 +32,7 @@ FunctionTree<D>::~FunctionTree() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
+    delete this->serialTree_p;
 }
 
 /** Leaves the tree inn the same state as after construction*/
@@ -93,10 +95,10 @@ double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
 //#pragma omp for schedule(guided)
     for (int n = 0; n < nNodes; n++) {
         const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
-        const MWNode<D> *mrNode = ket.findNode(braNode.getNodeIndex());
-        if (mrNode == 0) continue;
+        const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
+        if (mwNode == 0) continue;
 
-        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mrNode);
+        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
         if (braNode.isRootNode()) {
             locResult += braNode.dotScaling(ketNode);
         }
@@ -245,6 +247,6 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
-template class FunctionTree<1> ;
-template class FunctionTree<2> ;
-template class FunctionTree<3> ;
+template class FunctionTree<1>;
+template class FunctionTree<2>;
+template class FunctionTree<3>;

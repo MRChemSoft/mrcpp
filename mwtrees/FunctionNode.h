@@ -34,17 +34,6 @@ protected:
     double integrateLegendre() const;
     double integrateInterpolating() const;
 
-    void createChildren() {
-        if (this->isBranchNode()) MSG_FATAL("Node already has children");
-        this->tree->getSerialTree()->allocChildren(*this);
-        this->setIsBranchNode();
-        this->clearIsEndNode();
-    }
-    void genChildren() {
-        if (this->isBranchNode()) MSG_FATAL("Node already has children");
-        this->tree->getSerialTree()->allocGenChildren(*this);
-        this->setIsBranchNode();
-    }
 };
 
 #endif // FUNCTIONNODE_H

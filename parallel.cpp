@@ -171,6 +171,99 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest
 }
 #endif
 
+/** Assign work among MPI processes
+ * For a NxN loop. Does not assume symmetry
+ * At each iteration data is processed, data is sent and data is received.
+ * input: 
+ * N, the size of one loop 
+ * iter, the iteration 
+ * output: 
+ * which (i,j) pair to compute next
+ * to whom send own data, from who receive data
+ */
+void Assign_NxN(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvfrom, int* rcvorb){
+  int iter = 0;
+  int NBlock=N/MPI_size;//number of subblocks
+  int M = N%MPI_size; //number of lines and column left after subblocks are taken out
+  int Maxiter=-1;
+  int iter_base;
+  int iBlock = 0;
+  int jBlock = 0;
+  int MaxiterSofar=0;
+  for (int dBlock = 0; dBlock < (N+MPI_size-1)/MPI_size; dBlock++) {
+
+  //1)  //diagonal block
+    int imax=MPI_size;
+    if(dBlock==NBlock)imax=M;
+    int jmax=MPI_size;
+    if(dBlock==NBlock)jmax=M;
+    for (int i = 0; i < imax; i++) {
+      for (int j = 0; j < jmax; j++) {
+	iter_base = (i+j)%MPI_size * ((N+MPI_size-1)/MPI_size);
+	if(dBlock==NBlock)iter_base = (i+j)%M * ((N+MPI_size-1)/MPI_size);
+	iter = iter_base + dBlock*MPI_size*((N+MPI_size-1)/MPI_size);
+	int i_glob = i + dBlock*MPI_size;
+	int j_glob = j + dBlock*MPI_size;
+	if(i==MPI_rank){
+	  //this processor receive orbital j_glob from MPIrank=j, and send its own orbital i_glob to MPIrank=j.
+	  if(iter>Maxiter)Maxiter=iter;
+	  doi[iter]=i_glob;
+	  doj[iter]=j_glob;
+	  if(i==j){
+	    sendto[iter]=-1;
+	    sendorb[iter]=-1;
+	    rcvorb[iter]=-1;
+	  }else{
+	    sendto[iter]=j;
+	    sendorb[iter]=i_glob;
+	    rcvorb[iter]=j_glob;}// contains info both which orbital and indirectly who from
+	}
+  //2)	//treat all rows and columns that can be generated from received data	
+	if(i<=j and i==MPI_rank){
+	  //do the corresponding column 
+	  //for (iBlock = 0; iBlock < NBlock; iBlock++) {
+	  for (int icol = i; icol < N; icol+=MPI_size) {
+	    iBlock=icol/MPI_size;
+	    if(iBlock!=dBlock){
+	      int sh=1;
+	      if(iBlock>dBlock)sh=0;//not very elegant
+	      int i_glob = i + iBlock*MPI_size;
+	      int j_glob = j + dBlock*MPI_size;
+	      doi[iter+iBlock+sh] = i_glob;
+	      doj[iter+iBlock+sh] = j_glob;
+	      rcvorb[iter+iBlock+sh]=-1;//indicates "use same as before"
+	      sendorb[iter+iBlock+sh]=-1;//indicates "do not send anything"
+	      sendto[iter+iBlock+sh]=-1;//indicates "do not send anything"
+	      if(iter+iBlock+sh>Maxiter)Maxiter=iter+iBlock+sh;
+	    }
+	  }
+	}else if(i==MPI_rank){
+	  //do the corresponding row
+	  //for (jBlock = 0; jBlock < NBlock; jBlock++) {
+	  for (int jrow = j; jrow < N; jrow+=MPI_size) {
+	    jBlock=jrow/MPI_size;
+	    if(jBlock!=dBlock){
+	      int sh=1;
+	      if(jBlock>dBlock)sh=0;//not very elegant
+	    int i_glob = i + dBlock*MPI_size;
+	    int j_glob = j + jBlock*MPI_size;
+	    
+	    doi[iter+jBlock+sh] = i_glob;
+	    doj[iter+jBlock+sh] = j_glob;
+	    rcvorb[iter+jBlock+sh]=-1;//indicates "use same as before"
+	    sendorb[iter+jBlock+sh]=-1;//indicates "do not send anything"
+	    sendto[iter+jBlock+sh]=-1;//indicates "do not send anything"
+	    if(iter+jBlock+sh>Maxiter)Maxiter=iter+jBlock+sh;
+	    }
+	  }
+	}
+	MaxiterSofar=Maxiter;
+      }
+    }
+  }
+
+}
+
 /** Define all the different MPI groups
  */
 void define_groups(){

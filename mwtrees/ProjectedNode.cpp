@@ -22,7 +22,7 @@ void ProjectedNode<3>::reCompress() {
  
 	assert(inp+7*stride == this->getMWChild(7).getCoefs());
  
-	this->tree->serialTree_p->S_mwTransformBack(inp, out, stride);
+	this->tree->getSerialTree()->S_mwTransformBack(inp, out, stride);
         this->setHasCoefs();
         this->calcNorms();
     }

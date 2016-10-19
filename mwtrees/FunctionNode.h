@@ -33,6 +33,7 @@ protected:
     double evalScaling(const double *r) const;
     double integrateLegendre() const;
     double integrateInterpolating() const;
+
 };
 
 #endif // FUNCTIONNODE_H

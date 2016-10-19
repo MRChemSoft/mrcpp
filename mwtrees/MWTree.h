@@ -30,13 +30,17 @@
 #define TEST_TREE_LOCK() false
 #endif
 
+template<int D> class SerialFunctionTree;
+class SerialOperatorTree;
+
 template<int D>
 class MWTree {
 public:
+    MWTree(const MultiResolutionAnalysis<D> &mra);
     virtual ~MWTree();
+
     void setZero();
 
-    double estimateError(bool absPrec);
     double getSquareNorm() const { return this->squareNorm; }
     void calcSquareNorm();
     void clearSquareNorm() { this->squareNorm = -1.0; }
@@ -79,8 +83,16 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
+    void makeNodeTable(MWNodeVector &nodeTable);
+    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
+
+    MWNodeVector* copyEndNodeTable();
+    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
+
+    void resetEndNodeTable();
+    void clearEndNodeTable() { this->endNodeTable.clear(); }
+
     void deleteGenerated();
-    void clearGenerated();
 
     int getNThreads() const { return this->nThreads; }
 
@@ -100,12 +112,9 @@ public:
     friend class ProjectedNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;
-    friend class GridCleaner<D>;
-    friend class TreeCalculator<D>;
-    friend class ProjectionCalculator<D>;
-    friend class OperApplicationCalculator<D>;
-    friend class OperatorState<D>;
     friend class SerialTree<D>;
+    friend class SerialFunctionTree<D>;
+    friend class SerialOperatorTree;
 
 protected:
     // Parameters that are set in construction and should never change
@@ -132,11 +141,6 @@ protected:
     MWNodeVector endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
-    // Constructors are protected, use TreeBuilders
-    MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
-    MWTree(const MultiResolutionAnalysis<D> &mra);
-    MWTree(const MWTree<D> &tree);
-
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
 
@@ -155,15 +159,6 @@ protected:
     void updateGenNodeCounts();
     void incrementGenNodeCount();
     void decrementGenNodeCount();
-
-    void makeNodeTable(MWNodeVector &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
-
-    MWNodeVector* copyEndNodeTable();
-    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
-
-    void resetEndNodeTable();
-    void clearEndNodeTable() { this->endNodeTable.clear(); }
 
 #ifdef OPENMP
     omp_lock_t tree_lock;

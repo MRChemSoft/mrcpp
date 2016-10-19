@@ -19,6 +19,7 @@
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
     virtual ~FunctionTree();
 
     void clear();
@@ -54,21 +55,7 @@ public:
     template<int T>
     friend std::ostream& operator <<(std::ostream &o, FunctionTree<T> &tree);
 
-    friend class GridGenerator<D>;
-    friend class GridCleaner<D>;
-    friend class MWProjector<D>;
-    friend class MWAdder<D>;
-    friend class MWMultiplier<D>;
-    friend class MWOperator<D>;
-    friend class SCF;
     friend void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
-
-protected:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES);
-    FunctionTree(const MultiResolutionAnalysis<D> &mra);
-    FunctionTree(const MWTree<D> &tree);
-    FunctionTree(const FunctionTree<D> &tree);
-    FunctionTree<D> &operator=(const FunctionTree<D> &tree);
 };
 
 template<int D>

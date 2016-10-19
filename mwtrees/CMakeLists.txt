@@ -8,6 +8,9 @@ add_library(mwtrees STATIC
     OperatorTree.cpp
     OperatorTreeVector.cpp
     ProjectedNode.cpp
+    SerialFunctionTree.cpp
+    SerialOperatorTree.cpp
+    SerialTree.cpp
 )
 
 target_link_libraries(mwtrees

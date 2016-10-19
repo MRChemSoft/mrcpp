@@ -5,6 +5,7 @@
  */
 
 #include "FunctionTree.h"
+#include "SerialFunctionTree.h"
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
 #include "HilbertIterator.h"
@@ -15,86 +16,23 @@ using namespace Eigen;
 /** FunctionTree constructor for Serial Tree.
   * */
 template<int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int MAXALLOCNODES)
-        : MWTree<D> (mra, MAXALLOCNODES) {
-}
-
-/** FunctionTree constructor.
-  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
-  * Gives an uninitializes function. */
-template<int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
+FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
         : MWTree<D> (mra) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
+    this->serialTree_p = new SerialFunctionTree<D>(this, max_nodes);
+    this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
-    */
-}
-
-/** FunctionTree copy constructor.
-  * Copy polynomial order and type, as well as the world box from the
-  * given tree, but only at root scale. Uninitialized function.
-  * Use = operator to copy data.*/
-template<int D>
-FunctionTree<D>::FunctionTree(const MWTree<D> &tree)
-        : MWTree<D> (tree) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
-    this->resetEndNodeTable();
-    */
-}
-
-/** FunctionTree copy constructor.
-  * Copy polynomial order and type, as well as the world box from the
-  * given tree, but only at root scale. Uninitializedfunction.
-  * Use = operator to copy data.*/
-template<int D>
-FunctionTree<D>::FunctionTree(const FunctionTree<D> &tree)
-        : MWTree<D> (tree) {
-    NOT_IMPLEMENTED_ABORT;
-    /*
-    for (int rIdx = 0; rIdx < this->rootBox.size(); rIdx++) {
-        const NodeIndex<D> &nIdx = this->rootBox.getNodeIndex(rIdx);
-        MWNode<D> *root = new ProjectedNode<D>(*this, nIdx);
-        this->rootBox.setNode(rIdx, &root);
-    }
-    this->resetEndNodeTable();
-    */
-}
-
-template<int D>
-FunctionTree<D>& FunctionTree<D>::operator=(const FunctionTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT;
 }
 
 /** FunctionTree destructor. */
 template<int D>
 FunctionTree<D>::~FunctionTree() {
-  //    println(10, "~FunctionTree");    
-    //    NOT_IMPLEMENTED_ABORT;
-    if(this->serialTree_p){
-      //root nodes are created and destroyed in the Serial tree
-    }else{
-        NOT_IMPLEMENTED_ABORT;
-        /*
-      MWNode<D> **roots = this->rootBox.getNodes();
-      for (int i = 0; i < this->rootBox.size(); i++) {
-        ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
-        if (node != 0) delete node;
-        roots[i] = 0;
-      }
-      */
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.dealloc();
+        this->rootBox.clearNode(i);
     }
+    delete this->serialTree_p;
 }
 
 /** Leaves the tree inn the same state as after construction*/
@@ -157,10 +95,10 @@ double FunctionTree<D>::dot(const FunctionTree<D> &ket) {
 //#pragma omp for schedule(guided)
     for (int n = 0; n < nNodes; n++) {
         const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
-        const MWNode<D> *mrNode = ket.findNode(braNode.getNodeIndex());
-        if (mrNode == 0) continue;
+        const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
+        if (mwNode == 0) continue;
 
-        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mrNode);
+        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
         if (braNode.isRootNode()) {
             locResult += braNode.dotScaling(ketNode);
         }
@@ -309,6 +247,6 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
-template class FunctionTree<1> ;
-template class FunctionTree<2> ;
-template class FunctionTree<3> ;
+template class FunctionTree<1>;
+template class FunctionTree<2>;
+template class FunctionTree<3>;

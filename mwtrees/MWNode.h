@@ -28,6 +28,8 @@
 #define TEST_NODE_LOCK() false
 #endif
 
+template<int D> class SerialFunctionTree;
+
 template<int D>
 class MWNode {
 public:
@@ -39,7 +41,7 @@ public:
     int getDepth() const { return getNodeIndex().getScale()-getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
     int getNChildren() const { if (isBranchNode()) return getTDim(); return 0; }
-    int getSNodeIx() const { return this->SNodeIx; }
+    int getSerialIx() const { return this->serialIx; }
     const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
@@ -61,7 +63,6 @@ public:
     inline bool isAllocated() const;
     inline bool isBranchNode() const;
     inline bool isLooseNode() const;
-    inline bool hasWCoefs() const;
 
     double getSquareNorm() const { return this->squareNorm; }
     double getScalingNorm() const;
@@ -76,10 +77,6 @@ public:
     double* getCoefs() { return this->coefs; }
     const double* getCoefs() const { return this->coefs; }
 
-    int SNodeIx; //index in serial Tree
-    int parentSNodeIx; //index of parent in serial Tree, or -1 for roots
-    int childSNodeIx; //index of first child in serial Tree, or -1 for leafnodes/endnodes
-
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
     MWNode<D>& getMWChild(int i) { return static_cast<MWNode<D> &>(*this->children[i]); }
@@ -88,23 +85,45 @@ public:
     const MWNode<D>& getMWParent() const { return static_cast<const MWNode<D> &>(*this->parent); }
     const MWNode<D>& getMWChild(int i) const { return static_cast<const MWNode<D> &>(*this->children[i]); }
 
+    void zeroCoefs();
+    void setCoefBlock(int block, int block_size, const double *c);
+    void addCoefBlock(int block, int block_size, const double *c);
+    void zeroCoefBlock(int block, int block_size);
+
+    void calcNorms();
+    void zeroNorms();
+    void clearNorms();
+
+    virtual void createChildren();
+    virtual void genChildren() { NOT_REACHED_ABORT; }
+    virtual void deleteChildren();
+
+    virtual void cvTransform(int kind);
+    virtual void mwTransform(int kind);
+
+    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
+    void setIsEndNode() { SET_BITS(status, FlagEndNode); }
+    void setIsGenNode() { SET_BITS(status, FlagGenNode); }
+    void setIsRootNode() { SET_BITS(status, FlagRootNode); }
+    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }
+    void setIsAllocated() { SET_BITS(status, FlagAllocated); }
+    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
+    void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }
+    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
+    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
+    void clearIsGenNode() { CLEAR_BITS(status, FlagGenNode); }
+    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
+    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
+
     template<int T>
     friend std::ostream& operator<<(std::ostream &o, const MWNode<T> &nd);
 
-    friend class TreeAdaptor<D>;
-    friend class TreeBuilder<D>;
-    friend class DefaultCalculator<D>;
-    friend class ProjectionCalculator<D>;
-    friend class AdditionCalculator<D>;
     friend class MultiplicationCalculator<D>;
-    friend class OperApplicationCalculator<D>;
-    friend class CrossCorrelationCalculator;
-    friend class DerivativeCalculator;
-    friend class SerialTree<D>;
+    friend class SerialFunctionTree<D>;
+    friend class SerialOperatorTree;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
-    friend class NodeBox<D>;
 
 protected:
     MWTree<D> *tree;
@@ -120,59 +139,21 @@ protected:
     int n_coefs;
     double *coefs;
 
-    MWNode();
-    MWNode(MWTree<D> &t, const NodeIndex<D> &nIdx);
-    MWNode(MWNode<D> &p, int cIdx);
-    MWNode(const MWNode<D> &n);
-    MWNode& operator=(const MWNode<D> &n) { NOT_IMPLEMENTED_ABORT; }
-    virtual ~MWNode();
+    int serialIx;       //index in serial Tree
+    int parentSerialIx; //index of parent in serial Tree, or -1 for roots
+    int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
 
-    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
-    void setHasWCoefs() { SET_BITS(status, FlagHasWCoefs); }
-    void setIsEndNode() { SET_BITS(status, FlagEndNode); }
-    void setIsGenNode() { SET_BITS(status, FlagGenNode); }
-    void setIsRootNode() { SET_BITS(status, FlagRootNode); }
-    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }
-    void setIsAllocated() { SET_BITS(status, FlagAllocated); }
-    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
-    void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }
-    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs);}
-    void clearHasWCoefs() { CLEAR_BITS(status, FlagHasWCoefs);}
-    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
-    void clearIsGenNode() { CLEAR_BITS(status, FlagGenNode); }
-    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
-    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
+    MWNode();
+    MWNode(const MWNode<D> &node);
+    virtual ~MWNode();
+    virtual void dealloc() { NOT_REACHED_ABORT; }
 
     virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();
 
-    //virtual void setCoefs(const Eigen::VectorXd &c);
-    virtual void zeroCoefs();
-
-    void setCoefBlock(int block, int block_size, const double *c);
-    void addCoefBlock(int block, int block_size, const double *c);
-    void zeroCoefBlock(int block, int block_size);
-
-    void calcNorms();
-    void zeroNorms();
-    void clearNorms();
-
-    double estimateError(bool absPrec);
-
     virtual double calcComponentNorm(int i) const;
 
-    virtual void cvTransform(int kind);
-    virtual void mwTransform(int kind);
-
     bool crop(double prec, NodeIndexSet *cropIdx = 0);
-
-    virtual void copyChildren(const MWNode<D> &node) { NOT_IMPLEMENTED_ABORT; }
-    virtual void createChildren();
-    virtual void deleteChildren();
-    virtual void genChildren();
-
-    virtual void genChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
-    virtual void createChild(int cIdx) { NOT_IMPLEMENTED_ABORT; }
 
     virtual void reCompress();
     virtual void giveChildrenCoefs(bool overwrite = true);
@@ -196,7 +177,6 @@ protected:
     const MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
     MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
-    virtual void clearGenerated();
     void deleteGenerated();
 
     static const unsigned char FlagBranchNode = B8(00000001);
@@ -206,7 +186,6 @@ protected:
     static const unsigned char FlagEndNode    = B8(00010000);
     static const unsigned char FlagRootNode   = B8(00100000);
     static const unsigned char FlagLooseNode  = B8(01000000);
-    static const unsigned char FlagHasWCoefs  = B8(10000000);//if Wavelet coefficients are not zero
 #ifdef OPENMP
     omp_lock_t node_lock;
 #endif
@@ -229,14 +208,6 @@ bool MWNode<D>::isAllocated() const {
 template<int D>
 bool MWNode<D>::hasCoefs() const {
     if (this->status & FlagHasCoefs) {
-        return true;
-    }
-    return false;
-}
-
-template<int D>
-bool MWNode<D>::hasWCoefs() const {
-    if (this->status & FlagHasWCoefs) {
         return true;
     }
     return false;
@@ -323,9 +294,6 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     }
     if (nd.hasCoefs()) {
         flags[5] = 'C';
-	if (nd.hasWCoefs()) {
-	  flags[6] = 'W';
-	}
     }
     o << " " << flags;
     o << " sqNorm=" << nd.squareNorm;

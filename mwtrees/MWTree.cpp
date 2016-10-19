@@ -12,7 +12,7 @@
 using namespace std;
 using namespace Eigen;
 
-/** MWTree constructor.
+/** MWTree constructor with SerialTree storage for nodes.
   * Creates an empty tree object. Node construction and assignment of most of
   * the parameters are done in derived classes. */
 template<int D>
@@ -22,52 +22,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
           rootBox(mra.getWorldBox()),
           order(mra.getOrder()),
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
-          squareNorm(-1.0),
-          name("nn"),
-          nNodes(0),
-          serialTree_p(0) {
-    this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
-
-    println(10, "new MWTree ");
-#ifdef OPENMP
-    omp_init_lock(&tree_lock);
-#endif
-}
-
-/** MWTree constructor with SerialTree storage for nodes.
-  * Creates an empty tree object. Node construction and assignment of most of
-  * the parameters are done in derived classes. */
-template<int D>
-MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, int max_nodes)
-        : nThreads(omp_get_max_threads()),
-          MRA(mra),
-          rootBox(mra.getWorldBox()),
-          order(mra.getOrder()),
-          kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
-          squareNorm(-1.0),
-          name("nn"),
-          nNodes(0),
-          serialTree_p(0) {
-    this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
-
-    new SerialTree<D>(this, max_nodes);
-    println(10, "new Serial MWTree ");
-#ifdef OPENMP
-    omp_init_lock(&tree_lock);
-#endif
-}
-
-/** MWTree copy constructor.
-  * Takes the parameters of the input tree, not it's data */
-template<int D>
-MWTree<D>::MWTree(const MWTree<D> &tree)
-        : nThreads(omp_get_max_threads()),
-          MRA(tree.MRA),
-          rootBox(tree.rootBox),
-          order(tree.order),
-          kp1_d(tree.kp1_d),
           squareNorm(-1.0),
           name("nn"),
           nNodes(0) {
@@ -82,50 +36,16 @@ MWTree<D>::MWTree(const MWTree<D> &tree)
 /** MWTree destructor. */
 template<int D>
 MWTree<D>::~MWTree() {
-  //println(10, "~MWTree");
-    if(this->serialTree_p) {
-      //SerialTree removes nodes
-      //      println(10, "delete serialTree_p");
-      delete this->serialTree_p;
-    } else {
-      //Has to remove nodes here?
-      //MWNode<D> **roots = this->getRootBox().getNodes();
-      //for (int i = 0; i < this->getRootBox().size(); i++) {
-      //  //ProjectedNode<D> *node = static_cast<ProjectedNode<D> *>(roots[i]);
-      //  roots[i]->~MWNode();
-      //  roots[i] = 0;
-      //}
-    }
     this->endNodeTable.clear();
-    if (this->nNodes != 0) {
-      MSG_ERROR("Node count != 0 -> " << this->nNodes);
-    }
-    if (this->nodesAtDepth.size() != 1) {
-      MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
-    }
-    if (this->nodesAtDepth[0] != 0) {
-      MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    }
+    if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
+    if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
+    if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     deleteNodeCounters();
 
 #ifdef OPENMP
     omp_destroy_lock(&tree_lock);
 #endif
 
-}
-
-template<int D>
-double MWTree<D>::estimateError(bool absPrec) {
-    NOT_IMPLEMENTED_ABORT;
-//    double error = 0.0;
-//    for (int i = 0; i < this->getNEndNodes(); i++) {
-//        MWNode<D> &node = getEndMWNode(i);
-//        error += node.estimateError(absPrec);
-//    }
-//#ifdef HAVE_MPI
-//    error = mpi::all_reduce(node_group, error, std::plus<double>());
-//#endif
-//    return error;
 }
 
 /** Calculate the squared norm of a function represented as a tree.
@@ -580,16 +500,6 @@ template<int D>
 void MWTree<D>::deleteGenerated() {
     for (int n = 0; n < getNEndNodes(); n++) {
         getEndMWNode(n).deleteGenerated();
-    }
-}
-
-
-/** Loop through endNodeTable and recursively clear all GenNode coefficients.
-  * Includes a static cast of endNodes from MWNode to FunctionNode*/
-template<int D>
-void MWTree<D>::clearGenerated() {
-    for (int i = 0; i < this->endNodeTable.size(); i++) {
-        getEndMWNode(i).clearGenerated();
     }
 }
 

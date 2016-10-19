@@ -5,6 +5,7 @@
 
 class OperatorTree: public MWTree<2> {
 public:
+    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, int max_nodes);
     virtual ~OperatorTree();
 
     double getNormPrecision() const { return this->normPrec; }
@@ -45,8 +46,6 @@ protected:
     BandWidth *bandWidth;
     OperatorNode ***nodePtrStore;  ///< Avoids tree lookups
     OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
-
-    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np);
 
     void setupOperNodeCache();
     void clearOperNodeCache();

@@ -19,14 +19,14 @@ using namespace std;
 template<int D>
 SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
         : SerialTree<D>(tree),
-          maxNodes(max_nodes),
           maxGenNodes(max_nodes),
-          nNodes(0),
           nGenNodes(0),
-          nNodesCoeff(0),
-          nGenNodesCoeff(0),
           lastNode(0),
           lastGenNode(0) {
+
+
+    this->maxNodes = max_nodes;
+    this->nNodes = 0;
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
@@ -47,10 +47,10 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
     this->lastGenNode = this->sGenNodes;//position of last allocated Gen node
 
     //initialize stacks
-    for (int i = 0; i < maxNodes; i++) {
+    for (int i = 0; i < this->maxNodes; i++) {
         this->nodeStackStatus[i] = 0;//0=unoccupied
     }
-    this->nodeStackStatus[maxNodes] = -1;//=unavailable
+    this->nodeStackStatus[this->maxNodes] = -1;//=unavailable
 
     //initialize stacks
     for (int i = 0; i < this->maxGenNodes; i++) {
@@ -388,6 +388,87 @@ void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
     }
     omp_unset_lock(&Sfunc_tree_lock);
  }
+
+/** Overwrite all pointers defined in the tree.
+  * Necessary after sending the tree 
+  * could be optimized. Should reset other counters? (GenNodes...) */
+template<int D>
+void SerialFunctionTree<D>::rewritePointers(int nChunks){
+  //NOT_IMPLEMENTED_ABORT;
+    
+  int depthMax = 100;
+  MWNode<D>* stack[depthMax*8];
+  int slen = 0, counter = 0;
+
+  this->nGenNodes = 0;
+
+  //reinitialize stacks
+  for (int i = 0; i < this->maxNodes; i++) {
+        this->nodeStackStatus[i] = 0;
+  }
+
+  for (int i = 0; i < this->maxGenNodes; i++) {
+        this->genNodeStackStatus[i] = 0;//0=unoccupied
+  }
+  this->genNodeStackStatus[this->maxGenNodes] = -1;//=unavailable
+
+  this->getTree()->nNodes = 0;
+  this->getTree()->nodesAtDepth.clear();
+  this->getTree()->squareNorm = 0.0;
+
+  for(int ichunk = 0 ; ichunk < nChunks; ichunk++){
+    for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++){
+      ProjectedNode<D>* Node = (this->nodeChunks[ichunk]) + inode;
+      if (Node->serialIx >= 0) {
+	  //Node is part of tree, should be processed
+	  this->getTree()->incrementNodeCount(Node->getScale());
+	  if (Node->isEndNode()) this->getTree()->squareNorm += Node->getSquareNorm();
+	  
+	  //normally (intel) the virtual table does not change, but we overwrite anyway
+	  *(char**)(Node) = this->cvptr_ProjectedNode;
+	  
+	  Node->tree = this->getTree();
+
+	  //"adress" of coefs is the same as node, but in another array
+	  Node->coefs = this->nodeCoeffChunks[ichunk]+ inode*this->sizeNodeCoeff;
+	  
+	  //adress of parent and children must be corrected
+	  //can be on a different chunks
+	  if(Node->parentSerialIx>=0){
+	    int n_ichunk = Node->parentSerialIx/this->maxNodesPerChunk;
+	    int n_inode = Node->parentSerialIx%this->maxNodesPerChunk;
+	    Node->parent = this->nodeChunks[n_ichunk] + n_inode;
+	  }else{Node->parent = 0;}
+	    
+	  for (int i = 0; i < Node->getNChildren(); i++) {
+	    int n_ichunk = (Node->childSerialIx+i)/this->maxNodesPerChunk;
+	    int n_inode = (Node->childSerialIx+i)%this->maxNodesPerChunk;
+	    Node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
+	  }
+	  this->nodeStackStatus[Node->serialIx] = 1;//occupied
+#ifdef OPENMP
+	  omp_init_lock(&(Node->node_lock));
+#endif
+	}
+
+    }
+  }
+
+  //update other MWTree data
+  FunctionTree<D>* Tree = static_cast<FunctionTree<D>*> (this->tree_p);
+
+  NodeBox<D> &rBox = Tree->getRootBox();
+  MWNode<D> **roots = rBox.getNodes();
+
+  for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
+    roots[rIdx] = (this->nodeChunks[0]) + rIdx;//adress of roots are at start of NodeChunks[0] array
+  }
+
+  this->getTree()->resetEndNodeTable();
+
+
+}
+
 
 template class SerialFunctionTree<1>;
 template class SerialFunctionTree<2>;

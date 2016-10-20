@@ -17,10 +17,10 @@ using namespace std;
 */
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree, int max_nodes)
         : SerialTree<2>(tree),
-          maxNodes(max_nodes),
-          nNodes(0),
-          nNodesCoeff(0),
           lastNode(0) {
+
+    this->maxNodes = max_nodes;
+    this->nNodes = 0;
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
@@ -180,7 +180,7 @@ OperatorNode* SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double *
             MSG_FATAL("maxNodes exceeded " << this->maxNodes);
         }
 
-        //we want nodes allocated simultaneously to be allocated on the same pice.
+        //we want nodes allocated simultaneously to be allocated on the same piece.
         //possibly jump over the last nodes from the old chunk
         this->nNodes = this->maxNodesPerChunk*((this->nNodes+nAlloc-1)/this->maxNodesPerChunk);//start of next chunk
 

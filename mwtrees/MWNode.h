@@ -42,6 +42,7 @@ public:
     int getScale() const { return getNodeIndex().getScale(); }
     int getNChildren() const { if (isBranchNode()) return getTDim(); return 0; }
     int getSerialIx() const { return this->serialIx; }
+    void setSerialIx(int Ix) { this->serialIx = Ix; }
     const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }

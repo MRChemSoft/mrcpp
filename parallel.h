@@ -31,7 +31,7 @@ void define_groups();
 void MPI_Initializations();
 
 
-void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
+//void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
 
 #ifdef HAVE_MPI
 

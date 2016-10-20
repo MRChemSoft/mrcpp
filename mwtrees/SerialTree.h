@@ -31,9 +31,15 @@ public:
     void S_mwTransform(double* coeff_in, double* coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int stride);
 
-    void rewritePointers(int nChunks);
+    int nNodes;                 //number of Nodes already defined
+    int maxNodesPerChunk;
+    int *nodeStackStatus;
+    int sizeNodeCoeff;          //size of coeff for one node
+    double **coeffStack;
 
 protected:
+    int maxNodes;               //max number of nodes that can be defined
+
     MWTree<D> *tree_p;
 };
 

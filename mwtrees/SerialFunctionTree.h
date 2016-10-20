@@ -32,33 +32,28 @@ public:
     virtual void deallocNodes(int serialIx);
     virtual void deallocGenNodes(int serialIx);
 
-protected:
-    int maxNodes;               //max number of nodes that can be defined
-    int maxGenNodes;            //max number of Gen nodes that can be defined
-    int sizeNodeCoeff;          //size of coeff for one node
-    int sizeGenNodeCoeff;       //size of coeff for one Gen node
-
-    int nNodes;                 //number of ProjectedNodes already defined
-    int nGenNodes;              //number of GenNodes already defined
-    int nNodesCoeff;            //number of nodes coeff already defined
-    int nGenNodesCoeff;         //number of GenNodes coeff already defined
-
-    double **coeffStack;
-    double **genCoeffStack;
-
-    int *nodeStackStatus;
-    int *genNodeStackStatus;
-
-    int maxNodesPerChunk;
     std::vector<ProjectedNode<D>*> nodeChunks;
-    std::vector<GenNode<D>*> genNodeChunks;
     std::vector<double*> nodeCoeffChunks;
-    std::vector<double*> genNodeCoeffChunks;
 
     ProjectedNode<D> *sNodes;   //serial ProjectedNodes
     GenNode<D> *sGenNodes;      //serial GenNodes
     double *sNodesCoeff;        //serial ProjectedNodes coefficients
     double *sGenNodesCoeff;     //serial GenNodes coefficients
+
+    std::vector<GenNode<D>*> genNodeChunks;
+    std::vector<double*> genNodeCoeffChunks;
+
+    int nGenNodes;              //number of GenNodes already defined
+
+    double **genCoeffStack;
+
+    int *genNodeStackStatus;
+
+    void rewritePointers(int nChunks);
+
+protected:
+    int maxGenNodes;            //max number of Gen nodes that can be defined
+    int sizeGenNodeCoeff;       //size of coeff for one Gen node
 
     char *cvptr_ProjectedNode;  //virtual table pointer for ProjectedNode
     char *cvptr_GenNode;        //virtual table pointer for GenNode

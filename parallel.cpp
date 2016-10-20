@@ -5,6 +5,7 @@
 #include "FunctionTree.h"
 #include "ProjectedNode.h"
 #include "../mrchem/qmfunctions/Orbital.h"
+#include "SerialFunctionTree.h"
 #include "SerialTree.h"
 #include "InterpolatingBasis.h"
 #include "MultiResolutionAnalysis.h"
@@ -13,8 +14,6 @@
 
 
 using namespace std;
-
-const MultiResolutionAnalysis<3> *default_mra=0;//used to define mra when not explicitely defined
 
 int MPI_rank = 0;
 int MPI_size = 1;
@@ -30,91 +29,12 @@ void MPI_Initializations(){
 
 }
 
-MultiResolutionAnalysis<3>* initializeMRA() {
-    // Constructing world box
-  const int D=3;
-    int scale = Input.get<int>("World.scale");
-    int max_depth = Input.get<int>("max_depth");
-    vector<int> corner = Input.getIntVec("World.corner");
-    vector<int> boxes = Input.getIntVec("World.boxes");
-    NodeIndex<D> idx(scale, corner.data());
-    BoundingBox<D> world(idx, boxes.data());
-
-    // Constructing scaling basis
-    int order = Input.get<int>("order");
-    InterpolatingBasis basis(order);
-
-    // Initializing MRA
-    return new MultiResolutionAnalysis<D>(world, basis, max_depth);
-}
-
-void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag){
-#ifdef HAVE_MPI
-  MPI_Status status;
-  MPI_Comm comm=MPI_COMM_WORLD;
-
-  struct Metadata{
-    int spin;
-    int occupancy;
-    int NchunksReal;
-    int NchunksImag;
-    double error;
-  };
-
-  Metadata Orbinfo;
-
-  if(MPI_rank==source){
-    Orbinfo.spin=Orb->getSpin();
-    Orbinfo.occupancy=Orb->getOccupancy();
-    Orbinfo.error=Orb->getError();
-    if(Orb->hasReal()){
-      Orbinfo.NchunksReal = Orb->re().getSerialTree()->NodeChunks.size();//should reduce to actual number of chunks
-    }else{Orbinfo.NchunksReal = 0;}
-    if(Orb->hasImag()){
-      Orbinfo.NchunksImag = Orb->im().getSerialTree()->NodeChunks.size();//should reduce to actual number of chunks
-    }else{Orbinfo.NchunksImag = 0;}
-
-    int count=sizeof(Metadata);
-    MPI_Send(&Orbinfo, count, MPI_BYTE, dest, 0, comm);
-
-    if(Orb->hasReal())SendRcv_SerialTree(&Orb->re(), Orbinfo.NchunksReal, source, dest, tag, comm);
-    if(Orb->hasImag())SendRcv_SerialTree(&Orb->im(), Orbinfo.NchunksImag, source, dest, tag*10000, comm);
-
-  }
-  if(MPI_rank==dest){
-    int count=sizeof(Metadata);
-    MPI_Recv(&Orbinfo, count, MPI_BYTE, source, 0, comm, &status);
-    Orb->setSpin(Orbinfo.spin);
-    Orb->setOccupancy(Orbinfo.occupancy);
-    Orb->setError(Orbinfo.error);
-
-    if(Orbinfo.NchunksReal>0){
-      if(not Orb->hasReal()){
-	//We must have a tree defined for receiving nodes. Define one:
-	if(default_mra==0){
-	  default_mra = initializeMRA();
-	  cout<<" defined new MRA with depth "<<default_mra->getMaxDepth()<<endl;
-	}
-	Orb->real = new FunctionTree<3>(*default_mra,MAXALLOCNODES);
-      }
-    SendRcv_SerialTree(&Orb->re(), Orbinfo.NchunksReal, source, dest, tag, comm);}
-
-    if(Orbinfo.NchunksImag>0){
-      SendRcv_SerialTree(&Orb->im(), Orbinfo.NchunksImag, source, dest, tag*10000, comm);
-    }else{
-      //&(Orb->im())=0;
-    }
-  }
-
-#endif
-
-}
 #ifdef HAVE_MPI
 template<int D>
 void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
   Timer timer;
-  SerialTree<D>* STree = Tree->getSerialTree();
+  SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
   
 
   cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<endl;
@@ -127,15 +47,15 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
       count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
       cout<<MPI_rank<<" sending "<<STree->maxNodesPerChunk<<" ProjectedNodes to "<<dest<<endl;
-      //set SNodeIx of the unused nodes to -1
+      //set serialIx of the unused nodes to -1
       int ishift = ichunk*STree->maxNodesPerChunk;
       for (int i = 0; i < STree->maxNodesPerChunk; i++){
-	if(STree->NodeStackStatus[ishift+i]!=1)(STree->NodeChunks[ichunk])[i].SNodeIx=-1;
+	if(STree->nodeStackStatus[ishift+i]!=1)(STree->nodeChunks[ichunk])[i].setSerialIx(-1);
       }
-      MPI_Send(STree->NodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm);
+      MPI_Send(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm);
       count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
       cout<<MPI_rank<<" sending "<<count<<" doubles to "<<dest<<endl;
-      MPI_Send(STree->NodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm);
+      MPI_Send(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm);
     }
 
      timer.stop();
@@ -145,26 +65,26 @@ void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest
 
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
-      if(ichunk<STree->NodeChunks.size()){
-	STree->SNodesCoeff = STree->NodeCoeffChunks[ichunk];
-	STree->SNodes = STree->NodeChunks[ichunk];
+      if(ichunk<STree->nodeChunks.size()){
+	STree->sNodesCoeff = STree->nodeCoeffChunks[ichunk];
+	STree->sNodes = STree->nodeChunks[ichunk];
       }else{
-        STree->SNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
-        STree->NodeCoeffChunks.push_back(STree->SNodesCoeff);
-	STree->SNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
-	STree->NodeChunks.push_back(STree->SNodes);
+        STree->sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
+        STree->nodeCoeffChunks.push_back(STree->sNodesCoeff);
+	STree->sNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
+	STree->nodeChunks.push_back(STree->sNodes);
       }      
       count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
-      MPI_Recv(STree->NodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &status);
+      MPI_Recv(STree->nodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &status);
       cout<<MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source<<endl;
       count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
-      MPI_Recv(STree->NodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &status);
+      MPI_Recv(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &status);
       cout<<MPI_rank<<" received  "<<count<<" coefficients from "<<source<<endl;
     }
     timer.stop();
     cout<<" time receive  " << timer<<endl;
     timer.start();
-    STree->RewritePointers(Nchunks);
+    STree->rewritePointers(Nchunks);
     timer.stop();
     cout<<" time rewrite pointers  " << timer<<endl;
   }

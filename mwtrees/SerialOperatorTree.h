@@ -31,21 +31,12 @@ public:
     virtual void deallocGenNodes(int serialIx);
 
 protected:
-    int maxNodes;               //max number of nodes that can be defined
-    int sizeNodeCoeff;          //size of coeff for one node
-
-    int nNodes;                 //number of OperatorNodes already defined
-    int nNodesCoeff;            //number of nodes coeff already defined
-
-    double **coeffStack;
-    int *nodeStackStatus;
-
-    int maxNodesPerChunk;
-    std::vector<OperatorNode*> nodeChunks;
-    std::vector<double*> nodeCoeffChunks;
 
     OperatorNode *sNodes;       //serial OperatorNodes
     double *sNodesCoeff;        //serial OperatorNodes coefficients
+
+    std::vector<OperatorNode*> nodeChunks;
+    std::vector<double*> nodeCoeffChunks;
 
     char *cvptr_OperatorNode;   //virtual table pointer for OperatorNode
     OperatorNode* lastNode;     //pointer to the last active node

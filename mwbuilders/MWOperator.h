@@ -32,7 +32,6 @@ protected:
     OperatorTreeVector oper;
 
     void clearOperator();
-    MultiResolutionAnalysis<2> *getOperatorMRA();
 };
 
 #endif // MWOPERATOR_H

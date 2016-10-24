@@ -22,7 +22,7 @@ DerivativeOperator<D>::~DerivativeOperator() {
 
 template<int D>
 void DerivativeOperator<D>::initializeOperator() {
-    MultiResolutionAnalysis<2> *oper_mra = this->getOperatorMRA();
+    MultiResolutionAnalysis<2> *oper_mra = this->MRA.getOperatorMRA();
     DerivativeGenerator DG(*oper_mra);
 
     OperatorTree *oper_comp = DG(this->A, this->B);

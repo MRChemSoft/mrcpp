@@ -51,23 +51,6 @@ void MWOperator<D>::clearOperator() {
     this->oper.clear();
 }
 
-template<int D>
-MultiResolutionAnalysis<2>* MWOperator<D>::getOperatorMRA() {
-    const BoundingBox<D> &box = this->MRA.getWorldBox();
-    const ScalingBasis &basis = this->MRA.getScalingBasis();
-
-    int maxn = 0;
-    for (int i = 0; i < D; i++) {
-        if (box.size(i) > maxn) {
-            maxn = box.size(i);
-        }
-    }
-    int nbox[2] = { maxn, maxn};
-    NodeIndex<2> idx(box.getScale());
-    BoundingBox<2> oper_box(idx, nbox);
-    return new MultiResolutionAnalysis<2>(oper_box, basis);
-}
-
 template class MWOperator<1>;
 template class MWOperator<2>;
 template class MWOperator<3>;

@@ -20,8 +20,6 @@ protected:
 
     double calcMinDistance(double epsilon) const;
     double calcMaxDistance() const;
-
-    MultiResolutionAnalysis<1> *getKernelMRA() const;
 };
 
 #endif // CONVOLUTIONOPERATOR_H

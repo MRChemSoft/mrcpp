@@ -31,12 +31,8 @@ void define_groups();
 void MPI_Initializations();
 
 
-//void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
-
 #ifdef HAVE_MPI
 
-template<int D>
-void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);
 template<int D>

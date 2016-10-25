@@ -2,7 +2,8 @@
 #define MULTIRESOLUTIONANALYSIS_H
 
 #include "BoundingBox.h"
-#include "ScalingBasis.h"
+#include "InterpolatingBasis.h"
+#include "LegendreBasis.h"
 #include "FilterCache.h"
 
 template<int D>
@@ -35,6 +36,55 @@ public:
     const MWFilter &getFilter() const { return *this->filter; }
     const ScalingBasis &getScalingBasis() const { return this->basis; }
     const BoundingBox<D> &getWorldBox() const { return this->world; }
+
+    MultiResolutionAnalysis<1> *getKernelMRA() const {
+        MultiResolutionAnalysis<1> *mra = 0;
+        const BoundingBox<D> &box = getWorldBox();
+        const ScalingBasis &basis = getScalingBasis();
+
+        int type = basis.getScalingType();
+        int kern_order = 2*basis.getScalingOrder() + 1;
+
+        ScalingBasis *kern_basis = 0;
+        if (type == Interpol) {
+            kern_basis = new InterpolatingBasis(kern_order);
+        } else if (type == Legendre) {
+            kern_basis = new LegendreBasis(kern_order);
+        } else {
+            MSG_ERROR("Invalid scaling type");
+            return mra;
+        }
+
+        int max_l = 0;
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > max_l) {
+                max_l = box.size(i);
+            }
+        }
+        int start_l = -max_l;
+        int tot_l = 2*max_l;
+        NodeIndex<1> idx(box.getScale(), &start_l);
+        BoundingBox<1> kern_box(idx, &tot_l);
+        mra = new MultiResolutionAnalysis<1>(kern_box, *kern_basis);
+        delete kern_basis;
+        return mra;
+    }
+
+    MultiResolutionAnalysis<2> *getOperatorMRA() const {
+        const BoundingBox<D> &box = getWorldBox();
+        const ScalingBasis &basis = getScalingBasis();
+
+        int maxn = 0;
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > maxn) {
+                maxn = box.size(i);
+            }
+        }
+        int nbox[2] = { maxn, maxn};
+        NodeIndex<2> idx(box.getScale());
+        BoundingBox<2> oper_box(idx, nbox);
+        return new MultiResolutionAnalysis<2>(oper_box, basis);
+    }
 
     bool operator==(const MultiResolutionAnalysis<D> &mra) const {
         if (this->basis != mra.basis) return false;

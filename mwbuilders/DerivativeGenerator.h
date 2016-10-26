@@ -14,7 +14,7 @@ public:
     virtual ~DerivativeGenerator() { }
 
     OperatorTree *operator()(double a, double b) {
-        OperatorTree *out = new OperatorTree(this->MRA, MachineZero, MaxAllocNodes);
+        OperatorTree *out = new OperatorTree(this->MRA, MachineZero, MaxAllocOperNodes);
         (*this)(*out, a, b, -1);
         return out;
     }

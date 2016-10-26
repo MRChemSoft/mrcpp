@@ -36,9 +36,10 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
-        FunctionTree<1> *kern_comp = G(greens_comp);
-        Q(*kern_comp, greens_comp);
-        OperatorTree *oper_comp = CC(*kern_comp);
+        FunctionTree<1> *kern_comp = new FunctionTree<1>(*kern_mra, MaxAllocNodes);
+        G(*kern_comp, greens_comp); //Generate empty grid to hold narrow Gaussian
+        Q(*kern_comp, greens_comp); //Project Gaussian starting from the empty grid
+        OperatorTree *oper_comp = CC(*kern_comp); //Expand 1D kernel into 2D operator
 
         this->kernel.push_back(kern_comp);
         this->oper.push_back(oper_comp);

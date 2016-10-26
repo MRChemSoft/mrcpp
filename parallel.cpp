@@ -78,10 +78,8 @@ void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI
       if(STree->nodeStackStatus[ishift+i]!=1)(STree->nodeChunks[ichunk])[i].setSerialIx(-1);
     }
     MPI_Isend(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm,&request);
-    MPI_Wait(&request, &status);
     count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
     MPI_Isend(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm,&request);
-    MPI_Wait(&request, &status);
   }
   timer.stop();
   println(10, " time send     " << timer); 
@@ -155,11 +153,9 @@ void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MP
       }      
       count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
       MPI_Irecv(STree->nodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &request);
-      MPI_Wait(&request, &status);
       println(10, MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source);
       count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
       MPI_Irecv(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &request);
-      MPI_Wait(&request, &status);
       println(10, MPI_rank<<" received  "<<count<<" coefficients from "<<source);
     }
 

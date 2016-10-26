@@ -1,12 +1,6 @@
 
 /*
  *
- *
- *  \date Jul 8, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- * \breif
  */
 
 #ifndef CONSTANTS_H_
@@ -19,7 +13,8 @@ const int MaxDepth = 25; ///< Maximum depth of trees
 const int MaxScale = 31; ///< Maximum scale of trees
 const int MinScale = -31; ///< Minimum scale of trees
 const int MaxSepRank = 1000;
-const int MaxAllocNodes = 500*1024;
+const int MaxAllocNodes = 256*1024;
+const int MaxAllocOperNodes = 8*1024;
 
 
 namespace Axis {

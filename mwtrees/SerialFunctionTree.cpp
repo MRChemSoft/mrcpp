@@ -5,6 +5,8 @@
 
 using namespace std;
 
+int NFtrees=0;
+
 /** SerialTree class constructor.
   * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
   * Initializes rootNodes to represent the zero function and allocate their nodes. 
@@ -25,19 +27,31 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
           lastGenNode(0) {
 
 
-    this->maxNodes = max_nodes;
+    if(D==3){
+      this->maxNodes = max_nodes;
+    }else{
+      //defined smaller sizes
+      this->maxNodes = max_nodes/128;
+    }
     this->nNodes = 0;
 
-    //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
-    int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
+    NFtrees++;
+    if(MPI_rank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
 
+    //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();//One block
     this->sizeNodeCoeff = (1<<D)*this->sizeGenNodeCoeff;//TDim  blocks
     println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff*sizeof(double)/1024);
     println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff*sizeof(double)/1024);
 
-    this->maxNodesPerChunk = sizePerChunk/this->sizeGenNodeCoeff;
-    println(10, " max_nodes = " << max_nodes << ", nodes per chunk = " << this->maxNodesPerChunk);
+    int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible     
+    if(D<3){
+      //define rather from number of nodes per chunk
+      this->maxNodesPerChunk = 64;
+      sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
+    }else{      
+      this->maxNodesPerChunk = sizePerChunk/this->sizeGenNodeCoeff;
+    }
 
     //indicate occupation of nodes
     this->nodeStackStatus = new int[this->maxNodes + 1];
@@ -82,6 +96,8 @@ SerialFunctionTree<D>::~SerialFunctionTree() {
 
     delete[] this->nodeStackStatus;
     delete[] this->genNodeStackStatus;
+
+    NFtrees--;
 
 #ifdef HAVE_OPENMP
     omp_destroy_lock(&Sfunc_tree_lock);

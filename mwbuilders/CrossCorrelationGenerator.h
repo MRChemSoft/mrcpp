@@ -20,7 +20,7 @@ public:
     void multPrecision(double fac) { this->prec *= fac; }
 
     OperatorTree *operator()(FunctionTree<1> &inp) {
-        OperatorTree *out = new OperatorTree(this->MRA, this->prec, MaxAllocNodes);
+        OperatorTree *out = new OperatorTree(this->MRA, this->prec, MaxAllocOperNodes);
         (*this)(*out, inp, -1);
         return out;
     }

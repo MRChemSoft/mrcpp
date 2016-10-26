@@ -4,6 +4,8 @@
 
 using namespace std;
 
+int NOtrees=0;
+
 /** SerialTree class constructor.
   * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
   * Initializes rootNodes to represent the zero function and allocate their nodes. 
@@ -21,15 +23,14 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree, int max_nodes)
 
     this->maxNodes = max_nodes;
     this->nNodes = 0;
-
-    //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
-    int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible
+    NOtrees++;
 
     this->sizeNodeCoeff = 4*this->tree_p->getKp1_d();
-    println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff*sizeof(double)/1024);
 
-    this->maxNodesPerChunk = sizePerChunk/this->sizeNodeCoeff;
-    println(10, " max_nodes = " << max_nodes << ", nodes per chunk = " << this->maxNodesPerChunk);
+    this->maxNodesPerChunk = 64;
+    int sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
+   
+    if(MPI_rank==0 and NOtrees%100==1)println(10, " max_nodes = " << max_nodes << ", nodes per chunk = " << this->maxNodesPerChunk<<" sizePerChunk "<<sizePerChunk<<" N Op trees: "<<NOtrees);
 
     //indicate occupation of nodes
     this->nodeStackStatus = new int[this->maxNodes + 1];
@@ -58,6 +59,7 @@ SerialOperatorTree::~SerialOperatorTree() {
     for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
 
     delete[] this->nodeStackStatus;
+    NOtrees--;
 
 #ifdef HAVE_OPENMP
     omp_destroy_lock(&Soper_tree_lock);
@@ -172,7 +174,7 @@ void SerialOperatorTree::allocGenChildren(MWNode<2> &parent) {
 //return pointer to the last active node or NULL if failed
 OperatorNode* SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     *serialIx = this->nNodes;
-    int chunkIx = *serialIx%(this->maxNodesPerChunk);
+    int chunkIx = (*serialIx)%(this->maxNodesPerChunk);
 
     if (chunkIx == 0 or chunkIx+nAlloc > this->maxNodesPerChunk ) {
         //start on new chunk

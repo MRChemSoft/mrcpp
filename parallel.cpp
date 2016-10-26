@@ -30,75 +30,12 @@ void MPI_Initializations(){
 
 #ifdef HAVE_MPI
 template<int D>
-void SendRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int dest, int tag, MPI_Comm comm){
-  MPI_Status status;
-  Timer timer;
-  SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
-  
-
-  if(dest==MPI_rank)cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" receiving from "<<source<<endl;
-  if(source==MPI_rank)cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest<<endl;
-  int count = 1;
-  int STreeMeta[count];
-
-  if(MPI_rank==source){
-
-    timer.start();
-    for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
-      count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
-      cout<<MPI_rank<<" sending "<<STree->maxNodesPerChunk<<" ProjectedNodes to "<<dest<<endl;
-      //set serialIx of the unused nodes to -1
-      int ishift = ichunk*STree->maxNodesPerChunk;
-      for (int i = 0; i < STree->maxNodesPerChunk; i++){
-	if(STree->nodeStackStatus[ishift+i]!=1)(STree->nodeChunks[ichunk])[i].setSerialIx(-1);
-      }
-      MPI_Send(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm);
-      count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
-      cout<<MPI_rank<<" sending "<<count<<" doubles to "<<dest<<endl;
-      MPI_Send(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm);
-    }
-
-     timer.stop();
-    cout<<" time send     " << timer<<endl;
-  }
-  if(MPI_rank==dest){
-
-    timer.start();
-    for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
-      if(ichunk<STree->nodeChunks.size()){
-	STree->sNodesCoeff = STree->nodeCoeffChunks[ichunk];
-	STree->sNodes = STree->nodeChunks[ichunk];
-      }else{
-        STree->sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
-        STree->nodeCoeffChunks.push_back(STree->sNodesCoeff);
-	STree->sNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
-	STree->nodeChunks.push_back(STree->sNodes);
-      }      
-      count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
-      MPI_Recv(STree->nodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &status);
-      cout<<MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source<<endl;
-      count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
-      MPI_Recv(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &status);
-      cout<<MPI_rank<<" received  "<<count<<" coefficients from "<<source<<endl;
-    }
-    timer.stop();
-    cout<<" time receive  " << timer<<endl;
-    timer.start();
-    STree->rewritePointers(Nchunks);
-    timer.stop();
-    cout<<" time rewrite pointers  " << timer<<endl;
-  }
-}
-#endif
-
-#ifdef HAVE_MPI
-template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm){
   MPI_Status status;
   Timer timer;
   SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
   
-  cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest<<endl;
+  println(10," STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest);
   int count = 1;
   int STreeMeta[count];
   
@@ -116,7 +53,7 @@ void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_
   }
   
   timer.stop();
-  cout<<" time send     " << timer<<endl; 
+  println(10," time send     " << timer); 
 }
 #endif
 
@@ -127,7 +64,7 @@ void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI
   Timer timer;
   SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
   
-  cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest<<endl;
+  println(10,MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest);
   int count = 1;
   int STreeMeta[count];
   MPI_Request request;
@@ -141,13 +78,11 @@ void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI
       if(STree->nodeStackStatus[ishift+i]!=1)(STree->nodeChunks[ichunk])[i].setSerialIx(-1);
     }
     MPI_Isend(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm,&request);
-    MPI_Wait(&request, &status);
     count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
     MPI_Isend(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm,&request);
-    MPI_Wait(&request, &status);
   }
   timer.stop();
-  cout<<" time send     " << timer<<endl; 
+  println(10, " time send     " << timer); 
 }
 #endif
 
@@ -159,7 +94,7 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
   SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
   
 
-  cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" receiving from "<<source<<endl;
+  println(10, MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" receiving from "<<source);
   int count = 1;
   int STreeMeta[count];
 
@@ -176,17 +111,17 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
       }      
       count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
       MPI_Recv(STree->nodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &status);
-      cout<<MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source<<endl;
+      println(10, MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source);
       count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
       MPI_Recv(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &status);
-      cout<<MPI_rank<<" received  "<<count<<" coefficients from "<<source<<endl;
+      println(10, " received  "<<count<<" coefficients from "<<source);
     }
     timer.stop();
-    cout<<" time receive  " << timer<<endl;
+    println(10, " time receive  " << timer);
     timer.start();
     STree->rewritePointers(Nchunks);
     timer.stop();
-    cout<<" time rewrite pointers  " << timer<<endl;
+	    println(10, " time rewrite pointers  " << timer);
 
 }
 #endif
@@ -199,7 +134,7 @@ void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MP
   SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
   
 
-  cout<<MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" receiving from "<<source<<endl;
+  println(10, MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" receiving from "<<source);
   int count = 1;
   int STreeMeta[count];
 
@@ -218,21 +153,19 @@ void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MP
       }      
       count=STree->maxNodesPerChunk*sizeof(ProjectedNode<D>);
       MPI_Irecv(STree->nodeChunks[ichunk], count, MPI_BYTE, source, tag+1+ichunk, comm, &request);
-      MPI_Wait(&request, &status);
-      cout<<MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source<<endl;
+      println(10, MPI_rank<<" received  "<<count/1024<<" kB with ProjectedNodes from "<<source);
       count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
       MPI_Irecv(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, source, tag+ichunk*1000, comm, &request);
-      MPI_Wait(&request, &status);
-      cout<<MPI_rank<<" received  "<<count<<" coefficients from "<<source<<endl;
+      println(10, MPI_rank<<" received  "<<count<<" coefficients from "<<source);
     }
 
 
     timer.stop();
-    cout<<" time receive  " << timer<<endl;
+    println(10, " time receive  " << timer);
     timer.start();
     STree->rewritePointers(Nchunks);
     timer.stop();
-    cout<<" time rewrite pointers  " << timer<<endl;
+    println(10, " time rewrite pointers  " << timer);
 
 }
 #endif
@@ -352,8 +285,6 @@ void Assign_NxN_sym(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rc
 	    int i_glob = i + dBlock*MPI_size;
 	    int j_glob = j + jBlock*MPI_size;
 	  if((imax+j-i)%imax<(imax+1)/2){
-	    cout<<dBlock<<" D "<<iter+jBlock+sh<<" "<<i_glob<<" "<<j_glob<<endl;
-	    
 	    doi[iter+jBlock+sh] = i_glob;
 	    doj[iter+jBlock+sh] = j_glob;}
 	    //rcvorb[iter+jBlock+sh]=-1;//indicates "use same as before"
@@ -533,9 +464,6 @@ void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr
 } */
 
 #ifdef HAVE_MPI
-template void SendRcv_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
-template void SendRcv_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
-template void SendRcv_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int source, int dest, int tag, MPI_Comm comm);
 template void Rcv_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int source, int tag, MPI_Comm comm);
 template void Rcv_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int source, int tag, MPI_Comm comm);
 template void Rcv_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int source, int tag, MPI_Comm comm);

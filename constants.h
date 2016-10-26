@@ -15,6 +15,7 @@ const int MinScale = -31; ///< Minimum scale of trees
 const int MaxSepRank = 1000;
 const int MaxAllocNodes = 256*1024;
 const int MaxAllocOperNodes = 8*1024;
+const int MaxAllocNodes1D = 8*1024;
 
 
 namespace Axis {

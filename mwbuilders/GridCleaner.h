@@ -9,18 +9,14 @@
 template<int D>
 class GridCleaner : public TreeBuilder<D> {
 public:
-    GridCleaner(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
-            : TreeBuilder<D>(mra),
-              prec(pr) {
-    }
-    virtual ~GridCleaner() {
-    }
+    GridCleaner(double pr = -1.0) : prec(pr) { }
+    virtual ~GridCleaner() { }
 
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
 
     int operator()(MWTree<D> &out) {
-        this->adaptor = new WaveletAdaptor<D>(this->prec, this->MRA.getMaxScale());
+        this->adaptor = new WaveletAdaptor<D>(this->prec, MaxScale);
         this->calculator = new DefaultCalculator<D>();
         int nSplit = clean(out);
         this->clearCalculator();

@@ -30,16 +30,19 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
     MultiResolutionAnalysis<1> *kern_mra = this->MRA.getKernelMRA();
     MultiResolutionAnalysis<2> *oper_mra = this->MRA.getOperatorMRA();
 
-    GridGenerator<1> G(*kern_mra);
-    MWProjector<1> Q(*kern_mra, this->build_prec/10.0);
-    CrossCorrelationGenerator CC(*oper_mra, this->build_prec);
+    GridGenerator<1> G;
+    MWProjector<1> Q(this->build_prec/10.0);
+    CrossCorrelationGenerator CC(this->build_prec);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
-        FunctionTree<1> *kern_comp = new FunctionTree<1>(*kern_mra, MaxAllocNodes);
+
+        FunctionTree<1> *kern_comp = new FunctionTree<1>(*kern_mra);
         G(*kern_comp, greens_comp); //Generate empty grid to hold narrow Gaussian
         Q(*kern_comp, greens_comp); //Project Gaussian starting from the empty grid
-        OperatorTree *oper_comp = CC(*kern_comp); //Expand 1D kernel into 2D operator
+
+        OperatorTree *oper_comp = new OperatorTree(*oper_mra, this->build_prec);
+        CC(*oper_comp, *kern_comp); //Expand 1D kernel into 2D operator
 
         this->kernel.push_back(kern_comp);
         this->oper.push_back(oper_comp);

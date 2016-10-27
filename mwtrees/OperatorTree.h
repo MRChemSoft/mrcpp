@@ -5,7 +5,8 @@
 
 class OperatorTree: public MWTree<2> {
 public:
-    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, int max_nodes);
+    OperatorTree(const MultiResolutionAnalysis<2> &mra,
+                 double np, int max_nodes = MaxAllocOperNodes);
     virtual ~OperatorTree();
 
     double getNormPrecision() const { return this->normPrec; }

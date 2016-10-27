@@ -9,33 +9,14 @@
 template<int D>
 class MWMultiplier : public TreeBuilder<D> {
 public:
-    MWMultiplier(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
-            : TreeBuilder<D>(mra),
-              prec(pr) {
-    }
-    virtual ~MWMultiplier() {
-    }
+    MWMultiplier(double pr = -1.0) : prec(pr) { }
+    virtual ~MWMultiplier() { }
 
     double getPrecision() const { return this->prec; }
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
 
-    FunctionTree<D>* operator()(double c,
-                                FunctionTree<D> &tree_a,
-                                FunctionTree<D> &tree_b) {
-        FunctionTreeVector<D> tree_vec;
-        tree_vec.push_back(c, &tree_a);
-        tree_vec.push_back(1.0, &tree_b);
-        return (*this)(tree_vec);
-    }
-    FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp);
-        return out;
-    }
-
-    void operator()(FunctionTree<3> &out,
-                    double c,
+    void operator()(FunctionTree<3> &out, double c,
                     FunctionTree<D> &tree_a,
                     FunctionTree<D> &tree_b,
                     int maxIter = -1) {
@@ -47,7 +28,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new WaveletAdaptor<D>(this->prec, this->MRA.getMaxScale());
+        this->adaptor = new WaveletAdaptor<D>(this->prec, MaxScale);
         this->calculator = new MultiplicationCalculator<D>(inp);
         this->build(out, maxIter);
         this->clearCalculator();

@@ -19,7 +19,8 @@
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, int max_nodes);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra,
+                 int max_nodes = MaxAllocNodes);
     virtual ~FunctionTree();
 
     void clear();

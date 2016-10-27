@@ -6,20 +6,12 @@
 #include "Timer.h"
 
 template<int D>
-FunctionTree<D>* MWOperator<D>::operator()(FunctionTree<D> &inp) {
-    FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-    (*this)(*out, inp, -1);
-    return out;
-}
-
-template<int D>
 void MWOperator<D>::operator()(FunctionTree<D> &out,
                                FunctionTree<D> &inp,
                                int maxIter) {
     Timer pre_t;
     this->oper.calcBandWidths(this->apply_prec);
-    this->adaptor = new WaveletAdaptor<D>(this->apply_prec,
-                                          this->MRA.getMaxScale());
+    this->adaptor = new WaveletAdaptor<D>(this->apply_prec, MaxScale);
     this->calculator = new OperApplicationCalculator<D>(this->apply_dir,
                                                         this->apply_prec,
                                                         this->oper,

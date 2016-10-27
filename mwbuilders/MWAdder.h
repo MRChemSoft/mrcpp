@@ -5,34 +5,16 @@
 #include "AdditionCalculator.h"
 #include "WaveletAdaptor.h"
 #include "Timer.h"
-#include "SerialTree.h"
 
 template<int D>
 class MWAdder : public TreeBuilder<D> {
 public:
-    MWAdder(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
-            : TreeBuilder<D>(mra),
-              prec(pr) {
-    }
-    virtual ~MWAdder() {
-    }
+    MWAdder(double pr = -1.0) : prec(pr) { }
+    virtual ~MWAdder() { }
 
     double getPrecision() const { return this->prec; }
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
-
-    FunctionTree<D>* operator()(double a, FunctionTree<D> &tree_a,
-                                double b, FunctionTree<D> &tree_b) {
-        FunctionTreeVector<D> tree_vec;
-        tree_vec.push_back(a, &tree_a);
-        tree_vec.push_back(b, &tree_b);
-        return (*this)(tree_vec);
-    }
-    FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp);
-        return out;
-    }
 
     void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
@@ -46,7 +28,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new WaveletAdaptor<D>(this->prec, this->MRA.getMaxScale());
+        this->adaptor = new WaveletAdaptor<D>(this->prec, MaxScale);
         this->calculator = new AdditionCalculator<D>(inp);
         this->build(out, maxIter);
         this->clearCalculator();

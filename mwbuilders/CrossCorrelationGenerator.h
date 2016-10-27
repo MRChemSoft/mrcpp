@@ -9,24 +9,14 @@
 
 class CrossCorrelationGenerator : public TreeBuilder<2> {
 public:
-    CrossCorrelationGenerator(const MultiResolutionAnalysis<2> &mra, double pr)
-            : TreeBuilder<2>(mra),
-              prec(pr) {
-    }
-    virtual ~CrossCorrelationGenerator() {
-    }
+    CrossCorrelationGenerator(double pr) : prec(pr) { }
+    virtual ~CrossCorrelationGenerator() { }
 
     void setPrecision(double pr) { this->prec = pr; }
     void multPrecision(double fac) { this->prec *= fac; }
 
-    OperatorTree *operator()(FunctionTree<1> &inp) {
-        OperatorTree *out = new OperatorTree(this->MRA, this->prec, MaxAllocOperNodes);
-        (*this)(*out, inp, -1);
-        return out;
-    }
-
     void operator()(OperatorTree &out, FunctionTree<1> &inp, int maxIter = -1) {
-        this->adaptor = new OperatorAdaptor(this->prec, this->MRA.getMaxScale());
+        this->adaptor = new OperatorAdaptor(this->prec, MaxScale);
         this->calculator = new CrossCorrelationCalculator(inp);
         this->build(out, maxIter);
         this->clearCalculator();

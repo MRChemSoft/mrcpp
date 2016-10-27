@@ -10,33 +10,8 @@
 template<int D>
 class GridGenerator : public TreeBuilder<D> {
 public:
-    GridGenerator(const MultiResolutionAnalysis<D> &mra)
-            : TreeBuilder<D>(mra) {
-    }
-    virtual ~GridGenerator() {
-    }
-
-    FunctionTree<D> *operator()() {
-        return new FunctionTree<D>(this->MRA, MaxAllocNodes);
-    }
-
-    FunctionTree<D> *operator()(const RepresentableFunction<D> &inp, int maxIter = -1) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp, maxIter);
-        return out;
-    }
-
-    FunctionTree<D> *operator()(FunctionTree<D> &inp, int maxIter = -1) {
-	FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp, maxIter);
-        return out;
-    }
-
-    FunctionTree<D> *operator()(FunctionTreeVector<D> &inp, int maxIter = -1) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp, maxIter);
-        return out;
-    }
+    GridGenerator() { }
+    virtual ~GridGenerator() { }
 
     void operator()(FunctionTree<D> &out,
                     const RepresentableFunction<D> &inp,

@@ -8,10 +8,7 @@
 using namespace std;
 
 template<int D>
-TreeBuilder<D>::TreeBuilder(const MultiResolutionAnalysis<D> &mra)
-        : adaptor(0),
-          calculator(0),
-          MRA(mra) {
+TreeBuilder<D>::TreeBuilder() : adaptor(0), calculator(0) {
 }
 
 template<int D>

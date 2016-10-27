@@ -11,17 +11,10 @@ class BoysFunction : public RepresentableFunction<1> {
 public:
     BoysFunction(int n, double prec = 1.0e-10)
             : RepresentableFunction<1>(),
-              Q(0),
-              order(n) {
-        int k = 13;
-        InterpolatingBasis basis(k);
-        BoundingBox<1> world;
-        MultiResolutionAnalysis<1> MRA(world, basis);
-        this->Q = new MWProjector<1>(MRA, prec);
-    }
-    virtual ~BoysFunction() {
-        if (this->Q != 0) delete this->Q;
-    }
+              order(n),
+              Q(prec),
+              MRA(BoundingBox<1>(), InterpolatingBasis(13)) { }
+    virtual ~BoysFunction() { }
 
     double evalf(const double *r) const {
         int oldlevel = TelePrompter::setPrintLevel(0);
@@ -38,17 +31,20 @@ public:
             return exp(-xt_2)*t_2n;
         };
 
-        FunctionTree<1> *tree = (*this->Q)(f);
-        double result = tree->integrate();
-        delete tree;
+        FunctionTree<1> tree(this->MRA);
+        NOT_IMPLEMENTED_ABORT;
+        //waiting for const
+        //this->Q(tree, f);
+        double result = tree.integrate();
 
         TelePrompter::setPrintLevel(oldlevel);
         return result;
     }
 
 protected:
-    MWProjector<1> *Q;
     const int order;
+    MWProjector<1> Q;
+    MultiResolutionAnalysis<1> MRA;
 };
 
 #endif // BOYSFUNCTION_H

@@ -6,13 +6,12 @@
 template<int D>
 class TreeBuilder {
 public:
-    TreeBuilder(const MultiResolutionAnalysis<D> &mra);
+    TreeBuilder();
     virtual ~TreeBuilder();
 
 protected:
     TreeAdaptor<D> *adaptor;
     TreeCalculator<D> *calculator;
-    const MultiResolutionAnalysis<D> MRA;
 
     void clearCalculator();
     void clearAdaptor();

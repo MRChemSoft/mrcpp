@@ -5,6 +5,7 @@ add_library(mwoperators STATIC
     DerivativeOperator.cpp
     HelmholtzKernel.cpp
     PoissonKernel.cpp
+    MWOperator.cpp
 )
 
 target_link_libraries(mwoperators

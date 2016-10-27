@@ -4,7 +4,7 @@
 #include "MWOperator.h"
 
 template<int D>
-class DerivativeOperator : public MWOperator<D> {
+class DerivativeOperator : public MWOperator {
 public:
     DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
                        double a = 0.5, double b = 0.5);

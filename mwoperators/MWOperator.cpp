@@ -5,30 +5,26 @@
 using namespace std;
 using namespace Eigen;
 
-template<int D>
-void MWOperator<D>::clearOperator() {
+void MWOperator::clearOperator() {
     for (int i = 0; i < this->oper_exp.size(); i++) {
         if (this->oper_exp[i] != 0) delete this->oper_exp[i];
     }
     this->oper_exp.clear();
 }
 
-template<int D>
-OperatorTree& MWOperator<D>::getComponent(int i) {
+OperatorTree& MWOperator::getComponent(int i) {
     if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }
 
-template<int D>
-const OperatorTree& MWOperator<D>::getComponent(int i) const {
+const OperatorTree& MWOperator::getComponent(int i) const {
     if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }
 
-template<int D>
-int MWOperator<D>::getMaxBandWidth(int depth) const {
+int MWOperator::getMaxBandWidth(int depth) const {
     int maxWidth = -1;
     if (depth < 0 ) {
         maxWidth = this->bandMax.maxCoeff();
@@ -38,15 +34,13 @@ int MWOperator<D>::getMaxBandWidth(int depth) const {
     return maxWidth;
 }
 
-template<int D>
-void MWOperator<D>::clearBandWidths() {
+void MWOperator::clearBandWidths() {
     for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
         this->oper_exp[i]->clearBandWidth();
     }
 }
 
-template<int D>
-void MWOperator<D>::calcBandWidths(double prec) {
+void MWOperator::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component
     for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
@@ -75,7 +69,3 @@ void MWOperator<D>::calcBandWidths(double prec) {
     }
     println(20, "  Maximum bandwidths:\n" << this->bandMax << std::endl);
 }
-
-template class MWOperator<1>;
-template class MWOperator<2>;
-template class MWOperator<3>;

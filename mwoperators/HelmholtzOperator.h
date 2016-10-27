@@ -11,8 +11,8 @@ public:
             : ConvolutionOperator<3>(mra, pr), mu(m) {
         int oldlevel = TelePrompter::setPrintLevel(0);
         double epsilon = this->prec/10.0;
-        double r_min = calcMinDistance(epsilon);
-        double r_max = calcMaxDistance();
+        double r_min = calcMinDistance(mra, epsilon);
+        double r_max = calcMaxDistance(mra);
         HelmholtzKernel helmholtz_kernel(this->mu, epsilon, r_min, r_max);
         // Rescale for application in 3D
         helmholtz_kernel.rescale(3);

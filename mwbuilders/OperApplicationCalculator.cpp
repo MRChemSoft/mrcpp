@@ -19,7 +19,7 @@ using namespace Eigen;
 template<int D>
 OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
                                                         double p,
-                                                        MWOperator<D> &o,
+                                                        MWOperator &o,
                                                         FunctionTree<D> &f,
                                                         int depth)
         : applyDir(dir),

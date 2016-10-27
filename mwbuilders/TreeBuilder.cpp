@@ -8,40 +8,15 @@
 using namespace std;
 
 template<int D>
-TreeBuilder<D>::TreeBuilder() : adaptor(0), calculator(0) {
-}
-
-template<int D>
-TreeBuilder<D>::~TreeBuilder() {
-    if (this->adaptor != 0) MSG_ERROR("Adaptor not deallocated");
-    if (this->calculator != 0) MSG_ERROR("Calculator not deallocated");
-}
-
-template<int D>
-void TreeBuilder<D>::clearAdaptor() {
-    if (this->adaptor != 0) {
-        delete this->adaptor;
-        this->adaptor = 0;
-    }
-}
-
-template<int D>
-void TreeBuilder<D>::clearCalculator() {
-    if (this->calculator != 0) {
-        delete this->calculator;
-        this->calculator = 0;
-    }
-}
-
-template<int D>
-void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
+void TreeBuilder<D>::build(MWTree<D> &tree,
+                           TreeCalculator<D> &calculator,
+                           TreeAdaptor<D> &adaptor,
+                           int maxIter) const {
     Timer calc_t(false), split_t(false), norm_t(false);
-    if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
-    if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
     println(10, " == Building tree");
 
     MWNodeVector *newVec = 0;
-    MWNodeVector *workVec = this->calculator->getInitialWorkVector(tree);
+    MWNodeVector *workVec = calculator.getInitialWorkVector(tree);
 
     double sNorm = 0.0;
     double wNorm = 0.0;
@@ -51,7 +26,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
         printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
         printout(10, setw(6) << workVec->size() << " nodes ");
         calc_t.resume();
-        this->calculator->calcNodeVector(*workVec);
+        calculator.calcNodeVector(*workVec);
         calc_t.stop();
 
         norm_t.resume();
@@ -73,7 +48,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, int maxIter) const {
         split_t.resume();
         newVec = new MWNodeVector;
         if (iter >= maxIter and maxIter >= 0) workVec->clear();
-        this->adaptor->splitNodeVector(*newVec, *workVec);
+        adaptor.splitNodeVector(*newVec, *workVec);
         split_t.stop();
 
         delete workVec;

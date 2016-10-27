@@ -5,18 +5,17 @@
 using namespace std;
 
 template<int D>
-int GridCleaner<D>::clean(MWTree<D> &tree) const {
-    if (this->calculator == 0) MSG_ERROR("Calculator not initialized");
-    if (this->adaptor == 0) MSG_ERROR("Adaptor not initialized");
+int GridCleaner<D>::clean(MWTree<D> &tree,
+                          TreeCalculator<D> &calculator,
+                          TreeAdaptor<D> &adaptor) const {
     println(10, " == Clearing tree");
 
     Timer split_t;
-    MWNodeVector *newVec = new MWNodeVector;
+    MWNodeVector newVec;
     MWNodeVector *workVec = tree.copyEndNodeTable();
-    this->adaptor->splitNodeVector(*newVec, *workVec);
-    int nSplit = newVec->size();
+    adaptor.splitNodeVector(newVec, *workVec);
+    int nSplit = newVec.size();
     delete workVec;
-    delete newVec;
     split_t.stop();
 
     printout(10, "  -- #  0: Split        ");
@@ -26,7 +25,7 @@ int GridCleaner<D>::clean(MWTree<D> &tree) const {
     MWNodeVector nodeVec;
     tree.makeNodeTable(nodeVec);
     int nClear = nodeVec.size();
-    this->calculator->calcNodeVector(nodeVec);//clear all coefficients
+    calculator.calcNodeVector(nodeVec);//clear all coefficients
     clean_t.stop();
 
     tree.resetEndNodeTable();

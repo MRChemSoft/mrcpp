@@ -9,7 +9,8 @@
 
 class DerivativeGenerator : public TreeBuilder<2> {
 public:
-    DerivativeGenerator(const ScalingBasis &bas) : basis(bas) { }
+    DerivativeGenerator(const ScalingBasis &bas, int max_scale = MaxScale)
+        : TreeBuilder<2>(-1.0, max_scale), basis(bas) { }
     virtual ~DerivativeGenerator() { }
 
     void operator()(OperatorTree &out, double a, double b, int maxIter = -1) {
@@ -17,11 +18,9 @@ public:
         if (fabs(a) > MachineZero) bw = 1;
         if (fabs(b) > MachineZero) bw = 1;
 
-        this->adaptor = new BandWidthAdaptor(bw, MaxScale);
-        this->calculator = new DerivativeCalculator(this->basis, a, b);
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        DerivativeCalculator calculator(this->basis, a, b);
+        BandWidthAdaptor adaptor(bw, this->maxScale);
+        this->build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);

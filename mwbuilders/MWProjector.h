@@ -10,11 +10,9 @@
 template<int D>
 class MWProjector : public TreeBuilder<D> {
 public:
-    MWProjector(double pr = -1.0) : prec(pr) { }
+    MWProjector(double pr = -1.0, int max_scale = MaxScale)
+        : TreeBuilder<D>(pr, max_scale) { }
     virtual ~MWProjector() { }
-
-    void setPrecision(double pr) { this->prec = pr; }
-    void multPrecision(double fac) { this->prec *= fac; }
 
     void operator()(FunctionTree<D> &out,
                     std::function<double (const double *r)> func,
@@ -22,15 +20,12 @@ public:
         AnalyticFunction<D> inp(func);
         (*this)(out, inp, maxIter);
     }
-
     void operator()(FunctionTree<D> &out,
                     RepresentableFunction<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new WaveletAdaptor<D>(this->prec, MaxScale);
-        this->calculator = new ProjectionCalculator<D>(inp);
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        ProjectionCalculator<D> calculator(inp);
+        WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
+        this->build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -40,8 +35,6 @@ public:
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
     }
-protected:
-    double prec;
 };
 
 #endif // MWPROJECTOR_H

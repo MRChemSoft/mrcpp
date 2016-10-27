@@ -7,13 +7,13 @@
 template<int D>
 class ConvolutionOperator : public MWOperator<D> {
 public:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                        double apply, double build);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
+        : MWOperator<D>(mra), prec(pr) { }
     virtual ~ConvolutionOperator();
 
 protected:
-    double build_prec;
-    FunctionTreeVector<1> kernel;
+    double prec;
+    FunctionTreeVector<1> kernel_exp;
 
     void initializeOperator(GreensKernel &greens_kernel);
     void clearKernel();

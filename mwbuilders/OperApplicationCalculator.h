@@ -10,7 +10,7 @@ class OperApplicationCalculator : public TreeCalculator<D> {
 public:
     OperApplicationCalculator(int dir,
                               double p,
-                              OperatorTreeVector &o,
+                              MWOperator<D> &o,
                               FunctionTree<D> &f,
                               int depth = MaxDepth);
     virtual ~OperApplicationCalculator();
@@ -21,7 +21,7 @@ protected:
     int applyDir;
     int maxDepth;
     double prec;
-    OperatorTreeVector *oper;
+    MWOperator<D> *oper;
     FunctionTree<D> *fTree;
     std::vector<Timer> band_t;
     std::vector<Timer> calc_t;

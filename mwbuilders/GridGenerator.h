@@ -5,44 +5,37 @@
 #include "DefaultCalculator.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
-#include "SerialTree.h"
 
 template<int D>
 class GridGenerator : public TreeBuilder<D> {
 public:
-    GridGenerator() { }
+    GridGenerator(int max_scale = MaxScale) : TreeBuilder<D>(-1.0, max_scale) { }
     virtual ~GridGenerator() { }
 
     void operator()(FunctionTree<D> &out,
                     const RepresentableFunction<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new AnalyticAdaptor<D>(inp);
-        this->calculator = new DefaultCalculator<D>();
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        AnalyticAdaptor<D> adaptor(inp);
+        DefaultCalculator<D> calculator;
+        this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out,
                     FunctionTree<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new CopyAdaptor<D>(inp);
-        this->calculator = new DefaultCalculator<D>();
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        CopyAdaptor<D> adaptor(inp);
+        DefaultCalculator<D> calculator;
+        this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) {
-        this->adaptor = new CopyAdaptor<D>(inp);
-        this->calculator = new DefaultCalculator<D>();
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        CopyAdaptor<D> adaptor(inp);
+        DefaultCalculator<D> calculator;
+        this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
 };

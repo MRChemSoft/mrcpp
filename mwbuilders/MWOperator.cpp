@@ -1,46 +1,79 @@
 #include "MWOperator.h"
-#include "FunctionTree.h"
-#include "WaveletAdaptor.h"
-#include "OperApplicationCalculator.h"
-#include "MultiResolutionAnalysis.h"
+#include "BandWidth.h"
 #include "Timer.h"
 
-template<int D>
-void MWOperator<D>::operator()(FunctionTree<D> &out,
-                               FunctionTree<D> &inp,
-                               int maxIter) {
-    Timer pre_t;
-    this->oper.calcBandWidths(this->apply_prec);
-    this->adaptor = new WaveletAdaptor<D>(this->apply_prec, MaxScale);
-    this->calculator = new OperApplicationCalculator<D>(this->apply_dir,
-                                                        this->apply_prec,
-                                                        this->oper,
-                                                        inp);
-    pre_t.stop();
-
-    this->build(out, maxIter);
-
-    Timer post_t;
-    this->clearCalculator();
-    this->clearAdaptor();
-    this->oper.clearBandWidths();
-    out.mwTransform(TopDown, false); // add coarse scale contributions
-    out.mwTransform(BottomUp);
-    out.calcSquareNorm();
-    inp.deleteGenerated();
-    post_t.stop();
-
-    println(10, "Time pre operator   " << pre_t);
-    println(10, "Time post operator  " << post_t);
-    println(10, std::endl);
-}
+using namespace std;
+using namespace Eigen;
 
 template<int D>
 void MWOperator<D>::clearOperator() {
-    for (int i = 0; i < this->oper.size(); i++) {
-        if (this->oper[i] != 0) delete this->oper[i];
+    for (int i = 0; i < this->oper_exp.size(); i++) {
+        if (this->oper_exp[i] != 0) delete this->oper_exp[i];
     }
-    this->oper.clear();
+    this->oper_exp.clear();
+}
+
+template<int D>
+OperatorTree& MWOperator<D>::getComponent(int i) {
+    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
+    return *this->oper_exp[i];
+}
+
+template<int D>
+const OperatorTree& MWOperator<D>::getComponent(int i) const {
+    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
+    return *this->oper_exp[i];
+}
+
+template<int D>
+int MWOperator<D>::getMaxBandWidth(int depth) const {
+    int maxWidth = -1;
+    if (depth < 0 ) {
+        maxWidth = this->bandMax.maxCoeff();
+    } else if (depth < this->bandMax.size() ) {
+        maxWidth = this->bandMax(depth);
+    }
+    return maxWidth;
+}
+
+template<int D>
+void MWOperator<D>::clearBandWidths() {
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        this->oper_exp[i]->clearBandWidth();
+    }
+}
+
+template<int D>
+void MWOperator<D>::calcBandWidths(double prec) {
+    int maxDepth = 0;
+    // First compute BandWidths and find depth of the deepest component
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        OperatorTree &oTree = *this->oper_exp[i];
+        oTree.calcBandWidth(prec);
+        const BandWidth &bw = oTree.getBandWidth();
+        int depth = bw.getDepth();
+        if (depth > maxDepth) {
+            maxDepth = depth;
+        }
+    }
+    this->bandMax = VectorXi(maxDepth + 1);
+    this->bandMax.setConstant(-1);
+    // Find the largest effective bandwidth at each scale
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        const OperatorTree &oTree = *this->oper_exp[i];
+        const BandWidth &bw = oTree.getBandWidth();
+        for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
+            for (int j = 0; j < 4; j++) { //component loop
+                int w = bw.getWidth(n, j);
+                if (w > this->bandMax(n)) {
+                    this->bandMax(n) = w;
+                }
+            }
+        }
+    }
+    println(20, "  Maximum bandwidths:\n" << this->bandMax << std::endl);
 }
 
 template class MWOperator<1>;

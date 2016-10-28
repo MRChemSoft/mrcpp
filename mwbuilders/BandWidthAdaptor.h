@@ -10,7 +10,7 @@
 
 class BandWidthAdaptor : public TreeAdaptor<2> {
 public:
-    BandWidthAdaptor(int bw, int ms = MaxScale)
+    BandWidthAdaptor(int bw, int ms)
             : TreeAdaptor<2>(ms),
               bandWidth(bw) { }
     virtual ~BandWidthAdaptor() { }

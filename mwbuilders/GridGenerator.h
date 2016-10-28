@@ -9,13 +9,14 @@
 template<int D>
 class GridGenerator : public TreeBuilder<D> {
 public:
-    GridGenerator(int max_scale = MaxScale) : TreeBuilder<D>(-1.0, max_scale) { }
+    GridGenerator(int max_scale = MaxScale)
+        : TreeBuilder<D>(-1.0, max_scale) { }
     virtual ~GridGenerator() { }
 
     void operator()(FunctionTree<D> &out,
                     const RepresentableFunction<D> &inp,
                     int maxIter = -1) const {
-        AnalyticAdaptor<D> adaptor(inp);
+        AnalyticAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
@@ -24,7 +25,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     FunctionTree<D> &inp,
                     int maxIter = -1) const {
-        CopyAdaptor<D> adaptor(inp);
+        CopyAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
@@ -33,7 +34,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) const {
-        CopyAdaptor<D> adaptor(inp);
+        CopyAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);
         println(10, std::endl);

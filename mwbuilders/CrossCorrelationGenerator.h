@@ -9,7 +9,7 @@
 
 class CrossCorrelationGenerator : public TreeBuilder<2> {
 public:
-    CrossCorrelationGenerator(double pr, int max_scale = MaxScale)
+    CrossCorrelationGenerator(double pr, int max_scale)
         : TreeBuilder<2>(pr, max_scale) { }
     virtual ~CrossCorrelationGenerator() { }
 

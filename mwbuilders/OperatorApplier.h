@@ -9,7 +9,7 @@
 template<int D>
 class OperatorApplier : public TreeBuilder<D> {
 public:
-    OperatorApplier(double pr, int max_scale = MaxScale)
+    OperatorApplier(double pr = -1.0, int max_scale = MaxScale)
         : TreeBuilder<D>(pr, max_scale) { }
     virtual ~OperatorApplier() { }
 

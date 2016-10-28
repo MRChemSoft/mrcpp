@@ -32,9 +32,7 @@ public:
         };
 
         FunctionTree<1> tree(this->MRA);
-        NOT_IMPLEMENTED_ABORT;
-        //waiting for const
-        //this->Q(tree, f);
+        this->Q(tree, f);
         double result = tree.integrate();
 
         TelePrompter::setPrintLevel(oldlevel);

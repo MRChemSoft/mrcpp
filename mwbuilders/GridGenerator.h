@@ -14,7 +14,7 @@ public:
 
     void operator()(FunctionTree<D> &out,
                     const RepresentableFunction<D> &inp,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         AnalyticAdaptor<D> adaptor(inp);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);
@@ -23,7 +23,7 @@ public:
 
     void operator()(FunctionTree<D> &out,
                     FunctionTree<D> &inp,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         CopyAdaptor<D> adaptor(inp);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);
@@ -32,7 +32,7 @@ public:
 
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         CopyAdaptor<D> adaptor(inp);
         DefaultCalculator<D> calculator;
         this->build(out, calculator, adaptor, maxIter);

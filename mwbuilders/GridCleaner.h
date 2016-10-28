@@ -15,7 +15,7 @@ public:
     double getPrecision() const { return this->prec; }
     void setPrecision(double pr) { this->prec = pr; }
 
-    int operator()(MWTree<D> &out) {
+    int operator()(MWTree<D> &out) const {
         DefaultCalculator<D> calculator;
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
         int nSplit = clean(out, calculator, adaptor);

@@ -13,7 +13,11 @@ public:
         : TreeBuilder<D>(pr, max_scale) { }
     virtual ~OperatorApplier() { }
 
-    void operator()(FunctionTree<D> &out, MWOperator &oper, FunctionTree<D> &inp, int maxIter = -1, int dir = -1) {
+    void operator()(FunctionTree<D> &out,
+                    MWOperator &oper,
+                    FunctionTree<D> &inp,
+                    int maxIter = -1,
+                    int dir = -1) const {
         Timer pre_t;
         oper.calcBandWidths(this->prec);
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);

@@ -16,13 +16,13 @@ public:
 
     void operator()(FunctionTree<D> &out,
                     std::function<double (const double *r)> func,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         AnalyticFunction<D> inp(func);
         (*this)(out, inp, maxIter);
     }
     void operator()(FunctionTree<D> &out,
                     RepresentableFunction<D> &inp,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         ProjectionCalculator<D> calculator(inp);
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
         this->build(out, calculator, adaptor, maxIter);

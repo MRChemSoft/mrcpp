@@ -16,7 +16,7 @@ public:
     void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
                     double b, FunctionTree<D> &tree_b,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         FunctionTreeVector<D> tree_vec;
         tree_vec.push_back(a, &tree_a);
         tree_vec.push_back(b, &tree_b);
@@ -24,7 +24,7 @@ public:
     }
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         AdditionCalculator<D> calculator(inp);
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
         this->build(out, calculator, adaptor, maxIter);

@@ -7,7 +7,7 @@
 template<int D>
 class AnalyticAdaptor : public TreeAdaptor<D> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms = MaxScale)
+    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms)
             : TreeAdaptor<D>(ms),
               func(&f) { }
     virtual ~AnalyticAdaptor() { }

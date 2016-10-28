@@ -15,9 +15,10 @@ ConvolutionOperator<D>::~ConvolutionOperator() {
 
 template<int D>
 void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
-    GridGenerator<1> G;
-    MWProjector<1> Q(this->prec/10.0);
-    CrossCorrelationGenerator CC(this->prec);
+    int max_scale = this->oper_mra.getMaxScale();
+    GridGenerator<1> G(max_scale);
+    MWProjector<1> Q(this->prec/10.0, max_scale);
+    CrossCorrelationGenerator CC(this->prec, max_scale);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];

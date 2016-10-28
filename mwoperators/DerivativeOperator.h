@@ -22,7 +22,9 @@ protected:
     const double B;
 
     void initializeOperator() {
-        DerivativeGenerator DG(this->oper_mra.getScalingBasis());
+        int max_scale = this->oper_mra.getMaxScale();
+        const ScalingBasis &basis = this->oper_mra.getScalingBasis();
+        DerivativeGenerator DG(basis, max_scale);
 
         OperatorTree *oper_comp = new OperatorTree(this->oper_mra, MachineZero, MaxAllocOperNodes);
         DG(*oper_comp, this->A, this->B);

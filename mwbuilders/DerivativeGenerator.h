@@ -9,7 +9,7 @@
 
 class DerivativeGenerator : public TreeBuilder<2> {
 public:
-    DerivativeGenerator(const ScalingBasis &bas, int max_scale = MaxScale)
+    DerivativeGenerator(const ScalingBasis &bas, int max_scale)
         : TreeBuilder<2>(-1.0, max_scale), basis(bas) { }
     virtual ~DerivativeGenerator() { }
 

@@ -5,7 +5,7 @@
 
 class OperatorAdaptor : public WaveletAdaptor<2> {
 public:
-    OperatorAdaptor(double pr = -1.0, int ms = MaxScale, bool ap = false)
+    OperatorAdaptor(double pr, int ms, bool ap = false)
             : WaveletAdaptor<2>(pr, ms, ap) { }
     virtual ~OperatorAdaptor() { }
 

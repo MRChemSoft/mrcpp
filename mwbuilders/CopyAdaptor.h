@@ -8,11 +8,11 @@
 template<int D>
 class CopyAdaptor : public TreeAdaptor<D> {
 public:
-    CopyAdaptor(FunctionTree<D> &t, int ms = MaxScale)
+    CopyAdaptor(FunctionTree<D> &t, int ms)
             : TreeAdaptor<D>(ms) {
         tree_vec.push_back(&t);
     }
-    CopyAdaptor(FunctionTreeVector<D> &t, int ms = MaxScale)
+    CopyAdaptor(FunctionTreeVector<D> &t, int ms)
             : TreeAdaptor<D>(ms),
               tree_vec(t) {
     }

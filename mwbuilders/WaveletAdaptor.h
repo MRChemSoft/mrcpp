@@ -7,8 +7,8 @@
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double pr = -1.0,
-		   int ms = MaxScale,
+    WaveletAdaptor(double pr,
+		   int ms,
 		   bool ap = false,
 		   double sf = 1.0)
             : TreeAdaptor<D>(ms),

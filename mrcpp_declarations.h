@@ -16,7 +16,6 @@ template <int D> class MWTree;
 template <int D> class FunctionTree;
 template <int D> class FunctionTreeVector;
 class OperatorTree;
-class OperatorTreeVector;
 
 template <int D> class MWNode;
 template <int D> class FunctionNode;
@@ -30,7 +29,7 @@ template <int D> class GridCleaner;
 template <int D> class MWProjector;
 template <int D> class MWAdder;
 template <int D> class MWMultiplier;
-template <int D> class MWOperator;
+class MWOperator;
 template <int D> class IdentityOperator;
 template <int D> class DerivativeConvolution;
 template <int D> class DerivativeOperator;

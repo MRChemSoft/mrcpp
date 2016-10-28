@@ -9,26 +9,18 @@
 
 class DerivativeGenerator : public TreeBuilder<2> {
 public:
-    DerivativeGenerator(const MultiResolutionAnalysis<2> &mra)
-        : TreeBuilder<2>(mra) { }
+    DerivativeGenerator(const ScalingBasis &bas, int max_scale = MaxScale)
+        : TreeBuilder<2>(-1.0, max_scale), basis(bas) { }
     virtual ~DerivativeGenerator() { }
-
-    OperatorTree *operator()(double a, double b) {
-        OperatorTree *out = new OperatorTree(this->MRA, MachineZero, MaxAllocOperNodes);
-        (*this)(*out, a, b, -1);
-        return out;
-    }
 
     void operator()(OperatorTree &out, double a, double b, int maxIter = -1) {
         int bw = 0;
         if (fabs(a) > MachineZero) bw = 1;
         if (fabs(b) > MachineZero) bw = 1;
 
-        this->adaptor = new BandWidthAdaptor(bw, this->MRA.getMaxScale());
-        this->calculator = new DerivativeCalculator(this->MRA.getScalingBasis(), a, b);
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        DerivativeCalculator calculator(this->basis, a, b);
+        BandWidthAdaptor adaptor(bw, this->maxScale);
+        this->build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -39,6 +31,8 @@ public:
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
     }
+protected:
+    ScalingBasis basis;
 };
 
 #endif // DERIVATIVEGENERATOR_H

@@ -6,7 +6,6 @@ add_library(mwtrees STATIC
     MWTree.cpp
     OperatorNode.cpp
     OperatorTree.cpp
-    OperatorTreeVector.cpp
     ProjectedNode.cpp
     SerialFunctionTree.cpp
     SerialOperatorTree.cpp

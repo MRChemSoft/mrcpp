@@ -1,8 +1,8 @@
 
 add_library(mwbuilders STATIC 
     CrossCorrelationCalculator.cpp
+    DerivativeCalculator.cpp
     GridCleaner.cpp
-    MWOperator.cpp
     OperApplicationCalculator.cpp
     ProjectionCalculator.cpp
     TreeBuilder.cpp

@@ -5,39 +5,18 @@
 #include "AdditionCalculator.h"
 #include "WaveletAdaptor.h"
 #include "Timer.h"
-#include "SerialTree.h"
 
 template<int D>
 class MWAdder : public TreeBuilder<D> {
 public:
-    MWAdder(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
-            : TreeBuilder<D>(mra),
-              prec(pr) {
-    }
-    virtual ~MWAdder() {
-    }
-
-    double getPrecision() const { return this->prec; }
-    void setPrecision(double pr) { this->prec = pr; }
-    void multPrecision(double fac) { this->prec *= fac; }
-
-    FunctionTree<D>* operator()(double a, FunctionTree<D> &tree_a,
-                                double b, FunctionTree<D> &tree_b) {
-        FunctionTreeVector<D> tree_vec;
-        tree_vec.push_back(a, &tree_a);
-        tree_vec.push_back(b, &tree_b);
-        return (*this)(tree_vec);
-    }
-    FunctionTree<D>* operator()(FunctionTreeVector<D> &inp) {
-        FunctionTree<D> *out = new FunctionTree<D>(this->MRA, MaxAllocNodes);
-        (*this)(*out, inp);
-        return out;
-    }
+    MWAdder(double pr = -1.0, int max_scale = MaxScale)
+        : TreeBuilder<D>(pr, max_scale) { }
+    virtual ~MWAdder() { }
 
     void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
                     double b, FunctionTree<D> &tree_b,
-                    int maxIter = -1) {
+                    int maxIter = -1) const {
         FunctionTreeVector<D> tree_vec;
         tree_vec.push_back(a, &tree_a);
         tree_vec.push_back(b, &tree_b);
@@ -45,12 +24,10 @@ public:
     }
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
-                    int maxIter = -1) {
-        this->adaptor = new WaveletAdaptor<D>(this->prec, this->MRA.getMaxScale());
-        this->calculator = new AdditionCalculator<D>(inp);
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+                    int maxIter = -1) const {
+        AdditionCalculator<D> calculator(inp);
+        WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
+        this->build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -68,9 +45,6 @@ public:
         println(10, "Time cleaning       " << clean_t);
         println(10, std::endl);
     }
-
-protected:
-    double prec;
 };
 
 #endif // MWADDER_H

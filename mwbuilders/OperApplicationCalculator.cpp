@@ -1,5 +1,5 @@
 #include "OperApplicationCalculator.h"
-#include "OperatorTreeVector.h"
+#include "MWOperator.h"
 #include "OperatorState.h"
 #include "FunctionNode.h"
 #include "OperatorNode.h"
@@ -19,7 +19,7 @@ using namespace Eigen;
 template<int D>
 OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
                                                         double p,
-                                                        OperatorTreeVector &o,
+                                                        MWOperator &o,
                                                         FunctionTree<D> &f,
                                                         int depth)
         : applyDir(dir),

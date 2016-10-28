@@ -9,28 +9,14 @@
 
 class CrossCorrelationGenerator : public TreeBuilder<2> {
 public:
-    CrossCorrelationGenerator(const MultiResolutionAnalysis<2> &mra, double pr)
-            : TreeBuilder<2>(mra),
-              prec(pr) {
-    }
-    virtual ~CrossCorrelationGenerator() {
-    }
-
-    void setPrecision(double pr) { this->prec = pr; }
-    void multPrecision(double fac) { this->prec *= fac; }
-
-    OperatorTree *operator()(FunctionTree<1> &inp) {
-        OperatorTree *out = new OperatorTree(this->MRA, this->prec, MaxAllocOperNodes);
-        (*this)(*out, inp, -1);
-        return out;
-    }
+    CrossCorrelationGenerator(double pr, int max_scale = MaxScale)
+        : TreeBuilder<2>(pr, max_scale) { }
+    virtual ~CrossCorrelationGenerator() { }
 
     void operator()(OperatorTree &out, FunctionTree<1> &inp, int maxIter = -1) {
-        this->adaptor = new OperatorAdaptor(this->prec, this->MRA.getMaxScale());
-        this->calculator = new CrossCorrelationCalculator(inp);
-        this->build(out, maxIter);
-        this->clearCalculator();
-        this->clearAdaptor();
+        CrossCorrelationCalculator calculator(inp);
+        OperatorAdaptor adaptor(this->prec, this->maxScale);
+        this->build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -41,8 +27,6 @@ public:
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
     }
-protected:
-    double prec;
 };
 
 #endif // CROSSCORRELATIONGENERATOR_H

@@ -208,7 +208,7 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
 }
 
 template<int D>
-void FunctionNode<D>::setValues(VectorXd &vec) {
+void FunctionNode<D>::setValues(const VectorXd &vec) {
     this->zeroCoefs();
     this->setCoefBlock(0, vec.size(), vec.data());
     this->cvTransform(Backward);

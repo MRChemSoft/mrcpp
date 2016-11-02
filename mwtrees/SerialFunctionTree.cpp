@@ -27,12 +27,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
           lastGenNode(0) {
 
 
-    if(D==3){
-      this->maxNodes = max_nodes;
-    }else{
-      //defined smaller sizes
-      this->maxNodes = max_nodes/128;
-    }
+    this->maxNodes = max_nodes;
     this->nNodes = 0;
 
     NFtrees++;

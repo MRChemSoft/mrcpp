@@ -22,8 +22,8 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &greens_comp = *greens_kernel[i];
+        FunctionTree<1> *kern_comp = new FunctionTree<1>(this->kern_mra, MaxAllocNodes1D);
 
-        FunctionTree<1> *kern_comp = new FunctionTree<1>(this->kern_mra);
         G(*kern_comp, greens_comp); //Generate empty grid to hold narrow Gaussian
         Q(*kern_comp, greens_comp); //Project Gaussian starting from the empty grid
 

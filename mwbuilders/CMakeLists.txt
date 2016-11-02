@@ -6,7 +6,6 @@ add_library(mwbuilders STATIC
     OperApplicationCalculator.cpp
     ProjectionCalculator.cpp
     TreeBuilder.cpp
-    WaveletAdaptor.cpp
 )
 
 target_link_libraries(mwbuilders

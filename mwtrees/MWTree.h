@@ -60,7 +60,7 @@ public:
     const NodeBox<D> &getRootBox() const { return this->rootBox; }
     const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }
 
-    void crop(double thrs = -1.0, bool absPrec = true);
+    void crop(double prec, double splitFac = 1.0, bool absPrec = true);
     void mwTransform(int type, bool overwrite = true);
 
     void setName(const std::string &n) { this->name = n; }

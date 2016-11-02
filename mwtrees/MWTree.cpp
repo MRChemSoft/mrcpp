@@ -68,35 +68,14 @@ void MWTree<D>::calcSquareNorm() {
   * which have a higher precision than the requested precison.
   * By default, the relative precision of the tree is used. */
 template<int D>
-void MWTree<D>::crop(double thrs, bool absPrec) {
-    NOT_IMPLEMENTED_ABORT;
+void MWTree<D>::crop(double prec, double splitFac, bool absPrec) {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = getRootMWNode(i);
+        root.crop(prec, splitFac, absPrec);
+    }
+    resetEndNodeTable();
+    calcSquareNorm();
 }
-
-//template<int D>
-//void MWTree<D>::cropTree(double prec, bool absPrec) {
-//    set<const NodeIndex<D> *, NodeIndexComp<D> > cropNodes;
-//    for (int i = 0; i < this->rootBox.getNBoxes(); i++) {
-//        MWNode<D> &rootNode = getRootMWNode(i);
-//        if (this->isScattered()) {
-//            rootNode.cropChildren(prec, &cropNodes);
-//        } else {
-//            rootNode.cropChildren(prec);
-//        }
-//    }
-//    if (this->isScattered()) {
-//        broadcastIndexList(cropNodes);
-//        typename set<const NodeIndex<D> *,
-//                NodeIndexComp<D> >::reverse_iterator it;
-//        for (it = cropNodes.rbegin(); it != cropNodes.rend(); it++) {
-//            MWNode<D> *node = this->findNode(**it);
-//            if (node != 0) {
-//                node->deleteChildren();
-//            }
-//        }
-//    }
-//    resetEndNodeTable();
-//    this->squareNorm = calcSquareNorm();
-//}
 
 template<int D>
 void MWTree<D>::mwTransform(int type, bool overwrite) {

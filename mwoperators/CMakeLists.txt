@@ -1,5 +1,6 @@
 
 add_library(mwoperators STATIC
+    FiniteDifferenceOperator.cpp
     ConvolutionOperator.cpp
     HelmholtzKernel.cpp
     PoissonKernel.cpp

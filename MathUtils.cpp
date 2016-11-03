@@ -289,20 +289,22 @@ void MathUtils::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
         int pos = kp1_d - nelem;
         int inpos = kp1_d - idx;
         for (int i = 0; i < kp1; i++) {
-            //#ifdef HAVE_BLAS
-            //	    cblas_dcopy(idx, &coefs(inpos), 1, &coefs(pos + i * idx), 1);
-            //	    cblas_dscal(idx, scaling.col(dim + 1)(i), &coefs(pos + i * idx), 1);
-            //#else
             expanded.segment(pos + i * idx, idx) =
                     expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
-            //#endif
         }
         tensorExpandCoefs(dim, dir + 1, kp1, kp1_d, primitive, expanded);
     }
 }
 
 void MathUtils::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
-    NOT_IMPLEMENTED_ABORT
+    int n = 0;
+    for (int i = 0; i < kp1; i++) {
+        for (int j = 0; j < kp1; j++) {
+            expanded(n,0) = primitive(j,0);
+            expanded(n,1) = primitive(i,1);
+            n++;
+        }
+    }
 }
 
 void MathUtils::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
@@ -317,21 +319,6 @@ void MathUtils::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, Matrix
             }
         }
     }
-    /*
-    if (dir <= D) {
-    tensorExpandCoords(dim, dir+1, kp1, primitive, expanded);
-    }
-    int dim = D-1;
-    int kp1_dir = ipow(kp1, dir);
-    int kp1_dmd = ipow(kp1, dim - dir);
-    for (int i = 0; i < kp1_dmd; i++) {
-        for (int j = 0; j < kp1_dir; j++) {
-        for (int k = 0; k < kp1; k++) {
-                expanded(k*() + j*() + i*(), dir) = primitive(k, dir);
-        }
-        }
-    }
-*/
 }
 
 /** Calculate the distance between two points in n-dimensions */

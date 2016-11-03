@@ -42,19 +42,15 @@ void InterpolatingBasis::initScalingBasis() {
     }
 }
 
-//void InterpolatingBasis::preEvaluate() {
-//	getQuadratureCache(qc);
-//	const VectorXd &wgts = qc.getWeights(quadratureOrder);
+void InterpolatingBasis::calcQuadratureValues() {
+    int q_order = getQuadratureOrder();
+    getQuadratureCache(qc);
+    const VectorXd &wgts = qc.getWeights(q_order);
 
-//	int npts = scalingOrder + 1;
-//	preVals = MatrixXd::Zero(quadratureOrder, npts);
-
-//	assert(quadratureOrder == npts);
-
-//	for (int k = 0; k < npts; k++) {
-//		preVals(k, k) = sqrt(wgts(k));
-//	}
-//}
+    for (int k = 0; k < q_order; k++) {
+	this->quadVals(k, k) = sqrt(wgts(k));
+    }
+}
 
 ///****** WARNING! Ugliness ahead!!! ********************************/
 

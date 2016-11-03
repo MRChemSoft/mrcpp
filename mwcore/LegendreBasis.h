@@ -17,10 +17,12 @@ public:
     LegendreBasis(int k)
             : ScalingBasis(k, Legendre) {
         initScalingBasis();
+        calcQuadratureValues();
     }
     virtual ~LegendreBasis() { }
 
     void initScalingBasis();
+    void calcQuadratureValues();
 };
 
 #endif // LEGENDREBASIS_H

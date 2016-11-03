@@ -9,6 +9,7 @@
 
 #include "LegendreBasis.h"
 #include "LegendrePoly.h"
+#include "QuadratureCache.h"
 
 using namespace std;
 using namespace Eigen;
@@ -21,37 +22,19 @@ void LegendreBasis::initScalingBasis() {
     }
 }
 
-//LegendreBasis::LegendreBasis(int order) : ScalingBasis(order) {
-//	this->type = Legendre;
-//	initScalingBasis();
-//	preEvaluate();
-//}
+void LegendreBasis::calcQuadratureValues() {
+    int q_order = getQuadratureOrder();
+    getQuadratureCache(qc);
+    const VectorXd &pts = qc.getRoots(q_order);
+    const VectorXd &wgts = qc.getWeights(q_order);
 
-//void LegendreBasis::initScalingBasis() {
-//	for (int i = 0; i < scalingOrder + 1; i++) {
-//		LegendrePoly *poly = new LegendrePoly(i, 0.0, 1.0);
-//		this->addFunc(poly);
-//		this->getFunc(i) *= sqrt(2.0 * i + 1.0); // exact normalization
-//	}
-//}
-
-//void LegendreBasis::preEvaluate() {
-//	getQuadratureCache(qc);
-//	const VectorXd &pts = qc.getRoots(quadratureOrder);
-//	const VectorXd &wgts = qc.getWeights(quadratureOrder);
-
-//	int npts = scalingOrder + 1;
-//	preVals = MatrixXd::Zero(quadratureOrder, npts);
-
-//	assert(quadratureOrder == npts);
-
-//	for (int k = 0; k < npts; k++) {
-//		const Polynomial &poly = this->getFunc(k);
-//		for (int i = 0; i < quadratureOrder; i++) {
-//			preVals(i, k) = poly.evalf(pts(i)) * wgts(i);
-//		}
-//	}
-//}
+    for (int k = 0; k < q_order; k++) {
+	const Polynomial &poly = this->getFunc(k);
+	for (int i = 0; i < q_order; i++) {
+	    this->quadVals(i, k) = poly.evalf(pts(i)) * wgts(i);
+	}
+    }
+}
 
 ///****** WARNING! Ugliness ahead!!! ********************************/
 

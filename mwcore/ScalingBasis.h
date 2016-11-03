@@ -23,6 +23,8 @@ public:
             : type(t),
               order(k) {
         if (this->order < 1) MSG_FATAL("Invalid scaling order");
+        int q_order = getQuadratureOrder();
+        this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
     }
     virtual ~ScalingBasis() { }
 
@@ -42,6 +44,7 @@ public:
     int getScalingType() const { return this->type; }
     int getScalingOrder() const { return this->order; }
     int getQuadratureOrder() const { return this->order + 1; }
+    const Eigen::MatrixXd &getQuadratureValues() const { return this->quadVals; }
 
     bool operator==(const ScalingBasis &basis) const {
         if (this->type != basis.type) return false;
@@ -67,9 +70,10 @@ public:
         return o;
     }
 protected:
-    std::vector<Polynomial> funcs;
     const int type;
     const int order;
+    Eigen::MatrixXd quadVals;
+    std::vector<Polynomial> funcs;
 };
 
 #endif /* SCALINGBASIS_H */

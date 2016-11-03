@@ -17,10 +17,12 @@ public:
     InterpolatingBasis(int k)
             : ScalingBasis(k, Interpol) {
         initScalingBasis();
+        calcQuadratureValues();
     }
     virtual ~InterpolatingBasis() { }
 
     void initScalingBasis();
+    void calcQuadratureValues();
 };
 
 #endif // INTERPOLATINGBASIS_H

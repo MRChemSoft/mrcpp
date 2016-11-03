@@ -575,7 +575,22 @@ int MWNode<D>::getChildIndex(const double *r) const {
 }
 
 template<int D>
-void MWNode<D>::getQuadraturePoints(MatrixXd &pts) {
+void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
+    int kp1 = this->getKp1();
+    pts = MatrixXd::Zero(kp1,D);
+
+    getQuadratureCache(qc);
+    const VectorXd &roots = qc.getRoots(kp1);
+
+    double sFac = pow(2.0, -this->getScale());
+    const int *l = this->getTranslation();
+    for (int d = 0; d < D; d++) {
+        pts.col(d) = sFac*(roots.array() + double(l[d]));
+    }
+}
+
+template<int D>
+void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
     pts = MatrixXd::Zero(2*kp1,D);
 
@@ -590,38 +605,45 @@ void MWNode<D>::getQuadraturePoints(MatrixXd &pts) {
     }
 }
 
-//template<int D>
-//void MWNode<D>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
-//    NOT_IMPLEMENTED_ABORT;
-//}
+template<int D>
+void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
+    MatrixXd prim_pts;
+    getPrimitiveQuadPts(prim_pts);
 
-//template<>
-//void MWNode<1>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
-//    int kp1_d = this->getKp1_d();
-//    expandedPoints = MatrixXd::Zero(kp1_d,1);
+    int kp1 = this->getKp1();
+    int kp1_d = this->getKp1_d();
+    pts = MatrixXd::Zero(kp1_d, D);
 
-//    const MatrixXd &primitivePoints = getQuadPoints();
-//    expandedPoints.col(0) = primitivePoints;
-//}
+    if (D == 1) pts = prim_pts;
+    if (D == 2) MathUtils::tensorExpandCoords_2D(kp1, prim_pts, pts);
+    if (D == 3) MathUtils::tensorExpandCoords_3D(kp1, prim_pts, pts);
+    if (D >= 4) NOT_IMPLEMENTED_ABORT;
+}
 
-//template<>
-//void MWNode<2>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
-//    NOT_IMPLEMENTED_ABORT;
-//    int kp1 = this->getKp1();
-//    int kp1_d = this->getKp1_d();
-//    const MatrixXd &primitivePoints = getQuadPoints();
-//    expandedPoints = MatrixXd::Zero(kp1_d,2);
-//    MathUtils::tensorExpandCoords_2D(kp1, primitivePoints, expandedPoints);
-//}
+template<int D>
+void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
+    MatrixXd prim_pts;
+    getPrimitiveChildPts(prim_pts);
 
-//template<>
-//void MWNode<3>::getExpandedPoints(Eigen::MatrixXd &expandedPoints) const {
-//    int kp1 = this->getKp1();
-//    int kp1_d = this->getKp1_d();
-//    const MatrixXd &primitivePoints = getQuadPoints();
-//    expandedPoints = MatrixXd::Zero(kp1_d,3);
-//    MathUtils::tensorExpandCoords_3D(kp1, primitivePoints, expandedPoints);
-//}
+    int tDim = this->getTDim();
+    int kp1 = this->getKp1();
+    int kp1_d = this->getKp1_d();
+    pts = MatrixXd::Zero(tDim*kp1_d, D);
+    MatrixXd prim_t = MatrixXd::Zero(kp1, D);
+    MatrixXd exp_t = MatrixXd::Zero(kp1_d, D);
+
+    for (int t = 0; t < tDim; t++) {
+        for (int d = 0; d < D; d++) {
+            int idx = (t>>d)&1;
+            prim_t.col(d) = prim_pts.block(idx*kp1, d, kp1, 1);
+        }
+        if (D == 1) exp_t = prim_t;
+        if (D == 2) MathUtils::tensorExpandCoords_2D(kp1, prim_t, exp_t);
+        if (D == 3) MathUtils::tensorExpandCoords_3D(kp1, prim_t, exp_t);
+        if (D >= 4) NOT_IMPLEMENTED_ABORT;
+        pts.block(t*kp1_d, 0, kp1_d, D) = exp_t;
+    }
+}
 
 /** Const version of node retriever that NEVER generates.
   *

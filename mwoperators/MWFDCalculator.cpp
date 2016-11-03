@@ -51,7 +51,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
     if (i_0 < 0) MSG_FATAL("Node should exist!");
     MWNode<D> &mw_0 = this->f_tree->getNode(idx);
     FunctionNode<D> &f_0 = static_cast<FunctionNode<D> &>(mw_0);
-    f_0.getQuadraturePoints(pts);
+    f_0.getPrimitiveChildPts(pts);
     f_0.getValues(vals);
     input_data.block(n_coefs,0,n_coefs,D) = pts;
     input_data.block(n_coefs,D,n_coefs,1) = vals;
@@ -71,7 +71,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
         double r_m1 = n_size*idx.getTranslation(0) - MachineZero;
         MWNode<D> &mw_m1 = this->f_tree->getNode(&r_m1, fetch_scale);
         FunctionNode<D> &f_m1 = static_cast<FunctionNode<D> &>(mw_m1);
-        f_m1.getQuadraturePoints(pts);
+        f_m1.getPrimitiveChildPts(pts);
         f_m1.getValues(vals);
         input_data.block(0,0,n_coefs,D) = pts;
         input_data.block(0,D,n_coefs,1) = vals;
@@ -82,7 +82,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
         double r_p1 = n_size*idx_p1.getTranslation(0) + MachineZero;
         MWNode<D> &mw_p1 = this->f_tree->getNode(&r_p1, fetch_scale);
         FunctionNode<D> &f_p1 = static_cast<FunctionNode<D> &>(mw_p1);
-        f_p1.getQuadraturePoints(pts);
+        f_p1.getPrimitiveChildPts(pts);
         f_p1.getValues(vals);
         input_data.block(2*n_coefs,0,n_coefs,D) = pts;
         input_data.block(2*n_coefs,D,n_coefs,1) = vals;
@@ -95,7 +95,7 @@ MatrixXd MWFDCalculator<D>::setupOutputData(FunctionNode<D> &node) {
     int n_coefs = this->f_tree->getTDim()*this->f_tree->getKp1_d();
     MatrixXd output_data = MatrixXd::Zero(n_coefs, D+1);
     MatrixXd pts;
-    node.getQuadraturePoints(pts);
+    node.getPrimitiveChildPts(pts);
     output_data.block(0,0,n_coefs,D) = pts;
     return output_data;
 }

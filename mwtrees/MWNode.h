@@ -78,7 +78,10 @@ public:
     double* getCoefs() { return this->coefs; }
     const double* getCoefs() const { return this->coefs; }
 
-    void getQuadraturePoints(Eigen::MatrixXd &pts);
+    void getPrimitiveQuadPts(Eigen::MatrixXd &pts) const;
+    void getPrimitiveChildPts(Eigen::MatrixXd &pts) const;
+    void getExpandedQuadPts(Eigen::MatrixXd &pts) const;
+    void getExpandedChildPts(Eigen::MatrixXd &pts) const;
 
     MWTree<D>& getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D>& getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }

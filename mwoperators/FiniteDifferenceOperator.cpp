@@ -34,7 +34,7 @@ void FiniteDifferenceOperator<D>::setupQuadPoints(FunctionTree<D> &tree,
     for (int n = 0; n < nNodes; n++) {
         FunctionNode<D> &node = tree.getEndFuncNode(n);
         MatrixXd x_i;
-        node.getQuadraturePoints(x_i);
+        node.getPrimitiveChildPts(x_i);
         pts.block(n*nCoefs, 0, nCoefs, D) = x_i;
     }
 }

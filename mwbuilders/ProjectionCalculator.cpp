@@ -1,14 +1,34 @@
 #include <Eigen/Core>
 
 #include "ProjectionCalculator.h"
-#include "QuadratureCache.h"
-#include "MultiResolutionAnalysis.h"
 #include "MWNode.h"
-#include "MWTree.h"
 
 using namespace std;
 using namespace Eigen;
 
+template<int D>
+void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
+    MatrixXd exp_pts;
+    node.getExpandedChildPts(exp_pts);
+
+    assert(exp_pts.cols() == node.getNCoefs());
+
+    int kp1 = node.getKp1();
+    int np1 = node.getScale() + 1;
+    double two_np1 = pow(2.0, -np1);
+
+    double *coefs = node.getCoefs();
+    for (int i = 0; i < node.getNCoefs(); i++) {
+        const double *r = exp_pts.col(i).data();
+        coefs[i] = this->func->evalf(r);
+    }
+    node.cvTransform(Backward);
+    node.mwTransform(Compression);
+    node.setHasCoefs();
+    node.calcNorms();
+}
+
+/* Old interpolating version, somewhat faster
 template<int D>
 void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     const ScalingBasis &sf = node.getMWTree().getMRA().getScalingBasis();
@@ -62,6 +82,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     node.setHasCoefs();
     node.calcNorms();
 }
+*/
 
 template class ProjectionCalculator<1>;
 template class ProjectionCalculator<2>;

@@ -225,6 +225,48 @@ void MWNode<D>::copyCoefsFromChildren() {
   *       representation, in oppose to s/d (scaling and wavelet). */
 template<int D>
 void MWNode<D>::cvTransform(int operation) {
+    int kp1 = this->getKp1();
+    int kp1_dm1 = MathUtils::ipow(kp1, D - 1);
+    int kp1_d = this->getKp1_d();
+    int nCoefs = this->getTDim()*kp1_d;
+
+    const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
+    const MatrixXd &S = sf.getCVMap(operation);
+
+    double o_vec[nCoefs];
+    double *out_vec = o_vec;
+    double *in_vec = this->coefs;
+
+    for (int i = 0; i < D; i++) {
+        for (int t = 0; t < this->getTDim(); t++) {
+            double *out = out_vec + t*kp1_d;
+            double *in = in_vec + t*kp1_d;
+            MathUtils::applyFilter(out, in, S, kp1, kp1_dm1, 0.0);
+        }
+        double *tmp = in_vec;
+        in_vec = out_vec;
+        out_vec = tmp;
+    }
+    int np1 = getScale() + 1; // we're working on scaling coefs on next scale
+    double two_fac = pow(2.0, D*np1);
+    if (operation == Backward) {
+        two_fac = sqrt(1.0/two_fac);
+    } else {
+        two_fac = sqrt(two_fac);
+    }
+    if (IS_ODD(D)) {
+        for (int i = 0; i < nCoefs; i++) {
+            this->coefs[i] = two_fac*in_vec[i];
+        }
+    } else {
+        for (int i = 0; i < nCoefs; i++) {
+            this->coefs[i] *= two_fac;
+        }
+    }
+}
+/* Old interpolating version, somewhat faster
+template<int D>
+void MWNode<D>::cvTransform(int operation) {
     const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
     if (sf.getScalingType() != Interpol) {
         NOT_IMPLEMENTED_ABORT;
@@ -267,6 +309,7 @@ void MWNode<D>::cvTransform(int operation) {
         }
     }
 }
+*/
 
 /** Multiwavelet transform: fast version
   *

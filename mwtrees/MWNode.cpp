@@ -592,7 +592,7 @@ void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
 template<int D>
 void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
-    pts = MatrixXd::Zero(2*kp1,D);
+    pts = MatrixXd::Zero(D,2*kp1);
 
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
@@ -600,8 +600,8 @@ void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     double sFac = pow(2.0, -(this->getScale() + 1));
     const int *l = this->getTranslation();
     for (int d = 0; d < D; d++) {
-        pts.col(d).segment(0, kp1) = sFac*(roots.array() + 2.0*double(l[d]));
-        pts.col(d).segment(kp1, kp1) = sFac*(roots.array() + 2.0*double(l[d]) + 1);
+        pts.row(d).segment(0, kp1) = sFac*(roots.array() + 2.0*double(l[d]));
+        pts.row(d).segment(kp1, kp1) = sFac*(roots.array() + 2.0*double(l[d]) + 1);
     }
 }
 
@@ -612,7 +612,7 @@ void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
 
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    pts = MatrixXd::Zero(kp1_d, D);
+    pts = MatrixXd::Zero(D, kp1_d);
 
     if (D == 1) pts = prim_pts;
     if (D == 2) MathUtils::tensorExpandCoords_2D(kp1, prim_pts, pts);
@@ -628,20 +628,20 @@ void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
     int tDim = this->getTDim();
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    pts = MatrixXd::Zero(tDim*kp1_d, D);
-    MatrixXd prim_t = MatrixXd::Zero(kp1, D);
-    MatrixXd exp_t = MatrixXd::Zero(kp1_d, D);
+    pts = MatrixXd::Zero(D, tDim*kp1_d);
+    MatrixXd prim_t = MatrixXd::Zero(D, kp1);
+    MatrixXd exp_t = MatrixXd::Zero(D, kp1_d);
 
     for (int t = 0; t < tDim; t++) {
         for (int d = 0; d < D; d++) {
             int idx = (t>>d)&1;
-            prim_t.col(d) = prim_pts.block(idx*kp1, d, kp1, 1);
+            prim_t.row(d) = prim_pts.block(d, idx*kp1, 1, kp1);
         }
         if (D == 1) exp_t = prim_t;
         if (D == 2) MathUtils::tensorExpandCoords_2D(kp1, prim_t, exp_t);
         if (D == 3) MathUtils::tensorExpandCoords_3D(kp1, prim_t, exp_t);
         if (D >= 4) NOT_IMPLEMENTED_ABORT;
-        pts.block(t*kp1_d, 0, kp1_d, D) = exp_t;
+        pts.block(0, t*kp1_d, D, kp1_d) = exp_t;
     }
 }
 

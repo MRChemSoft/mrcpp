@@ -300,8 +300,8 @@ void MathUtils::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, Matrix
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
-            expanded(n,0) = primitive(j,0);
-            expanded(n,1) = primitive(i,1);
+            expanded(0,n) = primitive(0,j);
+            expanded(1,n) = primitive(1,i);
             n++;
         }
     }
@@ -312,9 +312,9 @@ void MathUtils::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, Matrix
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
             for (int k = 0; k < kp1; k++) {
-                expanded(n,0) = primitive(k,0);
-                expanded(n,1) = primitive(j,1);
-                expanded(n,2) = primitive(i,2);
+                expanded(0,n) = primitive(0,k);
+                expanded(1,n) = primitive(1,j);
+                expanded(2,n) = primitive(2,i);
                 n++;
             }
         }

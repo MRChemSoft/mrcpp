@@ -53,7 +53,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
     FunctionNode<D> &f_0 = static_cast<FunctionNode<D> &>(mw_0);
     f_0.getPrimitiveChildPts(pts);
     f_0.getValues(vals);
-    input_data.block(n_coefs,0,n_coefs,D) = pts;
+    input_data.block(n_coefs,0,n_coefs,D) = pts.transpose();
     input_data.block(n_coefs,D,n_coefs,1) = vals;
 
     // Creating ghost points at boundaries (values will be zero)
@@ -61,8 +61,8 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
     if (i_m1 < 0 or i_p1 < 0) {
         MatrixXd shift(n_coefs, D);
         shift.setConstant(n_size);
-        if (i_m1 < 0) input_data.block(0*n_coefs,0,n_coefs,D) = pts - shift;
-        if (i_p1 < 0) input_data.block(2*n_coefs,0,n_coefs,D) = pts + shift;
+        if (i_m1 < 0) input_data.block(0*n_coefs,0,n_coefs,D) = pts.transpose() - shift;
+        if (i_p1 < 0) input_data.block(2*n_coefs,0,n_coefs,D) = pts.transpose() + shift;
     }
 
     if (i_m1 >= 0) {
@@ -73,7 +73,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
         FunctionNode<D> &f_m1 = static_cast<FunctionNode<D> &>(mw_m1);
         f_m1.getPrimitiveChildPts(pts);
         f_m1.getValues(vals);
-        input_data.block(0,0,n_coefs,D) = pts;
+        input_data.block(0,0,n_coefs,D) = pts.transpose();
         input_data.block(0,D,n_coefs,1) = vals;
     }
     if (i_p1 >= 0) {
@@ -84,7 +84,7 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
         FunctionNode<D> &f_p1 = static_cast<FunctionNode<D> &>(mw_p1);
         f_p1.getPrimitiveChildPts(pts);
         f_p1.getValues(vals);
-        input_data.block(2*n_coefs,0,n_coefs,D) = pts;
+        input_data.block(2*n_coefs,0,n_coefs,D) = pts.transpose();
         input_data.block(2*n_coefs,D,n_coefs,1) = vals;
     }
     return input_data;
@@ -96,7 +96,7 @@ MatrixXd MWFDCalculator<D>::setupOutputData(FunctionNode<D> &node) {
     MatrixXd output_data = MatrixXd::Zero(n_coefs, D+1);
     MatrixXd pts;
     node.getPrimitiveChildPts(pts);
-    output_data.block(0,0,n_coefs,D) = pts;
+    output_data.block(0,0,n_coefs,D) = pts.transpose();
     return output_data;
 }
 

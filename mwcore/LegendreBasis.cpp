@@ -7,9 +7,12 @@
  *
  */
 
+#include <Eigen/Dense>
+
 #include "LegendreBasis.h"
 #include "LegendrePoly.h"
 #include "QuadratureCache.h"
+#include "eigen_disable_warnings.h"
 
 using namespace std;
 using namespace Eigen;
@@ -23,17 +26,31 @@ void LegendreBasis::initScalingBasis() {
 }
 
 void LegendreBasis::calcQuadratureValues() {
-    int q_order = getQuadratureOrder();
     getQuadratureCache(qc);
+    int q_order = getQuadratureOrder();
+    const VectorXd &pts = qc.getRoots(q_order);
+
+    for (int k = 0; k < q_order; k++) {
+	const Polynomial &poly = this->getFunc(k);
+	for (int i = 0; i < q_order; i++) {
+	    this->quadVals(i, k) = poly.evalf(pts(i));
+	}
+    }
+}
+
+void LegendreBasis::calcCVMaps() {
+    getQuadratureCache(qc);
+    int q_order = getQuadratureOrder();
     const VectorXd &pts = qc.getRoots(q_order);
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
 	const Polynomial &poly = this->getFunc(k);
 	for (int i = 0; i < q_order; i++) {
-	    this->quadVals(i, k) = poly.evalf(pts(i)) * wgts(i);
+	    this->vcMap(k, i) = poly.evalf(pts(i)) * wgts(i);
 	}
     }
+    this->cvMap = this->vcMap.inverse();
 }
 
 ///****** WARNING! Ugliness ahead!!! ********************************/

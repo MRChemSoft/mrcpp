@@ -44,11 +44,19 @@ void InterpolatingBasis::initScalingBasis() {
 
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
+    for (int k = 0; k < q_order; k++) {
+	this->quadVals(k, k) = 1.0;
+    }
+}
+
+void InterpolatingBasis::calcCVMaps() {
+    int q_order = getQuadratureOrder();
     getQuadratureCache(qc);
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
-	this->quadVals(k, k) = sqrt(wgts(k));
+	this->cvMap(k, k) = sqrt(1.0/wgts(k));
+	this->vcMap(k, k) = sqrt(wgts(k));
     }
 }
 

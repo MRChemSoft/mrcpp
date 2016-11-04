@@ -14,15 +14,16 @@
 
 class LegendreBasis : public ScalingBasis {
 public:
-    LegendreBasis(int k)
-            : ScalingBasis(k, Legendre) {
+    LegendreBasis(int k) : ScalingBasis(k, Legendre) {
         initScalingBasis();
         calcQuadratureValues();
+        calcCVMaps();
     }
     virtual ~LegendreBasis() { }
 
     void initScalingBasis();
     void calcQuadratureValues();
+    void calcCVMaps();
 };
 
 #endif // LEGENDREBASIS_H

@@ -25,6 +25,8 @@ public:
         if (this->order < 1) MSG_FATAL("Invalid scaling order");
         int q_order = getQuadratureOrder();
         this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
+        this->cvMap = Eigen::MatrixXd::Zero(q_order, q_order);
+        this->vcMap = Eigen::MatrixXd::Zero(q_order, q_order);
     }
     virtual ~ScalingBasis() { }
 
@@ -44,7 +46,15 @@ public:
     int getScalingType() const { return this->type; }
     int getScalingOrder() const { return this->order; }
     int getQuadratureOrder() const { return this->order + 1; }
+
     const Eigen::MatrixXd &getQuadratureValues() const { return this->quadVals; }
+    const Eigen::MatrixXd &getCVMap(int operation) const {
+        if (operation == Forward) {
+            return this->cvMap;
+        } else {
+            return this->vcMap;
+        }
+    }
 
     bool operator==(const ScalingBasis &basis) const {
         if (this->type != basis.type) return false;
@@ -72,7 +82,9 @@ public:
 protected:
     const int type;
     const int order;
-    Eigen::MatrixXd quadVals;
+    Eigen::MatrixXd quadVals;// function values at quadrature pts
+    Eigen::MatrixXd cvMap;  // coef-value transformation matrix
+    Eigen::MatrixXd vcMap;  // value-coef transformation matrix
     std::vector<Polynomial> funcs;
 };
 

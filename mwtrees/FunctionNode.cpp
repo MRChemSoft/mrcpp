@@ -99,10 +99,9 @@ double FunctionNode<D>::integrate() const {
   * coefficient is simply the integral of f(x). */
 template<int D>
 double FunctionNode<D>::integrateLegendre() const {
-    NOT_IMPLEMENTED_ABORT;
-    //double n = (D * this->getScale()) / 2.0;
-    //double two_n = pow(2.0, -n);
-    //return two_n * this->getCoefs()[0];
+    double n = (D * this->getScale()) / 2.0;
+    double two_n = pow(2.0, -n);
+    return two_n * this->getCoefs()[0];
 }
 
 /** Function integration, Interpolating basis.

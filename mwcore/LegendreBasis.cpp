@@ -47,7 +47,7 @@ void LegendreBasis::calcCVMaps() {
     for (int k = 0; k < q_order; k++) {
 	const Polynomial &poly = this->getFunc(k);
 	for (int i = 0; i < q_order; i++) {
-	    this->vcMap(k, i) = poly.evalf(pts(i)) * wgts(i);
+	    this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i);
 	}
     }
     this->cvMap = this->vcMap.inverse();

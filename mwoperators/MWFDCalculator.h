@@ -17,10 +17,22 @@ protected:
 
     virtual void calcNode(MWNode<D> &node);
 
-    Eigen::MatrixXd setupInputData(const NodeIndex<D> &idx);
-    Eigen::MatrixXd setupOutputData(FunctionNode<D> &node);
-    void compute(Eigen::MatrixXd &output_data, Eigen::MatrixXd &input_data);
+    void computeBlock(Eigen::VectorXd &out_pts, Eigen::MatrixXd &out_vals,
+                      Eigen::VectorXd &inp_pts, Eigen::MatrixXd &inp_vals);
+    void computeLine(Eigen::MatrixXd &output_data, Eigen::MatrixXd &input_data);
     double computePoint(int M, int N, double x0, Eigen::MatrixXd &input_data);
+
+    void fetchInputData(const NodeIndex<D> &idx,
+                        Eigen::VectorXd &pts,
+                        Eigen::MatrixXd &vals);
+    void fetchOutputPoints(const MWNode<D> &node,
+                           Eigen::VectorXd &pts);
+    void pushOutputValues(FunctionNode<D> &node,
+                          Eigen::MatrixXd &vals);
+
+    void getNodeData(FunctionNode<D> &node,
+                     Eigen::VectorXd &pts,
+                     Eigen::MatrixXd &vals);
 };
 
 #endif // MWFDCALCULATOR_H

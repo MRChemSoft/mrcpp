@@ -1,6 +1,7 @@
 #include "MWFDCalculator.h"
 #include "FunctionTree.h"
 #include "FunctionNode.h"
+#include "MathUtils.h"
 
 using namespace std;
 using namespace Eigen;
@@ -19,16 +20,21 @@ void MWFDCalculator<D>::calcNode(MWNode<D> &node) {
     FunctionNode<D> &g_node = static_cast<FunctionNode<D> &>(node);
     const NodeIndex<D> &g_idx = g_node.getNodeIndex();
 
-    MatrixXd input_data = setupInputData(g_idx);
-    MatrixXd output_data = setupOutputData(g_node);
-    compute(output_data, input_data);
-    g_node.setValues(output_data.col(D));
+    VectorXd inp_pts;
+    VectorXd out_pts;
+    MatrixXd inp_vals;
+    MatrixXd out_vals;
+
+    fetchInputData(g_idx, inp_pts, inp_vals);
+    fetchOutputPoints(g_node, out_pts);
+    computeBlock(out_pts, out_vals, inp_pts, inp_vals);
+    pushOutputValues(g_node, out_vals);
 }
 
 template<int D>
-MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
-    if (D != 1) NOT_IMPLEMENTED_ABORT;
-
+void MWFDCalculator<D>::fetchInputData(const NodeIndex<D> &idx,
+                                       VectorXd &pts,
+                                       MatrixXd &vals) {
     // Index for neighboring nodes in direction of application
     NodeIndex<D> idx_m1(idx);
     NodeIndex<D> idx_p1(idx);
@@ -40,88 +46,225 @@ MatrixXd MWFDCalculator<D>::setupInputData(const NodeIndex<D> &idx) {
     int i_0 = this->f_tree->getRootIndex(idx);
     int i_p1 = this->f_tree->getRootIndex(idx_p1);
 
-    // Temp storage for quad pts and values
-    MatrixXd pts;
-    VectorXd vals;
+    // Total number of quad pts (actually on children nodes, hence 2*)
+    int tkp1 = 2*this->f_tree->getKp1();
+    int tkp1_dm1 = MathUtils::ipow(tkp1, D-1);
+    pts = VectorXd::Zero(3*tkp1);
+    vals = MatrixXd::Zero(tkp1_dm1, 3*tkp1);
 
-    // Total number of quad pts (actually on children nodes)
-    int n_coefs = this->f_tree->getTDim()*this->f_tree->getKp1_d();
-    MatrixXd input_data = MatrixXd::Zero(3*n_coefs, D+1);
-
-    if (i_0 < 0) MSG_FATAL("Node should exist!");
-    MWNode<D> &mw_0 = this->f_tree->getNode(idx);
-    FunctionNode<D> &f_0 = static_cast<FunctionNode<D> &>(mw_0);
-    f_0.getPrimitiveChildPts(pts);
-    f_0.getValues(vals);
-    input_data.block(n_coefs,0,n_coefs,D) = pts.transpose();
-    input_data.block(n_coefs,D,n_coefs,1) = vals;
+    if (i_0 >= 0) {
+        VectorXd node_pts;
+        MatrixXd node_vals = MatrixXd::Zero(tkp1_dm1, tkp1);
+        MWNode<D> &mw_0 = this->f_tree->getNode(idx);
+        FunctionNode<D> &f_0 = static_cast<FunctionNode<D> &>(mw_0);
+        getNodeData(f_0, node_pts, node_vals);
+        pts.segment(1*tkp1, tkp1) = node_pts;
+        vals.block(0, 1*tkp1, tkp1_dm1, tkp1) = node_vals;
+    } else {
+        MSG_FATAL("Node should exist!");
+    }
 
     // Creating ghost points at boundaries (values will be zero)
     double n_size = pow(2.0, -idx.getScale());
-    if (i_m1 < 0 or i_p1 < 0) {
-        MatrixXd shift(n_coefs, D);
-        shift.setConstant(n_size);
-        if (i_m1 < 0) input_data.block(0*n_coefs,0,n_coefs,D) = pts.transpose() - shift;
-        if (i_p1 < 0) input_data.block(2*n_coefs,0,n_coefs,D) = pts.transpose() + shift;
-    }
+    VectorXd shift(tkp1);
+    shift.setConstant(n_size);
 
     if (i_m1 >= 0) {
-        // Fetch neighboring leaf node (only works for 1D)
-        int fetch_scale = -1;
-        double r_m1 = n_size*idx.getTranslation(0) - MachineZero;
-        MWNode<D> &mw_m1 = this->f_tree->getNode(&r_m1, fetch_scale);
+        VectorXd node_pts;
+        MatrixXd node_vals = MatrixXd::Zero(tkp1_dm1, tkp1);
+        MWNode<D> &mw_m1 = this->f_tree->getNode(idx_m1);
         FunctionNode<D> &f_m1 = static_cast<FunctionNode<D> &>(mw_m1);
-        f_m1.getPrimitiveChildPts(pts);
-        f_m1.getValues(vals);
-        input_data.block(0,0,n_coefs,D) = pts.transpose();
-        input_data.block(0,D,n_coefs,1) = vals;
+        getNodeData(f_m1, node_pts, node_vals);
+        pts.segment(0*tkp1, tkp1) = node_pts;
+        vals.block(0, 0*tkp1, tkp1_dm1, tkp1) = node_vals;
+    } else {
+        pts.segment(0, tkp1) = pts.segment(tkp1, tkp1) - shift;
     }
+
     if (i_p1 >= 0) {
-        // Fetch neighboring leaf node (only works for 1D)
-        int fetch_scale = -1;
-        double r_p1 = n_size*idx_p1.getTranslation(0) + MachineZero;
-        MWNode<D> &mw_p1 = this->f_tree->getNode(&r_p1, fetch_scale);
+        VectorXd node_pts;
+        MatrixXd node_vals = MatrixXd::Zero(tkp1_dm1, tkp1);
+        MWNode<D> &mw_p1 = this->f_tree->getNode(idx_p1);
         FunctionNode<D> &f_p1 = static_cast<FunctionNode<D> &>(mw_p1);
-        f_p1.getPrimitiveChildPts(pts);
-        f_p1.getValues(vals);
-        input_data.block(2*n_coefs,0,n_coefs,D) = pts.transpose();
-        input_data.block(2*n_coefs,D,n_coefs,1) = vals;
+        getNodeData(f_p1, node_pts, node_vals);
+        pts.segment(2*tkp1, tkp1) = node_pts;
+        vals.block(0, 2*tkp1, tkp1_dm1, tkp1) = node_vals;
+    } else {
+        pts.segment(2*tkp1,tkp1) = pts.segment(tkp1, tkp1) + shift;
     }
-    return input_data;
 }
 
 template<int D>
-MatrixXd MWFDCalculator<D>::setupOutputData(FunctionNode<D> &node) {
-    int n_coefs = this->f_tree->getTDim()*this->f_tree->getKp1_d();
-    MatrixXd output_data = MatrixXd::Zero(n_coefs, D+1);
-    MatrixXd pts;
-    node.getPrimitiveChildPts(pts);
-    output_data.block(0,0,n_coefs,D) = pts.transpose();
-    return output_data;
+void MWFDCalculator<D>::getNodeData(FunctionNode<D> &node,
+                                    VectorXd &pts,
+                                    MatrixXd &vals) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+template<>
+void MWFDCalculator<3>::getNodeData(FunctionNode<3> &node,
+                                    VectorXd &pts,
+                                    MatrixXd &vals) {
+    int dir = this->apply_dir;
+    int kp1 = node.getKp1();
+    int kp1_dm1 = MathUtils::ipow(kp1, 2);
+    int kp1_d = node.getKp1_d();
+    int tDim = node.getTDim();
+
+    MatrixXd prim_pts;
+    node.getPrimitiveChildPts(prim_pts);
+    pts = prim_pts.row(dir);
+
+    VectorXd unsort_vals;
+    node.getValues(unsort_vals);
+
+    int X,Y,Z;
+    MatrixXd **sort_vals = new MatrixXd*[tDim];
+    for (int t = 0; t < tDim; t++) {
+        sort_vals[t] = new MatrixXd;
+        const VectorXd &inp = unsort_vals.segment(t*kp1_d, kp1_d);
+        MatrixXd &out = *sort_vals[t];
+
+        out = MatrixXd::Zero(kp1_dm1, kp1);
+        int n = 0;
+        for (int x = 0; x < kp1; x++) {
+            for (int y = 0; y < kp1; y++) {
+                for (int z = 0; z < kp1; z++) {
+                    if (dir == 0) { X = x; Y = y; Z = z; }
+                    if (dir == 1) { X = y; Y = z; Z = x; }
+                    if (dir == 2) { X = z; Y = x; Z = y; }
+                    out(n,z) = inp(X*kp1*kp1 + Y*kp1 + Z);
+                }
+                n++;
+            }
+        }
+    }
+    for (int z = 0; z < 2; z++) {
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 2; x++) {
+                if (dir == 0) { X = x; Y = y; Z = z; }
+                if (dir == 1) { X = y; Y = z; Z = x; }
+                if (dir == 2) { X = z; Y = x; Z = y; }
+                vals.block((2*z+y)*kp1_dm1, x*kp1, kp1_dm1, kp1) = *sort_vals[4*Z+2*Y+X];
+            }
+        }
+    }
+
+    for (int t = 0; t < tDim; t++) {
+        delete sort_vals[t];
+    }
+    delete[] sort_vals;
 }
 
 template<int D>
-void MWFDCalculator<D>::compute(MatrixXd &output_data,
-                                            MatrixXd &input_data) {
+void MWFDCalculator<D>::fetchOutputPoints(const MWNode<D> &node,
+                                          VectorXd &pts) {
+    MatrixXd prim_pts;
+    node.getPrimitiveChildPts(prim_pts);
+    pts = prim_pts.row(this->apply_dir);
+}
+
+template<int D>
+void MWFDCalculator<D>::pushOutputValues(FunctionNode<D> &node,
+                                         MatrixXd &vals) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+template<>
+void MWFDCalculator<3>::pushOutputValues(FunctionNode<3> &node,
+                                         MatrixXd &vals) {
+    int dir = this->apply_dir;
+    int kp1 = node.getKp1();
+    int kp1_dm1 = MathUtils::ipow(kp1, 2);
+    int kp1_d = node.getKp1_d();
+    int tDim = node.getTDim();
+
+    MatrixXd **sort_vals = new MatrixXd*[tDim];
+    for (int t = 0; t < tDim; t++) {
+        sort_vals[t] = new MatrixXd;
+    }
+
+    int X,Y,Z;
+    for (int z = 0; z < 2; z++) {
+        for (int y = 0; y < 2; y++) {
+            for (int x = 0; x < 2; x++) {
+                if (dir == 0) { X = x; Y = y; Z = z; }
+                if (dir == 1) { Y = x; Z = y; X = z; }
+                if (dir == 2) { Z = x; X = y; Y = z; }
+                *sort_vals[4*Z+2*Y+X] = vals.block((2*z+y)*kp1_dm1, x*kp1, kp1_dm1, kp1);
+            }
+        }
+    }
+
+    VectorXd unsort_vals = VectorXd::Zero(tDim*kp1_d);
+    for (int t = 0; t < tDim; t++) {
+        MatrixXd &inp = *sort_vals[t];
+        VectorXd out = VectorXd::Zero(kp1_d);
+        int n = 0;
+        for (int x = 0; x < kp1; x++) {
+            for (int y = 0; y < kp1; y++) {
+                for (int z = 0; z < kp1; z++) {
+                    if (dir == 0) { X = x; Y = y; Z = z; }
+                    if (dir == 1) { X = y; Y = z; Z = x; }
+                    if (dir == 2) { X = z; Y = x; Z = y; }
+                    out(X*kp1*kp1 + Y*kp1 + Z) = inp(n,z);
+                }
+                n++;
+            }
+        }
+        unsort_vals.segment(t*kp1_d, kp1_d) = out;
+    }
+    for (int t = 0; t < tDim; t++) {
+        delete sort_vals[t];
+    }
+    delete[] sort_vals;
+
+    node.setCoefBlock(0, tDim*kp1_d, unsort_vals.data());
+    node.cvTransform(Backward);
+    node.mwTransform(Compression);
+    node.setHasCoefs();
+    node.calcNorms();
+}
+
+template<int D>
+void MWFDCalculator<D>::computeBlock(VectorXd &out_pts,
+                                     MatrixXd &out_vals,
+                                     VectorXd &inp_pts,
+                                     MatrixXd &inp_vals) {
+    out_vals = MatrixXd::Zero(inp_vals.rows(), out_pts.size());
+    for (int i = 0; i < inp_vals.rows(); i++) {
+        MatrixXd out_data = MatrixXd::Zero(out_pts.size(), 2);
+        MatrixXd inp_data = MatrixXd::Zero(inp_pts.size(), 2);
+        out_data.col(0) = out_pts;
+        inp_data.col(0) = inp_pts;
+        inp_data.col(1) = inp_vals.row(i);
+        computeLine(out_data, inp_data);
+        out_vals.row(i) = out_data.col(1);
+    }
+}
+
+template<int D>
+void MWFDCalculator<D>::computeLine(MatrixXd &output_data,
+                                    MatrixXd &input_data) {
     int m = this->diff_order;
     int n = this->approx_order;
     int nOut = output_data.rows();
     for (int x = 0; x < nOut; x++) {
-        double x0 = output_data(x, this->apply_dir);
-        output_data(x, D) = computePoint(m, n, x0, input_data);
+        double x0 = output_data(x, 0);
+        output_data(x, 1) = computePoint(m, n, x0, input_data);
     }
 }
 
 template<int D>
 double MWFDCalculator<D>::computePoint(int M,
-                                                   int N,
-                                                   double x0,
-                                                   MatrixXd &input_data) {
+                                       int N,
+                                       double x0,
+                                       MatrixXd &input_data) {
     int d = this->apply_dir;
     int nInp = input_data.rows();
     int i0 = -1;
     for (int i = 0; i < nInp; i++) {
-        if (fabs(x0 - input_data(i,d)) < MachineZero) i0 = i;
+        if (fabs(x0 - input_data(i,0)) < MachineZero) i0 = i;
     }
     if (i0 < 0) MSG_FATAL("x0 did not coincide with an input point");
 
@@ -132,10 +275,10 @@ double MWFDCalculator<D>::computePoint(int M,
     if (i0 > imax) i0 = imax;
 
     VectorXd alpha = VectorXd::Zero(2*N+1);
-    alpha(0) = input_data(i0, d);
+    alpha(0) = input_data(i0, 0);
     for (int nu = 1; nu <= N; nu++) {
-        alpha(2*nu - 1) = input_data(i0 + nu, d);
-        alpha(2*nu    ) = input_data(i0 - nu, d);
+        alpha(2*nu - 1) = input_data(i0 + nu, 0);
+        alpha(2*nu    ) = input_data(i0 - nu, 0);
     }
 
     MatrixXd **delta = new MatrixXd*[M+1];
@@ -167,10 +310,10 @@ double MWFDCalculator<D>::computePoint(int M,
     }
     const MatrixXd &delta_M = (*delta[M]);
     const VectorXd &last_row = delta_M.row(delta_M.rows() - 1);
-    double result = last_row(0)*input_data(i0, D);
+    double result = last_row(0)*input_data(i0, 1);
     for (int nu = 1; nu <= N; nu++) {
-        result += last_row(2*nu-1)*input_data(i0 + nu, D);
-        result += last_row(2*nu  )*input_data(i0 - nu, D);
+        result += last_row(2*nu-1)*input_data(i0 + nu, 1);
+        result += last_row(2*nu  )*input_data(i0 - nu, 1);
     }
     for (int m = 0; m <= M; m++) {
         delete delta[m];

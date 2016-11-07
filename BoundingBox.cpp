@@ -200,13 +200,12 @@ int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
             ncells *= this->nBoxes[i];
         }
         int reqTransl = (l[d] >> relScale) - cl[d];
+        if (reqTransl < 0 or reqTransl >= this->nBoxes[d]) return -1;
         bIdx += ncells * reqTransl;
     }
-    if (bIdx < 0 or bIdx >= this->size()) {
-        return -1;
-    } else {
-        return bIdx;
-    }
+    assert(bIdx >= 0);
+    assert(bIdx < this->size());
+    return bIdx;
 }
 
 template class BoundingBox<1>;

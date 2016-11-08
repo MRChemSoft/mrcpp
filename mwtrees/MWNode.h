@@ -33,6 +33,9 @@ template<int D> class SerialFunctionTree;
 template<int D>
 class MWNode {
 public:
+    MWNode(const MWNode<D> &node);
+    virtual ~MWNode();
+
     int getKp1() const { return getMWTree().getKp1(); }
     int getKp1_d() const { return getMWTree().getKp1_d(); }
     int getOrder() const { return getMWTree().getOrder(); }
@@ -152,8 +155,6 @@ protected:
     int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     MWNode();
-    MWNode(const MWNode<D> &node);
-    virtual ~MWNode();
     virtual void dealloc() { NOT_REACHED_ABORT; }
 
     bool crop(double prec, double splitFac, bool absPrec);

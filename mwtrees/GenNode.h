@@ -29,6 +29,17 @@ public:
     virtual void cvTransform(int kind) { NOT_IMPLEMENTED_ABORT; }
     virtual void mwTransform(int kind) { NOT_IMPLEMENTED_ABORT; }
 
+    virtual void setValues(const Eigen::VectorXd &vec) { NOT_IMPLEMENTED_ABORT; }
+    virtual void getValues(Eigen::VectorXd &vec) {
+        MWNode<D> copy(*this);
+        vec = Eigen::VectorXd::Zero(copy.getNCoefs());
+        copy.mwTransform(Reconstruction);
+        copy.cvTransform(Forward);
+        for (int i = 0; i < this->n_coefs; i++) {
+            vec(i) = copy.getCoefs()[i];
+        }
+    }
+
     friend class SerialFunctionTree<D>;
 
 protected:

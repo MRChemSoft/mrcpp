@@ -15,8 +15,8 @@ public:
     const FunctionNode<D> &getFuncParent() const { return static_cast<const FunctionNode<D> &>(*this->parent); }
     const FunctionNode<D> &getFuncChild(int i) const { return static_cast<const FunctionNode<D> &>(*this->children[i]); }
 
-    void setValues(const Eigen::VectorXd &vec);
-    void getValues(Eigen::VectorXd &vec);
+    virtual void setValues(const Eigen::VectorXd &vec);
+    virtual void getValues(Eigen::VectorXd &vec);
 
     friend class FunctionTree<D>;
 

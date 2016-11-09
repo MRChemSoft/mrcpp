@@ -1,5 +1,7 @@
 
 add_library(mwbuilders STATIC 
+    MWFDCalculator.cpp
+    HarrisonDerivativeCalculator.cpp
     CrossCorrelationCalculator.cpp
     DerivativeCalculator.cpp
     OperApplicationCalculator.cpp

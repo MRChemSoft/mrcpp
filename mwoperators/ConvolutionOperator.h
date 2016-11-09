@@ -7,10 +7,7 @@
 template<int D>
 class ConvolutionOperator : public MWOperator {
 public:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
-        : MWOperator(mra.getOperatorMRA()),
-          prec(pr),
-          kern_mra(mra.getKernelMRA()) { }
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr);
     virtual ~ConvolutionOperator();
 
 protected:

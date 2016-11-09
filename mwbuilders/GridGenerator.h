@@ -7,38 +7,46 @@
 #include "CopyAdaptor.h"
 
 template<int D>
-class GridGenerator : public TreeBuilder<D> {
+class GridGenerator {
 public:
-    GridGenerator(int max_scale = MaxScale)
-        : TreeBuilder<D>(-1.0, max_scale) { }
+    GridGenerator(int ms = MaxScale)
+        : maxScale(ms) { }
     virtual ~GridGenerator() { }
+
+    int getMaxScale() const { return this->maxScale; }
+    void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
                     const RepresentableFunction<D> &inp,
                     int maxIter = -1) const {
+        TreeBuilder<D> builder;
         AnalyticAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
-        this->build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out,
                     FunctionTree<D> &inp,
                     int maxIter = -1) const {
+        TreeBuilder<D> builder;
         CopyAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
-        this->build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) const {
+        TreeBuilder<D> builder;
         CopyAdaptor<D> adaptor(inp, this->maxScale);
         DefaultCalculator<D> calculator;
-        this->build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, maxIter);
         println(10, std::endl);
     }
+protected:
+    int maxScale;
 };
 
 #endif // GRIDGENERATOR_H

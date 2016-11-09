@@ -3,16 +3,22 @@
 
 #include "TreeBuilder.h"
 #include "ProjectionCalculator.h"
-#include "AnalyticFunction.h"
 #include "WaveletAdaptor.h"
+#include "AnalyticFunction.h"
 #include "Timer.h"
 
 template<int D>
-class MWProjector : public TreeBuilder<D> {
+class MWProjector {
 public:
-    MWProjector(double pr = -1.0, int max_scale = MaxScale)
-        : TreeBuilder<D>(pr, max_scale) { }
+    MWProjector(double pr = -1.0, int ms = MaxScale)
+        : prec(pr), maxScale(ms) { }
     virtual ~MWProjector() { }
+
+    double getPrecision() const { return this->prec; }
+    int getMaxScale() const { return this->maxScale; }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
                     std::function<double (const double *r)> func,
@@ -23,9 +29,11 @@ public:
     void operator()(FunctionTree<D> &out,
                     RepresentableFunction<D> &inp,
                     int maxIter = -1) const {
-        ProjectionCalculator<D> calculator(inp);
+        TreeBuilder<D> builder;
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
-        this->build(out, calculator, adaptor, maxIter);
+        ProjectionCalculator<D> calculator(inp);
+
+        builder.build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -35,6 +43,9 @@ public:
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
     }
+protected:
+    double prec;
+    int maxScale;
 };
 
 #endif // MWPROJECTOR_H

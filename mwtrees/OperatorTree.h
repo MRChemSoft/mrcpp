@@ -14,6 +14,9 @@ public:
     void calcBandWidth(double prec = -1.0);
     void clearBandWidth();
 
+    void setupOperNodeCache();
+    void clearOperNodeCache();
+
     BandWidth &getBandWidth() { return *this->bandWidth; }
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
@@ -39,17 +42,11 @@ public:
         return o;
     }
 
-    friend class DerivativeGenerator;
-    friend class CrossCorrelationGenerator;
-
 protected:
     const double normPrec;
     BandWidth *bandWidth;
     OperatorNode ***nodePtrStore;  ///< Avoids tree lookups
     OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
-
-    void setupOperNodeCache();
-    void clearOperNodeCache();
 
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 };

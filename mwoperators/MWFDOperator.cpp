@@ -1,4 +1,5 @@
 #include "MWFDOperator.h"
+#include "TreeBuilder.h"
 #include "MWFDCalculator.h"
 #include "WaveletAdaptor.h"
 #include "FunctionTree.h"
@@ -7,10 +8,9 @@
 
 template<int D>
 MWFDOperator<D>::MWFDOperator(const MultiResolutionAnalysis<D> &mra,
-                              int k,
-                              int n,
-                              double prec)
-    : TreeBuilder<D>(prec, MaxScale),
+                              int k, int n, double pr)
+    : prec(pr),
+      maxScale(mra.getMaxScale()),
       diff_order(k),
       approx_order(n) {
     if (this->approx_order < 0)
@@ -24,13 +24,15 @@ MWFDOperator<D>::MWFDOperator(const MultiResolutionAnalysis<D> &mra,
 template<int D>
 void MWFDOperator<D>::operator()(FunctionTree<D> &out,
                                  FunctionTree<D> &inp,
-                                 int maxIter) const {
+                                 int maxIter,
+                                 int dir) const {
     Timer pre_t;
+    TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
-    MWFDCalculator<D> calculator(0, this->diff_order, this->approx_order, inp);
+    MWFDCalculator<D> calculator(dir, this->diff_order, this->approx_order, inp);
     pre_t.stop();
 
-    this->build(out, calculator, adaptor, maxIter);
+    builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
     out.mwTransform(BottomUp);

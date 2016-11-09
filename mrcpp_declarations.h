@@ -29,6 +29,8 @@ template <int D> class GridCleaner;
 template <int D> class MWProjector;
 template <int D> class MWAdder;
 template <int D> class MWMultiplier;
+template <int D> class OperatorApplier;
+
 class MWOperator;
 template <int D> class IdentityOperator;
 template <int D> class DerivativeConvolution;
@@ -36,7 +38,6 @@ template <int D> class DerivativeOperator;
 template <int D> class ConvolutionOperator;
 class PoissonOperator;
 class HelmholtzOperator;
-class CrossCorrelationGenerator;
 
 class GreensKernel;
 class IdentityKernel;

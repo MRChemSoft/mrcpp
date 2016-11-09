@@ -8,27 +8,26 @@
 template<int D>
 class GridCleaner {
 public:
-    GridCleaner(double pr = -1.0, int max_scale = MaxScale)
-        : prec(pr), maxScale(max_scale) { }
+    GridCleaner(double pr = -1.0, int ms = MaxScale)
+        : prec(pr), maxScale(ms) { }
     virtual ~GridCleaner() { }
 
     double getPrecision() const { return this->prec; }
+    int getMaxScale() const { return this->maxScale; }
+
     void setPrecision(double pr) { this->prec = pr; }
+    void setMaxScale(int ms) { this->maxScale = ms; }
 
     int operator()(MWTree<D> &out) const {
+        TreeBuilder<D> builder;
         DefaultCalculator<D> calculator;
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
-        int nSplit = clean(out, calculator, adaptor);
-        return nSplit;
+        return builder.clear(out, calculator, adaptor);
     }
 
 protected:
     double prec;
     int maxScale;
-
-    int clean(MWTree<D> &tree,
-              TreeCalculator<D> &calculator,
-              TreeAdaptor<D> &adaptor) const;
 };
 
 #endif // GRIDCLEANER_H

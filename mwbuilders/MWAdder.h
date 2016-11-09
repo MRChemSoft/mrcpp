@@ -7,11 +7,17 @@
 #include "Timer.h"
 
 template<int D>
-class MWAdder : public TreeBuilder<D> {
+class MWAdder {
 public:
-    MWAdder(double pr = -1.0, int max_scale = MaxScale)
-        : TreeBuilder<D>(pr, max_scale) { }
+    MWAdder(double pr = -1.0, int ms = MaxScale)
+        : prec(pr), maxScale(ms) { }
     virtual ~MWAdder() { }
+
+    double getPrecision() const { return this->prec; }
+    int getMaxScale() const { return this->maxScale; }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
                     double a, FunctionTree<D> &tree_a,
@@ -25,9 +31,11 @@ public:
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
                     int maxIter = -1) const {
-        AdditionCalculator<D> calculator(inp);
+        TreeBuilder<D> builder;
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
-        this->build(out, calculator, adaptor, maxIter);
+        AdditionCalculator<D> calculator(inp);
+
+        builder.build(out, calculator, adaptor, maxIter);
 
         Timer trans_t;
         out.mwTransform(BottomUp);
@@ -45,6 +53,9 @@ public:
         println(10, "Time cleaning       " << clean_t);
         println(10, std::endl);
     }
+protected:
+    double prec;
+    int maxScale;
 };
 
 #endif // MWADDER_H

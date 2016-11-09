@@ -6,24 +6,20 @@
 template<int D>
 class TreeBuilder {
 public:
-    TreeBuilder(double pr, int max_scale)
-        : prec(pr), maxScale(max_scale) { }
+    TreeBuilder() { }
     virtual ~TreeBuilder() { }
-
-    double getPrecision() const { return this->prec; }
-    void setPrecision(double pr) { this->prec = pr; }
-
-protected:
-    double prec;
-    int maxScale;
-
-    double calcScalingNorm(const MWNodeVector &vec) const;
-    double calcWaveletNorm(const MWNodeVector &vec) const;
 
     void build(MWTree<D> &tree,
                TreeCalculator<D> &calculator,
                TreeAdaptor<D> &adaptor,
                int maxIter) const;
+
+    int clear(MWTree<D> &tree,
+              TreeCalculator<D> &calculator,
+              TreeAdaptor<D> &adaptor) const;
+protected:
+    double calcScalingNorm(const MWNodeVector &vec) const;
+    double calcWaveletNorm(const MWNodeVector &vec) const;
 };
 
 #endif // TREEBUILDER_H

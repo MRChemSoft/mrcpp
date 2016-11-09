@@ -7,11 +7,17 @@
 #include "MWOperator.h"
 
 template<int D>
-class OperatorApplier : public TreeBuilder<D> {
+class OperatorApplier {
 public:
-    OperatorApplier(double pr = -1.0, int max_scale = MaxScale)
-        : TreeBuilder<D>(pr, max_scale) { }
+    OperatorApplier(double pr = -1.0, int ms = MaxScale)
+        : prec(pr), maxScale(ms) { }
     virtual ~OperatorApplier() { }
+
+    double getPrecision() const { return this->prec; }
+    int getMaxScale() const { return this->maxScale; }
+
+    void setPrecision(double pr) { this->prec = pr; }
+    void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
                     MWOperator &oper,
@@ -20,11 +26,12 @@ public:
                     int dir = -1) const {
         Timer pre_t;
         oper.calcBandWidths(this->prec);
+        TreeBuilder<D> builder;
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
         OperApplicationCalculator<D> calculator(dir, this->prec, oper, inp);
         pre_t.stop();
 
-        this->build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, maxIter);
 
         Timer post_t;
         oper.clearBandWidths();
@@ -38,6 +45,9 @@ public:
         println(10, "Time post operator  " << post_t);
         println(10, std::endl);
     }
+protected:
+    double prec;
+    int maxScale;
 };
 
 #endif // OPERATORAPPLIER_H

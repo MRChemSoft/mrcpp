@@ -1,11 +1,19 @@
 #include "ConvolutionOperator.h"
-#include "CrossCorrelationGenerator.h"
+#include "CrossCorrelationCalculator.h"
+#include "OperatorAdaptor.h"
 #include "GridGenerator.h"
 #include "MWProjector.h"
 #include "OperatorTree.h"
 #include "GreensKernel.h"
 #include "Gaussian.h"
 #include "MathUtils.h"
+
+template<int D>
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
+    : MWOperator(mra.getOperatorMRA()),
+      prec(pr),
+      kern_mra(mra.getKernelMRA()) {
+}
 
 template<int D>
 ConvolutionOperator<D>::~ConvolutionOperator() {
@@ -18,20 +26,22 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
     int max_scale = this->oper_mra.getMaxScale();
     GridGenerator<1> G(max_scale);
     MWProjector<1> Q(this->prec/10.0, max_scale);
-    CrossCorrelationGenerator CC(this->prec, max_scale);
+
+    TreeBuilder<2> builder;
+    OperatorAdaptor adaptor(this->prec, max_scale);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
-        Gaussian<1> &greens_comp = *greens_kernel[i];
-        FunctionTree<1> *kern_comp = new FunctionTree<1>(this->kern_mra, MaxAllocNodes1D);
+        Gaussian<1> &k_func = *greens_kernel[i];
+        FunctionTree<1> *k_tree = new FunctionTree<1>(this->kern_mra, MaxAllocNodes1D);
+        G(*k_tree, k_func); //Generate empty grid to hold narrow Gaussian
+        Q(*k_tree, k_func); //Project Gaussian starting from the empty grid
+        CrossCorrelationCalculator calculator(*k_tree);
 
-        G(*kern_comp, greens_comp); //Generate empty grid to hold narrow Gaussian
-        Q(*kern_comp, greens_comp); //Project Gaussian starting from the empty grid
+        OperatorTree *o_tree = new OperatorTree(this->oper_mra, this->prec);
+        builder.build(*o_tree, calculator, adaptor, -1); //Expand 1D kernel into 2D operator
 
-        OperatorTree *oper_comp = new OperatorTree(this->oper_mra, this->prec);
-        CC(*oper_comp, *kern_comp); //Expand 1D kernel into 2D operator
-
-        this->kernel_exp.push_back(kern_comp);
-        this->oper_exp.push_back(oper_comp);
+        this->kernel_exp.push_back(k_tree);
+        this->oper_exp.push_back(o_tree);
     }
 }
 

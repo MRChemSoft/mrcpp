@@ -98,8 +98,9 @@ void DerivativeCalculator::calcNode(MWNode<2> &node) {
             for (int i = 0; i < kp1; i++) {
                 double zero_i = this->valueZero(i);
                 for (int j = 0; j < kp1; j++) {
+                    int idx = i*kp1 + j;
                     double one_j = this->valueOne(j);
-                    coefs[1*kp1_d + i*kp1 + j] = -b*zero_i*one_j;
+                    coefs[1*kp1_d + idx] = -b*zero_i*one_j;
                 }
             }
         }
@@ -128,8 +129,9 @@ void DerivativeCalculator::calcNode(MWNode<2> &node) {
             for (int i = 0; i < kp1; i++) {
                 double one_i = this->valueOne(i);
                 for (int j = 0; j < kp1; j++) {
+                    int idx = i*kp1 + j;
                     double zero_j = this->valueZero(j);
-                    coefs[2*kp1_d + i*kp1 + j] = a*one_i*zero_j;
+                    coefs[2*kp1_d + idx] = a*one_i*zero_j;
                 }
             }
         }

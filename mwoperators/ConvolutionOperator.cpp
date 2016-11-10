@@ -40,6 +40,15 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         OperatorTree *o_tree = new OperatorTree(this->oper_mra, this->prec);
         builder.build(*o_tree, calculator, adaptor, -1); //Expand 1D kernel into 2D operator
 
+        Timer trans_t;
+        o_tree->mwTransform(BottomUp);
+        o_tree->calcSquareNorm();
+        o_tree->setupOperNodeCache();
+        trans_t.stop();
+
+        println(10, "Time transform      " << trans_t);
+        println(10, std::endl);
+
         this->kernel_exp.push_back(k_tree);
         this->oper_exp.push_back(o_tree);
     }

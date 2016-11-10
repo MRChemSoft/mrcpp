@@ -231,7 +231,11 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
             }
             os.setFComponent(ft);
             for (int gt = 0; gt < this->nComp; gt++) {
-                if (depth == 0 || gt != 0 || ft != 0) {
+                bool compute = false;
+                if (gt != 0 or ft != 0) { compute = true; }
+                else if (not this->oper->applyCompressed()) { compute = true; }
+                else if (depth == 0) { compute = true; }
+                if (compute) {
                     os.setGComponent(gt);
                     applyOperComp(os);
                 }
@@ -371,9 +375,15 @@ void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 
 template<int D>
 MWNodeVector* OperApplicationCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
-    MWNodeVector *nodeVec = new MWNodeVector;
-    tree.makeNodeTable(*nodeVec);
-    return nodeVec;
+    if (this->oper->applyCompressed()) {
+        // return table of all nodes
+        MWNodeVector *nodeVec = new MWNodeVector;
+        tree.makeNodeTable(*nodeVec);
+        return nodeVec;
+    } else {
+        // return table of end nodes
+        return tree.copyEndNodeTable();
+    }
 }
 
 template class OperApplicationCalculator<1>;

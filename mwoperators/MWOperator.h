@@ -22,6 +22,8 @@ public:
         this->oper_exp.clear();
     }
 
+    virtual bool applyCompressed() const { return true; }
+
     int getMaxBandWidth(int depth = -1) const;
     const Eigen::VectorXi &getMaxBandWidths() const { return this->bandMax; }
 

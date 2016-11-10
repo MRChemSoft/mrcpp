@@ -15,6 +15,7 @@ public:
         initializeOperator(a, b);
     }
     virtual ~DerivativeOperator() { this->clearOperator(); }
+    bool applyCompressed() const { return false; }
 
 protected:
     void initializeOperator(double a, double b) {

@@ -19,41 +19,7 @@ public:
         this->setApplyDir(d);
     }
     virtual ~DerivativeConvolution() { }
-
-    FunctionTreeVector<D> grad(FunctionTree<D> &inp) {
-        GridGenerator<D> G(this->MRA);
-        FunctionTreeVector<D> out;
-        for (int d = 0; d < D; d++) {
-            this->setApplyDir(d);
-            FunctionTree<D> *out_d = G(inp);
-            (*this)(*out_d, inp, 0);
-            out.push_back(out_d);
-        }
-        return out;
-    }
-    FunctionTree<D>* div(FunctionTreeVector<D> &inp) {
-        if (inp.size() != D) MSG_ERROR("Invalid dimension");
-
-        MWAdder<D> add(this->MRA);
-        GridGenerator<D> G(this->MRA);
-
-        FunctionTreeVector<D> vec;
-        for (int d = 0; d < D; d++) {
-            this->setApplyDir(d);
-            FunctionTree<D> *tmp_d = G(inp);
-            (*this)(*tmp_d, *inp[d], 0);
-            vec.push_back(tmp_d);
-        }
-
-        FunctionTree<D> *out = G(inp);
-        add(*out, vec, 0);
-        vec.clear(true);
-
-        return out;
-    }
-    FunctionTreeVector<3> curl(FunctionTreeVector<3> &inp) {
-        NOT_IMPLEMENTED_ABORT;
-    }
+    bool applyCompressed() const { return false; }
 };
 
 #endif // DERIVATIVECONVOLUTION_H

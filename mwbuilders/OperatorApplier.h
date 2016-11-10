@@ -35,7 +35,9 @@ public:
 
         Timer post_t;
         oper.clearBandWidths();
-        out.mwTransform(TopDown, false); // add coarse scale contributions
+        if (oper.applyCompressed()) {
+            out.mwTransform(TopDown, false); // add coarse scale contributions
+        }
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         inp.deleteGenerated();

@@ -6,12 +6,16 @@
 #include "OperatorTree.h"
 #include "GreensKernel.h"
 #include "Gaussian.h"
+#include "BandWidth.h"
 #include "MathUtils.h"
+
+using namespace std;
+using namespace Eigen;
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
-    : MWOperator(mra.getOperatorMRA()),
-      prec(pr),
+    : prec(pr),
+      oper_mra(mra.getOperatorMRA()),
       kern_mra(mra.getKernelMRA()) {
 }
 
@@ -49,17 +53,25 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
 
-        this->kernel_exp.push_back(k_tree);
+        this->kern_exp.push_back(k_tree);
         this->oper_exp.push_back(o_tree);
     }
 }
 
 template<int D>
-void ConvolutionOperator<D>::clearKernel() {
-    for (int i = 0; i < this->kernel_exp.size(); i++) {
-        if (this->kernel_exp[i] != 0) delete this->kernel_exp[i];
+void ConvolutionOperator<D>::clearOperator() {
+    for (int i = 0; i < this->oper_exp.size(); i++) {
+        if (this->oper_exp[i] != 0) delete this->oper_exp[i];
     }
-    this->kernel_exp.clear();
+    this->oper_exp.clear();
+}
+
+template<int D>
+void ConvolutionOperator<D>::clearKernel() {
+    for (int i = 0; i < this->kern_exp.size(); i++) {
+        if (this->kern_exp[i] != 0) delete this->kern_exp[i];
+    }
+    this->kern_exp.clear();
 }
 
 template<int D>
@@ -73,6 +85,69 @@ double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> 
     const double *lb = MRA.getWorldBox().getLowerBounds();
     const double *ub = MRA.getWorldBox().getUpperBounds();
     return MathUtils::calcDistance(D, lb, ub);
+}
+
+template<int D>
+OperatorTree& ConvolutionOperator<D>::getComponent(int i) {
+    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
+    return *this->oper_exp[i];
+}
+
+template<int D>
+const OperatorTree& ConvolutionOperator<D>::getComponent(int i) const {
+    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
+    return *this->oper_exp[i];
+}
+
+template<int D>
+int ConvolutionOperator<D>::getMaxBandWidth(int depth) const {
+    int maxWidth = -1;
+    if (depth < 0 ) {
+        maxWidth = this->bandMax.maxCoeff();
+    } else if (depth < this->bandMax.size() ) {
+        maxWidth = this->bandMax(depth);
+    }
+    return maxWidth;
+}
+
+template<int D>
+void ConvolutionOperator<D>::calcBandWidths(double prec) {
+    int maxDepth = 0;
+    // First compute BandWidths and find depth of the deepest component
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        OperatorTree &oTree = *this->oper_exp[i];
+        oTree.calcBandWidth(prec);
+        const BandWidth &bw = oTree.getBandWidth();
+        int depth = bw.getDepth();
+        if (depth > maxDepth) {
+            maxDepth = depth;
+        }
+    }
+    this->bandMax = VectorXi(maxDepth + 1);
+    this->bandMax.setConstant(-1);
+    // Find the largest effective bandwidth at each scale
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        const OperatorTree &oTree = *this->oper_exp[i];
+        const BandWidth &bw = oTree.getBandWidth();
+        for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
+            for (int j = 0; j < 4; j++) { //component loop
+                int w = bw.getWidth(n, j);
+                if (w > this->bandMax(n)) {
+                    this->bandMax(n) = w;
+                }
+            }
+        }
+    }
+    println(20, "  Maximum bandwidths:\n" << this->bandMax << std::endl);
+}
+
+template<int D>
+void ConvolutionOperator<D>::clearBandWidths() {
+    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
+        this->oper_exp[i]->clearBandWidth();
+    }
 }
 
 template class ConvolutionOperator<1>;

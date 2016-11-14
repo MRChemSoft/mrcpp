@@ -1,43 +1,38 @@
 #ifndef PHOPERATOR_H
 #define PHOPERATOR_H
 
-#include "MWOperator.h"
+#include "DerivativeOperator.h"
 #include "TreeBuilder.h"
 #include "PHCalculator.h"
 #include "BandWidthAdaptor.h"
 
 template<int D>
-class PHOperator : public MWOperator {
+class PHOperator : public DerivativeOperator {
 public:
-    PHOperator(const MultiResolutionAnalysis<D> &mra)
+    PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
             : MWOperator(mra.getOperatorMRA()) {
-        initializeOperator();
+        initializeOperator(order);
     }
-    virtual ~PHOperator() { this->clearOperator(); }
-    bool applyCompressed() const { return false; }
+    virtual ~PHOperator() { }
 
 protected:
-    void initializeOperator() {
+    void initializeOperator(int order) {
         int bw = 1; //Operator bandwidth
         int max_scale = this->oper_mra.getMaxScale();
         const ScalingBasis &basis = this->oper_mra.getScalingBasis();
-        PHCalculator calculator(basis);
+        PHCalculator calculator(basis, order);
         BandWidthAdaptor adaptor(bw, max_scale);
         TreeBuilder<2> builder;
-
-        OperatorTree *o_tree = new OperatorTree(this->oper_mra, MachineZero, MaxAllocOperNodes);
-        builder.build(*o_tree, calculator, adaptor, -1);
+        builder.build(this->oper_tree, calculator, adaptor, -1);
 
         Timer trans_t;
         //o_tree->mwTransform(BottomUp);
-        o_tree->calcSquareNorm();
-        o_tree->setupOperNodeCache();
+        this->oper_tree.calcSquareNorm();
+        this->oper_tree.setupOperNodeCache();
         trans_t.stop();
 
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
-
-        this->oper_exp.push_back(o_tree);
     }
 };
 

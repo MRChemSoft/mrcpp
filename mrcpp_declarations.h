@@ -66,6 +66,7 @@ template <int D> class HilbertPath;
 class BandWidth;
 template <int D> class OperatorState;
 
+#define OperatorTreeVector std::vector<OperatorTree *>
 #define MWNodeVector std::vector<MWNode<D> *>
 #define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
 

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace Eigen;
 
-PHCalculator::PHCalculator(const ScalingBasis &basis) {
+PHCalculator::PHCalculator(const ScalingBasis &basis, int order) {
     readSMatrix(basis);
 }
 

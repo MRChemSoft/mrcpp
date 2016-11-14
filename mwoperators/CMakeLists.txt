@@ -6,7 +6,6 @@ add_library(mwoperators STATIC
     HelmholtzKernel.cpp
     PHCalculator.cpp
     PoissonKernel.cpp
-    MWOperator.cpp
 )
 
 target_link_libraries(mwoperators

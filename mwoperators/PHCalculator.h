@@ -7,7 +7,7 @@
 
 class PHCalculator : public TreeCalculator<2> {
 public:
-    PHCalculator(const ScalingBasis &basis);
+    PHCalculator(const ScalingBasis &basis, int order);
     virtual ~PHCalculator() { }
 
 protected:

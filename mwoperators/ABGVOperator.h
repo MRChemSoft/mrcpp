@@ -1,20 +1,19 @@
 #ifndef ABGVOPERATOR_H
 #define ABGVOPERATOR_H
 
-#include "MWOperator.h"
+#include "DerivativeOperator.h"
 #include "TreeBuilder.h"
 #include "ABGVCalculator.h"
 #include "BandWidthAdaptor.h"
 
 template<int D>
-class ABGVOperator : public MWOperator {
+class ABGVOperator : public DerivativeOperator {
 public:
-    ABGVOperator(const MultiResolutionAnalysis<D> &mra,
-                       double a = 0.5, double b = 0.5)
-            : MWOperator(mra.getOperatorMRA()) {
+    ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b)
+            : DerivativeOperator(mra.getOperatorMRA()) {
         initializeOperator(a, b);
     }
-    virtual ~ABGVOperator() { this->clearOperator(); }
+    virtual ~ABGVOperator() { }
 
 protected:
     void initializeOperator(double a, double b) {
@@ -27,20 +26,16 @@ protected:
         ABGVCalculator calculator(basis, a, b);
         BandWidthAdaptor adaptor(bw, max_scale);
         TreeBuilder<2> builder;
-
-        OperatorTree *o_tree = new OperatorTree(this->oper_mra, MachineZero, MaxAllocOperNodes);
-        builder.build(*o_tree, calculator, adaptor, -1);
+        builder.build(this->oper_tree, calculator, adaptor, -1);
 
         Timer trans_t;
-        o_tree->mwTransform(BottomUp);
-        o_tree->calcSquareNorm();
-        o_tree->setupOperNodeCache();
+        //this->oper_tree.mwTransform(BottomUp);
+        this->oper_tree.calcSquareNorm();
+        this->oper_tree.setupOperNodeCache();
         trans_t.stop();
 
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
-
-        this->oper_exp.push_back(o_tree);
     }
 };
 

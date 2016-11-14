@@ -1,17 +1,17 @@
-#ifndef OPERATORAPPLIER_H
-#define OPERATORAPPLIER_H
+#ifndef MWCONVOLUTION_H
+#define MWCONVOLUTION_H
 
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "OperApplicationCalculator.h"
-#include "MWOperator.h"
+#include "ConvolutionOperator.h"
 
 template<int D>
-class OperatorApplier {
+class MWConvolution {
 public:
-    OperatorApplier(double pr = -1.0, int ms = MaxScale)
-        : prec(pr), maxScale(ms) { }
-    virtual ~OperatorApplier() { }
+    MWConvolution(ConvolutionOperator<D> &op, double pr = -1.0, int ms = MaxScale)
+        : prec(pr), maxScale(ms), oper(&op) { }
+    virtual ~MWConvolution() { }
 
     double getPrecision() const { return this->prec; }
     int getMaxScale() const { return this->maxScale; }
@@ -20,24 +20,20 @@ public:
     void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
-                    MWOperator &oper,
                     FunctionTree<D> &inp,
-                    int maxIter = -1,
-                    int dir = -1) const {
+                    int max_iter = -1) const {
         Timer pre_t;
-        oper.calcBandWidths(this->prec);
-        TreeBuilder<D> builder;
+        this->oper->calcBandWidths(this->prec);
         WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
-        OperApplicationCalculator<D> calculator(dir, this->prec, oper, inp);
+        OperApplicationCalculator<D> calculator(0, this->prec, *this->oper, inp);
         pre_t.stop();
 
-        builder.build(out, calculator, adaptor, maxIter);
+        TreeBuilder<D> builder;
+        builder.build(out, calculator, adaptor, max_iter);
 
         Timer post_t;
-        oper.clearBandWidths();
-        if (oper.applyCompressed()) {
-            out.mwTransform(TopDown, false); // add coarse scale contributions
-        }
+        this->oper->clearBandWidths();
+        out.mwTransform(TopDown, false); // add coarse scale contributions
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         inp.deleteGenerated();
@@ -50,6 +46,7 @@ public:
 protected:
     double prec;
     int maxScale;
+    ConvolutionOperator<D> *oper;
 };
 
-#endif // OPERATORAPPLIER_H
+#endif // MWCONVOLUTION_H

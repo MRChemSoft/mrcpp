@@ -261,7 +261,9 @@ int MWTree<D>::getNGenNodes() {
   * appropriate rootNode. */
 template<int D>
 const MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) const {
-    const MWNode<D> &root = getRootBox().getNode(idx);
+    int rIdx = getRootBox().getBoxIndex(idx);
+    if (rIdx < 0) return 0;
+    const MWNode<D> &root = getRootBox().getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);
 }
@@ -274,7 +276,9 @@ const MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) const {
   * appropriate rootNode. */
 template<int D>
 MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) {
-    MWNode<D> &root = this->rootBox.getNode(idx);
+    int rIdx = getRootBox().getBoxIndex(idx);
+    if (rIdx < 0) return 0;
+    MWNode<D> &root = this->rootBox.getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);
 }

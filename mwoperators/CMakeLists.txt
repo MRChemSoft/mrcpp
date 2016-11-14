@@ -1,9 +1,10 @@
 
 add_library(mwoperators STATIC
-    PHCalculator.cpp
     ABGVCalculator.cpp
     ConvolutionOperator.cpp
+    CrossCorrelationCalculator.cpp
     HelmholtzKernel.cpp
+    PHCalculator.cpp
     PoissonKernel.cpp
     MWOperator.cpp
 )

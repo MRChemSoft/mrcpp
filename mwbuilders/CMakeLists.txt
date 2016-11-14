@@ -1,6 +1,5 @@
 
 add_library(mwbuilders STATIC 
-    CrossCorrelationCalculator.cpp
     OperApplicationCalculator.cpp
     ProjectionCalculator.cpp
     TreeBuilder.cpp

@@ -28,21 +28,21 @@ public:
 
     void operator()(FunctionTree<D> &out,
                     FunctionTree<D> &inp,
-                    int maxIter = -1) const {
+                    int max_iter = -1) const {
         TreeBuilder<D> builder;
-        CopyAdaptor<D> adaptor(inp, this->maxScale);
+        CopyAdaptor<D> adaptor(inp, this->maxScale, 0);
         DefaultCalculator<D> calculator;
-        builder.build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, max_iter);
         println(10, std::endl);
     }
 
     void operator()(FunctionTree<D> &out,
                     FunctionTreeVector<D> &inp,
-                    int maxIter = -1) const {
+                    int max_iter = -1) const {
         TreeBuilder<D> builder;
-        CopyAdaptor<D> adaptor(inp, this->maxScale);
+        CopyAdaptor<D> adaptor(inp, this->maxScale, 0);
         DefaultCalculator<D> calculator;
-        builder.build(out, calculator, adaptor, maxIter);
+        builder.build(out, calculator, adaptor, max_iter);
         println(10, std::endl);
     }
 protected:

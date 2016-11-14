@@ -1,4 +1,4 @@
-#include "DerivativeCalculator.h"
+#include "ABGVCalculator.h"
 #include "QuadratureCache.h"
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
@@ -7,9 +7,7 @@
 using namespace std;
 using namespace Eigen;
 
-DerivativeCalculator::DerivativeCalculator(const ScalingBasis &basis,
-                                           double a,
-                                           double b)
+ABGVCalculator::ABGVCalculator(const ScalingBasis &basis, double a, double b)
         : A(a), B(b) {
     int kp1 = basis.getQuadratureOrder();
     this->K = MatrixXd::Zero(kp1, kp1);
@@ -19,7 +17,7 @@ DerivativeCalculator::DerivativeCalculator(const ScalingBasis &basis,
     calcValueVectors(basis);
 }
 
-void DerivativeCalculator::calcValueVectors(const ScalingBasis &basis) {
+void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
     for (int i = 0; i < kp1; i++) {
@@ -47,7 +45,7 @@ void DerivativeCalculator::calcValueVectors(const ScalingBasis &basis) {
     }
 }
 
-void DerivativeCalculator::calcKMatrix(const ScalingBasis &basis) {
+void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
     for (int i = 0; i < kp1; i++) {
@@ -82,7 +80,7 @@ void DerivativeCalculator::calcKMatrix(const ScalingBasis &basis) {
     }
 }
 
-void DerivativeCalculator::calcNode(MWNode<2> &node) {
+void ABGVCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();

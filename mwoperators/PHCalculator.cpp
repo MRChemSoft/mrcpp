@@ -1,13 +1,13 @@
-#include "NumDiffCalculator.h"
+#include "PHCalculator.h"
 
 using namespace std;
 using namespace Eigen;
 
-NumDiffCalculator::NumDiffCalculator(const ScalingBasis &basis) {
+PHCalculator::PHCalculator(const ScalingBasis &basis) {
     readSMatrix(basis);
 }
 
-void NumDiffCalculator::readSMatrix(const ScalingBasis &basis) {
+void PHCalculator::readSMatrix(const ScalingBasis &basis) {
     if (basis.getScalingType() != Legendre) NOT_IMPLEMENTED_ABORT;
 
     int kp1 = basis.getQuadratureOrder();
@@ -235,7 +235,7 @@ void NumDiffCalculator::readSMatrix(const ScalingBasis &basis) {
     }
 }
 
-void NumDiffCalculator::calcNode(MWNode<2> &node) {
+void PHCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();

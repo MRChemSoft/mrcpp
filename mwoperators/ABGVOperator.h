@@ -1,27 +1,30 @@
-#ifndef NUMDIFFOPERATOR_H
-#define NUMDIFFOPERATOR_H
+#ifndef ABGVOPERATOR_H
+#define ABGVOPERATOR_H
 
 #include "MWOperator.h"
 #include "TreeBuilder.h"
-#include "NumDiffCalculator.h"
+#include "ABGVCalculator.h"
 #include "BandWidthAdaptor.h"
 
 template<int D>
-class NumDiffOperator : public MWOperator {
+class ABGVOperator : public MWOperator {
 public:
-    NumDiffOperator(const MultiResolutionAnalysis<D> &mra)
+    ABGVOperator(const MultiResolutionAnalysis<D> &mra,
+                       double a = 0.5, double b = 0.5)
             : MWOperator(mra.getOperatorMRA()) {
-        initializeOperator();
+        initializeOperator(a, b);
     }
-    virtual ~NumDiffOperator() { this->clearOperator(); }
-    bool applyCompressed() const { return false; }
+    virtual ~ABGVOperator() { this->clearOperator(); }
 
 protected:
-    void initializeOperator() {
-        int bw = 1; //Operator bandwidth
+    void initializeOperator(double a, double b) {
+        int bw = 0; //Operator bandwidth
+        if (fabs(a) > MachineZero) bw = 1;
+        if (fabs(b) > MachineZero) bw = 1;
+
         int max_scale = this->oper_mra.getMaxScale();
         const ScalingBasis &basis = this->oper_mra.getScalingBasis();
-        NumDiffCalculator calculator(basis);
+        ABGVCalculator calculator(basis, a, b);
         BandWidthAdaptor adaptor(bw, max_scale);
         TreeBuilder<2> builder;
 
@@ -29,7 +32,7 @@ protected:
         builder.build(*o_tree, calculator, adaptor, -1);
 
         Timer trans_t;
-        //o_tree->mwTransform(BottomUp);
+        o_tree->mwTransform(BottomUp);
         o_tree->calcSquareNorm();
         o_tree->setupOperNodeCache();
         trans_t.stop();
@@ -41,4 +44,4 @@ protected:
     }
 };
 
-#endif // NUMDIFFOPERATOR_H
+#endif // ABGVOPERATOR_H

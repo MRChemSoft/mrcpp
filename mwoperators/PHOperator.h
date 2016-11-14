@@ -1,31 +1,27 @@
-#ifndef DERIVATIVEOPERATOR_H
-#define DERIVATIVEOPERATOR_H
+#ifndef PHOPERATOR_H
+#define PHOPERATOR_H
 
 #include "MWOperator.h"
 #include "TreeBuilder.h"
-#include "DerivativeCalculator.h"
+#include "PHCalculator.h"
 #include "BandWidthAdaptor.h"
 
 template<int D>
-class DerivativeOperator : public MWOperator {
+class PHOperator : public MWOperator {
 public:
-    DerivativeOperator(const MultiResolutionAnalysis<D> &mra,
-                       double a = 0.5, double b = 0.5)
+    PHOperator(const MultiResolutionAnalysis<D> &mra)
             : MWOperator(mra.getOperatorMRA()) {
-        initializeOperator(a, b);
+        initializeOperator();
     }
-    virtual ~DerivativeOperator() { this->clearOperator(); }
+    virtual ~PHOperator() { this->clearOperator(); }
     bool applyCompressed() const { return false; }
 
 protected:
-    void initializeOperator(double a, double b) {
-        int bw = 0; //Operator bandwidth
-        if (fabs(a) > MachineZero) bw = 1;
-        if (fabs(b) > MachineZero) bw = 1;
-
+    void initializeOperator() {
+        int bw = 1; //Operator bandwidth
         int max_scale = this->oper_mra.getMaxScale();
         const ScalingBasis &basis = this->oper_mra.getScalingBasis();
-        DerivativeCalculator calculator(basis, a, b);
+        PHCalculator calculator(basis);
         BandWidthAdaptor adaptor(bw, max_scale);
         TreeBuilder<2> builder;
 
@@ -33,7 +29,7 @@ protected:
         builder.build(*o_tree, calculator, adaptor, -1);
 
         Timer trans_t;
-        o_tree->mwTransform(BottomUp);
+        //o_tree->mwTransform(BottomUp);
         o_tree->calcSquareNorm();
         o_tree->setupOperNodeCache();
         trans_t.stop();
@@ -45,4 +41,4 @@ protected:
     }
 };
 
-#endif // DERIVATIVEOPERATOR_H
+#endif // PHOPERATOR_H

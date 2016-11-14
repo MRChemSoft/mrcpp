@@ -1,14 +1,14 @@
-#ifndef NUMDIFFCALCULATOR_H
-#define NUMDIFFCALCULATOR_H
+#ifndef PHCALCULATOR_H
+#define PHCALCULATOR_H
 
 #include <Eigen/Core>
 
 #include "TreeCalculator.h"
 
-class NumDiffCalculator : public TreeCalculator<2> {
+class PHCalculator : public TreeCalculator<2> {
 public:
-    NumDiffCalculator(const ScalingBasis &basis);
-    virtual ~NumDiffCalculator() { }
+    PHCalculator(const ScalingBasis &basis);
+    virtual ~PHCalculator() { }
 
 protected:
     Eigen::MatrixXd S_m1;
@@ -19,4 +19,4 @@ protected:
     void readSMatrix(const ScalingBasis &basis);
 };
 
-#endif // NUMDIFFCALCULATOR_H
+#endif // PHCALCULATOR_H

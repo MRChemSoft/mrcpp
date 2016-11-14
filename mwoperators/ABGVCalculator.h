@@ -1,12 +1,12 @@
-#ifndef DERIVATIVECALCULATOR_H
-#define DERIVATIVECALCULATOR_H
+#ifndef ABGVCALCULATOR_H
+#define ABGVCALCULATOR_H
 
 #include "TreeCalculator.h"
 
-class DerivativeCalculator : public TreeCalculator<2> {
+class ABGVCalculator : public TreeCalculator<2> {
 public:
-    DerivativeCalculator(const ScalingBasis &basis, double a, double b);
-    virtual ~DerivativeCalculator() { }
+    ABGVCalculator(const ScalingBasis &basis, double a, double b);
+    virtual ~ABGVCalculator() { }
 
 protected:
     const double A;	 ///< Left boundary conditions, ref. Alpert et al.
@@ -21,4 +21,4 @@ protected:
     void calcValueVectors(const ScalingBasis &basis);
 };
 
-#endif // DERIVATIVECALCULATOR_H
+#endif // ABGVCALCULATOR_H

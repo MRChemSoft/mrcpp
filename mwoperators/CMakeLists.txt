@@ -1,5 +1,7 @@
 
 add_library(mwoperators STATIC
+    PHCalculator.cpp
+    ABGVCalculator.cpp
     ConvolutionOperator.cpp
     HelmholtzKernel.cpp
     PoissonKernel.cpp

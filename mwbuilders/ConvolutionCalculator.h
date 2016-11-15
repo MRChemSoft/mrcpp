@@ -1,27 +1,25 @@
-#ifndef OPERAPPLICATIONCALCULATOR_H
-#define OPERAPPLICATIONCALCULATOR_H
+#ifndef CONVOLUTIONCALCULATOR_H
+#define CONVOLUTIONCALCULATOR_H
 
 #include "TreeCalculator.h"
 #include "OperatorStatistics.h"
 #include "mrcpp_declarations.h"
 
 template<int D>
-class OperApplicationCalculator : public TreeCalculator<D> {
+class ConvolutionCalculator : public TreeCalculator<D> {
 public:
-    OperApplicationCalculator(int dir,
-                              double p,
-                              MWOperator &o,
-                              FunctionTree<D> &f,
-                              int depth = MaxDepth);
-    virtual ~OperApplicationCalculator();
+    ConvolutionCalculator(double p,
+                          ConvolutionOperator<D> &o,
+                          FunctionTree<D> &f,
+                          int depth = MaxDepth);
+    virtual ~ConvolutionCalculator();
 
     virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
-    int applyDir;
     int maxDepth;
     double prec;
-    MWOperator *oper;
+    ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
     std::vector<Timer> band_t;
     std::vector<Timer> calc_t;
@@ -35,7 +33,6 @@ protected:
 
     MWNodeVector* makeOperBand(const MWNode<D> &gNode);
     void fillOperBand(MWNodeVector *band, NodeIndex<D> &idx, const int *nbox, int dim);
-    void freeOperBand(MWNodeVector *band, MWNode<D> &gNode);
 
     void initTimers();
     void clearTimers();
@@ -58,4 +55,4 @@ protected:
 };
 
 
-#endif // OPERAPPLICATIONCALCULATOR_H
+#endif // CONVOLUTIONCALCULATOR_H

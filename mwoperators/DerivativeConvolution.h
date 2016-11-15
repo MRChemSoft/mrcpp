@@ -19,7 +19,6 @@ public:
         this->setApplyDir(d);
     }
     virtual ~DerivativeConvolution() { }
-    bool applyCompressed() const { return false; }
 };
 
 #endif // DERIVATIVECONVOLUTION_H

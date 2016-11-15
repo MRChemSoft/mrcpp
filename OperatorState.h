@@ -55,7 +55,8 @@ public:
     double **getAuxData() { return this->aux; }
     double **getOperData() { return this->oData; }
 
-    friend class OperApplicationCalculator<D>;
+    friend class ConvolutionCalculator<D>;
+    friend class DerivativeCalculator<D>;
 
 private:
     int ft;

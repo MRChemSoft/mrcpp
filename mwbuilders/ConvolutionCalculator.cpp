@@ -1,5 +1,5 @@
-#include "OperApplicationCalculator.h"
-#include "MWOperator.h"
+#include "ConvolutionCalculator.h"
+#include "ConvolutionOperator.h"
 #include "OperatorState.h"
 #include "FunctionNode.h"
 #include "OperatorNode.h"
@@ -17,13 +17,11 @@ using namespace std;
 using namespace Eigen;
 
 template<int D>
-OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
-                                                        double p,
-                                                        MWOperator &o,
-                                                        FunctionTree<D> &f,
-                                                        int depth)
-        : applyDir(dir),
-          maxDepth(depth),
+ConvolutionCalculator<D>::ConvolutionCalculator(double p,
+                                                ConvolutionOperator<D> &o,
+                                                FunctionTree<D> &f,
+                                                int depth)
+        : maxDepth(depth),
           prec(p),
           oper(&o),
           fTree(&f) {
@@ -33,7 +31,7 @@ OperApplicationCalculator<D>::OperApplicationCalculator(int dir,
 }
 
 template<int D>
-OperApplicationCalculator<D>::~OperApplicationCalculator() {
+ConvolutionCalculator<D>::~ConvolutionCalculator() {
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
     for (int i = 0; i < this->bandSizes.size(); i++) {
@@ -42,7 +40,7 @@ OperApplicationCalculator<D>::~OperApplicationCalculator() {
 }
 
 template<int D>
-void OperApplicationCalculator<D>::initTimers() {
+void ConvolutionCalculator<D>::initTimers() {
     int nThreads = omp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(Timer(false));
@@ -52,14 +50,14 @@ void OperApplicationCalculator<D>::initTimers() {
 }
 
 template<int D>
-void OperApplicationCalculator<D>::clearTimers() {
+void ConvolutionCalculator<D>::clearTimers() {
     this->band_t.clear();
     this->calc_t.clear();
     this->norm_t.clear();
 }
 
 template<int D>
-void OperApplicationCalculator<D>::printTimers() const {
+void ConvolutionCalculator<D>::printTimers() const {
     int oldprec = TelePrompter::setPrecision(1);
     int nThreads = omp_get_max_threads();
     printout(20, endl);
@@ -87,7 +85,7 @@ void OperApplicationCalculator<D>::printTimers() const {
 /** Initialize the number of nodes formally within the bandwidth of an
  operator. The band size is used for thresholding. */
 template<int D>
-void OperApplicationCalculator<D>::initBandSizes() {
+void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &oTree = this->oper->getComponent(i);
         const BandWidth &bw = oTree.getBandWidth();
@@ -105,9 +103,9 @@ void OperApplicationCalculator<D>::initBandSizes() {
   * there are edges on the world box, and thus over estimates
   * the number of nodes. This is different from the previous version. */
 template<int D>
-void OperApplicationCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
-                                                      int depth,
-                                                      const BandWidth &bw) {
+void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
+                                                  int depth,
+                                                  const BandWidth &bw) {
     for (int gt = 0; gt < this->nComp; gt++) {
         for (int ft = 0; ft < this->nComp; ft++) {
             int k = gt * this->nComp + ft;
@@ -129,7 +127,7 @@ void OperApplicationCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector* OperApplicationCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
     MWNodeVector *band = new MWNodeVector();
 
     int depth = gNode.getDepth();
@@ -167,7 +165,7 @@ MWNodeVector* OperApplicationCalculator<D>::makeOperBand(const MWNode<D> &gNode)
 
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
 template<int D>
-void OperApplicationCalculator<D>::fillOperBand(MWNodeVector *band,
+void ConvolutionCalculator<D>::fillOperBand(MWNodeVector *band,
                                                 NodeIndex<D> &idx,
                                                 const int *nbox,
                                                 int dim) {
@@ -188,7 +186,7 @@ void OperApplicationCalculator<D>::fillOperBand(MWNodeVector *band,
 }
 
 template<int D>
-int OperApplicationCalculator<D>::getBandSizeFactor(int i, int depth,
+int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth,
                                                     const OperatorState<D> &os) const {
     assert(i >= 0 and i < this->bandSizes.size());
     MatrixXi &bs = *this->bandSizes[i];
@@ -198,7 +196,7 @@ int OperApplicationCalculator<D>::getBandSizeFactor(int i, int depth,
 }
 
 template<int D>
-void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
+void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     FunctionNode<D> &gNode = static_cast<FunctionNode<D> &>(node);
     gNode.zeroCoefs();
 
@@ -231,11 +229,7 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
             }
             os.setFComponent(ft);
             for (int gt = 0; gt < this->nComp; gt++) {
-                bool compute = false;
-                if (gt != 0 or ft != 0) { compute = true; }
-                else if (not this->oper->applyCompressed()) { compute = true; }
-                else if (depth == 0) { compute = true; }
-                if (compute) {
+                if (depth == 0 or gt != 0 or ft != 0) {
                     os.setGComponent(gt);
                     applyOperComp(os);
                 }
@@ -252,7 +246,7 @@ void OperApplicationCalculator<D>::calcNode(MWNode<D> &node) {
 
 /** Apply each component (term) of the operator expansion to a node in f */
 template<int D>
-void OperApplicationCalculator<D>::applyOperComp(OperatorState<D> &os) {
+void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &os) {
     int depth = os.gNode->getDepth();
     double fNorm = os.fNode->getComponentNorm(os.ft);
     for (int i = 0; i < this->oper->size(); i++) {
@@ -270,7 +264,7 @@ void OperApplicationCalculator<D>::applyOperComp(OperatorState<D> &os) {
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
 template<int D>
-void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
+void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
@@ -297,32 +291,20 @@ void OperApplicationCalculator<D>::applyOperator(OperatorState<D> &os) {
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
         int oIdx = os.getOperIndex(d);
-        double ocn = oNode.getComponentNorm(oIdx);
-        oNorm *= ocn;
-        if (this->applyDir < 0 or this->applyDir == d) {
-            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx*os.kp1_2;
-        } else {
-            if (oTransl == 0 and (oIdx == 0 or oIdx == 3)) {
-                // This will activate the identity operator in direction i
-                oData[d] = 0;
-            } else {
-                // This means that we are in a zero part of the identity operator
-                return;
-            }
-        }
+        oNorm *= oNode.getComponentNorm(oIdx);
+        oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx*os.kp1_2;
     }
     double upperBound = oNorm * os.fThreshold;
     if (upperBound > os.gThreshold) {
         this->operStat.incrementFNodeCounters(fNode, os.ft, os.gt);
         tensorApplyOperComp(os);
-        gNode.setHasCoefs();
     }
 }
 
 /** Perorm the required linear algebra operations in order to apply an
 operator component to a f-node in a n-dimensional tesor space. */
 template<int D>
-void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
+void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     double **aux = os.getAuxData();
     double **oData = os.getOperData();
 #ifdef HAVE_BLAS
@@ -374,19 +356,13 @@ void OperApplicationCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 }
 
 template<int D>
-MWNodeVector* OperApplicationCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
-    if (this->oper->applyCompressed()) {
-        // return table of all nodes
-        MWNodeVector *nodeVec = new MWNodeVector;
-        tree.makeNodeTable(*nodeVec);
-        return nodeVec;
-    } else {
-        // return table of end nodes
-        return tree.copyEndNodeTable();
-    }
+MWNodeVector* ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+    MWNodeVector *nodeVec = new MWNodeVector;
+    tree.makeNodeTable(*nodeVec);
+    return nodeVec;
 }
 
-template class OperApplicationCalculator<1>;
-template class OperApplicationCalculator<2>;
-template class OperApplicationCalculator<3>;
+template class ConvolutionCalculator<1>;
+template class ConvolutionCalculator<2>;
+template class ConvolutionCalculator<3>;
 

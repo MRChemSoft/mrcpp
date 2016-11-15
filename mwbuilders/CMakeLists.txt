@@ -1,6 +1,6 @@
 
 add_library(mwbuilders STATIC 
-    OperApplicationCalculator.cpp
+    ConvolutionCalculator.cpp
     ProjectionCalculator.cpp
     TreeBuilder.cpp
 )

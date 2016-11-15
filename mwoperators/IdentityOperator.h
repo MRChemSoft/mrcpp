@@ -14,7 +14,6 @@ public:
         this->initializeOperator(identity_kernel);
     }
     virtual ~IdentityOperator() { }
-    bool applyCompressed() const { return false; }
 };
 
 #endif // IDENTITYOPERATOR_H

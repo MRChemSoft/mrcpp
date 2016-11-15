@@ -29,15 +29,17 @@ template <int D> class GridCleaner;
 template <int D> class MWProjector;
 template <int D> class MWAdder;
 template <int D> class MWMultiplier;
-template <int D> class OperatorApplier;
+template <int D> class MWConvolution;
+template <int D> class MWDerivative;
 
-class MWOperator;
 template <int D> class IdentityOperator;
 template <int D> class DerivativeConvolution;
-template <int D> class DerivativeOperator;
 template <int D> class ConvolutionOperator;
 class PoissonOperator;
 class HelmholtzOperator;
+template<int D> class DerivativeOperator;
+template<int D> class ABGVOperator;
+template<int D> class PHOperator;
 
 class GreensKernel;
 class IdentityKernel;
@@ -50,7 +52,8 @@ template <int D> class DefaultCalculator;
 template <int D> class ProjectionCalculator;
 template <int D> class AdditionCalculator;
 template <int D> class MultiplicationCalculator;
-template <int D> class OperApplicationCalculator;
+template <int D> class ConvolutionCalculator;
+template <int D> class DerivativeCalculator;
 class CrossCorrelationCalculator;
 
 template <int D> class TreeAdaptor;

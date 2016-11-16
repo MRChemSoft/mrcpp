@@ -4,6 +4,7 @@ add_library(mwoperators STATIC
     ConvolutionOperator.cpp
     CrossCorrelationCalculator.cpp
     HelmholtzKernel.cpp
+    MWOperator.cpp
     PHCalculator.cpp
     PoissonKernel.cpp
 )

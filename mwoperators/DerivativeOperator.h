@@ -1,20 +1,14 @@
 #ifndef DERIVATIVEOPERATOR_H
 #define DERIVATIVEOPERATOR_H
 
-#include "MultiResolutionAnalysis.h"
-#include "OperatorTree.h"
+#include "MWOperator.h"
 
-class DerivativeOperator {
+template<int D>
+class DerivativeOperator : public MWOperator {
 public:
-    DerivativeOperator(MultiResolutionAnalysis<2> mra) 
-        : oper_tree(mra, MachineZero, MaxAllocOperNodes) { }
+    DerivativeOperator(const MultiResolutionAnalysis<D> &mra) 
+            : MWOperator(mra.getOperatorMRA()) { }
     virtual ~DerivativeOperator() { }
-
-    OperatorTree &getOperatorTree() { return this->oper_tree; }
-    const OperatorTree &getOperatorTree() const { return this->oper_tree; }
-
-protected:
-    OperatorTree oper_tree;
 };
 
 #endif // DERIVATIVEOPERATOR_H

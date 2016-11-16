@@ -1,6 +1,7 @@
 
 add_library(mwbuilders STATIC 
     ConvolutionCalculator.cpp
+    DerivativeCalculator.cpp
     ProjectionCalculator.cpp
     TreeBuilder.cpp
 )

@@ -3,37 +3,43 @@
 
 #include "TreeBuilder.h"
 #include "CopyAdaptor.h"
-#include "OperApplicationCalculator.h"
+#include "DerivativeCalculator.h"
 #include "DerivativeOperator.h"
 
 template<int D>
 class MWDerivative {
 public:
-    MWDerivative(DerivativeOperator<D> &op, int ms = MaxScale)
-        : maxScale(ms), oper(&op) { }
-    virtual ~MWDerivative() { this->oper = 0; }
+    MWDerivative(int ms = MaxScale) : maxScale(ms) { }
+    virtual ~MWDerivative() { }
 
     int getMaxScale() const { return this->maxScale; }
     void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
+                    DerivativeOperator<D> &oper,
                     FunctionTree<D> &inp,
                     int dir = -1) const {
         TreeBuilder<D> builder;
 
+        int bw[D]; // Operator bandwidth in [x,y,z]
+        for (int d = 0; d < D; d++) bw[d] = 0;
+
+        // Copy input tree plus bandwidth in operator direction
         Timer pre_t;
-        int bw[D];
-        getBandWidth(dir, bw);
+        oper.calcBandWidths(1.0); // Fixed 0 or 1 for derivatives
+        bw[dir] = oper.getMaxBandWidth();
         CopyAdaptor<D> pre_adaptor(inp, this->maxScale, bw);
         DefaultCalculator<D> pre_calculator;
         builder.build(out, pre_calculator, pre_adaptor, -1);
         pre_t.stop();
 
+        // Apply operator on fixed expanded grid
         TreeAdaptor<D> apply_adaptor(this->maxScale);
-        OperApplicationCalculator<D> apply_calculator(dir, this->prec, *this->oper, inp);
+        DerivativeCalculator<D> apply_calculator(dir, oper, inp);
         builder.build(out, apply_calculator, apply_adaptor, 0);
 
         Timer post_t;
+        oper.clearBandWidths();
         out.mwTransform(BottomUp);
         out.calcSquareNorm();
         inp.deleteGenerated();
@@ -45,13 +51,6 @@ public:
     }
 protected:
     int maxScale;
-    DerivativeOperator<D> *oper;
-
-    void getBandWidth(int dir, int bw[D]) const {
-        if (dir >= D) MSG_FATAL("Invalid apply dir");
-        for (int d = 0; d < D; d++) bw[d] = 0;
-        bw[dir] = 1;
-    }
 };
 
 #endif // MWDERIVATIVE_H

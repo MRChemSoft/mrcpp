@@ -423,28 +423,56 @@ void MWNode<D>::reCompress() {
 /** Recurse down until an EndNode is found, and then crop children with
   * too high precision. */
 template<int D>
-bool MWNode<D>::crop(double prec, NodeIndexSet *cropIdx) {
-    NOT_IMPLEMENTED_ABORT;
-    //    if (this->isEndNode()) {
-    //        return true;
-    //    } else {
-    //        for (int i = 0; i < this->tDim; i++) {
-    //            MWNode<D> &child = *this->children[i];
-    //            if (child.cropChildren(prec, cropIdx)) {
-    //                if (not this->isForeign()) {
-    //                    if (this->splitCheck(prec) == false) {
-    //                        if (cropIdx != 0) {
-    //                            cropIdx->insert(&this->getNodeIndex());
-    //                        } else {
-    //                            this->deleteChildren();
-    //                        }
-    //                        return true;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return false;
+bool MWNode<D>::crop(double prec, double splitFac, bool absPrec) {
+    if (this->isEndNode()) {
+        return true;
+    } else {
+        for (int i = 0; i < this->getTDim(); i++) {
+            MWNode<D> &child = *this->children[i];
+            if (child.crop(prec, splitFac, absPrec)) {
+                if (this->splitCheck(prec, splitFac, absPrec) == false) {
+                    this->deleteChildren();
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+template<int D>
+bool MWNode<D>::splitCheck(double prec, double splitFac, bool absPrec) const {
+    if (prec < 0.0) {
+        return false;
+    }
+    double scale_fac = getScaleFactor(splitFac, absPrec);
+    double w_thrs = max(2.0*MachinePrec, prec*scale_fac);
+    double w_norm = sqrt(getWaveletNorm());
+    if (w_norm > w_thrs) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/** Calculate the threshold for the wavelet norm.
+  *
+  * Calculates the threshold that has to be met in the wavelet norm in order to
+  * guarantee the precision in the function representation. Depends on the
+  * square norm of the function and the requested relative accuracy. */
+template<int D>
+double MWNode<D>::getScaleFactor(double splitFac, bool absPrec) const {
+    double t_norm = 1.0;
+    double sq_norm = this->tree->getSquareNorm();
+    if (sq_norm > 0.0 and not absPrec) {
+        t_norm = sqrt(sq_norm);
+    }
+    double scale_fac = 1.0;
+    if (splitFac > MachineZero) {
+        double expo = 0.5 * splitFac * (getScale() + 1);
+        scale_fac = pow(2.0, -expo);
+    }
+    return t_norm * scale_fac;
 }
 
 template<int D>

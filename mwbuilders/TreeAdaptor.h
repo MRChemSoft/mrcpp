@@ -17,7 +17,7 @@ public:
             MWNode<D> &node = *inp[n];
             // Can be BranchNode in operator application
             if (node.isBranchNode()) continue;
-            if (node.getScale() >= this->maxScale) continue;
+            if (node.getScale() + 2 > this->maxScale) continue;
             if (splitNode(node)) {
                 node.createChildren();
                 for (int i = 0; i < node.getNChildren(); i++) {

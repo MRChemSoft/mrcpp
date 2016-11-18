@@ -12,8 +12,8 @@ public:
 		   bool ap = false,
 		   double sf = 1.0)
             : TreeAdaptor<D>(ms),
-              prec(pr),
               absPrec(ap),
+              prec(pr),
 	      splitFac(sf) { }
     virtual ~WaveletAdaptor() { }
 
@@ -21,12 +21,13 @@ public:
     void setAbsPrec(bool ap) { this->absPrec = ap; }
 
 protected:
-    double prec;
     bool absPrec;
+    double prec;
     double splitFac;
 
-    virtual bool splitNode(const MWNode<D> &node) const;
-    double getWaveletThreshold(double norm, int scale) const;
+    virtual bool splitNode(const MWNode<D> &node) const {
+        return node.splitCheck(this->prec, this->splitFac, this->absPrec);
+    }
 };
 
 #endif // WAVELETADAPTOR_H

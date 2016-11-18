@@ -174,10 +174,13 @@ int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
     int cn = this->cornerIndex.getScale();
     int cl = this->cornerIndex.getTranslation(0);
     int relScale = n - cn;
-    if (relScale >= 0) {
-        return (l >> relScale) - cl;
-    } else {
+    if (relScale < 0) return -1;
+
+    int bIdx = (l >> relScale) - cl;
+    if (bIdx < 0 or bIdx >= this->size()) {
         return -1;
+    } else {
+        return bIdx;
     }
 }
 
@@ -199,7 +202,11 @@ int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
         int reqTransl = (l[d] >> relScale) - cl[d];
         bIdx += ncells * reqTransl;
     }
-    return bIdx;
+    if (bIdx < 0 or bIdx >= this->size()) {
+        return -1;
+    } else {
+        return bIdx;
+    }
 }
 
 template class BoundingBox<1>;

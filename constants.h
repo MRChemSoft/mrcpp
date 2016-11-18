@@ -16,6 +16,7 @@ const int MaxSepRank = 1000;
 const int MaxAllocNodes = 256*1024;
 const int MaxAllocOperNodes = 8*1024;
 const int MaxAllocNodes1D = 8*1024;
+const int workOrbVecSize = 10;//Max number of orbitals stored temporarily. Larger->more memory
 
 
 namespace Axis {

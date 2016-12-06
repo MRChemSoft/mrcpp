@@ -39,7 +39,6 @@ public:
     void square();
     void power(double d);
     void normalize();
-    void orthogonalize(const FunctionTree<D> &tree);
     void map(const RepresentableFunction<1> &func);
 
     FunctionTree<D>& operator *=(double c);

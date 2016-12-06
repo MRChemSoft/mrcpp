@@ -161,22 +161,6 @@ void FunctionTree<D>::normalize() {
 }
 
 template<int D>
-void FunctionTree<D>::orthogonalize(const FunctionTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT;
-//    this->purgeGenNodes();
-//    this->purgeForeignNodes();
-//    tree.purgeGenNodes();
-//    tree.purgeForeignNodes();
-//    double innerProd = this->dot(tree);
-//    double norm = tree.getSquareNorm();
-//    this->purgeGenNodes();
-//    this->purgeForeignNodes();
-//    tree.purgeGenNodes();
-//    tree.purgeForeignNodes();
-//    *this -= (innerProd/norm) * tree;
-}
-
-template<int D>
 void FunctionTree<D>::map(const RepresentableFunction<1> &func) {
     NOT_IMPLEMENTED_ABORT;
 }

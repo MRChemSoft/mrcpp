@@ -9,14 +9,16 @@
 template<int D>
 class MWConvolution {
 public:
-    MWConvolution(double pr = -1.0, int ms = MaxScale)
-        : prec(pr), maxScale(ms) { }
+    MWConvolution(double pr = -1.0, int ms = MaxScale, bool ap = false)
+        : prec(pr), absPrec(ap), maxScale(ms) { }
     virtual ~MWConvolution() { }
 
     double getPrecision() const { return this->prec; }
+    bool getAbsPrec() const { return this->absPrec; }
     int getMaxScale() const { return this->maxScale; }
 
     void setPrecision(double pr) { this->prec = pr; }
+    void setAbsPrec(bool ap) { this->absPrec = ap; }
     void setMaxScale(int ms) { this->maxScale = ms; }
 
     void operator()(FunctionTree<D> &out,
@@ -25,7 +27,7 @@ public:
                     int max_iter = -1) const {
         Timer pre_t;
         oper.calcBandWidths(this->prec);
-        WaveletAdaptor<D> adaptor(this->prec, this->maxScale);
+        WaveletAdaptor<D> adaptor(this->prec, this->maxScale, this->absPrec);
         ConvolutionCalculator<D> calculator(this->prec, oper, inp);
         pre_t.stop();
 
@@ -46,6 +48,7 @@ public:
     }
 protected:
     double prec;
+    bool absPrec;
     int maxScale;
 };
 

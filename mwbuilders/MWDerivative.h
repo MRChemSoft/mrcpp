@@ -3,6 +3,7 @@
 
 #include "TreeBuilder.h"
 #include "CopyAdaptor.h"
+#include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
 #include "DerivativeOperator.h"
 

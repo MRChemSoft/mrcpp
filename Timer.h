@@ -54,9 +54,9 @@ public:
     friend std::ostream& operator<<(std::ostream &o, const Timer &timer) {
         int old_prec;
         GET_PRINT_PRECISION(old_prec);
-        SET_PRINT_PRECISION(3);
+        SET_PRINT_PRECISION(5);
 	//uncommented until properly defined:        o << "    user   " << std::setw(6) <<  timer.getUserTime();
-        o << " " << std::setw(6) <<  timer.getWallTime();
+        o <<  timer.getWallTime();
         SET_PRINT_PRECISION(old_prec);
         return o;
 	}

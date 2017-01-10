@@ -40,7 +40,7 @@ void TelePrompter::printHeader(int level, const string &str, int newlines) {
 
 void TelePrompter::printFooter(int level, const Timer &t, int newlines) {
     printSeparator(level, '-');
-    println(level, " Elapsed time:     " << t);
+    println(level, "                 Wall time: " << setw(11) << t << " sec ");
     printSeparator(level, '=', newlines);
 }
 

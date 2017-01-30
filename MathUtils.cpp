@@ -441,3 +441,10 @@ MatrixXd MathUtils::readMatrixFile(const string &file) {
     return matrix;
 }
 
+void MathUtils::diagonalizeBlock(Eigen::MatrixXd &M , Eigen::MatrixXd &U, int nstart, int nsize) {
+    SelfAdjointEigenSolver<MatrixXd> es(nsize);
+    es.compute(M.block(nstart, nstart, nsize, nsize));
+    MatrixXd tmp = es.eigenvectors();
+    U.block(nstart, nstart, nsize, nsize) = tmp.transpose();
+    M.block(nstart, nstart, nsize, nsize) = es.eigenvalues().asDiagonal();
+}

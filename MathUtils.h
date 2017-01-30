@@ -77,6 +77,8 @@ public:
 
     static Eigen::MatrixXd readMatrixFile(const std::string &file);
 
+    static void diagonalizeBlock(Eigen::MatrixXd &M , Eigen::MatrixXd &U, int nstart, int nsize);
+
 private:
     static void print_vector(int n, const double *vec);
 };

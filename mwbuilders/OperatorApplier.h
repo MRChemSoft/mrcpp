@@ -5,6 +5,7 @@
 #include "WaveletAdaptor.h"
 #include "OperApplicationCalculator.h"
 #include "MWOperator.h"
+#include "Timer.h"
 
 template<int D>
 class OperatorApplier : public TreeBuilder<D> {

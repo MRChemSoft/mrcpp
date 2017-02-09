@@ -23,6 +23,7 @@
 #define TEST_BIT(A,N) {if (A & (1 << N)) return true; return false;}
 #define IS_ODD(A) ( A & 1 )
 #define IS_EVEN(A) (!( A & 1 ))
+#define IS_EQUAL(A,B) (fabs(A - B) < MachineZero)
 
 #define SET_BITS(A,N) A |= (N)
 #define CLEAR_BITS(A,N) A &= ~(N)

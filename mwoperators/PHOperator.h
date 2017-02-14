@@ -5,6 +5,7 @@
 #include "TreeBuilder.h"
 #include "PHCalculator.h"
 #include "BandWidthAdaptor.h"
+#include "Timer.h"
 
 template<int D>
 class PHOperator : public DerivativeOperator<D> {

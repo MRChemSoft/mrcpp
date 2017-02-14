@@ -5,6 +5,7 @@
 #include "WaveletAdaptor.h"
 #include "ConvolutionCalculator.h"
 #include "ConvolutionOperator.h"
+#include "Timer.h"
 
 template<int D>
 class MWConvolution {

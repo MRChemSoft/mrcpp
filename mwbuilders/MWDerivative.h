@@ -6,6 +6,7 @@
 #include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
 #include "DerivativeOperator.h"
+#include "Timer.h"
 
 template<int D>
 class MWDerivative {

@@ -5,6 +5,7 @@
 #include "TreeBuilder.h"
 #include "ABGVCalculator.h"
 #include "BandWidthAdaptor.h"
+#include "Timer.h"
 
 template<int D>
 class ABGVOperator : public DerivativeOperator<D> {

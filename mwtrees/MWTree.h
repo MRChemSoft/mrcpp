@@ -1,10 +1,5 @@
 /**
  *
- * \date Jun 5, 2009
- * \author Jonas Juselius <jonas.juselius@uit.no> \n
- *         CTCC, University of Tromsø
- *
- *
  */
 
 #ifndef MWTREE_H_

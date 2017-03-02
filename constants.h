@@ -29,7 +29,6 @@ const int Z = 2;
 }
 
 
-enum NumType { Total, Real, Imag };
 enum Spin { Paired, Alpha, Beta };
 enum FuncType {	Legendre, Interpol };
 enum SplitType { ExactSplit, NormalSplit, FastSplit };

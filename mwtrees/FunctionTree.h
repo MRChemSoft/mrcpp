@@ -14,6 +14,7 @@
 
 #include "TreeBuilder.h"
 #include "MWTree.h"
+#include "SerialFunctionTree.h"
 
 
 template<int D>

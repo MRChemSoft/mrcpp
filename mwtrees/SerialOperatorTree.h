@@ -31,9 +31,7 @@ public:
     virtual void deallocGenNodes(int serialIx);
 
 protected:
-
     OperatorNode *sNodes;       //serial OperatorNodes
-    double *sNodesCoeff;        //serial OperatorNodes coefficients
 
     std::vector<OperatorNode*> nodeChunks;
     std::vector<double*> nodeCoeffChunks;

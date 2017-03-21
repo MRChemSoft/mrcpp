@@ -277,8 +277,8 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
 	    //need to allocate new chunk
 	    this->sNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	    this->nodeChunks.push_back(this->sNodes);
-            this->sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-            this->nodeCoeffChunks.push_back(this->sNodesCoeff);
+            double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
+            this->nodeCoeffChunks.push_back(sNodesCoeff);
 	    if (chunk%100==99 and D==3) println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes/1024) * this->sizeNodeCoeff/128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
@@ -289,7 +289,9 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
 
     ProjectedNode<D> *newNode  = this->lastNode;
     ProjectedNode<D> *newNode_cp  = newNode;
-    *coefs_p = this->sNodesCoeff + chunkIx*this->sizeNodeCoeff;
+
+    int chunk = this->nNodes/this->maxNodesPerChunk;//find the right chunk
+    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx*this->sizeNodeCoeff;
  
     for (int i = 0; i < nAlloc; i++) {
         if (this->nodeStackStatus[*serialIx+i] != 0)
@@ -350,8 +352,8 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
 	    //need to allocate new chunk
 	    this->sGenNodes = (GenNode<D>*) new char[this->maxNodesPerChunk*sizeof(GenNode<D>)];
 	    this->genNodeChunks.push_back(this->sGenNodes);
-	    this->sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
-	    genNodeCoeffChunks.push_back(this->sGenNodesCoeff);
+	    double *sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
+	    this->genNodeCoeffChunks.push_back(sGenNodesCoeff);
 	    if(chunk%100==99 and D==3)println(10,endl<<" number of GenNodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->genNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
         }
         this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes%(this->maxNodesPerChunk);
@@ -362,7 +364,9 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
 
     GenNode<D>* newNode  = this->lastGenNode;
     GenNode<D>* newNode_cp  = newNode;
-    *coefs_p = this->sGenNodesCoeff + chunkIx*this->sizeGenNodeCoeff;
+
+    int chunk = this->nGenNodes/this->maxNodesPerChunk;//find the right chunk
+    *coefs_p = this->genNodeCoeffChunks[chunk] + chunkIx*this->sizeGenNodeCoeff;
 
     for (int i = 0; i < nAlloc; i++) {
         newNode_cp->serialIx = *serialIx+i;//Until overwritten!

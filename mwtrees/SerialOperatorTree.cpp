@@ -193,8 +193,8 @@ OperatorNode* SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double *
 	    //need to allocate new chunk
 	    this->sNodes = (OperatorNode*) new char[this->maxNodesPerChunk*sizeof(OperatorNode)];
 	    this->nodeChunks.push_back(this->sNodes);
-            this->sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-            this->nodeCoeffChunks.push_back(this->sNodesCoeff);
+            double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
+            this->nodeCoeffChunks.push_back(sNodesCoeff);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -204,7 +204,9 @@ OperatorNode* SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double *
 
     OperatorNode *newNode  = this->lastNode;
     OperatorNode *newNode_cp  = newNode;
-    *coefs_p = this->sNodesCoeff + chunkIx*this->sizeNodeCoeff;
+
+    int chunk = this->nNodes/this->maxNodesPerChunk;//find the right chunk
+    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx*this->sizeNodeCoeff;
  
     for (int i = 0; i < nAlloc; i++) {
         if (this->nodeStackStatus[*serialIx+i] != 0)

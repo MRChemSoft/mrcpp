@@ -37,8 +37,6 @@ public:
 
     ProjectedNode<D> *sNodes;   //serial ProjectedNodes
     GenNode<D> *sGenNodes;      //serial GenNodes
-    double *sNodesCoeff;        //serial ProjectedNodes coefficients
-    double *sGenNodesCoeff;     //serial GenNodes coefficients
 
     std::vector<GenNode<D>*> genNodeChunks;
     std::vector<double*> genNodeCoeffChunks;

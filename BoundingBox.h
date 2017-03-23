@@ -81,29 +81,28 @@ template<int T>
 std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
     GET_PRINT_PRECISION(int pprec);
     o << std::fixed << std::setprecision(5);
-    o << "*BoundingBox: " << std::endl;
-    o << "  unit length     = " << box.getUnitLength() << std::endl;
-    o << "  total boxes     = " << box.size() << std::endl;
-    o << "  boxes           = [ ";
+    o << " unit length      = " << box.getUnitLength() << std::endl;
+    o << " total boxes      = " << box.size() << std::endl;
+    o << " boxes            = [ ";
     for (int i = 0; i < T; i++) {
         o << std::setw(11) << box.size(i) << " ";
     }
-    o << " ]" << std::endl;
-    o << "  lower bounds    = [ ";
+    o << "]" << std::endl;
+    o << " lower bounds     = [ ";
     for (int i = 0; i < T; i++) {
         o << std::setw(11) << box.getLowerBound(i) << " ";
     }
-    o << " ]" << std::endl;
-    o << "  upper bounds    = [ ";
+    o << "]" << std::endl;
+    o << " upper bounds     = [ ";
     for (int i = 0; i < T; i++) {
         o << std::setw(11) << box.getUpperBound(i) << " ";
     }
-    o << " ]" << std::endl;
-    o << "  total length    = [ ";
+    o << "]" << std::endl;
+    o << " total length     = [ ";
     for (int i = 0; i < T; i++) {
         o << std::setw(11) << box.getBoxLength(i) << " ";
     }
-    o << " ]" << std::endl;
+    o << "]";
     o << std::scientific << std::setprecision(pprec);
     return o;
 }

@@ -68,14 +68,13 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream &o, const ScalingBasis &bas) {
-        o << "*ScalingBasis:" << std::endl;
-        o << "  order           = " << bas.getScalingOrder() << std::endl;
+        o << " polynomial order = " << bas.getScalingOrder() << std::endl;
         if (bas.getScalingType() == Legendre) {
-            o << "  type            = Legendre";
+            o << " polynomial type  = Legendre";
         } else if (bas.getScalingType() == Interpol) {
-            o << "  type            = Interpolating";
+            o << " polynomial type  = Interpolating";
         } else {
-            o << "  type            = Unknown";
+            o << " polynomial type  = Unknown";
         }
         return o;
     }

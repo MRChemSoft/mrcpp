@@ -97,22 +97,18 @@ public:
         return false;
     }
 
-    /*
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o,
-                                    const MultiResolutionAnalysis<T> &mra) {
-        o << std::endl;
-        o << "***************** MultiResolution Analysis *****************";
-        o << std::endl;
-        o << std::endl << mra.basis;
-        o << std::endl;
-        o << std::endl << mra.world;
-        o << std::endl;
-        o << "************************************************************";
-        o << std::endl;
-        return o;
+    void print() const {
+        println(0, std::endl);
+        println(0, "============================================================");
+        println(0, "                  MultiResolution Analysis                  ");
+        println(0, "------------------------------------------------------------");
+        println(0, this->basis);
+        println(0, "------------------------------------------------------------");
+        println(0, this->world);
+        println(0, "============================================================");
+        println(0, std::endl);
     }
-    */
+
 protected:
     const int maxDepth;
     const ScalingBasis basis;

@@ -1,7 +1,6 @@
 #ifndef PARALLEL_H_
 #define PARALLEL_H_
 
-#include <mpi.h>
 #include "config.h"
 
 template<int D> class FunctionTree;
@@ -32,6 +31,7 @@ void MPI_Initializations();
 
 
 #ifdef HAVE_MPI
+#include <mpi.h>
 
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);

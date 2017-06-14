@@ -21,8 +21,8 @@ int NFtrees=0;
 template<int D>
 SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
         : SerialTree<D>(tree),
-          maxGenNodes(max_nodes),
           nGenNodes(0),
+          maxGenNodes(max_nodes),
           lastNode(0),
           lastGenNode(0) {
 

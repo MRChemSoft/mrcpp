@@ -17,8 +17,8 @@ using namespace Eigen;
 */
 template<int D>
 Plot<D>::Plot(int npts, const double *a, const double *b)
-        : nPoints(npts),
-          fout(0) {
+        : fout(0),
+          nPoints(npts) {
     setRange(a, b);
     setSuffix(Plot<D>::Line, ".line");
     setSuffix(Plot<D>::Surface, ".surf");

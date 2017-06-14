@@ -19,12 +19,12 @@ template<int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         : nThreads(omp_get_max_threads()),
           MRA(mra),
-          rootBox(mra.getWorldBox()),
           order(mra.getOrder()),
           kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
-          squareNorm(-1.0),
           name("nn"),
-          nNodes(0) {
+          nNodes(0),
+          squareNorm(-1.0),
+          rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 

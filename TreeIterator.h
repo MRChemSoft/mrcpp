@@ -12,9 +12,9 @@ class TreeIterator {
 public:
     TreeIterator(int dir = TopDown)
         : mode(dir),
+          returnGenNodes(true),
           state(0),
-          initialState(0),
-          returnGenNodes(true) {
+          initialState(0) {
     }
     virtual ~TreeIterator() {
         if (this->initialState != 0) {

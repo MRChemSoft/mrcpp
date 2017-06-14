@@ -26,9 +26,9 @@ MWNode<D>::MWNode()
           nodeIndex(),
           hilbertPath(),
           squareNorm(-1.0),
-          status(0),
           n_coefs(0),
-          coefs(0) {
+          coefs(0),
+          status(0) {
     setIsLeafNode();
     setIsLooseNode();
 
@@ -51,9 +51,9 @@ MWNode<D>::MWNode(const MWNode<D> &node)
           nodeIndex(node.nodeIndex),
           hilbertPath(node.hilbertPath),
           squareNorm(-1.0),
-          status(0),
           n_coefs(0),
-          coefs(0) {
+          coefs(0),
+          status(0) {
     setIsLeafNode();
     setIsLooseNode();
 

@@ -10,9 +10,9 @@ template<int D>
 class MultiResolutionAnalysis {
 public:
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
-            : world(mra.world),
+            : maxDepth(mra.maxDepth),
               basis(mra.basis),
-              maxDepth(mra.maxDepth) {
+              world(mra.world) {
         if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
         if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
         setupFilter();
@@ -20,9 +20,9 @@ public:
     MultiResolutionAnalysis(const BoundingBox<D> &bb,
                             const ScalingBasis &sb,
                             int depth = MaxDepth)
-            : world(bb),
+            : maxDepth(depth),
               basis(sb),
-              maxDepth(depth) {
+              world(bb) {
         if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
         if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
         setupFilter();

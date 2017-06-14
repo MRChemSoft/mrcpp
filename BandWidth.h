@@ -9,8 +9,10 @@
 #ifndef BANDWIDTH_H
 #define BANDWIDTH_H
 
-#include <iostream>
+#pragma GCC system_header
 #include <Eigen/Core>
+
+#include <iostream>
 
 class BandWidth {
 public:

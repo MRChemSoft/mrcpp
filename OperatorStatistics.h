@@ -1,6 +1,7 @@
 #ifndef OPERATORSTATISTICS_H
 #define OPERATORSTATISTICS_H
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "TelePrompter.h"

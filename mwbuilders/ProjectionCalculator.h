@@ -1,6 +1,9 @@
 #ifndef ANALYTICPROJECTOR_H
 #define ANALYTICPROJECTOR_H
 
+#pragma GCC system_header
+#include <Eigen/Core>
+
 #include "TreeCalculator.h"
 
 template<int D>

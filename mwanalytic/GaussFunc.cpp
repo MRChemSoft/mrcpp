@@ -7,7 +7,6 @@
  *
  * \breif
  */
-#include <Eigen/Core>
 #include <cmath>
 
 #include "GaussExp.h"

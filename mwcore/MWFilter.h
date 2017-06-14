@@ -11,7 +11,9 @@
 #ifndef MWFILTER_H_
 #define MWFILTER_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
+
 #include <string>
 
 typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic>

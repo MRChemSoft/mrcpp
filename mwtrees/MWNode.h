@@ -8,6 +8,7 @@
 #ifndef MWNODE_H_
 #define MWNODE_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "parallel.h"

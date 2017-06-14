@@ -1,6 +1,7 @@
 #ifndef MWFDCALCULATOR_H
 #define MWFDCALCULATOR_H
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "TreeCalculator.h"

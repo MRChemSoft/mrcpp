@@ -1,5 +1,3 @@
-#include <Eigen/Core>
-
 #include "SerialTree.h"
 #include "MWTree.h"
 #include "TelePrompter.h"

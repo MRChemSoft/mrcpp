@@ -7,6 +7,7 @@
 #ifndef OPERATORSTATE_H
 #define OPERATORSTATE_H
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "MWNode.h"

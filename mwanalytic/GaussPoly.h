@@ -9,8 +9,10 @@
 #ifndef GAUSSPOLY_H
 #define GAUSSPOLY_H
 
-#include <vector>
+#pragma GCC system_header
 #include <Eigen/Core>
+
+#include <vector>
 
 #include "Gaussian.h"
 #include "Polynomial.h"

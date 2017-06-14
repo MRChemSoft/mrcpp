@@ -12,6 +12,8 @@
 
 #include <iostream>
 #include <cmath>
+
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"

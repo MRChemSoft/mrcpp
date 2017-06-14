@@ -7,8 +7,6 @@
  *
  */
 
-#include <Eigen/Dense>
-
 #include "LegendreBasis.h"
 #include "LegendrePoly.h"
 #include "QuadratureCache.h"

@@ -5,6 +5,7 @@
 #ifndef MWTREE_H_
 #define MWTREE_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "parallel.h"

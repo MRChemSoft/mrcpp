@@ -10,7 +10,11 @@
 #ifndef MATHUTILS_H_
 #define MATHUTILS_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
+#pragma GCC system_header
+#include <Eigen/Eigenvalues>
+
 #include "TelePrompter.h"
 
 class MathUtils {

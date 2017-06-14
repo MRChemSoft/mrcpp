@@ -16,6 +16,7 @@
 #ifndef POLYNOMIAL_H_
 #define POLYNOMIAL_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"

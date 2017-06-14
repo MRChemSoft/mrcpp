@@ -1,7 +1,6 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
-#include <Eigen/Eigenvalues>
 
 #include "MathUtils.h"
 #include "TelePrompter.h"

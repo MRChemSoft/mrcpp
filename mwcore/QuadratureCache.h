@@ -11,6 +11,7 @@
 #ifndef QUADRATURECACHE_H_
 #define QUADRATURECACHE_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "GaussQuadrature.h"

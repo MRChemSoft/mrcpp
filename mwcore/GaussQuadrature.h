@@ -11,6 +11,7 @@
 #ifndef GAUSSQUADRATURE_H_
 #define GAUSSQUADRATURE_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"

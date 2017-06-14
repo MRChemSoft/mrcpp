@@ -11,7 +11,9 @@
 #ifndef CROSSCORRELATION_H_
 #define CROSSCORRELATION_H_
 
+#pragma GCC system_header
 #include <Eigen/Core>
+
 #include <string>
 
 class CrossCorrelation {

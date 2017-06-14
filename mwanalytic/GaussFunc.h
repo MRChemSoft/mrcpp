@@ -21,6 +21,9 @@
 #ifndef GAUSSFUNC_H_
 #define GAUSSFUNC_H_
 
+#pragma GCC system_header
+#include <Eigen/Core>
+
 #include "Gaussian.h"
 
 template<int D> class GaussPoly;

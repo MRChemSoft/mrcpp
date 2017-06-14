@@ -1,5 +1,3 @@
-#include <Eigen/Core>
-
 #include "ProjectionCalculator.h"
 #include "MWNode.h"
 

@@ -10,6 +10,9 @@
 #ifndef SERIALTREE_H_
 #define SERIALTREE_H_
 
+#pragma GCC system_header
+#include <Eigen/Core>
+
 template<int D> class MWTree;
 template<int D> class MWNode;
 

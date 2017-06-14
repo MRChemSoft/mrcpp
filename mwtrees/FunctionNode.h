@@ -1,6 +1,9 @@
 #ifndef FUNCTIONNODE_H
 #define FUNCTIONNODE_H
 
+#pragma GCC system_header
+#include <Eigen/Core>
+
 #include "MWNode.h"
 #include "FunctionTree.h"
 

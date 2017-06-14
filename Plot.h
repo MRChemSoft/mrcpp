@@ -1,11 +1,13 @@
 #ifndef PLOT_H
 #define PLOT_H
 
+#pragma GCC system_header
+#include <Eigen/Core>
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
-#include <Eigen/Core>
 
 #include "mrcpp_declarations.h"
 

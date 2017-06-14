@@ -1,5 +1,3 @@
-#include <Eigen/Core>
-
 #include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "MathUtils.h"

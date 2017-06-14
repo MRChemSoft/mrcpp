@@ -1,6 +1,7 @@
 #ifndef PHCALCULATOR_H
 #define PHCALCULATOR_H
 
+#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "TreeCalculator.h"

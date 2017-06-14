@@ -10,6 +10,9 @@
 #ifndef LEGENDREBASIS_H
 #define LEGENDREBASIS_H
 
+#pragma GCC system_header
+#include <Eigen/Dense>
+
 #include "ScalingBasis.h"
 
 class LegendreBasis : public ScalingBasis {

@@ -9,8 +9,6 @@
 #include "InterpolatingBasis.h"
 #include "MultiResolutionAnalysis.h"
 
-#include "mrchem.h"
-
 
 using namespace std;
 

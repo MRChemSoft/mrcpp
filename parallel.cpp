@@ -99,11 +99,10 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
       if(ichunk<STree->nodeChunks.size()){
-	STree->sNodesCoeff = STree->nodeCoeffChunks[ichunk];
 	STree->sNodes = STree->nodeChunks[ichunk];
       }else{
-        STree->sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
-        STree->nodeCoeffChunks.push_back(STree->sNodesCoeff);
+        double *sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
+        STree->nodeCoeffChunks.push_back(sNodesCoeff);
 	STree->sNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	STree->nodeChunks.push_back(STree->sNodes);
       }      
@@ -141,11 +140,10 @@ void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MP
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
       if(ichunk<STree->nodeChunks.size()){
-	STree->sNodesCoeff = STree->nodeCoeffChunks[ichunk];
 	STree->sNodes = STree->nodeChunks[ichunk];
       }else{
-        STree->sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
-        STree->nodeCoeffChunks.push_back(STree->sNodesCoeff);
+        double *sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
+        STree->nodeCoeffChunks.push_back(sNodesCoeff);
 	STree->sNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	STree->nodeChunks.push_back(STree->sNodes);
       }      

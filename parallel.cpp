@@ -57,7 +57,7 @@ void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_
 
 #ifdef HAVE_MPI
 template<int D>
-void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm){
+void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request){
   MPI_Status status;
   Timer timer;
   SerialFunctionTree<D>* STree = Tree->getSerialFunctionTree();
@@ -65,7 +65,6 @@ void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI
   println(10,MPI_rank<<" STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest);
   int count = 1;
   int STreeMeta[count];
-  MPI_Request request;
 
   timer.start();
   for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
@@ -75,9 +74,9 @@ void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI
     for (int i = 0; i < STree->maxNodesPerChunk; i++){
       if(STree->nodeStackStatus[ishift+i]!=1)(STree->nodeChunks[ichunk])[i].setSerialIx(-1);
     }
-    MPI_Isend(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm,&request);
+    MPI_Isend(STree->nodeChunks[ichunk], count, MPI_BYTE, dest, tag+1+ichunk, comm, &request);
     count=STree->sizeNodeCoeff*STree->maxNodesPerChunk;
-    MPI_Isend(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm,&request);
+    MPI_Isend(STree->nodeCoeffChunks[ichunk], count, MPI_DOUBLE, dest, tag+ichunk*1000, comm, &request);
   }
   timer.stop();
   println(10, " time send     " << timer); 
@@ -135,7 +134,7 @@ void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MP
   int count = 1;
   int STreeMeta[count];
 
-  MPI_Request request;
+  MPI_Request request=MPI_REQUEST_NULL;
 
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){
@@ -469,8 +468,8 @@ template void Send_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int dest, 
 template void IRcv_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int source, int tag, MPI_Comm comm);
 template void IRcv_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int source, int tag, MPI_Comm comm);
 template void IRcv_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int source, int tag, MPI_Comm comm);
-template void ISend_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int dest, int tag, MPI_Comm comm);
-template void ISend_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int dest, int tag, MPI_Comm comm);
-template void ISend_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int dest, int tag, MPI_Comm comm);
+template void ISend_SerialTree<1>(FunctionTree<1>* STree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request);
+template void ISend_SerialTree<2>(FunctionTree<2>* STree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request);
+template void ISend_SerialTree<3>(FunctionTree<3>* STree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request);
 #endif
 

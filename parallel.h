@@ -44,7 +44,7 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
 void Assign_NxN(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
 void Assign_NxN_sym(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
 
-//void Share_memory(MPI_Comm ncomm, MPI_Comm ncomm_sh, int sh_size, double * d_ptr);
+void Share_memory(MPI_Comm ncomm, MPI_Comm& ncomm_sh, int sh_size, double * d_ptr);
 
 #else
 

@@ -266,7 +266,7 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
             MSG_FATAL("maxNodes exceeded " << this->maxNodes);
         }
 
-        //we want nodes allocated simultaneously to be allocated on the same pice.
+        //we want nodes allocated simultaneously to be allocated on the same piece.
         //possibly jump over the last nodes from the old chunk
         this->nNodes = this->maxNodesPerChunk*((this->nNodes+nAlloc-1)/this->maxNodesPerChunk);//start of next chunk
 

@@ -23,6 +23,7 @@
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
 #define UNSET_NODE_LOCK() omp_unset_lock(&this->node_lock)
 #define TEST_NODE_LOCK() omp_test_lock(&this->node_lock)
+
 #else
 #define SET_NODE_LOCK()
 #define UNSET_NODE_LOCK()
@@ -136,6 +137,7 @@ public:
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
+    friend class Density;
 
 protected:
     MWTree<D> *tree;

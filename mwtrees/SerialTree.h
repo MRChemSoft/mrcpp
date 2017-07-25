@@ -39,9 +39,9 @@ public:
     int *nodeStackStatus;
     int sizeNodeCoeff;          //size of coeff for one node
     double **coeffStack;
+    int maxNodes;               //max number of nodes that can be defined
 
 protected:
-    int maxNodes;               //max number of nodes that can be defined
 
     MWTree<D> *tree_p;
 };

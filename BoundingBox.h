@@ -62,7 +62,7 @@ protected:
 template<int D>
 bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return false;
-    for (int d = 0; d < 3; d++) {
+    for (int d = 0; d < D; d++) {
         if (this->size(d) != box.size(d)) return false;
     }
     return true;
@@ -71,7 +71,7 @@ bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
 template<int D>
 bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return true;
-    for (int d = 0; d < 3; d++) {
+    for (int d = 0; d < D; d++) {
         if (this->size(d) != box.size(d)) return true;
     }
     return false;

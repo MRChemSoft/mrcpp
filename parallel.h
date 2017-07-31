@@ -23,15 +23,24 @@ class Orbital;
 
 #endif
 
-extern int MPI_rank;
-extern int MPI_size;
+extern int MPI_Orb_rank;
+extern int MPI_Orb_size;
+extern int MPI_SH_rank;
+extern int MPI_SH_size;
+extern int MPI_SH_group_rank;
+extern int MPI_SH_group_size;
 
-void define_groups();
+
+void define_MPI_groups();
 void MPI_Initializations();
 
 
 #ifdef HAVE_MPI
 #include <mpi.h>
+
+extern MPI_Comm MPI_Comm_Orb;
+extern MPI_Comm MPI_Comm_SH;
+extern MPI_Comm MPI_Comm_SH_group;
 
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);
@@ -44,7 +53,7 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
 void Assign_NxN(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
 void Assign_NxN_sym(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
 
-void Share_memory(MPI_Comm ncomm, MPI_Comm& ncomm_sh, int sh_size, double * d_ptr);
+void Share_memory(int sh_size, double * &d_ptr, MPI_Win & MPI_win);
 
 #else
 

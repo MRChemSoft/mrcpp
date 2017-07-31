@@ -1,11 +1,10 @@
 /**
-*
-*
-*  \date Jul, 2016
-*  \author Peter Wind <peter.wind@uit.no> \n
-*  CTCC, University of Tromsø
-*
-*/
+ *
+ *  \date July, 2016
+ *  \author Peter Wind <peter.wind@uit.no> \n
+ *  CTCC, University of Tromsø
+ *
+ */
 
 #ifndef SERIALTREE_H_
 #define SERIALTREE_H_
@@ -19,7 +18,7 @@ template<int D> class MWNode;
 template<int D>
 class SerialTree {
 public:
-    SerialTree(MWTree<D> *tree) : tree_p(tree) { }
+    SerialTree(MWTree<D> *tree) : tree_p(tree), isShared(false) { }
     virtual ~SerialTree() { }
 
     MWTree<D>* getTree() { return this->tree_p; }
@@ -40,9 +39,9 @@ public:
     int sizeNodeCoeff;          //size of coeff for one node
     double **coeffStack;
     int maxNodes;               //max number of nodes that can be defined
+    bool isShared;              //The coefficients are stored in shared memory
 
 protected:
-
     MWTree<D> *tree_p;
 };
 

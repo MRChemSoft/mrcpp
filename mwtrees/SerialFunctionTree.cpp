@@ -31,7 +31,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
     this->nNodes = 0;
 
     NFtrees++;
-    if(MPI_rank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
+    if(MPI_Orb_rank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();//One block
@@ -86,7 +86,8 @@ template<int D>
 SerialFunctionTree<D>::~SerialFunctionTree() {
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[] (char*)(this->nodeChunks[i]);
-    for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    if(not this->isShared)//if the data is shared, it must be freed by MPI_Win_free
+	for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
 
     delete[] this->nodeStackStatus;
@@ -275,6 +276,11 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
         //careful: nodeChunks.size() is an unsigned int
         if (chunk+1 > this->nodeChunks.size()){
 	    //need to allocate new chunk
+	    if(this->isShared){
+		//enough memory must already be allocated. 
+		//Maybe in the future dynamical shared memory allocation will be implemented 
+		MSG_FATAL("Insufficient shared memory allocated ");
+	    }
 	    this->sNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	    this->nodeChunks.push_back(this->sNodes);
             double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];

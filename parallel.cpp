@@ -25,6 +25,40 @@ MPI_Comm MPI_Comm_SH;
 MPI_Comm MPI_Comm_SH_group;
 #endif
 
+/** sh_size in MB
+ */
+SharedMemory::SharedMemory(int sh_size){
+    this->allocShmem(sh_size);
+}
+
+SharedMemory::~SharedMemory(){
+#ifdef HAVE_MPI
+    MPI_Win_free(&this->sh_win);//deallocates the memory block
+#endif
+}
+
+void SharedMemory::allocShmem(int sh_size){
+#ifdef HAVE_MPI
+    //MPI_Aint types are used for adresses (can be larger than int).
+    MPI_Aint size = (MPI_SH_rank==0) ? 1024*1024*sh_size : 0;//rank 0 defines length of segment 
+    int disp_unit = 16;//in order for the compiler to keep aligned. 
+    //size is in bytes
+    MPI_Win_allocate_shared(size, disp_unit, MPI_INFO_NULL, MPI_Comm_SH, &this->sh_start_ptr, &this->sh_win);
+    MPI_Win_fence(0, this->sh_win);//wait until finished
+    MPI_Aint qsize = 0;
+    int qdisp = 0;
+    MPI_Win_shared_query(this->sh_win, 0, &qsize, &qdisp, &this->sh_start_ptr);
+    //    printf("me = %d, allocated: size=%zu, bytes at = %p %d\n", MPI_SH_rank, qsize, this->sh_start_ptr, this->sh_start_ptr );
+    MPI_Win_fence(0, this->sh_win);
+    this->sh_max_ptr = this->sh_start_ptr + qsize/sizeof(double);
+    //printf("me = %d, start = %p, max  = %p diff %d\n", MPI_SH_rank, this->sh_start_ptr, this->sh_max_ptr, this->sh_max_ptr-this->sh_start_ptr);
+    this->sh_end_ptr = this->sh_start_ptr;
+    //if(MPI_Orb_rank==0)d_ptr[18]=2.34;
+    //printf("shared: me=%d,  val=%lf\n", shrank, d_ptr[18]);
+#endif
+}
+
+
 /** Send or receive a serial tree using MPI
  */
 void MPI_Initializations(){
@@ -474,7 +508,7 @@ void Share_memory(int sh_size, double * &d_ptr, MPI_Win &win){
     int qdisp = 0;
     int * qbase = NULL;
     MPI_Win_shared_query(win, 0, &qsize, &qdisp, &d_ptr);
-    //printf("me = %d, allocated: size=%zu, bytes at = %p\n", shrank, qsize, d_ptr);
+    printf("me = %d, allocated: size=%zu, bytes at = %p %d\n", MPI_SH_rank, qsize, d_ptr, d_ptr);
     MPI_Win_fence(0, win);
     //if(MPI_Orb_rank==0)d_ptr[18]=2.34;
     //printf("shared: me=%d,  val=%lf\n", shrank, d_ptr[18]);

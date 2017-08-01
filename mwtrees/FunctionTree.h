@@ -22,6 +22,8 @@ class FunctionTree: public MWTree<D> {
 public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra,
                  int max_nodes = MaxAllocNodes);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra,
+                 SharedMemory* &shMem, int max_nodes = MaxAllocNodes);
     virtual ~FunctionTree();
 
     void clear();

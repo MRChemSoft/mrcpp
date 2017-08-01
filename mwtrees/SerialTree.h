@@ -12,6 +12,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
+#include "parallel.h"
+
 template<int D> class MWTree;
 template<int D> class MWNode;
 
@@ -40,6 +42,8 @@ public:
     double **coeffStack;
     int maxNodes;               //max number of nodes that can be defined
     bool isShared;              //The coefficients are stored in shared memory
+    SharedMemory* shMem;
+    
 
 protected:
     MWTree<D> *tree_p;

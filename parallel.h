@@ -42,6 +42,22 @@ extern MPI_Comm MPI_Comm_Orb;
 extern MPI_Comm MPI_Comm_SH;
 extern MPI_Comm MPI_Comm_SH_group;
 
+
+/** Share memory within a compute node
+ */
+class SharedMemory {
+public:    
+    SharedMemory(int sh_size);
+    ~SharedMemory();
+    void allocShmem(int sh_size);
+    double * sh_start_ptr; //start of shared block
+    double * sh_max_ptr; //end of shared block
+    double * sh_end_ptr; //end of used part
+#ifdef HAVE_MPI
+    MPI_Win sh_win; //MPI window object 
+#endif
+};
+
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);
 template<int D>

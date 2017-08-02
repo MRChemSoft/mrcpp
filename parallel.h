@@ -23,24 +23,25 @@ class Orbital;
 
 #endif
 
-extern int MPI_Orb_rank;
-extern int MPI_Orb_size;
-extern int MPI_SH_rank;
-extern int MPI_SH_size;
+extern int mpiOrbRank;
+extern int mpiOrbSize;
+extern int mpiShRank;
+extern int mpiShSize;
 extern int MPI_SH_group_rank;
 extern int MPI_SH_group_size;
 
 
-void define_MPI_groups();
 void MPI_Initializations();
+void define_MPI_groups();
+bool orbIsSh(int orbRank);
 
 
 #ifdef HAVE_MPI
 #include <mpi.h>
 
-extern MPI_Comm MPI_Comm_Orb;
-extern MPI_Comm MPI_Comm_SH;
-extern MPI_Comm MPI_Comm_SH_group;
+extern MPI_Comm mpiCommOrb;
+extern MPI_Comm mpiCommSh;
+extern MPI_Comm mpiCommSh_group;
 
 
 /** Share memory within a compute node

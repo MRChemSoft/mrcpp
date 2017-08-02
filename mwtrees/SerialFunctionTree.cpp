@@ -31,7 +31,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
     this->nNodes = 0;
 
     NFtrees++;
-    if(MPI_Orb_rank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
+    if(mpiOrbRank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();//One block
@@ -279,7 +279,7 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
 	    double *sNodesCoeff;		
 	    if (this->isShared) {
 		//for coefficients, take from the shared memory block
-		//if (MPI_SH_rank !=0) MSG_FATAL("Only master can claim shared memory");
+		//if (mpiShRank !=0) MSG_FATAL("Only master can claim shared memory");
 		sNodesCoeff = this->shMem->sh_end_ptr;		
 		this->shMem->sh_end_ptr += (this->sizeNodeCoeff*this->maxNodesPerChunk)/sizeof(double);
 		//may increase size dynamically in the future

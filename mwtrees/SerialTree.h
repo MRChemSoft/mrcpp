@@ -20,7 +20,7 @@ template<int D> class MWNode;
 template<int D>
 class SerialTree {
 public:
-    SerialTree(MWTree<D> *tree) : tree_p(tree), isShared(false) { }
+    SerialTree(MWTree<D> *tree) : isShared(false), shMem(0), tree_p(tree) { }
     virtual ~SerialTree() { }
 
     MWTree<D>* getTree() { return this->tree_p; }
@@ -42,7 +42,7 @@ public:
     double **coeffStack;
     int maxNodes;               //max number of nodes that can be defined
     bool isShared;              //The coefficients are stored in shared memory
-    SharedMemory* shMem;
+    SharedMemory *shMem;
     
 
 protected:

@@ -33,6 +33,21 @@ void MPI_Initializations();
 void define_MPI_groups();
 bool orbIsSh(int orbRank);
 
+/** Share memory within a compute node
+ */
+class SharedMemory {
+public:
+    SharedMemory(int sh_size);
+    ~SharedMemory();
+    void allocShmem(int sh_size);
+    double *sh_start_ptr; //start of shared block
+    double *sh_max_ptr; //end of shared block
+    double *sh_end_ptr; //end of used part
+#ifdef HAVE_MPI
+    MPI_Win sh_win; //MPI window object
+#endif
+};
+
 #ifdef HAVE_MPI
 #include <mpi.h>
 
@@ -42,21 +57,6 @@ extern MPI_Comm mpiCommOrb;
 extern MPI_Comm mpiCommSh;
 extern MPI_Comm mpiCommSh_group;
 
-
-/** Share memory within a compute node
- */
-class SharedMemory {
-public:    
-    SharedMemory(int sh_size);
-    ~SharedMemory();
-    void allocShmem(int sh_size);
-    double * sh_start_ptr; //start of shared block
-    double * sh_max_ptr; //end of shared block
-    double * sh_end_ptr; //end of used part
-#ifdef HAVE_MPI
-    MPI_Win sh_win; //MPI window object 
-#endif
-};
 
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);

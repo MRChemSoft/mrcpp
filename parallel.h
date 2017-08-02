@@ -3,12 +3,10 @@
 
 #include "config.h"
 
-template<int D> class FunctionTree;
-class Orbital;
+#define EIGEN_DONT_PARALLELIZE
 
 #ifdef HAVE_OPENMP
 
-#define OPENMP
 #include <omp.h>
 
 #else
@@ -35,9 +33,10 @@ void MPI_Initializations();
 void define_MPI_groups();
 bool orbIsSh(int orbRank);
 
-
 #ifdef HAVE_MPI
 #include <mpi.h>
+
+template<int D> class FunctionTree;
 
 extern MPI_Comm mpiCommOrb;
 extern MPI_Comm mpiCommSh;

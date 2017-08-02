@@ -5,12 +5,13 @@
 
 #define EIGEN_DONT_PARALLELIZE
 
+#ifdef HAVE_MPI
+#include <mpi.h>
+#endif
+
 #ifdef HAVE_OPENMP
-
 #include <omp.h>
-
 #else
-
 #define omp_get_max_threads() 1
 #define omp_get_num_threads() 1
 #define omp_get_thread_num() 0
@@ -18,7 +19,6 @@
 #define omp_set_lock(x)
 #define omp_unset_lock(x)
 #define omp_test_lock(x)
-
 #endif
 
 extern int mpiOrbRank;
@@ -49,14 +49,12 @@ public:
 };
 
 #ifdef HAVE_MPI
-#include <mpi.h>
-
-template<int D> class FunctionTree;
 
 extern MPI_Comm mpiCommOrb;
 extern MPI_Comm mpiCommSh;
 extern MPI_Comm mpiCommSh_group;
 
+template<int D> class FunctionTree;
 
 template<int D>
 void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);

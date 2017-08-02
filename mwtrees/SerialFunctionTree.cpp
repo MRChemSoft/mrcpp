@@ -31,7 +31,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, int max_nodes)
     this->nNodes = 0;
 
     NFtrees++;
-    if(MPI_rank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
+    if(mpiOrbRank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" max_nodes = " << max_nodes<<" dim = "<<D);
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();//One block
@@ -86,7 +86,8 @@ template<int D>
 SerialFunctionTree<D>::~SerialFunctionTree() {
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[] (char*)(this->nodeChunks[i]);
-    for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    if(not this->isShared)//if the data is shared, it must be freed by MPI_Win_free
+	for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
 
     delete[] this->nodeStackStatus;
@@ -266,7 +267,7 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
             MSG_FATAL("maxNodes exceeded " << this->maxNodes);
         }
 
-        //we want nodes allocated simultaneously to be allocated on the same pice.
+        //we want nodes allocated simultaneously to be allocated on the same piece.
         //possibly jump over the last nodes from the old chunk
         this->nNodes = this->maxNodesPerChunk*((this->nNodes+nAlloc-1)/this->maxNodesPerChunk);//start of next chunk
 
@@ -275,10 +276,22 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
         //careful: nodeChunks.size() is an unsigned int
         if (chunk+1 > this->nodeChunks.size()){
 	    //need to allocate new chunk
+	    double *sNodesCoeff;		
+	    if (this->isShared) {
+		//for coefficients, take from the shared memory block
+		//if (mpiShRank !=0) MSG_FATAL("Only master can claim shared memory");
+		sNodesCoeff = this->shMem->sh_end_ptr;		
+		this->shMem->sh_end_ptr += (this->sizeNodeCoeff*this->maxNodesPerChunk)/sizeof(double);
+		//may increase size dynamically in the future
+		if (int(this->shMem->sh_max_ptr - this->shMem->sh_end_ptr) < 0 ) {
+		    MSG_FATAL("Shared block too small");
+		}
+	    } else {
+		sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
+	    }
+            this->nodeCoeffChunks.push_back(sNodesCoeff);
 	    this->sNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	    this->nodeChunks.push_back(this->sNodes);
-            double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-            this->nodeCoeffChunks.push_back(sNodesCoeff);
 	    if (chunk%100==99 and D==3) println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes/1024) * this->sizeNodeCoeff/128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);

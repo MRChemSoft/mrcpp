@@ -30,7 +30,7 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree, int max_nodes)
     this->maxNodesPerChunk = 64;
     int sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
    
-    if(MPI_rank==0 and NOtrees%100==1)println(10, " max_nodes = " << max_nodes << ", nodes per chunk = " << this->maxNodesPerChunk<<" sizePerChunk "<<sizePerChunk<<" N Op trees: "<<NOtrees);
+    if(mpiOrbRank==0 and NOtrees%100==1)println(10, " max_nodes = " << max_nodes << ", nodes per chunk = " << this->maxNodesPerChunk<<" sizePerChunk "<<sizePerChunk<<" N Op trees: "<<NOtrees);
 
     //indicate occupation of nodes
     this->nodeStackStatus = new int[this->maxNodes + 1];

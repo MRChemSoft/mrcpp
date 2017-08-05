@@ -20,7 +20,7 @@ class OperatorNode;
 
 class SerialOperatorTree : public SerialTree<2> {
 public:
-    SerialOperatorTree(OperatorTree *tree, int max_nodes);
+    SerialOperatorTree(OperatorTree *tree);
     virtual ~SerialOperatorTree();
 
     virtual void allocRoots(MWTree<2> &tree);

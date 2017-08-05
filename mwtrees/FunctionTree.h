@@ -21,10 +21,8 @@ class Orbital;
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra,
-                 int max_nodes = MaxAllocNodes);
-    FunctionTree(const MultiResolutionAnalysis<D> &mra,
-                 SharedMemory* &shMem, int max_nodes = MaxAllocNodes);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory* &shMem);
     virtual ~FunctionTree();
 
     void clear();

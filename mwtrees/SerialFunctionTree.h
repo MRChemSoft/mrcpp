@@ -22,7 +22,7 @@ template<int D> class GenNode;
 template<int D>
 class SerialFunctionTree : public SerialTree<D> {
 public:
-    SerialFunctionTree(FunctionTree<D> *tree, int max_nodes);
+    SerialFunctionTree(FunctionTree<D> *tree);
     virtual ~SerialFunctionTree();
 
     virtual void allocRoots(MWTree<D> &tree);
@@ -45,7 +45,8 @@ public:
 
     double **genCoeffStack;
 
-    int *genNodeStackStatus;
+    //    int *genNodeStackStatus;
+    std::vector<int> genNodeStackStatus;
 
     void rewritePointers(int nChunks);
 

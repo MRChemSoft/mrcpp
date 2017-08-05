@@ -37,7 +37,8 @@ public:
 
     int nNodes;                 //number of Nodes already defined
     int maxNodesPerChunk;
-    int *nodeStackStatus;
+    //    int *nodeStackStatus;
+    std::vector<int> nodeStackStatus;
     int sizeNodeCoeff;          //size of coeff for one node
     double **coeffStack;
     int maxNodes;               //max number of nodes that can be defined

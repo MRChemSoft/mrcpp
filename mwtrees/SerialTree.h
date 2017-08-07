@@ -11,6 +11,7 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
+#include <vector>
 
 #include "parallel.h"
 
@@ -37,7 +38,6 @@ public:
 
     int nNodes;                 //number of Nodes already defined
     int maxNodesPerChunk;
-    //    int *nodeStackStatus;
     std::vector<int> nodeStackStatus;
     int sizeNodeCoeff;          //size of coeff for one node
     double **coeffStack;

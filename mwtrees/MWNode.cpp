@@ -1,8 +1,5 @@
 /**
  *  Simple n-dimensional node
- *
- *  Created on: Oct 12, 2009
- *      Author: jonas
  */
 
 #include "MWNode.h"

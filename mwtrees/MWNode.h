@@ -1,8 +1,5 @@
 /**
  *  Simple n-dimensional node
- *
- *  Created on: May 29, 2009
- *      Author: jonas
  */
 
 #ifndef MWNODE_H_

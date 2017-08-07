@@ -1,12 +1,6 @@
 /**
-*
-*
-*  \date Aug 14, 2009
-*  \author Jonas Juselius <jonas.juselius@uit.no> \n
-*  CTCC, University of Tromsø
-*
 *  Basic class for representing functions in a multiwavelet
-* representation.
+*  representation.
 */
 
 #ifndef FUNCTIONTREE_H_

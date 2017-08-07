@@ -1,6 +1,5 @@
 /**
- *  \date Oct 12, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *  \date 2016
  *          CTCC, University of Tromsø
  */
 

@@ -427,8 +427,15 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
   this->nodeStackStatus.resize(nodecount);
   this->nodeStackStatus.assign(nodecount, 0);
   this->maxNodes = nodecount;
+
+  //clear all gennodes and their chunks:
+  for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
+  for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
+  this->genNodeCoeffChunks.clear();
   this->genNodeStackStatus.clear();
+  this->genNodeChunks.clear();
   this->maxGenNodes = 0;
+
 
   for(int ichunk = 0 ; ichunk < nChunks; ichunk++){
     for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++){

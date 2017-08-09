@@ -76,6 +76,8 @@ void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_
     println(10," STree  at "<<STree<<" number of nodes = "<<STree->nNodes<<" sending to "<<dest);
     int count = 1;
     int STreeMeta[count];
+    
+    if(STree->nGenNodes != 0)MSG_FATAL("sending of GenNodes not implemented");
   
     timer.start();
     for(int ichunk = 0 ; ichunk <Nchunks ; ichunk++){

@@ -38,13 +38,13 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree)
     println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff*sizeof(double)/1024);
     println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff*sizeof(double)/1024);
 
-    int sizePerChunk = 1024*1024;// 1 MB small for no waisting place, but large enough so that latency and overhead work is negligible     
+    int sizePerChunk = 2*1024*1024;// 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible     
     if(D<3){
       //define rather from number of nodes per chunk
       this->maxNodesPerChunk = 64;
       sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
     }else{      
-      this->maxNodesPerChunk = sizePerChunk/this->sizeGenNodeCoeff;
+	this->maxNodesPerChunk = sizePerChunk/this->sizeNodeCoeff/sizeof(double);
     }
 
     this->lastNode = (ProjectedNode<D>*) this->sNodes;//position of last allocated node
@@ -257,11 +257,10 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
 	    double *sNodesCoeff;		
 	    if (this->isShared) {
 		//for coefficients, take from the shared memory block
-		//if (mpiShRank !=0) MSG_FATAL("Only master can claim shared memory");
-		sNodesCoeff = this->shMem->sh_end_ptr;		
-		this->shMem->sh_end_ptr += (this->sizeNodeCoeff*this->maxNodesPerChunk)/sizeof(double);
+		sNodesCoeff = this->shMem->sh_end_ptr;	
+		this->shMem->sh_end_ptr += (this->sizeNodeCoeff*this->maxNodesPerChunk);
 		//may increase size dynamically in the future
-		if (int(this->shMem->sh_max_ptr - this->shMem->sh_end_ptr) < 0 ) {
+		if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) {
 		    MSG_FATAL("Shared block too small");
 		}
 	    } else {
@@ -410,13 +409,10 @@ void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
   * could be optimized. Should reset other counters? (GenNodes...) */
 template<int D>
 void SerialFunctionTree<D>::rewritePointers(int nChunks){
-  //NOT_IMPLEMENTED_ABORT;
     
   int depthMax = 100;
   MWNode<D>* stack[depthMax*8];
   int slen = 0, counter = 0;
-
-  this->nGenNodes = 0;
 
   this->getTree()->nNodes = 0;
   this->getTree()->nodesAtDepth.clear();
@@ -434,8 +430,8 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
   this->genNodeCoeffChunks.clear();
   this->genNodeStackStatus.clear();
   this->genNodeChunks.clear();
+  this->nGenNodes = 0;
   this->maxGenNodes = 0;
-
 
   for(int ichunk = 0 ; ichunk < nChunks; ichunk++){
     for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++){

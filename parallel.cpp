@@ -143,7 +143,14 @@ void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI
 	if (ichunk<STree->nodeChunks.size()) {
 	    STree->sNodes = STree->nodeChunks[ichunk];
 	}else{
-	    double *sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
+	    double *sNodesCoeff;
+	    if( STree->isShared and orbIsSh(source)) {
+		if(ichunk == 0) STree->shMem->sh_end_ptr = STree->shMem->sh_start_ptr;
+		sNodesCoeff = STree->shMem->sh_end_ptr;	
+		STree->shMem->sh_end_ptr += (STree->sizeNodeCoeff*STree->maxNodesPerChunk);		
+	    }else{
+		sNodesCoeff = new double[STree->sizeNodeCoeff*STree->maxNodesPerChunk];
+	    }
 	    STree->nodeCoeffChunks.push_back(sNodesCoeff);
 	    STree->sNodes = (ProjectedNode<D>*) new char[STree->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
 	    STree->nodeChunks.push_back(STree->sNodes);

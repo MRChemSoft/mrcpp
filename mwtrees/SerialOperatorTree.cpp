@@ -237,3 +237,7 @@ void SerialOperatorTree::deallocNodes(int serialIx) {
 void SerialOperatorTree::deallocGenNodes(int serialIx) {
     NOT_REACHED_ABORT;
 }
+
+void SerialOperatorTree::deallocGenNodeChunks() {
+    NOT_REACHED_ABORT;
+}

@@ -29,6 +29,7 @@ public:
 
     virtual void deallocNodes(int serialIx);
     virtual void deallocGenNodes(int serialIx);
+    virtual void deallocGenNodeChunks();
 
 protected:
     OperatorNode *sNodes;       //serial OperatorNodes

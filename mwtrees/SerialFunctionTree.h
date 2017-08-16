@@ -31,6 +31,7 @@ public:
 
     virtual void deallocNodes(int serialIx);
     virtual void deallocGenNodes(int serialIx);
+    virtual void deallocGenNodeChunks();
 
     std::vector<ProjectedNode<D>*> nodeChunks;
     std::vector<double*> nodeCoeffChunks;

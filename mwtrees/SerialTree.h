@@ -32,6 +32,7 @@ public:
 
     virtual void deallocNodes(int serialIx) = 0;
     virtual void deallocGenNodes(int serialIx) = 0;
+    virtual void deallocGenNodeChunks() = 0;
 
     void S_mwTransform(double* coeff_in, double* coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
     void S_mwTransformBack(double* coeff_in, double* coeff_out, int stride);

@@ -44,7 +44,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree)
 	this->maxNodesPerChunk = 64;
 	sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
     }else{      
-	this->maxNodesPerChunk = sizePerChunk/this->sizeNodeCoeff/sizeof(double);
+	this->maxNodesPerChunk = (sizePerChunk/this->sizeNodeCoeff/sizeof(double)/8)*8;
     }
 
     this->lastNode = (ProjectedNode<D>*) this->sNodes;//position of last allocated node
@@ -410,6 +410,7 @@ void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
 
 template<int D>
 void SerialFunctionTree<D>::deallocGenNodeChunks() {
+    //if(mpiOrbRank==0 and (this->genNodeCoeffChunks.size()*2)*1024/8>10000)cout<<"deallocate genchunks MB "<<(this->genNodeCoeffChunks.size()*2)*1024/1024/8<<endl;
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
     this->genNodeCoeffChunks.clear();

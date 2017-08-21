@@ -1,5 +1,4 @@
-#ifndef PHOPERATOR_H
-#define PHOPERATOR_H
+#pragma once
 
 #include "DerivativeOperator.h"
 #include "TreeBuilder.h"
@@ -41,4 +40,3 @@ protected:
     }
 };
 
-#endif // PHOPERATOR_H

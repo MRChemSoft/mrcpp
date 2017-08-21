@@ -1,5 +1,4 @@
-#ifndef OPERATORTREE_H
-#define OPERATORTREE_H
+#pragma once
 
 #include "MWTree.h"
 
@@ -51,4 +50,3 @@ protected:
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 };
 
-#endif // OPERATORTREE_H

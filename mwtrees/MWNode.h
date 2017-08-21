@@ -2,8 +2,7 @@
  *  Simple n-dimensional node
  */
 
-#ifndef MWNODE_H_
-#define MWNODE_H_
+#pragma once
 
 #pragma GCC system_header
 #include <Eigen/Core>
@@ -317,4 +316,3 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     return o;
 }
 
-#endif /* MWNODE_H_ */

@@ -1,5 +1,4 @@
-#ifndef ANALYTICFUNCTION_H
-#define ANALYTICFUNCTION_H
+#pragma once
 
 #include "RepresentableFunction.h"
 
@@ -22,4 +21,3 @@ protected:
     std::function<double (const double *r)> func;
 };
 
-#endif // ANALYTICFUNCTION_H

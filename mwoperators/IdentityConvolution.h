@@ -1,5 +1,4 @@
-#ifndef IDENTITYCONVOLUTION_H
-#define IDENTITYCONVOLUTION_H
+#pragma once
 
 #include "ConvolutionOperator.h"
 #include "IdentityKernel.h"
@@ -16,4 +15,3 @@ public:
     virtual ~IdentityConvolution() { }
 };
 
-#endif // IDENTITYCONVOLUTION_H

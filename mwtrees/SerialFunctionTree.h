@@ -7,8 +7,7 @@
 *
 */
 
-#ifndef SERIALFUNCTIONTREE_H_
-#define SERIALFUNCTIONTREE_H_
+#pragma once
 
 #include <vector>
 
@@ -70,4 +69,3 @@ private:
 #endif
 };
 
-#endif /* SERIALFUNCTIONTREE_H_*/

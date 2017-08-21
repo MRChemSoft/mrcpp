@@ -1,5 +1,4 @@
-#ifndef MWREPR_DECLARATIONS_H_
-#define MWREPR_DECLARATIONS_H_
+#pragma once
 
 #include <vector>
 #include <set>
@@ -73,4 +72,3 @@ template <int D> class OperatorState;
 #define MWNodeVector std::vector<MWNode<D> *>
 #define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
 
-#endif /* MWREPR_DECLARATIONS_H_*/

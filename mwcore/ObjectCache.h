@@ -1,16 +1,4 @@
-/*
- *
- *
- *  \date Jul 25, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- * \breif
- *
- */
-
-#ifndef OBJECTCACHE_H_
-#define OBJECTCACHE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -133,4 +121,3 @@ private:
     std::vector<int> mem; ///< mem per object
 };
 
-#endif /* OBJECTCACHE_H_ */

@@ -3,8 +3,7 @@
 *  representation.
 */
 
-#ifndef FUNCTIONTREE_H_
-#define FUNCTIONTREE_H_
+#pragma once
 
 #include "TreeBuilder.h"
 #include "MWTree.h"
@@ -73,4 +72,3 @@ std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
     return o;
 }
 
-#endif /* FUNCTIONTREE_H_*/

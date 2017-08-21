@@ -3,8 +3,7 @@
  *
  */
 
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#pragma once
 
 const double MachinePrec = 1.0e-15L;
 const double MachineZero = 1.0e-15L;
@@ -40,4 +39,3 @@ const double root_pi = 1.7724538509055160273;
 const double C_x = -0.73855876638202240588; //Dirac exchange constant
 
 
-#endif /* CONSTANTS_H_ */

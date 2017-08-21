@@ -2,8 +2,7 @@
  *
  */
 
-#ifndef MWTREE_H_
-#define MWTREE_H_
+#pragma once
 
 #pragma GCC system_header
 #include <Eigen/Core>
@@ -157,4 +156,3 @@ protected:
 #endif
 };
 
-#endif /* MWTREE_H_ */

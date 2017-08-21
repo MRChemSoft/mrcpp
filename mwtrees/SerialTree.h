@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SERIALTREE_H_
-#define SERIALTREE_H_
+#pragma once
 
 #pragma GCC system_header
 #include <Eigen/Core>
@@ -51,4 +50,3 @@ protected:
     MWTree<D> *tree_p;
 };
 
-#endif /* SERIALTREE_H_*/

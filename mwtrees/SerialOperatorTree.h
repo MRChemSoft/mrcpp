@@ -7,8 +7,7 @@
 *
 */
 
-#ifndef SERIALOPERATORTREE_H_
-#define SERIALOPERATORTREE_H_
+#pragma once
 
 #include <vector>
 
@@ -48,4 +47,3 @@ private:
 #endif
 };
 
-#endif /* SERIALOPERATORTREE_H_*/

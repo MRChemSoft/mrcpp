@@ -1,5 +1,4 @@
-#ifndef PARALLEL_H_
-#define PARALLEL_H_
+#pragma once
 
 #include "config.h"
 
@@ -73,4 +72,3 @@ void Share_memory(int sh_size, double * &d_ptr, MPI_Win & MPI_win);
 
 
 #endif
-#endif /* PARALLEL_H_ */

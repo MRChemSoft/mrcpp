@@ -1,12 +1,10 @@
 /**
  *
- *
  *          CTCC, University of Tromsø
  *
  */
 
-#ifndef BOUNDINGBOX_H_
-#define BOUNDINGBOX_H_
+#pragma once
 
 #include "mrcpp_declarations.h"
 #include "NodeIndex.h"
@@ -107,4 +105,3 @@ std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
     return o;
 }
 
-#endif /* BOUNDINGBOX_H_ */

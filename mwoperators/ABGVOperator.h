@@ -1,5 +1,4 @@
-#ifndef ABGVOPERATOR_H
-#define ABGVOPERATOR_H
+#pragma once
 
 #include "DerivativeOperator.h"
 #include "TreeBuilder.h"
@@ -43,4 +42,3 @@ protected:
     }
 };
 
-#endif // ABGVOPERATOR_H

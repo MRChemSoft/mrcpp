@@ -1,0 +1,7 @@
+if(NOT INITIAL_GUESS_PROGRAM)
+    set(INITIAL_GUESS_PROGRAM "lsdalton")
+endif()
+
+if(NOT INITIAL_GUESS_PROGRAM_DIR)
+    set(INITIAL_GUESS_PROGRAM_DIR "/unknown")
+endif()

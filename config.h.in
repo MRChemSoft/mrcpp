@@ -1,0 +1,15 @@
+#define PROGRAM_VERSION "@PROGRAM_VERSION@"
+
+#define GIT_REVISION "@GIT_REVISION@"
+
+#define MW_FILTER_DIR "@MW_FILTER_DIR@"
+
+#define BLAS_H "@BLAS_H@"
+
+#cmakedefine HAVE_MPI
+
+#cmakedefine HAVE_OPENMP
+
+#cmakedefine HAVE_BLAS
+
+#cmakedefine HAVE_XCFUN

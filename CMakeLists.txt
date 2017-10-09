@@ -5,14 +5,14 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 # project name
-project(MRChem)
+project(MRCPP CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# if CMAKE_BUILD_TYPE undefined, we set it to Debug
+# if CMAKE_BUILD_TYPE undefined, we set it to Release
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug")
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 # directories which hold included cmake modules
@@ -21,26 +21,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/downloaded)
 
 # included cmake modules
-include(autocmake_cc)
 include(autocmake_cxx)
-include(GNU.C)
 include(GNU.CXX)
-include(Intel.C)
 include(Intel.CXX)
-include(autocmake_mpi)
 include(autocmake_omp)
 include(autocmake_safeguards)
 include(autocmake_version)
 include(autocmake_code_coverage)
 include(eigen)
+include(catch)
 include(tests)
 include(python)
 include(git)
-include(initial_guess)
 include(doxygen)
 include(mw_filters)
 include(main)
 include(feature_summary)
 include(autocmake_save_flags)
-
-

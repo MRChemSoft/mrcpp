@@ -12,6 +12,5 @@ link_directories(${PROJECT_BINARY_DIR}/external/lib)
 
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(pilot)

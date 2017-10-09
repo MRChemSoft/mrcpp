@@ -1,73 +1,67 @@
-/** \mainpage The MRCPP program
+/** \mainpage MRCPP sandbox
  *
  * \author Stig Rune Jensen
  *
  * \version 1.0
  *
  * \par Copyright:
- * GPLv4
+ * LGPLv3
  *
  */
 
-#include "mrchem.h"
 #include "parallel.h"
-#include "constants.h"
-#include "MREnv.h"
 #include "Timer.h"
-#include "TelePrompter.h"
 #include "MathUtils.h"
-#include "Plot.h"
 
-#include "FunctionTree.h"
-#include "ABGVOperator.h"
-#include "PoissonOperator.h"
-#include "HelmholtzOperator.h"
+#include "MultiResolutionAnalysis.h"
+
 #include "MWProjector.h"
 #include "MWAdder.h"
 #include "MWMultiplier.h"
 #include "MWDerivative.h"
 #include "MWConvolution.h"
 #include "GridGenerator.h"
-//#include "GridCleaner.h"
+#include "GridCleaner.h"
+
+#include "FunctionTree.h"
+#include "ABGVOperator.h"
+#include "PoissonOperator.h"
+#include "HelmholtzOperator.h"
 
 #include "GaussFunc.h"
 
 
 using namespace std;
 
-void testProjection();
-void testAddition();
-void testMultiplication();
-void testDerivative();
-void testPoisson();
-void testSCF();
-//void testTreeCleaner();
+void initializeMRCPP(int argc, char **argv);
+void finalizeMRCPP(const Timer t);
 
-Getkw Input;
+void testProjection(double prec);
+void testAddition(double prec);
+void testMultiplication(double prec);
+void testTreeCleaner(double prec);
+void testDerivative(double prec);
+void testPoisson(double prec);
+void testSCF(double prec);
 
 template<int D> MultiResolutionAnalysis<D>* initializeMRA();
 template<int D> GaussFunc<D>* initializeGauss(const double *pos = 0);
 
 int main(int argc, char **argv) {
     Timer timer;
-    MREnv::initializeMRCPP(argc, argv);
+    initializeMRCPP(argc, argv);
 
-    bool run_projection = Input.get<bool>("Pilot.run_projection");
-    bool run_addition = Input.get<bool>("Pilot.run_addition");
-    bool run_multiplication = Input.get<bool>("Pilot.run_multiplication");
-    bool run_derivative = Input.get<bool>("Pilot.run_derivative");
-    bool run_poisson = Input.get<bool>("Pilot.run_poisson");
-    bool run_scf = Input.get<bool>("Pilot.run_scf");
-
-    if (run_projection) testProjection();
-    if (run_addition) testAddition();
-    if (run_multiplication) testMultiplication();
-    if (run_derivative) testDerivative();
-    if (run_poisson) testPoisson();
-    if (run_scf) testSCF();
+    double prec = 1.0e-3;
+    //testProjection(prec);
+    //testAddition(prec);
+    //testMultiplication(prec);
+    //testDerivative(prec);
+    //testPoisson(prec);
+    //testSCF(prec);
+    //testTreeCleaner(prec);
 
     timer.stop();
-    MREnv::finalizeMRCPP(timer);
+    finalizeMRCPP(timer);
 
     return 0;
 }
@@ -75,14 +69,14 @@ int main(int argc, char **argv) {
 template<int D>
 MultiResolutionAnalysis<D>* initializeMRA() {
     // Constructing world box
-    int min_scale = Input.get<int>("MRA.min_scale");
-    vector<int> corner = Input.getIntVec("MRA.corner");
-    vector<int> boxes = Input.getIntVec("MRA.boxes");
-    NodeIndex<D> idx(min_scale, corner.data());
-    BoundingBox<D> world(idx, boxes.data());
+    int min_scale = -4;
+    int corner[3] = {-1,-1,-1};
+    int boxes[3]  = { 2, 2, 2};
+    NodeIndex<D> idx(min_scale, corner);
+    BoundingBox<D> world(idx, boxes);
 
     // Constructing scaling basis
-    int order = Input.get<int>("MRA.order");
+    int order = 5;
     InterpolatingBasis basis(order);
 
     // Initializing MRA
@@ -103,12 +97,12 @@ GaussFunc<D>* initializeGauss(const double *pos) {
     }
 }
 
-void testProjection() {
+void testProjection(double prec) {
     Timer timer;
     TelePrompter::printHeader(0, "Testing MWProjector");
 
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     int max_scale = MRA->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
     MWProjector<3> project(prec, max_scale);
 
     auto f = [] (const double *r) -> double {
@@ -128,16 +122,18 @@ void testProjection() {
     println(0, " Integral                    " << setw(30) << integral);
     println(0, " Square norm                 " << setw(30) << sq_norm);
 
+    delete MRA;
+
     timer.stop();
     TelePrompter::printFooter(0, timer, 2);
 }
 
-void testAddition() {
+void testAddition(double prec) {
     Timer timer;
     TelePrompter::printHeader(0, "Testing MWAdder");
 
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     int max_scale = MRA->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
     MWProjector<3> project(prec, max_scale);
     MWAdder<3> add(prec, max_scale);
 
@@ -161,17 +157,18 @@ void testAddition() {
 
     delete f_func;
     delete g_func;
+    delete MRA;
 
     timer.stop();
     TelePrompter::printFooter(0, timer, 2);
 }
 
-void testMultiplication() {
+void testMultiplication(double prec) {
     Timer timer;
     TelePrompter::printHeader(0, "Testing MWMultiplier");
 
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     int max_scale = MRA->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
     MWProjector<3> project(prec, max_scale);
     MWMultiplier<3> mult(prec, max_scale);
 
@@ -195,12 +192,13 @@ void testMultiplication() {
 
     delete f_func;
     delete g_func;
+    delete MRA;
 
     timer.stop();
     TelePrompter::printFooter(0, timer, 2);
 }
 
-void testDerivative() {
+void testDerivative(double prec) {
     TelePrompter::printHeader(0, "Testing derivative operator");
     printout(0, endl);
 
@@ -208,7 +206,6 @@ void testDerivative() {
     MultiResolutionAnalysis<1> *MRA_1 = initializeMRA<1>();
 
     int max_scale = MRA_1->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
     double proj_prec = prec/10.0;
 
     ABGVOperator<1> D(*MRA_1, 0.0, 0.0);
@@ -281,13 +278,13 @@ void testDerivative() {
     TelePrompter::printFooter(0, tot_t, 2);
 }
 
-void testPoisson() {
+void testPoisson(double prec) {
     TelePrompter::printHeader(0, "Testing Poisson operator");
     printout(0, endl);
 
     Timer tot_t;
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     int max_scale = MRA->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
     double proj_prec = prec/10.0;
     double build_prec = prec/10.0;
     double apply_prec = prec;
@@ -345,14 +342,15 @@ void testPoisson() {
     println(0," Relative error:             " << setw(30) << error << endl);
     println(0, endl);
 
+    delete MRA;
+
     tot_t.stop();
     TelePrompter::printFooter(0, tot_t, 2);
 }
 
-void testSCF() {
-    // Precision parameters
+void testSCF(double prec) {
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     int max_scale = MRA->getMaxScale();
-    double prec = Input.get<double>("rel_prec");
 
     // Initializing projector
     GridGenerator<3> grid(max_scale);
@@ -496,37 +494,100 @@ void testSCF() {
     TelePrompter::printSeparator(0, '=', 2);
 
     delete phi_n;
+    delete MRA;
 }
 
-/*
-void testTreeCleaner() {
+void testTreeCleaner(double prec) {
     Timer timer;
     TelePrompter::printHeader(0, "Testing TreeCleaner");
 
+    MultiResolutionAnalysis<3> *MRA = initializeMRA<3>();
     GaussFunc<3> *f_func = initializeGauss<3>();
 
-    double prec = Input.get<double>("rel_prec");
     GridCleaner<3> clean(prec, MRA->getMaxScale());
     MWProjector<3> project(-1.0, MRA->getMaxScale());
 
     FunctionTree<3> f_tree(*MRA);
 
+    int iter = 0;
     int n_nodes = 1;
     while (n_nodes > 0) {
         project(f_tree, *f_func);
         n_nodes = clean(f_tree);
+        printout(0, " iter " << setw(3) << iter++);
+        printout(0, setw(45) << " n_nodes " << setw(5) << n_nodes << endl);
     }
     project(f_tree, *f_func);
 
     double integral = f_tree.integrate();
     double sq_norm = f_tree.getSquareNorm();
 
+    TelePrompter::printSeparator(0, '-');
     println(0, " Integral                    " << setw(30) << integral);
     println(0, " Square norm                 " << setw(30) << sq_norm);
 
     delete f_func;
+    delete MRA;
     timer.stop();
     TelePrompter::printFooter(0, timer, 2);
 }
-*/
+
+void initializeMRCPP(int argc, char **argv) {
+    int nThreads = omp_get_max_threads();
+    omp_set_dynamic(0);
+
+    int printlevel = 0;
+    bool teletype = false;
+
+    TelePrompter::init(printlevel, teletype, "MRCPP");
+    TelePrompter::setPrecision(15);
+
+    println(0,endl << endl);
+    println(0,"************************************************************");
+    println(0,"***     __  __ ____   ____ ____  ____                    ***");
+    println(0,"***    |  \\/  |  _ \\ / ___|  _ \\|  _ \\                   ***");
+    println(0,"***    | |\\/| | |_) | |   | |_) | |_) |                  ***");
+    println(0,"***    | |  | |  _ <| |___|  __/|  __/                   ***");
+    println(0,"***    |_|  |_|_| \\_\\\\____|_|   |_|                      ***");
+    println(0,"***                                                      ***");
+    println(0,"***    VERSION " << PROGRAM_VERSION << " (rev. " << GIT_REVISION << ")                      ***");
+    println(0,"***                                                      ***");
+    println(0,"***    Stig Rune Jensen <stig.r.jensen@uit.no>           ***");
+    println(0,"***    Jonas Juselius   <jonas.juselius@uit.no>          ***");
+    println(0,"***    Luca Frediani    <luca.frediani@uit.no>           ***");
+    println(0,"***                                                      ***");
+    println(0,"************************************************************");
+    println(0,endl);
+
+    TelePrompter::printSeparator(0, '-', 1);
+    println(0," Print level     : " <<  printlevel);
+
+#ifdef HAVE_BLAS
+    println(0, " Linear algebra  : BLAS");
+#else
+    println(0, " Linear algebra  : EIGEN");
+#endif
+
+#ifdef HAVE_OPENMP
+    println(0," Parallelization : " << nThreads << " threads (OpenMP)" << endl);
+#else
+    println(0," Parallelization : Serial execution" << endl);
+#endif
+
+    TelePrompter::printSeparator(0, '-', 2);
+}
+
+void finalizeMRCPP(const Timer t) {
+    double wt = t.getWallTime();
+    SET_PRINT_PRECISION(6);
+    println(0,endl);
+    println(0,"************************************************************");
+    println(0,"***                                                      ***");
+    println(0,"***                    Exiting MRCPP                     ***");
+    println(0,"***                                                      ***");
+    println(0,"***               Wall time: " << wt << "                ***");
+    println(0,"***                                                      ***");
+    println(0,"************************************************************");
+    println(0,endl);
+}
 

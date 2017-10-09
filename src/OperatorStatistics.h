@@ -3,8 +3,9 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "TelePrompter.h"
 #include "mrcpp_declarations.h"
+
+#include "TelePrompter.h"
 
 template<int D>
 class OperatorStatistics {

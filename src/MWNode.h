@@ -9,7 +9,6 @@
 
 #include "parallel.h"
 #include "macros.h"
-#include "mrcpp_declarations.h"
 
 #include "MWTree.h"
 #include "HilbertPath.h"

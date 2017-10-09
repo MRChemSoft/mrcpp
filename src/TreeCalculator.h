@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MWNode.h"
-#include "mrcpp_declarations.h"
 
 template<int D>
 class TreeCalculator {

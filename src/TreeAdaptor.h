@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mrcpp_declarations.h"
 #include "TelePrompter.h"
 
 template<int D>

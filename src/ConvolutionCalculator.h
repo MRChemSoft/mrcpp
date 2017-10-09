@@ -2,7 +2,6 @@
 
 #include "TreeCalculator.h"
 #include "OperatorStatistics.h"
-#include "mrcpp_declarations.h"
 
 template<int D>
 class ConvolutionCalculator : public TreeCalculator<D> {

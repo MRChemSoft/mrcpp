@@ -1,38 +1,53 @@
-include_directories(mwbuilders)
-include_directories(mwoperators)
-include_directories(mwtrees)
-include_directories(mwcore)
-include_directories(mwanalytic)
-
-add_subdirectory(mwbuilders)
-add_subdirectory(mwoperators)
-add_subdirectory(mwtrees)
-add_subdirectory(mwcore)
-add_subdirectory(mwanalytic)
+include(DefaultPathsMRCPP)
 
 add_library(mrcpp STATIC 
+    ABGVCalculator.cpp
     BoundingBox.cpp
+    ConvolutionCalculator.cpp
+    ConvolutionOperator.cpp
+    CrossCorrelation.cpp
+    CrossCorrelationCache.cpp
+    CrossCorrelationCalculator.cpp
+    DerivativeCalculator.cpp
+    FilterCache.cpp
+    FunctionNode.cpp
+    FunctionTree.cpp
+    GaussExp.cpp
+    GaussFunc.cpp
+    GaussPoly.cpp
+    GaussQuadrature.cpp
+    Gaussian.cpp
+    HelmholtzKernel.cpp
     HilbertPath.cpp
+    InterpolatingBasis.cpp
+    LegendreBasis.cpp
+    LegendrePoly.cpp
+    MWFilter.cpp
+    MWNode.cpp
+    MWOperator.cpp
+    MWTree.cpp
     MathUtils.cpp
     NodeBox.cpp
+    OperatorNode.cpp
     OperatorStatistics.cpp
-    RepresentableFunction.cpp
-    TelePrompter.cpp
-    parallel.cpp
+    OperatorTree.cpp
+    PHCalculator.cpp
     Plot.cpp
-)
-
-target_link_libraries(mrcpp
-    mwanalytic
-    mwcore 
-    mwtrees
-    mwoperators
-    mwbuilders
-    rt
+    PoissonKernel.cpp
+    Polynomial.cpp
+    ProjectedNode.cpp
+    ProjectionCalculator.cpp
+    QuadratureCache.cpp
+    RepresentableFunction.cpp
+    SerialFunctionTree.cpp
+    SerialOperatorTree.cpp
+    SerialTree.cpp
+    TelePrompter.cpp
+    TreeBuilder.cpp
+    parallel.cpp
 )
 
 install(TARGETS mrcpp
         ARCHIVE DESTINATION lib
         CONFIGURATIONS Debug-devel Release-devel
         )
-

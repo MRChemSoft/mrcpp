@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "mrcpp_declarations.h"
 #include "NodeIndex.h"
 
 template<int D>

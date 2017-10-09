@@ -2,7 +2,6 @@
 
 #include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
-#include "mrcpp_declarations.h"
 
 template<int D>
 class GridCleaner {

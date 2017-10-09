@@ -25,8 +25,6 @@
 #define TEST_TREE_LOCK() false
 #endif
 
-template<int D> class SerialFunctionTree;
-class SerialOperatorTree;
 
 template<int D>
 class MWTree {

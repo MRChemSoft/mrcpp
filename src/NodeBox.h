@@ -11,6 +11,8 @@
 
 #include "BoundingBox.h"
 
+template<int D> class MWNode;
+
 template<int D>
 class NodeBox : public BoundingBox<D> {
 public:

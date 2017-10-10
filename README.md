@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-%20LGPLv3-blue.svg)](../master/LICENSE)
 
 
-# MRChem: MultiResolution Chemistry
+# MRCPP: MultiResolution Computation Program Package
 
-- Documentation: http://mrchemdoc.readthedocs.io
+- Documentation: http://mrcpp.readthedocs.io

@@ -6,6 +6,8 @@ before_install:
 - sudo apt-get install libeigen3-dev
 
 script:
-- echo "lol"
-
-- ./setup 
+- ./setup --enable-tests
+- cd build
+- make
+- cd tests
+- ./unit_tests.x

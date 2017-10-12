@@ -4,3 +4,5 @@ sudo: false
 
 script:
 - echo "lol"
+
+- ./setup 

@@ -3,7 +3,7 @@ sudo: false
 
 before_install: 
 
-- apt-get install libeigen3-dev
+- sudo apt-get install libeigen3-dev
 
 script:
 - echo "lol"

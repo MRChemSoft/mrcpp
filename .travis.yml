@@ -7,7 +7,7 @@ addons:
       - libeigen3-dev
 
 script:
-- ./setup --enable-tests
+- ./setup --enable-tests --coverage
 - cd build
 - make
 - cd tests

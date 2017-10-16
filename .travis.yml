@@ -1,9 +1,11 @@
 language: cpp
 sudo: false
 
-before_install: 
+addons:
+  apt:
+    packages:
+      - libeigen3-dev
 
-- sudo apt-get install libeigen3-dev
 script:
 - ./setup --enable-tests
 - cd build

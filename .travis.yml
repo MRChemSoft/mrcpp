@@ -5,6 +5,7 @@ addons:
   apt:
     packages:
       - libeigen3-dev
+      - cpp-coveralls
 
 script:
 - ./setup --enable-tests --coverage
@@ -12,4 +13,6 @@ script:
 - make
 - cd tests
 - ./unit_tests.x
+- cd ../..
+- coveralls --exclude tests --gcov-options '\-lp'
 

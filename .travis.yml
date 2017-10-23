@@ -18,5 +18,5 @@ script:
 
 after_success:
   - cd ../..
-  - coveralls --exclude tests --gcov-options '\-lp'
+  - coveralls --exclude build/CMakeFiles --exclude tests --gcov-options '\-lp'
 

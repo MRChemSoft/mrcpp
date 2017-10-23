@@ -5,14 +5,18 @@ addons:
   apt:
     packages:
       - libeigen3-dev
-      - cpp-coveralls
+
+before_install:
+  - pip install --user cpp-coveralls
 
 script:
-- ./setup --enable-tests --coverage
-- cd build
-- make
-- cd tests
-- ./unit_tests.x
-- cd ../..
-- coveralls --exclude tests --gcov-options '\-lp'
+  - ./setup --enable-tests --coverage
+  - cd build
+  - make
+  - cd tests
+  - ./unit_tests.x
+
+after_success:
+  - cd ../..
+  - coveralls --exclude tests --gcov-options '\-lp'
 

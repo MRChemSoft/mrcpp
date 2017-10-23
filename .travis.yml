@@ -11,6 +11,8 @@ before_install:
 
 script:
   - ./setup --enable-tests --coverage
+  - g++ --version
+  - gcov --version
   - cd build
   - make
   - cd tests

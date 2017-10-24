@@ -5,20 +5,17 @@ addons:
   apt:
     packages:
       - libeigen3-dev
-
-before_install:
-  - pip install --user cpp-coveralls
+      - lcov
 
 script:
   - ./setup --enable-tests --coverage
-  - g++ --version
-  - gcov --version
   - cd build
   - make
   - cd tests
   - ./unit_tests.x
 
 after_success:
-  - cd ../..
-  - coveralls -e build/CMakeFiles -e build/config.h -e external -e tests --gcov-options '\-lp'
-
+  - cd ..
+  - lcov --directory . --capture --output-file coverage.info
+  - lcov --list coverage.info
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"

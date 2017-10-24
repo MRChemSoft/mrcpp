@@ -1,6 +1,9 @@
 language: cpp
 sudo: false
 
+notifications:
+  slack: mrchem:tx8yhf1Og2nFEyI8AxBMLIZL
+
 addons:
   apt:
     packages:

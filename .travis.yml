@@ -15,8 +15,7 @@ script:
   - ./setup --enable-tests --coverage
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
-  - cd tests
-  - ./unit_tests.x
+  - ctest --output-on-failure --verbose
 
 after_success:
   - cd ..

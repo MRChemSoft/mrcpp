@@ -6,7 +6,7 @@ using namespace Eigen;
 
 namespace polynomial {
 
-TEST_CASE("Polynomial constructors", "[poly_constructor], [polynomials]") {
+TEST_CASE("Polynomial constructors", "[poly_constructor], [polynomial]") {
     double a = 0.0;
     double b = 2.0;
     Vector4d c = {0.0, 1.0, 0.0, 0.0};
@@ -47,7 +47,7 @@ TEST_CASE("Polynomial constructors", "[poly_constructor], [polynomials]") {
     }
 }
 
-TEST_CASE("Polynomial evaluation", "[poly_evalf], [polynomials]") {
+TEST_CASE("Polynomial evaluation", "[poly_evalf], [polynomial]") {
     double a = 0.0;
     double b = 2.0;
     Vector3d c = {1.0, 0.0, 2.0};
@@ -68,7 +68,7 @@ TEST_CASE("Polynomial evaluation", "[poly_evalf], [polynomials]") {
     }
 }
 
-SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomials]") {
+SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomial]") {
     GIVEN("A bounded polynomial P") {
         double a = -1.0;
         double b = 1.0;
@@ -102,7 +102,7 @@ SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomials
     }
 }
 
-SCENARIO("Polynomials can be added and multiplied", "[poly_arithmetics], [polynomials]") {
+SCENARIO("Polynomials can be added and multiplied", "[poly_arithmetics], [polynomial]") {
     GIVEN("Two polynomials P and Q") {
         Vector3d pCoefs = {0.0, 1.0, 1.0};
         Vector2d qCoefs = {0.0, 1.0};
@@ -188,7 +188,7 @@ SCENARIO("Polynomials can be added and multiplied", "[poly_arithmetics], [polyno
     }
 }
 
-TEST_CASE("Polynomial differentiation", "[poly_diff], [polynomials]") {
+TEST_CASE("Polynomial differentiation", "[poly_diff], [polynomial]") {
     Vector3d c = {0.0, 1.0, 2.0};
     Polynomial P(c);
 
@@ -207,7 +207,7 @@ TEST_CASE("Polynomial differentiation", "[poly_diff], [polynomials]") {
     }
 }
 
-TEST_CASE("Polynomial integration", "[poly_int], [polynomials]") {
+TEST_CASE("Polynomial integration", "[poly_int], [polynomial]") {
     Vector3d c = {0.0, 1.0, 2.0};
     Polynomial P(c);
 
@@ -247,7 +247,7 @@ TEST_CASE("Polynomial integration", "[poly_int], [polynomials]") {
     }
 }
 
-SCENARIO("Bounded polynomials have inner products and norms", "[poly_norm], [polynomials]") {
+SCENARIO("Bounded polynomials have inner products and norms", "[poly_norm], [polynomial]") {
     GIVEN("Two unbounded polynomials P and Q") {
         Vector3d c1 = {0.0, 1.0, 1.0};
         Vector2d c2 = {0.0, 1.0};

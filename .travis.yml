@@ -5,23 +5,75 @@ notifications:
   slack:
     secure: 1jnJfgRwfuF8dzfN5daTItQ+jrilhRSjz88gKMhMpqvWrpaAZrytTcejs5FELXadeLIiddoT7c5GKLrCngVzadMi60bc/kfE2Lzer8z31i6mfPXGLvd3zWpVa6Tt8Bur2wL/oB/f6herDQurW2t0HcTp6oc6Mv3iI23PPl/MQG4w6oNKc6SOeBIBDykJOSaf3+SY/z4vXBqqF5lbmWHUIngTUkV7UEzmj+c4MukOUn9IyYjNSgvZd1ql4SKG58gzkafB1tbhxPjyJqLcWjokwlhVYTxHulBqemxRj7DGznWAUL72Pbc6ot27R655wvl/OEoL7X8U0aLIJIlIzLl49WDv5c81wGw/iOVjj5leBpfJl6QlyNMJC0jPEEJYPbEWxzgZGNa1eYbZyroOKvBBalcYVzxq018VgwYjMdZL0zFhdTymgFcDnR1p3Z1Lii6fN3oO2QVAsyBq3sN+IVtlyAWnHIGP+eyEGpggKJ1GsnG/Mb8cjBc6hjG8Q3fRQEfB5C5FeWJSU67hTnuGpTWKcF8rcfbtrw5D1JzBkqYjL6PuG5/VLu8Ro/IihBKf0N+sFa5GvdmbWOEWDEpiIMfWvcOpTIabZyRzcLJX7fqP29b2lUjoLVT3g5+cgSYSZcVyCFj+kunL1LZpgsBf9tr6r+OWzXwNVti+fEvF0KqMHHs=
 
-addons:
-  apt:
-    packages:
-      - libeigen3-dev
-      - lcov
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - cmake3-data
+            - g++-4.8
+            - libeigen3-dev
+      env:
+        - BUILD_TYPE='release'
+        - OPENMP='false'
+        - COVERAGE='false'
+        - CXX_COMPILER='g++-4.8'
+        - PYTHON_VER='2.7'
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - cmake3-data
+            - g++-4.8
+            - libeigen3-dev
+      env:
+        - BUILD_TYPE='release'
+        - OPENMP='true'
+        - COVERAGE='false'
+        - CXX_COMPILER='g++-4.8'
+        - PYTHON_VER='2.7'
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - cmake3-data
+            - g++-4.8
+            - libeigen3-dev
+            - lcov
+      env:
+        - BUILD_TYPE='debug'
+        - OPENMP='false'
+        - COVERAGE='true'
+        - CXX_COMPILER='g++-4.8'
+        - PYTHON_VER='2.7'
+
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - python --version
+  - cmake --version
+  - ${CXX_COMPILER} --version
 
 script:
-  - ./setup --enable-tests --coverage
+  - export OMP_NUM_THREADS=2
+  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} --enable-tests --cmake-options='-DENABLE_CODE_COVERAGE=${COVERAGE} -DENABLE_OPENMP=${OPENMP}'
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
   - ctest --output-on-failure --verbose
 
 after_success:
-  - cd ${TRAVIS_BUILD_DIR}
-  - lcov --directory . --capture --output-file coverage.info
-  - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
-  - lcov --remove coverage.info 'external/*' --output-file coverage.info 
-  - lcov --remove coverage.info 'tests/*' --output-file coverage.info 
-  - lcov --list coverage.info
-  - bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
+  - |
+    if [[ "${COVERAGE}" = true ]]; then
+      cd ${TRAVIS_BUILD_DIR}
+      lcov --version
+      lcov --directory . --capture --output-file coverage.info
+      lcov --remove coverage.info '/usr/*' --output-file coverage.info
+      lcov --remove coverage.info 'external/*' --output-file coverage.info
+      lcov --remove coverage.info 'tests/*' --output-file coverage.info
+      lcov --list coverage.info
+      bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
+    fi
+

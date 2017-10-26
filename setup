@@ -20,6 +20,7 @@ Usage:
 Options:
   --cxx=<CXX>                            C++ compiler [default: g++].
   --extra-cxx-flags=<EXTRA_CXXFLAGS>     Extra C++ compiler flags [default: ''].
+  --mpi                                  Enable MPI parallelization [default: False].
   --omp                                  Enable OpenMP parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
   --enable-tests                         Enable tests [default: False].
@@ -42,6 +43,7 @@ def gen_cmake_command(options, arguments):
     command.append('CXX={0}'.format(arguments['--cxx']))
     command.append(arguments['--cmake-executable'])
     command.append('-DEXTRA_CXXFLAGS="{0}"'.format(arguments['--extra-cxx-flags']))
+    command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
     command.append('-DENABLE_OPENMP={0}'.format(arguments['--omp']))
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))
     command.append('-DENABLE_TESTS={0}'.format(arguments['--enable-tests']))

@@ -111,9 +111,9 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
 }
 
 TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator], [mw_operator]") {
-    double proj_prec = 1.0e-3;
-    double apply_prec = 1.0e-2;
-    double build_prec = 1.0e-3;
+    double proj_prec = 3.0e-3;
+    double apply_prec = 3.0e-2;
+    double build_prec = 3.0e-3;
 
     // Computational domain [-32.0, 32.0]
     int scale = -5;

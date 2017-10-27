@@ -17,9 +17,8 @@ matrix:
             - libeigen3-dev
       env:
         - BUILD_TYPE='release'
-        - OPENMP='false'
-        - COVERAGE='false'
         - CXX_COMPILER='g++-4.8'
+        - TESTS='--enable-tests'
         - PYTHON_VER='2.7'
     - os: linux
       addons:
@@ -31,9 +30,9 @@ matrix:
             - libeigen3-dev
       env:
         - BUILD_TYPE='release'
-        - OPENMP='true'
-        - COVERAGE='false'
         - CXX_COMPILER='g++-4.8'
+        - OPENMP='--omp'
+        - TESTS='--enable-tests'
         - PYTHON_VER='2.7'
     - os: linux
       addons:
@@ -46,9 +45,9 @@ matrix:
             - lcov
       env:
         - BUILD_TYPE='debug'
-        - OPENMP='false'
-        - COVERAGE='true'
         - CXX_COMPILER='g++-4.8'
+        - COVERAGE='--coverage'
+        - TESTS='--enable-tests'
         - PYTHON_VER='2.7'
 
 before_script:
@@ -59,14 +58,17 @@ before_script:
 
 script:
   - export OMP_NUM_THREADS=2
-  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} --enable-tests --cmake-options='-DENABLE_CODE_COVERAGE=${COVERAGE} -DENABLE_OPENMP=${OPENMP}'
+  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${TESTS} ${COVERAGE} ${OPENMP}
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
-  - ctest --output-on-failure --verbose
+  - |
+    if [[ "${TESTS}" = "--enable-tests" ]]; then
+      ctest --output-on-failure --verbose
+    fi
 
 after_success:
   - |
-    if [[ "${COVERAGE}" = true ]]; then
+    if [[ "${COVERAGE}" = "--coverage" ]]; then
       cd ${TRAVIS_BUILD_DIR}
       lcov --version
       lcov --directory . --capture --output-file coverage.info

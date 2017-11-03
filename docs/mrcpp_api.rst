@@ -1,6 +1,6 @@
-====================================
-MRCPP: Application Program Interface
-====================================
+=============================
+Application Program Interface
+=============================
 
 ------------
 Introduction

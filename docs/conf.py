@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# MRChem documentation build configuration file, created by
+# MRCPP documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 26 15:03:29 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -51,7 +51,7 @@ source_suffix = ['.rst']
 master_doc = 'index'
 
 # General information about the project.
-project = u'MRChem'
+project = u'MRCPP'
 copyright = u'2016, Luca Frediani, Stig Rune Jensen'
 author = u'Luca Frediani, Stig Rune Jensen'
 
@@ -207,7 +207,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MRChemdoc'
+htmlhelp_basename = 'MRCPP'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -229,7 +229,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'MRChem.tex', u'MRChem Documentation',
+  (master_doc, 'MRCPP.tex', u'MRCPP Documentation',
    u'Luca Frediani, Stig Rune Jensen', 'manual'),
 ]
 
@@ -259,7 +259,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'mrchem', u'MRChem Documentation',
+    (master_doc, 'mrcpp', u'MRCPP Documentation',
      [author], 1)
 ]
 
@@ -273,8 +273,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'MRChem', u'MRChem Documentation',
-   author, 'MRChem', 'One line description of project.',
+  (master_doc, 'MRCPP', u'MRCPP Documentation',
+   author, 'MRCPP', 'One line description of project.',
    'Miscellaneous'),
 ]
 

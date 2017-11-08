@@ -29,7 +29,7 @@ MultiResolutionAnalysis<D>* initializeMRA() {
 }
 namespace derivative_operator {
 
-template<int D> void testDifferentiation(){
+template<int D> void testDifferentiation(double a,double b){
 
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
@@ -37,7 +37,7 @@ template<int D> void testDifferentiation(){
     int max_scale = mra->getMaxScale();
     double proj_prec = prec/10.0;
 
-    ABGVOperator<D> Differentiate(*mra, 0.0, 0.0);
+    ABGVOperator<D> Differentiate(*mra, a, b);
     MWDerivative<D> apply(max_scale);
 
     MWAdder<D> add(-1.0, max_scale);
@@ -78,16 +78,28 @@ template<int D> void testDifferentiation(){
 
 }
 
-TEST_CASE("Differentiantion", "[derivative]") {
-
-    SECTION("1D derivative test"){
-        testDifferentiation<1>();
+TEST_CASE("differentiantion_entral_difference", "[derivative],[central_difference]") {
+// 0.5,0.5 specifies central difference
+    SECTION("1D_derivative_test"){
+        testDifferentiation<1>(0.5,0.5);
     }
-    SECTION("2D derivative test"){
-        testDifferentiation<2>();
+    SECTION("2D_derivative_test"){
+        testDifferentiation<2>(0.5,0.5);
     }
     SECTION("3D derivative test"){
-        testDifferentiation<3>();
+        testDifferentiation<3>(0.5,0.5);
+    }
+}
+TEST_CASE("differentiantion_center_difference", "[derivative], [center_difference]") {
+// 0,0 specifies center difference
+    SECTION("1D_derivative_test"){
+        testDifferentiation<1>(0,0);
+    }
+    SECTION("2D_derivative_test"){
+        testDifferentiation<2>(0,0);
+    }
+    SECTION("3D_derivative_test"){
+        testDifferentiation<3>(0,0);
     }
 }
 } // namespace

@@ -1,8 +1,8 @@
 add_library(mrcpp-tests OBJECT band_width.cpp
                                bounding_box.cpp
                                function_tree.cpp
-			       #                               gauss_quadrature.cpp
-			       derivative_operator.cpp
+#                               gauss_quadrature.cpp
+                               derivative_operator.cpp
                                grid_cleaner.cpp
                                grid_generator.cpp
                                helmholtz_operator.cpp

@@ -15,8 +15,8 @@
 using namespace std;
 
 namespace derivative_operator {
-template<int D>
-MultiResolutionAnalysis<D>* initializeMRA() {
+
+template<int D> MultiResolutionAnalysis<D>* initializeMRA() {
     // Constructing world box
     int min_scale = -4;
     int corner[3] = {-1,-1,-1};
@@ -32,7 +32,7 @@ MultiResolutionAnalysis<D>* initializeMRA() {
     return new MultiResolutionAnalysis<D>(world, basis);
 }
 
-template<int D> void testDifferentiationABGV(double a,double b){
+template<int D> void testDifferentiationABGV(double a, double b) {
 
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
@@ -46,16 +46,15 @@ template<int D> void testDifferentiationABGV(double a,double b){
     MWAdder<D> add(-1.0, max_scale);
     MWProjector<D> project(proj_prec, max_scale);
 
-    auto f = [] (const double *r) -> double {
-        const double r_0[3] = {pi, pi, pi};
+    const double r_0[3] = {pi, pi, pi};
+    auto f = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
         return exp(-R*R);
     };
 
-    auto df = [] (const double *r) -> double {
-        const double r_0[3] = {pi, pi, pi};
+    auto df = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
-        return -2*exp(-R*R)*(r[0]-pi);
+        return -2.0*exp(-R*R)*(r[0]-r_0[0]);
     };
 
     FunctionTree<D> f_tree(*mra);
@@ -76,12 +75,10 @@ template<int D> void testDifferentiationABGV(double a,double b){
 
     REQUIRE(rel_err <= prec);
 
-
     delete mra;
-
 }
 
-template<int D> void testDifferentiationPH(int order){
+template<int D> void testDifferentiationPH(int order) {
 
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
@@ -95,16 +92,15 @@ template<int D> void testDifferentiationPH(int order){
     MWAdder<D> add(-1.0, max_scale);
     MWProjector<D> project(proj_prec, max_scale);
 
-    auto f = [] (const double *r) -> double {
-        const double r_0[3] = {pi, pi, pi};
+    const double r_0[3] = {pi, pi, pi};
+    auto f = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
         return exp(-R*R);
     };
-    auto df = [order] (const double *r) -> double {
-        const double r_0[3] = {pi, pi, pi};
+    auto df = [r_0, order] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
         return -(2-order)*2*exp(-R*R)*(r[0]-pi)
-                + (order-1)*(-2*exp(-R*R)+4*exp(-R*R)*(r[0]-pi)*(r[0]-pi));
+                + (order-1)*(-2*exp(-R*R)+4*exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]));
                 // 2-order = 1 and order-1 = 0 in the first order case
                 // 2-order = 0 and order-1 = 1 in the second order case
     };
@@ -127,56 +123,55 @@ template<int D> void testDifferentiationPH(int order){
 
     REQUIRE(rel_err <= prec);
 
-
     delete mra;
-
 }
 
-TEST_CASE("ABGV_differentiantion_entral_difference", "[derivative],[central_difference]") {
-// 0.5,0.5 specifies central difference
-    SECTION("1D_derivative_test"){
+TEST_CASE("ABGV differentiantion central difference", "[derivative],[central_difference]") {
+    // 0.5,0.5 specifies central difference
+    SECTION("1D derivative test"){
         testDifferentiationABGV<1>(0.5,0.5);
     }
-    SECTION("2D_derivative_test"){
+    SECTION("2D derivative test"){
         testDifferentiationABGV<2>(0.5,0.5);
     }
     SECTION("3D derivative test"){
         testDifferentiationABGV<3>(0.5,0.5);
     }
 }
-TEST_CASE("ABGV_differentiantion_center_difference", "[derivative], [center_difference]") {
-// 0,0 specifies center difference
-    SECTION("1D_derivative_test"){
+
+TEST_CASE("ABGV differentiantion center difference", "[derivative], [center_difference]") {
+    // 0,0 specifies center difference
+    SECTION("1D derivative test") {
         testDifferentiationABGV<1>(0,0);
     }
-    SECTION("2D_derivative_test"){
+    SECTION("2D derivative test") {
         testDifferentiationABGV<2>(0,0);
     }
-    SECTION("3D_derivative_test"){
+    SECTION("3D derivative test") {
         testDifferentiationABGV<3>(0,0);
     }
 }
-TEST_CASE("PH_differentiantion_first_order", "[derivative], [PH_first_order]") {
 
-    SECTION("1D_derivative_test"){
+TEST_CASE("PH differentiantion first order", "[derivative], [PH_first_order]") {
+    SECTION("1D derivative test") {
         testDifferentiationPH<1>(1);
     }
-    SECTION("2D_derivative_test"){
+    SECTION("2D derivative test") {
         testDifferentiationPH<2>(1);
     }
-    SECTION("3D_derivative_test"){
+    SECTION("3D derivative test") {
         testDifferentiationPH<3>(1);
     }
 }
-TEST_CASE("PH_differentiantion_second_order", "[derivative], [PH_second_order]") {
 
-    SECTION("1D_second_order_derivative_test"){
+TEST_CASE("PH differentiantion second order", "[derivative], [PH_second_order]") {
+    SECTION("1D second order derivative test") {
         testDifferentiationPH<1>(2);
     }
-    SECTION("2D_second_order_derivative_test"){
+    SECTION("2D second order derivative test") {
         testDifferentiationPH<2>(2);
     }
-    SECTION("3D_second_order_derivative_test"){
+    SECTION("3D second order derivative test") {
         testDifferentiationPH<3>(2);
     }
 }

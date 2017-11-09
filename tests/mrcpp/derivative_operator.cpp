@@ -40,7 +40,7 @@ template<int D> void testDifferentiationABGV(double a,double b){
     int max_scale = mra->getMaxScale();
     double proj_prec = prec/10.0;
 
-    ABGVOperator<D> Differentiate(*mra, a, b);
+    ABGVOperator<D> diff(*mra, a, b);
     MWDerivative<D> apply(max_scale);
 
     MWAdder<D> add(-1.0, max_scale);
@@ -65,7 +65,7 @@ template<int D> void testDifferentiationABGV(double a,double b){
     project(df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
-    apply(dg_tree, Differentiate, f_tree, 0);
+    apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
     add(err_tree, 1.0, df_tree, -1.0, dg_tree);
@@ -89,7 +89,7 @@ template<int D> void testDifferentiationPH(int order){
     int max_scale = mra->getMaxScale();
     double proj_prec = prec/10.0;
 
-    PHOperator<D> Differentiate(*mra, order);
+    PHOperator<D> diff(*mra, order);
     MWDerivative<D> apply(max_scale);
 
     MWAdder<D> add(-1.0, max_scale);
@@ -116,7 +116,7 @@ template<int D> void testDifferentiationPH(int order){
     project(df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
-    apply(dg_tree, Differentiate, f_tree, 0);
+    apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
     add(err_tree, 1.0, df_tree, -1.0, dg_tree);

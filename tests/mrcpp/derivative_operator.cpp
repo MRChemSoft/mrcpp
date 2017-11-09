@@ -11,6 +11,8 @@
 #include "MWProjector.h"
 
 using namespace std;
+
+namespace derivative_operator {
 template<int D>
 MultiResolutionAnalysis<D>* initializeMRA() {
     // Constructing world box
@@ -27,7 +29,6 @@ MultiResolutionAnalysis<D>* initializeMRA() {
     // Initializing MRA
     return new MultiResolutionAnalysis<D>(world, basis);
 }
-namespace derivative_operator {
 
 template<int D> void testDifferentiation(double a,double b){
 
@@ -62,7 +63,7 @@ template<int D> void testDifferentiation(double a,double b){
     project(df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
-    apply(dg_tree, Differentiate, f_tree, 0); // Does not refine grid further
+    apply(dg_tree, Differentiate, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
     add(err_tree, 1.0, df_tree, -1.0, dg_tree);

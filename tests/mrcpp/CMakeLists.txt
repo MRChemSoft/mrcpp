@@ -1,7 +1,8 @@
 add_library(mrcpp-tests OBJECT band_width.cpp
                                bounding_box.cpp
                                function_tree.cpp
-                               gauss_quadrature.cpp
+#                               gauss_quadrature.cpp
+                               derivative_operator.cpp
                                grid_cleaner.cpp
                                grid_generator.cpp
                                helmholtz_operator.cpp
@@ -22,6 +23,7 @@ add_library(mrcpp-tests OBJECT band_width.cpp
 add_Catch_test(band_width "band_width")
 add_Catch_test(bounding_box "bounding_box")
 add_Catch_test(function_tree "function_tree")
+add_Catch_test(derivative "derivative")
 #add_Catch_test(gauss_quadrature "gauss_quadrature")
 add_Catch_test(grid_cleaner "grid_cleaner")
 add_Catch_test(grid_generator "grid_generator")

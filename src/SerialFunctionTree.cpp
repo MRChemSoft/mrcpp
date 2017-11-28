@@ -5,8 +5,6 @@
 
 using namespace std;
 
-int NFtrees=0;
-
 /** SerialTree class constructor.
  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
  * Initializes rootNodes to represent the zero function and allocate their nodes. 
@@ -25,12 +23,8 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree)
       lastNode(0),
       lastGenNode(0) {
 
-
     this->maxNodes = 0;
     this->nNodes = 0;
-
-    NFtrees++;
-    if(mpiOrbRank==0 and NFtrees%10==1) println(10," N Function trees created: "<<NFtrees<<" dim = "<<D);
 
     //Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();//One block
@@ -69,14 +63,11 @@ template<int D>
 SerialFunctionTree<D>::~SerialFunctionTree() {
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[] (char*)(this->nodeChunks[i]);
-    if(not this->isShared)//if the data is shared, it must be freed by MPI_Win_free
-	for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
 
     this->nodeStackStatus.clear();
     this->genNodeStackStatus.clear();
-
-    NFtrees--;
 
 #ifdef HAVE_OPENMP
     omp_destroy_lock(&Sfunc_tree_lock);
@@ -253,31 +244,18 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
 
         //careful: nodeChunks.size() is an unsigned int
         if (chunk+1 > this->nodeChunks.size()){
-	    //need to allocate new chunk
-	    double *sNodesCoeff;		
-	    if (this->isShared) {
-		//for coefficients, take from the shared memory block
-		sNodesCoeff = this->shMem->sh_end_ptr;	
-		this->shMem->sh_end_ptr += (this->sizeNodeCoeff*this->maxNodesPerChunk);
-		//may increase size dynamically in the future
-		if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) {
-		    MSG_FATAL("Shared block too small");
-		}
-	    } else {
-		sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
-	    }
+            //need to allocate new chunk
+            double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
 
             this->nodeCoeffChunks.push_back(sNodesCoeff);
-	    this->sNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
-	    this->nodeChunks.push_back(this->sNodes);
+            this->sNodes = (ProjectedNode<D>*) new char[this->maxNodesPerChunk*sizeof(ProjectedNode<D>)];
+            this->nodeChunks.push_back(this->sNodes);
 
-	    //allocate new chunk in nodeStackStatus
-	    int oldsize = this->nodeStackStatus.size();
-	    int newsize = oldsize + this->maxNodesPerChunk;
-	    for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
-	    this->maxNodes = newsize;
-
-	    if (chunk%100==99 and D==3) println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes * this->sizeNodeCoeff)/1024/128);
+            //allocate new chunk in nodeStackStatus
+            int oldsize = this->nodeStackStatus.size();
+            int newsize = oldsize + this->maxNodesPerChunk;
+            for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
+            this->maxNodes = newsize;
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -410,7 +388,6 @@ void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
 
 template<int D>
 void SerialFunctionTree<D>::deallocGenNodeChunks() {
-    //if(mpiOrbRank==0 and (this->genNodeCoeffChunks.size()*2)*1024/8>10000)cout<<"deallocate genchunks MB "<<(this->genNodeCoeffChunks.size()*2)*1024/1024/8<<endl;
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[] (char*)(this->genNodeChunks[i]);
     this->genNodeCoeffChunks.clear();

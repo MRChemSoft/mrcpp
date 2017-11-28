@@ -30,8 +30,6 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
     this->maxNodesPerChunk = 64;
     int sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
    
-    if(mpiOrbRank==0 and NOtrees%100==1)println(10, "nodes per chunk = " << this->maxNodesPerChunk<<" sizePerChunk "<<sizePerChunk<<" N Op trees: "<<NOtrees);
-
     this->lastNode = (OperatorNode*) this->sNodes;//position of last allocated node
 
     //make virtual table pointers

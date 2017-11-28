@@ -12,10 +12,6 @@ const int MaxDepth = 30; ///< Maximum depth of trees
 const int MaxScale = 31; ///< Maximum scale of trees
 const int MinScale = -31; ///< Minimum scale of trees
 const int MaxSepRank = 1000;
-//Max number of orbitals stored temporarily. Larger->more memory
-//Also max size of orbitalvector that can be sent with send_OrbVec
-const int workOrbVecSize = 10;
-
 
 namespace Axis {
 const int None = -1;

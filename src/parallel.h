@@ -20,55 +20,64 @@
 #define omp_test_lock(x)
 #endif
 
-extern int mpiOrbRank;
-extern int mpiOrbSize;
-extern int mpiShRank;
-extern int mpiShSize;
-extern int MPI_SH_group_rank;
-extern int MPI_SH_group_size;
+template<int D> class FunctionTree;
+template<int D> class SerialFunctionTree;
 
+namespace mpi {
 
-void MPI_Initializations();
-void define_MPI_groups();
-bool orbIsSh(int orbRank);
-
-/** Share memory within a compute node
- */
-class SharedMemory {
-public:
-    SharedMemory(int sh_size);
-    ~SharedMemory();
-    void allocShmem(int sh_size);
-    double *sh_start_ptr; //start of shared block
-    double *sh_max_ptr; //end of shared block
-    double *sh_end_ptr; //end of used part
 #ifdef HAVE_MPI
-    MPI_Win sh_win; //MPI window object
-#endif
+
+template<int D>
+struct tree_request {
+    tree_request(FunctionTree<D> &tree, int t) {
+        this->tag = t;
+        this->s_tree = tree.getSerialFunctionTree();
+        this->n_chunks = this->s_tree->nodeChunks.size();
+        this->mpi_req = MPI_REQUEST_NULL;
+    }
+    int tag;
+    int n_chunks;
+    MPI_Status mpi_stat;
+    MPI_Request mpi_req;
+    SerialFunctionTree<D> *s_tree;
 };
 
-#ifdef HAVE_MPI
+class communicator {
+public:
+    communicator() { }
+    communicator &operator=(MPI_Comm c) { this->comm = c; return *this; }
 
-extern MPI_Comm mpiCommOrb;
-extern MPI_Comm mpiCommSh;
-extern MPI_Comm mpiCommSh_group;
+    int size() const { int s; MPI_Comm_size(this->comm, &s); return s; }
+    int rank() const { int r; MPI_Comm_rank(this->comm, &r); return r; }
+    void barrier() const { MPI_Barrier(this->comm); }
 
-template<int D> class FunctionTree;
+    template<int D> void send_tree(tree_request<D> &request, int dst);
+    template<int D> void recv_tree(tree_request<D> &request, int src);
 
-template<int D>
-void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);
-template<int D>
-void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI_Comm comm);
-template<int D>
-void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request);
-template<int D>
-void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI_Comm comm);
-void Assign_NxN(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
-void Assign_NxN_sym(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
-
-void Share_memory(int sh_size, double * &d_ptr, MPI_Win & MPI_win);
+private:
+    MPI_Comm comm;
+};
 
 #else
 
+template<int D>
+struct tree_request {
+    tree_request(FunctionTree<D> &tree, int t) { }
+};
+
+class communicator {
+public:
+    communicator() { }
+    int rank() const { return 0; }
+    int size() const { return 1; }
+    void barrier() const { }
+
+    template<int D> void send_tree(tree_request<D> &request, int dst) { }
+    template<int D> void recv_tree(tree_request<D> &request, int src) { }
+};
 
 #endif
+
+extern mpi::communicator world;
+
+};

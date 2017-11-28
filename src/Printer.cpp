@@ -18,8 +18,8 @@ int Printer::precision = 12;
 std::ostream *Printer::out = &std::cout;
 
 void Printer::init(int level, const char *file) {
-    int mpi_rank = mpiOrbRank;
-    int mpi_size = mpiOrbSize;
+    int mpi_rank = mpi::world.rank();
+    int mpi_size = mpi::world.size();
     if (file != 0) {
         stringstream fname;
         if (mpi_size > 1) {
@@ -53,7 +53,7 @@ void Printer::printEnvironment(int level) {
     println(level, " Linear algebra  : EIGEN");
 #endif
 
-    int nHosts = mpiOrbSize;
+    int nHosts = mpi::world.size();
     int nThreads = omp_get_max_threads();
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP

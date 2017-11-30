@@ -1,6 +1,6 @@
 #include "SerialTree.h"
 #include "MWTree.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "MathUtils.h"
 
 using namespace Eigen;

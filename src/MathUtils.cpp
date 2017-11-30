@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "MathUtils.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "constants.h"
 #include "parallel.h"
 #include "eigen_disable_warnings.h"

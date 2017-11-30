@@ -10,7 +10,7 @@
 #pragma GCC system_header
 #include <Eigen/Eigenvalues>
 
-#include "TelePrompter.h"
+#include "Printer.h"
 
 class MathUtils {
 public:

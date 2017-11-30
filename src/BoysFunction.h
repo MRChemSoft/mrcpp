@@ -16,7 +16,7 @@ public:
     virtual ~BoysFunction() { }
 
     double evalf(const double *r) const {
-        int oldlevel = TelePrompter::setPrintLevel(0);
+        int oldlevel = Printer::setPrintLevel(0);
 
         int n = this->order;
         double x = r[0];
@@ -34,7 +34,7 @@ public:
         this->Q(tree, f);
         double result = tree.integrate();
 
-        TelePrompter::setPrintLevel(oldlevel);
+        Printer::setPrintLevel(oldlevel);
         return result;
     }
 

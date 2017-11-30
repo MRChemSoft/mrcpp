@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "TelePrompter.h"
+#include "Printer.h"
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
 

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "parallel.h"
 #include "macros.h"
 

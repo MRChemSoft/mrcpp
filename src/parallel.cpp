@@ -1,6 +1,6 @@
 #include <iostream>
 #include "parallel.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "Timer.h"
 #include "FunctionTree.h"
 #include "ProjectedNode.h"

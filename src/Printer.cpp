@@ -6,18 +6,18 @@
  */
 
 #include <fstream>
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "Timer.h"
 #include "parallel.h"
 
 using namespace std;
 
 static ofstream tp_outfile;
-int TelePrompter::printLevel = 0;
-int TelePrompter::precision = 12;
-std::ostream *TelePrompter::out = &std::cout;
+int Printer::printLevel = 0;
+int Printer::precision = 12;
+std::ostream *Printer::out = &std::cout;
 
-void TelePrompter::printSeparator(int level, const char &sep, int newlines) {
+void Printer::printSeparator(int level, const char &sep, int newlines) {
     int N = 60;
     for (int i = 0; i < N; i++) {
         printout(level, sep);
@@ -26,7 +26,7 @@ void TelePrompter::printSeparator(int level, const char &sep, int newlines) {
         printout(level, endl);
     }
 }
-void TelePrompter::printHeader(int level, const string &str, int newlines) {
+void Printer::printHeader(int level, const string &str, int newlines) {
     int N = 60;
     int len = str.size();
     printSeparator(level, '=', 0);
@@ -38,37 +38,37 @@ void TelePrompter::printHeader(int level, const string &str, int newlines) {
     printSeparator(level, '-', newlines);
 }
 
-void TelePrompter::printFooter(int level, const Timer &t, int newlines) {
+void Printer::printFooter(int level, const Timer &t, int newlines) {
     printSeparator(level, '-');
     println(level, "                 Wall time: " << setw(11) << t << " sec ");
     printSeparator(level, '=', newlines);
 }
 
-void TelePrompter::printDouble(int level, const std::string &name, double d) {
+void Printer::printDouble(int level, const std::string &name, double d) {
     char cName[31] = "                              ";
     for (int i = 0; i < 31; i++) {
         if (i < name.size()) {
             cName[i+1] = name[i];
         }
     }
-    int oldPrec = TelePrompter::setPrecision(5);
+    int oldPrec = Printer::setPrecision(5);
     println(level, cName << setw(29) << d);
-    TelePrompter::setPrecision(oldPrec);
+    Printer::setPrecision(oldPrec);
 }
 
-void TelePrompter::printTree(int level, const std::string &name, int n, double t) {
+void Printer::printTree(int level, const std::string &name, int n, double t) {
     char cName[31] = "                              ";
     for (int i = 0; i < 31; i++) {
         if (i < name.size()) {
             cName[i+1] = name[i];
         }
     }
-    int oldPrec = TelePrompter::setPrecision(5);
+    int oldPrec = Printer::setPrecision(5);
     println(level, cName << setw(12) << n << setw(17) << t);
-    TelePrompter::setPrecision(oldPrec);
+    Printer::setPrecision(oldPrec);
 }
 
-void TelePrompter::init(int printLevel, bool teletype, const char *fil) {
+void Printer::init(int printLevel, bool teletype, const char *fil) {
     SET_PRINT_PRECISION(15);
     cout << scientific << setprecision(14);
 

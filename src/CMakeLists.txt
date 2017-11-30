@@ -42,7 +42,7 @@ add_library(mrcpp STATIC
     SerialFunctionTree.cpp
     SerialOperatorTree.cpp
     SerialTree.cpp
-    TelePrompter.cpp
+    Printer.cpp
     TreeBuilder.cpp
     parallel.cpp
 )

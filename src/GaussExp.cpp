@@ -11,7 +11,7 @@
 #include "Gaussian.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "MathUtils.h"
 
 using namespace std;

@@ -52,7 +52,7 @@ void DerivativeCalculator<D>::clearTimers() {
 
 template<int D>
 void DerivativeCalculator<D>::printTimers() const {
-    int oldprec = TelePrompter::setPrecision(1);
+    int oldprec = Printer::setPrecision(1);
     int nThreads = omp_get_max_threads();
     printout(20, endl);
     printout(20, endl << "thread ");
@@ -73,7 +73,7 @@ void DerivativeCalculator<D>::printTimers() const {
     }
     printout(20, endl);
     printout(20, endl);
-    TelePrompter::setPrecision(oldprec);
+    Printer::setPrecision(oldprec);
 }
 
 template<int D>

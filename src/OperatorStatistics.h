@@ -5,7 +5,7 @@
 
 #include "mrcpp_declarations.h"
 
-#include "TelePrompter.h"
+#include "Printer.h"
 
 template<int D>
 class OperatorStatistics {

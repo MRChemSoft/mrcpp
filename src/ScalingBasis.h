@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "constants.h"
 #include "Polynomial.h"
 

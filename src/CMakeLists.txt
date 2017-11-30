@@ -32,7 +32,7 @@ add_library(mrcpp STATIC
     OperatorStatistics.cpp
     OperatorTree.cpp
     PHCalculator.cpp
-    Plot.cpp
+    Plotter.cpp
     PoissonKernel.cpp
     Polynomial.cpp
     ProjectedNode.cpp

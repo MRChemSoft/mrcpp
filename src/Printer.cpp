@@ -13,9 +13,71 @@
 using namespace std;
 
 static ofstream tp_outfile;
-int Printer::printLevel = 0;
+int Printer::printLevel = -1;
 int Printer::precision = 12;
 std::ostream *Printer::out = &std::cout;
+
+void Printer::init(int level, const char *file) {
+    int mpi_rank = mpiOrbRank;
+    int mpi_size = mpiOrbSize;
+    if (file != 0) {
+        stringstream fname;
+        if (mpi_size > 1) {
+            fname << file << "-" << mpi_rank << ".out";
+        } else {
+            fname << file << ".out";
+        }
+        if (not fname.str().empty()) {
+            tp_outfile.open(fname.str().c_str());
+            setOutputStream(tp_outfile);
+        }
+    } else {
+        if (mpi_rank > 0) {
+            setPrintLevel(-1); // Higher ranks be quiet
+        }
+    }
+    setScientific();
+    setPrintLevel(level);
+}
+
+void Printer::printEnvironment(int level) {
+    printout(level, endl);
+    printSeparator(level, '-', 1);
+    println(level, " MRCPP version   : " << PROGRAM_VERSION);
+    println(level, " Git revision    : " << GIT_REVISION << endl);
+    println(level, " Print level     : " << getPrintLevel());
+
+#ifdef HAVE_BLAS
+    println(level, " Linear algebra  : BLAS");
+#else
+    println(level, " Linear algebra  : EIGEN");
+#endif
+
+    int nHosts = mpiOrbSize;
+    int nThreads = omp_get_max_threads();
+#ifdef HAVE_MPI
+#ifdef HAVE_OPENMP
+    println(level, " Parallelization : MPI/OpenMP");
+    println(level, " - MPI hosts     : " << nHosts);
+    println(level, " - OMP threads   : " << nThreads);
+    println(level, " - Total cores   : " << nThreads*nHosts);
+#else
+    println(level, " Parallelization : MPI");
+    println(level, " - MPI hosts     : " << nHosts);
+#endif
+#else
+#ifdef HAVE_OPENMP
+    println(level, " Parallelization : OpenMP");
+    println(level, " - OMP threads   : " << nThreads);
+#else
+    println(level, " Parallelization : NONE");
+#endif
+#endif
+
+    printout(level, endl);
+    printSeparator(level, '-', 2);
+}
+
 
 void Printer::printSeparator(int level, const char &sep, int newlines) {
     int N = 60;
@@ -26,6 +88,7 @@ void Printer::printSeparator(int level, const char &sep, int newlines) {
         printout(level, endl);
     }
 }
+
 void Printer::printHeader(int level, const string &str, int newlines) {
     int N = 60;
     int len = str.size();
@@ -68,37 +131,15 @@ void Printer::printTree(int level, const std::string &name, int n, double t) {
     Printer::setPrecision(oldPrec);
 }
 
-void Printer::init(int printLevel, bool teletype, const char *fil) {
-    SET_PRINT_PRECISION(15);
-    cout << scientific << setprecision(14);
+int Printer::setPrintLevel(int i) {
+    int oldLevel = printLevel;
+    printLevel = i;
+    return oldLevel;
+}
 
-    int rank=mpiOrbRank;
-    int world_size = 1;
-    SET_PRINT_LEVEL(printLevel);
-    if (teletype and fil != 0) {
-        stringstream fname;
-        if (rank == 0) {
-            if (printLevel < 0) {
-                if (world_size > 1) {
-                    fname << fil << "-" << rank << ".out";
-                } else {
-                    fname << fil << ".out";
-                }
-            }
-        } else {
-            fname << fil << "-" << rank << ".out";
-        }
-
-        if (printLevel < 0) {
-            SET_PRINT_LEVEL(-printLevel);
-        }
-        if (not fname.str().empty()) {
-            tp_outfile.open(fname.str().c_str());
-            SET_MESSAGE_STREAM(tp_outfile);
-        }
-    } else {
-        if (rank > 0) {
-            SET_PRINT_LEVEL(-10);
-        }
-    }
+int Printer::setPrecision(int i) {
+    int oldPrec = precision;
+    precision = i;
+    *out << std::setprecision(i);
+    return oldPrec;
 }

@@ -440,6 +440,14 @@ double GaussExp<3>::calcCoulombEnergy() {
     return energy;
 }
 
+template<int D>
+void GaussExp<D>::setDefaultScreening(double screen) {
+    if (screen < 0) {
+        MSG_ERROR("Screening constant cannot be negative!");
+    }
+    defaultScreening = screen;
+}
+
 
 template class GaussExp<1>;
 template class GaussExp<2>;

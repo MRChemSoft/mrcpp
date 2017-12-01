@@ -17,6 +17,18 @@ extern "C" {
 using namespace std;
 using namespace Eigen;
 
+/** Calculate \f$ m^e\f$ for integers. */
+int MathUtils::ipow(int m, int e) {
+    if (e < 0) {
+        MSG_FATAL("Exponent cannot be negative: " << e)
+    }
+    int result = 1;
+    for (int i=0; i < e; i++) {
+        result *= m;
+    }
+    return result;
+}
+
 /** Compute the norm of a matrix given as a vector
  *
  * The norm of the matrix is computed by iterating the following operation:

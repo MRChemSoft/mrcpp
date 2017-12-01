@@ -12,6 +12,7 @@
 
 #include "HelmholtzKernel.h"
 #include "GaussFunc.h"
+#include "Printer.h"
 
 using namespace std;
 

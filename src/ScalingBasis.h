@@ -2,32 +2,16 @@
 
 #include <vector>
 
-#include "Printer.h"
 #include "constants.h"
+
 #include "Polynomial.h"
 
 class ScalingBasis {
 public:
-    ScalingBasis(int k, int t)
-            : type(t),
-              order(k) {
-        if (this->order < 1) MSG_FATAL("Invalid scaling order");
-        int q_order = getQuadratureOrder();
-        this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
-        this->cvMap = Eigen::MatrixXd::Zero(q_order, q_order);
-        this->vcMap = Eigen::MatrixXd::Zero(q_order, q_order);
-    }
+    ScalingBasis(int k, int t);
     virtual ~ScalingBasis() { }
 
-    void evalf(const double *r, Eigen::MatrixXd &vals) const {
-        if (vals.rows() != this->funcs.size()) MSG_ERROR("Invalid argument");
-
-        for (int d = 0; d < vals.cols(); d++) {
-            for (int k = 0; k < vals.rows(); k++) {
-                vals(k, d) = getFunc(k).evalf(r[d]);
-            }
-        }
-    }
+    void evalf(const double *r, Eigen::MatrixXd &vals) const;
 
     Polynomial &getFunc(int k) { return this->funcs[k]; }
     const Polynomial &getFunc(int k) const { return this->funcs[k]; }
@@ -37,24 +21,10 @@ public:
     int getQuadratureOrder() const { return this->order + 1; }
 
     const Eigen::MatrixXd &getQuadratureValues() const { return this->quadVals; }
-    const Eigen::MatrixXd &getCVMap(int operation) const {
-        if (operation == Forward) {
-            return this->cvMap;
-        } else {
-            return this->vcMap;
-        }
-    }
+    const Eigen::MatrixXd &getCVMap(int operation) const;
 
-    bool operator==(const ScalingBasis &basis) const {
-        if (this->type != basis.type) return false;
-        if (this->order != basis.order) return false;
-        return true;
-    }
-    bool operator!=(const ScalingBasis &basis) const {
-        if (this->type != basis.type) return true;
-        if (this->order != basis.order) return true;
-        return false;
-    }
+    bool operator==(const ScalingBasis &basis) const;
+    bool operator!=(const ScalingBasis &basis) const;
 
     friend std::ostream& operator<<(std::ostream &o, const ScalingBasis &bas) {
         o << " polynomial order = " << bas.getScalingOrder() << std::endl;
@@ -67,6 +37,7 @@ public:
         }
         return o;
     }
+
 protected:
     const int type;
     const int order;

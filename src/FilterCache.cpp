@@ -9,6 +9,8 @@
  */
 
 #include "FilterCache.h"
+#include "Printer.h"
+
 #include "constants.h"
 
 using namespace std;

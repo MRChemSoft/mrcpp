@@ -12,6 +12,7 @@
 #include "GaussPoly.h"
 #include "GaussFunc.h"
 #include "GaussExp.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

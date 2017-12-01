@@ -1,0 +1,9 @@
+#include "MWConvolution.h"
+#include "PoissonOperator.h"
+#include "HelmholtzOperator.h"
+#include "DerivativeConvolution.h"
+#include "IdentityConvolution.h"
+
+#include "MWDerivative.h"
+#include "ABGVOperator.h"
+#include "PHOperator.h"

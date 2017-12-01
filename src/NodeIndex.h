@@ -8,8 +8,6 @@
 
 #include <iostream>
 
-#include "Printer.h"
-
 template<int D> class NodeIndexComp;
 
 template<int D>
@@ -28,7 +26,7 @@ public:
     inline void setTranslation(const int *l);
 
     int getScale() const { return this->N; }
-    int getTranslation(int d) const { assert(d >= 0 or d < D); return this->L[d]; }
+    int getTranslation(int d) const { return this->L[d]; }
     int *getTranslation() { return this->L; }
     const int *getTranslation() const { return this->L; }
 

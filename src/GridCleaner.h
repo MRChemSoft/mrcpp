@@ -1,7 +1,8 @@
 #pragma once
 
-#include "WaveletAdaptor.h"
+#include "TreeBuilder.h"
 #include "DefaultCalculator.h"
+#include "WaveletAdaptor.h"
 
 template<int D>
 class GridCleaner {

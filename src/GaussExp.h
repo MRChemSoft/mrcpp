@@ -17,13 +17,11 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 #include "RepresentableFunction.h"
 
-template<int D> class Gaussian;
-template<int D> class GaussFunc;
-template<int D> class GaussPoly;
-template<int D> class NodeIndex;
+#include "mrcpp_declarations.h"
 
 #define GAUSS_EXP_PREC 1.e-10
 
@@ -87,18 +85,12 @@ public:
     void setFunc(int i, const GaussPoly<D> &g, double c = 1.0);
     void setFunc(int i, const GaussFunc<D> &g, double c = 1.0);
 
+    void setDefaultScreening(double screen);
     void setScreen(bool screen);
     void setExp(int i, double a) { this->funcs[i]->setExp(a); }
     void setCoef(int i, double b) { this->funcs[i]->setCoef(b); }
     void setPower(int i, const int power[D]) { this->funcs[i]->setPower(power); }
     void setPos(int i, const double pos[D]) { this->funcs[i]->setPos(pos); }
-
-    void setDefaultScreening(double screen) {
-        if (screen < 0) {
-            MSG_ERROR("Screening constant cannot be negative!");
-        }
-        defaultScreening = screen;
-    }
 
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);
@@ -111,6 +103,7 @@ public:
         }
         return o;
     }
+
 protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;

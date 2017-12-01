@@ -1,6 +1,7 @@
 #include "SerialOperatorTree.h"
 #include "OperatorTree.h"
 #include "OperatorNode.h"
+#include "Printer.h"
 
 using namespace std;
 

@@ -10,23 +10,11 @@
 #pragma GCC system_header
 #include <Eigen/Eigenvalues>
 
-#include "Printer.h"
-
 class MathUtils {
 public:
     static double binomialCoeff(int n, int j);
     static double factorial(int n);
-    /** Calculate \f$ m^e\f$ for integers. */
-    static int ipow(int m, int e) {
-        if (e < 0) {
-            MSG_FATAL("Exponent cannot be negative: " << e)
-        }
-        int result = 1;
-        for (int i=0; i < e; i++) {
-            result *= m;
-        }
-        return result;
-    }
+    static int ipow(int m, int e);
 
     static Eigen::MatrixXd hermitianMatrixPow(Eigen::MatrixXd A, double b);
     static Eigen::MatrixXd diagonalizeHermitianMatrix(Eigen::MatrixXd &A);

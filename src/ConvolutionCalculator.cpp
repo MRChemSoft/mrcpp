@@ -5,6 +5,7 @@
 #include "OperatorNode.h"
 #include "BandWidth.h"
 #include "Timer.h"
+#include "Printer.h"
 #include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS
@@ -43,14 +44,20 @@ template<int D>
 void ConvolutionCalculator<D>::initTimers() {
     int nThreads = omp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
-        this->band_t.push_back(Timer(false));
-        this->calc_t.push_back(Timer(false));
-        this->norm_t.push_back(Timer(false));
+        this->band_t.push_back(new Timer(false));
+        this->calc_t.push_back(new Timer(false));
+        this->norm_t.push_back(new Timer(false));
     }
 }
 
 template<int D>
 void ConvolutionCalculator<D>::clearTimers() {
+    int nThreads = omp_get_max_threads();
+    for (int i = 0; i < nThreads; i++) {
+        delete this->band_t[i];
+        delete this->calc_t[i];
+        delete this->norm_t[i];
+    }
     this->band_t.clear();
     this->calc_t.clear();
     this->norm_t.clear();
@@ -67,15 +74,15 @@ void ConvolutionCalculator<D>::printTimers() const {
     }
     printout(20, endl << "band     ");
     for (int i = 0; i < nThreads; i++) {
-        printout(20, this->band_t[i].getWallTime() << "  ");
+        printout(20, this->band_t[i]->getWallTime() << "  ");
     }
     printout(20, endl << "calc     ");
     for (int i = 0; i < nThreads; i++) {
-        printout(20, this->calc_t[i].getWallTime() << "  ");
+        printout(20, this->calc_t[i]->getWallTime() << "  ");
     }
     printout(20, endl << "norm     ");
     for (int i = 0; i < nThreads; i++) {
-        printout(20, this->norm_t[i].getWallTime() << "  ");
+        printout(20, this->norm_t[i]->getWallTime() << "  ");
     }
     printout(20, endl);
     printout(20, endl);
@@ -206,9 +213,9 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
-    this->band_t[omp_get_thread_num()].resume();
+    this->band_t[omp_get_thread_num()]->resume();
     MWNodeVector *fBand = makeOperBand(gNode);
-    this->band_t[omp_get_thread_num()].stop();
+    this->band_t[omp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
@@ -218,7 +225,7 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     }
     os.gThreshold = gThrs;
 
-    this->calc_t[omp_get_thread_num()].resume();
+    this->calc_t[omp_get_thread_num()]->resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D> &fNode = *(*fBand)[n];
         os.setFNode(fNode);
@@ -236,11 +243,11 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
             }
         }
     }
-    this->calc_t[omp_get_thread_num()].stop();
+    this->calc_t[omp_get_thread_num()]->stop();
 
-    this->norm_t[omp_get_thread_num()].resume();
+    this->norm_t[omp_get_thread_num()]->resume();
     gNode.calcNorms();
-    this->norm_t[omp_get_thread_num()].stop();
+    this->norm_t[omp_get_thread_num()]->stop();
     delete fBand;
 }
 

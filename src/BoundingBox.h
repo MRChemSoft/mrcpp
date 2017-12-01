@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <iomanip>
+
 #include "NodeIndex.h"
 
 template<int D>
@@ -76,7 +78,6 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
 
 template<int T>
 std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
-    int oldprec = Printer::setPrecision(5);
     o << std::fixed;
     o << " unit length      = " << box.getUnitLength() << std::endl;
     o << " total boxes      = " << box.size() << std::endl;
@@ -101,7 +102,6 @@ std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
     }
     o << "]";
     o << std::scientific;
-    Printer::setPrecision(oldprec);
     return o;
 }
 

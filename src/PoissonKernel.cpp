@@ -12,6 +12,7 @@
 
 #include "PoissonKernel.h"
 #include "GaussFunc.h"
+#include "Printer.h"
 
 /** generate an approximation of the 3d poisson kernel expanded in
  * gaussian functions this routine assumes that the expansion be centered

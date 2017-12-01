@@ -78,6 +78,7 @@ void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode,
     }
 }
 
+
 template class OperatorStatistics<1>;
 template class OperatorStatistics<2>;
 template class OperatorStatistics<3>;

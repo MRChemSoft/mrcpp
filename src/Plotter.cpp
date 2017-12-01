@@ -1,7 +1,9 @@
 #include "Plotter.h"
 #include "RepresentableFunction.h"
 #include "FunctionTree.h"
+#include "MWNode.h"
 #include "MathUtils.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -1,6 +1,7 @@
 #include "CrossCorrelationCalculator.h"
 #include "FunctionTree.h"
 #include "MWNode.h"
+#include "Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

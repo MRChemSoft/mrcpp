@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Printer.h"
+#include "mrcpp_declarations.h"
+
+#include "MWNode.h"
 
 template<int D>
 class TreeAdaptor {

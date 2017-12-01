@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include "PHCalculator.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

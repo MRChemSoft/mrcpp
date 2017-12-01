@@ -3,6 +3,7 @@
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
 #include "MWNode.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

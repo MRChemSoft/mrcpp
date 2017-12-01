@@ -1,6 +1,7 @@
 #include "ConvolutionOperator.h"
 #include "CrossCorrelationCalculator.h"
 #include "OperatorAdaptor.h"
+#include "TreeBuilder.h"
 #include "GridGenerator.h"
 #include "MWProjector.h"
 #include "OperatorTree.h"
@@ -8,6 +9,8 @@
 #include "Gaussian.h"
 #include "BandWidth.h"
 #include "MathUtils.h"
+#include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

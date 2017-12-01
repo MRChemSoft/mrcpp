@@ -2,9 +2,13 @@ include(DefaultPathsMRCPP)
 
 add_library(mrcpp STATIC 
     ABGVCalculator.cpp
+    ABGVOperator.cpp
+    BandWidth.cpp
     BoundingBox.cpp
+    BoysFunction.cpp
     ConvolutionCalculator.cpp
     ConvolutionOperator.cpp
+    CopyAdaptor.cpp
     CrossCorrelation.cpp
     CrossCorrelationCache.cpp
     CrossCorrelationCalculator.cpp
@@ -12,12 +16,16 @@ add_library(mrcpp STATIC
     FilterCache.cpp
     FunctionNode.cpp
     FunctionTree.cpp
+    FunctionTreeVector.cpp
     GaussExp.cpp
     GaussFunc.cpp
     GaussPoly.cpp
     GaussQuadrature.cpp
     Gaussian.cpp
+    GenNode.cpp
+    GridGenerator.cpp
     HelmholtzKernel.cpp
+    HelmholtzOperator.cpp
     HilbertPath.cpp
     InterpolatingBasis.cpp
     LegendreBasis.cpp
@@ -26,24 +34,36 @@ add_library(mrcpp STATIC
     MWNode.cpp
     MWOperator.cpp
     MWTree.cpp
+    MWProjector.cpp
+    MWDerivative.cpp
+    MWConvolution.cpp
+    MWAdder.cpp
+    MWMultiplier.cpp
     MathUtils.cpp
+    MultiResolutionAnalysis.cpp
     NodeBox.cpp
+    ObjectCache.cpp
     OperatorNode.cpp
     OperatorStatistics.cpp
     OperatorTree.cpp
     PHCalculator.cpp
+    PHOperator.cpp
     Plotter.cpp
     PoissonKernel.cpp
+    PoissonOperator.cpp
     Polynomial.cpp
     ProjectedNode.cpp
     ProjectionCalculator.cpp
     QuadratureCache.cpp
     RepresentableFunction.cpp
+    ScalingBasis.cpp
     SerialFunctionTree.cpp
     SerialOperatorTree.cpp
     SerialTree.cpp
     Printer.cpp
+    Timer.cpp
     TreeBuilder.cpp
+    TreeIterator.cpp
     parallel.cpp
 )
 

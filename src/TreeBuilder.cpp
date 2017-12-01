@@ -4,6 +4,7 @@
 #include "MWTree.h"
 #include "MWNode.h"
 #include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
 

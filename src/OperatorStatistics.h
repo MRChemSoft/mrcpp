@@ -2,10 +2,9 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
+#include <iomanip>
 
 #include "mrcpp_declarations.h"
-
-#include "Printer.h"
 
 template<int D>
 class OperatorStatistics {
@@ -26,7 +25,6 @@ public:
         o << "  By components:" << std::endl << *os.totCompCount << std::endl;
         return o;
     }
-
 protected:
     int nThreads;
     int totFCount;

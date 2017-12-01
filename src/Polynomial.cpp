@@ -9,6 +9,7 @@
 
 #include "Polynomial.h"
 #include "MathUtils.h"
+#include "Printer.h"
 
 using namespace Eigen;
 using namespace std;

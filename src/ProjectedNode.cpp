@@ -1,7 +1,37 @@
 #include "ProjectedNode.h"
+#include "SerialTree.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+
+template<int D>
+void ProjectedNode<D>::createChildren() {
+    MWNode<D>::createChildren();
+    this->clearIsEndNode();
+}
+
+template<int D>
+void ProjectedNode<D>::genChildren() {
+    if (this->isBranchNode()) MSG_FATAL("Node already has children");
+    this->tree->getSerialTree()->allocGenChildren(*this);
+    this->setIsBranchNode();
+}
+
+template<int D>
+void ProjectedNode<D>::deleteChildren() {
+    MWNode<D>::deleteChildren();
+    this->setIsEndNode();
+}
+
+template<int D>
+void ProjectedNode<D>::dealloc() {
+#ifdef HAVE_OPENMP
+    omp_destroy_lock(&this->node_lock);
+#endif
+    this->tree->decrementNodeCount(this->getScale());
+    this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+}
 
 /** Update the coefficients of the node by a mw transform of the scaling
   * coefficients of the children. Option to overwrite or add up existing

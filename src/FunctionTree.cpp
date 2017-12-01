@@ -8,6 +8,7 @@
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
 #include "HilbertIterator.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

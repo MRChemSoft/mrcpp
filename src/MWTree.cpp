@@ -8,6 +8,7 @@
 #include "MultiResolutionAnalysis.h"
 #include "HilbertIterator.h"
 #include "MathUtils.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
@@ -484,6 +485,16 @@ void MWTree<D>::deleteGenerated() {
     for (int n = 0; n < getNEndNodes(); n++) {
         getEndMWNode(n).deleteGenerated();
     }
+}
+
+template<int D>
+bool MWTree<D>::saveTree(const string &file) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+template<int D>
+bool MWTree<D>::loadTree(const string &file) {
+    NOT_IMPLEMENTED_ABORT;
 }
 
 template class MWTree<1>;

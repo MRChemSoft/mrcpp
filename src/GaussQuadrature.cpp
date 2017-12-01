@@ -3,6 +3,7 @@
 
 #include "GaussQuadrature.h"
 #include "LegendrePoly.h"
+#include "Printer.h"
 #include "macros.h"
 #include "constants.h"
 

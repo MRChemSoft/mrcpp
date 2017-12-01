@@ -4,11 +4,13 @@
 
 #include "MWNode.h"
 #include "MWTree.h"
+#include "SerialTree.h"
 #include "ProjectedNode.h"
 #include "MathUtils.h"
 #include "QuadratureCache.h"
 #include "GenNode.h"
 #include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
@@ -86,6 +88,11 @@ MWNode<D>::~MWNode() {
 #ifdef HAVE_OPENMP
     omp_destroy_lock(&node_lock);
 #endif
+}
+
+template<int D>
+void MWNode<D>::dealloc() {
+    NOT_REACHED_ABORT;
 }
 
 /** Allocate the coefs vector. Only used by loose nodes. */
@@ -520,6 +527,11 @@ void MWNode<D>::createChildren() {
     if (this->isBranchNode()) MSG_FATAL("Node already has children");
     this->getMWTree().getSerialTree()->allocChildren(*this);
     this->setIsBranchNode();
+}
+
+template<int D>
+void MWNode<D>::genChildren() {
+    NOT_REACHED_ABORT;
 }
 
 /** Recursive deallocation of children and all their descendants.

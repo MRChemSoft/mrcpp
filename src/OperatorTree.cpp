@@ -4,6 +4,7 @@
 #include "SerialTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
+#include "Printer.h"
 
 using namespace Eigen;
 using namespace std;

@@ -1,13 +1,25 @@
-#ifndef MWREPR_DECLARATIONS_H_
-#define MWREPR_DECLARATIONS_H_
+#pragma once
 
 #include <vector>
 #include <set>
+
+class Timer;
+class Printer;
+template<int D> class Plotter;
+
+template <int D> class Gaussian;
+template <int D> class GaussFunc;
+template <int D> class GaussPoly;
+template <int D> class GaussExp;
 
 template <int D> class BoundingBox;
 template <int D> class NodeBox;
 template <int D> class NodeIndex;
 template <int D> class NodeIndexComp;
+
+class ScalingBasis;
+class LegendreBasis;
+class InterpolatingBasis;
 
 template <int D> class RepresentableFunction;
 template <int D> class MultiResolutionAnalysis;
@@ -16,6 +28,7 @@ template <int D> class MWTree;
 template <int D> class FunctionTree;
 template <int D> class FunctionTreeVector;
 class OperatorTree;
+template <int D> class SerialTree;
 template <int D> class SerialFunctionTree;
 class SerialOperatorTree;
 
@@ -75,4 +88,3 @@ template <int D> class OperatorState;
 #define MWNodeVector std::vector<MWNode<D> *>
 #define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
 
-#endif /* MWREPR_DECLARATIONS_H_*/

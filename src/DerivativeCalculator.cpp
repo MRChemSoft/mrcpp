@@ -5,6 +5,7 @@
 #include "FunctionTree.h"
 #include "BandWidth.h"
 #include "Timer.h"
+#include "Printer.h"
 #include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS

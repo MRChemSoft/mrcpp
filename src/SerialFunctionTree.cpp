@@ -2,6 +2,7 @@
 #include "FunctionTree.h"
 #include "ProjectedNode.h"
 #include "GenNode.h"
+#include "Printer.h"
 
 using namespace std;
 

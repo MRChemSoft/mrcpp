@@ -6,7 +6,8 @@
 
 #pragma once
 
-#include "Printer.h"
+#include <iostream>
+
 #include "constants.h"
 
 template<int D>
@@ -48,6 +49,7 @@ public:
         o << "]" << std::endl;
         return o;
     }
+
 protected:
     bool bounded;
     double *A; ///< Lower bound, NULL if unbounded

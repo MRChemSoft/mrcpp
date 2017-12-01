@@ -11,8 +11,8 @@
 #include "macros.h"
 
 #include "MWTree.h"
+#include "NodeIndex.h"
 #include "HilbertPath.h"
-#include "SerialTree.h"
 
 #ifdef HAVE_OPENMP
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
@@ -24,8 +24,6 @@
 #define UNSET_NODE_LOCK()
 #define TEST_NODE_LOCK() false
 #endif
-
-template<int D> class SerialFunctionTree;
 
 template<int D>
 class MWNode {
@@ -101,7 +99,7 @@ public:
     void clearNorms();
 
     virtual void createChildren();
-    virtual void genChildren() { NOT_REACHED_ABORT; }
+    virtual void genChildren();
     virtual void deleteChildren();
 
     virtual void cvTransform(int kind);
@@ -153,7 +151,7 @@ protected:
     int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     MWNode();
-    virtual void dealloc() { NOT_REACHED_ABORT; }
+    virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
     double getScaleFactor(double splitFac, bool absPrec) const;

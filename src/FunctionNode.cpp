@@ -1,6 +1,7 @@
 #include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "MathUtils.h"
+#include "Printer.h"
 #include "QuadratureCache.h"
 
 #ifdef HAVE_BLAS

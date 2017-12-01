@@ -10,10 +10,8 @@
 #include "parallel.h"
 #include "mrcpp_declarations.h"
 
-#include "NodeBox.h"
-#include "MWNode.h"
 #include "MultiResolutionAnalysis.h"
-#include "SerialTree.h"
+#include "NodeBox.h"
 
 #ifdef HAVE_OPENMP
 #define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
@@ -92,8 +90,8 @@ public:
 
     int getNThreads() const { return this->nThreads; }
 
-    virtual bool saveTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
-    virtual bool loadTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
+    virtual bool saveTree(const std::string &file);
+    virtual bool loadTree(const std::string &file);
 
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);

@@ -6,65 +6,21 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
-
-#include <iostream>
+#include <iomanip>
 
 class BandWidth {
 public:
-    BandWidth(int depth = 0)
-            : widths(depth + 1, 5) {
-        this->clear();
-    }
-    BandWidth &operator=(const BandWidth &bw) {
-        this->widths = bw.widths;
-        return *this;
-    }
+    BandWidth(int depth = 0) : widths(depth + 1, 5) { this->clear(); }
+    BandWidth &operator=(const BandWidth &bw);
     virtual ~BandWidth() { }
 
-    void clear() {
-        this->widths.setConstant(-1);
-    }
+    void clear() { this->widths.setConstant(-1); }
 
-    int getDepth() const {
-        return this->widths.rows() - 1;
-    }
-
-    bool isEmpty(int depth) const {
-        if (depth > getDepth()) {
-            return true;
-        }
-        if (this->widths(depth, 4) < 0) {
-            return true;
-        }
-        return false;
-    }
-
-    int getWidth(int depth, int index) const {
-        assert(depth >= 0);
-        assert(index >= 0 and index < 4);
-        if (depth > getDepth()) { // No bw at requested depth
-            return -1;
-        }
-        return this->widths(depth, index);
-    }
-
-    int getMaxWidth(int depth) const {
-        assert(depth >= 0);
-        if (depth > getDepth()) { // No bw at requested depth
-            return -1;
-        }
-        return this->widths(depth, 4);
-    }
-
-    void setWidth(int depth, int index, int wd) {
-        assert(depth >= 0 and depth < getDepth());
-        assert(index >= 0 and index < 4);
-        assert(wd >= 0);
-        this->widths(depth, index) = wd;
-        if (wd > this->widths(depth, 4)) {
-            this->widths(depth, 4) = wd;
-        }
-    }
+    bool isEmpty(int depth) const;
+    int getDepth() const { return this->widths.rows() - 1; }
+    int getMaxWidth(int depth) const;
+    int getWidth(int depth, int index) const;
+    void setWidth(int depth, int index, int wd);
 
     friend std::ostream& operator<<(std::ostream &o, const BandWidth &bw) {
         o << "  *BandWidths:" << std::endl;

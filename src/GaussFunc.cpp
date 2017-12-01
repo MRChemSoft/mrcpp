@@ -14,6 +14,7 @@
 #include "GaussPoly.h"
 #include "Polynomial.h"
 #include "MathUtils.h"
+#include "Printer.h"
 #include "BoysFunction.h"
 
 using namespace Eigen;

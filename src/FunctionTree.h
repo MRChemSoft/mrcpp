@@ -5,9 +5,7 @@
 
 #pragma once
 
-#include "TreeBuilder.h"
 #include "MWTree.h"
-#include "SerialFunctionTree.h"
 
 template<int D>
 class FunctionTree: public MWTree<D> {

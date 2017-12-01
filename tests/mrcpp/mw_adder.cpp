@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+#include "FunctionTreeVector.h"
 #include "GridGenerator.h"
 #include "MWProjector.h"
 #include "MWAdder.h"

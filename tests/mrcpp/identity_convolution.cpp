@@ -2,6 +2,7 @@
 
 #include "factory_functions.h"
 #include "MWProjector.h"
+#include "TreeBuilder.h"
 #include "IdentityConvolution.h"
 #include "IdentityKernel.h"
 #include "OperatorTree.h"

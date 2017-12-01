@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+#include "MWNode.h"
 
 namespace mw_tree {
 

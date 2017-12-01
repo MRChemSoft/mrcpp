@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 #include "PoissonOperator.h"
+#include "PoissonKernel.h"
+#include "TreeBuilder.h"
 #include "MWOperator.h"
 #include "MWConvolution.h"
 #include "OperatorAdaptor.h"

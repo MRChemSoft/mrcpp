@@ -1,7 +1,9 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+#include "TreeBuilder.h"
 #include "HelmholtzOperator.h"
+#include "HelmholtzKernel.h"
 #include "MWOperator.h"
 #include "MWConvolution.h"
 #include "OperatorAdaptor.h"

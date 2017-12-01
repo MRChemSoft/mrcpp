@@ -9,6 +9,7 @@
 #include "FunctionTree.h"
 #include "GridGenerator.h"
 #include "GaussFunc.h"
+#include "Printer.h"
 
 template<class T> void finalize(T **obj) {
     if (obj == 0) MSG_FATAL("Invalid argument");

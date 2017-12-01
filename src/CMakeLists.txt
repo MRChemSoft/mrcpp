@@ -32,7 +32,7 @@ add_library(mrcpp STATIC
     OperatorStatistics.cpp
     OperatorTree.cpp
     PHCalculator.cpp
-    Plot.cpp
+    Plotter.cpp
     PoissonKernel.cpp
     Polynomial.cpp
     ProjectedNode.cpp
@@ -42,7 +42,7 @@ add_library(mrcpp STATIC
     SerialFunctionTree.cpp
     SerialOperatorTree.cpp
     SerialTree.cpp
-    TelePrompter.cpp
+    Printer.cpp
     TreeBuilder.cpp
     parallel.cpp
 )

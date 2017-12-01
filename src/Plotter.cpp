@@ -1,4 +1,4 @@
-#include "Plot.h"
+#include "Plotter.h"
 #include "RepresentableFunction.h"
 #include "FunctionTree.h"
 #include "MathUtils.h"
@@ -7,7 +7,7 @@ using namespace std;
 using namespace Eigen;
 
 
-/** Plot constructor
+/** Plotter constructor
 
     Upper bound is placed BEFORE lower bound in argument list .
     Arguments:
@@ -16,14 +16,14 @@ using namespace Eigen;
     *a:			lower bound, default (0, 0, ... , 0)
 */
 template<int D>
-Plot<D>::Plot(int npts, const double *a, const double *b)
+Plotter<D>::Plotter(int npts, const double *a, const double *b)
         : fout(0),
           nPoints(npts) {
     setRange(a, b);
-    setSuffix(Plot<D>::Line, ".line");
-    setSuffix(Plot<D>::Surface, ".surf");
-    setSuffix(Plot<D>::Cube, ".cube");
-    setSuffix(Plot<D>::Grid, ".grid");
+    setSuffix(Plotter<D>::Line, ".line");
+    setSuffix(Plotter<D>::Surface, ".surf");
+    setSuffix(Plotter<D>::Cube, ".cube");
+    setSuffix(Plotter<D>::Grid, ".grid");
 }
 
 /** Set both bounds in one go
@@ -35,7 +35,7 @@ Plot<D>::Plot(int npts, const double *a, const double *b)
     *b:			upper bound, default (0, 0, ... , 0)
 */
 template<int D>
-void Plot<D>::setRange(const double *a, const double *b) {
+void Plotter<D>::setRange(const double *a, const double *b) {
     for (int d = 0; d < D; d++) {
         if (a == 0) {
             A[d] = 0.0;
@@ -55,7 +55,7 @@ void Plot<D>::setRange(const double *a, const double *b) {
     The number of points is restricted to be the same in all directions
 */
 template<int D>
-void Plot<D>::setNPoints(int npts) {
+void Plotter<D>::setNPoints(int npts) {
     if (npts <= 0) MSG_ERROR("Invalid number of points");
     this->nPoints = npts;
 }
@@ -72,7 +72,7 @@ void Plot<D>::setNPoints(int npts) {
     grid:    ".grid"
 */
 template<int D>
-void Plot<D>::setSuffix(int t, const string &s) {
+void Plotter<D>::setSuffix(int t, const string &s) {
     this->suffix.insert(pair<int, string>(t, s));
 }
 
@@ -84,13 +84,13 @@ void Plot<D>::setSuffix(int t, const string &s) {
     1000 points between the boundaries of the function).
 */
 template<int D>
-void Plot<D>::linePlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::linePlot(const RepresentableFunction<D> &func, const string &fname) {
     println(20, "----------Line Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcLineCoordinates();
     evaluateFunction(func);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Line];
+    file << fname << this->suffix[Plotter<D>::Line];
     openPlot(file.str());
     writeLineData();
     closePlot();
@@ -106,13 +106,13 @@ void Plot<D>::linePlot(const RepresentableFunction<D> &func, const string &fname
     will be distributed evenly in the two dimensions.
 */
 template<int D>
-void Plot<D>::surfPlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::surfPlot(const RepresentableFunction<D> &func, const string &fname) {
     println(20, "--------Surface Plot----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcSurfCoordinates();
     evaluateFunction(func);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Surface];
+    file << fname << this->suffix[Plotter<D>::Surface];
     openPlot(file.str());
     writeSurfData();
     closePlot();
@@ -128,13 +128,13 @@ void Plot<D>::surfPlot(const RepresentableFunction<D> &func, const string &fname
     will be distributed evenly in the three dimensions.
 */
 template<int D>
-void Plot<D>::cubePlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::cubePlot(const RepresentableFunction<D> &func, const string &fname) {
     println(20, "----------Cube Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcCubeCoordinates();
     evaluateFunction(func);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Cube];
+    file << fname << this->suffix[Plotter<D>::Cube];
     openPlot(file.str());
     writeCubeData();
     closePlot();
@@ -149,13 +149,13 @@ void Plot<D>::cubePlot(const RepresentableFunction<D> &func, const string &fname
     1000 points between the boundaries of the function).
 */
 template<int D>
-void Plot<D>::linePlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::linePlot(FunctionTree<D> &tree, const string &fname) {
     println(20, "----------Line Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcLineCoordinates();
     evaluateFunction(tree);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Line];
+    file << fname << this->suffix[Plotter<D>::Line];
     openPlot(file.str());
     writeLineData();
     closePlot();
@@ -171,13 +171,13 @@ void Plot<D>::linePlot(FunctionTree<D> &tree, const string &fname) {
     will be distributed evenly in the two dimensions.
 */
 template<int D>
-void Plot<D>::surfPlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::surfPlot(FunctionTree<D> &tree, const string &fname) {
     println(20, "--------Surface Plot----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcSurfCoordinates();
     evaluateFunction(tree);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Surface];
+    file << fname << this->suffix[Plotter<D>::Surface];
     openPlot(file.str());
     writeSurfData();
     closePlot();
@@ -193,13 +193,13 @@ void Plot<D>::surfPlot(FunctionTree<D> &tree, const string &fname) {
     will be distributed evenly in the three dimensions.
 */
 template<int D>
-void Plot<D>::cubePlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::cubePlot(FunctionTree<D> &tree, const string &fname) {
     println(20, "----------Cube Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcCubeCoordinates();
     evaluateFunction(tree);
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Cube];
+    file << fname << this->suffix[Plotter<D>::Cube];
     openPlot(file.str());
     writeCubeData();
     closePlot();
@@ -213,10 +213,10 @@ void Plot<D>::cubePlot(FunctionTree<D> &tree, const string &fname) {
     will print only	nodes owned by itself (pluss the rootNodes).
 */
 template<int D>
-void Plot<D>::gridPlot(const MWTree<D> &tree, const string &fname) {
+void Plotter<D>::gridPlot(const MWTree<D> &tree, const string &fname) {
     println(20, "----------Grid Plot-----------");
     stringstream file;
-    file << fname << this->suffix[Plot<D>::Grid];
+    file << fname << this->suffix[Plotter<D>::Grid];
     openPlot(file.str());
     writeGrid(tree);
     closePlot();
@@ -231,7 +231,7 @@ void Plot<D>::gridPlot(const MWTree<D> &tree, const string &fname) {
     1000 points between the boundaries of the function).
 */
 template<int D>
-Eigen::VectorXd &Plot<D>::linePlot(RepresentableFunction<D> &func) {
+Eigen::VectorXd &Plotter<D>::linePlot(RepresentableFunction<D> &func) {
     calcLineCoordinates();
     evaluateFunction(func);
     return this->values;
@@ -246,7 +246,7 @@ Eigen::VectorXd &Plot<D>::linePlot(RepresentableFunction<D> &func) {
     will be distributed evenly in the two dimensions.
 */
 template<int D>
-Eigen::VectorXd &Plot<D>::surfPlot(RepresentableFunction<D> &func) {
+Eigen::VectorXd &Plotter<D>::surfPlot(RepresentableFunction<D> &func) {
     calcSurfCoordinates();
     evaluateFunction(func);
     return this->values;
@@ -261,7 +261,7 @@ Eigen::VectorXd &Plot<D>::surfPlot(RepresentableFunction<D> &func) {
     will be distributed evenly in the three dimensions.
 */
 template<int D>
-Eigen::VectorXd &Plot<D>::cubePlot(RepresentableFunction<D> &func) {
+Eigen::VectorXd &Plotter<D>::cubePlot(RepresentableFunction<D> &func) {
     calcCubeCoordinates();
     evaluateFunction(func);
     return this->values;
@@ -274,7 +274,7 @@ Eigen::VectorXd &Plot<D>::cubePlot(RepresentableFunction<D> &func) {
     the matrix coords for later evaluation.
 */
 template<int D>
-void Plot<D>::calcLineCoordinates() {
+void Plotter<D>::calcLineCoordinates() {
     double step[D];
 
     if (this->nPoints <= 0) {
@@ -293,7 +293,7 @@ void Plot<D>::calcLineCoordinates() {
 }
 
 template<int D>
-void Plot<D>::calcSurfCoordinates() {
+void Plotter<D>::calcSurfCoordinates() {
     NOT_IMPLEMENTED_ABORT;
 //    if (D != 2) {
 //        MSG_ERROR("Cannot plot planes for dim != 2!");
@@ -327,7 +327,7 @@ void Plot<D>::calcSurfCoordinates() {
     evaluation.
 */
 template<>
-void Plot<3>::calcCubeCoordinates() {
+void Plotter<3>::calcCubeCoordinates() {
     int nPerDim = (int) floor(cbrt(this->nPoints));
     int nRealPoints = MathUtils::ipow(nPerDim, 3);
     this->coords = MatrixXd::Zero(nRealPoints, 3);
@@ -351,7 +351,7 @@ void Plot<3>::calcCubeCoordinates() {
 }
 
 template<int D>
-void Plot<D>::calcCubeCoordinates() {
+void Plotter<D>::calcCubeCoordinates() {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -362,7 +362,7 @@ void Plot<D>::calcCubeCoordinates() {
     in the vector "values".
 */
 template<int D>
-void Plot<D>::evaluateFunction(const RepresentableFunction<D> &func) {
+void Plotter<D>::evaluateFunction(const RepresentableFunction<D> &func) {
     int totNPoints = this->coords.rows();
     if (not (totNPoints > 0)) {
         MSG_ERROR("Coordinates not set, cannot evaluate");
@@ -385,7 +385,7 @@ void Plot<D>::evaluateFunction(const RepresentableFunction<D> &func) {
     in the vector "values".
 */
 template<int D>
-void Plot<D>::evaluateFunction(FunctionTree<D> &tree) {
+void Plotter<D>::evaluateFunction(FunctionTree<D> &tree) {
     int totNPoints = this->coords.rows();
     if (not (totNPoints > 0)) {
         MSG_ERROR("Coordinates not set, cannot evaluate");
@@ -409,7 +409,7 @@ void Plot<D>::evaluateFunction(FunctionTree<D> &tree) {
     value.
 */
 template<int D>
-void Plot<D>::writeLineData() {
+void Plotter<D>::writeLineData() {
     ostream &o = *this->fout;
     int totNPoints = this->coords.rows();
     for (int i = 0; i < totNPoints; i++) {
@@ -428,7 +428,7 @@ void Plot<D>::writeLineData() {
 }
 
 template<int D>
-void Plot<D>::writeSurfData() {
+void Plotter<D>::writeSurfData() {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -439,7 +439,7 @@ void Plot<D>::writeSurfData() {
     previously calculated (the "values" vector).
 */
 template<>
-void Plot<3>::writeCubeData() {
+void Plotter<3>::writeCubeData() {
     int np = 0;
     double max = -1.0e10;
     double min = 1.0e10;
@@ -489,12 +489,12 @@ void Plot<3>::writeCubeData() {
 }
 
 template<int D>
-void Plot<D>::writeCubeData() {
+void Plotter<D>::writeCubeData() {
     NOT_IMPLEMENTED_ABORT
 }
 
 template<>
-void Plot<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
+void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
     double origin[3] = {0, 0, 0};
     double length = pow(2.0, -node.getScale());
     ostream &o = *this->fout;
@@ -611,7 +611,7 @@ void Plot<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
 }
 
 template<int D>
-void Plot<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
+void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -622,7 +622,7 @@ void Plot<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
     Currently only working in 3D.
 */
 template<>
-void Plot<3>::writeGrid(const MWTree<3> &tree) {
+void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     ostream &o = *this->fout;
     o << "CQUAD" << endl;
     o.precision(6);
@@ -639,7 +639,7 @@ void Plot<3>::writeGrid(const MWTree<3> &tree) {
 }
 
 template<int D>
-void Plot<D>::writeGrid(const MWTree<D> &tree) {
+void Plotter<D>::writeGrid(const MWTree<D> &tree) {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -648,7 +648,7 @@ void Plot<D>::writeGrid(const MWTree<D> &tree) {
     Opens a file output stream fout for file named fname.
 */
 template<int D>
-void Plot<D>::openPlot(const string &fname) {
+void Plotter<D>::openPlot(const string &fname) {
     if (fname.empty()) {
         if (this->fout == 0) {
             MSG_ERROR("Plot file not set!");
@@ -675,7 +675,7 @@ void Plot<D>::openPlot(const string &fname) {
     Closes the file output stream fout.
 */
 template<int D>
-void Plot<D>::closePlot() {
+void Plotter<D>::closePlot() {
     if (this->fout != 0) this->fout->close();
     this->fout = 0;
 }
@@ -683,7 +683,7 @@ void Plot<D>::closePlot() {
 /** Checks the validity of the plotting range
 */
 template<int D>
-bool Plot<D>::verifyRange() {
+bool Plotter<D>::verifyRange() {
     for (int d = 0; d < D; d++) {
         if (this->A[d] > this->B[d]) {
             return false;
@@ -692,6 +692,6 @@ bool Plot<D>::verifyRange() {
     return true;
 }
 
-template class Plot<1>;
-template class Plot<2>;
-template class Plot<3>;
+template class Plotter<1>;
+template class Plotter<2>;
+template class Plotter<3>;

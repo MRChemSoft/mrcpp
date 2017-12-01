@@ -14,7 +14,7 @@
 #include "config.h"
 
 #include "CrossCorrelation.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;

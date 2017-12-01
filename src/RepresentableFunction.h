@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "constants.h"
 
 template<int D>

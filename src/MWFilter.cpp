@@ -14,7 +14,7 @@
 #include "config.h"
 
 #include "MWFilter.h"
-#include "TelePrompter.h"
+#include "Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

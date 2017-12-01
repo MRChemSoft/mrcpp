@@ -11,10 +11,10 @@
 #include "mrcpp_declarations.h"
 
 template<int D>
-class Plot {
+class Plotter {
 public:
-    Plot(int npts = 1000, const double *a = 0, const double *b = 0);
-    virtual ~Plot() { }
+    Plotter(int npts = 1000, const double *a = 0, const double *b = 0);
+    virtual ~Plotter() { }
 
     void setRange(const double *a, const double *b);
     void setNPoints(int npts);

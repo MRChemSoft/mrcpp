@@ -76,8 +76,8 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
 
 template<int T>
 std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
-    GET_PRINT_PRECISION(int pprec);
-    o << std::fixed << std::setprecision(5);
+    int oldprec = Printer::setPrecision(5);
+    o << std::fixed;
     o << " unit length      = " << box.getUnitLength() << std::endl;
     o << " total boxes      = " << box.size() << std::endl;
     o << " boxes            = [ ";
@@ -100,7 +100,8 @@ std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
         o << std::setw(11) << box.getBoxLength(i) << " ";
     }
     o << "]";
-    o << std::scientific << std::setprecision(pprec);
+    o << std::scientific;
+    Printer::setPrecision(oldprec);
     return o;
 }
 

@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "TelePrompter.h"
+#include "Printer.h"
 
 template<int D> class NodeIndexComp;
 

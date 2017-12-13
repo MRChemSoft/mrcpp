@@ -15,9 +15,9 @@ using namespace Eigen;
 /** FunctionTree constructor for Serial Tree.
   * */
 template<int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra)
+FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
         : MWTree<D> (mra) {
-    this->serialTree_p = new SerialFunctionTree<D>(this);
+    this->serialTree_p = new SerialFunctionTree<D>(this, sh_mem);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
 }

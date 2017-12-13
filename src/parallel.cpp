@@ -5,33 +5,60 @@
 #include "Printer.h"
 #include "Timer.h"
 
-mpi::communicator mpi::world;
-
 using namespace std;
+
+/** sh_size in MB
+ */
+#ifdef HAVE_MPI
+SharedMemory::SharedMemory(MPI_Comm &comm, int sh_size) {
+    int rank;
+    MPI_Comm_rank(comm, &rank);
+    // MPI_Aint types are used for adresses (can be larger than int)
+    MPI_Aint size = (rank == 0) ? 1024*1024*sh_size : 0; //rank 0 defines length of segment
+    int disp_unit = 16; //in order for the compiler to keep aligned
+    //size is in bytes
+    MPI_Win_allocate_shared(size, disp_unit, MPI_INFO_NULL, comm, &this->sh_start_ptr, &this->sh_win);
+    MPI_Win_fence(0, this->sh_win); //wait until finished
+    MPI_Aint qsize = 0;
+    int qdisp = 0;
+    MPI_Win_shared_query(this->sh_win, 0, &qsize, &qdisp, &this->sh_start_ptr);
+    MPI_Win_fence(0, this->sh_win);
+    this->sh_max_ptr = this->sh_start_ptr + qsize/sizeof(double);
+    this->sh_end_ptr = this->sh_start_ptr;
+}
+#endif
+
+#ifdef HAVE_MPI
+SharedMemory::~SharedMemory() {
+    //deallocates the memory block
+    MPI_Win_free(&this->sh_win);
+}
+#endif
 
 #ifdef HAVE_MPI
 template<int D>
-void mpi::communicator::send_tree(FunctionTree<D> &tree, int dst, int tag) {
+void mpi::send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm) {
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
-    
-    int n_chunks = sTree.nodeChunks.size();
-    MPI_Send(&n_chunks, sizeof(int), MPI_BYTE, dst, tag-1, this->comm);
-    println(10, " Sending " << n_chunks << " chunks");
+
+    int nChunks = sTree.nodeChunks.size();
+    MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, tag-1, comm);
+    println(10, " Sending " << nChunks << " chunks");
 
     Timer t1;
     int count = 1;
-    for (int iChunk = 0; iChunk < n_chunks; iChunk++) {
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
         //set serialIx of the unused nodes to -1
         int iShift = iChunk*sTree.maxNodesPerChunk;
         for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            if (sTree.nodeStackStatus[iShift+i] !=1)
+            if (sTree.nodeStackStatus[iShift+i] != 1) {
                 sTree.nodeChunks[iChunk][i].setSerialIx(-1);
+            }
         }
-        MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, this->comm);
+        MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, comm);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, this->comm);
+        MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, comm);
     }
     t1.stop();
     println(10, " Time send                   " << setw(30) << t1);
@@ -40,17 +67,17 @@ void mpi::communicator::send_tree(FunctionTree<D> &tree, int dst, int tag) {
 
 #ifdef HAVE_MPI
 template<int D>
-void mpi::communicator::recv_tree(FunctionTree<D> &tree, int src, int tag) {
+void mpi::recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
     MPI_Status status;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
 
-    int n_chunks;
-    MPI_Recv(&n_chunks, sizeof(int), MPI_BYTE, src, tag-1, this->comm, &status);
-    println(10, " Recieving " << n_chunks << " chunks");
+    int nChunks;
+    MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, tag-1, comm, &status);
+    println(10, " Recieving " << nChunks << " chunks");
 
     Timer t1;
     int count = 1;
-    for (int iChunk = 0; iChunk < n_chunks; iChunk++) {
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         if (iChunk < sTree.nodeChunks.size()) {
             sTree.sNodes = sTree.nodeChunks[iChunk];
         } else {
@@ -61,15 +88,15 @@ void mpi::communicator::recv_tree(FunctionTree<D> &tree, int src, int tag) {
             sTree.nodeChunks.push_back(sTree.sNodes);
         }
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag+iChunk, this->comm, &status);
+        MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag+iChunk, comm, &status);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag+iChunk+1000, this->comm, &status);
+        MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag+iChunk+1000, comm, &status);
     }
     t1.stop();
     println(10, " Time recieve                " << setw(30) << t1);
 
     Timer t2;
-    sTree.rewritePointers(n_chunks);
+    sTree.rewritePointers(nChunks);
     t2.stop();
     println(10, " Time rewrite pointers       " << setw(30) << t2);
 }
@@ -77,59 +104,112 @@ void mpi::communicator::recv_tree(FunctionTree<D> &tree, int src, int tag) {
 
 #ifdef HAVE_MPI
 template<int D>
-void mpi::communicator::isend_tree(FunctionTree<D> &tree, int dst, int tag, mpi::requests &reqs) {
-    MPI_Request req = MPI_REQUEST_NULL;
+void mpi::isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req) {
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
 
-    int n_chunks = sTree.nodeChunks.size();
-    MPI_Isend(&n_chunks, sizeof(int), MPI_BYTE, dst, tag-1, this->comm, &req);
-    println(0, " Sending " << n_chunks << " chunks");
+    int nChunks = sTree.nodeChunks.size();
+    MPI_Isend(&nChunks, sizeof(int), MPI_BYTE, dst, tag-1, comm, &req);
+    println(10, " Sending " << nChunks << " chunks");
 
     Timer t1;
     int count = 1;
-    for (int iChunk = 0; iChunk < n_chunks; iChunk++) {
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
         //set serialIx of the unused nodes to -1
         int iShift = iChunk*sTree.maxNodesPerChunk;
         for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            if (sTree.nodeStackStatus[iShift+i] !=1)
+            if (sTree.nodeStackStatus[iShift+i] != 1) {
                 sTree.nodeChunks[iChunk][i].setSerialIx(-1);
+            }
         }
-        MPI_Isend(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, this->comm, &req);
+        MPI_Isend(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, comm, &req);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, this->comm, &req);
+        MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, comm, &req);
     }
-    // Should we push back on individual isends?
-    reqs.push_back(req);
     t1.stop();
     println(10, " Time send                   " << setw(30) << t1);
 }
 #endif
 
 #ifdef HAVE_MPI
-void mpi::communicator::wait(mpi::requests &reqs) {
-    MPI_Status status;
+template<int D>
+void mpi::share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
     Timer t1;
-    for (int i = 0; i < reqs.size(); i++) {
-        MPI_Wait(&reqs[i], &status);
+    SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
+    if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
+
+    int size, rank;
+    MPI_Comm_size(comm, &size);
+    MPI_Comm_rank(comm, &rank);
+
+    for (int dst = 0; dst < size; dst++) {
+        if (dst == src) continue;
+        int dst_tag = tag*(dst+1);
+        if (rank == src) {
+            int nChunks = sTree.nodeChunks.size();
+            println(10, " Sending " << nChunks << " chunks");
+            MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, dst_tag-1, comm);
+            int count = 1;
+            for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+                count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
+                //set serialIx of the unused nodes to -1
+                int iShift = iChunk*sTree.maxNodesPerChunk;
+                for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
+                    if (sTree.nodeStackStatus[iShift+i] != 1) {
+                        sTree.nodeChunks[iChunk][i].setSerialIx(-1);
+                    }
+                }
+                println(10, " Sending chunk " << iChunk);
+                MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag+iChunk, comm);
+                count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+            }
+        }
+        if (rank == dst) {
+            MPI_Status status;
+
+            int nChunks;
+            MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, dst_tag-1, comm, &status);
+            println(10, " Recieved " << nChunks << " chunks");
+
+            int count = 1;
+            for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+                if (iChunk < sTree.nodeChunks.size()) {
+                    sTree.sNodes = sTree.nodeChunks[iChunk];
+                } else {
+                    if (iChunk == 0) sTree.getMemory()->sh_end_ptr = sTree.getMemory()->sh_start_ptr;
+                    double *sNodesCoeff = sTree.getMemory()->sh_end_ptr;
+                    sTree.getMemory()->sh_end_ptr += (sTree.sizeNodeCoeff*sTree.maxNodesPerChunk);
+                    sTree.nodeCoeffChunks.push_back(sNodesCoeff);
+                    sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
+                    sTree.nodeChunks.push_back(sTree.sNodes);
+                }
+                count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
+                println(10, " Recieving chunk " << iChunk);
+                MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag+iChunk, comm, &status);
+            }
+            sTree.rewritePointers(nChunks);
+        }
     }
+
     t1.stop();
-    println(10, " N requests                  " << setw(30) << reqs.size());
-    println(10, " Time wait                   " << setw(30) << t1);
-    reqs.clear();
+    println(10, " Time share                  " << setw(30) << t1);
+
 }
 #endif
 
 #ifdef HAVE_MPI
-template void mpi::communicator::send_tree(FunctionTree<1> &tree, int dst, int tag);
-template void mpi::communicator::send_tree(FunctionTree<2> &tree, int dst, int tag);
-template void mpi::communicator::send_tree(FunctionTree<3> &tree, int dst, int tag);
-template void mpi::communicator::recv_tree(FunctionTree<1> &tree, int src, int tag);
-template void mpi::communicator::recv_tree(FunctionTree<2> &tree, int src, int tag);
-template void mpi::communicator::recv_tree(FunctionTree<3> &tree, int src, int tag);
-template void mpi::communicator::isend_tree(FunctionTree<1> &tree, int dst, int tag, mpi::requests &req);
-template void mpi::communicator::isend_tree(FunctionTree<2> &tree, int dst, int tag, mpi::requests &req);
-template void mpi::communicator::isend_tree(FunctionTree<3> &tree, int dst, int tag, mpi::requests &req);
+template void mpi::send_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm &comm);
+template void mpi::send_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm &comm);
+template void mpi::send_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm &comm);
+template void mpi::recv_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm &comm);
+template void mpi::recv_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm &comm);
+template void mpi::recv_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm &comm);
+template void mpi::isend_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
+template void mpi::isend_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
+template void mpi::isend_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
+template void mpi::share_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm &comm);
+template void mpi::share_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm &comm);
+template void mpi::share_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm &comm);
 #endif
 

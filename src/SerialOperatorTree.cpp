@@ -18,7 +18,7 @@ int NOtrees=0;
   * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
 */
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
-        : SerialTree<2>(tree),
+        : SerialTree<2>(tree, 0),
           lastNode(0) {
 
     this->maxNodes = 0;

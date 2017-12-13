@@ -20,10 +20,13 @@ template<int D> class MWNode;
 template<int D>
 class SerialTree {
 public:
-    SerialTree(MWTree<D> *tree) : tree_p(tree) { }
+    SerialTree(MWTree<D> *tree, SharedMemory *mem);
     virtual ~SerialTree() { }
 
     MWTree<D>* getTree() { return this->tree_p; }
+    SharedMemory* getMemory() { return this->shMem; }
+
+    bool isShared() const { if (this->shMem == 0) return false; return true; }
 
     virtual void allocRoots(MWTree<D> &tree) = 0;
     virtual void allocChildren(MWNode<D> &parent) = 0;
@@ -42,8 +45,8 @@ public:
     int sizeNodeCoeff;          //size of coeff for one node
     double **coeffStack;
     int maxNodes;               //max number of nodes that can be defined
-    
 
 protected:
     MWTree<D> *tree_p;
+    SharedMemory *shMem;
 };

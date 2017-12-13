@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "config.h"
+#include "constants.h"
 
 #define EIGEN_DONT_PARALLELIZE
 
@@ -22,65 +23,49 @@
 #endif
 
 template<int D> class FunctionTree;
-template<int D> class SerialFunctionTree;
-
-namespace mpi {
 
 #ifdef HAVE_MPI
 
-class requests {
+/** Share memory within a compute node
+ */
+class SharedMemory {
 public:
-    requests() { }
+    SharedMemory(MPI_Comm &comm, int sh_size = 500);
+    ~SharedMemory();
 
-    int size() const { return mpi_req.size(); }
-    MPI_Request& operator[](int i) { return mpi_req[i]; }
-
-    void clear() { mpi_req.clear(); }
-    void push_back(MPI_Request req) { mpi_req.push_back(req); }
-
-private:
-    std::vector<MPI_Request> mpi_req;
+    double *sh_start_ptr;  //start of shared block
+    double *sh_end_ptr;    //end of used part
+    double *sh_max_ptr;    //end of shared block
+    MPI_Win sh_win;        //MPI window object
 };
 
-class communicator {
-public:
-    communicator() { }
-    communicator &operator=(MPI_Comm c) { this->comm = c; return *this; }
+namespace mpi {
 
-    int size() const { int s; MPI_Comm_size(this->comm, &s); return s; }
-    int rank() const { int r; MPI_Comm_rank(this->comm, &r); return r; }
-    void barrier() const { MPI_Barrier(this->comm); }
+template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
+template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm);
+template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
+template<int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
 
-    template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag);
-    template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag);
-
-    template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, mpi::requests &req);
-    void wait(mpi::requests &req);
-
-private:
-    MPI_Comm comm;
 };
 
 #else
 
-typedef int requests;
+typedef int MPI_Comm;
 
-class communicator {
+class SharedMemory {
 public:
-    communicator() { }
-    int rank() const { return 0; }
-    int size() const { return 1; }
-    void barrier() const { }
+    SharedMemory(MPI_Comm &comm, int sh_size = 0) { }
+    ~SharedMemory() { }
+};
 
-    template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag) { }
-    template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag) { }
+namespace mpi {
 
-    template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, requests &reqs) { }
-    void wait(requests &reqs) { }
+template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req) { }
+template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm) { }
+template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) { }
+template<int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) { }
+
 };
 
 #endif
 
-extern mpi::communicator world;
-
-};

@@ -21,7 +21,7 @@ template<int D> class GenNode;
 template<int D>
 class SerialFunctionTree : public SerialTree<D> {
 public:
-    SerialFunctionTree(FunctionTree<D> *tree);
+    SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *sh_mem);
     virtual ~SerialFunctionTree();
 
     virtual void allocRoots(MWTree<D> &tree);

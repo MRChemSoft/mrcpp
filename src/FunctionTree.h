@@ -12,7 +12,7 @@
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = 0);
     virtual ~FunctionTree();
 
     void clear();

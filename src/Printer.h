@@ -15,8 +15,8 @@ class Timer;
 
 class Printer {
 public:
-    static void init(int level = 0, const char *file = 0);
-    static void printEnvironment(int level = 0);
+    static void init(int level = 0, int rank = 0, int size = 1, const char *file = 0);
+    static void printEnvironment(int level = 0, int hosts = 1, int threads = 1);
     static void printSeparator(int level, const char &sep, int newlines = 0);
     static void printHeader(int level, const std::string &str, int newlines = 0);
     static void printFooter(int level, const Timer &t, int newlines = 0);
@@ -29,13 +29,15 @@ public:
 
     static int setPrecision(int i);
     static int setPrintLevel(int i);
-    static int getPrecision() { return precision; }
+    static int getPrecision() { return printPrec; }
     static int getPrintLevel() { return printLevel; }
 
     static std::ostream *out;
 private:
     static int printLevel;
-    static int precision;
+    static int printPrec;
+    static int printRank;
+    static int printSize;
 };
 
 #define STR_DEBUG(S,X) {std::ostringstream _str;\

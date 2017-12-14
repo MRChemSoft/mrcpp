@@ -14,7 +14,11 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
           coeffStack(0),
           maxNodes(0),
           tree_p(tree),
+#ifdef HAVE_MPI
           shMem(mem) {
+#else
+          shMem(0) {
+#endif
 }
 
 /** Make children scaling coefficients from parent

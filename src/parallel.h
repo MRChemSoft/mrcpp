@@ -8,6 +8,10 @@
 
 #ifdef HAVE_MPI
 #include <mpi.h>
+#else
+typedef int MPI_Comm;
+typedef int MPI_Win;
+typedef int MPI_Request;
 #endif
 
 #ifdef HAVE_OPENMP
@@ -22,15 +26,11 @@
 #define omp_test_lock(x)
 #endif
 
-template<int D> class FunctionTree;
-
-#ifdef HAVE_MPI
-
 /** Share memory within a compute node
  */
 class SharedMemory {
 public:
-    SharedMemory(MPI_Comm &comm, int sh_size = 500);
+    SharedMemory(MPI_Comm &comm, int sh_size = SharedMemSize);
     ~SharedMemory();
 
     double *sh_start_ptr;  //start of shared block
@@ -39,33 +39,11 @@ public:
     MPI_Win sh_win;        //MPI window object
 };
 
-namespace mpi {
+template<int D> class FunctionTree;
 
 template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
 template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm);
 template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
 template<int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
 
-};
-
-#else
-
-typedef int MPI_Comm;
-
-class SharedMemory {
-public:
-    SharedMemory(MPI_Comm &comm, int sh_size = 0) { }
-    ~SharedMemory() { }
-};
-
-namespace mpi {
-
-template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req) { }
-template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm) { }
-template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) { }
-template<int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) { }
-
-};
-
-#endif
 

@@ -42,7 +42,7 @@ void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm) {
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
 
     int nChunks = sTree.nodeChunks.size();
-    MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, tag-1, comm);
+    MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, tag, comm);
     println(10, " Sending " << nChunks << " chunks");
 
     Timer t1;
@@ -56,9 +56,9 @@ void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm) {
                 sTree.nodeChunks[iChunk][i].setSerialIx(-1);
             }
         }
-        MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, comm);
+        MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk+1, comm);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, comm);
+        MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1001, comm);
     }
     t1.stop();
     println(10, " Time send                   " << setw(30) << t1);
@@ -72,8 +72,8 @@ void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
 
     int nChunks;
-    MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, tag-1, comm, &status);
-    println(10, " Recieving " << nChunks << " chunks");
+    MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, tag, comm, &status);
+    println(10, " Receiving " << nChunks << " chunks");
 
     Timer t1;
     int count = 1;
@@ -88,9 +88,9 @@ void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
             sTree.nodeChunks.push_back(sTree.sNodes);
         }
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag+iChunk, comm, &status);
+        MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag+iChunk+1, comm, &status);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag+iChunk+1000, comm, &status);
+        MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag+iChunk+1001, comm, &status);
     }
     t1.stop();
     println(10, " Time recieve                " << setw(30) << t1);
@@ -109,7 +109,7 @@ void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Req
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
 
     int nChunks = sTree.nodeChunks.size();
-    MPI_Isend(&nChunks, sizeof(int), MPI_BYTE, dst, tag-1, comm, &req);
+    MPI_Isend(&nChunks, sizeof(int), MPI_BYTE, dst, tag, comm, &req);
     println(10, " Sending " << nChunks << " chunks");
 
     Timer t1;
@@ -123,9 +123,9 @@ void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Req
                 sTree.nodeChunks[iChunk][i].setSerialIx(-1);
             }
         }
-        MPI_Isend(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk, comm, &req);
+        MPI_Isend(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk+1, comm, &req);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1000, comm, &req);
+        MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1001, comm, &req);
     }
     t1.stop();
     println(10, " Time send                   " << setw(30) << t1);
@@ -170,7 +170,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
 
             int nChunks;
             MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, dst_tag-1, comm, &status);
-            println(10, " Recieved " << nChunks << " chunks");
+            println(10, " Received " << nChunks << " chunks");
 
             int count = 1;
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
@@ -185,7 +185,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm) {
                     sTree.nodeChunks.push_back(sTree.sNodes);
                 }
                 count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-                println(10, " Recieving chunk " << iChunk);
+                println(10, " Receiving chunk " << iChunk);
                 MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag+iChunk, comm, &status);
             }
             sTree.rewritePointers(nChunks);

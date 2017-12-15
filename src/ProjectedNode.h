@@ -27,6 +27,9 @@ protected:
     virtual ~ProjectedNode() { assert(this->tree == 0); }
 
     void dealloc() {
+#ifdef HAVE_OPENMP
+        omp_destroy_lock(&this->node_lock);
+#endif
         this->tree->decrementNodeCount(this->getScale());
         this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
     }

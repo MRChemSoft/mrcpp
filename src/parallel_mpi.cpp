@@ -1,4 +1,4 @@
-#include "parallel.h"
+#include "parallel_mpi.h"
 #include "FunctionTree.h"
 #include "ProjectedNode.h"
 #include "SerialFunctionTree.h"

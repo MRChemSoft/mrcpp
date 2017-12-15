@@ -5,7 +5,6 @@
 #include "MathUtils.h"
 #include "Printer.h"
 #include "constants.h"
-#include "parallel.h"
 #include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS

@@ -17,6 +17,7 @@ template <int D> class NodeBox;
 template <int D> class NodeIndex;
 template <int D> class NodeIndexComp;
 
+class SharedMemory;
 class ScalingBasis;
 class LegendreBasis;
 class InterpolatingBasis;

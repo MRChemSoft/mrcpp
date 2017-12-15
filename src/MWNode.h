@@ -7,7 +7,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "parallel.h"
+#include "parallel_omp.h"
 #include "macros.h"
 
 #include "MWTree.h"

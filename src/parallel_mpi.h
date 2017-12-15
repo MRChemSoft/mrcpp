@@ -1,11 +1,5 @@
 #pragma once
 
-#include <vector>
-#include "config.h"
-#include "constants.h"
-
-#define EIGEN_DONT_PARALLELIZE
-
 #ifdef HAVE_MPI
 #include <mpi.h>
 #else
@@ -14,23 +8,11 @@ typedef int MPI_Win;
 typedef int MPI_Request;
 #endif
 
-#ifdef HAVE_OPENMP
-#include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_get_num_threads() 1
-#define omp_get_thread_num() 0
-#define omp_set_dynamic(n)
-#define omp_set_lock(x)
-#define omp_unset_lock(x)
-#define omp_test_lock(x)
-#endif
-
 /** Share memory within a compute node
  */
 class SharedMemory {
 public:
-    SharedMemory(MPI_Comm &comm, int sh_size = SharedMemSize);
+    SharedMemory(MPI_Comm &comm, int sh_size);
     ~SharedMemory();
 
     double *sh_start_ptr;  //start of shared block

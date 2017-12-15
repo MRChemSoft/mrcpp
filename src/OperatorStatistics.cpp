@@ -1,6 +1,5 @@
 #include "OperatorStatistics.h"
 #include "MWNode.h"
-#include "parallel.h"
 
 using namespace Eigen;
 

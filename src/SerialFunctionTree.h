@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "SerialTree.h"
-#include "parallel.h"
 
 template<int D> class FunctionTree;
 template<int D> class ProjectedNode;

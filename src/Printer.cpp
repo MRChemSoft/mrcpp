@@ -6,9 +6,11 @@
  */
 
 #include <fstream>
+
+#include "config.h"
+
 #include "Printer.h"
 #include "Timer.h"
-#include "parallel.h"
 
 using namespace std;
 

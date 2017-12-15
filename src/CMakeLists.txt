@@ -64,7 +64,7 @@ add_library(mrcpp STATIC
     Timer.cpp
     TreeBuilder.cpp
     TreeIterator.cpp
-    parallel.cpp
+    parallel_mpi.cpp
 )
 
 install(TARGETS mrcpp

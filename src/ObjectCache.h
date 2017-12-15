@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "parallel.h"
+#include "parallel_omp.h"
 #include "macros.h"
 
 #define getObjectCache(T,X) \

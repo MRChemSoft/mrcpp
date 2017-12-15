@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "SerialTree.h"
-#include "parallel.h"
 
 class OperatorTree;
 class OperatorNode;

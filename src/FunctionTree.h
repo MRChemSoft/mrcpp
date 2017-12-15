@@ -9,13 +9,10 @@
 #include "MWTree.h"
 #include "SerialFunctionTree.h"
 
-class Orbital;
-
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra);
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory* &shMem);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = 0);
     virtual ~FunctionTree();
 
     void clear();
@@ -51,8 +48,6 @@ public:
 
     template<int T>
     friend std::ostream& operator <<(std::ostream &o, FunctionTree<T> &tree);
-
-    friend void SendRcv_Orbital(Orbital* Orb, int source, int dest, int tag);
 };
 
 template<int D>

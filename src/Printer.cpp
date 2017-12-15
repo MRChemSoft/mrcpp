@@ -14,16 +14,19 @@ using namespace std;
 
 static ofstream tp_outfile;
 int Printer::printLevel = -1;
-int Printer::precision = 12;
+int Printer::printPrec = 12;
+int Printer::printRank = 0;
+int Printer::printSize = 1;
 std::ostream *Printer::out = &std::cout;
 
-void Printer::init(int level, const char *file) {
-    int mpi_rank = mpiOrbRank;
-    int mpi_size = mpiOrbSize;
+void Printer::init(int level, int rank, int size, const char *file) {
+    printLevel = level;
+    printRank = rank;
+    printSize = size;
     if (file != 0) {
         stringstream fname;
-        if (mpi_size > 1) {
-            fname << file << "-" << mpi_rank << ".out";
+        if (printSize > 1) {
+            fname << file << "-" << printRank << ".out";
         } else {
             fname << file << ".out";
         }
@@ -32,15 +35,14 @@ void Printer::init(int level, const char *file) {
             setOutputStream(tp_outfile);
         }
     } else {
-        if (mpi_rank > 0) {
+        if (printRank > 0) {
             setPrintLevel(-1); // Higher ranks be quiet
         }
     }
     setScientific();
-    setPrintLevel(level);
 }
 
-void Printer::printEnvironment(int level) {
+void Printer::printEnvironment(int level, int hosts, int threads) {
     printout(level, endl);
     printSeparator(level, '-', 1);
     println(level, " MRCPP version   : " << PROGRAM_VERSION);
@@ -53,22 +55,20 @@ void Printer::printEnvironment(int level) {
     println(level, " Linear algebra  : EIGEN");
 #endif
 
-    int nHosts = mpiOrbSize;
-    int nThreads = omp_get_max_threads();
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : MPI/OpenMP");
-    println(level, " - MPI hosts     : " << nHosts);
-    println(level, " - OMP threads   : " << nThreads);
-    println(level, " - Total cores   : " << nThreads*nHosts);
+    println(level, " - MPI hosts     : " << hosts);
+    println(level, " - OMP threads   : " << threads);
+    println(level, " - Total cores   : " << threads*hosts);
 #else
     println(level, " Parallelization : MPI");
-    println(level, " - MPI hosts     : " << nHosts);
+    println(level, " - MPI hosts     : " << hosts);
 #endif
 #else
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : OpenMP");
-    println(level, " - OMP threads   : " << nThreads);
+    println(level, " - OMP threads   : " << threads);
 #else
     println(level, " Parallelization : NONE");
 #endif
@@ -138,8 +138,8 @@ int Printer::setPrintLevel(int i) {
 }
 
 int Printer::setPrecision(int i) {
-    int oldPrec = precision;
-    precision = i;
+    int oldPrec = printPrec;
+    printPrec = i;
     *out << std::setprecision(i);
     return oldPrec;
 }

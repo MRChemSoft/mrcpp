@@ -1,11 +1,17 @@
 #pragma once
 
+#include <vector>
 #include "config.h"
+#include "constants.h"
 
 #define EIGEN_DONT_PARALLELIZE
 
 #ifdef HAVE_MPI
 #include <mpi.h>
+#else
+typedef int MPI_Comm;
+typedef int MPI_Win;
+typedef int MPI_Request;
 #endif
 
 #ifdef HAVE_OPENMP
@@ -20,55 +26,24 @@
 #define omp_test_lock(x)
 #endif
 
-extern int mpiOrbRank;
-extern int mpiOrbSize;
-extern int mpiShRank;
-extern int mpiShSize;
-extern int MPI_SH_group_rank;
-extern int MPI_SH_group_size;
-
-
-void MPI_Initializations();
-void define_MPI_groups();
-bool orbIsSh(int orbRank);
-
 /** Share memory within a compute node
  */
 class SharedMemory {
 public:
-    SharedMemory(int sh_size);
+    SharedMemory(MPI_Comm &comm, int sh_size = SharedMemSize);
     ~SharedMemory();
-    void allocShmem(int sh_size);
-    double *sh_start_ptr; //start of shared block
-    double *sh_max_ptr; //end of shared block
-    double *sh_end_ptr; //end of used part
-#ifdef HAVE_MPI
-    MPI_Win sh_win; //MPI window object
-#endif
+
+    double *sh_start_ptr;  //start of shared block
+    double *sh_end_ptr;    //end of used part
+    double *sh_max_ptr;    //end of shared block
+    MPI_Win sh_win;        //MPI window object
 };
-
-#ifdef HAVE_MPI
-
-extern MPI_Comm mpiCommOrb;
-extern MPI_Comm mpiCommSh;
-extern MPI_Comm mpiCommSh_group;
 
 template<int D> class FunctionTree;
 
-template<int D>
-void Send_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm);
-template<int D>
-void IRcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI_Comm comm);
-template<int D>
-void ISend_SerialTree(FunctionTree<D>* Tree, int Nchunks, int dest, int tag, MPI_Comm comm, MPI_Request& request);
-template<int D>
-void Rcv_SerialTree(FunctionTree<D>* Tree, int Nchunks, int source, int tag, MPI_Comm comm);
-void Assign_NxN(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
-void Assign_NxN_sym(int N, int* doi, int*doj, int* sendto, int* sendorb, int* rcvorb, int* MaxIter);
-
-void Share_memory(int sh_size, double * &d_ptr, MPI_Win & MPI_win);
-
-#else
+template<int D> void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm, MPI_Request &req);
+template<int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm &comm);
+template<int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
+template<int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm &comm);
 
 
-#endif

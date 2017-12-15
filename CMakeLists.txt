@@ -24,6 +24,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/downloade
 include(autocmake_cxx)
 include(GNU.CXX)
 include(Intel.CXX)
+include(autocmake_mpi)
 include(autocmake_omp)
 include(autocmake_safeguards)
 include(autocmake_version)

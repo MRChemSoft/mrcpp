@@ -6,6 +6,20 @@
 using namespace Eigen;
 using namespace std;
 
+template<int D>
+SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
+        : nNodes(0),
+          maxNodesPerChunk(0),
+          sizeNodeCoeff(0),
+          coeffStack(0),
+          maxNodes(0),
+          tree_p(tree),
+#ifdef HAVE_MPI
+          shMem(mem) {
+#else
+          shMem(0) {
+#endif
+}
 
 /** Make children scaling coefficients from parent
  * Other node info are not used/set

@@ -44,12 +44,11 @@ void Printer::init(int level, int rank, int size, const char *file) {
     setScientific();
 }
 
-void Printer::printEnvironment(int level, int hosts, int threads) {
+void Printer::printEnvironment(int level) {
     printout(level, endl);
     printSeparator(level, '-', 1);
     println(level, " MRCPP version   : " << PROGRAM_VERSION);
     println(level, " Git revision    : " << GIT_REVISION << endl);
-    println(level, " Print level     : " << getPrintLevel());
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra  : BLAS");
@@ -60,17 +59,12 @@ void Printer::printEnvironment(int level, int hosts, int threads) {
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : MPI/OpenMP");
-    println(level, " - MPI hosts     : " << hosts);
-    println(level, " - OMP threads   : " << threads);
-    println(level, " - Total cores   : " << threads*hosts);
 #else
     println(level, " Parallelization : MPI");
-    println(level, " - MPI hosts     : " << hosts);
 #endif
 #else
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : OpenMP");
-    println(level, " - OMP threads   : " << threads);
 #else
     println(level, " Parallelization : NONE");
 #endif

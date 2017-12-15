@@ -16,7 +16,7 @@ class Timer;
 class Printer {
 public:
     static void init(int level = 0, int rank = 0, int size = 1, const char *file = 0);
-    static void printEnvironment(int level = 0, int hosts = 1, int threads = 1);
+    static void printEnvironment(int level = 0);
     static void printSeparator(int level, const char &sep, int newlines = 0);
     static void printHeader(int level, const std::string &str, int newlines = 0);
     static void printFooter(int level, const Timer &t, int newlines = 0);

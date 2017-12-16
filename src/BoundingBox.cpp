@@ -14,14 +14,15 @@
 using namespace std;
 
 template<int D>
-BoundingBox<D>::BoundingBox() {
-    setNBoxes(0);
+BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
+        : cornerIndex(n, l) {
+    setNBoxes(nb);
     setDerivedParameters();
 }
 
 template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
-            : cornerIndex(idx) {
+        : cornerIndex(idx) {
     setNBoxes(nb);
     setDerivedParameters();
 }

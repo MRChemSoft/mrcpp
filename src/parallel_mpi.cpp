@@ -149,7 +149,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
         if (rank == src) {
             int nChunks = sTree.nodeChunks.size();
             println(10, " Sending " << nChunks << " chunks");
-            MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, dst_tag-1, comm);
+            MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, dst_tag, comm);
             int count = 1;
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
                 count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
@@ -161,7 +161,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
                     }
                 }
                 println(10, " Sending chunk " << iChunk);
-                MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag+iChunk, comm);
+                MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag+iChunk+1, comm);
                 count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
             }
         }
@@ -169,7 +169,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
             MPI_Status status;
 
             int nChunks;
-            MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, dst_tag-1, comm, &status);
+            MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, dst_tag, comm, &status);
             println(10, " Received " << nChunks << " chunks");
 
             int count = 1;
@@ -186,7 +186,7 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
                 }
                 count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
                 println(10, " Receiving chunk " << iChunk);
-                MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag+iChunk, comm, &status);
+                MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag+iChunk+1, comm, &status);
             }
             sTree.rewritePointers(nChunks);
         }

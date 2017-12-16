@@ -17,11 +17,14 @@ class Printer {
 public:
     static void init(int level = 0, int rank = 0, int size = 1, const char *file = 0);
     static void printEnvironment(int level = 0);
+
     static void printSeparator(int level, const char &sep, int newlines = 0);
     static void printHeader(int level, const std::string &str, int newlines = 0);
     static void printFooter(int level, const Timer &t, int newlines = 0);
-    static void printDouble(int level, const std::string &name, double d);
-    static void printTree(int level, const std::string &name, int n, double t);
+
+    static void printDouble(int level, const std::string &str, double d, int p = -1);
+    static void printTree(int level, const std::string &str, int n, double t);
+    static void printTime(int level, const std::string &str, const Timer &t);
 
     static void setOutputStream(std::ostream &o) { out = &o; }
     static void setScientific() { *out << std::scientific; }

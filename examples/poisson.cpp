@@ -22,8 +22,7 @@ int main(int argc, char **argv) {
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    NodeIndex<3> idx(min_scale, corner);
-    BoundingBox<3> world(idx, boxes);
+    BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
@@ -62,15 +61,18 @@ int main(int argc, char **argv) {
     double num_energy = g_tree.dot(f_tree);
     double error = (num_energy-ana_energy)/num_energy;
 
-    println(0, std::endl);
-    println(0," f_tree integral:            " << std::setw(30) << f_int);
-    println(0," f_tree norm:                " << std::setw(30) << f_norm << std::endl);
-    println(0," g_tree integral:            " << std::setw(30) << g_int);
-    println(0," g_tree norm:                " << std::setw(30) << g_norm << std::endl);
-    println(0," Analytic energy:            " << std::setw(30) << ana_energy);
-    println(0," Numerical energy:           " << std::setw(30) << num_energy);
-    println(0," Relative error:             " << std::setw(30) << error);
-    println(0, std::endl);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "f_tree integral", f_int);
+    Printer::printDouble(0, "f_tree norm", f_norm);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "g_tree integral", g_int);
+    Printer::printDouble(0, "g_tree norm", g_norm);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "Analytic energy", ana_energy);
+    Printer::printDouble(0, "Numerical energy", num_energy);
+    Printer::printDouble(0, "Relative error", error, 1);
+    Printer::printSeparator(0, ' ');
+
     timer.stop();
     Printer::printFooter(0, timer, 2);
 

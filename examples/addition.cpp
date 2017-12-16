@@ -21,8 +21,7 @@ int main(int argc, char **argv) {
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    NodeIndex<3> idx(min_scale, corner);
-    BoundingBox<3> world(idx, boxes);
+    BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
@@ -62,9 +61,9 @@ int main(int argc, char **argv) {
 
     double integral = g_tree.integrate();
     double sq_norm = g_tree.getSquareNorm();
+    Printer::printDouble(0, "Integral", integral);
+    Printer::printDouble(0, "Square norm", sq_norm);
 
-    println(0, " Integral                    " << std::setw(30) << integral);
-    println(0, " Square norm                 " << std::setw(30) << sq_norm);
     timer.stop();
     Printer::printFooter(0, timer, 2);
 

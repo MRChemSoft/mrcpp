@@ -6,8 +6,8 @@
 const int min_scale = -4;
 const int max_scale = 20;
 
-const int order = 7;
-const double prec = 1.0e-5;
+const int order = 5;
+const double prec = 1.0e-3;
 
 void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     Timer timer;
@@ -69,8 +69,7 @@ int main(int argc, char **argv) {
     int min_scale = -4;
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    NodeIndex<3> idx(min_scale, corner);
-    BoundingBox<3> world(idx, boxes);
+    BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
@@ -160,13 +159,13 @@ int main(int argc, char **argv) {
 
     Printer::printHeader(0, "SCF timings");
     for (int i = 0; i < scf_t.size(); i++) {
-        println(0, " Time cycle " << std::setw(5) << i+1 << "  " << scf_t[i]);
+        Printer::printTree(0, "Time cycle", i+1, scf_t[i].getWallTime());
     }
     Printer::printSeparator(0, '=', 2);
 
     Printer::setPrecision(15);
     Printer::printHeader(0, "Final energy");
-    println(0, " Eigenvalue        " << std::setw(40) << epsilon_n);
+    Printer::printDouble(0, "Eigenvalue", epsilon_n);
     Printer::printSeparator(0, '=', 2);
 
     delete phi_n;

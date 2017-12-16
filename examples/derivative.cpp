@@ -21,8 +21,7 @@ int main(int argc, char **argv) {
     // Constructing world box
     int corner[1] = {-1 };
     int boxes[1]  = { 2 };
-    NodeIndex<1> idx(min_scale, corner);
-    BoundingBox<1> world(idx, boxes);
+    BoundingBox<1> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
@@ -73,16 +72,20 @@ int main(int argc, char **argv) {
     double abs_err = sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err/df_norm;
 
-    println(0, std::endl);
-    println(0," f_tree integral:            " << std::setw(30) << f_int);
-    println(0," f_tree norm:                " << std::setw(30) << f_norm << std::endl);
-    println(0," df_tree integral:           " << std::setw(30) << df_int);
-    println(0," df_tree norm:               " << std::setw(30) << df_norm << std::endl);
-    println(0," dg_tree integral:           " << std::setw(30) << dg_int);
-    println(0," dg_tree norm:               " << std::setw(30) << dg_norm << std::endl);
-    println(0," absolute error:             " << std::setw(30) << abs_err);
-    println(0," relative error:             " << std::setw(30) << rel_err);
-    println(0, std::endl);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "f_tree integral", f_int);
+    Printer::printDouble(0, "f_tree norm", f_norm);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "df_tree integral", df_int);
+    Printer::printDouble(0, "df_tree norm", df_norm);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "dg_tree integral", dg_int);
+    Printer::printDouble(0, "dg_tree norm", dg_norm);
+    Printer::printSeparator(0, ' ');
+    Printer::printDouble(0, "absolute error", abs_err, 1);
+    Printer::printDouble(0, "relative error", rel_err, 1);
+    Printer::printSeparator(0, ' ');
+
     timer.stop();
     Printer::printFooter(0, timer, 2);
 

@@ -1,0 +1,23 @@
+#include "MRCPP/Printer"
+#include "MRCPP/Timer"
+
+// This is your personal sandbox to test out ideas.
+// See the examples/ directory for inspiration.
+// Please do not commit your pilot code to git.
+
+
+int main(int argc, char **argv) {
+    Timer timer;
+
+    // Initialize printing
+    int printlevel = 0;
+    Printer::init(printlevel);
+    Printer::printEnvironment();
+    Printer::printHeader(0, "MRCPP pilot code");
+
+    timer.stop();
+    Printer::printFooter(0, timer, 2);
+
+    return 0;
+}
+

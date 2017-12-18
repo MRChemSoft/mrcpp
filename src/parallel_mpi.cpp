@@ -36,7 +36,7 @@ SharedMemory::~SharedMemory() {
 }
 
 template<int D>
-void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm) {
+void mrcpp::send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm) {
 #ifdef HAVE_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
@@ -66,7 +66,7 @@ void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm) {
 }
 
 template<int D>
-void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
+void mrcpp::recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
 #ifdef HAVE_MPI
     MPI_Status status;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
@@ -103,7 +103,7 @@ void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
 }
 
 template<int D>
-void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req) {
+void mrcpp::isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req) {
 #ifdef HAVE_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
@@ -133,7 +133,7 @@ void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Requ
 }
 
 template<int D>
-void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
+void mrcpp::share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
 #ifdef HAVE_MPI
     Timer t1;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
@@ -197,15 +197,15 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
 #endif
 }
 
-template void send_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm comm);
-template void send_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm comm);
-template void send_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm comm);
-template void recv_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm);
-template void recv_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
-template void recv_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);
-template void isend_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
-template void isend_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
-template void isend_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
-template void share_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm);
-template void share_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
-template void share_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::send_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm comm);
+template void mrcpp::send_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm comm);
+template void mrcpp::send_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm comm);
+template void mrcpp::recv_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::recv_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::recv_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::isend_tree(FunctionTree<1> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
+template void mrcpp::isend_tree(FunctionTree<2> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
+template void mrcpp::isend_tree(FunctionTree<3> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req);
+template void mrcpp::share_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::share_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
+template void mrcpp::share_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);

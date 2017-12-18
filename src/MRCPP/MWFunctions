@@ -4,7 +4,6 @@
 #include "LegendreBasis.h"
 
 #include "grid.h"
-#include "GridCleaner.h"
 #include "project.h"
 #include "multiply.h"
 #include "add.h"

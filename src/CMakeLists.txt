@@ -36,7 +36,7 @@ add_library(mrcpp STATIC
     MWTree.cpp
     project.cpp
     MWDerivative.cpp
-    MWConvolution.cpp
+    apply.cpp
     add.cpp
     multiply.cpp
     MathUtils.cpp

@@ -34,7 +34,7 @@ add_library(mrcpp STATIC
     MWNode.cpp
     MWOperator.cpp
     MWTree.cpp
-    MWProjector.cpp
+    project.cpp
     MWDerivative.cpp
     MWConvolution.cpp
     MWAdder.cpp

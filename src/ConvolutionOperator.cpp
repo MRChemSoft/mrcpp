@@ -3,7 +3,6 @@
 #include "OperatorAdaptor.h"
 #include "TreeBuilder.h"
 #include "GridGenerator.h"
-#include "MWProjector.h"
 #include "OperatorTree.h"
 #include "GreensKernel.h"
 #include "Gaussian.h"
@@ -11,6 +10,7 @@
 #include "MathUtils.h"
 #include "Timer.h"
 #include "Printer.h"
+#include "project.h"
 
 using namespace std;
 using namespace Eigen;
@@ -31,7 +31,6 @@ template<int D>
 void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
     int max_scale = this->oper_mra.getMaxScale();
     GridGenerator<1> G(max_scale);
-    MWProjector<1> Q(this->prec/10.0, max_scale);
 
     TreeBuilder<2> builder;
     OperatorAdaptor adaptor(this->prec, max_scale);
@@ -40,7 +39,7 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         Gaussian<1> &k_func = *greens_kernel[i];
         FunctionTree<1> *k_tree = new FunctionTree<1>(this->kern_mra);
         G(*k_tree, k_func); //Generate empty grid to hold narrow Gaussian
-        Q(*k_tree, k_func); //Project Gaussian starting from the empty grid
+        mrcpp::project(this->prec/10, *k_tree, k_func); //Project Gaussian starting from the empty grid
         CrossCorrelationCalculator calculator(*k_tree);
 
         OperatorTree *o_tree = new OperatorTree(this->oper_mra, this->prec);

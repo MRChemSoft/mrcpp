@@ -1,6 +1,6 @@
 #pragma once
+
 #include "RepresentableFunction.h"
-#include "MWProjector.h"
 #include "MultiResolutionAnalysis.h"
 
 class BoysFunction : public RepresentableFunction<1> {
@@ -12,7 +12,7 @@ public:
 
 protected:
     const int order;
-    MWProjector<1> Q;
+    const double prec;
     MultiResolutionAnalysis<1> MRA;
 };
 

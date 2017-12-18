@@ -5,7 +5,7 @@
 
 #include "GridGenerator.h"
 #include "GridCleaner.h"
-#include "MWProjector.h"
+#include "project.h"
 #include "MWMultiplier.h"
 #include "MWAdder.h"
 

@@ -2,11 +2,12 @@
 #include "FunctionTree.h"
 #include "InterpolatingBasis.h"
 #include "Printer.h"
+#include "project.h"
 
-BoysFunction::BoysFunction(int n, double prec)
+BoysFunction::BoysFunction(int n, double p)
         : RepresentableFunction<1>(),
           order(n),
-          Q(prec),
+          prec(p),
           MRA(BoundingBox<1>(), InterpolatingBasis(13)) {
 }
 
@@ -26,7 +27,7 @@ double BoysFunction::evalf(const double *r) const {
     };
 
     FunctionTree<1> tree(this->MRA);
-    this->Q(tree, f);
+    mrcpp::project(this->prec, tree, f);
     double result = tree.integrate();
 
     Printer::setPrintLevel(oldlevel);

@@ -3,15 +3,14 @@
 #include "TreeCalculator.h"
 #include "FunctionTreeVector.h"
 
-template<int D> class MWMultiplier;
-
 template<int D>
 class MultiplicationCalculator : public TreeCalculator<D> {
 public:
-    friend class MWMultiplier<D>;
-protected:
     MultiplicationCalculator(FunctionTreeVector<D> &inp) : prod_vec(&inp) { }
     virtual ~MultiplicationCalculator() { }
+
+protected:
+    FunctionTreeVector<D> *prod_vec;
 
     virtual void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
@@ -27,7 +26,8 @@ protected:
             node_i.mwTransform(Reconstruction);
             node_i.cvTransform(Forward);
             const double *coefs_i = node_i.getCoefs();
-            for (int j = 0; j < node_i.getNCoefs(); j++) {
+            int n_coefs = node_i.getNCoefs();
+            for (int j = 0; j < n_coefs; j++) {
                 coefs_o[j] *= c_i * coefs_i[j];
             }
         }
@@ -36,8 +36,5 @@ protected:
         node_o.setHasCoefs();
         node_o.calcNorms();
     }
-
-private:
-    FunctionTreeVector<D> *prod_vec;
 };
 

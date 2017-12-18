@@ -6,7 +6,7 @@
 #include "GridGenerator.h"
 #include "GridCleaner.h"
 #include "project.h"
-#include "MWMultiplier.h"
+#include "multiply.h"
 #include "add.h"
 
 #include "FunctionTree.h"

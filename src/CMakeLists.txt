@@ -38,7 +38,7 @@ add_library(mrcpp STATIC
     MWDerivative.cpp
     MWConvolution.cpp
     add.cpp
-    MWMultiplier.cpp
+    multiply.cpp
     MathUtils.cpp
     MultiResolutionAnalysis.cpp
     NodeBox.cpp

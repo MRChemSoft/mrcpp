@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ConvolutionOperator.h"
-#include "GridGenerator.h"
 #include "DerivativeKernel.h"
 
 template<int D>

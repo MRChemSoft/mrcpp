@@ -3,7 +3,7 @@
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
 
-#include "GridGenerator.h"
+#include "grid.h"
 #include "GridCleaner.h"
 #include "project.h"
 #include "multiply.h"

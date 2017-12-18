@@ -40,7 +40,6 @@ template <int D> class GenNode;
 class OperatorNode;
 
 template <int D> class TreeBuilder;
-template <int D> class GridGenerator;
 template <int D> class GridCleaner;
 template <int D> class MWConvolution;
 template <int D> class MWDerivative;

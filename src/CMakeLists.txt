@@ -23,7 +23,7 @@ add_library(mrcpp STATIC
     GaussQuadrature.cpp
     Gaussian.cpp
     GenNode.cpp
-    GridGenerator.cpp
+    grid.cpp
     HelmholtzKernel.cpp
     HelmholtzOperator.cpp
     HilbertPath.cpp

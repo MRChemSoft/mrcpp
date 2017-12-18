@@ -4,7 +4,7 @@
 #include "MRCPP/Timer"
 
 const int min_scale = -4;
-const int max_scale = 20;
+const int max_depth = 25;
 
 const int order = 7;
 const double prec = 1.0e-5;
@@ -40,10 +40,7 @@ int main(int argc, char **argv) {
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis);
-
-    // Setting up projector
-    MWProjector<3> project(prec, max_scale);
+    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Defining analytic function
     auto f = [] (const double *r) -> double {
@@ -57,7 +54,7 @@ int main(int argc, char **argv) {
     FunctionTree<3> f_tree(MRA);
 
     // Only rank 0 projects the function
-    if (wrank == 0) project(f_tree, f);
+    if (wrank == 0) mrcpp::project(prec, f_tree, f);
 
     {   // Print data before send
         double integral = f_tree.integrate();
@@ -72,8 +69,8 @@ int main(int argc, char **argv) {
     for (int dst = 0; dst < wsize; dst++) {
         if (dst == src) continue;
         int tag = 11111*dst; // Unique tag for each communication
-        if (wrank == src) send_tree(f_tree, dst, tag, comm);
-        if (wrank == dst) recv_tree(f_tree, src, tag, comm);
+        if (wrank == src) mrcpp::send_tree(f_tree, dst, tag, comm);
+        if (wrank == dst) mrcpp::recv_tree(f_tree, src, tag, comm);
     }
     send_t.stop();
     Printer::printSeparator(0, ' ');

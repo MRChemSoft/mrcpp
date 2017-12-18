@@ -4,7 +4,7 @@
 #include "MRCPP/Timer"
 
 const int min_scale = -4;
-const int max_scale = 20;
+const int max_depth = 25;
 
 const int order = 7;
 const double prec = 1.0e-5;
@@ -43,10 +43,7 @@ int main(int argc, char **argv) {
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis);
-
-    // Setting up projector
-    MWProjector<3> project(prec, max_scale);
+    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Projecting vector of functions
     int nFuncs = 5;
@@ -60,7 +57,7 @@ int main(int argc, char **argv) {
         };
         FunctionTree<3> *tree = new FunctionTree<3>(MRA);
         if (i%wsize == wrank) {
-            project(*tree, f);
+            mrcpp::project(prec, *tree, f);
             tree->normalize();
         }
         f_vec.push_back(tree);
@@ -77,8 +74,8 @@ int main(int argc, char **argv) {
             if (src != dst) {
                 int tag = 1000000*dst;
                 MPI_Request req = req_null;
-                if (wrank == src) isend_tree(f_i, dst, tag, comm, &req);
-                if (wrank == dst) recv_tree(f_i, src, tag, comm);
+                if (wrank == src) mrcpp::isend_tree(f_i, dst, tag, comm, &req);
+                if (wrank == dst) mrcpp::recv_tree(f_i, src, tag, comm);
                 requests.push_back(req);
             }
             // Compute my column(s) of the overlap matrix

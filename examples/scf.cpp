@@ -4,7 +4,7 @@
 #include "MRCPP/Timer"
 
 const int min_scale = -4;
-const int max_scale = 20;
+const int max_depth = 25;
 
 const int order = 5;
 const double prec = 1.0e-3;
@@ -13,9 +13,6 @@ void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     Timer timer;
     int oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting nuclear potential");
-
-    // Setting up projector
-    MWProjector<3> project(prec, max_scale);
 
     // Smoothing parameter
     double c = 0.00435*prec/pow(Z, 5);
@@ -28,7 +25,7 @@ void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     };
 
     // Projecting function
-    project(V, f);
+    mrcpp::project(prec, V, f);
 
     timer.stop();
     Printer::printFooter(0, timer, 2);
@@ -40,16 +37,13 @@ void setupInitialGuess(FunctionTree<3> &phi) {
     int oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
 
-    // Setting up projector
-    MWProjector<3> project(prec, max_scale);
-
     auto f = [] (const double *r) -> double {
         double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return 1.0*exp(-1.0*x*x);
     };
 
     // Projecting and normalizing function
-    project(phi, f);
+    mrcpp::project(prec, phi, f);
     phi.normalize();
 
     timer.stop();
@@ -73,12 +67,7 @@ int main(int argc, char **argv) {
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis);
-
-    MWAdder<3> add(-1.0, max_scale);
-    MWMultiplier<3> mult(prec, max_scale);
-    MWConvolution<3> apply(prec, max_scale);
-    GridGenerator<3> grid(max_scale);
+    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Nuclear potential
     double Z = 1.0;
@@ -114,18 +103,18 @@ int main(int argc, char **argv) {
 
         // Compute Helmholtz argument V*phi
         FunctionTree<3> Vphi(MRA);
-        grid(Vphi, *phi_n); // Copy grid from orbital
-        mult(Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
+        mrcpp::copy_grid(Vphi, *phi_n); // Copy grid from orbital
+        mrcpp::multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
         // Apply Helmholtz operator phi^n+1 = H[V*phi^n]
         phi_np1 = new FunctionTree<3>(MRA);
-        apply(*phi_np1, H, Vphi);
+        mrcpp::apply(prec, *phi_np1, H, Vphi);
         *phi_np1 *= -1.0/(2.0*pi);
 
         // Compute orbital residual
         FunctionTree<3> d_phi_n(MRA);
-        grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
-        add(d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
+        mrcpp::copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
+        mrcpp::add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
         error = sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||

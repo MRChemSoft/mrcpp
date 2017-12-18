@@ -4,7 +4,7 @@
 #include "MRCPP/Timer"
 
 const int min_scale = -4;
-const int max_scale = 20;
+const int max_depth = 25;
 
 const int order = 7;
 const double prec = 1.0e-5;
@@ -25,11 +25,7 @@ int main(int argc, char **argv) {
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis);
-
-    // Setting up projectors
-    MWProjector<3> project(prec, max_scale);
-    MWAdder<3> add(prec, max_scale);
+    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Setting up analytic Gaussians
     double beta = 20.0;
@@ -48,16 +44,16 @@ int main(int argc, char **argv) {
     FunctionTree<3> g_tree(MRA);
 
     // Projecting functions
-    project(f_tree_1, f_func_1);
-    project(f_tree_2, f_func_2);
-    project(f_tree_3, f_func_3);
+    mrcpp::project(prec, f_tree_1, f_func_1);
+    mrcpp::project(prec, f_tree_2, f_func_2);
+    mrcpp::project(prec, f_tree_3, f_func_3);
 
     // g = f_1 - 2*f_2 + 3*f_3
     FunctionTreeVector<3> f_vec;
     f_vec.push_back( 1.0, &f_tree_1);
     f_vec.push_back(-2.0, &f_tree_2);
     f_vec.push_back( 3.0, &f_tree_3);
-    add(g_tree, f_vec);
+    mrcpp::add(prec, g_tree, f_vec);
 
     double integral = g_tree.integrate();
     double sq_norm = g_tree.getSquareNorm();

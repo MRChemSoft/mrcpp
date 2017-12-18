@@ -4,7 +4,7 @@
 #include "MRCPP/Timer"
 
 const int min_scale = -4;
-const int max_scale = 20;
+const int max_depth = 25;
 
 const int order = 7;
 const double prec = 1.0e-5;
@@ -48,10 +48,7 @@ int main(int argc, char **argv) {
 
     // Constructing basis and MRA
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis);
-
-    // Setting up projector
-    MWProjector<3> project(prec, max_scale);
+    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Defining analytic function
     auto f = [] (const double *r) -> double {
@@ -67,8 +64,8 @@ int main(int argc, char **argv) {
 
     // Only first rank projects
     int frank = 0;
-    if (srank == frank) project(f_tree, f);
-    share_tree(f_tree, frank, 0, scomm);
+    if (srank == frank) mrcpp::project(prec, f_tree, f);
+    mrcpp::share_tree(f_tree, frank, 0, scomm);
 
     {   // Print data after share
         double integral = f_tree.integrate();
@@ -80,7 +77,7 @@ int main(int argc, char **argv) {
     // Last rank rescales the tree
     int lrank = ssize - 1;
     if (srank == lrank) f_tree *= 2.0;
-    share_tree(f_tree, lrank, 0, scomm);
+    mrcpp::share_tree(f_tree, lrank, 0, scomm);
 
     {   // Print data after rescale
         double integral = f_tree.integrate();

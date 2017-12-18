@@ -1,6 +1,8 @@
 #include "Timer.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 Timer::Timer(bool start_timer) : running(false), time_used(0.0) {
     if (start_timer) {
         start();
@@ -39,12 +41,12 @@ double Timer::getWallTime() const {
     return this->time_used;
 }
 
-std::ostream& operator<<(std::ostream &o, const Timer &timer) {
+std::ostream& Timer::print(std::ostream &o) const {
     int old_prec = Printer::setPrecision(5);
-    o << timer.getWallTime();
+    o << getWallTime();
     Printer::setPrecision(old_prec);
     return o;
-    }
+}
 
 timeT Timer::now(){
     return std::chrono::high_resolution_clock::now();

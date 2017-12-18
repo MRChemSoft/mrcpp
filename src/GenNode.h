@@ -7,6 +7,8 @@
 
 #include "FunctionNode.h"
 
+namespace mrcpp {
+
 template<int D>
 class GenNode: public FunctionNode<D> {
 public:
@@ -31,3 +33,4 @@ protected:
     void reCompress();
 };
 
+}

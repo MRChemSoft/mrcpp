@@ -2,6 +2,8 @@
 
 #include "MWTree.h"
 
+namespace mrcpp {
+
 class OperatorTree: public MWTree<2> {
 public:
     OperatorTree(const MultiResolutionAnalysis<2> &mra,
@@ -50,3 +52,4 @@ protected:
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 };
 
+}

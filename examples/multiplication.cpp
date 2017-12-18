@@ -10,35 +10,35 @@ const int order = 7;
 const double prec = 1.0e-5;
 
 int main(int argc, char **argv) {
-    Timer timer;
+    mrcpp::Timer timer;
 
     // Initialize printing
     int printlevel = 0;
-    Printer::init(printlevel);
-    Printer::printEnvironment();
-    Printer::printHeader(0, "Multiplying MW functions");
+    mrcpp::Printer::init(printlevel);
+    mrcpp::Printer::printEnvironment();
+    mrcpp::Printer::printHeader(0, "Multiplying MW functions");
 
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    BoundingBox<3> world(min_scale, corner, boxes);
+    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    mrcpp::InterpolatingBasis basis(order);
+    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Setting up analytic Gaussians
     double beta = 20.0;
-    double alpha = pow(beta/pi, 3.0/2.0);
+    double alpha = pow(beta/mrcpp::pi, 3.0/2.0);
     double f_pos[3] = {0.0, 0.0,  0.1};
     double g_pos[3] = {0.0, 0.0, -0.1};
-    GaussFunc<3> f_func(beta, alpha, f_pos);
-    GaussFunc<3> g_func(beta, alpha, g_pos);
+    mrcpp::GaussFunc<3> f_func(beta, alpha, f_pos);
+    mrcpp::GaussFunc<3> g_func(beta, alpha, g_pos);
 
     // Initialize MW functions
-    FunctionTree<3> f_tree(MRA);
-    FunctionTree<3> g_tree(MRA);
-    FunctionTree<3> h_tree(MRA);
+    mrcpp::FunctionTree<3> f_tree(MRA);
+    mrcpp::FunctionTree<3> g_tree(MRA);
+    mrcpp::FunctionTree<3> h_tree(MRA);
 
     // Projecting f and g
     mrcpp::project(prec, f_tree, f_func);
@@ -49,11 +49,11 @@ int main(int argc, char **argv) {
 
     double integral = h_tree.integrate();
     double sq_norm = h_tree.getSquareNorm();
-    Printer::printDouble(0, "Integral", integral);
-    Printer::printDouble(0, "Square norm", sq_norm);
+    mrcpp::Printer::printDouble(0, "Integral", integral);
+    mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
 
     timer.stop();
-    Printer::printFooter(0, timer, 2);
+    mrcpp::Printer::printFooter(0, timer, 2);
 
     return 0;
 }

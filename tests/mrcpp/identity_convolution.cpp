@@ -13,6 +13,8 @@
 #include "apply.h"
 #include "grid.h"
 
+using namespace mrcpp;
+
 namespace identity_convolution {
 
 template<int D> void applyIdentity();
@@ -39,8 +41,8 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
             MultiResolutionAnalysis<1> kern_mra(box, basis);
 
             FunctionTree<1> kern_tree(kern_mra);
-            mrcpp::build_grid(kern_tree, id_kern);
-            mrcpp::project(proj_prec, kern_tree, id_kern);
+            build_grid(kern_tree, id_kern);
+            project(proj_prec, kern_tree, id_kern);
             REQUIRE( (kern_tree.integrate() == Approx(1.0).epsilon(proj_prec)) );
 
             SECTION("Build operator tree by cross correlation") {
@@ -105,8 +107,8 @@ template<int D> void applyIdentity() {
     FunctionTree<D> fTree(*mra);
     FunctionTree<D> gTree(*mra);
 
-    mrcpp::project(proj_prec, fTree, *fFunc);
-    mrcpp::apply(apply_prec, gTree, I, fTree);
+    project(proj_prec, fTree, *fFunc);
+    apply(apply_prec, gTree, I, fTree);
 
     REQUIRE( (gTree.getDepth() <= fTree.getDepth()) );
     REQUIRE( (gTree.getNNodes() <= fTree.getNNodes()) );

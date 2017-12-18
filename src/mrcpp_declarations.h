@@ -3,6 +3,8 @@
 #include <vector>
 #include <set>
 
+namespace mrcpp {
+
 class Timer;
 class Printer;
 template<int D> class Plotter;
@@ -73,6 +75,7 @@ template <int D> class TreeIterator;
 template <int D> class LebesgueIterator;
 template <int D> class HilbertIterator;
 template <int D> class HilbertPath;
+template <int D> class IteratorNode;
 
 class BandWidth;
 template <int D> class OperatorState;
@@ -81,3 +84,4 @@ template <int D> class OperatorState;
 #define MWNodeVector std::vector<MWNode<D> *>
 #define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
 
+}

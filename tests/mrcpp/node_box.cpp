@@ -3,6 +3,8 @@
 #include "factory_functions.h"
 #include "MWNode.h"
 
+using namespace mrcpp;
+
 namespace node_box {
 
 template<int D> void testConstructors();

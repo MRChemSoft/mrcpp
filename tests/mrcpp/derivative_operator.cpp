@@ -10,8 +10,8 @@
 #include "apply.h"
 #include "project.h"
 
-
 using namespace std;
+using namespace mrcpp;
 
 namespace derivative_operator {
 
@@ -50,16 +50,16 @@ template<int D> void testDifferentiationABGV(double a, double b) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    mrcpp::project(prec/10, f_tree, f);
+    project(prec/10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    mrcpp::project(prec/10, df_tree, df);
+    project(prec/10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
-    mrcpp::apply(dg_tree, diff, f_tree, 0);
+    apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
-    mrcpp::add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
     double df_norm = sqrt(df_tree.getSquareNorm());
     double abs_err = sqrt(err_tree.getSquareNorm());
@@ -90,16 +90,16 @@ template<int D> void testDifferentiationPH(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    mrcpp::project(prec/10, f_tree, f);
+    project(prec/10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    mrcpp::project(prec/10, df_tree, df);
+    project(prec/10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
-    mrcpp::apply(dg_tree, diff, f_tree, 0);
+    apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
-    mrcpp::add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
     double df_norm = sqrt(df_tree.getSquareNorm());
     double abs_err = sqrt(err_tree.getSquareNorm());

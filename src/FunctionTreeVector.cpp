@@ -1,6 +1,8 @@
 #include "FunctionTreeVector.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<int D>
 FunctionTreeVector<D>::FunctionTreeVector(const FunctionTreeVector<D> &vec) {
     this->clear();

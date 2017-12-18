@@ -3,6 +3,7 @@
 #include "LegendrePoly.h"
 
 using namespace std;
+using namespace mrcpp;
 
 namespace legendre_poly {
 

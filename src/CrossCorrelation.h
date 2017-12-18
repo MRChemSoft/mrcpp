@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace mrcpp {
+
 class CrossCorrelation {
 public:
     CrossCorrelation(int k, int t, const std::string &lib = "");
@@ -35,3 +37,4 @@ protected:
     void readCCCBin();
 };
 
+}

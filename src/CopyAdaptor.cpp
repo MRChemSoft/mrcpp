@@ -1,5 +1,7 @@
 #include "CopyAdaptor.h"
 
+using namespace mrcpp;
+
 template<int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms) {

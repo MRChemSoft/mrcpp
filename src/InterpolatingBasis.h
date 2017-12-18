@@ -2,6 +2,8 @@
 
 #include "ScalingBasis.h"
 
+namespace mrcpp {
+
 class InterpolatingBasis : public ScalingBasis {
 public:
     InterpolatingBasis(int k) : ScalingBasis(k, Interpol) {
@@ -16,3 +18,4 @@ public:
     void calcCVMaps();
 };
 
+}

@@ -9,6 +9,8 @@
 #include "grid.h"
 #include "multiply.h"
 
+using namespace mrcpp;
+
 namespace multiplication {
 
 template<int D> void testMultiplication();
@@ -47,14 +49,14 @@ template<int D> void testMultiplication() {
     FunctionTree<D> ref_tree(*mra);
 
     // Build empty grids
-    mrcpp::build_grid(a_tree, a_func);
-    mrcpp::build_grid(b_tree, b_func);
-    mrcpp::build_grid(ref_tree, ref_func);
+    build_grid(a_tree, a_func);
+    build_grid(b_tree, b_func);
+    build_grid(ref_tree, ref_func);
 
     // Project functions
-    mrcpp::project(prec, a_tree, a_func);
-    mrcpp::project(prec, b_tree, b_func);
-    mrcpp::project(prec, ref_tree, ref_func);
+    project(prec, a_tree, a_func);
+    project(prec, b_tree, b_func);
+    project(prec, ref_tree, ref_func);
 
     const double ref_int = ref_tree.integrate();
     const double ref_norm = ref_tree.getSquareNorm();
@@ -64,7 +66,7 @@ template<int D> void testMultiplication() {
         FunctionTree<D> c_tree(*mra);
         prod_vec.push_back(&a_tree);
         prod_vec.push_back(&b_tree);
-        mrcpp::multiply(prec, c_tree, prod_vec);
+        multiply(prec, c_tree, prod_vec);
         prod_vec.clear();
 
         THEN("the MW product equals the analytic product") {

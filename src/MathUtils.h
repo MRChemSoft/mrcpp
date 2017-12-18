@@ -10,6 +10,8 @@
 #pragma GCC system_header
 #include <Eigen/Eigenvalues>
 
+namespace mrcpp {
+
 class MathUtils {
 public:
     static double binomialCoeff(int n, int j);
@@ -70,3 +72,4 @@ private:
     static void print_vector(int n, const double *vec);
 };
 
+}

@@ -3,6 +3,7 @@
 #include "Polynomial.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 namespace polynomial {
 

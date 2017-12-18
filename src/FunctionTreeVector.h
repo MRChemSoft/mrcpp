@@ -4,6 +4,8 @@
 
 #include "FunctionTree.h"
 
+namespace mrcpp {
+
 template<int D>
 class FunctionTreeVector {
 public:
@@ -31,3 +33,4 @@ protected:
     std::vector<FunctionTree<D> *> funcs;
 };
 
+}

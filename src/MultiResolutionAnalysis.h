@@ -6,6 +6,8 @@
 
 #include "mrcpp_declarations.h"
 
+namespace mrcpp {
+
 template<int D>
 class MultiResolutionAnalysis {
 public:
@@ -40,3 +42,4 @@ protected:
     void setupFilter();
 };
 
+}

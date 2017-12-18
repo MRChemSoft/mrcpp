@@ -3,6 +3,8 @@
 #include "factory_functions.h"
 #include "MWNode.h"
 
+using namespace mrcpp;
+
 namespace mw_tree {
 
 template<int D> void testNodeFetchers();

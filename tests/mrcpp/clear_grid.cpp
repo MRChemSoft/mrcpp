@@ -5,7 +5,9 @@
 #include "project.h"
 #include "grid.h"
 
-namespace clear_grid {
+using namespace mrcpp;
+
+namespace grid_clear {
 
 template<int D> void testClearGrid();
 
@@ -29,8 +31,8 @@ template<int D> void testClearGrid() {
 
     const double prec = 1.0e-4;
     FunctionTree<D> tree(*mra);
-    mrcpp::build_grid(tree, *func);
-    mrcpp::project(prec, tree, *func);
+    build_grid(tree, *func);
+    project(prec, tree, *func);
 
     const int refDepth = tree.getDepth();
     const int refNodes = tree.getNNodes();
@@ -38,14 +40,14 @@ template<int D> void testClearGrid() {
     const double refNorm = tree.getSquareNorm();
 
     WHEN("the grid is cleared") {
-        mrcpp::clear_grid(-1.0, tree);
+        clear_grid(-1.0, tree);
         THEN("it represents an undefined function on the same grid") {
             REQUIRE( (tree.getDepth() == refDepth) );
             REQUIRE( (tree.getNNodes() == refNodes) );
             REQUIRE( (tree.integrate() == Approx(0.0)) );
             REQUIRE( (tree.getSquareNorm() == Approx(-1.0)) );
             AND_WHEN("the function is re-projected on the same grid") {
-                mrcpp::project(-1.0, tree, *func);
+                project(-1.0, tree, *func);
                 THEN("the representation is the same as before") {
                     REQUIRE( (tree.getDepth() == refDepth) );
                     REQUIRE( (tree.getNNodes() == refNodes) );
@@ -57,14 +59,14 @@ template<int D> void testClearGrid() {
     }
     WHEN("the grid is cleared adaptively") {
         const double new_prec = 1.0e-5;
-        mrcpp::clear_grid(new_prec, tree);
+        clear_grid(new_prec, tree);
         THEN("it represents an undefined function on a larger grid") {
             REQUIRE( (tree.getDepth() >= refDepth) );
             REQUIRE( (tree.getNNodes() > refNodes) );
             REQUIRE( (tree.integrate() == Approx(0.0)) );
             REQUIRE( (tree.getSquareNorm() == Approx(-1.0)) );
             AND_WHEN("the function is re-projected on the new grid") {
-                mrcpp::project(-1.0, tree, *func);
+                project(-1.0, tree, *func);
                 THEN("it becomes a larger representation of the same function") {
                     REQUIRE( (tree.getDepth() >= refDepth) );
                     REQUIRE( (tree.getNNodes() > refNodes) );

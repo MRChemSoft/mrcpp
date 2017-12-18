@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)

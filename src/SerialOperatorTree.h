@@ -13,8 +13,7 @@
 
 #include "SerialTree.h"
 
-class OperatorTree;
-class OperatorNode;
+namespace mrcpp {
 
 class SerialOperatorTree : public SerialTree<2> {
 public:
@@ -46,3 +45,4 @@ private:
 #endif
 };
 
+}

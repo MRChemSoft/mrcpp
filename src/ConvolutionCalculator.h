@@ -5,6 +5,8 @@
 
 #include "mrcpp_declarations.h"
 
+namespace mrcpp {
+
 template<int D>
 class ConvolutionCalculator : public TreeCalculator<D> {
 public:
@@ -54,4 +56,4 @@ protected:
     void tensorApplyOperComp(OperatorState<D> &os);
 };
 
-
+}

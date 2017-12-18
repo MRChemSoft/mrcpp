@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 
+using namespace mrcpp;
+
 namespace function_tree {
 
 template<int D> void testZeroFunction();

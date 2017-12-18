@@ -1,6 +1,8 @@
 #include "ScalingBasis.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 ScalingBasis::ScalingBasis(int k, int t)
         : type(t),
           order(k) {

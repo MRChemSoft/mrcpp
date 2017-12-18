@@ -15,6 +15,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template <int T>
 CrossCorrelationCache<T>::CrossCorrelationCache() {

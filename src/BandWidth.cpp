@@ -1,6 +1,8 @@
 #include "BandWidth.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 BandWidth& BandWidth::operator=(const BandWidth &bw) {
     this->widths = bw.widths;
     return *this;

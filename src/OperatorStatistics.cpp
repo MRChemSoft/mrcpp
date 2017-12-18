@@ -2,6 +2,7 @@
 #include "MWNode.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 OperatorStatistics<D>::OperatorStatistics()

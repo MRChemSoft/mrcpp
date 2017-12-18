@@ -2,8 +2,9 @@
 #include "SerialTree.h"
 #include "MathUtils.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 
 void OperatorNode::dealloc() {

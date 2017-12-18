@@ -3,8 +3,9 @@
 #include "Printer.h"
 #include "MathUtils.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)

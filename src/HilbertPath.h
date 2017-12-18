@@ -1,5 +1,7 @@
 #pragma once
 
+namespace mrcpp {
+
 template<int D>
 class HilbertPath {
 public:
@@ -24,3 +26,4 @@ private:
     static const int hTable[][8];
 };
 
+}

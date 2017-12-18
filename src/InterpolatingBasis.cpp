@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 void InterpolatingBasis::initScalingBasis() {
     int qOrder = getQuadratureOrder();

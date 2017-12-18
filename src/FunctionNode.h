@@ -6,6 +6,8 @@
 #include "MWNode.h"
 #include "FunctionTree.h"
 
+namespace mrcpp {
+
 template<int D>
 class FunctionNode : public MWNode<D> {
 public:
@@ -38,3 +40,4 @@ protected:
 
 };
 
+}

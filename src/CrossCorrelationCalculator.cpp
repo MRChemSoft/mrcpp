@@ -6,6 +6,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();

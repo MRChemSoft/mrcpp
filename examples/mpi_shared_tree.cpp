@@ -10,7 +10,7 @@ const int order = 7;
 const double prec = 1.0e-5;
 
 int main(int argc, char **argv) {
-    Timer tot_t;
+    mrcpp::Timer tot_t;
 
     // Initialize MPI
     MPI_Comm wcomm, scomm;
@@ -37,30 +37,30 @@ int main(int argc, char **argv) {
 
     // Initialize printing
     int printlevel = 0;
-    Printer::init(printlevel, wrank, wsize);
-    Printer::printEnvironment();
-    Printer::printHeader(0, "Shared memory MPI");
+    mrcpp::Printer::init(printlevel, wrank, wsize);
+    mrcpp::Printer::printEnvironment();
+    mrcpp::Printer::printHeader(0, "Shared memory MPI");
 
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    BoundingBox<3> world(min_scale, corner, boxes);
+    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    mrcpp::InterpolatingBasis basis(order);
+    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Defining analytic function
     auto f = [] (const double *r) -> double {
         const double beta = 100.0;
-        const double alpha = pow(beta/pi, 3.0/2.0);
+        const double alpha = pow(beta/mrcpp::pi, 3.0/2.0);
         double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return alpha*exp(-beta*R*R);
     };
 
     // Initialize a shared memory tree, max 100MB
-    SharedMemory *shared_mem = new SharedMemory(scomm, 100);
-    FunctionTree<3> f_tree(MRA, shared_mem);
+    mrcpp::SharedMemory *shared_mem = new mrcpp::SharedMemory(scomm, 100);
+    mrcpp::FunctionTree<3> f_tree(MRA, shared_mem);
 
     // Only first rank projects
     int frank = 0;
@@ -70,8 +70,8 @@ int main(int argc, char **argv) {
     {   // Print data after share
         double integral = f_tree.integrate();
         double sq_norm = f_tree.getSquareNorm();
-        Printer::printDouble(0, "Integral", integral);
-        Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::Printer::printDouble(0, "Integral", integral);
+        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
     }
 
     // Last rank rescales the tree
@@ -82,8 +82,8 @@ int main(int argc, char **argv) {
     {   // Print data after rescale
         double integral = f_tree.integrate();
         double sq_norm = f_tree.getSquareNorm();
-        Printer::printDouble(0, "Integral", integral);
-        Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::Printer::printDouble(0, "Integral", integral);
+        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
     }
 
     // Must be deleted before MPI_Finalize
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 #endif
 
     tot_t.stop();
-    Printer::printFooter(0, tot_t, 2);
+    mrcpp::Printer::printFooter(0, tot_t, 2);
 
     return 0;
 }

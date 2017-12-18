@@ -12,10 +12,9 @@
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussFunc;
-template<int D> class GaussPoly;
-template<int D> class GaussExp;
+namespace mrcpp {
 
 template<int D>
 class Gaussian: public RepresentableFunction<D> {
@@ -103,3 +102,4 @@ protected:
     bool isZeroOnInterval(const double *a, const double *b) const;
 };
 
+}

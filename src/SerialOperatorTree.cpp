@@ -4,6 +4,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 int NOtrees=0;
 

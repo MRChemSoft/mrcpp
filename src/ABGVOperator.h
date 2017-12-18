@@ -2,6 +2,8 @@
 
 #include "DerivativeOperator.h"
 
+namespace mrcpp {
+
 template<int D>
 class ABGVOperator : public DerivativeOperator<D> {
 public:
@@ -12,3 +14,4 @@ protected:
     void initializeOperator(double a, double b);
 };
 
+}

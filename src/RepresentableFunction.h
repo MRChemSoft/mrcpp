@@ -10,6 +10,8 @@
 
 #include "constants.h"
 
+namespace mrcpp {
+
 template<int D>
 class RepresentableFunction {
 public:
@@ -56,3 +58,4 @@ protected:
     double *B; ///< Upper bound, Null if unbounded
 };
 
+}

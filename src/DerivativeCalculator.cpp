@@ -16,6 +16,7 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 DerivativeCalculator<D>::DerivativeCalculator(int dir,

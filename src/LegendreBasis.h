@@ -5,6 +5,8 @@
 
 #include "ScalingBasis.h"
 
+namespace mrcpp {
+
 class LegendreBasis : public ScalingBasis {
 public:
     LegendreBasis(int k) : ScalingBasis(k, Legendre) {
@@ -19,3 +21,4 @@ public:
     void calcCVMaps();
 };
 
+}

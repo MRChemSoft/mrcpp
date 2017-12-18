@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 void ProjectedNode<D>::createChildren() {

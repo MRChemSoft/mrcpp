@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** MWTree constructor with SerialTree storage for nodes.
   * Creates an empty tree object. Node construction and assignment of most of

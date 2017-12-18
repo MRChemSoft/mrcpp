@@ -5,6 +5,8 @@
 
 #pragma once
 
+namespace mrcpp {
+
 #define  MAX(X,Y)   (((X) > (Y)) ? (X):(Y))
 #define  MIN(X,Y)   (((X) < (Y)) ? (X):(Y))
 #define  SQUARE(X)  ((X) * (X))
@@ -65,3 +67,4 @@
  B32(10000000,11111111,10101010,01010101) = 2164238933
  */
 
+}

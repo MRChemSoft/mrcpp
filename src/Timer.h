@@ -3,6 +3,8 @@
 #include <chrono>
 #include <iostream>
 
+namespace mrcpp {
+
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
 
 class Timer {
@@ -16,7 +18,7 @@ public:
 
     double getWallTime() const;
 
-    friend std::ostream& operator<<(std::ostream &o, const Timer &timer);
+    friend std::ostream& operator<<(std::ostream &o, const Timer &timer) { return timer.print(o); }
 private:
     bool running;
     double time_used;
@@ -24,4 +26,8 @@ private:
 
     timeT now();
     double diffTime(timeT t2, timeT t1);
+
+    std::ostream& print(std::ostream &o) const;
 };
+
+}

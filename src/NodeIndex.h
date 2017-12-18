@@ -8,7 +8,9 @@
 
 #include <iostream>
 
-template<int D> class NodeIndexComp;
+#include "mrcpp_declarations.h"
+
+namespace mrcpp {
 
 template<int D>
 class NodeIndex {
@@ -152,3 +154,4 @@ public:
     }
 };
 
+}

@@ -11,6 +11,8 @@
 #include "QuadratureCache.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 QuadratureCache::QuadratureCache() {
     this->A = 0.0;
     this->B = 1.0;

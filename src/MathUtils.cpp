@@ -15,6 +15,7 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** Calculate \f$ m^e\f$ for integers. */
 int MathUtils::ipow(int m, int e) {

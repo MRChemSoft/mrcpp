@@ -2,6 +2,8 @@
 
 #include "ConvolutionOperator.h"
 
+namespace mrcpp {
+
 class HelmholtzOperator : public ConvolutionOperator<3> {
 public:
     HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double m, double pr = -1.0);
@@ -12,4 +14,4 @@ protected:
     const double mu;
 };
 
-
+}

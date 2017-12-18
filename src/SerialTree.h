@@ -14,8 +14,7 @@
 
 #include "mrcpp_declarations.h"
 
-template<int D> class MWTree;
-template<int D> class MWNode;
+namespace mrcpp {
 
 template<int D>
 class SerialTree {
@@ -50,3 +49,5 @@ protected:
     MWTree<D> *tree_p;
     SharedMemory *shMem;
 };
+
+}

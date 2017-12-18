@@ -18,6 +18,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
 

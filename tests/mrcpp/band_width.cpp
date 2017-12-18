@@ -3,6 +3,7 @@
 #include "BandWidth.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 namespace band_width {
 

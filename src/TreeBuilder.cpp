@@ -7,6 +7,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree,

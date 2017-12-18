@@ -2,6 +2,8 @@
 #include "MWNode.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<int D>
 TreeIterator<D>::TreeIterator(int dir)
     : mode(dir),

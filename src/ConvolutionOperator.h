@@ -3,6 +3,8 @@
 #include "MWOperator.h"
 #include "FunctionTreeVector.h"
 
+namespace mrcpp {
+
 template<int D>
 class ConvolutionOperator : public MWOperator {
 public:
@@ -21,3 +23,4 @@ protected:
     double calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const;
 };
 
+}

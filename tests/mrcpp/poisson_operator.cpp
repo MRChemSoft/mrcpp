@@ -15,6 +15,7 @@
 #include "grid.h"
 
 using namespace std;
+using namespace mrcpp;
 
 namespace poisson_operator {
 
@@ -51,8 +52,8 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
             for (int i = 0; i < poisson.size(); i++) {
                 Gaussian<1> &kern_gauss = *poisson[i];
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
-                mrcpp::build_grid(*kern_tree, kern_gauss);
-                mrcpp::project(proj_prec, *kern_tree, kern_gauss);
+                build_grid(*kern_tree, kern_gauss);
+                project(proj_prec, *kern_tree, kern_gauss);
                 kern_vec.push_back(kern_tree);
             }
 
@@ -124,8 +125,8 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     FunctionTree<3> fTree(*mra);
     FunctionTree<3> gTree(*mra);
 
-    mrcpp::project(proj_prec, fTree, *fFunc);
-    mrcpp::apply(apply_prec, gTree, P, fTree);
+    project(proj_prec, fTree, *fFunc);
+    apply(apply_prec, gTree, P, fTree);
 
     double E_num = gTree.dot(fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);

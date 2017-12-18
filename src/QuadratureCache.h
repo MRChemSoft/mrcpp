@@ -6,6 +6,8 @@
 #include "GaussQuadrature.h"
 #include "ObjectCache.h"
 
+namespace mrcpp {
+
 #define getQuadratureCache(X) QuadratureCache &X=QuadratureCache::getInstance()
 
 class QuadratureCache: public ObjectCache<GaussQuadrature> {
@@ -39,3 +41,4 @@ private:
     QuadratureCache &operator=(QuadratureCache const&) { return *this; }
 };
 
+}

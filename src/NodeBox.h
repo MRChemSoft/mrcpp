@@ -10,8 +10,9 @@
 #pragma once
 
 #include "BoundingBox.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class MWNode;
+namespace mrcpp {
 
 template<int D>
 class NodeBox : public BoundingBox<D> {
@@ -45,3 +46,4 @@ protected:
     void deleteNodes();
 };
 
+}

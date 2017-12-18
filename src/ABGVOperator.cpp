@@ -6,6 +6,8 @@
 #include "Printer.h"
 #include "Timer.h"
 
+using namespace mrcpp;
+
 template<int D>
 ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b)
         : DerivativeOperator<D>(mra) {

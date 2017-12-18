@@ -11,6 +11,8 @@
 #include "Printer.h"
 #include "Timer.h"
 
+using namespace mrcpp;
+
 template<int D>
 void mrcpp::apply(double prec,
                   FunctionTree<D> &out,

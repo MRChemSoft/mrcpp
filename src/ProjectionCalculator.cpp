@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {

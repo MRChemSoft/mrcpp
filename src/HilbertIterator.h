@@ -5,6 +5,8 @@
 #include "TreeIterator.h"
 #include "HilbertPath.h"
 
+namespace mrcpp {
+
 template<int D>
 class HilbertIterator: public TreeIterator<D> {
 public:
@@ -22,3 +24,4 @@ protected:
     }
 };
 
+}

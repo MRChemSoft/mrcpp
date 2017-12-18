@@ -6,6 +6,7 @@
 #include "parallel_mpi.h"
 
 using namespace std;
+using namespace mrcpp;
 
 /** SerialTree class constructor.
  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.

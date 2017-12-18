@@ -12,6 +12,7 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */

@@ -2,6 +2,8 @@
 
 #include "ObjectCache.h"
 
+namespace mrcpp {
+
 #define getLegendreScalingCache(X)\
     ScalingCache<LegendreBasis> &X = \
     ScalingCache<LegendreBasis>::getInstance()
@@ -39,3 +41,4 @@ private:
     ScalingCache<P> &operator=(const ScalingCache<P> &sc) { return *this;	}
 };
 
+}

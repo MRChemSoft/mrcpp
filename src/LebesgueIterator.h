@@ -4,6 +4,8 @@
 #include "MWNode.h"
 #include "TreeIterator.h"
 
+namespace mrcpp {
+
 template<int D>
 class LebesgueIterator: public TreeIterator<D> {
 public:
@@ -16,3 +18,4 @@ protected:
     int getChildIndex(int i) const { return i; }
 };
 
+}

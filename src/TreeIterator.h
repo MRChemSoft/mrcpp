@@ -3,7 +3,7 @@
 #include "constants.h"
 #include "mrcpp_declarations.h"
 
-template<int D> class IteratorNode;
+namespace mrcpp {
 
 template<int D>
 class TreeIterator {
@@ -52,3 +52,4 @@ public:
     ~IteratorNode() { delete this->next; }
 };
 
+}

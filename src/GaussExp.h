@@ -23,6 +23,8 @@
 
 #include "mrcpp_declarations.h"
 
+namespace mrcpp {
+
 #define GAUSS_EXP_PREC 1.e-10
 
 template<int D>
@@ -111,3 +113,4 @@ protected:
     double squareNorm;
 };
 
+}

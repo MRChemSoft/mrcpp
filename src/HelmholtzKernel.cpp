@@ -15,6 +15,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 /** generate an approximation of the 3d helmholtz kernel expanded in gaussian functions
  */

@@ -19,8 +19,9 @@
 #include <Eigen/Core>
 
 #include "Gaussian.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussPoly;
+namespace mrcpp {
 
 template<int D>
 class GaussFunc: public Gaussian<D> {
@@ -66,3 +67,4 @@ protected:
 
 };
 
+}

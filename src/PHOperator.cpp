@@ -5,6 +5,8 @@
 #include "Printer.h"
 #include "Timer.h"
 
+using namespace mrcpp;
+
 template<int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra) {

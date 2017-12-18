@@ -9,6 +9,8 @@ const int max_depth = 25;
 const int order = 5;
 const double prec = 1.0e-3;
 
+using namespace mrcpp;
+
 void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     Timer timer;
     int oldlevel = Printer::setPrintLevel(10);
@@ -17,7 +19,7 @@ void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     // Smoothing parameter
     double c = 0.00435*prec/pow(Z, 5);
     auto u = [] (double r) -> double {
-        return erf(r)/r + 1.0/(3.0*sqrt(pi))*(exp(-r*r) + 16.0*exp(-4.0*r*r));
+        return erf(r)/r + 1.0/(3.0*sqrt(mrcpp::pi))*(exp(-r*r) + 16.0*exp(-4.0*r*r));
     };
     auto f = [u, c, Z] (const double *r) -> double {
         double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
@@ -25,7 +27,7 @@ void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     };
 
     // Projecting function
-    mrcpp::project(prec, V, f);
+    project(prec, V, f);
 
     timer.stop();
     Printer::printFooter(0, timer, 2);
@@ -43,7 +45,7 @@ void setupInitialGuess(FunctionTree<3> &phi) {
     };
 
     // Projecting and normalizing function
-    mrcpp::project(prec, phi, f);
+    project(prec, phi, f);
     phi.normalize();
 
     timer.stop();
@@ -103,18 +105,18 @@ int main(int argc, char **argv) {
 
         // Compute Helmholtz argument V*phi
         FunctionTree<3> Vphi(MRA);
-        mrcpp::copy_grid(Vphi, *phi_n); // Copy grid from orbital
-        mrcpp::multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
+        copy_grid(Vphi, *phi_n); // Copy grid from orbital
+        multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
         // Apply Helmholtz operator phi^n+1 = H[V*phi^n]
         phi_np1 = new FunctionTree<3>(MRA);
-        mrcpp::apply(prec, *phi_np1, H, Vphi);
-        *phi_np1 *= -1.0/(2.0*pi);
+        apply(prec, *phi_np1, H, Vphi);
+        *phi_np1 *= -1.0/(2.0*mrcpp::pi);
 
         // Compute orbital residual
         FunctionTree<3> d_phi_n(MRA);
-        mrcpp::copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
-        mrcpp::add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
+        copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
+        add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
         error = sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||

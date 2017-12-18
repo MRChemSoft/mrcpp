@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 GaussPoly<D>::GaussPoly(double alpha, double coef, const double pos[D],

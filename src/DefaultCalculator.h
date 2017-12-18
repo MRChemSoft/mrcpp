@@ -2,6 +2,8 @@
 
 #include "TreeCalculator.h"
 
+namespace mrcpp {
+
 template<int D>
 class DefaultCalculator :public TreeCalculator<D> {
 public:
@@ -22,3 +24,4 @@ protected:
     }
 };
 
+}

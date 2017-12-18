@@ -15,8 +15,9 @@
 
 #include "Gaussian.h"
 #include "Polynomial.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussFunc;
+namespace mrcpp {
 
 template<int D>
 class GaussPoly : public Gaussian<D> {
@@ -76,3 +77,4 @@ private:
     Polynomial *poly[D];
 };
 
+}

@@ -13,6 +13,7 @@
 #include "Timer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 static ofstream tp_outfile;
 int Printer::printLevel = -1;

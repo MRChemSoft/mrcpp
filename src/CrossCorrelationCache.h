@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 
+namespace mrcpp {
+
 #define getCrossCorrelationCache(T,X)\
     CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()
 
@@ -36,3 +38,4 @@ private:
     CrossCorrelationCache<T> &operator=(CrossCorrelationCache<T> const &ccc) { return *this; }
 };
 
+}

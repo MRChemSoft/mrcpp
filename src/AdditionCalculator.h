@@ -3,6 +3,8 @@
 #include "TreeCalculator.h"
 #include "FunctionTreeVector.h"
 
+namespace mrcpp {
+
 template<int D>
 class AdditionCalculator : public TreeCalculator<D> {
 public:
@@ -32,3 +34,4 @@ protected:
     }
 };
 
+}

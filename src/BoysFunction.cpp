@@ -4,6 +4,8 @@
 #include "Printer.h"
 #include "project.h"
 
+using namespace mrcpp;
+
 BoysFunction::BoysFunction(int n, double p)
         : RepresentableFunction<1>(),
           order(n),

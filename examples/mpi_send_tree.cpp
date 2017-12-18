@@ -10,7 +10,7 @@ const int order = 7;
 const double prec = 1.0e-5;
 
 int main(int argc, char **argv) {
-    Timer tot_t;
+    mrcpp::Timer tot_t;
 
     // Initialize MPI
     MPI_Comm comm;
@@ -29,29 +29,29 @@ int main(int argc, char **argv) {
 
     // Initialize printing
     int printlevel = 0;
-    Printer::init(printlevel, wrank, wsize);
-    Printer::printEnvironment();
-    Printer::printHeader(0, "Blocking communication");
+    mrcpp::Printer::init(printlevel, wrank, wsize);
+    mrcpp::Printer::printEnvironment();
+    mrcpp::Printer::printHeader(0, "Blocking communication");
 
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    BoundingBox<3> world(min_scale, corner, boxes);
+    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    mrcpp::InterpolatingBasis basis(order);
+    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Defining analytic function
     auto f = [] (const double *r) -> double {
         const double beta = 100.0;
-        const double alpha = pow(beta/pi, 3.0/2.0);
+        const double alpha = pow(beta/mrcpp::pi, 3.0/2.0);
         double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return alpha*exp(-beta*R*R);
     };
 
     // All ranks define the function
-    FunctionTree<3> f_tree(MRA);
+    mrcpp::FunctionTree<3> f_tree(MRA);
 
     // Only rank 0 projects the function
     if (wrank == 0) mrcpp::project(prec, f_tree, f);
@@ -59,11 +59,11 @@ int main(int argc, char **argv) {
     {   // Print data before send
         double integral = f_tree.integrate();
         double sq_norm = f_tree.getSquareNorm();
-        Printer::printDouble(0, "Integral", integral);
-        Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::Printer::printDouble(0, "Integral", integral);
+        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
     }
 
-    Timer send_t;
+    mrcpp::Timer send_t;
     // Send function to all other ranks
     int src = 0;
     for (int dst = 0; dst < wsize; dst++) {
@@ -73,15 +73,15 @@ int main(int argc, char **argv) {
         if (wrank == dst) mrcpp::recv_tree(f_tree, src, tag, comm);
     }
     send_t.stop();
-    Printer::printSeparator(0, ' ');
-    Printer::printTime(0, "Time sending tree", send_t);
-    Printer::printSeparator(0, ' ');
+    mrcpp::Printer::printSeparator(0, ' ');
+    mrcpp::Printer::printTime(0, "Time sending tree", send_t);
+    mrcpp::Printer::printSeparator(0, ' ');
 
     {   // Print data after send
         double integral = f_tree.integrate();
         double sq_norm = f_tree.getSquareNorm();
-        Printer::printDouble(0, "Integral", integral);
-        Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::Printer::printDouble(0, "Integral", integral);
+        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
     }
 
     // Finalize MPI
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 #endif
 
     tot_t.stop();
-    Printer::printFooter(0, tot_t, 2);
+    mrcpp::Printer::printFooter(0, tot_t, 2);
 
     return 0;
 }

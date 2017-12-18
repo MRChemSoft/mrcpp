@@ -6,6 +6,8 @@
 #include "DefaultCalculator.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<int D>
 void mrcpp::build_grid(FunctionTree<D> &out,
                        const RepresentableFunction<D> &inp,

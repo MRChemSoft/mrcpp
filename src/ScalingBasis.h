@@ -6,6 +6,8 @@
 
 #include "Polynomial.h"
 
+namespace mrcpp {
+
 class ScalingBasis {
 public:
     ScalingBasis(int k, int t);
@@ -47,3 +49,4 @@ protected:
     std::vector<Polynomial> funcs;
 };
 
+}

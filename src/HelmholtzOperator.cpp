@@ -2,6 +2,8 @@
 #include "HelmholtzKernel.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
                                      double m, double pr)
         : ConvolutionOperator<3>(mra, pr), mu(m) {

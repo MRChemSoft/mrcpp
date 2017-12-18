@@ -2,6 +2,8 @@
 
 #include "GreensKernel.h"
 
+namespace mrcpp {
+
 class HelmholtzKernel: public GreensKernel {
 public:
     HelmholtzKernel(double m, double eps, double r_min, double r_max)
@@ -15,3 +17,4 @@ protected:
     virtual void initializeKernel();
 };
 
+}

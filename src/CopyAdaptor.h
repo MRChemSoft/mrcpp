@@ -3,6 +3,8 @@
 #include "TreeAdaptor.h"
 #include "FunctionTreeVector.h"
 
+namespace mrcpp {
+
 template<int D>
 class CopyAdaptor : public TreeAdaptor<D> {
 public:
@@ -18,3 +20,4 @@ protected:
     bool splitNode(const MWNode<D> &node) const;
 };
 
+}

@@ -10,6 +10,8 @@
 
 #include "NodeIndex.h"
 
+namespace mrcpp {
+
 template<int D>
 class BoundingBox {
 public:
@@ -105,3 +107,4 @@ std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
     return o;
 }
 
+}

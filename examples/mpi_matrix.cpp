@@ -10,7 +10,7 @@ const int order = 7;
 const double prec = 1.0e-5;
 
 int main(int argc, char **argv) {
-    Timer tot_t;
+    mrcpp::Timer tot_t;
 
     // Initialize MPI
     MPI_Comm comm;
@@ -32,22 +32,22 @@ int main(int argc, char **argv) {
 
     // Initialize printing
     int printlevel = 0;
-    Printer::init(printlevel, wrank, wsize);
-    Printer::printEnvironment();
-    Printer::printHeader(0, "Non-blocking communication");
+    mrcpp::Printer::init(printlevel, wrank, wsize);
+    mrcpp::Printer::printEnvironment();
+    mrcpp::Printer::printHeader(0, "Non-blocking communication");
 
     // Constructing world box
     int corner[3] = {-1,-1,-1};
     int boxes[3]  = { 2, 2, 2};
-    BoundingBox<3> world(min_scale, corner, boxes);
+    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    mrcpp::InterpolatingBasis basis(order);
+    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
 
     // Projecting vector of functions
     int nFuncs = 5;
-    FunctionTreeVector<3> f_vec;
+    mrcpp::FunctionTreeVector<3> f_vec;
     for (int i = 0; i < nFuncs; i++) {
         auto f = [i] (const double *r) -> double {
             const double beta = 1.0*i*i;
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
             double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
             return exp(-beta*R*R);
         };
-        FunctionTree<3> *tree = new FunctionTree<3>(MRA);
+        mrcpp::FunctionTree<3> *tree = new mrcpp::FunctionTree<3>(MRA);
         if (i%wsize == wrank) {
             mrcpp::project(prec, *tree, f);
             tree->normalize();
@@ -67,10 +67,10 @@ int main(int argc, char **argv) {
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(nFuncs, nFuncs);
     for (int j = 0; j < f_vec.size(); j++) {
         int dst = j%wsize;
-        FunctionTree<3> &f_j = *f_vec[j];
+        mrcpp::FunctionTree<3> &f_j = *f_vec[j];
         for (int i = 0; i < f_vec.size(); i++) {
             int src = i%wsize;
-            FunctionTree<3> &f_i = *f_vec[i];
+            mrcpp::FunctionTree<3> &f_i = *f_vec[i];
             if (src != dst) {
                 int tag = 1000000*dst;
                 MPI_Request req = req_null;
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     f_vec.clear(true);
 
     // Print overlap matrix
-    Printer::setPrecision(5);
+    mrcpp::Printer::setPrecision(5);
     println(0, S);
 
     // Finalize MPI
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 #endif
 
     tot_t.stop();
-    Printer::printFooter(0, tot_t, 2);
+    mrcpp::Printer::printFooter(0, tot_t, 2);
 
     return 0;
 }

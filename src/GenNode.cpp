@@ -2,6 +2,8 @@
 #include "SerialTree.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<int D>
 void GenNode<D>::createChildren() {
     NOT_REACHED_ABORT;

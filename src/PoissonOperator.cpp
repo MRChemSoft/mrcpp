@@ -2,6 +2,8 @@
 #include "PoissonKernel.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double pr)
         : ConvolutionOperator<3>(mra, pr) {
     int oldlevel = Printer::setPrintLevel(0);

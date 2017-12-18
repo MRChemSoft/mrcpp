@@ -8,6 +8,8 @@
 #include "Printer.h"
 #include "Timer.h"
 
+using namespace mrcpp;
+
 template<int D>
 void mrcpp::project(double prec,
                     FunctionTree<D> &out,

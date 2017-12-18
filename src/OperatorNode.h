@@ -3,6 +3,8 @@
 #include "MWNode.h"
 #include "OperatorTree.h"
 
+namespace mrcpp {
+
 class OperatorNode : public MWNode<2> {
 public:
     OperatorTree &getOperTree() { return static_cast<OperatorTree &>(*this->tree); }
@@ -39,3 +41,4 @@ protected:
     double calcComponentNorm(int i) const;
 };
 
+}

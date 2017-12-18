@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** MWNode default constructor.
  *  Should be used only by SerialTree to obtain

@@ -18,6 +18,7 @@
 #include "grid.h"
 
 using namespace std;
+using namespace mrcpp;
 
 namespace helmholtz_operator {
 
@@ -56,8 +57,8 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
             for (int i = 0; i < helmholtz.size(); i++) {
                 Gaussian<1> &kern_gauss = *helmholtz[i];
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
-                mrcpp::build_grid(*kern_tree, kern_gauss);
-                mrcpp::project(proj_prec, *kern_tree, kern_gauss);
+                build_grid(*kern_tree, kern_gauss);
+                project(proj_prec, *kern_tree, kern_gauss);
                 K.push_back(kern_tree);
             }
 
@@ -139,30 +140,30 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     double R[3] = {0.0, 0.0, 0.0};
     HydrogenicFunction hFunc(n, l, m_l, Z, R);
     FunctionTree<3> psi_n(MRA);
-    mrcpp::project(proj_prec, psi_n, hFunc);
+    project(proj_prec, psi_n, hFunc);
 
     auto f = [Z, R] (const double *r) -> double {
         double x = MathUtils::calcDistance(3, r, R);
         return -Z/x;
     };
     FunctionTree<3> V(MRA);
-    mrcpp::project(proj_prec, V, f);
+    project(proj_prec, V, f);
 
     FunctionTree<3> Vpsi(MRA);
-    mrcpp::copy_grid(Vpsi, psi_n);
-    mrcpp::multiply(-1.0, Vpsi, 1.0, V, psi_n);
+    copy_grid(Vpsi, psi_n);
+    multiply(-1.0, Vpsi, 1.0, V, psi_n);
 
     FunctionTree<3> psi_np1(MRA);
-    mrcpp::copy_grid(psi_np1, psi_n);
-    mrcpp::apply(apply_prec, psi_np1, H, Vpsi);
+    copy_grid(psi_np1, psi_n);
+    apply(apply_prec, psi_np1, H, Vpsi);
     psi_np1 *= -1.0/(2.0*pi);
 
     double norm = sqrt(psi_np1.getSquareNorm());
     REQUIRE( (norm == Approx(1.0).epsilon(apply_prec)) );
 
     FunctionTree<3> d_psi(MRA);
-    mrcpp::copy_grid(d_psi, psi_np1);
-    mrcpp::add(-1.0, d_psi, 1.0, psi_np1, -1.0, psi_n);
+    copy_grid(d_psi, psi_np1);
+    add(-1.0, d_psi, 1.0, psi_np1, -1.0, psi_n);
 
     double error = sqrt(d_psi.getSquareNorm());
     REQUIRE( (error < apply_prec) );

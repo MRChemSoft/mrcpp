@@ -5,6 +5,8 @@
 #include "parallel_omp.h"
 #include "macros.h"
 
+namespace mrcpp {
+
 #define getObjectCache(T,X) \
     ObjectCache<T> &X = ObjectCache<T>::getInstance();
 
@@ -66,3 +68,4 @@ private:
     std::vector<int> mem; ///< mem per object
 };
 
+}

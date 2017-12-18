@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D> double GaussExp<D>::defaultScreening = 10.0;
 

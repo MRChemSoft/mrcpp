@@ -18,6 +18,8 @@
 #include <iostream>
 #include <string>
 
+namespace mrcpp {
+
 #define getFilterCache(T,X)\
     FilterCache<T> &X = FilterCache<T>::getInstance()
 #define getLegendreFilterCache(X)\
@@ -61,3 +63,4 @@ private:
     FilterCache &operator=(FilterCache<T> const &fc) { return *this; }
 };
 
+}

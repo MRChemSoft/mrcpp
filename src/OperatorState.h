@@ -12,6 +12,8 @@
 #include "MWNode.h"
 #include "MathUtils.h"
 
+namespace mrcpp {
+
 #define GET_OP_IDX(FT,GT,ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
 
 template<int D>
@@ -93,3 +95,4 @@ private:
     }
 };
 
+}

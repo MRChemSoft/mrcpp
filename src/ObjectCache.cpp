@@ -5,6 +5,8 @@
 #include "CrossCorrelation.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<class T>
 ObjectCache<T> &ObjectCache<T>::getInstance() {
     static ObjectCache<T> theObjectCache;

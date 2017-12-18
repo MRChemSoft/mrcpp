@@ -9,6 +9,8 @@
 #include "grid.h"
 #include "add.h"
 
+using namespace mrcpp;
+
 namespace addition {
 
 template<int D> void testAddition();
@@ -54,14 +56,14 @@ template<int D> void testAddition() {
     FunctionTree<D> ref_tree(*mra);
 
     // Build empty grids
-    mrcpp::build_grid(a_tree, a_func);
-    mrcpp::build_grid(b_tree, b_func);
-    mrcpp::build_grid(ref_tree, ref_func);
+    build_grid(a_tree, a_func);
+    build_grid(b_tree, b_func);
+    build_grid(ref_tree, ref_func);
 
     // Project functions
-    mrcpp::project(prec, a_tree, a_func);
-    mrcpp::project(prec, b_tree, b_func);
-    mrcpp::project(prec, ref_tree, ref_func);
+    project(prec, a_tree, a_func);
+    project(prec, b_tree, b_func);
+    project(prec, ref_tree, ref_func);
 
     // Reference integrals
     const double a_int = a_tree.integrate();
@@ -75,7 +77,7 @@ template<int D> void testAddition() {
         FunctionTree<D> c_tree(*mra);
         sum_vec.push_back(a_coef, &a_tree);
         sum_vec.push_back(b_coef, &b_tree);
-        mrcpp::add(-1.0, c_tree, sum_vec);
+        add(-1.0, c_tree, sum_vec);
         sum_vec.clear();
 
         THEN("their integrals add up") {
@@ -97,7 +99,7 @@ template<int D> void testAddition() {
             FunctionTree<D> d_tree(*mra);
             sum_vec.push_back(&c_tree);
             sum_vec.push_back(-1.0, &a_tree);
-            mrcpp::add(-1.0, d_tree, sum_vec);
+            add(-1.0, d_tree, sum_vec);
             sum_vec.clear();
 
             THEN("the integral is the same as the second function") {
@@ -110,7 +112,7 @@ template<int D> void testAddition() {
                 FunctionTree<D> e_tree(*mra);
                 sum_vec.push_back(&d_tree);
                 sum_vec.push_back(-b_coef, &b_tree);
-                mrcpp::add(-1.0, e_tree, sum_vec);
+                add(-1.0, e_tree, sum_vec);
                 sum_vec.clear();
 
                 THEN("the integral is zero") {

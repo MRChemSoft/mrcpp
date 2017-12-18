@@ -8,6 +8,8 @@
 #include <Eigen/Core>
 #include <iomanip>
 
+namespace mrcpp {
+
 class BandWidth {
 public:
     BandWidth(int depth = 0) : widths(depth + 1, 5) { this->clear(); }
@@ -42,3 +44,4 @@ private:
     Eigen::MatrixXi widths; /// column 5 stores max width at depth
 };
 
+}

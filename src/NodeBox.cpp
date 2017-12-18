@@ -10,6 +10,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 NodeBox<D>::NodeBox() {

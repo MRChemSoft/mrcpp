@@ -6,6 +6,8 @@
 
 #include "mrcpp_declarations.h"
 
+namespace mrcpp {
+
 template<int D>
 class OperatorStatistics {
 public:
@@ -37,3 +39,4 @@ protected:
     Eigen::Matrix<int, 8, 8> **compCount;
 };
 
+}

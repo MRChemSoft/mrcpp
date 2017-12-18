@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** FunctionTree constructor for Serial Tree.
   * */

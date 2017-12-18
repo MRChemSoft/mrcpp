@@ -14,6 +14,8 @@
 #include "NodeIndex.h"
 #include "HilbertPath.h"
 
+namespace mrcpp {
+
 #ifdef HAVE_OPENMP
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
 #define UNSET_NODE_LOCK() omp_unset_lock(&this->node_lock)
@@ -313,3 +315,4 @@ std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
     return o;
 }
 
+}

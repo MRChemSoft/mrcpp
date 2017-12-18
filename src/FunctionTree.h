@@ -7,6 +7,8 @@
 
 #include "MWTree.h"
 
+namespace mrcpp {
+
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
@@ -65,3 +67,4 @@ std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
     return o;
 }
 
+}

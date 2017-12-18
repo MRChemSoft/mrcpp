@@ -3,6 +3,8 @@
 #include "RepresentableFunction.h"
 #include "MultiResolutionAnalysis.h"
 
+namespace mrcpp {
+
 class BoysFunction : public RepresentableFunction<1> {
 public:
     BoysFunction(int n, double prec = 1.0e-10);
@@ -16,4 +18,4 @@ protected:
     MultiResolutionAnalysis<1> MRA;
 };
 
-
+}

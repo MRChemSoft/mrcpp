@@ -2,6 +2,8 @@
 
 #include "FunctionNode.h"
 
+namespace mrcpp {
+
 template<int D>
 class ProjectedNode: public FunctionNode<D> {
 public:
@@ -19,3 +21,4 @@ protected:
     void reCompress();
 };
 
+}

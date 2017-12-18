@@ -12,6 +12,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)

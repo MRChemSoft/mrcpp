@@ -14,6 +14,8 @@
 #include "GaussFunc.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 /** generate an approximation of the 3d poisson kernel expanded in
  * gaussian functions this routine assumes that the expansion be centered
  */

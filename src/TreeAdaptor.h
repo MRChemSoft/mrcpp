@@ -1,8 +1,9 @@
 #pragma once
 
+#include "MWNode.h"
 #include "mrcpp_declarations.h"
 
-#include "MWNode.h"
+namespace mrcpp {
 
 template<int D>
 class TreeAdaptor {
@@ -33,3 +34,4 @@ protected:
     virtual bool splitNode(const MWNode<D> &node) const { return false; }
 };
 
+}

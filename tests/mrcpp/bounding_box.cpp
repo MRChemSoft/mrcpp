@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 
+using namespace mrcpp;
+
 namespace bounding_box {
 
 template<int D> void testConstructors();

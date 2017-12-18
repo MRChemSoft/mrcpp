@@ -3,6 +3,8 @@
 #include "GreensKernel.h"
 #include "GaussFunc.h"
 
+namespace mrcpp {
+
 class IdentityKernel : public GreensKernel {
 public:
     IdentityKernel(double eps)
@@ -19,3 +21,4 @@ protected:
     }
 };
 
+}

@@ -12,6 +12,7 @@
 #include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 RepresentableFunction<D>::RepresentableFunction(const double *a,

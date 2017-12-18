@@ -7,8 +7,9 @@
 #include "macros.h"
 #include "constants.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 /** Constructor for Gauss-Legendre quadrature.
  *

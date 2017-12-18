@@ -4,6 +4,8 @@
 #include "FilterCache.h"
 #include "Printer.h"
 
+using namespace mrcpp;
+
 template<int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
         : maxDepth(mra.maxDepth),

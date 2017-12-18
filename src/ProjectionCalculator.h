@@ -2,6 +2,8 @@
 
 #include "TreeCalculator.h"
 
+namespace mrcpp {
+
 template<int D>
 class ProjectionCalculator : public TreeCalculator<D> {
 public:
@@ -14,3 +16,4 @@ protected:
     virtual void calcNode(MWNode<D> &node);
 };
 
+}

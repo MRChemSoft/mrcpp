@@ -7,6 +7,8 @@
 #include "GaussExp.h"
 #include "Gaussian.h"
 
+namespace mrcpp {
+
 class GreensKernel : public GaussExp<1> {
 public:
     GreensKernel(double eps, double r_min, double r_max)
@@ -45,3 +47,4 @@ protected:
     virtual void initializeKernel() = 0;
 };
 
+}

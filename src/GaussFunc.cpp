@@ -18,6 +18,7 @@
 #include "BoysFunction.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{

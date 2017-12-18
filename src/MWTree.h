@@ -13,6 +13,8 @@
 #include "MultiResolutionAnalysis.h"
 #include "NodeBox.h"
 
+namespace mrcpp {
+
 #ifdef HAVE_OPENMP
 #define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
 #define UNSET_TREE_LOCK() omp_unset_lock(&this->tree_lock)
@@ -152,3 +154,4 @@ protected:
 #endif
 };
 
+}

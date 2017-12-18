@@ -7,7 +7,7 @@
 #include "GridCleaner.h"
 #include "project.h"
 #include "MWMultiplier.h"
-#include "MWAdder.h"
+#include "add.h"
 
 #include "FunctionTree.h"
 #include "FunctionTreeVector.h"

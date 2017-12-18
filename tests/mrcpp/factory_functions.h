@@ -7,7 +7,6 @@
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
 #include "FunctionTree.h"
-#include "GridGenerator.h"
 #include "GaussFunc.h"
 #include "Printer.h"
 

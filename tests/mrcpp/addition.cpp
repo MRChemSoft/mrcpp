@@ -1,18 +1,19 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+
 #include "FunctionTreeVector.h"
-#include "GridGenerator.h"
-#include "MWProjector.h"
-#include "MWAdder.h"
 #include "WaveletAdaptor.h"
 #include "GaussExp.h"
+#include "project.h"
+#include "grid.h"
+#include "add.h"
 
-namespace mw_adder {
+namespace addition {
 
 template<int D> void testAddition();
 
-SCENARIO("Adding MW trees", "[mw_adder], [tree_builder]") {
+SCENARIO("Adding MW trees", "[addition], [tree_builder]") {
     GIVEN("Two MW functions in 1D") {
         testAddition<1>();
     }
@@ -25,6 +26,8 @@ SCENARIO("Adding MW trees", "[mw_adder], [tree_builder]") {
 }
 
 template<int D> void testAddition() {
+    const double prec = 1.0e-4;
+
     const double a_coef = 1.0;
     const double b_coef = 2.0;
 
@@ -45,26 +48,20 @@ template<int D> void testAddition() {
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);
 
-    // Setting up adaptor and TreeBuilders
-    double prec = 1.0e-4;
-    GridGenerator<D> G;
-    MWProjector<D> Q(prec);
-    MWAdder<D> add;
-
     // Initialize trees
     FunctionTree<D> a_tree(*mra);
     FunctionTree<D> b_tree(*mra);
     FunctionTree<D> ref_tree(*mra);
 
     // Build empty grids
-    G(a_tree, a_func);
-    G(b_tree, b_func);
-    G(ref_tree, ref_func);
+    mrcpp::build_grid(a_tree, a_func);
+    mrcpp::build_grid(b_tree, b_func);
+    mrcpp::build_grid(ref_tree, ref_func);
 
     // Project functions
-    Q(a_tree, a_func);
-    Q(b_tree, b_func);
-    Q(ref_tree, ref_func);
+    mrcpp::project(prec, a_tree, a_func);
+    mrcpp::project(prec, b_tree, b_func);
+    mrcpp::project(prec, ref_tree, ref_func);
 
     // Reference integrals
     const double a_int = a_tree.integrate();
@@ -78,7 +75,7 @@ template<int D> void testAddition() {
         FunctionTree<D> c_tree(*mra);
         sum_vec.push_back(a_coef, &a_tree);
         sum_vec.push_back(b_coef, &b_tree);
-        add(c_tree, sum_vec);
+        mrcpp::add(-1.0, c_tree, sum_vec);
         sum_vec.clear();
 
         THEN("their integrals add up") {
@@ -100,7 +97,7 @@ template<int D> void testAddition() {
             FunctionTree<D> d_tree(*mra);
             sum_vec.push_back(&c_tree);
             sum_vec.push_back(-1.0, &a_tree);
-            add(d_tree, sum_vec);
+            mrcpp::add(-1.0, d_tree, sum_vec);
             sum_vec.clear();
 
             THEN("the integral is the same as the second function") {
@@ -113,7 +110,7 @@ template<int D> void testAddition() {
                 FunctionTree<D> e_tree(*mra);
                 sum_vec.push_back(&d_tree);
                 sum_vec.push_back(-b_coef, &b_tree);
-                add(e_tree, sum_vec);
+                mrcpp::add(-1.0, e_tree, sum_vec);
                 sum_vec.clear();
 
                 THEN("the integral is zero") {

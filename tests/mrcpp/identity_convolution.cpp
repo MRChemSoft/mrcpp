@@ -1,15 +1,17 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
-#include "MWProjector.h"
+
 #include "TreeBuilder.h"
 #include "IdentityConvolution.h"
 #include "IdentityKernel.h"
 #include "OperatorTree.h"
-#include "MWConvolution.h"
 #include "OperatorAdaptor.h"
 #include "CrossCorrelationCalculator.h"
 #include "BandWidth.h"
+#include "project.h"
+#include "apply.h"
+#include "grid.h"
 
 namespace identity_convolution {
 
@@ -35,12 +37,10 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
 
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);
-            GridGenerator<1> G;
-            MWProjector<1> Q(proj_prec);
 
             FunctionTree<1> kern_tree(kern_mra);
-            G(kern_tree, id_kern);
-            Q(kern_tree, id_kern);
+            mrcpp::build_grid(kern_tree, id_kern);
+            mrcpp::project(proj_prec, kern_tree, id_kern);
             REQUIRE( (kern_tree.integrate() == Approx(1.0).epsilon(proj_prec)) );
 
             SECTION("Build operator tree by cross correlation") {
@@ -101,15 +101,12 @@ template<int D> void applyIdentity() {
     initialize(&fFunc);
     initialize(&mra);
 
-    MWProjector<D> Q(proj_prec);
     IdentityConvolution<D> I(*mra, build_prec);
-    MWConvolution<D> apply(apply_prec);
-
     FunctionTree<D> fTree(*mra);
     FunctionTree<D> gTree(*mra);
 
-    Q(fTree, *fFunc);
-    apply(gTree, I, fTree);
+    mrcpp::project(proj_prec, fTree, *fFunc);
+    mrcpp::apply(apply_prec, gTree, I, fTree);
 
     REQUIRE( (gTree.getDepth() <= fTree.getDepth()) );
     REQUIRE( (gTree.getNNodes() <= fTree.getNNodes()) );

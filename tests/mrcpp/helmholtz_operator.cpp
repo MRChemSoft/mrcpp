@@ -1,19 +1,21 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+
 #include "TreeBuilder.h"
 #include "HelmholtzOperator.h"
 #include "HelmholtzKernel.h"
 #include "MWOperator.h"
-#include "MWConvolution.h"
 #include "OperatorAdaptor.h"
-#include "MWProjector.h"
-#include "MWMultiplier.h"
-#include "MWAdder.h"
 #include "BandWidth.h"
 #include "CrossCorrelationCalculator.h"
 #include "HydrogenicFunction.h"
 #include "MathUtils.h"
+#include "apply.h"
+#include "project.h"
+#include "multiply.h"
+#include "add.h"
+#include "grid.h"
 
 using namespace std;
 
@@ -50,15 +52,12 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);
 
-            MWProjector<1> Q(proj_prec);
-            GridGenerator<1> G;
-
             FunctionTreeVector<1> K;
             for (int i = 0; i < helmholtz.size(); i++) {
                 Gaussian<1> &kern_gauss = *helmholtz[i];
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
-                G(*kern_tree, kern_gauss);
-                Q(*kern_tree, kern_gauss);
+                mrcpp::build_grid(*kern_tree, kern_gauss);
+                mrcpp::project(proj_prec, *kern_tree, kern_gauss);
                 K.push_back(kern_tree);
             }
 
@@ -128,13 +127,6 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(box, basis);
 
-    FunctionTreeVector<3> tree_vec;
-    MWAdder<3> add;
-    MWMultiplier<3> mult;
-    MWProjector<3> Q(proj_prec);
-    GridGenerator<3> G;
-    MWConvolution<3> apply(apply_prec);
-
     int n = 2;                  // Principal quantum number
     int l = 1;                  // Angular quantum number
     int m_l = 2;                // Magnetic quantum number
@@ -147,30 +139,30 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     double R[3] = {0.0, 0.0, 0.0};
     HydrogenicFunction hFunc(n, l, m_l, Z, R);
     FunctionTree<3> psi_n(MRA);
-    Q(psi_n, hFunc);
+    mrcpp::project(proj_prec, psi_n, hFunc);
 
     auto f = [Z, R] (const double *r) -> double {
         double x = MathUtils::calcDistance(3, r, R);
         return -Z/x;
     };
     FunctionTree<3> V(MRA);
-    Q(V, f);
+    mrcpp::project(proj_prec, V, f);
 
     FunctionTree<3> Vpsi(MRA);
-    G(Vpsi, psi_n);
-    mult(Vpsi, 1.0, V, psi_n);
+    mrcpp::copy_grid(Vpsi, psi_n);
+    mrcpp::multiply(-1.0, Vpsi, 1.0, V, psi_n);
 
     FunctionTree<3> psi_np1(MRA);
-    G(psi_np1, psi_n);
-    apply(psi_np1, H, Vpsi);
+    mrcpp::copy_grid(psi_np1, psi_n);
+    mrcpp::apply(apply_prec, psi_np1, H, Vpsi);
     psi_np1 *= -1.0/(2.0*pi);
 
     double norm = sqrt(psi_np1.getSquareNorm());
     REQUIRE( (norm == Approx(1.0).epsilon(apply_prec)) );
 
     FunctionTree<3> d_psi(MRA);
-    G(d_psi, psi_np1);
-    add(d_psi, 1.0, psi_np1, -1.0, psi_n);
+    mrcpp::copy_grid(d_psi, psi_np1);
+    mrcpp::add(-1.0, d_psi, 1.0, psi_np1, -1.0, psi_n);
 
     double error = sqrt(d_psi.getSquareNorm());
     REQUIRE( (error < apply_prec) );

@@ -1,18 +1,19 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+
 #include "FunctionTreeVector.h"
-#include "GridGenerator.h"
-#include "MWProjector.h"
-#include "MWMultiplier.h"
 #include "WaveletAdaptor.h"
 #include "GaussPoly.h"
+#include "project.h"
+#include "grid.h"
+#include "multiply.h"
 
-namespace mw_multiplier {
+namespace multiplication {
 
 template<int D> void testMultiplication();
 
-SCENARIO("MWMultiplier", "[mw_multiplier], [tree_builder]") {
+SCENARIO("Multiplying MW trees", "[multiplication], [tree_builder]") {
     GIVEN("Two MW functions in 1D") {
         testMultiplication<1>();
     }
@@ -25,6 +26,8 @@ SCENARIO("MWMultiplier", "[mw_multiplier], [tree_builder]") {
 }
 
 template<int D> void testMultiplication() {
+    const double prec = 1.0e-4;
+
     double alpha = 1.0;
     double beta_a = 110.0;
     double beta_b = 50.0;
@@ -38,26 +41,20 @@ template<int D> void testMultiplication() {
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);
 
-    // Setting up adaptor and TreeBuilders
-    double prec = 1.0e-4;
-    GridGenerator<D> G;
-    MWProjector<D> Q(prec);
-    MWMultiplier<D> mult;
-
     // Initialize trees
     FunctionTree<D> a_tree(*mra);
     FunctionTree<D> b_tree(*mra);
     FunctionTree<D> ref_tree(*mra);
 
     // Build empty grids
-    G(a_tree, a_func);
-    G(b_tree, b_func);
-    G(ref_tree, ref_func);
+    mrcpp::build_grid(a_tree, a_func);
+    mrcpp::build_grid(b_tree, b_func);
+    mrcpp::build_grid(ref_tree, ref_func);
 
     // Project functions
-    Q(a_tree, a_func);
-    Q(b_tree, b_func);
-    Q(ref_tree, ref_func);
+    mrcpp::project(prec, a_tree, a_func);
+    mrcpp::project(prec, b_tree, b_func);
+    mrcpp::project(prec, ref_tree, ref_func);
 
     const double ref_int = ref_tree.integrate();
     const double ref_norm = ref_tree.getSquareNorm();
@@ -67,7 +64,7 @@ template<int D> void testMultiplication() {
         FunctionTree<D> c_tree(*mra);
         prod_vec.push_back(&a_tree);
         prod_vec.push_back(&b_tree);
-        mult(c_tree, prod_vec);
+        mrcpp::multiply(prec, c_tree, prod_vec);
         prod_vec.clear();
 
         THEN("the MW product equals the analytic product") {

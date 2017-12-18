@@ -2,29 +2,30 @@
 
 #include "factory_functions.h"
 
-namespace grid_generator {
+#include "grid.h"
 
-template<int D> void testGridGenerator();
+namespace build_grid {
 
-SCENARIO("The GridGenerator builds empty grids", "[grid_generator], [tree_builder], [trees]") {
-    GIVEN("a GridGenerator and analytic function in 1D") {
-        testGridGenerator<1>();
+template<int D> void testBuildGrid();
+
+SCENARIO("Building empty grids", "[build_grid], [tree_builder], [trees]") {
+    GIVEN("an analytic function in 1D") {
+        testBuildGrid<1>();
     }
-    GIVEN("a GridGenerator and analytic function in 2D") {
-        testGridGenerator<2>();
+    GIVEN("an analytic function in 2D") {
+        testBuildGrid<2>();
     }
-    GIVEN("a GridGenerator and analytic function in 3D") {
-        testGridGenerator<3>();
+    GIVEN("an analytic function in 3D") {
+        testBuildGrid<3>();
     }
 }
 
-template<int D> void testGridGenerator() {
+template<int D> void testBuildGrid() {
     GaussFunc<D> *f_func = 0;
     initialize(&f_func);
 
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);
-    GridGenerator<D> G;
 
     WHEN("the GridGenerator is given no argument") {
         FunctionTree<D> f_tree(*mra);
@@ -36,7 +37,7 @@ template<int D> void testGridGenerator() {
             REQUIRE( (f_tree.getNGenNodes() == 0) );
 
             AND_WHEN("the GridGenerator is given the analytic function") {
-                G(f_tree, *f_func, 2);
+                mrcpp::build_grid(f_tree, *f_func, 2);
 
                 THEN("the empty tree gets adapted") {
                     REQUIRE( (f_tree.getSquareNorm() == Approx(-1.0)) );
@@ -50,7 +51,7 @@ template<int D> void testGridGenerator() {
 
     WHEN("the GridGenerator is given the analytic function") {
         FunctionTree<D> f_tree(*mra);
-        G(f_tree, *f_func, 2);
+        mrcpp::build_grid(f_tree, *f_func, 2);
 
         THEN("we get an empty adapted tree structure") {
             REQUIRE( (f_tree.getSquareNorm() == Approx(-1.0)) );
@@ -60,7 +61,7 @@ template<int D> void testGridGenerator() {
 
             AND_WHEN("the empty tree is passed to the GridGenerator") {
                 FunctionTree<D> g_tree(*mra);
-                G(g_tree, f_tree);
+                mrcpp::copy_grid(g_tree, f_tree);
 
                 THEN("we get an identical empty grid") {
                     REQUIRE( (g_tree.getSquareNorm() == Approx(-1.0)) );

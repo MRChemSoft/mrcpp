@@ -232,6 +232,12 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
+template<int D>
+std::ostream& FunctionTree<D>::print(std::ostream &o) {
+    o << std::endl << "*FunctionTree: " << this->name << std::endl;
+    return MWTree<D>::print(o);
+}
+
 template class FunctionTree<1>;
 template class FunctionTree<2>;
 template class FunctionTree<3>;

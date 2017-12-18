@@ -449,6 +449,15 @@ void GaussExp<D>::setDefaultScreening(double screen) {
     defaultScreening = screen;
 }
 
+template<int D>
+std::ostream& GaussExp<D>::print(std::ostream &o) const {
+    o << "Gaussian Expansion: " << size() << " terms" << std::endl;
+    for (int i = 0; i < size(); i++) {
+        o << "Term " << i << ":" << std::endl;
+        o << getFunc(i) << std::endl << std::endl;
+    }
+    return o;
+}
 
 template class GaussExp<1>;
 template class GaussExp<2>;

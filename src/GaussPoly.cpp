@@ -235,6 +235,22 @@ void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
     this->power[d] = poly.getOrder();
 }
 
+template<int D>
+std::ostream& GaussPoly<D>::print(std::ostream &o) const {
+    o << "Exp: " << this->getExp() << std::endl;
+    o << "Coef: " << this->getCoef() << std::endl;
+    o << "Pos:   ";
+    for (int i = 0; i < D; i++) {
+        o << this->getPos()[i] << " ";
+    }
+    o << std::endl;
+    for (int i = 0; i < D; i++) {
+    o << "Dim " << i << ": order " << this->getPower(i) << std::endl;
+    o << this->getPolyCoefs(i) << std::endl;
+    }
+    return o;
+}
+
 template class GaussPoly<1>;
 template class GaussPoly<2>;
 template class GaussPoly<3>;

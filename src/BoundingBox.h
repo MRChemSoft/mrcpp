@@ -42,8 +42,7 @@ public:
     const double *getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box);
+    friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
     // Fundamental parameters
@@ -58,6 +57,8 @@ protected:
 
     void setNBoxes(const int *nb);
     void setDerivedParameters();
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 template<int D>
@@ -76,35 +77,6 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
         if (this->size(d) != box.size(d)) return true;
     }
     return false;
-}
-
-template<int T>
-std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
-    o << std::fixed;
-    o << " unit length      = " << box.getUnitLength() << std::endl;
-    o << " total boxes      = " << box.size() << std::endl;
-    o << " boxes            = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.size(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " lower bounds     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getLowerBound(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " upper bounds     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getUpperBound(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " total length     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getBoxLength(i) << " ";
-    }
-    o << "]";
-    o << std::scientific;
-    return o;
 }
 
 }

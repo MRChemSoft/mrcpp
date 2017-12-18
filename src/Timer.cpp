@@ -41,13 +41,6 @@ double Timer::getWallTime() const {
     return this->time_used;
 }
 
-std::ostream& Timer::print(std::ostream &o) const {
-    int old_prec = Printer::setPrecision(5);
-    o << getWallTime();
-    Printer::setPrecision(old_prec);
-    return o;
-}
-
 timeT Timer::now(){
     return std::chrono::high_resolution_clock::now();
 }
@@ -57,3 +50,9 @@ double Timer::diffTime(timeT t2, timeT t1) {
     return diff.count();
 }
 
+std::ostream& Timer::print(std::ostream &o) const {
+    int old_prec = Printer::setPrecision(5);
+    o << getWallTime();
+    Printer::setPrecision(old_prec);
+    return o;
+}

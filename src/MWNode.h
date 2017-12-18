@@ -123,8 +123,7 @@ public:
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, const MWNode<T> &nd);
+    friend std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) { return nd.print(o); }
 
     friend class MultiplicationCalculator<D>;
     friend class SerialFunctionTree<D>;
@@ -188,6 +187,8 @@ protected:
     MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
     void deleteGenerated();
+
+    virtual std::ostream& print(std::ostream &o) const;
 
     static const unsigned char FlagBranchNode = B8(00000001);
     static const unsigned char FlagGenNode    = B8(00000010);
@@ -277,42 +278,6 @@ bool MWNode<D>::checkStatus(unsigned char mask) const {
         return true;
     }
     return false;
-}
-
-template<int D>
-std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
-    std::string flags ="       ";
-    o << nd.getNodeIndex();
-    if (nd.isRootNode()) {
-        flags[0] = 'R';
-    }
-    if (nd.isEndNode()) {
-        flags[1] = 'E';
-    }
-    if (nd.isBranchNode()) {
-        flags[2] = 'B';
-    } else {
-        flags[2] = 'L';
-    }
-    if (nd.isGenNode()) {
-        flags[3] = 'G';
-    } else {
-        flags[3] = 'P';
-    }
-    if (nd.isAllocated()) {
-        flags[4] = 'A';
-    }
-    if (nd.hasCoefs()) {
-        flags[5] = 'C';
-    }
-    o << " " << flags;
-    o << " sqNorm=" << nd.squareNorm;
-    if (nd.hasCoefs()) {
-        o << " Coefs={";
-        o << nd.getCoefs()[0] << ", " <<
-             nd.getCoefs()[nd.getNCoefs() - 1] << "}";
-    }
-    return o;
 }
 
 }

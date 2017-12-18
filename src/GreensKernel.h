@@ -32,19 +32,16 @@ public:
         }
     }
 
-    friend std::ostream& operator <<(std::ostream &o, const GreensKernel &kernel) {
-        o << "Kernel: " << std::endl;
-        o << "epsilon:  " << kernel.epsilon << std::endl;
-        o << "rMin:     " << kernel.rMin << std::endl;
-        o << "rMax:     " << kernel.rMax << std::endl;
-        return o;
-    }
+    friend std::ostream& operator <<(std::ostream &o, const GreensKernel &kernel) { return kernel.print(o); }
+
 protected:
     const double epsilon;
     const double rMin; /**< lower extreme */
     const double rMax; /**< upper extreme  (not used) */
 
     virtual void initializeKernel() = 0;
+
+    virtual std::ostream& print(std::ostream &o) const = 0;
 };
 
 }

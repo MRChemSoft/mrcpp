@@ -56,3 +56,12 @@ void HelmholtzKernel::initializeKernel() {
     }
     this->calcSquareNorm();
 }
+
+std::ostream& HelmholtzKernel::print(std::ostream &o) const {
+    o << "Kernel: " << std::endl;
+    o << "epsilon:  " << this->epsilon << std::endl;
+    o << "rMin:     " << this->rMin << std::endl;
+    o << "rMax:     " << this->rMax << std::endl;
+    o << "mu:       " << this->mu << std::endl;
+    return o;
+}

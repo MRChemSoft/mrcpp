@@ -44,3 +44,20 @@ void BandWidth::setWidth(int depth, int index, int wd) {
         this->widths(depth, 4) = wd;
     }
 }
+
+
+std::ostream& BandWidth::print(std::ostream &o) const {
+    o << "  *BandWidths:" << std::endl;
+    o << "   n      T   C   B   A  |  max " << std::endl;
+    o << " -------------------------------" << std::endl;
+    for (int depth = 0; depth <= getDepth(); depth++) {
+        o << std::setw(4) << depth << " | ";
+        o << std::setw(4) << this->widths(depth, 0);
+        o << std::setw(4) << this->widths(depth, 1);
+        o << std::setw(4) << this->widths(depth, 2);
+        o << std::setw(4) << this->widths(depth, 3) << "  | ";
+        o << std::setw(4) << this->widths(depth, 4) << std::endl;
+    }
+    o << std::endl;
+    return o;
+}

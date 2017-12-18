@@ -498,6 +498,21 @@ bool MWTree<D>::loadTree(const string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 
+template<int D>
+std::ostream& MWTree<D>::print(std::ostream &o) {
+    o << "  square norm: " << this->squareNorm << std::endl;
+    o << "  root scale: " << this->getRootScale() << std::endl;
+    o << "  order: " << this->order << std::endl;
+    o << "  nodes: " << this->getNNodes() << std::endl;
+    o << "  endNodes: " << this->endNodeTable.size() << std::endl;
+    o << "  genNodes: " << this->getNGenNodes() << std::endl;
+    o << "  nodes per scale: " << std::endl;
+    for (int i = 0; i < this->nodesAtDepth.size(); i++) {
+        o << "    scale=" << i + this->getRootScale() << "  nodes="
+          << this->nodesAtDepth[i] << std::endl;
+    }
+    return o;
+}
 template class MWTree<1>;
 template class MWTree<2>;
 template class MWTree<3>;

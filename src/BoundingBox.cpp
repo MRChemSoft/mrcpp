@@ -212,6 +212,35 @@ int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
     return bIdx;
 }
 
+template<int D>
+std::ostream& BoundingBox<D>::print(std::ostream &o) const {
+    o << std::fixed;
+    o << " unit length      = " << getUnitLength() << std::endl;
+    o << " total boxes      = " << size() << std::endl;
+    o << " boxes            = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << size(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " lower bounds     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getLowerBound(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " upper bounds     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getUpperBound(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " total length     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getBoxLength(i) << " ";
+    }
+    o << "]";
+    o << std::scientific;
+    return o;
+}
+
 template class BoundingBox<1>;
 template class BoundingBox<2>;
 template class BoundingBox<3>;

@@ -97,20 +97,15 @@ public:
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);
 
-    friend std::ostream& operator<< (std::ostream &o, const GaussExp &gExp) {
-        o << "Gaussian Expansion: " << gExp.size() << " terms" << std::endl;
-        for (int i = 0; i < gExp.size(); i++) {
-            o << "Term " << i << ":" << std::endl;
-            o << gExp.getFunc(i) << std::endl << std::endl;
-        }
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
 
 protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
     double screening;
     double squareNorm;
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 }

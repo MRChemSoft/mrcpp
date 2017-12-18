@@ -307,6 +307,22 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     return sqrt(4.0*alpha/pi)*boysFac;
 }
 
+template<int D>
+std::ostream& GaussFunc<D>::print(std::ostream &o) const {
+    o << "Exp:   " << this->getExp() << std::endl;
+    o << "Coef:  "<< this->getCoef() << std::endl;
+    o << "Pos:   ";
+    for (int i = 0; i < D; i++) {
+        o << this->getPos()[i] << " ";
+    }
+    o << std::endl;
+    o << "Power: ";
+    for (int i = 0; i < D; i++) {
+        o << this->getPower(i) << " ";
+    }
+    return o;
+}
+
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;

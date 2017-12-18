@@ -28,17 +28,7 @@ public:
     bool operator==(const ScalingBasis &basis) const;
     bool operator!=(const ScalingBasis &basis) const;
 
-    friend std::ostream& operator<<(std::ostream &o, const ScalingBasis &bas) {
-        o << " polynomial order = " << bas.getScalingOrder() << std::endl;
-        if (bas.getScalingType() == Legendre) {
-            o << " polynomial type  = Legendre";
-        } else if (bas.getScalingType() == Interpol) {
-            o << " polynomial type  = Interpolating";
-        } else {
-            o << " polynomial type  = Unknown";
-        }
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const ScalingBasis &bas) { return bas.print(o); }
 
 protected:
     const int type;
@@ -47,6 +37,8 @@ protected:
     Eigen::MatrixXd cvMap;  // coef-value transformation matrix
     Eigen::MatrixXd vcMap;  // value-coef transformation matrix
     std::vector<Polynomial> funcs;
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 }

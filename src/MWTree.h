@@ -103,6 +103,8 @@ public:
 
     SerialTree<D>* getSerialTree() { return this->serialTree_p; }
 
+    friend std::ostream& operator <<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
+
     friend class MWNode<D>;
     friend class GenNode<D>;
     friend class ProjectedNode<D>;
@@ -148,6 +150,8 @@ protected:
     void updateGenNodeCounts();
     void incrementGenNodeCount();
     void decrementGenNodeCount();
+
+    virtual std::ostream& print(std::ostream &o);
 
 #ifdef HAVE_OPENMP
     omp_lock_t tree_lock;

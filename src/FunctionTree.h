@@ -46,25 +46,8 @@ public:
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    template<int T>
-    friend std::ostream& operator <<(std::ostream &o, FunctionTree<T> &tree);
+protected:
+    std::ostream& print(std::ostream &o);
 };
-
-template<int D>
-std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
-    o << std::endl << "*FunctionTree: " << tree.name << std::endl;
-    o << "  square norm: " << tree.squareNorm << std::endl;
-    o << "  root scale: " << tree.getRootScale() << std::endl;
-    o << "  order: " << tree.order << std::endl;
-    o << "  nodes: " << tree.getNNodes() << std::endl;
-    o << "  endNodes: " << tree.endNodeTable.size() << std::endl;
-    o << "  genNodes: " << tree.getNGenNodes() << std::endl;
-    o << "  nodes per scale: " << std::endl;
-    for (int i = 0; i < tree.nodesAtDepth.size(); i++) {
-        o << "    scale=" << i + tree.getRootScale() << "  nodes="
-          << tree.nodesAtDepth[i] << std::endl;
-    }
-    return o;
-}
 
 }

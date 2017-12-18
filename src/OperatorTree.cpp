@@ -180,3 +180,9 @@ void OperatorTree::mwTransformDown(bool overwrite) {
         }
     }
 }
+
+
+std::ostream& OperatorTree::print(std::ostream &o) {
+    o << std::endl << "*OperatorTree: " << this->name << std::endl;
+    return MWTree<2>::print(o);
+}

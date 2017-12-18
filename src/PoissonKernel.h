@@ -13,6 +13,7 @@ public:
     virtual ~PoissonKernel() { }
 protected:
     virtual void initializeKernel();
+    virtual std::ostream& print(std::ostream &o) const;
 };
 
 }

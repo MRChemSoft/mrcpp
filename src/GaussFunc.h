@@ -65,6 +65,7 @@ protected:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a,
             double pos_b, double expo_a, double expo_b);
 
+    std::ostream& print(std::ostream &o) const;
 };
 
 }

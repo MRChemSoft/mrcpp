@@ -27,22 +27,6 @@ public:
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
 
-    friend std::ostream& operator <<(std::ostream &o, OperatorTree &tree) {
-        o << std::endl << "*OperatorTree: " << tree.name << std::endl;
-        o << "  square norm: " << tree.squareNorm << std::endl;
-        o << "  root scale: " << tree.getRootScale() << std::endl;
-        o << "  order: " << tree.order << std::endl;
-        o << "  nodes: " << tree.getNNodes() << std::endl;
-        o << "  endNodes: " << tree.endNodeTable.size() << std::endl;
-        o << "  genNodes: " << tree.getNGenNodes() << std::endl;
-        o << "  nodes per scale: " << std::endl;
-        for (int i = 0; i < tree.nodesAtDepth.size(); i++) {
-            o << "    scale=" << i + tree.getRootScale() << "  nodes="
-              << tree.nodesAtDepth[i] << std::endl;
-        }
-        return o;
-    }
-
 protected:
     const double normPrec;
     BandWidth *bandWidth;
@@ -50,6 +34,8 @@ protected:
     OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
 
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
+
+    std::ostream& print(std::ostream &o);
 };
 
 }

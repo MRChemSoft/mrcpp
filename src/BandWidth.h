@@ -24,24 +24,12 @@ public:
     int getWidth(int depth, int index) const;
     void setWidth(int depth, int index, int wd);
 
-    friend std::ostream& operator<<(std::ostream &o, const BandWidth &bw) {
-        o << "  *BandWidths:" << std::endl;
-        o << "   n      T   C   B   A  |  max " << std::endl;
-        o << " -------------------------------" << std::endl;
-        for (int depth = 0; depth <= bw.getDepth(); depth++) {
-            o << std::setw(4) << depth << " | ";
-            o << std::setw(4) << bw.widths(depth, 0);
-            o << std::setw(4) << bw.widths(depth, 1);
-            o << std::setw(4) << bw.widths(depth, 2);
-            o << std::setw(4) << bw.widths(depth, 3) << "  | ";
-            o << std::setw(4) << bw.widths(depth, 4) << std::endl;
-        }
-        o << std::endl;
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const BandWidth &bw) { bw.print(o); }
 
 private:
     Eigen::MatrixXi widths; /// column 5 stores max width at depth
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 }

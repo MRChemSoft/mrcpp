@@ -35,7 +35,6 @@ add_library(mrcpp STATIC
     MWOperator.cpp
     MWTree.cpp
     project.cpp
-    MWDerivative.cpp
     apply.cpp
     add.cpp
     multiply.cpp

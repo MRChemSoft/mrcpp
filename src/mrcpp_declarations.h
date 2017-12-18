@@ -39,9 +39,6 @@ template <int D> class ProjectedNode;
 template <int D> class GenNode;
 class OperatorNode;
 
-template <int D> class TreeBuilder;
-template <int D> class MWDerivative;
-
 template <int D> class IdentityConvolution;
 template <int D> class DerivativeConvolution;
 template <int D> class ConvolutionOperator;
@@ -57,6 +54,7 @@ class DerivativeKernel;
 class PoissonKernel;
 class HelmholtzKernel;
 
+template <int D> class TreeBuilder;
 template <int D> class TreeCalculator;
 template <int D> class DefaultCalculator;
 template <int D> class ProjectionCalculator;

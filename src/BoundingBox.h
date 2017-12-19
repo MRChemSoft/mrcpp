@@ -46,8 +46,8 @@ public:
 
 protected:
     // Fundamental parameters
-    int nBoxes[D+1];		        ///< Number of boxes in each dim, last entry total
-    NodeIndex<D> cornerIndex;	///< Index defining the lower corner of the box
+    int nBoxes[D+1];                ///< Number of boxes in each dim, last entry total
+    NodeIndex<D> cornerIndex;       ///< Index defining the lower corner of the box
 
     // Derived parameters
     double unitLength;		    ///< 1/2^initialScale
@@ -80,3 +80,4 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
 }
 
 }
+

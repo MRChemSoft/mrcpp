@@ -5,6 +5,8 @@
  *
  */
 
+#include <math.h>
+
 #include "constants.h"
 
 #include "BoundingBox.h"
@@ -99,16 +101,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
     return nIdx;
 }
 
-template<>
-NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
-    assert(bIdx >= 0 and bIdx <= nBoxes[1]);
-    int n = getScale();
-    int cl = this->cornerIndex.getTranslation(0);
-    int l = bIdx + cl;
-    NodeIndex<1> nIdx(n, &l);
-    return nIdx;
-}
-
+// Specialized for D=1 below
 template<int D>
 NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     assert(bIdx >= 0 and bIdx <= nBoxes[D]);
@@ -134,18 +127,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     return nIdx;
 }
 
-template<>
-int BoundingBox<1>::getBoxIndex(const double *r) const {
-    assert(r != 0);
-    double x = r[0];
-    if (x < this->lowerBounds[0]) return -1;
-    if (x >= this->upperBounds[0]) return -1;
-    double div = (x - this->lowerBounds[0]) / this->unitLength;
-    double iint;
-    modf(div,&iint);
-    return (int) iint;
-}
-
+// Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const double *r) const {
     assert(r != 0);
@@ -171,23 +153,7 @@ int BoundingBox<D>::getBoxIndex(const double *r) const {
     return bIdx;
 }
 
-template<>
-int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
-    int n = nIdx.getScale();
-    int l = nIdx.getTranslation(0);
-    int cn = this->cornerIndex.getScale();
-    int cl = this->cornerIndex.getTranslation(0);
-    int relScale = n - cn;
-    if (relScale < 0) return -1;
-
-    int bIdx = (l >> relScale) - cl;
-    if (bIdx < 0 or bIdx >= this->size()) {
-        return -1;
-    } else {
-        return bIdx;
-    }
-}
-
+// Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
     int n = nIdx.getScale();
@@ -241,6 +207,49 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
     return o;
 }
 
+// Template specializations
+namespace mrcpp {
+
+template<>
+int BoundingBox<1>::getBoxIndex(const double *r) const {
+    double x = r[0];
+    if (x < this->lowerBounds[0]) return -1;
+    if (x >= this->upperBounds[0]) return -1;
+    double div = (x - this->lowerBounds[0]) / this->unitLength;
+    double iint;
+    modf(div,&iint);
+    return (int) iint;
+}
+
+template<>
+NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
+    int n = getScale();
+    int cl = this->cornerIndex.getTranslation(0);
+    int l = bIdx + cl;
+    NodeIndex<1> nIdx(n, &l);
+    return nIdx;
+}
+
+template<>
+int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
+    int n = nIdx.getScale();
+    int l = nIdx.getTranslation(0);
+    int cn = this->cornerIndex.getScale();
+    int cl = this->cornerIndex.getTranslation(0);
+    int relScale = n - cn;
+    if (relScale < 0) return -1;
+
+    int bIdx = (l >> relScale) - cl;
+    if (bIdx < 0 or bIdx >= this->size()) {
+        return -1;
+    } else {
+        return bIdx;
+    }
+}
+
+}
+
 template class BoundingBox<1>;
 template class BoundingBox<2>;
 template class BoundingBox<3>;
+

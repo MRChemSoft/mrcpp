@@ -322,37 +322,7 @@ void Plotter<D>::calcSurfCoordinates() {
 //    }
 }
 
-/** Calculating coordinates to be evaluated
-
-    Generating a vector of nPoints coordinates equally distributed between the
-    dimensions, that fills the space of a cube defined by the lower- and upper
-    corner (A and B). Coordiates are stored in the matrix coords for later
-    evaluation.
-*/
-template<>
-void Plotter<3>::calcCubeCoordinates() {
-    int nPerDim = (int) floor(cbrt(this->nPoints));
-    int nRealPoints = MathUtils::ipow(nPerDim, 3);
-    this->coords = MatrixXd::Zero(nRealPoints, 3);
-
-    double step[3];
-    for (int d = 0; d < 3; d++) {
-        step[d] = (this->B[d] - this->A[d]) / (nPerDim - 1);
-    }
-
-    int n = 0;
-    for (int i = 0; i < nPerDim; i++) {
-        for (int j = 0; j < nPerDim; j++) {
-            for (int k = 0; k < nPerDim; k++) {
-                this->coords(n, 0) = i * step[0] + this->A[0];
-                this->coords(n, 1) = j * step[1] + this->A[1];
-                this->coords(n, 2) = k * step[2] + this->A[2];
-                n++;
-            }
-        }
-    }
-}
-
+// Specialized for D=3 below
 template<int D>
 void Plotter<D>::calcCubeCoordinates() {
     NOT_IMPLEMENTED_ABORT
@@ -435,6 +405,106 @@ void Plotter<D>::writeSurfData() {
     NOT_IMPLEMENTED_ABORT
 }
 
+// Specialized for D=3 below
+template<int D>
+void Plotter<D>::writeCubeData() {
+    NOT_IMPLEMENTED_ABORT
+}
+
+// Specialized for D=3 below
+template<int D>
+void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
+    NOT_IMPLEMENTED_ABORT
+}
+
+// Specialized for D=3 below
+template<int D>
+void Plotter<D>::writeGrid(const MWTree<D> &tree) {
+    NOT_IMPLEMENTED_ABORT
+}
+
+/** Opening file for output
+
+    Opens a file output stream fout for file named fname.
+*/
+template<int D>
+void Plotter<D>::openPlot(const string &fname) {
+    if (fname.empty()) {
+        if (this->fout == 0) {
+            MSG_ERROR("Plot file not set!");
+            return;
+        } else if (this->fout->fail()) {
+            MSG_ERROR("Plot file not set!");
+            return;
+        }
+    } else {
+        if (this->fout != 0) {
+            this->fout->close();
+        }
+        this->fout = &this->fstrm;
+        this->fout->open(fname.c_str());
+        if (this->fout->bad()) {
+            MSG_ERROR("File error");
+            return;
+        }
+    }
+}
+
+/** Closing file
+
+    Closes the file output stream fout.
+*/
+template<int D>
+void Plotter<D>::closePlot() {
+    if (this->fout != 0) this->fout->close();
+    this->fout = 0;
+}
+
+/** Checks the validity of the plotting range
+*/
+template<int D>
+bool Plotter<D>::verifyRange() {
+    for (int d = 0; d < D; d++) {
+        if (this->A[d] > this->B[d]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Template specializations
+namespace mrcpp {
+
+/** Calculating coordinates to be evaluated
+
+    Generating a vector of nPoints coordinates equally distributed between the
+    dimensions, that fills the space of a cube defined by the lower- and upper
+    corner (A and B). Coordiates are stored in the matrix coords for later
+    evaluation.
+*/
+template<>
+void Plotter<3>::calcCubeCoordinates() {
+    int nPerDim = (int) floor(cbrt(this->nPoints));
+    int nRealPoints = MathUtils::ipow(nPerDim, 3);
+    this->coords = MatrixXd::Zero(nRealPoints, 3);
+
+    double step[3];
+    for (int d = 0; d < 3; d++) {
+        step[d] = (this->B[d] - this->A[d]) / (nPerDim - 1);
+    }
+
+    int n = 0;
+    for (int i = 0; i < nPerDim; i++) {
+        for (int j = 0; j < nPerDim; j++) {
+            for (int k = 0; k < nPerDim; k++) {
+                this->coords(n, 0) = i * step[0] + this->A[0];
+                this->coords(n, 1) = j * step[1] + this->A[1];
+                this->coords(n, 2) = k * step[2] + this->A[2];
+                n++;
+            }
+        }
+    }
+}
 
 /** Writing plot data to file
 
@@ -489,11 +559,6 @@ void Plotter<3>::writeCubeData() {
     println(0, "Max value:" << max);
     println(0, "Min value:" << min);
     println(0, "Isovalue: " << isoval);
-}
-
-template<int D>
-void Plotter<D>::writeCubeData() {
-    NOT_IMPLEMENTED_ABORT
 }
 
 template<>
@@ -613,11 +678,6 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          endl;
 }
 
-template<int D>
-void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
-    NOT_IMPLEMENTED_ABORT
-}
-
 /** Writing grid data to file
 
     This will write a grid file (readable by geomview) of the grid (of endNodes)
@@ -641,58 +701,6 @@ void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     }
 }
 
-template<int D>
-void Plotter<D>::writeGrid(const MWTree<D> &tree) {
-    NOT_IMPLEMENTED_ABORT
-}
-
-/** Opening file for output
-
-    Opens a file output stream fout for file named fname.
-*/
-template<int D>
-void Plotter<D>::openPlot(const string &fname) {
-    if (fname.empty()) {
-        if (this->fout == 0) {
-            MSG_ERROR("Plot file not set!");
-            return;
-        } else if (this->fout->fail()) {
-            MSG_ERROR("Plot file not set!");
-            return;
-        }
-    } else {
-        if (this->fout != 0) {
-            this->fout->close();
-        }
-        this->fout = &this->fstrm;
-        this->fout->open(fname.c_str());
-        if (this->fout->bad()) {
-            MSG_ERROR("File error");
-            return;
-        }
-    }
-}
-
-/** Closing file
-
-    Closes the file output stream fout.
-*/
-template<int D>
-void Plotter<D>::closePlot() {
-    if (this->fout != 0) this->fout->close();
-    this->fout = 0;
-}
-
-/** Checks the validity of the plotting range
-*/
-template<int D>
-bool Plotter<D>::verifyRange() {
-    for (int d = 0; d < D; d++) {
-        if (this->A[d] > this->B[d]) {
-            return false;
-        }
-    }
-    return true;
 }
 
 template class Plotter<1>;

@@ -20,6 +20,7 @@
 #include <iostream>
 
 #include "RepresentableFunction.h"
+#include "GaussFunc.h"
 
 #include "mrcpp_declarations.h"
 

@@ -36,11 +36,14 @@ void ProjectedNode<D>::dealloc() {
 
 /** Update the coefficients of the node by a mw transform of the scaling
   * coefficients of the children. Option to overwrite or add up existing
-  * coefficients. */
+  * coefficients. Specialized for D=3 below. */
 template<int D>
 void ProjectedNode<D>::reCompress() {
     MWNode<D>::reCompress();
 }
+
+// Template specializations
+namespace mrcpp {
 
 template<>
 void ProjectedNode<3>::reCompress() {
@@ -57,6 +60,8 @@ void ProjectedNode<3>::reCompress() {
         this->setHasCoefs();
         this->calcNorms();
     }
+}
+
 }
 
 template class ProjectedNode<1>;

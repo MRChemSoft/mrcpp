@@ -5,6 +5,7 @@
 // See the examples/ directory for inspiration.
 // Please do not commit your pilot code to git.
 
+using namespace mrcpp;
 
 int main(int argc, char **argv) {
     Timer timer;

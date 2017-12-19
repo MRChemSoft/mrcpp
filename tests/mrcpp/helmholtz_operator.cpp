@@ -156,7 +156,7 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     FunctionTree<3> psi_np1(MRA);
     copy_grid(psi_np1, psi_n);
     apply(apply_prec, psi_np1, H, Vpsi);
-    psi_np1 *= -1.0/(2.0*pi);
+    psi_np1.rescale(-1.0/(2.0*pi));
 
     double norm = sqrt(psi_np1.getSquareNorm());
     REQUIRE( (norm == Approx(1.0).epsilon(apply_prec)) );

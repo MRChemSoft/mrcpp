@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     double f_norm = sqrt(f_tree.getSquareNorm());
     double g_int = g_tree.integrate();
     double g_norm = sqrt(g_tree.getSquareNorm());
-    double num_energy = g_tree.dot(f_tree);
+    double num_energy = mrcpp::dot(g_tree, f_tree);
     double error = (num_energy-ana_energy)/num_energy;
 
     mrcpp::Printer::printSeparator(0, ' ');

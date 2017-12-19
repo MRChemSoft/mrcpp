@@ -29,15 +29,15 @@ protected:
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
     double evalf(const double *r);
+    double evalScaling(const double *r) const;
 
     double integrate() const;
-    double dotScaling(const FunctionNode<D> &ket) const;
-    double dotWavelet(const FunctionNode<D> &ket) const;
-
-    double evalScaling(const double *r) const;
     double integrateLegendre() const;
     double integrateInterpolating() const;
 
 };
+
+template<int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template<int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
 
 }

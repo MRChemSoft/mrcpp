@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
     // Last rank rescales the tree
     int lrank = ssize - 1;
-    if (srank == lrank) f_tree *= 2.0;
+    if (srank == lrank) f_tree.rescale(2.0);
     mrcpp::share_tree(f_tree, lrank, 0, scomm);
 
     {   // Print data after rescale

@@ -18,7 +18,6 @@ public:
     void clear();
 
     double integrate() const;
-    virtual double dot(const FunctionTree<D> &ket);
     virtual double evalf(const double *r);
 
     void getEndValues(Eigen::VectorXd &data);
@@ -29,14 +28,8 @@ public:
 
     // In place operations
     void square();
-    void power(double d);
+    void rescale(double c);
     void normalize();
-    void map(const RepresentableFunction<1> &func);
-
-    FunctionTree<D>& operator *=(double c);
-    FunctionTree<D>& operator *=(const FunctionTree<D> &tree);
-    FunctionTree<D>& operator +=(const FunctionTree<D> &tree);
-    FunctionTree<D>& operator -=(const FunctionTree<D> &tree);
 
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -49,5 +42,7 @@ public:
 protected:
     std::ostream& print(std::ostream &o);
 };
+
+template<int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket);
 
 }

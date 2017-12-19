@@ -128,7 +128,7 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     project(proj_prec, fTree, *fFunc);
     apply(apply_prec, gTree, P, fTree);
 
-    double E_num = gTree.dot(fTree);
+    double E_num = dot(gTree, fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);
 
     REQUIRE( (E_num == Approx(E_ana).epsilon(apply_prec)) );

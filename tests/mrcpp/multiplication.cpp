@@ -71,7 +71,7 @@ template<int D> void testMultiplication() {
 
         THEN("the MW product equals the analytic product") {
             double c_int = c_tree.integrate();
-            double c_dot = c_tree.dot(ref_tree);
+            double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
             REQUIRE( (c_int == Approx(ref_int)) );
             REQUIRE( (c_dot == Approx(ref_norm)) );

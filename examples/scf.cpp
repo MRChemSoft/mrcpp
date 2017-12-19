@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         // Apply Helmholtz operator phi^n+1 = H[V*phi^n]
         phi_np1 = new FunctionTree<3>(MRA);
         apply(prec, *phi_np1, H, Vphi);
-        *phi_np1 *= -1.0/(2.0*mrcpp::pi);
+        phi_np1->rescale(-1.0/(2.0*mrcpp::pi));
 
         // Compute orbital residual
         FunctionTree<3> d_phi_n(MRA);
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
         error = sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||
-        d_epsilon_n = Vphi.dot(d_phi_n)/phi_np1->getSquareNorm();
+        d_epsilon_n = dot(Vphi, d_phi_n)/phi_np1->getSquareNorm();
         epsilon_np1 = epsilon_n + d_epsilon_n;
 
         printout(0, std::setw(3) << iter);

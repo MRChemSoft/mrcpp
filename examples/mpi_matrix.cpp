@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
                 requests.push_back(req);
             }
             // Compute my column(s) of the overlap matrix
-            if (wrank == dst) S(i,j) = f_i.dot(f_j);
+            if (wrank == dst) S(i,j) = mrcpp::dot(f_i, f_j);
         }
     }
 

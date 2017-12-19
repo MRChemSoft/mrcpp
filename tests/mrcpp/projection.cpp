@@ -37,7 +37,7 @@ template<int D> void testProjectFunction() {
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = tree.getSquareNorm();
-            REQUIRE( (tree.dot(tree) == Approx(norm)) );
+            REQUIRE( (dot(tree, tree) == Approx(norm)) );
         }
     }
     WHEN("the function is projected on an adapted grid") {
@@ -49,7 +49,7 @@ template<int D> void testProjectFunction() {
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = tree.getSquareNorm();
-            REQUIRE( (tree.dot(tree) == Approx(norm)) );
+            REQUIRE( (dot(tree, tree) == Approx(norm)) );
         }
     }
     WHEN("the function is projected with guaranteed precision") {
@@ -61,7 +61,7 @@ template<int D> void testProjectFunction() {
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = f_tree.getSquareNorm();
-            REQUIRE( (f_tree.dot(f_tree) == Approx(norm)) );
+            REQUIRE( (dot(f_tree, f_tree) == Approx(norm)) );
         }
         AND_WHEN("the function is projected on an identical grid") {
             FunctionTree<D> g_tree(*mra);
@@ -74,7 +74,7 @@ template<int D> void testProjectFunction() {
             }
             THEN("the dot product with the original is equal to their squared norm") {
                 const double norm = f_tree.getSquareNorm();
-                REQUIRE( (g_tree.dot(f_tree) == Approx(norm)) );
+                REQUIRE( (dot(g_tree, f_tree) == Approx(norm)) );
             }
         }
     }

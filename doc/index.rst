@@ -22,8 +22,21 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :caption: Installation
 
-   installation
-   mrcpp_api
+   install.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Application Program Interface
+
+   mrcpp_api/introduction
+   mrcpp_api/mwfunctions
+   mrcpp_api/mwoperators
+   mrcpp_api/gaussians
+   mrcpp_api/parallel
+   mrcpp_api/printer
+   mrcpp_api/plotter
+   mrcpp_api/timer
 

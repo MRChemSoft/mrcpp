@@ -53,9 +53,6 @@ double GenNode<D>::calcComponentNorm(int i) const {
 
 template<int D>
 void GenNode<D>::dealloc() {
-#ifdef HAVE_OPENMP
-    omp_destroy_lock(&this->node_lock);
-#endif
     this->tree->decrementGenNodeCount();
     this->tree->getSerialTree()->deallocGenNodes(this->getSerialIx());
 }

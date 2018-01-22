@@ -19,12 +19,8 @@ using namespace mrcpp;
 template<int D>
 double FunctionNode<D>::evalf(const double *r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
-    SET_NODE_LOCK();
-    if (this->isLeafNode()) {
-        this->genChildren();
-        this->giveChildrenCoefs();
-    }
-    UNSET_NODE_LOCK();
+
+    this->threadSafeGenChildren();
     int cIdx = this->getChildIndex(r);
     assert(this->children[cIdx] != 0);
     return getFuncChild(cIdx).evalScaling(r);

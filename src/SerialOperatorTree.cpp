@@ -84,6 +84,7 @@ void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
         root_p->n_coefs = this->sizeNodeCoeff;
         root_p->coefs = coefs_p;
 
+        root_p->lockX = 0;
         root_p->serialIx = sIx;
         root_p->parentSerialIx = -1;//to indicate rootnode
         root_p->childSerialIx = -1;
@@ -98,10 +99,6 @@ void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
         root_p->setIsRootNode();
 
         tree.incrementNodeCount(root_p->getScale());
-
-#ifdef HAVE_OPENMP
-        omp_init_lock(&(root_p->node_lock));
-#endif
 
         sIx++;
         root_p++;
@@ -136,6 +133,7 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
         child_p->n_coefs = this->sizeNodeCoeff;
         child_p->coefs = coefs_p;
 
+        child_p->lockX = 0;
         child_p->serialIx = sIx;
         child_p->parentSerialIx = parent.serialIx;
         child_p->childSerialIx = -1;
@@ -149,10 +147,6 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
         child_p->setIsEndNode();
 
         child_p->tree->incrementNodeCount(child_p->getScale());
-
-#ifdef HAVE_OPENMP
-        omp_init_lock(&child_p->node_lock);
-#endif
 
         sIx++;
         child_p++;

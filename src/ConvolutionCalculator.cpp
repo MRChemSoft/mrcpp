@@ -34,6 +34,7 @@ ConvolutionCalculator<D>::ConvolutionCalculator(double p,
 
 template<int D>
 ConvolutionCalculator<D>::~ConvolutionCalculator() {
+    clearTimers();
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
     for (int i = 0; i < this->bandSizes.size(); i++) {

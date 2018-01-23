@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ConvolutionOperator.h"
-#include "GridGenerator.h"
 #include "DerivativeKernel.h"
+
+namespace mrcpp {
 
 template<int D>
 class DerivativeConvolution : public ConvolutionOperator<D> {
@@ -20,3 +21,4 @@ public:
     virtual ~DerivativeConvolution() { }
 };
 
+}

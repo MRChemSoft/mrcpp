@@ -5,6 +5,8 @@
 #include "MultiResolutionAnalysis.h"
 #include "OperatorTree.h"
 
+namespace mrcpp {
+
 class MWOperator {
 public:
     MWOperator(MultiResolutionAnalysis<2> mra) : oper_mra(mra) { }
@@ -32,3 +34,4 @@ protected:
     Eigen::VectorXi band_max;
 };
 
+}

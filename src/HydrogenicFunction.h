@@ -4,6 +4,8 @@
 
 #include "RepresentableFunction.h"
 
+namespace mrcpp {
+
 class RadialFunction : public RepresentableFunction<1> {
 public:
     RadialFunction(int n, int l, double Z)
@@ -172,3 +174,4 @@ protected:
     AngularFunction Y;
 };
 
+}

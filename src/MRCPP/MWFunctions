@@ -1,0 +1,12 @@
+#include "MultiResolutionAnalysis.h"
+#include "BoundingBox.h"
+#include "InterpolatingBasis.h"
+#include "LegendreBasis.h"
+
+#include "grid.h"
+#include "project.h"
+#include "multiply.h"
+#include "add.h"
+
+#include "FunctionTree.h"
+#include "FunctionTreeVector.h"

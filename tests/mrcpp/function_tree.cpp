@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 
+using namespace mrcpp;
+
 namespace function_tree {
 
 template<int D> void testZeroFunction();
@@ -36,7 +38,7 @@ template<int D> void testZeroFunction() {
             REQUIRE( (tree.integrate() == Approx(0.0)) );
         }
         THEN("the dot product with itself is zero") {
-            REQUIRE( (tree.dot(tree) == Approx(0.0)) );
+            REQUIRE( (dot(tree, tree) == Approx(0.0)) );
         }
     }
     finalize(&mra);

@@ -1,8 +1,10 @@
 #include "SerialOperatorTree.h"
 #include "OperatorTree.h"
 #include "OperatorNode.h"
+#include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 int NOtrees=0;
 

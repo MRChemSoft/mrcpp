@@ -15,8 +15,9 @@
 
 #include "Gaussian.h"
 #include "Polynomial.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussFunc;
+namespace mrcpp {
 
 template<int D>
 class GaussPoly : public Gaussian<D> {
@@ -57,22 +58,10 @@ public:
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power,
         int pow[D], int dir) const;
 
-    friend std::ostream& operator<<(std::ostream &o, const GaussPoly<D> &gPoly)
-    {
-        o << "Exp: " << gPoly.getExp() << std::endl;
-        o << "Coef: " << gPoly.getCoef() << std::endl;
-        o << "Pos:   ";
-        for (int i = 0; i < D; i++) {
-            o << gPoly.getPos()[i] << " ";
-        }
-        o << std::endl;
-        for (int i = 0; i < D; i++) {
-        o << "Dim " << i << ": order " << gPoly.getPower(i) << std::endl;
-        o << gPoly.getPolyCoefs(i) << std::endl;
-        }
-        return o;
-    }
 private:
     Polynomial *poly[D];
+
+    std::ostream& print(std::ostream &o) const;
 };
 
+}

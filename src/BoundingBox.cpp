@@ -5,21 +5,27 @@
  *
  */
 
-#include "MathUtils.h"
+#include <math.h>
+
 #include "constants.h"
+
 #include "BoundingBox.h"
+#include "MathUtils.h"
+#include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
-BoundingBox<D>::BoundingBox() {
-    setNBoxes(0);
+BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
+        : cornerIndex(n, l) {
+    setNBoxes(nb);
     setDerivedParameters();
 }
 
 template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
-            : cornerIndex(idx) {
+        : cornerIndex(idx) {
     setNBoxes(nb);
     setDerivedParameters();
 }
@@ -95,16 +101,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
     return nIdx;
 }
 
-template<>
-NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
-    assert(bIdx >= 0 and bIdx <= nBoxes[1]);
-    int n = getScale();
-    int cl = this->cornerIndex.getTranslation(0);
-    int l = bIdx + cl;
-    NodeIndex<1> nIdx(n, &l);
-    return nIdx;
-}
-
+// Specialized for D=1 below
 template<int D>
 NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     assert(bIdx >= 0 and bIdx <= nBoxes[D]);
@@ -130,18 +127,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     return nIdx;
 }
 
-template<>
-int BoundingBox<1>::getBoxIndex(const double *r) const {
-    assert(r != 0);
-    double x = r[0];
-    if (x < this->lowerBounds[0]) return -1;
-    if (x >= this->upperBounds[0]) return -1;
-    double div = (x - this->lowerBounds[0]) / this->unitLength;
-    double iint;
-    modf(div,&iint);
-    return (int) iint;
-}
-
+// Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const double *r) const {
     assert(r != 0);
@@ -167,23 +153,7 @@ int BoundingBox<D>::getBoxIndex(const double *r) const {
     return bIdx;
 }
 
-template<>
-int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
-    int n = nIdx.getScale();
-    int l = nIdx.getTranslation(0);
-    int cn = this->cornerIndex.getScale();
-    int cl = this->cornerIndex.getTranslation(0);
-    int relScale = n - cn;
-    if (relScale < 0) return -1;
-
-    int bIdx = (l >> relScale) - cl;
-    if (bIdx < 0 or bIdx >= this->size()) {
-        return -1;
-    } else {
-        return bIdx;
-    }
-}
-
+// Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
     int n = nIdx.getScale();
@@ -208,6 +178,78 @@ int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
     return bIdx;
 }
 
+template<int D>
+std::ostream& BoundingBox<D>::print(std::ostream &o) const {
+    o << std::fixed;
+    o << " unit length      = " << getUnitLength() << std::endl;
+    o << " total boxes      = " << size() << std::endl;
+    o << " boxes            = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << size(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " lower bounds     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getLowerBound(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " upper bounds     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getUpperBound(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " total length     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getBoxLength(i) << " ";
+    }
+    o << "]";
+    o << std::scientific;
+    return o;
+}
+
+// Template specializations
+namespace mrcpp {
+
+template<>
+int BoundingBox<1>::getBoxIndex(const double *r) const {
+    double x = r[0];
+    if (x < this->lowerBounds[0]) return -1;
+    if (x >= this->upperBounds[0]) return -1;
+    double div = (x - this->lowerBounds[0]) / this->unitLength;
+    double iint;
+    modf(div,&iint);
+    return (int) iint;
+}
+
+template<>
+NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
+    int n = getScale();
+    int cl = this->cornerIndex.getTranslation(0);
+    int l = bIdx + cl;
+    NodeIndex<1> nIdx(n, &l);
+    return nIdx;
+}
+
+template<>
+int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
+    int n = nIdx.getScale();
+    int l = nIdx.getTranslation(0);
+    int cn = this->cornerIndex.getScale();
+    int cl = this->cornerIndex.getTranslation(0);
+    int relScale = n - cn;
+    if (relScale < 0) return -1;
+
+    int bIdx = (l >> relScale) - cl;
+    if (bIdx < 0 or bIdx >= this->size()) {
+        return -1;
+    } else {
+        return bIdx;
+    }
+}
+
+}
+
 template class BoundingBox<1>;
 template class BoundingBox<2>;
 template class BoundingBox<3>;
+

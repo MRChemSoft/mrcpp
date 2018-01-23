@@ -3,6 +3,10 @@
 #include "TreeCalculator.h"
 #include "OperatorStatistics.h"
 
+#include "mrcpp_declarations.h"
+
+namespace mrcpp {
+
 template<int D>
 class ConvolutionCalculator : public TreeCalculator<D> {
 public:
@@ -19,9 +23,9 @@ protected:
     double prec;
     ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
-    std::vector<Timer> band_t;
-    std::vector<Timer> calc_t;
-    std::vector<Timer> norm_t;
+    std::vector<Timer *> band_t;
+    std::vector<Timer *> calc_t;
+    std::vector<Timer *> norm_t;
 
     OperatorStatistics<D> operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
@@ -52,4 +56,4 @@ protected:
     void tensorApplyOperComp(OperatorState<D> &os);
 };
 
-
+}

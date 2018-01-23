@@ -7,6 +7,8 @@
   * Assumes translational invariant and symmetric (in x - y) operator and keeps
   * only lower row of nodes (lx = 0). */
 
+namespace mrcpp {
+
 class BandWidthAdaptor : public TreeAdaptor<2> {
 public:
     BandWidthAdaptor(int bw, int ms)
@@ -30,3 +32,4 @@ protected:
     }
 };
 
+}

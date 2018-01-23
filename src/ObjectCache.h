@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
 #include <vector>
-#include "Printer.h"
-#include "parallel.h"
+
+#include "parallel_omp.h"
 #include "macros.h"
+
+namespace mrcpp {
 
 #define getObjectCache(T,X) \
     ObjectCache<T> &X = ObjectCache<T>::getInstance();
@@ -22,69 +23,15 @@
 template<class T>
 class ObjectCache {
 public:
-    static ObjectCache<T> &getInstance() {
-        static ObjectCache<T> theObjectCache;
-        return theObjectCache;
-    }
+    static ObjectCache<T> &getInstance();
+    virtual void clear();
 
-    virtual void clear() {
-        for (unsigned int i = 0; i < this->objs.size(); i++) {
-            if (this->objs[i] != 0) {
-                unload(i);
-            }
-        }
-    }
+    virtual void load(int id);
+    void load(int id, T *new_o, int memory);
+    virtual void unload(int id);
 
-    virtual void load(int id) {
-        MSG_INFO("This routine does nothing in this class.");
-    }
-
-    void load(int id, T *new_o, int memory) {
-        if (id >= this->highWaterMark) {
-            for (int i = 0; i < id - this->highWaterMark + 1; i++) {
-                this->objs.push_back(0);
-                this->mem.push_back(0);
-            }
-            this->highWaterMark = id;
-        }
-        if (this->objs[id] != 0) {
-            return;
-        }
-        this->mem[id] = memory;
-        this->memLoaded += memory;
-        this->objs[id] = new_o;
-
-    }
-    virtual void unload(int id) {
-        if (id < 0 or id > this->highWaterMark) {
-            MSG_ERROR("Id out of bounds:" << id);
-        }
-        if (this->objs[id] == 0) {
-            MSG_WARN ("Object not loaded.");
-            return;
-        }
-        this->memLoaded -= this->mem[id];
-        this->mem[id] = 0;
-        delete this->objs[id];
-        this->objs[id] = 0;
-    }
-
-    virtual T &get(int id) {
-        if (id < 0) {
-            MSG_ERROR("Id out of bounds:" << id);
-        }
-        if (this->objs[id] == 0) {
-            MSG_ERROR("Object not loaded!");
-        }
-        return *(this->objs[id]);
-    }
-    bool hasId(int id) {
-        if (id > this->highWaterMark)
-            return false;
-        if (this->objs[id] == 0)
-            return false;
-        return true;
-    }
+    virtual T &get(int id);
+    bool hasId(int id);
 
     int getNObjs() { return this->objs.size(); }
     int getMem() { return this->memLoaded; }
@@ -121,3 +68,4 @@ private:
     std::vector<int> mem; ///< mem per object
 };
 
+}

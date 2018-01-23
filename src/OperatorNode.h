@@ -3,6 +3,8 @@
 #include "MWNode.h"
 #include "OperatorTree.h"
 
+namespace mrcpp {
+
 class OperatorNode : public MWNode<2> {
 public:
     OperatorTree &getOperTree() { return static_cast<OperatorTree &>(*this->tree); }
@@ -35,14 +37,8 @@ protected:
     OperatorNode() : MWNode<2>() { }
     virtual ~OperatorNode() { }
 
+    void dealloc();
     double calcComponentNorm(int i) const;
-
-    void dealloc() {
-#ifdef HAVE_OPENMP
-        omp_destroy_lock(&this->node_lock);
-#endif
-        this->tree->decrementNodeCount(this->getScale());
-        this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
-    }
 };
 
+}

@@ -5,6 +5,8 @@
 
 #include "TreeCalculator.h"
 
+namespace mrcpp {
+
 class PHCalculator : public TreeCalculator<2> {
 public:
     PHCalculator(const ScalingBasis &basis, int n);
@@ -20,3 +22,4 @@ protected:
     void readSMatrix(const ScalingBasis &basis, char n);
 };
 
+}

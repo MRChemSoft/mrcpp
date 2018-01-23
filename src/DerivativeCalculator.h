@@ -3,6 +3,8 @@
 #include "TreeCalculator.h"
 #include "OperatorStatistics.h"
 
+namespace mrcpp {
+
 template<int D>
 class DerivativeCalculator : public TreeCalculator<D> {
 public:
@@ -38,4 +40,4 @@ protected:
     void tensorApplyOperComp(OperatorState<D> &os);
 };
 
-
+}

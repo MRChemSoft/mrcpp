@@ -4,6 +4,8 @@
 #include "GaussFunc.h"
 #include "GaussPoly.h"
 
+namespace mrcpp {
+
 class DerivativeKernel : public GreensKernel {
 public:
     DerivativeKernel(double eps)
@@ -21,3 +23,4 @@ protected:
     }
 };
 
+}

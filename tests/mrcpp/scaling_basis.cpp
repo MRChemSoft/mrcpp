@@ -3,8 +3,9 @@
 #include "InterpolatingBasis.h"
 #include "LegendreBasis.h"
 
-namespace scaling_basis {
+using namespace mrcpp;
 
+namespace scaling_basis {
 
 template<int K> void testConstructor(const ScalingBasis &basis);
 template<int K> void testOrthonormality(const ScalingBasis &basis);

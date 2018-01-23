@@ -1,15 +1,49 @@
 #include "ProjectedNode.h"
+#include "SerialTree.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
+
+template<int D>
+void ProjectedNode<D>::createChildren() {
+    MWNode<D>::createChildren();
+    this->clearIsEndNode();
+}
+
+template<int D>
+void ProjectedNode<D>::genChildren() {
+    if (this->isBranchNode()) MSG_FATAL("Node already has children");
+    this->tree->getSerialTree()->allocGenChildren(*this);
+    this->setIsBranchNode();
+}
+
+template<int D>
+void ProjectedNode<D>::deleteChildren() {
+    MWNode<D>::deleteChildren();
+    this->setIsEndNode();
+}
+
+template<int D>
+void ProjectedNode<D>::dealloc() {
+#ifdef HAVE_OPENMP
+    omp_destroy_lock(&this->node_lock);
+#endif
+    this->tree->decrementNodeCount(this->getScale());
+    this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+}
 
 /** Update the coefficients of the node by a mw transform of the scaling
   * coefficients of the children. Option to overwrite or add up existing
-  * coefficients. */
+  * coefficients. Specialized for D=3 below. */
 template<int D>
 void ProjectedNode<D>::reCompress() {
     MWNode<D>::reCompress();
 }
+
+// Template specializations
+namespace mrcpp {
 
 template<>
 void ProjectedNode<3>::reCompress() {
@@ -26,6 +60,8 @@ void ProjectedNode<3>::reCompress() {
         this->setHasCoefs();
         this->calcNorms();
     }
+}
+
 }
 
 template class ProjectedNode<1>;

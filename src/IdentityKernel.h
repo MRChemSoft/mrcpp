@@ -3,6 +3,8 @@
 #include "GreensKernel.h"
 #include "GaussFunc.h"
 
+namespace mrcpp {
+
 class IdentityKernel : public GreensKernel {
 public:
     IdentityKernel(double eps)
@@ -17,5 +19,13 @@ protected:
         GaussFunc<1> gFunc(alpha, coef);
         this->append(gFunc);
     }
+    virtual std::ostream& print(std::ostream &o) const {
+        o << "Kernel: " << std::endl;
+        o << "epsilon:  " << this->epsilon << std::endl;
+        o << "rMin:     " << this->rMin << std::endl;
+        o << "rMax:     " << this->rMax << std::endl;
+        return o;
+    }
 };
 
+}

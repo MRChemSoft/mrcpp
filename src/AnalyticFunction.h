@@ -2,6 +2,8 @@
 
 #include "RepresentableFunction.h"
 
+namespace mrcpp {
+
 template<int D>
 class AnalyticFunction : public RepresentableFunction<D> {
 public:
@@ -21,3 +23,4 @@ protected:
     std::function<double (const double *r)> func;
 };
 
+}

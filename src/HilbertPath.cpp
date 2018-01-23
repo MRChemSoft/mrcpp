@@ -1,5 +1,7 @@
 #include "HilbertPath.h"
 
+using namespace mrcpp;
+
 template<>
 const short int HilbertPath<1>::pTable[1][8] = {
     {0,0,-1,-1,-1,-1,-1,-1}

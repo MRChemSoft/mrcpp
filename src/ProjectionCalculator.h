@@ -1,9 +1,8 @@
 #pragma once
 
-#pragma GCC system_header
-#include <Eigen/Core>
-
 #include "TreeCalculator.h"
+
+namespace mrcpp {
 
 template<int D>
 class ProjectionCalculator : public TreeCalculator<D> {
@@ -17,3 +16,4 @@ protected:
     virtual void calcNode(MWNode<D> &node);
 };
 
+}

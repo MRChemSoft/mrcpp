@@ -1,9 +1,11 @@
 #include "MWOperator.h"
 #include "BandWidth.h"
 #include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 void MWOperator::clear(bool dealloc) {
     if (dealloc) {

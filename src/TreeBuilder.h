@@ -2,6 +2,8 @@
 
 #include "mrcpp_declarations.h"
 
+namespace mrcpp {
+
 template<int D>
 class TreeBuilder {
 public:
@@ -21,3 +23,4 @@ protected:
     double calcWaveletNorm(const MWNodeVector &vec) const;
 };
 
+}

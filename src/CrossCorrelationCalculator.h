@@ -3,6 +3,8 @@
 #include "TreeCalculator.h"
 #include "CrossCorrelationCache.h"
 
+namespace mrcpp {
+
 class CrossCorrelationCalculator : public TreeCalculator<2> {
 public:
     CrossCorrelationCalculator(FunctionTree<1> &k) : kernel(&k) { }
@@ -17,4 +19,4 @@ protected:
     void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);
 };
 
-
+}

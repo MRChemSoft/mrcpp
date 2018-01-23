@@ -1,8 +1,8 @@
 #include "OperatorStatistics.h"
 #include "MWNode.h"
-#include "parallel.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 OperatorStatistics<D>::OperatorStatistics()
@@ -76,6 +76,17 @@ void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode,
     if (fNode.isGenNode()) {
         this->genCount[thread]++;
     }
+}
+
+template<int D>
+std::ostream& OperatorStatistics<D>::print(std::ostream &o) const {
+    o << std::setw(8);
+    o << "*OperatorFunc statistics: " << std::endl << std::endl;
+    o << "  Total calculated gNodes      : " << this->totGCount << std::endl;
+    o << "  Total applied fNodes         : " << this->totFCount << std::endl;
+    o << "  Total applied genNodes       : " << this->totGenCount << std::endl << std::endl;
+    o << "  By components:" << std::endl << *this->totCompCount << std::endl;
+    return o;
 }
 
 template class OperatorStatistics<1>;

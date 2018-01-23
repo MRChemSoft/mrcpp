@@ -9,8 +9,10 @@
  */
 
 #include "RepresentableFunction.h"
+#include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 RepresentableFunction<D>::RepresentableFunction(const double *a,
@@ -103,6 +105,22 @@ bool RepresentableFunction<D>::outOfBounds(const double *r) const {
         }
     }
     return false;
+}
+
+template<int D>
+std::ostream& RepresentableFunction<D>::print(std::ostream &o) const {
+    o << "RepresentableFunction: " << std::endl;
+    o << "  A=[ ";
+    for (int i = 0; i < D; i++) {
+        o << this->A[i] << " ";
+    }
+    o << "]" << std::endl;
+    o << "  B=[ ";
+    for (int i = 0; i < D; i++) {
+        o << this->B[i] << " ";
+    }
+    o << "]" << std::endl;
+    return o;
 }
 
 template class RepresentableFunction<1>;

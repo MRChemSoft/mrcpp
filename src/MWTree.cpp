@@ -8,9 +8,11 @@
 #include "MultiResolutionAnalysis.h"
 #include "HilbertIterator.h"
 #include "MathUtils.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** MWTree constructor with SerialTree storage for nodes.
   * Creates an empty tree object. Node construction and assignment of most of
@@ -486,6 +488,31 @@ void MWTree<D>::deleteGenerated() {
     }
 }
 
+template<int D>
+bool MWTree<D>::saveTree(const string &file) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+template<int D>
+bool MWTree<D>::loadTree(const string &file) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+template<int D>
+std::ostream& MWTree<D>::print(std::ostream &o) {
+    o << "  square norm: " << this->squareNorm << std::endl;
+    o << "  root scale: " << this->getRootScale() << std::endl;
+    o << "  order: " << this->order << std::endl;
+    o << "  nodes: " << this->getNNodes() << std::endl;
+    o << "  endNodes: " << this->endNodeTable.size() << std::endl;
+    o << "  genNodes: " << this->getNGenNodes() << std::endl;
+    o << "  nodes per scale: " << std::endl;
+    for (int i = 0; i < this->nodesAtDepth.size(); i++) {
+        o << "    scale=" << i + this->getRootScale() << "  nodes="
+          << this->nodesAtDepth[i] << std::endl;
+    }
+    return o;
+}
 template class MWTree<1>;
 template class MWTree<2>;
 template class MWTree<3>;

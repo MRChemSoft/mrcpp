@@ -1,16 +1,21 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+
+#include "TreeBuilder.h"
 #include "PoissonOperator.h"
+#include "PoissonKernel.h"
 #include "MWOperator.h"
-#include "MWConvolution.h"
 #include "OperatorAdaptor.h"
-#include "MWProjector.h"
 #include "BandWidth.h"
 #include "CrossCorrelationCalculator.h"
 #include "GaussFunc.h"
+#include "apply.h"
+#include "project.h"
+#include "grid.h"
 
 using namespace std;
+using namespace mrcpp;
 
 namespace poisson_operator {
 
@@ -43,15 +48,12 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);
 
-            MWProjector<1> Q(proj_prec);
-            GridGenerator<1> G;
-
             FunctionTreeVector<1> kern_vec;
             for (int i = 0; i < poisson.size(); i++) {
                 Gaussian<1> &kern_gauss = *poisson[i];
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
-                G(*kern_tree, kern_gauss);
-                Q(*kern_tree, kern_gauss);
+                build_grid(*kern_tree, kern_gauss);
+                project(proj_prec, *kern_tree, kern_gauss);
                 kern_vec.push_back(kern_tree);
             }
 
@@ -119,17 +121,14 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     initialize(&fFunc);
     initialize(&mra);
 
-    MWProjector<3> Q(proj_prec);
     PoissonOperator P(*mra, build_prec);
-    MWConvolution<3> apply(apply_prec);
-
     FunctionTree<3> fTree(*mra);
     FunctionTree<3> gTree(*mra);
 
-    Q(fTree, *fFunc);
-    apply(gTree, P, fTree);
+    project(proj_prec, fTree, *fFunc);
+    apply(apply_prec, gTree, P, fTree);
 
-    double E_num = gTree.dot(fTree);
+    double E_num = dot(gTree, fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);
 
     REQUIRE( (E_num == Approx(E_ana).epsilon(apply_prec)) );

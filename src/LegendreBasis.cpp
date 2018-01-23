@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {

@@ -6,12 +6,16 @@
 
 #pragma once
 
+#include <iomanip>
+
 #include "NodeIndex.h"
+
+namespace mrcpp {
 
 template<int D>
 class BoundingBox {
 public:
-    BoundingBox();
+    BoundingBox(int n = 0, const int *l = 0, const int *nb = 0);
     BoundingBox(const NodeIndex<D> &idx, const int *nb = 0);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
@@ -38,13 +42,12 @@ public:
     const double *getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box);
+    friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
     // Fundamental parameters
-    int nBoxes[D+1];		        ///< Number of boxes in each dim, last entry total
-    NodeIndex<D> cornerIndex;	///< Index defining the lower corner of the box
+    int nBoxes[D+1];                ///< Number of boxes in each dim, last entry total
+    NodeIndex<D> cornerIndex;       ///< Index defining the lower corner of the box
 
     // Derived parameters
     double unitLength;		    ///< 1/2^initialScale
@@ -54,6 +57,8 @@ protected:
 
     void setNBoxes(const int *nb);
     void setDerivedParameters();
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 template<int D>
@@ -74,34 +79,5 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
     return false;
 }
 
-template<int T>
-std::ostream& operator<<(std::ostream &o, const BoundingBox<T> &box) {
-    int oldprec = Printer::setPrecision(5);
-    o << std::fixed;
-    o << " unit length      = " << box.getUnitLength() << std::endl;
-    o << " total boxes      = " << box.size() << std::endl;
-    o << " boxes            = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.size(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " lower bounds     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getLowerBound(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " upper bounds     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getUpperBound(i) << " ";
-    }
-    o << "]" << std::endl;
-    o << " total length     = [ ";
-    for (int i = 0; i < T; i++) {
-        o << std::setw(11) << box.getBoxLength(i) << " ";
-    }
-    o << "]";
-    o << std::scientific;
-    Printer::setPrecision(oldprec);
-    return o;
 }
 

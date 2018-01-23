@@ -2,6 +2,8 @@
 
 #include "WaveletAdaptor.h"
 
+namespace mrcpp {
+
 class OperatorAdaptor : public WaveletAdaptor<2> {
 public:
     OperatorAdaptor(double pr, int ms, bool ap = false)
@@ -28,3 +30,4 @@ protected:
     }
 };
 
+}

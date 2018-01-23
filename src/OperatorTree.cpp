@@ -4,9 +4,11 @@
 #include "SerialTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
+#include "Printer.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         : MWTree<2>(mra),
@@ -177,4 +179,10 @@ void OperatorTree::mwTransformDown(bool overwrite) {
             }
         }
     }
+}
+
+
+std::ostream& OperatorTree::print(std::ostream &o) {
+    o << std::endl << "*OperatorTree: " << this->name << std::endl;
+    return MWTree<2>::print(o);
 }

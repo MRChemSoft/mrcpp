@@ -7,13 +7,13 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "parallel.h"
+#include "parallel_omp.h"
 #include "mrcpp_declarations.h"
 
-#include "NodeBox.h"
-#include "MWNode.h"
 #include "MultiResolutionAnalysis.h"
-#include "SerialTree.h"
+#include "NodeBox.h"
+
+namespace mrcpp {
 
 #ifdef HAVE_OPENMP
 #define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
@@ -92,8 +92,8 @@ public:
 
     int getNThreads() const { return this->nThreads; }
 
-    virtual bool saveTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
-    virtual bool loadTree(const std::string &file) { NOT_IMPLEMENTED_ABORT; }
+    virtual bool saveTree(const std::string &file);
+    virtual bool loadTree(const std::string &file);
 
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);
@@ -102,6 +102,8 @@ public:
     void RecountNodes();
 
     SerialTree<D>* getSerialTree() { return this->serialTree_p; }
+
+    friend std::ostream& operator <<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -149,8 +151,11 @@ protected:
     void incrementGenNodeCount();
     void decrementGenNodeCount();
 
+    virtual std::ostream& print(std::ostream &o);
+
 #ifdef HAVE_OPENMP
     omp_lock_t tree_lock;
 #endif
 };
 
+}

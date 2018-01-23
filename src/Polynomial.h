@@ -16,6 +16,8 @@
 
 #include "RepresentableFunction.h"
 
+namespace mrcpp {
+
 class Polynomial: public RepresentableFunction<1> {
 public:
     Polynomial(int k = 0, const double *a = 0, const double *b = 0);
@@ -75,3 +77,5 @@ protected:
     double L; ///< Translation coeff
     Eigen::VectorXd coefs; ///< Expansion coefficients
 };
+
+}

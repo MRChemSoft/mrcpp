@@ -1,9 +1,19 @@
 #include "OperatorNode.h"
+#include "SerialTree.h"
 #include "MathUtils.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
+
+void OperatorNode::dealloc() {
+#ifdef HAVE_OPENMP
+    omp_destroy_lock(&this->node_lock);
+#endif
+    this->tree->decrementNodeCount(this->getScale());
+    this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+}
 
 /** Calculate one specific component norm of the OperatorNode.
   *
@@ -35,3 +45,4 @@ double OperatorNode::calcComponentNorm(int i) const {
     }
     return norm;
 }
+

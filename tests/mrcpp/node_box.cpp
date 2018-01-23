@@ -1,6 +1,9 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
+#include "MWNode.h"
+
+using namespace mrcpp;
 
 namespace node_box {
 

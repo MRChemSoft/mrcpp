@@ -12,10 +12,9 @@
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussFunc;
-template<int D> class GaussPoly;
-template<int D> class GaussExp;
+namespace mrcpp {
 
 template<int D>
 class Gaussian: public RepresentableFunction<D> {
@@ -74,21 +73,7 @@ public:
         }
         this->squareNorm = -1.0;
     }
-    friend std::ostream& operator<<(std::ostream &o, const Gaussian<D> &gauss)
-    {
-        o << "Exp:   " << gauss.getExp() << std::endl;
-        o << "Coef:  "<< gauss.getCoef() << std::endl;
-        o << "Pos:   ";
-        for (int i = 0; i < D; i++) {
-            o << gauss.getPos()[i] << " ";
-        }
-        o << std::endl;
-        o << "Power: ";
-        for (int i = 0; i < D; i++) {
-            o << gauss.getPower(i) << " ";
-        }
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const Gaussian<D> &gauss) { return gauss.print(o);  }
 
     friend class GaussExp<D>;
 protected:
@@ -101,5 +86,8 @@ protected:
 
     bool isVisibleAtScale(int scale, int nQuadPts) const;
     bool isZeroOnInterval(const double *a, const double *b) const;
+
+    virtual std::ostream& print(std::ostream &o) const = 0;
 };
 
+}

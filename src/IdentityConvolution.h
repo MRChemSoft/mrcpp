@@ -3,6 +3,8 @@
 #include "ConvolutionOperator.h"
 #include "IdentityKernel.h"
 
+namespace mrcpp {
+
 template<int D>
 class IdentityConvolution : public ConvolutionOperator<D> {
 public:
@@ -15,3 +17,4 @@ public:
     virtual ~IdentityConvolution() { }
 };
 
+}

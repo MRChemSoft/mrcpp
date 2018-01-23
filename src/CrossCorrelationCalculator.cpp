@@ -1,10 +1,12 @@
 #include "CrossCorrelationCalculator.h"
 #include "FunctionTree.h"
 #include "MWNode.h"
+#include "Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();

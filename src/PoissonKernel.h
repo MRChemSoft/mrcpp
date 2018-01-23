@@ -2,6 +2,8 @@
 
 #include "GreensKernel.h"
 
+namespace mrcpp {
+
 class PoissonKernel: public GreensKernel {
 public:
     PoissonKernel(double eps, double r_min, double r_max)
@@ -11,5 +13,7 @@ public:
     virtual ~PoissonKernel() { }
 protected:
     virtual void initializeKernel();
+    virtual std::ostream& print(std::ostream &o) const;
 };
 
+}

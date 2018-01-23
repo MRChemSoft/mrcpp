@@ -3,6 +3,8 @@
 #include "TreeAdaptor.h"
 #include "constants.h"
 
+namespace mrcpp {
+
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
@@ -29,3 +31,4 @@ protected:
     }
 };
 
+}

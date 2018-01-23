@@ -16,6 +16,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D> double GaussExp<D>::defaultScreening = 10.0;
 
@@ -412,20 +413,40 @@ void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
 }
 */
 
+// Specialized for D=3 below
 template<int D>
 double GaussExp<D>::calcCoulombEnergy() {
     NOT_IMPLEMENTED_ABORT
 }
 
+template<int D>
+void GaussExp<D>::setDefaultScreening(double screen) {
+    if (screen < 0) {
+        MSG_ERROR("Screening constant cannot be negative!");
+    }
+    defaultScreening = screen;
+}
+
+template<int D>
+std::ostream& GaussExp<D>::print(std::ostream &o) const {
+    o << "Gaussian Expansion: " << size() << " terms" << std::endl;
+    for (int i = 0; i < size(); i++) {
+        o << "Term " << i << ":" << std::endl;
+        o << getFunc(i) << std::endl << std::endl;
+    }
+    return o;
+}
+
+// Template specializations
+namespace mrcpp {
+
 template<>
 double GaussExp<3>::calcCoulombEnergy() {
     double energy = 0.0;
     for (int i = 0; i < size(); i++) {
-        if (GaussFunc<3> *gauss_i =
-                    dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
+        if (GaussFunc<3> *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
             for (int j = i; j < size(); j++) {
-                if (GaussFunc<3> *gauss_j =
-                        dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
+                if (GaussFunc<3> *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
                     double c = 2.0;
                     if (i == j) c = 1.0;
                     energy += c*gauss_i->calcCoulombEnergy(*gauss_j);
@@ -440,7 +461,9 @@ double GaussExp<3>::calcCoulombEnergy() {
     return energy;
 }
 
+}
 
 template class GaussExp<1>;
 template class GaussExp<2>;
 template class GaussExp<3>;
+

@@ -3,8 +3,9 @@
 #include "Printer.h"
 #include "MathUtils.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
@@ -138,17 +139,20 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
     }
 }
 
+// Specialized for D=3 below.
+template<int D>
+void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int stride) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
+namespace mrcpp {
+
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
  * coeff_in are not modified.
  * The output is read directly from the 8 children scaling coefficients. 
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template<int D>
-void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int stride) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
 template<>
 void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int stride) {
   int operation = Compression;
@@ -222,6 +226,8 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
         }
         overwrite = 0.0;
     }
+}
+
 }
 
 template class SerialTree<1>;

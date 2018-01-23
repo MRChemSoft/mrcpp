@@ -1,6 +1,7 @@
 #include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "MathUtils.h"
+#include "Printer.h"
 #include "QuadratureCache.h"
 
 #ifdef HAVE_BLAS
@@ -11,6 +12,7 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */
@@ -144,6 +146,28 @@ double FunctionNode<D>::integrateInterpolating() const {
     return two_n * sum;
 }
 
+template<int D>
+void FunctionNode<D>::setValues(const VectorXd &vec) {
+    this->zeroCoefs();
+    this->setCoefBlock(0, vec.size(), vec.data());
+    this->cvTransform(Backward);
+    this->mwTransform(Compression);
+    this->setHasCoefs();
+    this->calcNorms();
+}
+
+template<int D>
+void FunctionNode<D>::getValues(VectorXd &vec) {
+    vec = VectorXd::Zero(this->n_coefs);
+    this->mwTransform(Reconstruction);
+    this->cvTransform(Forward);
+    for (int i = 0; i < this->n_coefs; i++) {
+        vec(i) = this->coefs[i];
+    }
+    this->cvTransform(Backward);
+    this->mwTransform(Compression);
+}
+
 /** Inner product of the functions represented by the scaling basis of the nodes.
   *
   * Integrates the product of the functions represented by the scaling basis on
@@ -151,9 +175,7 @@ double FunctionNode<D>::integrateInterpolating() const {
   * orthonormal, and the inner product is simply the dot product of the
   * coefficient vectors. Assumes the nodes have identical support. */
 template<int D>
-double FunctionNode<D>::dotScaling(const FunctionNode<D> &ket) const {
-    const FunctionNode<D> &bra = *this;
-
+double mrcpp::dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -179,8 +201,7 @@ double FunctionNode<D>::dotScaling(const FunctionNode<D> &ket) const {
   * orthonormal, and the inner product is simply the dot product of the
   * coefficient vectors. Assumes the nodes have identical support. */
 template<int D>
-double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
-    const FunctionNode<D> &bra = *this;
+double mrcpp::dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) {
         return 0.0;
     }
@@ -204,27 +225,12 @@ double FunctionNode<D>::dotWavelet(const FunctionNode<D> &ket) const {
 #endif
 }
 
-template<int D>
-void FunctionNode<D>::setValues(const VectorXd &vec) {
-    this->zeroCoefs();
-    this->setCoefBlock(0, vec.size(), vec.data());
-    this->cvTransform(Backward);
-    this->mwTransform(Compression);
-    this->setHasCoefs();
-    this->calcNorms();
-}
-
-template<int D>
-void FunctionNode<D>::getValues(VectorXd &vec) {
-    vec = VectorXd::Zero(this->n_coefs);
-    this->mwTransform(Reconstruction);
-    this->cvTransform(Forward);
-    for (int i = 0; i < this->n_coefs; i++) {
-        vec(i) = this->coefs[i];
-    }
-    this->cvTransform(Backward);
-    this->mwTransform(Compression);
-}
+template double mrcpp::dotScaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double mrcpp::dotScaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double mrcpp::dotScaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double mrcpp::dotWavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double mrcpp::dotWavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double mrcpp::dotWavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
 
 template class FunctionNode<1>;
 template class FunctionNode<2>;

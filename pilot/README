@@ -1,6 +1,0 @@
-To enable the pilot code:
-
-1) Copy mrcpp.cpp.sample to mrcpp.cpp
-2) Run setup
-3) make
-

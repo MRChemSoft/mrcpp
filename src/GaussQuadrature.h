@@ -5,6 +5,8 @@
 
 #include "RepresentableFunction.h"
 
+namespace mrcpp {
+
 const int MaxGaussOrder = 42;
 static const double EPS = 3.0e-12;
 static const int NewtonMaxIter = 10;
@@ -51,3 +53,4 @@ protected:
     double integrate_nd(RepresentableFunction<3> &func, int axis = 0) const;
 };
 
+}

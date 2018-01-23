@@ -19,8 +19,9 @@
 #include <Eigen/Core>
 
 #include "Gaussian.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class GaussPoly;
+namespace mrcpp {
 
 template<int D>
 class GaussFunc: public Gaussian<D> {
@@ -64,5 +65,7 @@ protected:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a,
             double pos_b, double expo_a, double expo_b);
 
+    std::ostream& print(std::ostream &o) const;
 };
 
+}

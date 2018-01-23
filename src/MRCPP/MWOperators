@@ -1,0 +1,7 @@
+#include "apply.h"
+#include "PoissonOperator.h"
+#include "HelmholtzOperator.h"
+#include "DerivativeConvolution.h"
+#include "IdentityConvolution.h"
+#include "ABGVOperator.h"
+#include "PHOperator.h"

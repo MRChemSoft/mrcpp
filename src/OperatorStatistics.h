@@ -2,10 +2,11 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
+#include <iomanip>
 
 #include "mrcpp_declarations.h"
 
-#include "Printer.h"
+namespace mrcpp {
 
 template<int D>
 class OperatorStatistics {
@@ -17,15 +18,7 @@ public:
     void incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt);
     void incrementGNodeCounters(const MWNode<D> &gNode);
 
-    friend std::ostream& operator<<(std::ostream &o, const OperatorStatistics &os) {
-        o << std::setw(8);
-        o << "*OperatorFunc statistics: " << std::endl << std::endl;
-        o << "  Total calculated gNodes      : " << os.totGCount << std::endl;
-        o << "  Total applied fNodes         : " << os.totFCount << std::endl;
-        o << "  Total applied genNodes       : " << os.totGenCount << std::endl << std::endl;
-        o << "  By components:" << std::endl << *os.totCompCount << std::endl;
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const OperatorStatistics &os) { return os.print(o); }
 
 protected:
     int nThreads;
@@ -37,5 +30,8 @@ protected:
     int *genCount;
     Eigen::Matrix<int, 8, 8> *totCompCount;
     Eigen::Matrix<int, 8, 8> **compCount;
+
+    std::ostream& print(std::ostream &o) const;
 };
 
+}

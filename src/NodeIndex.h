@@ -8,9 +8,9 @@
 
 #include <iostream>
 
-#include "Printer.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class NodeIndexComp;
+namespace mrcpp {
 
 template<int D>
 class NodeIndex {
@@ -28,17 +28,18 @@ public:
     inline void setTranslation(const int *l);
 
     int getScale() const { return this->N; }
-    int getTranslation(int d) const { assert(d >= 0 or d < D); return this->L[d]; }
+    int getTranslation(int d) const { return this->L[d]; }
     int *getTranslation() { return this->L; }
     const int *getTranslation() const { return this->L; }
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, const NodeIndex<T> &idx);
+    friend std::ostream& operator<<(std::ostream &o, const NodeIndex<D> &idx) { return idx.print(o); }
     friend class NodeIndexComp<D>;
 
 private:
     short int N;
     int L[D];
+
+    std::ostream& print(std::ostream &o) const;
 };
 
 template<int D>
@@ -102,12 +103,12 @@ bool NodeIndex<D>::operator!=(const NodeIndex<D> &idx) const {
 }
 
 template<int D>
-std::ostream& operator<<(std::ostream &o, const NodeIndex<D> &idx) {
-    o << "[ " << idx.N << " | ";
+std::ostream& NodeIndex<D>::print(std::ostream &o) const {
+    o << "[ " << this->N << " | ";
     for (int d = 0; d < D - 1; d++) {
-        o << idx.L[d] << ", ";
+        o << this->L[d] << ", ";
     }
-    o << idx.L[D - 1] << "]";
+    o << this->L[D - 1] << "]";
     return o;
 }
 
@@ -154,3 +155,4 @@ public:
     }
 };
 
+}

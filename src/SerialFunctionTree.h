@@ -12,11 +12,8 @@
 #include <vector>
 
 #include "SerialTree.h"
-#include "parallel.h"
 
-template<int D> class FunctionTree;
-template<int D> class ProjectedNode;
-template<int D> class GenNode;
+namespace mrcpp {
 
 template<int D>
 class SerialFunctionTree : public SerialTree<D> {
@@ -69,3 +66,4 @@ private:
 #endif
 };
 
+}

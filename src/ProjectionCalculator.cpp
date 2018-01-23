@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
@@ -10,10 +11,6 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     node.getExpandedChildPts(exp_pts);
 
     assert(exp_pts.cols() == node.getNCoefs());
-
-    int kp1 = node.getKp1();
-    int np1 = node.getScale() + 1;
-    double two_np1 = pow(2.0, -np1);
 
     double *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {

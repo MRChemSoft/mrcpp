@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 
+using namespace mrcpp;
+
 namespace node_index {
 
 template<int D> void testConstructors();

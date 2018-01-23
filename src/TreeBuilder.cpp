@@ -4,8 +4,10 @@
 #include "MWTree.h"
 #include "MWNode.h"
 #include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
 
 template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree,
@@ -42,7 +44,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
             // exact norm is recomputed after mwTransform
             tree.squareNorm = sNorm + wNorm;
         }
-        println(10, setw(25) << tree.squareNorm);
+        println(10, setw(24) << tree.squareNorm);
         norm_t.stop();
 
         split_t.resume();
@@ -58,10 +60,10 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
     tree.resetEndNodeTable();
     delete workVec;
 
-    println(10, "");
-    println(10, "Time calc           " << calc_t);
-    println(10, "Time norm           " << norm_t);
-    println(10, "Time split          " << split_t);
+    Printer::printSeparator(10, ' ');
+    Printer::printTime(10, "Time calc", calc_t);
+    Printer::printTime(10, "Time norm", norm_t);
+    Printer::printTime(10, "Time split", split_t);
 }
 
 template<int D>
@@ -92,10 +94,10 @@ int TreeBuilder<D>::clear(MWTree<D> &tree,
     tree.clearSquareNorm();
 
     println(10, "  -- #  1: Cleared      " << setw(6) << nClear << " nodes");
-    println(10, "");
-    println(10, "Time split          " << split_t);
-    println(10, "Time clean          " << clean_t);
-    println(10, endl);
+    Printer::printSeparator(10, ' ');
+    Printer::printTime(10, "Time split", split_t);
+    Printer::printTime(10, "Time clean", clean_t);
+    Printer::printSeparator(10, ' ');
 
     return nSplit;
 }

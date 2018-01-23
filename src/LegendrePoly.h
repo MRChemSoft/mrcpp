@@ -2,6 +2,8 @@
 
 #include "Polynomial.h"
 
+namespace mrcpp {
+
 class LegendrePoly: public Polynomial {
 public:
     LegendrePoly(int k, double n = 1.0, double l = 0.0);
@@ -14,3 +16,4 @@ protected:
     void computeLegendrePolynomial(int k);
 };
 
+}

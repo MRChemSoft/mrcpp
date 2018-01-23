@@ -2,6 +2,8 @@
 
 #include "MWOperator.h"
 
+namespace mrcpp {
+
 template<int D>
 class DerivativeOperator : public MWOperator {
 public:
@@ -10,3 +12,4 @@ public:
     virtual ~DerivativeOperator() { }
 };
 
+}

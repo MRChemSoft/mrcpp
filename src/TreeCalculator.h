@@ -2,6 +2,8 @@
 
 #include "MWNode.h"
 
+namespace mrcpp {
+
 template<int D>
 class TreeCalculator {
 public:
@@ -29,3 +31,4 @@ protected:
     virtual void postProcess() { }
 };
 
+}

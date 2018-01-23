@@ -4,14 +4,17 @@
 
 #include "MWNode.h"
 #include "MWTree.h"
+#include "SerialTree.h"
 #include "ProjectedNode.h"
 #include "MathUtils.h"
 #include "QuadratureCache.h"
 #include "GenNode.h"
 #include "Timer.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 /** MWNode default constructor.
  *  Should be used only by SerialTree to obtain
@@ -86,6 +89,11 @@ MWNode<D>::~MWNode() {
 #ifdef HAVE_OPENMP
     omp_destroy_lock(&node_lock);
 #endif
+}
+
+template<int D>
+void MWNode<D>::dealloc() {
+    NOT_REACHED_ABORT;
 }
 
 /** Allocate the coefs vector. Only used by loose nodes. */
@@ -522,6 +530,11 @@ void MWNode<D>::createChildren() {
     this->setIsBranchNode();
 }
 
+template<int D>
+void MWNode<D>::genChildren() {
+    NOT_REACHED_ABORT;
+}
+
 /** Recursive deallocation of children and all their descendants.
   * Leaves node as LeafNode and children[] as null pointer. */
 template<int D>
@@ -896,6 +909,43 @@ template<int D>
 bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
+
+template<int D>
+std::ostream& MWNode<D>::print(std::ostream &o) const {
+    std::string flags ="       ";
+    o << getNodeIndex();
+    if (isRootNode()) {
+        flags[0] = 'R';
+    }
+    if (isEndNode()) {
+        flags[1] = 'E';
+    }
+    if (isBranchNode()) {
+        flags[2] = 'B';
+    } else {
+        flags[2] = 'L';
+    }
+    if (isGenNode()) {
+        flags[3] = 'G';
+    } else {
+        flags[3] = 'P';
+    }
+    if (isAllocated()) {
+        flags[4] = 'A';
+    }
+    if (hasCoefs()) {
+        flags[5] = 'C';
+    }
+    o << " " << flags;
+    o << " sqNorm=" << this->squareNorm;
+    if (hasCoefs()) {
+        o << " Coefs={";
+        o << getCoefs()[0] << ", " <<
+             getCoefs()[getNCoefs() - 1] << "}";
+    }
+    return o;
+}
+
 
 template class MWNode<1>;
 template class MWNode<2>;

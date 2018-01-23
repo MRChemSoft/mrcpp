@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace mrcpp {
+
 typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic>
 FilterBlock;
 
@@ -55,4 +57,4 @@ protected:
     void fillFilterBlocks();
 };
 
-
+}

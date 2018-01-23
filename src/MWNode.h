@@ -7,12 +7,14 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "parallel.h"
+#include "parallel_omp.h"
 #include "macros.h"
 
 #include "MWTree.h"
+#include "NodeIndex.h"
 #include "HilbertPath.h"
-#include "SerialTree.h"
+
+namespace mrcpp {
 
 #ifdef HAVE_OPENMP
 #define SET_NODE_LOCK() omp_set_lock(&this->node_lock)
@@ -24,8 +26,6 @@
 #define UNSET_NODE_LOCK()
 #define TEST_NODE_LOCK() false
 #endif
-
-template<int D> class SerialFunctionTree;
 
 template<int D>
 class MWNode {
@@ -101,7 +101,7 @@ public:
     void clearNorms();
 
     virtual void createChildren();
-    virtual void genChildren() { NOT_REACHED_ABORT; }
+    virtual void genChildren();
     virtual void deleteChildren();
 
     virtual void cvTransform(int kind);
@@ -123,8 +123,7 @@ public:
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
 
-    template<int T>
-    friend std::ostream& operator<<(std::ostream &o, const MWNode<T> &nd);
+    friend std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) { return nd.print(o); }
 
     friend class MultiplicationCalculator<D>;
     friend class SerialFunctionTree<D>;
@@ -153,7 +152,7 @@ protected:
     int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     MWNode();
-    virtual void dealloc() { NOT_REACHED_ABORT; }
+    virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
     double getScaleFactor(double splitFac, bool absPrec) const;
@@ -188,6 +187,8 @@ protected:
     MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
     void deleteGenerated();
+
+    virtual std::ostream& print(std::ostream &o) const;
 
     static const unsigned char FlagBranchNode = B8(00000001);
     static const unsigned char FlagGenNode    = B8(00000010);
@@ -279,39 +280,4 @@ bool MWNode<D>::checkStatus(unsigned char mask) const {
     return false;
 }
 
-template<int D>
-std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) {
-    std::string flags ="       ";
-    o << nd.getNodeIndex();
-    if (nd.isRootNode()) {
-        flags[0] = 'R';
-    }
-    if (nd.isEndNode()) {
-        flags[1] = 'E';
-    }
-    if (nd.isBranchNode()) {
-        flags[2] = 'B';
-    } else {
-        flags[2] = 'L';
-    }
-    if (nd.isGenNode()) {
-        flags[3] = 'G';
-    } else {
-        flags[3] = 'P';
-    }
-    if (nd.isAllocated()) {
-        flags[4] = 'A';
-    }
-    if (nd.hasCoefs()) {
-        flags[5] = 'C';
-    }
-    o << " " << flags;
-    o << " sqNorm=" << nd.squareNorm;
-    if (nd.hasCoefs()) {
-        o << " Coefs={";
-        o << nd.getCoefs()[0] << ", " <<
-             nd.getCoefs()[nd.getNCoefs() - 1] << "}";
-    }
-    return o;
 }
-

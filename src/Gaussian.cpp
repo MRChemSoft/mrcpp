@@ -10,8 +10,9 @@
 #include "Gaussian.h"
 #include "NodeIndex.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {

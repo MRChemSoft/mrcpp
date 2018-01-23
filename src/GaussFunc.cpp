@@ -14,9 +14,11 @@
 #include "GaussPoly.h"
 #include "Polynomial.h"
 #include "MathUtils.h"
+#include "Printer.h"
 #include "BoysFunction.h"
 
 using namespace Eigen;
+using namespace mrcpp;
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
@@ -274,10 +276,29 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     return s_coeff[power_b + 2 * power_a];
 }
 
+// Specialized for D=3 below
 template<int D>
 double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
     NOT_IMPLEMENTED_ABORT;
 }
+
+template<int D>
+std::ostream& GaussFunc<D>::print(std::ostream &o) const {
+    o << "Exp:   " << this->getExp() << std::endl;
+    o << "Coef:  "<< this->getCoef() << std::endl;
+    o << "Pos:   ";
+    for (int i = 0; i < D; i++) {
+        o << this->getPos()[i] << " ";
+    }
+    o << std::endl;
+    o << "Power: ";
+    for (int i = 0; i < D; i++) {
+        o << this->getPower(i) << " ";
+    }
+    return o;
+}
+
+namespace mrcpp {
 
 /** NOTE: Gaussians must be normalized to unit charge coef = (alpha/pi)^(3/2)
  * for this to be correct!
@@ -303,6 +324,8 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     double boysFac = boys.evalf(&boysArg);
 
     return sqrt(4.0*alpha/pi)*boysFac;
+}
+
 }
 
 template class GaussFunc<1>;

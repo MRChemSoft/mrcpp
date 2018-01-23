@@ -12,6 +12,9 @@
 
 #include "PoissonKernel.h"
 #include "GaussFunc.h"
+#include "Printer.h"
+
+using namespace mrcpp;
 
 /** generate an approximation of the 3d poisson kernel expanded in
  * gaussian functions this routine assumes that the expansion be centered
@@ -62,4 +65,11 @@ void PoissonKernel::initializeKernel() {
     this->calcSquareNorm();
 }
 
+std::ostream& PoissonKernel::print(std::ostream &o) const {
+    o << "Kernel: " << std::endl;
+    o << "epsilon:  " << this->epsilon << std::endl;
+    o << "rMin:     " << this->rMin << std::endl;
+    o << "rMax:     " << this->rMax << std::endl;
+    return o;
+}
 

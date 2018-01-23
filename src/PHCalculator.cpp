@@ -3,9 +3,11 @@
 #include "config.h"
 
 #include "PHCalculator.h"
+#include "Printer.h"
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 PHCalculator::PHCalculator(const ScalingBasis &basis, int n)
         : diff_order(n) {

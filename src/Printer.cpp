@@ -6,11 +6,14 @@
  */
 
 #include <fstream>
+
+#include "config.h"
+
 #include "Printer.h"
 #include "Timer.h"
-#include "parallel.h"
 
 using namespace std;
+using namespace mrcpp;
 
 static ofstream tp_outfile;
 int Printer::printLevel = -1;
@@ -40,14 +43,14 @@ void Printer::init(int level, int rank, int size, const char *file) {
         }
     }
     setScientific();
+    setPrecision(printPrec);
 }
 
-void Printer::printEnvironment(int level, int hosts, int threads) {
+void Printer::printEnvironment(int level) {
     printout(level, endl);
     printSeparator(level, '-', 1);
     println(level, " MRCPP version   : " << PROGRAM_VERSION);
     println(level, " Git revision    : " << GIT_REVISION << endl);
-    println(level, " Print level     : " << getPrintLevel());
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra  : BLAS");
@@ -58,17 +61,12 @@ void Printer::printEnvironment(int level, int hosts, int threads) {
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : MPI/OpenMP");
-    println(level, " - MPI hosts     : " << hosts);
-    println(level, " - OMP threads   : " << threads);
-    println(level, " - Total cores   : " << threads*hosts);
 #else
     println(level, " Parallelization : MPI");
-    println(level, " - MPI hosts     : " << hosts);
 #endif
 #else
 #ifdef HAVE_OPENMP
     println(level, " Parallelization : OpenMP");
-    println(level, " - OMP threads   : " << threads);
 #else
     println(level, " Parallelization : NONE");
 #endif
@@ -107,28 +105,41 @@ void Printer::printFooter(int level, const Timer &t, int newlines) {
     printSeparator(level, '=', newlines);
 }
 
-void Printer::printDouble(int level, const std::string &name, double d) {
-    char cName[31] = "                              ";
+void Printer::printDouble(int level, const std::string &str, double d, int p) {
+    char cStr[31] = "                              ";
     for (int i = 0; i < 31; i++) {
-        if (i < name.size()) {
-            cName[i+1] = name[i];
+        if (i < str.size()) {
+            cStr[i+1] = str[i];
         }
     }
-    int oldPrec = Printer::setPrecision(5);
-    println(level, cName << setw(29) << d);
-    Printer::setPrecision(oldPrec);
+    int oldPrec = getPrecision();
+    if (p > 0) setPrecision(p);
+    println(level, cStr << setw(29) << d);
+    setPrecision(oldPrec);
 }
 
-void Printer::printTree(int level, const std::string &name, int n, double t) {
-    char cName[31] = "                              ";
+void Printer::printTree(int level, const std::string &str, int n, double t) {
+    char cStr[31] = "                              ";
     for (int i = 0; i < 31; i++) {
-        if (i < name.size()) {
-            cName[i+1] = name[i];
+        if (i < str.size()) {
+            cStr[i+1] = str[i];
         }
     }
-    int oldPrec = Printer::setPrecision(5);
-    println(level, cName << setw(12) << n << setw(17) << t);
-    Printer::setPrecision(oldPrec);
+    int oldPrec = setPrecision(5);
+    println(level, cStr << setw(12) << n << setw(17) << t);
+    setPrecision(oldPrec);
+}
+
+void Printer::printTime(int level, const std::string &str, const Timer &t) {
+    char cStr[31] = "                              ";
+    for (int i = 0; i < 31; i++) {
+        if (i < str.size()) {
+            cStr[i+1] = str[i];
+        }
+    }
+    int oldPrec = setPrecision(5);
+    println(level, cStr << setw(29) << t);
+    setPrecision(oldPrec);
 }
 
 int Printer::setPrintLevel(int i) {

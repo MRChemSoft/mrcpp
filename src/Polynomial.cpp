@@ -9,9 +9,11 @@
 
 #include "Polynomial.h"
 #include "MathUtils.h"
+#include "Printer.h"
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
+using namespace mrcpp;
 
 /** Construct polynomial of order zero with given size and bounds.
   * Includes default constructor. */

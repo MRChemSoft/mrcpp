@@ -1,72 +1,33 @@
 #pragma once
 
 #include <chrono>
+#include <iostream>
 
-#include "Printer.h"
+namespace mrcpp {
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
 
 class Timer {
 public:
-    Timer(bool start_timer = true) : running(false), time_used(0.0) {
-        if (start_timer) {
-            start();
-        }
-    }
-    Timer& operator=(const Timer &timer) {
-        if (this != &timer) {
-            this->time_used = timer.time_used;
-            this->clock_start = timer.clock_start;
-            this->running = timer.running;
-        }
-        return *this;
-    }
-    void start() {
-        this->clock_start = now();
-        this->time_used = 0.0;
-        this->running = true;
-    }
-    void resume() {
-        if (this->running) MSG_WARN("Timer already running");
-        this->clock_start = now();
-        this->running = true;
-    }
-    void stop() {
-        if (not this->running) MSG_WARN("Timer not running");
-        this->time_used += diffTime(now(), this->clock_start);
-        this->running = false;
-    }
+    Timer(bool start_timer = true);
+    Timer& operator=(const Timer &timer);
 
-    double getWallTime() const {
-        if (this->running) MSG_WARN("Timer still running");
-        return this->time_used;
-    }
-    double getUserTime() const {
-        if (this->running) MSG_WARN("Timer still running");
-        return this->time_used;
-    }
-    double getSystemTime() const {
-        if (this->running) MSG_WARN("Timer still running");
-        return this->time_used;
-    }
+    void start();
+    void resume();
+    void stop();
 
-    friend std::ostream& operator<<(std::ostream &o, const Timer &timer) {
-        int old_prec = Printer::setPrecision(5);
-        o << timer.getWallTime();
-        Printer::setPrecision(old_prec);
-        return o;
-	}
+    double getWallTime() const;
+
+    friend std::ostream& operator<<(std::ostream &o, const Timer &timer) { return timer.print(o); }
 private:
     bool running;
     double time_used;
     timeT clock_start;
 
-    timeT now(){
-        return std::chrono::high_resolution_clock::now();
-    }
+    timeT now();
+    double diffTime(timeT t2, timeT t1);
 
-    double diffTime(timeT t2, timeT t1) {
-        std::chrono::duration<double> diff = t2-t1;
-        return diff.count();
-    }
+    std::ostream& print(std::ostream &o) const;
 };
+
+}

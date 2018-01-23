@@ -12,10 +12,8 @@
 #include <vector>
 
 #include "SerialTree.h"
-#include "parallel.h"
 
-class OperatorTree;
-class OperatorNode;
+namespace mrcpp {
 
 class SerialOperatorTree : public SerialTree<2> {
 public:
@@ -47,3 +45,4 @@ private:
 #endif
 };
 
+}

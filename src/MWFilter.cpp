@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace mrcpp;
 
 string MWFilter::default_filter_lib = MW_FILTER_DIR;
 

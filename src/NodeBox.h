@@ -10,17 +10,18 @@
 #pragma once
 
 #include "BoundingBox.h"
+#include "mrcpp_declarations.h"
 
-template<int D> class MWNode;
+namespace mrcpp {
 
 template<int D>
 class NodeBox : public BoundingBox<D> {
 public:
-    NodeBox() { NOT_IMPLEMENTED_ABORT; }
+    NodeBox();
     NodeBox(const NodeIndex<D> &idx, const int *nb = 0);
     NodeBox(const NodeBox<D> &box);
     NodeBox(const BoundingBox<D> &box);
-    NodeBox<D> &operator=(const NodeBox<D> &box) { NOT_IMPLEMENTED_ABORT; }
+    NodeBox<D> &operator=(const NodeBox<D> &box);
     virtual ~NodeBox();
 
     void setNode(int idx, MWNode<D> **node);
@@ -45,3 +46,4 @@ protected:
     void deleteNodes();
 };
 
+}

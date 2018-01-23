@@ -2,17 +2,16 @@
 
 #include "factory_functions.h"
 
-
 #include "MathUtils.h"
+#include "MWOperator.h"
 #include "ABGVOperator.h"
 #include "PHOperator.h"
-#include "MWAdder.h"
-#include "MWDerivative.h"
-#include "MWOperator.h"
-#include "MWProjector.h"
-
+#include "add.h"
+#include "apply.h"
+#include "project.h"
 
 using namespace std;
+using namespace mrcpp;
 
 namespace derivative_operator {
 
@@ -29,22 +28,15 @@ template<int D> MultiResolutionAnalysis<D>* initializeMRA() {
     InterpolatingBasis basis(order);
 
     // Initializing MRA
-    return new MultiResolutionAnalysis<D>(world, basis);
+    int max_depth = 20;
+    return new MultiResolutionAnalysis<D>(world, basis, max_depth);
 }
 
 template<int D> void testDifferentiationABGV(double a, double b) {
-
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
     double prec = 1.0e-3;
-    int max_scale = mra->getMaxScale();
-    double proj_prec = prec/10.0;
-
     ABGVOperator<D> diff(*mra, a, b);
-    MWDerivative<D> apply(max_scale);
-
-    MWAdder<D> add(-1.0, max_scale);
-    MWProjector<D> project(proj_prec, max_scale);
 
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
@@ -58,16 +50,16 @@ template<int D> void testDifferentiationABGV(double a, double b) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project(f_tree, f);
+    project(prec/10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project(df_tree, df);
+    project(prec/10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
-    add(err_tree, 1.0, df_tree, -1.0, dg_tree);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
     double df_norm = sqrt(df_tree.getSquareNorm());
     double abs_err = sqrt(err_tree.getSquareNorm());
@@ -79,18 +71,10 @@ template<int D> void testDifferentiationABGV(double a, double b) {
 }
 
 template<int D> void testDifferentiationPH(int order) {
-
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
     double prec = 1.0e-3;
-    int max_scale = mra->getMaxScale();
-    double proj_prec = prec/10.0;
-
     PHOperator<D> diff(*mra, order);
-    MWDerivative<D> apply(max_scale);
-
-    MWAdder<D> add(-1.0, max_scale);
-    MWProjector<D> project(proj_prec, max_scale);
 
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
@@ -106,16 +90,16 @@ template<int D> void testDifferentiationPH(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project(f_tree, f);
+    project(prec/10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project(df_tree, df);
+    project(prec/10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
-    add(err_tree, 1.0, df_tree, -1.0, dg_tree);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
     double df_norm = sqrt(df_tree.getSquareNorm());
     double abs_err = sqrt(err_tree.getSquareNorm());
@@ -126,29 +110,29 @@ template<int D> void testDifferentiationPH(int order) {
     delete mra;
 }
 
-TEST_CASE("ABGV differentiantion central difference", "[derivative],[central_difference]") {
+TEST_CASE("ABGV differentiantion central difference", "[derivative], [central_difference]") {
     // 0.5,0.5 specifies central difference
     SECTION("1D derivative test"){
-        testDifferentiationABGV<1>(0.5,0.5);
+        testDifferentiationABGV<1>(0.5, 0.5);
     }
     SECTION("2D derivative test"){
-        testDifferentiationABGV<2>(0.5,0.5);
+        testDifferentiationABGV<2>(0.5, 0.5);
     }
     SECTION("3D derivative test"){
-        testDifferentiationABGV<3>(0.5,0.5);
+        testDifferentiationABGV<3>(0.5, 0.5);
     }
 }
 
 TEST_CASE("ABGV differentiantion center difference", "[derivative], [center_difference]") {
     // 0,0 specifies center difference
     SECTION("1D derivative test") {
-        testDifferentiationABGV<1>(0,0);
+        testDifferentiationABGV<1>(0, 0);
     }
     SECTION("2D derivative test") {
-        testDifferentiationABGV<2>(0,0);
+        testDifferentiationABGV<2>(0, 0);
     }
     SECTION("3D derivative test") {
-        testDifferentiationABGV<3>(0,0);
+        testDifferentiationABGV<3>(0, 0);
     }
 }
 

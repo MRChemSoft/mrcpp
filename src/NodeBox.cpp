@@ -7,8 +7,15 @@
 
 #include "NodeBox.h"
 #include "MWNode.h"
+#include "Printer.h"
 
 using namespace std;
+using namespace mrcpp;
+
+template<int D>
+NodeBox<D>::NodeBox() {
+    NOT_IMPLEMENTED_ABORT;
+}
 
 template<int D>
 NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const int *nb)
@@ -32,6 +39,11 @@ NodeBox<D>::NodeBox(const NodeBox<D> &box)
           nOccupied(0),
           nodes(0) {
     allocNodePointers();
+}
+
+template<int D>
+NodeBox<D>& NodeBox<D>::operator=(const NodeBox<D> &box) {
+    NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>

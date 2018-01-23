@@ -6,8 +6,11 @@
 
 #pragma once
 
-#include "Printer.h"
+#include <iostream>
+
 #include "constants.h"
+
+namespace mrcpp {
 
 template<int D>
 class RepresentableFunction {
@@ -34,23 +37,14 @@ public:
     virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
     virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
 
-    friend std::ostream& operator<<(std::ostream &o, const RepresentableFunction<D> &func) {
-        o << "RepresentableFunction: " << std::endl;
-        o << "  A=[ ";
-        for (int i = 0; i < D; i++) {
-            o << func.A[i] << " ";
-        }
-        o << "]" << std::endl;
-        o << "  B=[ ";
-        for (int i = 0; i < D; i++) {
-            o << func.B[i] << " ";
-        }
-        o << "]" << std::endl;
-        return o;
-    }
+    friend std::ostream& operator<<(std::ostream &o, const RepresentableFunction<D> &func) { return func.print(o); }
+
 protected:
     bool bounded;
     double *A; ///< Lower bound, NULL if unbounded
     double *B; ///< Upper bound, Null if unbounded
+
+    std::ostream& print(std::ostream &o) const;
 };
 
+}

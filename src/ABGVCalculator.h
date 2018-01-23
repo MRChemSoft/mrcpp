@@ -2,6 +2,8 @@
 
 #include "TreeCalculator.h"
 
+namespace mrcpp {
+
 class ABGVCalculator : public TreeCalculator<2> {
 public:
     ABGVCalculator(const ScalingBasis &basis, double a, double b);
@@ -20,3 +22,4 @@ protected:
     void calcValueVectors(const ScalingBasis &basis);
 };
 
+}

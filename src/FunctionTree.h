@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "TreeBuilder.h"
 #include "MWTree.h"
-#include "SerialFunctionTree.h"
+
+namespace mrcpp {
 
 template<int D>
 class FunctionTree: public MWTree<D> {
@@ -18,7 +18,6 @@ public:
     void clear();
 
     double integrate() const;
-    virtual double dot(const FunctionTree<D> &ket);
     virtual double evalf(const double *r);
 
     void getEndValues(Eigen::VectorXd &data);
@@ -29,14 +28,8 @@ public:
 
     // In place operations
     void square();
-    void power(double d);
+    void rescale(double c);
     void normalize();
-    void map(const RepresentableFunction<1> &func);
-
-    FunctionTree<D>& operator *=(double c);
-    FunctionTree<D>& operator *=(const FunctionTree<D> &tree);
-    FunctionTree<D>& operator +=(const FunctionTree<D> &tree);
-    FunctionTree<D>& operator -=(const FunctionTree<D> &tree);
 
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -46,24 +39,10 @@ public:
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    template<int T>
-    friend std::ostream& operator <<(std::ostream &o, FunctionTree<T> &tree);
+protected:
+    std::ostream& print(std::ostream &o);
 };
 
-template<int D>
-std::ostream& operator<<(std::ostream &o, FunctionTree<D> &tree) {
-    o << std::endl << "*FunctionTree: " << tree.name << std::endl;
-    o << "  square norm: " << tree.squareNorm << std::endl;
-    o << "  root scale: " << tree.getRootScale() << std::endl;
-    o << "  order: " << tree.order << std::endl;
-    o << "  nodes: " << tree.getNNodes() << std::endl;
-    o << "  endNodes: " << tree.endNodeTable.size() << std::endl;
-    o << "  genNodes: " << tree.getNGenNodes() << std::endl;
-    o << "  nodes per scale: " << std::endl;
-    for (int i = 0; i < tree.nodesAtDepth.size(); i++) {
-        o << "    scale=" << i + tree.getRootScale() << "  nodes="
-          << tree.nodesAtDepth[i] << std::endl;
-    }
-    return o;
-}
+template<int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket);
 
+}

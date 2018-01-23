@@ -36,10 +36,6 @@ MWNode<D>::MWNode()
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
-
-#ifdef HAVE_OPENMP
-    omp_init_lock(&node_lock);
-#endif
 }
 
 /** MWNode copy constructor.
@@ -75,10 +71,6 @@ MWNode<D>::MWNode(const MWNode<D> &node)
     for (int i = 0; i < getTDim(); i++) {
         this->children[i] = 0;
     }
-
-#ifdef HAVE_OPENMP
-    omp_init_lock(&node_lock);
-#endif
 }
 
 /** MWNode destructor.
@@ -86,9 +78,6 @@ MWNode<D>::MWNode(const MWNode<D> &node)
 template<int D>
 MWNode<D>::~MWNode() {
     if (this->isLooseNode()) this->freeCoefs();
-#ifdef HAVE_OPENMP
-    omp_destroy_lock(&node_lock);
-#endif
 }
 
 template<int D>
@@ -218,6 +207,141 @@ void MWNode<D>::copyCoefsFromChildren() {
     }
 }
 
+/** Generates children nodes in a thread safe manner if (*this) is a leaf node */
+template<int D>
+void MWNode<D>::threadSafeGenChildren() {
+    // set_node_lock caused segmentation errors seldom and randomly -> avoided
+
+    // we make many copies of the genChildren calls
+    // the chance that 2 different nodes are treated in the same copy is small and therefore
+    // the different critical sections will not interfer too much
+    if (this->isLeafNode() or this->lockX != 0) {
+        this->lockX = 1;
+
+        int nCritical = 16;
+        switch (this->serialIx%nCritical) {
+        case 0:
+#pragma omp critical(g0)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 1:
+#pragma omp critical(g1)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 2:
+#pragma omp critical(g2)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 3:
+#pragma omp critical(g3)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 4:
+#pragma omp critical(g4)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 5:
+#pragma omp critical(g5)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 6:
+#pragma omp critical(g6)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 7:
+#pragma omp critical(g7)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 8:
+#pragma omp critical(g8)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 9:
+#pragma omp critical(g9)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 10:
+#pragma omp critical(g10)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 11:
+#pragma omp critical(g11)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 12:
+#pragma omp critical(g12)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 13:
+#pragma omp critical(g13)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 14:
+#pragma omp critical(g14)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        case 15:
+#pragma omp critical(g15)
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+            break;
+        default:
+#pragma omp critical
+            if(isLeafNode()) {
+                genChildren();
+                giveChildrenCoefs();
+            }
+        }
+        this->lockX = 0;
+    }
+}
 
 /** Coefficient-Value transform
   *
@@ -815,14 +939,7 @@ MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
         return this;
     }
     assert(hasCoord(r));
-    // If we have reached an endNode, lock if necessary, and start generating
-    // NB! retrieveNode() for GenNodes behave a bit differently.
-    SET_NODE_LOCK();
-    if (this->isLeafNode()) {
-        genChildren();
-        giveChildrenCoefs();
-   }
-    UNSET_NODE_LOCK();
+    threadSafeGenChildren();
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(r, depth);
@@ -841,14 +958,8 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
         return this;
     }
     assert(isAncestor(idx));
-    SET_NODE_LOCK();
-    if (isLeafNode()) {
-      genChildren();
-      giveChildrenCoefs();
-    }
-    UNSET_NODE_LOCK();
+    threadSafeGenChildren();
     int cIdx = getChildIndex(idx);
-
     assert(this->children[cIdx] != 0);
     return this->children[cIdx]->retrieveNode(idx);
 }

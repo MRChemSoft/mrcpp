@@ -101,6 +101,7 @@ void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
         root_p->n_coefs = this->sizeNodeCoeff;
         root_p->coefs = coefs_p;
 
+        root_p->lockX = 0;
         root_p->serialIx = sIx;
         root_p->parentSerialIx = -1;//to indicate rootnode
         root_p->childSerialIx = -1;
@@ -115,10 +116,6 @@ void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
         root_p->setIsRootNode();
 
         tree.incrementNodeCount(root_p->getScale());
-
-#ifdef HAVE_OPENMP
-        omp_init_lock(&(root_p->node_lock));
-#endif
 
         sIx++;
         root_p++;
@@ -154,6 +151,7 @@ void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
         child_p->n_coefs = this->sizeNodeCoeff;
         child_p->coefs = coefs_p;
 
+        child_p->lockX = 0;
         child_p->serialIx = sIx;
         child_p->parentSerialIx = parent.serialIx;
         child_p->childSerialIx = -1;
@@ -167,10 +165,6 @@ void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
         child_p->setIsEndNode();
 
         child_p->tree->incrementNodeCount(child_p->getScale());
-
-#ifdef HAVE_OPENMP
-        omp_init_lock(&child_p->node_lock);
-#endif
 
         sIx++;
         child_p++;
@@ -206,6 +200,7 @@ void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent) {
         child_p->n_coefs = this->sizeGenNodeCoeff;
         child_p->coefs = coefs_p;
 
+        child_p->lockX = 0;
         child_p->serialIx = sIx;
         child_p->parentSerialIx = parent.serialIx;
         child_p->childSerialIx = -1;
@@ -219,10 +214,6 @@ void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent) {
         child_p->setIsGenNode();
 
         child_p->tree->incrementGenNodeCount();
-
-#ifdef HAVE_OPENMP
-        omp_init_lock(&child_p->node_lock);
-#endif
 
         sIx++;
         child_p++;
@@ -416,10 +407,6 @@ void SerialFunctionTree<D>::deallocGenNodeChunks() {
 template<int D>
 void SerialFunctionTree<D>::rewritePointers(int nChunks){
 
-    int depthMax = 100;
-    MWNode<D>* stack[depthMax*8];
-    int slen = 0, counter = 0;
-
     this->getTree()->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
@@ -469,9 +456,6 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
                     Node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
                 }
                 this->nodeStackStatus[Node->serialIx] = 1;//occupied
-#ifdef HAVE_OPENMP
-                omp_init_lock(&(Node->node_lock));
-#endif
             }
 
         }
@@ -488,8 +472,6 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     }
 
     this->getTree()->resetEndNodeTable();
-
-
 }
 
 

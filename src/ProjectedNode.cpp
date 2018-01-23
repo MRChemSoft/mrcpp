@@ -27,9 +27,6 @@ void ProjectedNode<D>::deleteChildren() {
 
 template<int D>
 void ProjectedNode<D>::dealloc() {
-#ifdef HAVE_OPENMP
-    omp_destroy_lock(&this->node_lock);
-#endif
     this->tree->decrementNodeCount(this->getScale());
     this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
 }

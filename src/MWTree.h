@@ -92,8 +92,8 @@ public:
 
     int getNThreads() const { return this->nThreads; }
 
-    virtual bool saveTree(const std::string &file);
-    virtual bool loadTree(const std::string &file);
+    virtual void saveTree(const std::string &file);
+    virtual void loadTree(const std::string &file);
 
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);

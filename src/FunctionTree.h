@@ -23,8 +23,8 @@ public:
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 
-    bool saveTree(const std::string &file);
-    bool loadTree(const std::string &file);
+    void saveTree(const std::string &file);
+    void loadTree(const std::string &file);
 
     // In place operations
     void square();

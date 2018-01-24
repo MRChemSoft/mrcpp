@@ -3,12 +3,15 @@
  *          CTCC, University of Tromsø
  */
 
+#include <fstream>
+
 #include "FunctionTree.h"
 #include "SerialFunctionTree.h"
 #include "FunctionNode.h"
 #include "ProjectedNode.h"
 #include "HilbertIterator.h"
 #include "Printer.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace Eigen;
@@ -43,19 +46,90 @@ void FunctionTree<D>::clear() {
 }
 
 /** Write the tree structure to disk, for later use.
-  * Argument file name will get a ".tree" file extension, and in MPI an
-  * additional "-[rank]". */
+  * Argument file name will get a ".tree" file extension. */
 template<int D>
-bool FunctionTree<D>::saveTree(const string &file) {
-    NOT_IMPLEMENTED_ABORT;
+void FunctionTree<D>::saveTree(const string &file) {
+    // This is basically a copy of MPI send_tree
+    Timer t1;
+    stringstream fname;
+    fname << file << ".tree";
+
+    fstream f;
+    f.open(fname.str(), ios::out | ios::binary);
+    if (not f.is_open()) MSG_ERROR("Unable to open file");
+
+    this->deleteGenerated();
+    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
+
+    // Write size of tree
+    int nChunks = sTree.nodeChunks.size();
+    f.write((char*) &nChunks, sizeof(int));
+
+    // Write tree data, chunk by chunk
+    int count = 1;
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+        count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
+        //set serialIx of the unused nodes to -1
+        int iShift = iChunk*sTree.maxNodesPerChunk;
+        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
+            if (sTree.nodeStackStatus[iShift+i] != 1) {
+                sTree.nodeChunks[iChunk][i].setSerialIx(-1);
+            }
+        }
+        f.write((char *) sTree.nodeChunks[iChunk], count);
+        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+        f.write((char *) sTree.nodeCoeffChunks[iChunk], count*sizeof(double));
+    }
+    f.close();
+
+    t1.stop();
+    Printer::printTime(10, "Time write", t1);
 }
 
 /** Read a previously stored tree structure from disk.
-  * Argument file name will get a ".tree" file extension, and in MPI an
-  * additional "-[rank]". */
+  * Argument file name will get a ".tree" file extension. */
 template<int D>
-bool FunctionTree<D>::loadTree(const string &file) {
-    NOT_IMPLEMENTED_ABORT;
+void FunctionTree<D>::loadTree(const string &file) {
+    // This is basically a copy of MPI recv_tree
+    Timer t1;
+    stringstream fname;
+    fname << file << ".tree";
+
+    fstream f;
+    f.open(fname.str(), ios::in | ios::binary);
+    if (not f.is_open()) MSG_ERROR("Unable to open file");
+
+    // Read size of tree
+    int nChunks;
+    f.read((char*) &nChunks, sizeof(int));
+    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
+
+    // Read tree data, chunk by chunk
+    int count = 1;
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+        if (iChunk < sTree.nodeChunks.size()) {
+            sTree.sNodes = sTree.nodeChunks[iChunk];
+        } else {
+            double *sNodesCoeff;
+            sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            sTree.nodeCoeffChunks.push_back(sNodesCoeff);
+            sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
+            sTree.nodeChunks.push_back(sTree.sNodes);
+        }
+        count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
+        f.read((char*) sTree.nodeChunks[iChunk], count);
+        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+        f.read((char*) sTree.nodeCoeffChunks[iChunk], count*sizeof(double));
+    }
+    f.close();
+
+    t1.stop();
+    Printer::printTime(10, "Time read tree", t1);
+
+    Timer t2;
+    sTree.rewritePointers(nChunks);
+    t2.stop();
+    Printer::printTime(10, "Time rewrite pointers", t2);
 }
 
 template<int D>

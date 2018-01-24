@@ -489,12 +489,12 @@ void MWTree<D>::deleteGenerated() {
 }
 
 template<int D>
-bool MWTree<D>::saveTree(const string &file) {
+void MWTree<D>::saveTree(const string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>
-bool MWTree<D>::loadTree(const string &file) {
+void MWTree<D>::loadTree(const string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 

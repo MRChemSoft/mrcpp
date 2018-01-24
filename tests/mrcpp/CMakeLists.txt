@@ -18,6 +18,7 @@ add_library(mrcpp-tests OBJECT band_width.cpp
                                poisson_operator.cpp
                                polynomial.cpp
                                scaling_basis.cpp
+                               tree_io.cpp
                                )
 
 add_Catch_test(band_width "band_width")
@@ -40,3 +41,4 @@ add_Catch_test(node_index "node_index")
 add_Catch_test(poisson_operator "poisson_operator")
 add_Catch_test(polynomials "polynomials")
 add_Catch_test(scaling_basis "scaling_basis")
+add_Catch_test(tree_io "tree_io")

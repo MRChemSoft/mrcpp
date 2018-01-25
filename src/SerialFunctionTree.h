@@ -29,6 +29,9 @@ public:
     virtual void deallocGenNodes(int serialIx);
     virtual void deallocGenNodeChunks();
 
+    int getNChunks() const { return this->nodeChunks.size(); }
+    int getNChunksUsed() const;
+
     std::vector<ProjectedNode<D>*> nodeChunks;
     std::vector<double*> nodeCoeffChunks;
 

@@ -39,6 +39,25 @@ template<int D> void testClearGrid() {
     const double refInt = tree.integrate();
     const double refNorm = tree.getSquareNorm();
 
+    WHEN("the tree is cleared") {
+        tree.clear();
+        THEN("it represents an undefined function on the root grid") {
+            REQUIRE( (tree.getDepth() == 1) );
+            REQUIRE( (tree.getNNodes() == tree.getRootBox().size()) );
+            REQUIRE( (tree.integrate() == Approx(0.0)) );
+            REQUIRE( (tree.getSquareNorm() == Approx(-1.0)) );
+            AND_WHEN("the function is re-projected") {
+                build_grid(tree, *func);
+                project(prec, tree, *func);
+                THEN("the representation is the same as before it was cleared") {
+                    REQUIRE( (tree.getDepth() == refDepth) );
+                    REQUIRE( (tree.getNNodes() == refNodes) );
+                    REQUIRE( (tree.integrate() == Approx(refInt)) );
+                    REQUIRE( (tree.getSquareNorm() == Approx(refNorm)) );
+                }
+            }
+        }
+    }
     WHEN("the grid is cleared") {
         clear_grid(-1.0, tree);
         THEN("it represents an undefined function on the same grid") {

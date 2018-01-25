@@ -42,7 +42,7 @@ void mrcpp::send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm) {
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
 
-    int nChunks = sTree.nodeChunks.size();
+    int nChunks = sTree.getNChunksUsed();
     MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, tag, comm);
     println(10, " Sending " << nChunks << " chunks");
 
@@ -109,7 +109,7 @@ void mrcpp::isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, M
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
 
-    int nChunks = sTree.nodeChunks.size();
+    int nChunks = sTree.getNChunksUsed();
     MPI_Isend(&nChunks, sizeof(int), MPI_BYTE, dst, tag, comm, req);
     println(10, " Sending " << nChunks << " chunks");
 

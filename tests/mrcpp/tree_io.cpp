@@ -4,6 +4,7 @@
 
 #include "project.h"
 #include "grid.h"
+#include "SerialFunctionTree.h"
 
 using namespace mrcpp;
 
@@ -40,6 +41,32 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
                 REQUIRE( (g_tree.integrate() == Approx(ref_charge).epsilon(1.0e-12)) );
                 REQUIRE( (g_tree.getSquareNorm() == Approx(ref_norm).epsilon(1.0e-12)) );
                 REQUIRE( (g_tree.getNNodes() == ref_nodes) );
+            }
+        }
+    }
+    WHEN("a function with unused memory chunks is saved") {
+        f_tree.clear();                   // leaves memory chunks
+        project(100*prec, f_tree, *func); // should use less chunks
+
+        const int refChunks = f_tree.getSerialFunctionTree()->getNChunks();
+        const int refChunksUsed = f_tree.getSerialFunctionTree()->getNChunksUsed();
+        REQUIRE( (refChunksUsed < refChunks) );
+
+        f_tree.saveTree("f");
+        THEN("the old tree remains unchanged") {
+            int nChunks = f_tree.getSerialFunctionTree()->getNChunks();
+            int nChunksUsed = f_tree.getSerialFunctionTree()->getNChunksUsed();
+            REQUIRE( (nChunks == refChunks) );
+            REQUIRE( (nChunksUsed == refChunksUsed) );
+        }
+        AND_WHEN("the saved function is load into a new tree") {
+            FunctionTree<3> g_tree(*mra);
+            g_tree.loadTree("f");
+            THEN("the new tree has no empty chunks") {
+                int nChunks = g_tree.getSerialFunctionTree()->getNChunks();
+                int nChunksUsed = g_tree.getSerialFunctionTree()->getNChunksUsed();
+                REQUIRE( (nChunksUsed == nChunks) );
+                REQUIRE( (nChunksUsed == refChunksUsed) );
             }
         }
     }

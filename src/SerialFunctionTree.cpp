@@ -474,6 +474,21 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     this->getTree()->resetEndNodeTable();
 }
 
+template<int D>
+int SerialFunctionTree<D>::getNChunksUsed() const {
+    int nUsed = 0;
+    for (int iChunk = 0; iChunk < getNChunks(); iChunk++) {
+        int iShift = iChunk * this->maxNodesPerChunk;
+        bool chunkUsed = false;
+        for (int i = 0; i < this->maxNodesPerChunk; i++) {
+            if (this->nodeStackStatus[iShift+i] == 1) {
+                chunkUsed = true;
+            }
+        }
+        if (chunkUsed) nUsed++;
+    }
+    return nUsed;
+}
 
 template class SerialFunctionTree<1>;
 template class SerialFunctionTree<2>;

@@ -72,7 +72,7 @@ void FunctionTree<D>::saveTree(const string &file) {
     SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
 
     // Write size of tree
-    int nChunks = sTree.nodeChunks.size();
+    int nChunks = sTree.getNChunksUsed();
     f.write((char*) &nChunks, sizeof(int));
 
     // Write tree data, chunk by chunk

@@ -39,10 +39,20 @@ FunctionTree<D>::~FunctionTree() {
     delete this->serialTree_p;
 }
 
-/** Leaves the tree inn the same state as after construction*/
+/** Leaves the tree inn the same state as after construction, e.i.
+  * undefined function containing only root nodes without coefficients.
+  * The assigned memory (nodeChunks in SerialTree) is NOT released,
+  * but is immediately available to the new function. */
 template<int D>
 void FunctionTree<D>::clear() {
-    NOT_IMPLEMENTED_ABORT;
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.clearHasCoefs();
+        root.clearNorms();
+    }
+    this->resetEndNodeTable();
+    this->clearSquareNorm();
 }
 
 /** Write the tree structure to disk, for later use.

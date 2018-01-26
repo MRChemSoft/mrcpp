@@ -29,6 +29,10 @@ modules:
     - docopt: "--enable-tests Enable tests [default: False]."
     - define: "'-DENABLE_TESTS={0}'.format(arguments['--enable-tests'])"
     - source: 'custom/tests.cmake'
+  - examples:
+    - docopt: "--enable-examples Enable code examples [default: False]."
+    - define: "'-DENABLE_EXAMPLES={0}'.format(arguments['--enable-examples'])"
+    - source: 'custom/examples.cmake'
   - custom:
     - source:
       - 'custom/python.cmake'

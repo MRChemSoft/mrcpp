@@ -1,7 +1,6 @@
 include(DefaultPathsMRCPP)
-include_directories (${CMAKE_SOURCE_DIR}/src)
-
-link_directories (${CMAKE_INSTALL_PREFIX}/lib)
+include_directories(${CMAKE_BINARY_DIR}/include)
+link_directories(${CMAKE_BINARY_DIR}/src)
 
 add_executable(projection projection.cpp)
 add_executable(addition addition.cpp)

@@ -21,6 +21,8 @@
 #   docopt: "--omp Enable OpenMP parallelization [default: False]."
 #   define: "'-DENABLE_OPENMP={0}'.format(arguments['--omp'])"
 
+cmake_policy (SET CMP0054 OLD)
+
 option(ENABLE_OPENMP "Enable OpenMP parallelization" OFF)
 
 if(ENABLE_OPENMP)

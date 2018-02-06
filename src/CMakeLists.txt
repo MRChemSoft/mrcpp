@@ -1,4 +1,5 @@
 include(DefaultPathsMRCPP)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_library(mrcpp STATIC 
     ABGVCalculator.cpp
@@ -66,7 +67,4 @@ add_library(mrcpp STATIC
     parallel_mpi.cpp
 )
 
-install(TARGETS mrcpp
-        ARCHIVE DESTINATION lib
-        CONFIGURATIONS Debug-devel Release-devel
-        )
+install(TARGETS mrcpp DESTINATION lib)

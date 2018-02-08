@@ -9,7 +9,6 @@
 #include "OperatorAdaptor.h"
 #include "BandWidth.h"
 #include "CrossCorrelationCalculator.h"
-#include "HydrogenicFunction.h"
 #include "MathUtils.h"
 #include "apply.h"
 #include "project.h"
@@ -128,22 +127,26 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(box, basis);
 
-    int n = 2;                  // Principal quantum number
-    int l = 1;                  // Angular quantum number
-    int m_l = 2;                // Magnetic quantum number
+    int n = 1;                  // Principal quantum number
     double Z = 1.0;             // Nuclear charge
     double E = -Z/(2.0*n*n);    // Total energy
 
     double mu = sqrt(-2*E);
     HelmholtzOperator H(MRA, mu, build_prec);
 
-    double R[3] = {0.0, 0.0, 0.0};
-    HydrogenicFunction hFunc(n, l, m_l, Z, R);
+    // Defining analytic 1s function
+    auto hFunc = [Z] (const double *r) -> double {
+        const double c_0 = 2.0*pow(Z, 3.0/2.0);
+        double rho = 2.0*Z*sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        double R_0 = c_0*exp(-rho/2.0);
+        double Y_00 = 1.0/sqrt(4.0*mrcpp::pi);
+        return R_0*Y_00;
+    };
     FunctionTree<3> psi_n(MRA);
     project(proj_prec, psi_n, hFunc);
 
-    auto f = [Z, R] (const double *r) -> double {
-        double x = MathUtils::calcDistance(3, r, R);
+    auto f = [Z] (const double *r) -> double {
+        double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return -Z/x;
     };
     FunctionTree<3> V(MRA);

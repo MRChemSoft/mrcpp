@@ -34,7 +34,6 @@ list(APPEND headers_list
     HelmholtzOperator.h
     HilbertIterator.h
     HilbertPath.h
-    HydrogenicFunction.h
     IdentityConvolution.h
     IdentityKernel.h
     InterpolatingBasis.h

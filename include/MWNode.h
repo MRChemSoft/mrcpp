@@ -127,19 +127,19 @@ protected:
     MWNode<D> *parent;	    ///< Parent node
     MWNode<D> *children[1<<D];    ///< 2^D children
 
-    NodeIndex<D> nodeIndex;
-    HilbertPath<D> hilbertPath;
-
     double squareNorm;
     double componentNorms[1<<D]; ///< 2^D components
 
-    int n_coefs;
     double *coefs;
+    int n_coefs;
 
     int lockX;          //manual lock tag (avoiding omp set/unset)
     int serialIx;       //index in serial Tree
     int parentSerialIx; //index of parent in serial Tree, or -1 for roots
     int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
+
+    NodeIndex<D> nodeIndex;
+    HilbertPath<D> hilbertPath;
 
     MWNode();
     virtual void dealloc();

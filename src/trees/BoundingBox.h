@@ -20,6 +20,7 @@ public:
     BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb);
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
+    BoundingBox(bool pbc);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() = default;
 
@@ -32,6 +33,7 @@ public:
     int getBoxIndex(const Coord<D> &r) const;
     int getBoxIndex(const NodeIndex<D> &nIdx) const;
 
+    bool isPeriodic() const {return this->periodic; }
     int size() const { return this->nBoxes[D]; }
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
@@ -48,6 +50,7 @@ public:
 
 protected:
     // Fundamental parameters
+    bool periodic;
     int nBoxes[D+1];                ///< Number of boxes in each dim, last entry total
     NodeIndex<D> cornerIndex;       ///< Index defining the lower corner of the box
 

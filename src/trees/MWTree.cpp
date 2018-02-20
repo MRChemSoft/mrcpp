@@ -345,6 +345,17 @@ template<int D>
 MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
+MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
+
+    bool periodic = getRootBox().isPeriodic();
+
+    double rtmp[3] = {r[0], r[1], r[2]};
+    if (r[0] > 1.0 and periodic) rtmp[0] = fmod(r[0],1.0);
+    if (r[1] > 1.0 and periodic) rtmp[1] = fmod(r[1],1.0);
+    if (r[2] > 1.0 and periodic) rtmp[2] = fmod(r[2],1.0);
+
+    MWNode<D> &root = getRootBox().getNode(rtmp);
+    return *root.retrieveNodeOrEndNode(rtmp, depth);
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.

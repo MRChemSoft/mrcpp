@@ -23,11 +23,11 @@ template<int D>
 MWNode<D>::MWNode()
         : tree(0),
           parent(0),
+          squareNorm(-1.0),
+          coefs(0),
+          n_coefs(0),
           nodeIndex(),
           hilbertPath(),
-          squareNorm(-1.0),
-          n_coefs(0),
-          coefs(0),
           status(0) {
     setIsLeafNode();
     setIsLooseNode();
@@ -44,11 +44,11 @@ template<int D>
 MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree),
           parent(0),
+          squareNorm(-1.0),
+          coefs(0),
+          n_coefs(0),
           nodeIndex(node.nodeIndex),
           hilbertPath(node.hilbertPath),
-          squareNorm(-1.0),
-          n_coefs(0),
-          coefs(0),
           status(0) {
     setIsLeafNode();
     setIsLooseNode();

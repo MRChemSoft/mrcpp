@@ -32,6 +32,8 @@ protected:
 
     MWNodeVector<D>* makeOperBand(const MWNode<D> &gNode);
     void fillOperBand(MWNodeVector<D> *band, NodeIndex<D> &idx, const int *nbox, int dim);
+    MWNodeVector* makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band);
+    void fillOperBand(MWNodeVector *band, std::vector<NodeIndex<D> > &idx_band, NodeIndex<D> &idx, const int *nbox, int dim);
 
     void initTimers();
     void clearTimers();

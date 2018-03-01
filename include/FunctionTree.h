@@ -31,6 +31,9 @@ public:
     void rescale(double c);
     void normalize();
 
+    int getNChunks();
+    int getNChunksUsed();
+
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 

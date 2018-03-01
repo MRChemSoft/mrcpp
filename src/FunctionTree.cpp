@@ -206,6 +206,17 @@ void FunctionTree<D>::normalize() {
     this->rescale(1.0/sqrt(sq_norm));
 }
 
+
+template<int D>
+int FunctionTree<D>::getNChunks() {
+    return this->getSerialFunctionTree()->getNChunks();
+}
+
+template<int D>
+int FunctionTree<D>::getNChunksUsed() {
+    return this->getSerialFunctionTree()->getNChunksUsed();
+}
+
 template<int D>
 void FunctionTree<D>::getEndValues(VectorXd &data) {
     int nNodes = this->getNEndNodes();

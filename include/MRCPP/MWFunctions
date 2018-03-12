@@ -8,5 +8,6 @@
 #include "multiply.h"
 #include "add.h"
 
+#include "AnalyticFunction.h"
 #include "FunctionTree.h"
 #include "FunctionTreeVector.h"

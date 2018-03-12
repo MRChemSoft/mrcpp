@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "RepresentableFunction.h"
 
 namespace mrcpp {
@@ -7,12 +9,15 @@ namespace mrcpp {
 template<int D>
 class AnalyticFunction : public RepresentableFunction<D> {
 public:
+    AnalyticFunction() { }
     AnalyticFunction(std::function<double (const double *r)> f,
                      const double *a = 0,
                      const double *b = 0)
         : RepresentableFunction<D>(a, b),
           func(f) { }
     virtual ~AnalyticFunction() { }
+
+    void set(std::function<double (const double *r)> f) { this->func = f; }
 
     virtual double evalf(const double *r) const {
         double val = 0.0;

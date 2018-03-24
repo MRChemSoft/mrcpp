@@ -21,8 +21,6 @@
 #   docopt: "--omp Enable OpenMP parallelization [default: False]."
 #   define: "'-DENABLE_OPENMP={0}'.format(arguments['--omp'])"
 
-cmake_policy (SET CMP0054 OLD)
-
 option(ENABLE_OPENMP "Enable OpenMP parallelization" OFF)
 
 if(ENABLE_OPENMP)
@@ -63,7 +61,7 @@ if(ENABLE_OPENMP)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp")
         endif()
         if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-            set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qsmp")
+            set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qsmp=omp")
         endif()
         if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
             # do nothing in this case

@@ -47,6 +47,6 @@ bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
     return false;
 }
 
-template class CopyAdaptor<1>;
-template class CopyAdaptor<2>;
-template class CopyAdaptor<3>;
+template class mrcpp::CopyAdaptor<1>;
+template class mrcpp::CopyAdaptor<2>;
+template class mrcpp::CopyAdaptor<3>;

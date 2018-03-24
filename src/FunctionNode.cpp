@@ -228,6 +228,6 @@ template double mrcpp::dotWavelet(const FunctionNode<1> &bra, const FunctionNode
 template double mrcpp::dotWavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
 template double mrcpp::dotWavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
 
-template class FunctionNode<1>;
-template class FunctionNode<2>;
-template class FunctionNode<3>;
+template class mrcpp::FunctionNode<1>;
+template class mrcpp::FunctionNode<2>;
+template class mrcpp::FunctionNode<3>;

@@ -77,6 +77,6 @@ const FunctionTree<D> *FunctionTreeVector<D>::operator[](int i) const {
     return this->funcs[i];
 }
 
-template class FunctionTreeVector<1>;
-template class FunctionTreeVector<2>;
-template class FunctionTreeVector<3>;
+template class mrcpp::FunctionTreeVector<1>;
+template class mrcpp::FunctionTreeVector<2>;
+template class mrcpp::FunctionTreeVector<3>;

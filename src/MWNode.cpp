@@ -1058,6 +1058,6 @@ std::ostream& MWNode<D>::print(std::ostream &o) const {
 }
 
 
-template class MWNode<1>;
-template class MWNode<2>;
-template class MWNode<3>;
+template class mrcpp::MWNode<1>;
+template class mrcpp::MWNode<2>;
+template class mrcpp::MWNode<3>;

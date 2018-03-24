@@ -61,6 +61,6 @@ void ProjectedNode<3>::reCompress() {
 
 }
 
-template class ProjectedNode<1>;
-template class ProjectedNode<2>;
-template class ProjectedNode<3>;
+template class mrcpp::ProjectedNode<1>;
+template class mrcpp::ProjectedNode<2>;
+template class mrcpp::ProjectedNode<3>;

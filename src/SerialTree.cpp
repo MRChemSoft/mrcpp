@@ -230,6 +230,6 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 
 }
 
-template class SerialTree<1>;
-template class SerialTree<2>;
-template class SerialTree<3>;
+template class mrcpp::SerialTree<1>;
+template class mrcpp::SerialTree<2>;
+template class mrcpp::SerialTree<3>;

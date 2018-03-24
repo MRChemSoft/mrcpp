@@ -79,7 +79,7 @@ bool ObjectCache<T>::hasId(int id) {
     return true;
 }
 
-template class ObjectCache<LegendrePoly>;
-template class ObjectCache<MWFilter>;
-template class ObjectCache<GaussQuadrature>;
-template class ObjectCache<CrossCorrelation>;
+template class mrcpp::ObjectCache<LegendrePoly>;
+template class mrcpp::ObjectCache<MWFilter>;
+template class mrcpp::ObjectCache<GaussQuadrature>;
+template class mrcpp::ObjectCache<CrossCorrelation>;

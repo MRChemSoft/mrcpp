@@ -126,6 +126,6 @@ void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &values) const {
     }
 }
 
-template class Gaussian<1>;
-template class Gaussian<2>;
-template class Gaussian<3>;
+template class mrcpp::Gaussian<1>;
+template class mrcpp::Gaussian<2>;
+template class mrcpp::Gaussian<3>;

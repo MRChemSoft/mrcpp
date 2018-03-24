@@ -127,6 +127,6 @@ const MWNode<D>& NodeBox<D>::getNode(int bIdx) const {
     return *this->nodes[bIdx];
 }
 
-template class NodeBox<1>;
-template class NodeBox<2>;
-template class NodeBox<3>;
+template class mrcpp::NodeBox<1>;
+template class mrcpp::NodeBox<2>;
+template class mrcpp::NodeBox<3>;

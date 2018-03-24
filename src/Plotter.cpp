@@ -703,6 +703,6 @@ void Plotter<3>::writeGrid(const MWTree<3> &tree) {
 
 }
 
-template class Plotter<1>;
-template class Plotter<2>;
-template class Plotter<3>;
+template class mrcpp::Plotter<1>;
+template class mrcpp::Plotter<2>;
+template class mrcpp::Plotter<3>;

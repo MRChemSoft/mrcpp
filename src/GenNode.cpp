@@ -62,6 +62,6 @@ void GenNode<D>::reCompress() {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template class GenNode<1>;
-template class GenNode<2>;
-template class GenNode<3>;
+template class mrcpp::GenNode<1>;
+template class mrcpp::GenNode<2>;
+template class mrcpp::GenNode<3>;

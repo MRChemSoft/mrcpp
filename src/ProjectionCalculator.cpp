@@ -79,6 +79,6 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
 }
 */
 
-template class ProjectionCalculator<1>;
-template class ProjectionCalculator<2>;
-template class ProjectionCalculator<3>;
+template class mrcpp::ProjectionCalculator<1>;
+template class mrcpp::ProjectionCalculator<2>;
+template class mrcpp::ProjectionCalculator<3>;

@@ -290,6 +290,6 @@ template double mrcpp::dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
 template double mrcpp::dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
 template double mrcpp::dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
 
-template class FunctionTree<1>;
-template class FunctionTree<2>;
-template class FunctionTree<3>;
+template class mrcpp::FunctionTree<1>;
+template class mrcpp::FunctionTree<2>;
+template class mrcpp::FunctionTree<3>;

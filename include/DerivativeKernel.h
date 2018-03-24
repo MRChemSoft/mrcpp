@@ -21,6 +21,8 @@ protected:
         GaussPoly<1> dg = g.differentiate(0);
         this->append(dg);
     }
+
+    virtual std::ostream& print(std::ostream &o) const { return o; }
 };
 
 }

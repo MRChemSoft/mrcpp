@@ -22,7 +22,7 @@ Options:
   --extra-cxx-flags=<EXTRA_CXXFLAGS>     Extra C++ compiler flags [default: ''].
   --mpi                                  Enable MPI parallelization [default: False].
   --omp                                  Enable OpenMP parallelization [default: False].
-  --coverage                             Enable code coverage [default: False].
+  --coverage                             Enable code coverage [default: OFF].
   --enable-tests                         Enable tests [default: False].
   --enable-examples                      Enable code examples [default: False].
   --type=<TYPE>                          Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release].

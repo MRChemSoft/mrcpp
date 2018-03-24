@@ -513,6 +513,6 @@ std::ostream& MWTree<D>::print(std::ostream &o) {
     }
     return o;
 }
-template class MWTree<1>;
-template class MWTree<2>;
-template class MWTree<3>;
+template class mrcpp::MWTree<1>;
+template class mrcpp::MWTree<2>;
+template class mrcpp::MWTree<3>;

@@ -123,6 +123,6 @@ std::ostream& RepresentableFunction<D>::print(std::ostream &o) const {
     return o;
 }
 
-template class RepresentableFunction<1>;
-template class RepresentableFunction<2>;
-template class RepresentableFunction<3>;
+template class mrcpp::RepresentableFunction<1>;
+template class mrcpp::RepresentableFunction<2>;
+template class mrcpp::RepresentableFunction<3>;

@@ -463,7 +463,7 @@ double GaussExp<3>::calcCoulombEnergy() {
 
 }
 
-template class GaussExp<1>;
-template class GaussExp<2>;
-template class GaussExp<3>;
+template class mrcpp::GaussExp<1>;
+template class mrcpp::GaussExp<2>;
+template class mrcpp::GaussExp<3>;
 

@@ -59,5 +59,5 @@ const MatrixXd &FilterCache<T>::getFilterMatrix(int order) {
     return ObjectCache<MWFilter>::get(order).getFilter();
 }
 
-template class FilterCache<Interpol>;
-template class FilterCache<Legendre>;
+template class mrcpp::FilterCache<Interpol>;
+template class mrcpp::FilterCache<Legendre>;

@@ -251,6 +251,6 @@ std::ostream& GaussPoly<D>::print(std::ostream &o) const {
     return o;
 }
 
-template class GaussPoly<1>;
-template class GaussPoly<2>;
-template class GaussPoly<3>;
+template class mrcpp::GaussPoly<1>;
+template class mrcpp::GaussPoly<2>;
+template class mrcpp::GaussPoly<3>;

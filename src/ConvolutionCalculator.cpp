@@ -371,7 +371,7 @@ MWNodeVector* ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) co
     return nodeVec;
 }
 
-template class ConvolutionCalculator<1>;
-template class ConvolutionCalculator<2>;
-template class ConvolutionCalculator<3>;
+template class mrcpp::ConvolutionCalculator<1>;
+template class mrcpp::ConvolutionCalculator<2>;
+template class mrcpp::ConvolutionCalculator<3>;
 

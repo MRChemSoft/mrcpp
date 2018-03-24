@@ -80,6 +80,6 @@ double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> 
     return MathUtils::calcDistance(D, lb, ub);
 }
 
-template class ConvolutionOperator<1>;
-template class ConvolutionOperator<2>;
-template class ConvolutionOperator<3>;
+template class mrcpp::ConvolutionOperator<1>;
+template class mrcpp::ConvolutionOperator<2>;
+template class mrcpp::ConvolutionOperator<3>;

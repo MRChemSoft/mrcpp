@@ -89,6 +89,6 @@ std::ostream& OperatorStatistics<D>::print(std::ostream &o) const {
     return o;
 }
 
-template class OperatorStatistics<1>;
-template class OperatorStatistics<2>;
-template class OperatorStatistics<3>;
+template class mrcpp::OperatorStatistics<1>;
+template class mrcpp::OperatorStatistics<2>;
+template class mrcpp::OperatorStatistics<3>;

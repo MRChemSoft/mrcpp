@@ -123,6 +123,6 @@ void MultiResolutionAnalysis<D>::setupFilter() {
     }
 }
 
-template class MultiResolutionAnalysis<1>;
-template class MultiResolutionAnalysis<2>;
-template class MultiResolutionAnalysis<3>;
+template class mrcpp::MultiResolutionAnalysis<1>;
+template class mrcpp::MultiResolutionAnalysis<2>;
+template class mrcpp::MultiResolutionAnalysis<3>;

@@ -122,6 +122,6 @@ double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector &vec) const {
     return wNorm;
 }
 
-template class TreeBuilder<1>;
-template class TreeBuilder<2>;
-template class TreeBuilder<3>;
+template class mrcpp::TreeBuilder<1>;
+template class mrcpp::TreeBuilder<2>;
+template class mrcpp::TreeBuilder<3>;

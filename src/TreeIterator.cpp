@@ -169,6 +169,6 @@ IteratorNode<D>::IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx)
     }
 }
 
-template class TreeIterator<1>;
-template class TreeIterator<2>;
-template class TreeIterator<3>;
+template class mrcpp::TreeIterator<1>;
+template class mrcpp::TreeIterator<2>;
+template class mrcpp::TreeIterator<3>;

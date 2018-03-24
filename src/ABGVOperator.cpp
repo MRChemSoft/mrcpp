@@ -40,6 +40,6 @@ void ABGVOperator<D>::initializeOperator(double a, double b) {
     this->oper_exp.push_back(o_tree);
 }
 
-template class ABGVOperator<1>;
-template class ABGVOperator<2>;
-template class ABGVOperator<3>;
+template class mrcpp::ABGVOperator<1>;
+template class mrcpp::ABGVOperator<2>;
+template class mrcpp::ABGVOperator<3>;

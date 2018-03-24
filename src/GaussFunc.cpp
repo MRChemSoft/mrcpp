@@ -328,6 +328,6 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
 }
 
-template class GaussFunc<1>;
-template class GaussFunc<2>;
-template class GaussFunc<3>;
+template class mrcpp::GaussFunc<1>;
+template class mrcpp::GaussFunc<2>;
+template class mrcpp::GaussFunc<3>;

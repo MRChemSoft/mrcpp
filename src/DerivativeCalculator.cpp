@@ -249,7 +249,7 @@ MWNodeVector* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) con
     return tree.copyEndNodeTable();
 }
 
-template class DerivativeCalculator<1>;
-template class DerivativeCalculator<2>;
-template class DerivativeCalculator<3>;
+template class mrcpp::DerivativeCalculator<1>;
+template class mrcpp::DerivativeCalculator<2>;
+template class mrcpp::DerivativeCalculator<3>;
 

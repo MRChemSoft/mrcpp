@@ -249,7 +249,7 @@ int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
 
 }
 
-template class BoundingBox<1>;
-template class BoundingBox<2>;
-template class BoundingBox<3>;
+template class mrcpp::BoundingBox<1>;
+template class mrcpp::BoundingBox<2>;
+template class mrcpp::BoundingBox<3>;
 

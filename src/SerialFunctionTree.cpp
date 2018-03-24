@@ -490,6 +490,6 @@ int SerialFunctionTree<D>::getNChunksUsed() const {
     return nUsed;
 }
 
-template class SerialFunctionTree<1>;
-template class SerialFunctionTree<2>;
-template class SerialFunctionTree<3>;
+template class mrcpp::SerialFunctionTree<1>;
+template class mrcpp::SerialFunctionTree<2>;
+template class mrcpp::SerialFunctionTree<3>;

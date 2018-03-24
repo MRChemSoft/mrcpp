@@ -89,7 +89,7 @@ const int HilbertPath<3>::hTable[12][8] = {
     {4,5,7,6,3,2,0,1}
 };
 
-template class HilbertPath<1>;
-template class HilbertPath<2>;
-template class HilbertPath<3>;
+template class mrcpp::HilbertPath<1>;
+template class mrcpp::HilbertPath<2>;
+template class mrcpp::HilbertPath<3>;
 

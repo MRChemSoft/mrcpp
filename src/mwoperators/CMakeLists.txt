@@ -12,23 +12,23 @@ target_sources(mrcpp PRIVATE
 )
 
 list(APPEND mwoperators_h
-    ABGVOperator.h
-    BandWidth.h
-    ConvolutionOperator.h
-    DerivativeConvolution.h
-    DerivativeKernel.h
-    DerivativeOperator.h
-    GreensKernel.h
-    HelmholtzKernel.h
-    HelmholtzOperator.h
-    IdentityConvolution.h
-    IdentityKernel.h
-    MWOperator.h
-    OperatorState.h
-    OperatorStatistics.h
-    PHOperator.h
-    PoissonKernel.h
-    PoissonOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeKernel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/GreensKernel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/IdentityConvolution.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/IdentityKernel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MWOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorState.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorStatistics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PHOperator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PoissonKernel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         

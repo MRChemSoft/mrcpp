@@ -41,7 +41,6 @@ add_library(mrcpp STATIC
     OperatorTree.cpp
     PHCalculator.cpp
     PHOperator.cpp
-    Plotter.cpp
     PoissonKernel.cpp
     PoissonOperator.cpp
     Polynomial.cpp
@@ -53,18 +52,18 @@ add_library(mrcpp STATIC
     SerialFunctionTree.cpp
     SerialOperatorTree.cpp
     SerialTree.cpp
-    Printer.cpp
-    Timer.cpp
     TreeBuilder.cpp
     TreeIterator.cpp
     parallel_mpi.cpp
 )
 
 add_subdirectory(gaussians)
+add_subdirectory(mwutils)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/src/gaussians
+    ${CMAKE_SOURCE_DIR}/src/mwutils
     )
 
 install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -125,11 +124,9 @@ list(APPEND headers_list
     OperatorTree.h
     PHCalculator.h
     PHOperator.h
-    Plotter.h
     PoissonKernel.h
     PoissonOperator.h
     Polynomial.h
-    Printer.h
     ProjectedNode.h
     ProjectionCalculator.h
     QuadratureCache.h
@@ -139,7 +136,6 @@ list(APPEND headers_list
     SerialFunctionTree.h
     SerialOperatorTree.h
     SerialTree.h
-    Timer.h
     TreeAdaptor.h
     TreeBuilder.h
     TreeCalculator.h

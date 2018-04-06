@@ -1,7 +1,5 @@
-include_directories(${CMAKE_BINARY_DIR}/api)
-include_directories(${CMAKE_BINARY_DIR}/include)
-
-link_directories(${CMAKE_BINARY_DIR}/src)
+include_directories(${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
+link_directories(${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 
 add_executable(multiplication multiplication.cpp)
 add_executable(tree_cleaner tree_cleaner.cpp)

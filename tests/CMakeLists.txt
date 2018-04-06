@@ -1,5 +1,6 @@
 include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
+link_directories(${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 
 add_subdirectory(mrcpp)
 

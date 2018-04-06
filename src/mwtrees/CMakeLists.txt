@@ -9,6 +9,8 @@ target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/MWTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MultiResolutionAnalysis.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/NodeBox.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialFunctionTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialOperatorTree.cpp
@@ -30,6 +32,8 @@ list(APPEND mwtrees_h
     ${CMAKE_CURRENT_SOURCE_DIR}/MultiResolutionAnalysis.h
     ${CMAKE_CURRENT_SOURCE_DIR}/NodeBox.h
     ${CMAKE_CURRENT_SOURCE_DIR}/NodeIndex.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialFunctionTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialOperatorTree.h

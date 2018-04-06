@@ -1,21 +1,18 @@
 target_sources(mrcpp PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/InterpolatingBasis.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/LegendreBasis.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LegendrePoly.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/RepresentableFunction.cpp
 )
 
-list(APPEND mwbasis_h
-    ${CMAKE_CURRENT_SOURCE_DIR}/InterpolatingBasis.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/LegendreBasis.h
+list(APPEND mwfunctions_h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AnalyticFunction.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LegendrePoly.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/RepresentableFunction.h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwbasis_h})                                                 
+foreach(_header ${mwfunctions_h})                                                 
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/src

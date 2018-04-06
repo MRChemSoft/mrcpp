@@ -15,11 +15,7 @@ add_library(mrcpp STATIC
     FunctionNode.cpp
     FunctionTree.cpp
     FunctionTreeVector.cpp
-    GaussExp.cpp
-    GaussFunc.cpp
-    GaussPoly.cpp
     GaussQuadrature.cpp
-    Gaussian.cpp
     GenNode.cpp
     grid.cpp
     HelmholtzKernel.cpp
@@ -64,8 +60,11 @@ add_library(mrcpp STATIC
     parallel_mpi.cpp
 )
 
+add_subdirectory(gaussians)
+
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/src/gaussians
     )
 
 install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -96,11 +95,7 @@ list(APPEND headers_list
     FunctionNode.h
     FunctionTree.h
     FunctionTreeVector.h
-    GaussExp.h
-    GaussFunc.h
-    GaussPoly.h
     GaussQuadrature.h
-    Gaussian.h
     GenNode.h
     GreensKernel.h
     HelmholtzKernel.h

@@ -1,6 +1,5 @@
 add_library(mrcpp STATIC 
     BoundingBox.cpp
-    BoysFunction.cpp
     FunctionNode.cpp
     FunctionTree.cpp
     FunctionTreeVector.cpp
@@ -41,7 +40,6 @@ install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 list(APPEND headers_list 
     AnalyticFunction.h
     BoundingBox.h
-    BoysFunction.h
     FunctionNode.h
     FunctionTree.h
     FunctionTreeVector.h

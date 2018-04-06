@@ -1,3 +1,10 @@
+#.rst:
+#
+# autocmake.yml configuration::
+#
+#   docopt: "--enable-tests Enable tests [default: False]."
+#   define: "'-DENABLE_TESTS={0}'.format(arguments['--enable-tests'])"
+
 option(ENABLE_TESTS "Enable test suite" ON)
 
 macro(add_Catch_test _name _labels)

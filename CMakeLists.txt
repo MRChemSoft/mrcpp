@@ -2,7 +2,7 @@
 # Copyright (c) 2015-2018 by Radovan Bast, Roberto Di Remigio, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 
 # project name
 project(MRCPP CXX)
@@ -31,11 +31,11 @@ include(autocmake_version)
 include(autocmake_code_coverage)
 include(eigen)
 include(catch)
-include(tests)
-include(examples)
 include(python)
 include(git)
 include(mw_filters)
 include(main)
 include(feature_summary)
+include(tests)
+include(examples)
 include(autocmake_save_flags)

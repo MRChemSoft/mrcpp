@@ -1,0 +1,13 @@
+#include "src/MultiResolutionAnalysis.h"
+#include "src/BoundingBox.h"
+#include "src/InterpolatingBasis.h"
+#include "src/LegendreBasis.h"
+
+#include "src/grid.h"
+#include "src/project.h"
+#include "src/multiply.h"
+#include "src/add.h"
+
+#include "src/AnalyticFunction.h"
+#include "src/FunctionTree.h"
+#include "src/FunctionTreeVector.h"

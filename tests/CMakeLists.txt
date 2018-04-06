@@ -1,7 +1,5 @@
-include(DefaultPathsMRCPP)
-include_directories(${PROJECT_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/external/catch)
+include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(mrcpp)
 

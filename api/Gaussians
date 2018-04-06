@@ -1,0 +1,4 @@
+#include "src/Gaussian.h"
+#include "src/GaussFunc.h"
+#include "src/GaussPoly.h"
+#include "src/GaussExp.h"

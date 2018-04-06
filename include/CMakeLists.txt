@@ -92,22 +92,13 @@ list(APPEND headers_list
                                                                                  
 # Sets install directory for all the headers in the list                         
 foreach(_header ${headers_list})                                                 
-   file(COPY ${_header} DESTINATION ${CMAKE_BINARY_DIR}/include)
-   install(FILES ${_header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endforeach() 
-
-list(APPEND api_list
-    MRCPP/MWFunctions
-    MRCPP/MWOperators
-    MRCPP/Gaussians
-    MRCPP/Parallel
-    MRCPP/Plotter
-    MRCPP/Printer
-    MRCPP/Timer
+ file(
+    COPY ${_header}
+    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/src
     )
-
-# Sets install directory for all the headers in the list                         
-foreach(_header ${api_list})                                                 
-   file(COPY ${_header} DESTINATION ${CMAKE_BINARY_DIR}/include/MRCPP)
-   install(FILES ${_header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/MRCPP)
+ install(
+    FILES ${_header}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/src
+    )
 endforeach() 
+

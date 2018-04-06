@@ -68,7 +68,7 @@ target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
     )
 
-install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/mrcpp)
+install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
 list(APPEND headers_list 

@@ -2,21 +2,15 @@ add_library(mrcpp STATIC
     BoundingBox.cpp
     BoysFunction.cpp
     CopyAdaptor.cpp
-    CrossCorrelation.cpp
-    CrossCorrelationCache.cpp
-    CrossCorrelationCalculator.cpp
-    FilterCache.cpp
     FunctionNode.cpp
     FunctionTree.cpp
     FunctionTreeVector.cpp
-    GaussQuadrature.cpp
     GenNode.cpp
     grid.cpp
     HilbertPath.cpp
     InterpolatingBasis.cpp
     LegendreBasis.cpp
     LegendrePoly.cpp
-    MWFilter.cpp
     MWNode.cpp
     MWTree.cpp
     project.cpp
@@ -25,11 +19,9 @@ add_library(mrcpp STATIC
     MathUtils.cpp
     MultiResolutionAnalysis.cpp
     NodeBox.cpp
-    ObjectCache.cpp
     Polynomial.cpp
     ProjectedNode.cpp
     ProjectionCalculator.cpp
-    QuadratureCache.cpp
     RepresentableFunction.cpp
     ScalingBasis.cpp
     SerialFunctionTree.cpp
@@ -41,12 +33,14 @@ add_library(mrcpp STATIC
 )
 
 add_subdirectory(gaussians)
+add_subdirectory(mwcore)
 add_subdirectory(mwutils)
 add_subdirectory(mwoperators)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/src/gaussians
+    ${CMAKE_SOURCE_DIR}/src/mwcore
     ${CMAKE_SOURCE_DIR}/src/mwutils
     ${CMAKE_SOURCE_DIR}/src/mwoperators
     )
@@ -61,15 +55,10 @@ list(APPEND headers_list
     BoundingBox.h
     BoysFunction.h
     CopyAdaptor.h
-    CrossCorrelation.h
-    CrossCorrelationCache.h
-    CrossCorrelationCalculator.h
     DefaultCalculator.h
-    FilterCache.h
     FunctionNode.h
     FunctionTree.h
     FunctionTreeVector.h
-    GaussQuadrature.h
     GenNode.h
     HilbertIterator.h
     HilbertPath.h
@@ -77,7 +66,6 @@ list(APPEND headers_list
     LebesgueIterator.h
     LegendreBasis.h
     LegendrePoly.h
-    MWFilter.h
     MWNode.h
     MWTree.h
     MathUtils.h
@@ -85,14 +73,11 @@ list(APPEND headers_list
     MultiplicationCalculator.h
     NodeBox.h
     NodeIndex.h
-    ObjectCache.h
     Polynomial.h
     ProjectedNode.h
     ProjectionCalculator.h
-    QuadratureCache.h
     RepresentableFunction.h
     ScalingBasis.h
-    ScalingCache.h
     SerialFunctionTree.h
     SerialOperatorTree.h
     SerialTree.h

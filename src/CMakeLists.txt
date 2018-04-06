@@ -16,7 +16,6 @@ add_library(mrcpp STATIC
     project.cpp
     add.cpp
     multiply.cpp
-    MathUtils.cpp
     MultiResolutionAnalysis.cpp
     NodeBox.cpp
     Polynomial.cpp
@@ -68,7 +67,6 @@ list(APPEND headers_list
     LegendrePoly.h
     MWNode.h
     MWTree.h
-    MathUtils.h
     MultiResolutionAnalysis.h
     MultiplicationCalculator.h
     NodeBox.h

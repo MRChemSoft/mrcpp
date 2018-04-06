@@ -5,9 +5,7 @@ target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MWOperator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorStatistics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PHOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.cpp
@@ -26,10 +24,8 @@ list(APPEND mwoperators_h
     IdentityConvolution.h
     IdentityKernel.h
     MWOperator.h
-    OperatorNode.h
     OperatorState.h
     OperatorStatistics.h
-    OperatorTree.h
     PHOperator.h
     PoissonKernel.h
     PoissonOperator.h

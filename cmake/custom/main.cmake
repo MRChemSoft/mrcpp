@@ -9,4 +9,5 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_subdirectory(src)
 add_subdirectory(pilot)
+add_subdirectory(api)
 add_subdirectory(include)

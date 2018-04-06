@@ -1,4 +1,0 @@
-#include "Gaussian.h"
-#include "GaussFunc.h"
-#include "GaussPoly.h"
-#include "GaussExp.h"

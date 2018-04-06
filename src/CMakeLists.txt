@@ -13,7 +13,6 @@ add_subdirectory(gaussians)
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/src/mwcore
-    ${CMAKE_SOURCE_DIR}/src/mwbasis
     ${CMAKE_SOURCE_DIR}/src/mwutils
     ${CMAKE_SOURCE_DIR}/src/mwtrees
     ${CMAKE_SOURCE_DIR}/src/mwbuilders

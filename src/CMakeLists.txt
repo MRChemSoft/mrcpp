@@ -8,7 +8,6 @@ add_subdirectory(mwtrees)
 add_subdirectory(mwbuilders)
 add_subdirectory(mwfunctions)
 add_subdirectory(mwoperators)
-add_subdirectory(gaussians)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
@@ -18,7 +17,6 @@ target_include_directories(mrcpp PRIVATE
     ${CMAKE_SOURCE_DIR}/src/mwbuilders
     ${CMAKE_SOURCE_DIR}/src/mwfunctions
     ${CMAKE_SOURCE_DIR}/src/mwoperators
-    ${CMAKE_SOURCE_DIR}/src/gaussians
     )
 
 install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

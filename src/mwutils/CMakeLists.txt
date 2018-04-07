@@ -1,5 +1,4 @@
 target_sources(mrcpp PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/BoysFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MathUtils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.cpp
@@ -7,7 +6,6 @@ target_sources(mrcpp PRIVATE
 )
 
 list(APPEND mwutils_h
-    ${CMAKE_CURRENT_SOURCE_DIR}/BoysFunction.h
     ${CMAKE_CURRENT_SOURCE_DIR}/MathUtils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.h

@@ -22,7 +22,11 @@ protected:
         this->append(dg);
     }
 
-    virtual std::ostream& print(std::ostream &o) const { return o; }
+    virtual std::ostream& print(std::ostream &o) const {
+        o << " DerivativeKernel: " << std::endl;
+        o << " epsilon:  " << this->epsilon << std::endl;
+        return o;
+    }
 };
 
 }

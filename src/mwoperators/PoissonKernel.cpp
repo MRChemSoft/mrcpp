@@ -66,10 +66,10 @@ void PoissonKernel::initializeKernel() {
 }
 
 std::ostream& PoissonKernel::print(std::ostream &o) const {
-    o << "Kernel: " << std::endl;
-    o << "epsilon:  " << this->epsilon << std::endl;
-    o << "rMin:     " << this->rMin << std::endl;
-    o << "rMax:     " << this->rMax << std::endl;
+    o << " PoissonKernel: " << std::endl;
+    o << " epsilon:  " << this->epsilon << std::endl;
+    o << " rMin:     " << this->rMin << std::endl;
+    o << " rMax:     " << this->rMax << std::endl;
     return o;
 }
 

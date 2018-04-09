@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 
 # project name
-project(MRCPP CXX)
+project(MRCPP LANGUAGES CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -15,10 +15,78 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# Options handling utilities
+include(CMakeParseArguments)
+include(CMakeDependentOption)
+# Macro for printing an option in a consistent manner
+# Written by Lori A. Burns (@loriab) and Ryan M. Richard (@ryanmrichard)
+# Syntax: print_option(NAME <option to print> DEFAULT <was specified>)
+macro(print_option)
+  set(options)
+  set(oneValueArgs NAME DEFAULT)
+  set(multiValueArgs)
+  cmake_parse_arguments(print_option
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  if(NOT DEFINED ${print_option_NAME} OR "${${print_option_NAME}}" STREQUAL "")
+    message(STATUS "Setting (unspecified) option ${print_option_NAME}: ${print_option_DEFAULT}")
+  else()
+    message(STATUS "Setting option ${print_option_NAME}: ${print_option_DEFAULT}")
+  endif()
+endmacro()
+
+# Wraps an option with default ON/OFF. Adds nice messaging to option()
+# Written by Lori A. Burns (@loriab) and Ryan M. Richard (@ryanmrichard)
+# Syntax: option_with_print(NAME <option name> MESSAGE <description> DEFAULT <default value>)
+macro(option_with_print)
+  set(options)
+  set(oneValueArgs NAME MESSAGE DEFAULT)
+  set(multiValueArgs)
+  cmake_parse_arguments(option_with_print
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  print_option(
+    NAME ${option_with_print_NAME}
+    DEFAULT ${option_with_print_DEFAULT}
+    )
+  option(${option_with_print_NAME} ${option_with_print_MESSAGE} ${option_with_print_DEFAULT})
+endmacro()
+
+# Wraps an option with a default other than ON/OFF and prints it
+# Written by Lori A. Burns (@loriab) and Ryan M. Richard (@ryanmrichard)
+# NOTE: Can't combine with above b/c CMake handles ON/OFF options specially
+# NOTE2: CMake variables are always defined so need to further check for if
+#       they are the NULL string. This is also why we need the force
+# Syntax: option_with_default(NAME <option name> MESSAGE <description> DEFAULT <default value>)
+macro(option_with_default)
+  set(options)
+  set(oneValueArgs NAME MESSAGE DEFAULT)
+  set(multiValueArgs)
+  cmake_parse_arguments(option_with_default
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  print_option(
+    NAME ${option_with_default_NAME}
+    DEFAULT "${option_with_default_DEFAULT}"
+    )
+  if(NOT DEFINED ${option_with_default_NAME} OR "${${option_with_default_NAME}}" STREQUAL "")
+    set(${option_with_default_NAME} "${option_with_default_DEFAULT}" CACHE STRING ${option_with_default_MESSAGE} FORCE)
+  endif()
+endmacro()
+
 # directories which hold included cmake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/compiler_flags)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/downloaded)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/compiler_flags)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/custom)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/downloaded)
 
 # included cmake modules
 include(autocmake_cxx)

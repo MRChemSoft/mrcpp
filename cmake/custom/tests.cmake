@@ -5,7 +5,7 @@
 #   docopt: "--enable-tests Enable tests [default: False]."
 #   define: "'-DENABLE_TESTS={0}'.format(arguments['--enable-tests'])"
 
-option(ENABLE_TESTS "Enable test suite" ON)
+option(ENABLE_TESTS "Enable test suite" OFF)
 
 macro(add_catch_test _name _labels)
   # _labels is not a list, it's a string... Transform it into a list

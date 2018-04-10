@@ -1,4 +1,4 @@
-#include "src/Gaussian.h"
-#include "src/GaussFunc.h"
-#include "src/GaussPoly.h"
-#include "src/GaussExp.h"
+#include "mwfunctions/Gaussian.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwfunctions/GaussPoly.h"
+#include "mwfunctions/GaussExp.h"

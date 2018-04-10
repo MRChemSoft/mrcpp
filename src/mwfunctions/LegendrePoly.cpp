@@ -7,9 +7,9 @@
  * \breif
  */
 
-#include "LegendrePoly.h"
-#include "ObjectCache.h"
-#include "Printer.h"
+#include "mwfunctions/LegendrePoly.h"
+#include "mwcore/ObjectCache.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

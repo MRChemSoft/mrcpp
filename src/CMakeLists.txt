@@ -10,12 +10,7 @@ add_subdirectory(mwparallel)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src/mwcore
-    ${CMAKE_SOURCE_DIR}/src/mwutils
-    ${CMAKE_SOURCE_DIR}/src/mwtrees
-    ${CMAKE_SOURCE_DIR}/src/mwbuilders
-    ${CMAKE_SOURCE_DIR}/src/mwfunctions
-    ${CMAKE_SOURCE_DIR}/src/mwoperators
+    ${CMAKE_SOURCE_DIR}/src
     )
 
 install(TARGETS mrcpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

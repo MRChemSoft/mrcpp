@@ -1,12 +1,12 @@
-#include "project.h"
-#include "MultiResolutionAnalysis.h"
-#include "TreeBuilder.h"
-#include "WaveletAdaptor.h"
-#include "ProjectionCalculator.h"
-#include "AnalyticFunction.h"
-#include "FunctionTree.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/WaveletAdaptor.h"
+#include "mwbuilders/ProjectionCalculator.h"
+#include "mwfunctions/AnalyticFunction.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace mrcpp;
 

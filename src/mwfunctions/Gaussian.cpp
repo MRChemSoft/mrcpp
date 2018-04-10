@@ -7,8 +7,8 @@
  *
  */
 
-#include "Gaussian.h"
-#include "NodeIndex.h"
+#include "mwfunctions/Gaussian.h"
+#include "mwtrees/NodeIndex.h"
 
 using namespace std;
 using namespace Eigen;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ConvolutionOperator.h"
-#include "IdentityKernel.h"
+#include "mwoperators/ConvolutionOperator.h"
+#include "mwoperators/IdentityKernel.h"
 
 namespace mrcpp {
 

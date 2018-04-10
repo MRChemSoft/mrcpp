@@ -5,13 +5,13 @@
 
 #include <fstream>
 
-#include "FunctionTree.h"
-#include "SerialFunctionTree.h"
-#include "FunctionNode.h"
-#include "ProjectedNode.h"
-#include "HilbertIterator.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwtrees/SerialFunctionTree.h"
+#include "mwtrees/FunctionNode.h"
+#include "mwtrees/ProjectedNode.h"
+#include "mwtrees/HilbertIterator.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace std;
 using namespace Eigen;

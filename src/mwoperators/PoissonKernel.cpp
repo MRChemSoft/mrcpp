@@ -10,9 +10,9 @@
 
 #include <cmath>
 
-#include "PoissonKernel.h"
-#include "GaussFunc.h"
-#include "Printer.h"
+#include "mwoperators/PoissonKernel.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

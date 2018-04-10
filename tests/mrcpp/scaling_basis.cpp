@@ -1,7 +1,7 @@
 #include "catch.hpp"
 
-#include "InterpolatingBasis.h"
-#include "LegendreBasis.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/LegendreBasis.h"
 
 using namespace mrcpp;
 

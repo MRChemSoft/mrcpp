@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WaveletAdaptor.h"
+#include "mwbuilders/WaveletAdaptor.h"
 
 namespace mrcpp {
 

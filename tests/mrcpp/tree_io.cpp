@@ -2,9 +2,9 @@
 
 #include "factory_functions.h"
 
-#include "project.h"
-#include "grid.h"
-#include "SerialFunctionTree.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/grid.h"
+#include "mwtrees/SerialFunctionTree.h"
 
 using namespace mrcpp;
 

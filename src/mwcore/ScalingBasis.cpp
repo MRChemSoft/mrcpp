@@ -1,5 +1,5 @@
-#include "ScalingBasis.h"
-#include "Printer.h"
+#include "mwcore/ScalingBasis.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

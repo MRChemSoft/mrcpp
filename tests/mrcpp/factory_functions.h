@@ -1,14 +1,14 @@
 #ifndef FACTORY_FUNCTIONS_H
 #define FACTORY_FUNCTIONS_H
 
-#include "BoundingBox.h"
-#include "NodeIndex.h"
-#include "MultiResolutionAnalysis.h"
-#include "InterpolatingBasis.h"
-#include "LegendreBasis.h"
-#include "FunctionTree.h"
-#include "GaussFunc.h"
-#include "Printer.h"
+#include "mwtrees/BoundingBox.h"
+#include "mwtrees/NodeIndex.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/LegendreBasis.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwutils/Printer.h"
 
 template<class T> void finalize(T **obj) {
     if (obj == 0) MSG_FATAL("Invalid argument");

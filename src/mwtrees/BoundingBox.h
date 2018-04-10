@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-#include "NodeIndex.h"
+#include "mwtrees/NodeIndex.h"
 
 namespace mrcpp {
 

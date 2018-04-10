@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "GaussExp.h"
-#include "Gaussian.h"
+#include "mwfunctions/GaussExp.h"
+#include "mwfunctions/Gaussian.h"
 
 namespace mrcpp {
 

@@ -10,8 +10,8 @@
 #include "mwparallel/omp.h"
 #include "mrcpp_declarations.h"
 
-#include "MultiResolutionAnalysis.h"
-#include "NodeBox.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
+#include "mwtrees/NodeBox.h"
 
 namespace mrcpp {
 

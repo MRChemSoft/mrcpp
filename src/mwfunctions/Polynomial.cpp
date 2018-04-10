@@ -7,9 +7,9 @@
  *
  */
 
-#include "Polynomial.h"
-#include "MathUtils.h"
-#include "Printer.h"
+#include "mwfunctions/Polynomial.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MWTree.h"
-#include "MWNode.h"
-#include "TreeIterator.h"
+#include "mwtrees/MWTree.h"
+#include "mwtrees/MWNode.h"
+#include "mwtrees/TreeIterator.h"
 
 namespace mrcpp {
 

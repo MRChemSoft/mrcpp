@@ -2,13 +2,13 @@
 
 #include "factory_functions.h"
 
-#include "MathUtils.h"
-#include "MWOperator.h"
-#include "ABGVOperator.h"
-#include "PHOperator.h"
-#include "add.h"
-#include "apply.h"
-#include "project.h"
+#include "mwutils/MathUtils.h"
+#include "mwoperators/MWOperator.h"
+#include "mwoperators/ABGVOperator.h"
+#include "mwoperators/PHOperator.h"
+#include "mwbuilders/add.h"
+#include "mwbuilders/apply.h"
+#include "mwbuilders/project.h"
 
 using namespace std;
 using namespace mrcpp;

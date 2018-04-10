@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "MWFilter.h"
-#include "ObjectCache.h"
+#include "mwcore/MWFilter.h"
+#include "mwcore/ObjectCache.h"
 
 #include <iostream>
 #include <string>

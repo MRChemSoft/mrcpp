@@ -8,8 +8,8 @@
  *
  */
 
-#include "RepresentableFunction.h"
-#include "Printer.h"
+#include "mwfunctions/RepresentableFunction.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

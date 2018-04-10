@@ -10,9 +10,9 @@
 #include "mwparallel/omp.h"
 #include "macros.h"
 
-#include "MWTree.h"
-#include "NodeIndex.h"
-#include "HilbertPath.h"
+#include "mwtrees/MWTree.h"
+#include "mwtrees/NodeIndex.h"
+#include "mwtrees/HilbertPath.h"
 
 namespace mrcpp {
 

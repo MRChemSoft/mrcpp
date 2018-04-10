@@ -2,19 +2,19 @@
 
 #include "factory_functions.h"
 
-#include "TreeBuilder.h"
-#include "HelmholtzOperator.h"
-#include "HelmholtzKernel.h"
-#include "MWOperator.h"
-#include "OperatorAdaptor.h"
-#include "BandWidth.h"
-#include "CrossCorrelationCalculator.h"
-#include "MathUtils.h"
-#include "apply.h"
-#include "project.h"
-#include "multiply.h"
-#include "add.h"
-#include "grid.h"
+#include "mwoperators/HelmholtzOperator.h"
+#include "mwoperators/HelmholtzKernel.h"
+#include "mwoperators/MWOperator.h"
+#include "mwoperators/BandWidth.h"
+#include "mwbuilders//OperatorAdaptor.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/CrossCorrelationCalculator.h"
+#include "mwbuilders/apply.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/multiply.h"
+#include "mwbuilders/add.h"
+#include "mwbuilders/grid.h"
+#include "mwutils/MathUtils.h"
 
 using namespace std;
 using namespace mrcpp;

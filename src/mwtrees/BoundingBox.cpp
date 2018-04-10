@@ -9,9 +9,9 @@
 
 #include "constants.h"
 
-#include "BoundingBox.h"
-#include "MathUtils.h"
-#include "Printer.h"
+#include "mwtrees/BoundingBox.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

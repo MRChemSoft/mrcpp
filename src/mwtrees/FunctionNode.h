@@ -3,8 +3,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "MWNode.h"
-#include "FunctionTree.h"
+#include "mwtrees/MWNode.h"
+#include "mwtrees/FunctionTree.h"
 
 namespace mrcpp {
 

@@ -9,10 +9,10 @@
 
 #include "vector"
 
-#include "GaussPoly.h"
-#include "GaussFunc.h"
-#include "GaussExp.h"
-#include "Printer.h"
+#include "mwfunctions/GaussPoly.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwfunctions/GaussExp.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -9,8 +9,8 @@
 
 #include "config.h"
 
-#include "Printer.h"
-#include "Timer.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace std;
 using namespace mrcpp;

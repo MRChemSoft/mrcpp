@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "Polynomial.h"
+#include "mwfunctions/Polynomial.h"
 
 using namespace Eigen;
 using namespace mrcpp;

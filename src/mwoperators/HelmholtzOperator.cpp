@@ -1,6 +1,6 @@
-#include "HelmholtzOperator.h"
-#include "HelmholtzKernel.h"
-#include "Printer.h"
+#include "mwoperators/HelmholtzOperator.h"
+#include "mwoperators/HelmholtzKernel.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

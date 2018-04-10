@@ -1,7 +1,7 @@
 #include "catch.hpp"
 
 #include "factory_functions.h"
-#include "MWNode.h"
+#include "mwtrees/MWNode.h"
 
 using namespace mrcpp;
 

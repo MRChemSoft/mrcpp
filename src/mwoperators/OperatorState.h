@@ -9,8 +9,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "MWNode.h"
-#include "MathUtils.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/MathUtils.h"
 
 namespace mrcpp {
 

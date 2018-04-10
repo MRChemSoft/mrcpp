@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GreensKernel.h"
-#include "GaussFunc.h"
+#include "mwoperators/GreensKernel.h"
+#include "mwfunctions/GaussFunc.h"
 
 namespace mrcpp {
 

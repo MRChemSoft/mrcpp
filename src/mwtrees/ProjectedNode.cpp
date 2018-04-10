@@ -1,6 +1,6 @@
-#include "ProjectedNode.h"
-#include "SerialTree.h"
-#include "Printer.h"
+#include "mwtrees/ProjectedNode.h"
+#include "mwtrees/SerialTree.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -1,6 +1,6 @@
-#include "GenNode.h"
-#include "SerialTree.h"
-#include "Printer.h"
+#include "mwtrees/GenNode.h"
+#include "mwtrees/SerialTree.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

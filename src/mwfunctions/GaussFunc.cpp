@@ -9,13 +9,13 @@
  */
 #include <cmath>
 
-#include "GaussExp.h"
-#include "GaussFunc.h"
-#include "GaussPoly.h"
-#include "Polynomial.h"
-#include "MathUtils.h"
-#include "Printer.h"
-#include "BoysFunction.h"
+#include "mwfunctions/GaussExp.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwfunctions/GaussPoly.h"
+#include "mwfunctions/Polynomial.h"
+#include "mwfunctions/BoysFunction.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Printer.h"
 
 using namespace Eigen;
 using namespace mrcpp;

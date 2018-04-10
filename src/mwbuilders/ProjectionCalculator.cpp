@@ -1,5 +1,5 @@
-#include "ProjectionCalculator.h"
-#include "MWNode.h"
+#include "mwbuilders/ProjectionCalculator.h"
+#include "mwtrees/MWNode.h"
 
 using namespace std;
 using namespace Eigen;

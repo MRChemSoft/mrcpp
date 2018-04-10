@@ -1,8 +1,8 @@
-#include "SerialFunctionTree.h"
-#include "FunctionTree.h"
-#include "ProjectedNode.h"
-#include "GenNode.h"
-#include "Printer.h"
+#include "mwtrees/SerialFunctionTree.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwtrees/ProjectedNode.h"
+#include "mwtrees/GenNode.h"
+#include "mwutils/Printer.h"
 #include "mwparallel/mpi.h"
 
 using namespace std;

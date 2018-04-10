@@ -2,7 +2,7 @@
 
 #include "factory_functions.h"
 
-#include "grid.h"
+#include "mwbuilders/grid.h"
 
 using namespace mrcpp;
 

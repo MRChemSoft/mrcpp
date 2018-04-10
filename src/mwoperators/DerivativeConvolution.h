@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ConvolutionOperator.h"
-#include "DerivativeKernel.h"
+#include "mwoperators/ConvolutionOperator.h"
+#include "mwoperators/DerivativeKernel.h"
 
 namespace mrcpp {
 

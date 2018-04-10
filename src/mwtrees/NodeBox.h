@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "BoundingBox.h"
+#include "mwtrees/BoundingBox.h"
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {

@@ -1,7 +1,7 @@
-#include "MWOperator.h"
-#include "BandWidth.h"
-#include "Timer.h"
-#include "Printer.h"
+#include "mwoperators/MWOperator.h"
+#include "mwoperators/BandWidth.h"
+#include "mwutils/Timer.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

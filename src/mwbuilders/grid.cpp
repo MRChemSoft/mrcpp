@@ -1,10 +1,10 @@
-#include "grid.h"
-#include "TreeBuilder.h"
-#include "AnalyticAdaptor.h"
-#include "CopyAdaptor.h"
-#include "WaveletAdaptor.h"
-#include "DefaultCalculator.h"
-#include "Printer.h"
+#include "mwbuilders/grid.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/AnalyticAdaptor.h"
+#include "mwbuilders/CopyAdaptor.h"
+#include "mwbuilders/WaveletAdaptor.h"
+#include "mwbuilders/DefaultCalculator.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

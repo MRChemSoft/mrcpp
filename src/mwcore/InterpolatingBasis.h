@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScalingBasis.h"
+#include "mwcore/ScalingBasis.h"
 
 namespace mrcpp {
 

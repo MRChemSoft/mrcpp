@@ -8,8 +8,8 @@
  * \breif
  */
 
-#include "FilterCache.h"
-#include "Printer.h"
+#include "mwcore/FilterCache.h"
+#include "mwutils/Printer.h"
 
 #include "constants.h"
 

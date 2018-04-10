@@ -1,9 +1,9 @@
-#include "PHOperator.h"
-#include "TreeBuilder.h"
-#include "PHCalculator.h"
-#include "BandWidthAdaptor.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwoperators/PHOperator.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/PHCalculator.h"
+#include "mwbuilders/BandWidthAdaptor.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace mrcpp;
 

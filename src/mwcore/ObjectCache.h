@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "parallel_omp.h"
+#include "mwparallel/omp.h"
 #include "macros.h"
 
 namespace mrcpp {

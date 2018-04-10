@@ -3,7 +3,7 @@
 #include "ProjectedNode.h"
 #include "GenNode.h"
 #include "Printer.h"
-#include "parallel_mpi.h"
+#include "mwparallel/mpi.h"
 
 using namespace std;
 using namespace mrcpp;

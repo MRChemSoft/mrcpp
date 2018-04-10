@@ -3,7 +3,7 @@
 #include "mwtrees/OperatorNode.h"
 #include "mwtrees/SerialTree.h"
 #include "mwtrees/LebesgueIterator.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwutils/Printer.h"
 
 using namespace std;

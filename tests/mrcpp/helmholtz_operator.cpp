@@ -5,7 +5,7 @@
 #include "mwoperators/HelmholtzOperator.h"
 #include "mwoperators/HelmholtzKernel.h"
 #include "mwoperators/MWOperator.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwbuilders//OperatorAdaptor.h"
 #include "mwbuilders/TreeBuilder.h"
 #include "mwbuilders/CrossCorrelationCalculator.h"

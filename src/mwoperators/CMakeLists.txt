@@ -1,6 +1,5 @@
 target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.cpp
@@ -13,7 +12,6 @@ target_sources(mrcpp PRIVATE
 
 list(APPEND mwoperators_h
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeKernel.h

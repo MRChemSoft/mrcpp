@@ -5,7 +5,7 @@
 #include "mwoperators/PoissonOperator.h"
 #include "mwoperators/PoissonKernel.h"
 #include "mwoperators/MWOperator.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwfunctions/GaussFunc.h"
 #include "mwbuilders/TreeBuilder.h"
 #include "mwbuilders/OperatorAdaptor.h"

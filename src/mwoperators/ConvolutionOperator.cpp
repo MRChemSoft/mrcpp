@@ -6,7 +6,7 @@
 #include "mwbuilders/project.h"
 #include "mwbuilders/grid.h"
 #include "mwtrees/OperatorTree.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwfunctions/Gaussian.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Timer.h"

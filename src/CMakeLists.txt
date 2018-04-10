@@ -1,6 +1,4 @@
-add_library(mrcpp STATIC 
-    parallel_mpi.cpp
-)
+add_library(mrcpp STATIC)
 
 add_subdirectory(mwcore)
 add_subdirectory(mwutils)
@@ -8,6 +6,7 @@ add_subdirectory(mwtrees)
 add_subdirectory(mwbuilders)
 add_subdirectory(mwfunctions)
 add_subdirectory(mwoperators)
+add_subdirectory(mwparallel)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}
@@ -27,8 +26,6 @@ list(APPEND mrcpp_h
     eigen_disable_warnings.h
     macros.h
     mrcpp_declarations.h
-    parallel_mpi.h
-    parallel_omp.h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         

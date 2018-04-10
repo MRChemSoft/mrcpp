@@ -2,12 +2,12 @@
 
 #include "factory_functions.h"
 
-#include "FunctionTreeVector.h"
-#include "WaveletAdaptor.h"
-#include "GaussExp.h"
-#include "project.h"
-#include "grid.h"
-#include "add.h"
+#include "mwtrees/FunctionTreeVector.h"
+#include "mwbuilders/WaveletAdaptor.h"
+#include "mwfunctions/GaussExp.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/grid.h"
+#include "mwbuilders/add.h"
 
 using namespace mrcpp;
 

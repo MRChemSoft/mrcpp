@@ -1,5 +1,5 @@
-#include "OperatorStatistics.h"
-#include "MWNode.h"
+#include "mwoperators/OperatorStatistics.h"
+#include "mwtrees/MWNode.h"
 
 using namespace Eigen;
 using namespace mrcpp;

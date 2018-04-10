@@ -19,8 +19,8 @@
 #include <vector>
 #include <iostream>
 
-#include "RepresentableFunction.h"
-#include "GaussFunc.h"
+#include "mwfunctions/RepresentableFunction.h"
+#include "mwfunctions/GaussFunc.h"
 
 #include "mrcpp_declarations.h"
 

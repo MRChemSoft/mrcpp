@@ -4,11 +4,11 @@
  *
  */
 
-#include "MWTree.h"
-#include "MultiResolutionAnalysis.h"
-#include "HilbertIterator.h"
-#include "MathUtils.h"
-#include "Printer.h"
+#include "mwtrees/MWTree.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
+#include "mwtrees/HilbertIterator.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -2,17 +2,17 @@
 
 #include "factory_functions.h"
 
-#include "TreeBuilder.h"
-#include "PoissonOperator.h"
-#include "PoissonKernel.h"
-#include "MWOperator.h"
-#include "OperatorAdaptor.h"
-#include "BandWidth.h"
-#include "CrossCorrelationCalculator.h"
-#include "GaussFunc.h"
-#include "apply.h"
-#include "project.h"
-#include "grid.h"
+#include "mwoperators/PoissonOperator.h"
+#include "mwoperators/PoissonKernel.h"
+#include "mwoperators/MWOperator.h"
+#include "mwoperators/BandWidth.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/OperatorAdaptor.h"
+#include "mwbuilders/CrossCorrelationCalculator.h"
+#include "mwbuilders/apply.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/grid.h"
 
 using namespace std;
 using namespace mrcpp;

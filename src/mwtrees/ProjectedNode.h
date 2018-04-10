@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FunctionNode.h"
+#include "mwtrees/FunctionNode.h"
 
 namespace mrcpp {
 

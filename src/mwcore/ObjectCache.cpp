@@ -1,9 +1,9 @@
-#include "ObjectCache.h"
-#include "LegendrePoly.h"
-#include "MWFilter.h"
-#include "GaussQuadrature.h"
-#include "CrossCorrelation.h"
-#include "Printer.h"
+#include "mwcore/ObjectCache.h"
+#include "mwcore/MWFilter.h"
+#include "mwcore/GaussQuadrature.h"
+#include "mwcore/CrossCorrelation.h"
+#include "mwfunctions/LegendrePoly.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

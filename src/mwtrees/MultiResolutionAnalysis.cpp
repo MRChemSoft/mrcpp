@@ -1,8 +1,8 @@
-#include "MultiResolutionAnalysis.h"
-#include "InterpolatingBasis.h"
-#include "LegendreBasis.h"
-#include "FilterCache.h"
-#include "Printer.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/LegendreBasis.h"
+#include "mwcore/FilterCache.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

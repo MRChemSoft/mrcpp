@@ -1,7 +1,7 @@
-#include "CrossCorrelationCalculator.h"
-#include "FunctionTree.h"
-#include "MWNode.h"
-#include "Printer.h"
+#include "mwbuilders/CrossCorrelationCalculator.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

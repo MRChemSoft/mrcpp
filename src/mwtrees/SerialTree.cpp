@@ -1,7 +1,7 @@
-#include "SerialTree.h"
-#include "MWTree.h"
-#include "Printer.h"
-#include "MathUtils.h"
+#include "mwtrees/SerialTree.h"
+#include "mwtrees/MWTree.h"
+#include "mwutils/Printer.h"
+#include "mwutils/MathUtils.h"
 
 using namespace std;
 using namespace Eigen;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RepresentableFunction.h"
-#include "MultiResolutionAnalysis.h"
+#include "mwfunctions/RepresentableFunction.h"
+#include "mwtrees/MultiResolutionAnalysis.h"
 
 namespace mrcpp {
 

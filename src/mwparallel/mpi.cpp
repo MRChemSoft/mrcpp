@@ -1,9 +1,9 @@
 #include "mwparallel/mpi.h"
-#include "FunctionTree.h"
-#include "ProjectedNode.h"
-#include "SerialFunctionTree.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwtrees/ProjectedNode.h"
+#include "mwtrees/SerialFunctionTree.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace std;
 using namespace mrcpp;

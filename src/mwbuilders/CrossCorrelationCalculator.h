@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TreeCalculator.h"
-#include "CrossCorrelationCache.h"
+#include "mwbuilders/TreeCalculator.h"
+#include "mwcore/CrossCorrelationCache.h"
 
 namespace mrcpp {
 

@@ -1,6 +1,6 @@
-#include "OperatorNode.h"
-#include "SerialTree.h"
-#include "MathUtils.h"
+#include "mwtrees/OperatorNode.h"
+#include "mwtrees/SerialTree.h"
+#include "mwutils/MathUtils.h"
 
 using namespace std;
 using namespace Eigen;

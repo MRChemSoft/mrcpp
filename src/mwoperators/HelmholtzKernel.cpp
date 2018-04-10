@@ -10,9 +10,9 @@
 
 #include <cmath>
 
-#include "HelmholtzKernel.h"
-#include "GaussFunc.h"
-#include "Printer.h"
+#include "mwoperators/HelmholtzKernel.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

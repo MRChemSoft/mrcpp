@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TreeAdaptor.h"
+#include "mwbuilders/TreeAdaptor.h"
 #include "constants.h"
 
 /** Builds an OperatorTree with known band width (e.g. derivative and identity).

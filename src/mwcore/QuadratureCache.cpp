@@ -8,8 +8,8 @@
  * \breif
  */
 
-#include "QuadratureCache.h"
-#include "Printer.h"
+#include "mwcore/QuadratureCache.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

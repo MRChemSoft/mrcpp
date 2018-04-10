@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CrossCorrelation.h"
-#include "ObjectCache.h"
+#include "mwcore/CrossCorrelation.h"
+#include "mwcore/ObjectCache.h"
 
 #include <iostream>
 #include <string>

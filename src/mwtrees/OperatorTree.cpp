@@ -1,10 +1,10 @@
-#include "OperatorTree.h"
-#include "SerialOperatorTree.h"
-#include "OperatorNode.h"
-#include "SerialTree.h"
-#include "BandWidth.h"
-#include "LebesgueIterator.h"
-#include "Printer.h"
+#include "mwtrees/OperatorTree.h"
+#include "mwtrees/SerialOperatorTree.h"
+#include "mwtrees/OperatorNode.h"
+#include "mwtrees/SerialTree.h"
+#include "mwtrees/LebesgueIterator.h"
+#include "mwoperators/BandWidth.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

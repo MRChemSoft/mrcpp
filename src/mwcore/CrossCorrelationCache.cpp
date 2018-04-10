@@ -8,8 +8,8 @@
  * \breif
  */
 
-#include "CrossCorrelationCache.h"
-#include "Printer.h"
+#include "mwcore/CrossCorrelationCache.h"
+#include "mwutils/Printer.h"
 
 #include "constants.h"
 

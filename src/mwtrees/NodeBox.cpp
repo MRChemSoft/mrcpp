@@ -5,9 +5,9 @@
  *
  */
 
-#include "NodeBox.h"
-#include "MWNode.h"
-#include "Printer.h"
+#include "mwtrees/NodeBox.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

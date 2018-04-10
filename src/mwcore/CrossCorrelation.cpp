@@ -13,8 +13,8 @@
 #include "constants.h"
 #include "config.h"
 
-#include "CrossCorrelation.h"
-#include "Printer.h"
+#include "mwcore/CrossCorrelation.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

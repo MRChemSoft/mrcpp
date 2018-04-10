@@ -1,9 +1,9 @@
-#include "ABGVCalculator.h"
-#include "QuadratureCache.h"
-#include "InterpolatingBasis.h"
-#include "LegendreBasis.h"
-#include "MWNode.h"
-#include "Printer.h"
+#include "mwbuilders/ABGVCalculator.h"
+#include "mwcore/QuadratureCache.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/LegendreBasis.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

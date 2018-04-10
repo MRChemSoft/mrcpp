@@ -2,15 +2,15 @@
  *  Simple n-dimensional node
  */
 
-#include "MWNode.h"
-#include "MWTree.h"
-#include "SerialTree.h"
-#include "ProjectedNode.h"
-#include "MathUtils.h"
-#include "QuadratureCache.h"
-#include "GenNode.h"
-#include "Timer.h"
-#include "Printer.h"
+#include "mwtrees/MWNode.h"
+#include "mwtrees/MWTree.h"
+#include "mwtrees/SerialTree.h"
+#include "mwtrees/ProjectedNode.h"
+#include "mwtrees/GenNode.h"
+#include "mwcore/QuadratureCache.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Timer.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -3,7 +3,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "TreeCalculator.h"
+#include "mwbuilders/TreeCalculator.h"
 
 namespace mrcpp {
 

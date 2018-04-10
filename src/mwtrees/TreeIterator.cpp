@@ -1,6 +1,6 @@
-#include "TreeIterator.h"
-#include "MWNode.h"
-#include "Printer.h"
+#include "mwtrees/TreeIterator.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

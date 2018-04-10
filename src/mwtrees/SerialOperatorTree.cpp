@@ -1,7 +1,7 @@
-#include "SerialOperatorTree.h"
-#include "OperatorTree.h"
-#include "OperatorNode.h"
-#include "Printer.h"
+#include "mwtrees/SerialOperatorTree.h"
+#include "mwtrees/OperatorTree.h"
+#include "mwtrees/OperatorNode.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

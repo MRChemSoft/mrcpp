@@ -1,8 +1,8 @@
-#include "BoysFunction.h"
-#include "FunctionTree.h"
-#include "InterpolatingBasis.h"
-#include "Printer.h"
-#include "project.h"
+#include "mwfunctions/BoysFunction.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwutils/Printer.h"
+#include "mwbuilders/project.h"
 
 using namespace mrcpp;
 

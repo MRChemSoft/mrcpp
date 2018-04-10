@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "LegendrePoly.h"
+#include "mwfunctions/LegendrePoly.h"
 
 using namespace std;
 using namespace mrcpp;

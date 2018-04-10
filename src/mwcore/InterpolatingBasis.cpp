@@ -7,9 +7,9 @@
  *
  */
 
-#include "InterpolatingBasis.h"
-#include "QuadratureCache.h"
-#include "LegendrePoly.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/QuadratureCache.h"
+#include "mwfunctions/LegendrePoly.h"
 
 using namespace std;
 using namespace Eigen;

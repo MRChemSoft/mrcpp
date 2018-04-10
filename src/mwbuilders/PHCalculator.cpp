@@ -2,8 +2,8 @@
 
 #include "config.h"
 
-#include "PHCalculator.h"
-#include "Printer.h"
+#include "mwbuilders/PHCalculator.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

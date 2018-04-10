@@ -7,12 +7,12 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "GaussExp.h"
-#include "Gaussian.h"
-#include "GaussFunc.h"
-#include "GaussPoly.h"
-#include "Printer.h"
-#include "MathUtils.h"
+#include "mwfunctions/GaussExp.h"
+#include "mwfunctions/Gaussian.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwfunctions/GaussPoly.h"
+#include "mwutils/Printer.h"
+#include "mwutils/MathUtils.h"
 
 using namespace std;
 using namespace Eigen;

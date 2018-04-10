@@ -1,10 +1,10 @@
-#include "ABGVOperator.h"
-#include "ABGVCalculator.h"
-#include "TreeBuilder.h"
-#include "BandWidthAdaptor.h"
-#include "OperatorTree.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwoperators/ABGVOperator.h"
+#include "mwbuilders/ABGVCalculator.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/BandWidthAdaptor.h"
+#include "mwtrees/OperatorTree.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace mrcpp;
 

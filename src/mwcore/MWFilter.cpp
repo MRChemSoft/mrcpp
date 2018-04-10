@@ -13,8 +13,8 @@
 #include "constants.h"
 #include "config.h"
 
-#include "MWFilter.h"
-#include "Printer.h"
+#include "mwcore/MWFilter.h"
+#include "mwutils/Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

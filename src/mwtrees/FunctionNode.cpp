@@ -1,8 +1,8 @@
-#include "FunctionNode.h"
-#include "FunctionTree.h"
-#include "MathUtils.h"
-#include "Printer.h"
-#include "QuadratureCache.h"
+#include "mwtrees/FunctionNode.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwutils/MathUtils.h"
+#include "mwutils/Printer.h"
+#include "mwcore/QuadratureCache.h"
 
 #ifdef HAVE_BLAS
 extern "C" {

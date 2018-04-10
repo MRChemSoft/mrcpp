@@ -1,6 +1,6 @@
-#include "PoissonOperator.h"
-#include "PoissonKernel.h"
-#include "Printer.h"
+#include "mwoperators/PoissonOperator.h"
+#include "mwoperators/PoissonKernel.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

@@ -1,9 +1,9 @@
 /*
  */
 
-#include "GaussQuadrature.h"
-#include "LegendrePoly.h"
-#include "Printer.h"
+#include "mwcore/GaussQuadrature.h"
+#include "mwfunctions/LegendrePoly.h"
+#include "mwutils/Printer.h"
 #include "macros.h"
 #include "constants.h"
 

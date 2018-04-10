@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "SerialTree.h"
+#include "mwtrees/SerialTree.h"
 
 namespace mrcpp {
 

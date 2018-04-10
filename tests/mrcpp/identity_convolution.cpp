@@ -2,16 +2,16 @@
 
 #include "factory_functions.h"
 
-#include "TreeBuilder.h"
-#include "IdentityConvolution.h"
-#include "IdentityKernel.h"
-#include "OperatorTree.h"
-#include "OperatorAdaptor.h"
-#include "CrossCorrelationCalculator.h"
-#include "BandWidth.h"
-#include "project.h"
-#include "apply.h"
-#include "grid.h"
+#include "mwoperators/IdentityConvolution.h"
+#include "mwoperators/IdentityKernel.h"
+#include "mwtrees/OperatorTree.h"
+#include "mwoperators/BandWidth.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/OperatorAdaptor.h"
+#include "mwbuilders/CrossCorrelationCalculator.h"
+#include "mwbuilders/project.h"
+#include "mwbuilders/apply.h"
+#include "mwbuilders/grid.h"
 
 using namespace mrcpp;
 

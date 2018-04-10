@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GreensKernel.h"
-#include "GaussFunc.h"
-#include "GaussPoly.h"
+#include "mwoperators/GreensKernel.h"
+#include "mwfunctions/GaussFunc.h"
+#include "mwfunctions/GaussPoly.h"
 
 namespace mrcpp {
 

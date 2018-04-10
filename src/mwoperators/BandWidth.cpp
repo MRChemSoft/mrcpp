@@ -1,5 +1,5 @@
-#include "BandWidth.h"
-#include "Printer.h"
+#include "mwoperators/BandWidth.h"
+#include "mwutils/Printer.h"
 
 using namespace mrcpp;
 

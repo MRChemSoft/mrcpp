@@ -1,10 +1,10 @@
-#include "add.h"
-#include "TreeBuilder.h"
-#include "WaveletAdaptor.h"
-#include "AdditionCalculator.h"
-#include "FunctionTree.h"
-#include "Printer.h"
-#include "Timer.h"
+#include "mwbuilders/add.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/WaveletAdaptor.h"
+#include "mwbuilders/AdditionCalculator.h"
+#include "mwtrees/FunctionTree.h"
+#include "mwutils/Printer.h"
+#include "mwutils/Timer.h"
 
 using namespace mrcpp;
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ScalingBasis.h"
-#include "BoundingBox.h"
-#include "MWFilter.h"
+#include "mwtrees/BoundingBox.h"
+#include "mwcore/ScalingBasis.h"
+#include "mwcore/MWFilter.h"
 
 #include "mrcpp_declarations.h"
 

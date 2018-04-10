@@ -1,10 +1,10 @@
-#include "TreeBuilder.h"
-#include "TreeCalculator.h"
-#include "TreeAdaptor.h"
-#include "MWTree.h"
-#include "MWNode.h"
-#include "Timer.h"
-#include "Printer.h"
+#include "mwbuilders/TreeBuilder.h"
+#include "mwbuilders/TreeCalculator.h"
+#include "mwbuilders/TreeAdaptor.h"
+#include "mwtrees/MWTree.h"
+#include "mwtrees/MWNode.h"
+#include "mwutils/Timer.h"
+#include "mwutils/Printer.h"
 
 using namespace std;
 using namespace mrcpp;

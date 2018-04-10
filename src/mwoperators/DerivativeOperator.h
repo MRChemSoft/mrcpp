@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MWOperator.h"
+#include "mwoperators/MWOperator.h"
 
 namespace mrcpp {
 

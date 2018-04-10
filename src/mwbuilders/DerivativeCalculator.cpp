@@ -1,7 +1,7 @@
 #include "mwbuilders/DerivativeCalculator.h"
 #include "mwoperators/DerivativeOperator.h"
 #include "mwoperators/OperatorState.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwtrees/OperatorNode.h"
 #include "mwtrees/FunctionTree.h"
 #include "mwutils/Timer.h"

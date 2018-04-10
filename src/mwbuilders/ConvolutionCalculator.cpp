@@ -1,7 +1,7 @@
 #include "mwbuilders/ConvolutionCalculator.h"
 #include "mwoperators/ConvolutionOperator.h"
 #include "mwoperators/OperatorState.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwtrees/FunctionNode.h"
 #include "mwtrees/OperatorNode.h"
 #include "mwutils/Timer.h"

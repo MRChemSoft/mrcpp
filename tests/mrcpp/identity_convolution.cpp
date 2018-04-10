@@ -5,7 +5,7 @@
 #include "mwoperators/IdentityConvolution.h"
 #include "mwoperators/IdentityKernel.h"
 #include "mwtrees/OperatorTree.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwbuilders/TreeBuilder.h"
 #include "mwbuilders/OperatorAdaptor.h"
 #include "mwbuilders/CrossCorrelationCalculator.h"

@@ -1,4 +1,5 @@
 target_sources(mrcpp PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.cpp
@@ -19,6 +20,7 @@ target_sources(mrcpp PRIVATE
 )
 
 list(APPEND mwtrees_h
+    ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.h
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.h
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.h

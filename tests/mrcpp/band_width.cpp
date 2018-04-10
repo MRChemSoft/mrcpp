@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 
 using namespace Eigen;
 using namespace mrcpp;

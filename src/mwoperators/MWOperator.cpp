@@ -1,5 +1,5 @@
 #include "mwoperators/MWOperator.h"
-#include "mwoperators/BandWidth.h"
+#include "mwtrees/BandWidth.h"
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"
 

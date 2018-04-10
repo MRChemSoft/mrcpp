@@ -1,1 +1,1 @@
-#include "src/parallel_mpi.h"
+#include "mwparallel/mpi.h"

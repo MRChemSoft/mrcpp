@@ -8,8 +8,8 @@ list(APPEND api_list
     Timer
     )
 
-# Sets install directory for all the headers in the list                         
-foreach(_header ${api_list})                                                 
+# Sets install directory for all the headers in the list
+foreach(_header ${api_list})
   file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
@@ -18,5 +18,5 @@ foreach(_header ${api_list})
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     )
-endforeach() 
+endforeach()
 

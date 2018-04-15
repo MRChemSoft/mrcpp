@@ -1,4 +1,4 @@
-add_library(mrcpp STATIC)
+add_library(mrcpp STATIC "")
 
 add_subdirectory(mwcore)
 add_subdirectory(mwutils)

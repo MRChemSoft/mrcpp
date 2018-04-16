@@ -8,8 +8,6 @@ using namespace mrcpp;
 namespace legendre_poly {
 
 TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
-    const double thrs = 10*MachineZero;
-
     int nLeg = 10;
     vector<LegendrePoly *> L;
     for (int k = 0; k < nLeg; k++) {
@@ -24,7 +22,7 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
             REQUIRE( L_k.getScaledUpperBound() == Approx(1.0) );
             REQUIRE( L_k.getOrder() == k );
             // Legendre polynomials are normalized so that L_k(1.0) = 1.0
-            REQUIRE( std::abs(L_k.evalf(1.0) - 1.0) < thrs );
+            REQUIRE( L_k.evalf(1.0) == Approx(1.0) );
         }
     }
 
@@ -36,7 +34,7 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
             for (int j = 0; j < i; j++) {
                 LegendrePoly &L_j = *L[j];
                 double S_ij = L_i.innerProduct(L_j);
-                REQUIRE( std::abs(S_ij) < thrs );
+                REQUIRE( S_ij == Approx(0.0).margin(1.0e-12) );
             }
         }
     }

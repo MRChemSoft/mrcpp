@@ -29,7 +29,6 @@ SCENARIO("Adding MW trees", "[addition], [tree_builder]") {
 
 template<int D> void testAddition() {
     const double prec = 1.0e-4;
-    const double thrs = prec*prec;
 
     const double a_coef = 1.0;
     const double b_coef = 2.0;
@@ -119,7 +118,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double e_int = e_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( std::abs(e_int - ref_int) < thrs );
+                    REQUIRE( e_int == Approx(ref_int).margin(prec*prec) );
                 }
             }
         }

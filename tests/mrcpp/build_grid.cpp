@@ -33,19 +33,19 @@ template<int D> void testBuildGrid() {
         FunctionTree<D> f_tree(*mra);
 
         THEN("we get an empty tree of root nodes") {
-            REQUIRE( (f_tree.getSquareNorm() == Approx(-1.0)) );
-            REQUIRE( (f_tree.getDepth() == 1) );
-            REQUIRE( (f_tree.getNNodes() == f_tree.getNEndNodes()) );
-            REQUIRE( (f_tree.getNGenNodes() == 0) );
+            REQUIRE( f_tree.getSquareNorm() == Approx(-1.0) );
+            REQUIRE( f_tree.getDepth() == 1 );
+            REQUIRE( f_tree.getNNodes() == f_tree.getNEndNodes() );
+            REQUIRE( f_tree.getNGenNodes() == 0 );
 
             AND_WHEN("the GridGenerator is given the analytic function") {
                 build_grid(f_tree, *f_func, 2);
 
                 THEN("the empty tree gets adapted") {
-                    REQUIRE( (f_tree.getSquareNorm() == Approx(-1.0)) );
-                    REQUIRE( (f_tree.getDepth() == 3) );
-                    REQUIRE( (f_tree.getNNodes() > f_tree.getNEndNodes()) );
-                    REQUIRE( (f_tree.getNGenNodes() == 0) );
+                    REQUIRE( f_tree.getSquareNorm() == Approx(-1.0) );
+                    REQUIRE( f_tree.getDepth() == 3 );
+                    REQUIRE( f_tree.getNNodes() > f_tree.getNEndNodes() );
+                    REQUIRE( f_tree.getNGenNodes() == 0 );
                 }
             }
         }
@@ -56,21 +56,21 @@ template<int D> void testBuildGrid() {
         build_grid(f_tree, *f_func, 2);
 
         THEN("we get an empty adapted tree structure") {
-            REQUIRE( (f_tree.getSquareNorm() == Approx(-1.0)) );
-            REQUIRE( (f_tree.getDepth() == 3) );
-            REQUIRE( (f_tree.getNNodes() > f_tree.getNEndNodes()) );
-            REQUIRE( (f_tree.getNGenNodes() == 0) );
+            REQUIRE( f_tree.getSquareNorm() == Approx(-1.0) );
+            REQUIRE( f_tree.getDepth() == 3 );
+            REQUIRE( f_tree.getNNodes() > f_tree.getNEndNodes() );
+            REQUIRE( f_tree.getNGenNodes() == 0 );
 
             AND_WHEN("the empty tree is passed to the GridGenerator") {
                 FunctionTree<D> g_tree(*mra);
                 copy_grid(g_tree, f_tree);
 
                 THEN("we get an identical empty grid") {
-                    REQUIRE( (g_tree.getSquareNorm() == Approx(-1.0)) );
-                    REQUIRE( (g_tree.getDepth() == f_tree.getDepth()) );
-                    REQUIRE( (g_tree.getNNodes() == f_tree.getNNodes()) );
-                    REQUIRE( (g_tree.getNEndNodes() == f_tree.getNEndNodes()) );
-                    REQUIRE( (g_tree.getNGenNodes() == 0) );
+                    REQUIRE( g_tree.getSquareNorm() == Approx(-1.0) );
+                    REQUIRE( g_tree.getDepth() == f_tree.getDepth() );
+                    REQUIRE( g_tree.getNNodes() == f_tree.getNNodes() );
+                    REQUIRE( g_tree.getNEndNodes() == f_tree.getNEndNodes() );
+                    REQUIRE( g_tree.getNGenNodes() == 0 );
                 }
             }
         }

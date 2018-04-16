@@ -33,11 +33,11 @@ template<int D> void testProjectFunction() {
         FunctionTree<D> tree(*mra);
         project(-1.0, tree, *func);
         THEN("it integrates to approximately one") {
-            REQUIRE( (tree.integrate() == Approx(1.0).epsilon(1.0e+1)) );
+            REQUIRE( tree.integrate() < 2.0 );
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = tree.getSquareNorm();
-            REQUIRE( (dot(tree, tree) == Approx(norm)) );
+            REQUIRE( dot(tree, tree) == Approx(norm) );
         }
     }
     WHEN("the function is projected on an adapted grid") {
@@ -45,11 +45,11 @@ template<int D> void testProjectFunction() {
         build_grid(tree, *func);
         project(-1.0, tree, *func);
         THEN("it integrates to approximately one") {
-            REQUIRE( (tree.integrate() == Approx(1.0).epsilon(1.0e-3)) );
+            REQUIRE( tree.integrate() == Approx(1.0).epsilon(1.0e-3) );
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = tree.getSquareNorm();
-            REQUIRE( (dot(tree, tree) == Approx(norm)) );
+            REQUIRE( dot(tree, tree) == Approx(norm) );
         }
     }
     WHEN("the function is projected with guaranteed precision") {
@@ -57,11 +57,11 @@ template<int D> void testProjectFunction() {
         FunctionTree<D> f_tree(*mra);
         project(prec, f_tree, *func);
         THEN("it integrates to approximately one") {
-            REQUIRE( (f_tree.integrate() == Approx(1.0).epsilon(1.0e-8)) );
+            REQUIRE( f_tree.integrate() == Approx(1.0).epsilon(1.0e-8) );
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = f_tree.getSquareNorm();
-            REQUIRE( (dot(f_tree, f_tree) == Approx(norm)) );
+            REQUIRE( dot(f_tree, f_tree) == Approx(norm) );
         }
         AND_WHEN("the function is projected on an identical grid") {
             FunctionTree<D> g_tree(*mra);
@@ -70,11 +70,11 @@ template<int D> void testProjectFunction() {
             project(-1.0, g_tree, *func);
             THEN("it integrates to the same value") {
                 const double charge = f_tree.integrate();
-                REQUIRE( (g_tree.integrate() == Approx(charge)) );
+                REQUIRE( g_tree.integrate() == Approx(charge) );
             }
             THEN("the dot product with the original is equal to their squared norm") {
                 const double norm = f_tree.getSquareNorm();
-                REQUIRE( (dot(g_tree, f_tree) == Approx(norm)) );
+                REQUIRE( dot(g_tree, f_tree) == Approx(norm) );
             }
         }
     }

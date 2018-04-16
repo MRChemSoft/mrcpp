@@ -29,7 +29,7 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
 
     SECTION("Initialize identity kernel") {
         IdentityKernel id_kern(exp_prec);
-        REQUIRE( (id_kern.size() == 1) );
+        REQUIRE( id_kern.size() == 1 );
 
         SECTION("Project identity kernel") {
             int l = -1;
@@ -43,7 +43,7 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
             FunctionTree<1> kern_tree(kern_mra);
             build_grid(kern_tree, id_kern);
             project(proj_prec, kern_tree, id_kern);
-            REQUIRE( (kern_tree.integrate() == Approx(1.0).epsilon(proj_prec)) );
+            REQUIRE( kern_tree.integrate() == Approx(1.0).epsilon(proj_prec) );
 
             SECTION("Build operator tree by cross correlation") {
                 NodeIndex<2> idx(n);
@@ -73,8 +73,8 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
                 oper_tree.clearBandWidth();
 
                 for (int i = 0; i < oper_tree.getDepth(); i++) {
-                    REQUIRE( (bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i)) );
-                    REQUIRE( (bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i)) );
+                    REQUIRE( bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i) );
+                    REQUIRE( bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i) );
                 }
             }
         }
@@ -110,9 +110,9 @@ template<int D> void applyIdentity() {
     project(proj_prec, fTree, *fFunc);
     apply(apply_prec, gTree, I, fTree);
 
-    REQUIRE( (gTree.getDepth() <= fTree.getDepth()) );
-    REQUIRE( (gTree.getNNodes() <= fTree.getNNodes()) );
-    REQUIRE( (gTree.integrate() == Approx(fTree.integrate()).epsilon(apply_prec)) );
+    REQUIRE( gTree.getDepth()  <= fTree.getDepth() );
+    REQUIRE( gTree.getNNodes() <= fTree.getNNodes() );
+    REQUIRE( gTree.integrate() == Approx(fTree.integrate()).epsilon(apply_prec) );
 
     finalize(&fFunc);
     finalize(&mra);

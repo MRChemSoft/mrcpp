@@ -77,8 +77,8 @@ template<int D> void testCompare() {
         BoundingBox<D> *bBox = 0;
         initialize<D>(&aBox);
         initialize<D>(&bBox);
-        REQUIRE( (*aBox == *bBox) );
-        REQUIRE_FALSE( (*aBox != *bBox) );
+        REQUIRE( *aBox == *bBox );
+        REQUIRE_FALSE( *aBox != *bBox );
         finalize(&aBox);
         finalize(&bBox);
     }
@@ -86,8 +86,8 @@ template<int D> void testCompare() {
         BoundingBox<D> *aBox = new BoundingBox<D>();
         BoundingBox<D> *bBox = 0;
         initialize<D>(&bBox);
-        REQUIRE( (*aBox != *bBox) );
-        REQUIRE_FALSE( (*aBox == *bBox) );
+        REQUIRE( *aBox != *bBox );
+        REQUIRE_FALSE( *aBox == *bBox );
         finalize(&aBox);
         finalize(&bBox);
     }
@@ -103,26 +103,26 @@ template<int D> void testFetch() {
                 r[d] = box->getUpperBound(d) - 1.0e-15;
             }
             const int last = box->size() - 1;
-            REQUIRE( (box->getBoxIndex(r) == last) );
+            REQUIRE( box->getBoxIndex(r) == last );
         }
         SECTION("Out of bounds") {
             for (int d = 0; d < D; d++) {
                 r[d] = -1.0;
             }
-            REQUIRE( (box->getBoxIndex(r) == -1) );
+            REQUIRE( box->getBoxIndex(r) == -1 );
         }
     }
     SECTION("Fetch by index") {
         SECTION("Within bounds") {
             NodeIndex<D> *idx = 0;
             initialize(&idx);
-            REQUIRE( (box->getBoxIndex(*idx) == 0) );
+            REQUIRE( box->getBoxIndex(*idx) == 0 );
             finalize(&idx);
         }
         SECTION("Out of bounds") {
             int n = -10;
             NodeIndex<D> idx(n);
-            REQUIRE( (box->getBoxIndex(idx) < 0) );
+            REQUIRE( box->getBoxIndex(idx) < 0 );
         }
     }
     finalize(&box);

@@ -36,20 +36,20 @@ template<int D> void testConstructors() {
     finalize(&nIdx);
 
     SECTION("Constructor") {
-        REQUIRE( (box.size() == tot_boxes) );
-        REQUIRE( (box.getNOccupied() == 0) );
+        REQUIRE( box.size() == tot_boxes );
+        REQUIRE( box.getNOccupied() == 0 );
     }
 
     SECTION("Copy constructor") {
         NodeBox<D> box_copy(box);
-        REQUIRE( (box_copy.size() == tot_boxes) );
-        REQUIRE( (box_copy.getNOccupied() == 0) );
+        REQUIRE( box_copy.size() == tot_boxes );
+        REQUIRE( box_copy.getNOccupied() == 0 );
     }
 
     SECTION("Base class copy constructor") {
         const BoundingBox<D> &b_box = static_cast<const BoundingBox<D> &>(box);
         NodeBox<D> box_copy(b_box);
-        REQUIRE( (box_copy == b_box) );
+        REQUIRE( box_copy == b_box );
     }
 }
 
@@ -87,12 +87,12 @@ template<int D> void testNodeFetchers() {
     // Fetch by NodeIndex
     SECTION("Find root node by NodeIndex") {
         MWNode<D> &node = node_box.getNode(idx_2);
-        REQUIRE( (node.getDepth() == 0) );
+        REQUIRE( node.getDepth() == 0 );
         REQUIRE( node.isAncestor(idx_2) );
     }
     SECTION("Find const root node by NodeIndex") {
         const MWNode<D> &node = const_box.getNode(idx_2);
-        REQUIRE( (node.getDepth() == 0) );
+        REQUIRE( node.getDepth() == 0 );
         REQUIRE( node.isAncestor(idx_2) );
     }
 
@@ -100,12 +100,12 @@ template<int D> void testNodeFetchers() {
     SECTION("Get root node by coord: existing node") {
         MWNode<D> &node = node_box.getNode(r);
         REQUIRE( node.hasCoord(r) );
-        REQUIRE( (node.getDepth() == 0) );
+        REQUIRE( node.getDepth() == 0 );
     }
     SECTION("Get node by coord: non-existing node") {
         const MWNode<D> &node = const_box.getNode(r);
         REQUIRE( node.hasCoord(r) );
-        REQUIRE( (node.getDepth() == 0) );
+        REQUIRE( node.getDepth() == 0 );
     }
 }
 

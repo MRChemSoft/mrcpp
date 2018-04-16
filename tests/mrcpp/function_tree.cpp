@@ -29,16 +29,16 @@ template<int D> void testZeroFunction() {
         tree.setZero();
         THEN("its value in an arbitrary point is zero") {
             double r[3] = {-0.2, 0.6, 0.76};
-            REQUIRE( (tree.evalf(r) == Approx(0.0)) );
+            REQUIRE( tree.evalf(r) == Approx(0.0) );
         }
         THEN("its squared norm is zero") {
-            REQUIRE( (tree.getSquareNorm() == Approx(0.0)) );
+            REQUIRE( tree.getSquareNorm() == Approx(0.0) );
         }
         THEN("it integrates to zero") {
-            REQUIRE( (tree.integrate() == Approx(0.0)) );
+            REQUIRE( tree.integrate() == Approx(0.0) );
         }
         THEN("the dot product with itself is zero") {
-            REQUIRE( (dot(tree, tree) == Approx(0.0)) );
+            REQUIRE( dot(tree, tree) == Approx(0.0) );
         }
     }
     finalize(&mra);
@@ -67,19 +67,19 @@ template<int D> void testGeneratedNodes() {
     tree.setZero();
 
     THEN("there are no GenNodes") {
-        REQUIRE( (tree.getNGenNodes() == 0) );
+        REQUIRE( tree.getNGenNodes() == 0 );
     }
 
     WHEN("a non-existing node is fetched") {
         MWNode<D> &node = tree.getNode(r, depth);
 
         THEN("there will be allocated GenNodes") {
-            REQUIRE( (tree.getNGenNodes() > 0) );
+            REQUIRE( tree.getNGenNodes() > 0 );
 
             AND_WHEN("the GenNodes are deleted") {
                 tree.deleteGenerated();
                 THEN("there will be no GenNodes") {
-                    REQUIRE( (tree.getNGenNodes() == 0) );
+                    REQUIRE( tree.getNGenNodes() == 0 );
                 }
             }
         }

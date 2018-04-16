@@ -20,8 +20,8 @@ using namespace mrcpp;
 namespace poisson_operator {
 
 TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [mw_operator]") {
-    const double r_min = 1.0e-2;
-    const double r_max = 1.0e+1;
+    const double r_min = 1.0e-3;
+    const double r_max = 1.0e+0;
     const double exp_prec  = 1.0e-4;
     const double proj_prec = 1.0e-3;
     const double ccc_prec  = 1.0e-3;
@@ -30,13 +30,17 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
     const int n = -3;
     const int k = 5;
 
+    cout << scientific;
+
     SECTION("Initialize Poisson's kernel") {
         PoissonKernel poisson(exp_prec, r_min, r_max);
-        REQUIRE( (poisson.size() == 26) );
+        REQUIRE( poisson.size() == 26 );
 
         double x = r_min;
         while (x < r_max) {
-            REQUIRE( (poisson.evalf(&x) == Approx(1.0/x).epsilon(exp_prec)) );
+            //double rel_prec = std::abs(poisson.evalf(&x) - 1.0/x)*x;
+            //cout << x << setw(20) << poisson.evalf(&x) << setw(20) << rel_prec << endl;
+            REQUIRE( poisson.evalf(&x) == Approx(1.0/x).epsilon(2.0*exp_prec) );
             x *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
@@ -90,15 +94,15 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                     oper_tree->clearBandWidth();
 
                     for (int i = 0; i < oper_tree->getDepth(); i++) {
-                        REQUIRE( (bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i)) );
-                        REQUIRE( (bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i)) );
+                        REQUIRE( bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i) );
+                        REQUIRE( bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i) );
                     }
                 }
                 O.calcBandWidths(band_prec);
-                REQUIRE( (O.getMaxBandWidth(3) == 3) );
-                REQUIRE( (O.getMaxBandWidth(7) == 5) );
-                REQUIRE( (O.getMaxBandWidth(13) == 9) );
-                REQUIRE( (O.getMaxBandWidth(15) == -1) );
+                REQUIRE( O.getMaxBandWidth(3) == 3 );
+                REQUIRE( O.getMaxBandWidth(7) == 5 );
+                REQUIRE( O.getMaxBandWidth(13) == 9 );
+                REQUIRE( O.getMaxBandWidth(19) == -1 );
 
                 O.clear(true);
             }
@@ -131,7 +135,7 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     double E_num = dot(gTree, fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);
 
-    REQUIRE( (E_num == Approx(E_ana).epsilon(apply_prec)) );
+    REQUIRE( E_num == Approx(E_ana).epsilon(apply_prec) );
 
     finalize(&fFunc);
     finalize(&mra);

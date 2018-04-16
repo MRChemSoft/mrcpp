@@ -5,7 +5,6 @@
 #include "MathUtils.h"
 #include "Printer.h"
 #include "constants.h"
-#include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -20,11 +19,9 @@ namespace mrcpp {
 
 /** Calculate \f$ m^e\f$ for integers. */
 int MathUtils::ipow(int m, int e) {
-    if (e < 0) {
-        MSG_FATAL("Exponent cannot be negative: " << e)
-    }
+    if (e < 0) MSG_FATAL("Exponent cannot be negative: " << e)
     int result = 1;
-    for (int i=0; i < e; i++) {
+    for (int i = 0; i < e; i++) {
         result *= m;
     }
     return result;
@@ -39,7 +36,7 @@ int MathUtils::ipow(int m, int e) {
  *	 \f$ ||M|| \lim_{n \rightarrow \infty} ||x_n||/||x_{n-1}||\f$
  */
 double MathUtils::matrixNorm2(const VectorXd &vector) {
-    int n = (int) sqrt(vector.size());
+    int n = (int) std::sqrt(vector.size());
     MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
     return matrixNorm2(matrix);
 }
@@ -62,7 +59,7 @@ double MathUtils::matrixNorm2(const MatrixXd &M) {
     std::srand(1);
     for (int i = 0; i < maxTry; i++) {
         y = Eigen::VectorXd::Random(size);
-        newNorm = sqrt(y.squaredNorm());
+        newNorm = std::sqrt(y.squaredNorm());
 
         ratio = 0.0;
         oldOperNorm = 0.0;
@@ -71,14 +68,14 @@ double MathUtils::matrixNorm2(const MatrixXd &M) {
         for (int j = 0; j <= jMax; j++) {
             x = y / newNorm;
             y = M.transpose() * M * x;
-            newNorm = sqrt(y.squaredNorm());
+            newNorm = std::sqrt(y.squaredNorm());
             oldOperNorm = newOperNorm;
-            newOperNorm = sqrt(newNorm);
+            newOperNorm = std::sqrt(newNorm);
             if (oldOperNorm == 0.0) {
                 continue;
             }
             ratio = newOperNorm/oldOperNorm;
-            if (fabs(ratio - 1.0) <= tol) {
+            if (std::abs(ratio - 1.0) <= tol) {
                 return newOperNorm;
             }
         }
@@ -94,7 +91,7 @@ double MathUtils::matrixNorm2(const MatrixXd &M) {
  * largest norm.
  */
 double MathUtils::matrixNorm1(const VectorXd &vector) {
-    int n = (int) sqrt(vector.size());
+    int n = (int) std::sqrt(vector.size());
     MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
     return matrixNorm1(matrix);
 }
@@ -108,7 +105,7 @@ double MathUtils::matrixNorm1(const MatrixXd &M) {
     for (int i = 0; i < nCols; i++) {
         double colNorm = 0.0;
         for (int j = 0; j < nRows; j++) {
-            colNorm += fabs(M(j,i));
+            colNorm += std::abs(M(j,i));
         }
         if (colNorm > maxNorm) {
             maxNorm = colNorm;
@@ -137,7 +134,7 @@ double MathUtils::matrixNormInfinity(const MatrixXd &M) {
     for (int i = 0; i < nRows; i++) {
         double rowNorm = 0.0;
         for (int j = 0; j < nCols; j++) {
-            rowNorm += fabs(M(i,j));
+            rowNorm += std::abs(M(i,j));
         }
         if (rowNorm > maxNorm) {maxNorm = rowNorm;}
     }
@@ -160,6 +157,14 @@ double MathUtils::binomialCoeff(int n, int j) {
         binomial_n_j /= factorial(j);
     }
     return binomial_n_j;
+}
+
+VectorXd MathUtils::getBinomialCoefs(unsigned int order) {
+    VectorXd coefs = VectorXd::Ones(order + 1);
+    for (int k = 0; k <= order; k++) {
+        coefs[k] = MathUtils::binomialCoeff(order, k);
+    }
+    return coefs;
 }
 
 /** Compute k! = GAMMA(k+1) for integer argument k */
@@ -250,27 +255,6 @@ void MathUtils::tensorSelfProduct(const VectorXd &A, MatrixXd &tprod) {
     }
 }
 
-// for debugging
-void MathUtils::print_vector(int n, const double *vec) {
-    int i;
-    for (i = 0; i < n; i++) {
-        if (fabs(vec[i]) < 1.0e-10) {
-            printf("%e\n", 0.0);
-        } else {
-            printf("%e\n", vec[i]);
-        }
-    }
-    printf("\n");
-}
-
-VectorXd MathUtils::getBinomialCoefs(unsigned int order) {
-    VectorXd coefs = VectorXd::Ones(order + 1);
-    for (int k = 0; k <= order; k++) {
-        coefs[k] = MathUtils::binomialCoeff(order, k);
-    }
-    return coefs;
-}
-
 void MathUtils::applyFilter(double *out, double *in,
                             const MatrixXd &filter,
                             int kp1, int kp1_dm1, double fac) {
@@ -339,114 +323,9 @@ double MathUtils::calcDistance(int D, const double *a, const double *b) {
     assert(a != 0 and b != 0 and D >= 0);
     double r = 0.0;
     for (int i = 0; i < D; i++) {
-        r += pow(a[i] - b[i], 2.0);
+        r += std::pow(a[i] - b[i], 2.0);
     }
-    return sqrt(r);
-}
-
-void MathUtils::swapCols(Matrix<double, Dynamic, Dynamic, RowMajor> &mat, int i, int j) {
-    if (i == j) {
-        return;
-    }
-    VectorXd tmpVec = mat.col(j);
-    mat.col(j) = mat.col(i);
-    mat.col(i) = tmpVec;
-}
-
-void MathUtils::swapRows(Matrix<double, Dynamic, Dynamic, RowMajor> &mat, int i, int j) {
-    if (i == j) {
-        return;
-    }
-    VectorXd tmpVec = mat.row(j);
-    mat.row(j) = mat.row(i);
-    mat.row(i) = tmpVec;
-}
-
-Eigen::MatrixXd MathUtils::hermitianMatrixPow(Eigen::MatrixXd A, double b) {
-    MatrixXd U = diagonalizeHermitianMatrix(A);
-    for (int i = 0; i < A.cols(); i++) {
-        A(i,i) = pow(A(i,i), b);
-    }
-    return U * A * U.transpose();
-}
-
-Eigen::MatrixXd MathUtils::diagonalizeHermitianMatrix(Eigen::MatrixXd &A) {
-    SelfAdjointEigenSolver<MatrixXd> es(A.cols());
-    es.compute(A);
-    A = es.eigenvalues().asDiagonal();
-    return es.eigenvectors();
-}
-
-
-/** Compute the exponential of minus a skew (=antisymmetric) real matrix \f$A\f$
- *
- * The result is a unitary real matrix.
- *	\f$ U=\exp(-A)=\exp(i(iA))\f$ ; \f$ iA=\f$ Hermitian Matrix
- *
- *      \f$ \exp(i(iA))=V\exp(id)V^\dagger \f$ ;
- *      \f$ d \f$: eigenvalues of \f$iA\f$,  \f$V\f$ eigenvectors of
- *      \f$iA\f$ (V unitary complex matrix)
- */
-Eigen::MatrixXd MathUtils::SkewMatrixExp(Eigen::MatrixXd &A) {
-    //calculates U=exp(-A)=exp(i(iA)) iA=HermitianMatrix
-    //skew=antisymmetric real
-    complex<double> im(0.0,1.0);
-    MatrixXcd Aim(A.cols(),A.cols()) ;
-    VectorXd diag(A.cols());
-    MatrixXcd diagim(A.cols(),A.cols()) ;
-    Aim = im*A;
-    MatrixXcd U(A.cols(),A.cols()) ;
-
-    //NB: eigenvalues are real, but eigenvectors are complex
-    U = diagonalizeHermitianMatrix(Aim,diag);
-
-    for (int j = 0; j < A.cols(); j++) {
-        for (int i = 0; i < A.cols(); i++) {
-            diagim(i,j) = 0.0;
-        }
-        diagim(j,j) = exp(im*diag(j));
-    }
-
-    Aim = U * diagim * U.adjoint();
-    return Aim.real() ;  //imaginary part is zero
-}
-
-Eigen::MatrixXcd MathUtils::diagonalizeHermitianMatrix(Eigen::MatrixXcd &A,Eigen::VectorXd &diag) {
-    SelfAdjointEigenSolver<MatrixXcd> es(A.cols());
-    es.compute(A);
-    diag = es.eigenvalues();//real
-    return es.eigenvectors();//complex
-}
-
-MatrixXd MathUtils::readMatrixFile(const string &file) {
-    int nTerms;
-    fstream ifs;
-    ifs.open(file.c_str());
-    if (not ifs) {
-        MSG_ERROR("Failed to open file: " << file);
-    }
-    string line;
-    getline(ifs, line);
-    istringstream iss(line);
-    iss >> nTerms;
-
-    MatrixXd matrix = MatrixXd::Zero(nTerms, nTerms);
-    for (int i = 0; i < nTerms; i++) {
-        for (int j = 0; j < nTerms; j++) {
-            getline(ifs, line);
-            istringstream iss(line);
-            iss >> matrix(j,i);
-        }
-    }
-    return matrix;
-}
-
-void MathUtils::diagonalizeBlock(Eigen::MatrixXd &M , Eigen::MatrixXd &U, int nstart, int nsize) {
-    SelfAdjointEigenSolver<MatrixXd> es(nsize);
-    es.compute(M.block(nstart, nstart, nsize, nsize));
-    MatrixXd tmp = es.eigenvectors();
-    U.block(nstart, nstart, nsize, nsize) = tmp.transpose();
-    M.block(nstart, nstart, nsize, nsize) = es.eigenvalues().asDiagonal();
+    return std::sqrt(r);
 }
 
 } //namespace mrcpp

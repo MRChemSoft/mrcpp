@@ -5,71 +5,44 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
-#pragma GCC system_header
-#include <Eigen/Eigenvalues>
 
 namespace mrcpp {
+namespace MathUtils {
 
-class MathUtils {
-public:
-    static double binomialCoeff(int n, int j);
-    static double factorial(int n);
-    static int ipow(int m, int e);
+double binomialCoeff(int n, int j);
+Eigen::VectorXd getBinomialCoefs(unsigned int order);
 
-    static Eigen::MatrixXd hermitianMatrixPow(Eigen::MatrixXd A, double b);
-    static Eigen::MatrixXd diagonalizeHermitianMatrix(Eigen::MatrixXd &A);
+double factorial(int n);
+int ipow(int m, int e);
 
-    static Eigen::MatrixXd tensorproduct(const Eigen::MatrixXd &A,
-                                         const Eigen::MatrixXd &B);
-    static Eigen::MatrixXd tensorproduct(const Eigen::MatrixXd &A,
-                                         const Eigen::VectorXd &B);
-    static Eigen::MatrixXd tensorproduct(const Eigen::VectorXd &A,
-                                         const Eigen::MatrixXd &B);
-    static Eigen::MatrixXd tensorproduct(const Eigen::VectorXd &A,
-                                         const Eigen::VectorXd &B);
+Eigen::MatrixXd tensorproduct(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B);
+Eigen::MatrixXd tensorproduct(const Eigen::MatrixXd &A, const Eigen::VectorXd &B);
+Eigen::MatrixXd tensorproduct(const Eigen::VectorXd &A, const Eigen::MatrixXd &B);
+Eigen::MatrixXd tensorproduct(const Eigen::VectorXd &A, const Eigen::VectorXd &B);
 
-    static void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::VectorXd &B);
-    static void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::MatrixXd &B);
+void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::VectorXd &B);
+void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::MatrixXd &B);
 
-    static double matrixNormInfinity(const Eigen::MatrixXd &M);
-    static double matrixNorm2(const Eigen::MatrixXd &M);
-    static double matrixNorm1(const Eigen::MatrixXd &M);
+double matrixNormInfinity(const Eigen::MatrixXd &M);
+double matrixNorm2(const Eigen::MatrixXd &M);
+double matrixNorm1(const Eigen::MatrixXd &M);
 
-    static double matrixNormInfinity(const Eigen::VectorXd &M);
-    static double matrixNorm2(const Eigen::VectorXd &M);
-    static double matrixNorm1(const Eigen::VectorXd &M);
+double matrixNormInfinity(const Eigen::VectorXd &M);
+double matrixNorm2(const Eigen::VectorXd &M);
+double matrixNorm1(const Eigen::VectorXd &M);
 
-    static Eigen::VectorXd getBinomialCoefs(unsigned int order);
+void applyFilter(double *out, double *in, const Eigen::MatrixXd &filter,
+                 int kp1, int kp1_dm1, double fac);
 
-    static void applyFilter(double *out, double *in, const Eigen::MatrixXd &filter,
-                            int kp1, int kp1_dm1, double fac);
+void tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
+                       const Eigen::MatrixXd &primitive,
+                       Eigen::VectorXd &expanded);
 
-    static void tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
-                                  const Eigen::MatrixXd &primitive, Eigen::VectorXd &expanded);
+void tensorExpandCoords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
+void tensorExpandCoords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 
-    static void tensorExpandCoords_2D(int kp1,
-                                      const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
-    static void tensorExpandCoords_3D(int kp1,
-                                      const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
+double calcDistance(int D, const double *a, const double *b);
 
-    static double calcDistance(int D, const double *a, const double *b);
-
-    static void swapRows(Eigen::Matrix<double, Eigen::Dynamic,
-                         Eigen::Dynamic, Eigen::RowMajor> &mat, int i, int j);
-    static void swapCols(Eigen::Matrix<double, Eigen::Dynamic,
-                         Eigen::Dynamic, Eigen::RowMajor> &mat, int i, int j);
-
-    static Eigen::MatrixXd SkewMatrixExp(Eigen::MatrixXd &A);
-    static Eigen::MatrixXcd diagonalizeHermitianMatrix(Eigen::MatrixXcd &A,Eigen::VectorXd &diag);
-
-    static Eigen::MatrixXd readMatrixFile(const std::string &file);
-
-    static void diagonalizeBlock(Eigen::MatrixXd &M , Eigen::MatrixXd &U, int nstart, int nsize);
-
-private:
-    static void print_vector(int n, const double *vec);
-};
-
-}
+} //namespace MathUtils
+} //namespace mrcpp

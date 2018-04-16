@@ -24,7 +24,6 @@ modules:
   - libs:
     - source:
       - 'custom/eigen.cmake'
-      - 'custom/catch.cmake'
   - custom:
     - source:
       - 'custom/python.cmake'

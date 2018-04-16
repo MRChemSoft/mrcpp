@@ -1,3 +1,8 @@
+# Prepare "Catch" library for other executables
+set(CATCH_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/catch)
+add_library(Catch INTERFACE)
+target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
+
 add_executable(mrcpp-tests unit_tests.cpp)
 add_subdirectory(mrcpp)
 
@@ -8,4 +13,5 @@ target_include_directories(mrcpp-tests PRIVATE
 
 target_link_libraries(mrcpp-tests
     mrcpp
+    Catch
     )

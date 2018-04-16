@@ -7,8 +7,8 @@
 #include "MWTree.h"
 #include "MultiResolutionAnalysis.h"
 #include "HilbertIterator.h"
-#include "utils/MathUtils.h"
 #include "utils/Printer.h"
+#include "utils/mwmath.h"
 
 using namespace std;
 using namespace Eigen;
@@ -23,7 +23,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         : nThreads(omp_get_max_threads()),
           MRA(mra),
           order(mra.getOrder()),
-          kp1_d(MathUtils::ipow(mra.getOrder() + 1, D)),
+          kp1_d(mwmath::ipow(mra.getOrder() + 1, D)),
           name("nn"),
           nNodes(0),
           squareNorm(-1.0),

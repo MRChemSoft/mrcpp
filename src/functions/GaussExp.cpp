@@ -12,7 +12,7 @@
 #include "GaussFunc.h"
 #include "GaussPoly.h"
 #include "utils/Printer.h"
-#include "utils/MathUtils.h"
+#include "utils/mwmath.h"
 
 using namespace std;
 using namespace Eigen;
@@ -404,7 +404,7 @@ void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
             }
             sf.calcScalingCoefs(this->getFunc(n), scale, l, scaling);
             tmpvec.segment(inpos, kp1) = scaling.col(0);
-            MathUtils::tensorExpandCoefs(D, 0, kp1, kp1_d, scaling, tmpvec);
+            mwmath::tensorExpandCoefs(D, 0, kp1, kp1_d, scaling, tmpvec);
             node.getCoefs().segment(child * kp1_d, kp1_d) += tmpvec;
         }
     }

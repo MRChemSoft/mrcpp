@@ -1,4 +1,4 @@
-/* \file MathUtils.h
+/* \file mwmath.h
  *
  * \breif Collection of misc math funcs.
  */
@@ -8,7 +8,7 @@
 #include <Eigen/Core>
 
 namespace mrcpp {
-namespace MathUtils {
+namespace mwmath {
 
 double binomialCoeff(int n, int j);
 Eigen::VectorXd getBinomialCoefs(unsigned int order);
@@ -44,5 +44,5 @@ void tensorExpandCoords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::Mat
 
 double calcDistance(int D, const double *a, const double *b);
 
-} //namespace MathUtils
+} //namespace mwmath
 } //namespace mrcpp

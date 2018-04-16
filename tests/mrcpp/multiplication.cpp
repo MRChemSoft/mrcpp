@@ -73,9 +73,9 @@ template<int D> void testMultiplication() {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE( (c_int == Approx(ref_int)) );
-            REQUIRE( (c_dot == Approx(ref_norm)) );
-            REQUIRE( (c_norm == Approx(ref_norm)) );
+            REQUIRE( c_int == Approx(ref_int) );
+            REQUIRE( c_dot == Approx(ref_norm) );
+            REQUIRE( c_norm == Approx(ref_norm) );
         }
     }
     finalize(&mra);

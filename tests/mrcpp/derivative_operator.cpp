@@ -65,7 +65,7 @@ template<int D> void testDifferentiationABGV(double a, double b) {
     double abs_err = sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err/df_norm;
 
-    REQUIRE(rel_err <= prec);
+    REQUIRE( rel_err <= prec );
 
     delete mra;
 }
@@ -105,12 +105,12 @@ template<int D> void testDifferentiationPH(int order) {
     double abs_err = sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err/df_norm;
 
-    REQUIRE(rel_err <= prec);
+    REQUIRE( rel_err <= prec );
 
     delete mra;
 }
 
-TEST_CASE("ABGV differentiantion central difference", "[derivative], [central_difference]") {
+TEST_CASE("ABGV differentiantion central difference", "[derivative_operator], [central_difference]") {
     // 0.5,0.5 specifies central difference
     SECTION("1D derivative test"){
         testDifferentiationABGV<1>(0.5, 0.5);
@@ -123,7 +123,7 @@ TEST_CASE("ABGV differentiantion central difference", "[derivative], [central_di
     }
 }
 
-TEST_CASE("ABGV differentiantion center difference", "[derivative], [center_difference]") {
+TEST_CASE("ABGV differentiantion center difference", "[derivative_operator], [center_difference]") {
     // 0,0 specifies center difference
     SECTION("1D derivative test") {
         testDifferentiationABGV<1>(0, 0);
@@ -136,7 +136,7 @@ TEST_CASE("ABGV differentiantion center difference", "[derivative], [center_diff
     }
 }
 
-TEST_CASE("PH differentiantion first order", "[derivative], [PH_first_order]") {
+TEST_CASE("PH differentiantion first order", "[derivative_operator], [PH_first_order]") {
     SECTION("1D derivative test") {
         testDifferentiationPH<1>(1);
     }
@@ -148,7 +148,7 @@ TEST_CASE("PH differentiantion first order", "[derivative], [PH_first_order]") {
     }
 }
 
-TEST_CASE("PH differentiantion second order", "[derivative], [PH_second_order]") {
+TEST_CASE("PH differentiantion second order", "[derivative_operator], [PH_second_order]") {
     SECTION("1D second order derivative test") {
         testDifferentiationPH<1>(2);
     }

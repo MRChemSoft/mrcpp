@@ -29,6 +29,7 @@ SCENARIO("Adding MW trees", "[addition], [tree_builder]") {
 
 template<int D> void testAddition() {
     const double prec = 1.0e-4;
+    const double thrs = prec*prec;
 
     const double a_coef = 1.0;
     const double b_coef = 2.0;
@@ -83,16 +84,16 @@ template<int D> void testAddition() {
         THEN("their integrals add up") {
             double c_int = c_tree.integrate();
             double int_sum = a_coef*a_int + b_coef*b_int;
-            REQUIRE( (c_int == Approx(int_sum)) );
+            REQUIRE( c_int == Approx(int_sum) );
         }
 
         AND_THEN("the MW sum equals the analytic sum") {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE( (c_int == Approx(ref_int)) );
-            REQUIRE( (c_dot == Approx(ref_norm)) );
-            REQUIRE( (c_norm == Approx(ref_norm)) );
+            REQUIRE( c_int == Approx(ref_int) );
+            REQUIRE( c_dot == Approx(ref_norm) );
+            REQUIRE( c_norm == Approx(ref_norm) );
         }
 
         AND_WHEN("the first function is subtracted") {
@@ -105,7 +106,7 @@ template<int D> void testAddition() {
             THEN("the integral is the same as the second function") {
                 double d_int = d_tree.integrate();
                 double ref_int = b_coef*b_int;
-                REQUIRE( (d_int == Approx(ref_int)) );
+                REQUIRE( d_int == Approx(ref_int) );
             }
 
             AND_WHEN("the second function is subtracted") {
@@ -118,7 +119,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double e_int = e_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( (e_int == Approx(ref_int)) );
+                    REQUIRE( std::abs(e_int - ref_int) < thrs );
                 }
             }
         }

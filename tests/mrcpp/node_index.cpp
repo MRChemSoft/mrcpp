@@ -50,7 +50,7 @@ template<int D> void testConstructors() {
     SECTION("Child constructor") {
         int i = D;
         NodeIndex<D> *cIdx = new NodeIndex<D>(*nIdx, i);
-        REQUIRE( (cIdx->getScale() == (nIdx->getScale() + 1)) );
+        REQUIRE( cIdx->getScale() == (nIdx->getScale() + 1) );
         finalize(&cIdx);
     }
 
@@ -71,21 +71,21 @@ template<int D> void testCompare() {
     initialize<D>(&aIdx);
     initialize<D>(&bIdx);
     THEN("aIdx == bIdx") {
-        REQUIRE( (*aIdx == *bIdx) );
-        REQUIRE_FALSE( (*aIdx != *bIdx) );
+        REQUIRE( *aIdx == *bIdx );
+        REQUIRE_FALSE( *aIdx != *bIdx );
     }
     WHEN("aIdx is given a deeper scale") {
         aIdx->setScale(2);
         THEN("aIdx != bIdx") {
-            REQUIRE( (*aIdx != *bIdx) );
-            REQUIRE_FALSE( (*aIdx == *bIdx) );
+            REQUIRE( *aIdx != *bIdx );
+            REQUIRE_FALSE( *aIdx == *bIdx );
         }
     }
     WHEN("bIdx is given a coarser scale") {
         bIdx->setScale(-10);
         THEN("aIdx != bIdx") {
-            REQUIRE( (*aIdx != *bIdx) );
-            REQUIRE_FALSE( (*aIdx == *bIdx) );
+            REQUIRE( *aIdx != *bIdx );
+            REQUIRE_FALSE( *aIdx == *bIdx );
         }
     }
     WHEN("aIdx is given a different translation") {
@@ -97,8 +97,8 @@ template<int D> void testCompare() {
         l2[D-1]++;
         aIdx->setTranslation(l2);
         THEN("aIdx != bIdx") {
-            REQUIRE( (*aIdx != *bIdx) );
-            REQUIRE_FALSE( (*aIdx == *bIdx) );
+            REQUIRE( *aIdx != *bIdx );
+            REQUIRE_FALSE( *aIdx == *bIdx );
         }
     }
     finalize(&aIdx);

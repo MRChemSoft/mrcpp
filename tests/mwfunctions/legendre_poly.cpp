@@ -2,14 +2,13 @@
 
 #include "mwfunctions/LegendrePoly.h"
 
-using namespace std;
 using namespace mrcpp;
 
 namespace legendre_poly {
 
 TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
     int nLeg = 10;
-    vector<LegendrePoly *> L;
+    std::vector<LegendrePoly *> L;
     for (int k = 0; k < nLeg; k++) {
         LegendrePoly *L_k = new LegendrePoly(k, 2.0, 1.0);
         L.push_back(L_k);

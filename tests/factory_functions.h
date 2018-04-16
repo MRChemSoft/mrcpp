@@ -96,7 +96,7 @@ template<int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra) {
 /* Initializing a D-dimensional Gaussian of unit charge */
 template<int D> void initialize(mrcpp::GaussFunc<D> **func) {
     double beta = 1.0e4;
-    double alpha = pow(beta/mrcpp::pi, D/2.0);
+    double alpha = std::pow(beta/mrcpp::pi, D/2.0);
     double pos[3] = {-0.2, 0.5, 1.0};
     int pow[3] = {0, 0, 0};
     *func = new mrcpp::GaussFunc<D>(beta, alpha, pos, pow);

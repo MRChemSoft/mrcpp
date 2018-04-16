@@ -26,8 +26,8 @@ TEST_CASE("Polynomial constructors", "[poly_constructor], [polynomials]") {
         REQUIRE( Q.getOrder() == 1 );
         REQUIRE( Q.getCoefs()[0] == Approx(0.0) );
         REQUIRE( Q.getCoefs()[1] == Approx(1.0) );
-        REQUIRE( Q.getLowerBound(0) == 0.0 );
-        REQUIRE( Q.getUpperBound(0) == 2.0 );
+        REQUIRE( Q.getLowerBound(0) == Approx(0.0) );
+        REQUIRE( Q.getUpperBound(0) == Approx(2.0) );
     }
 
     SECTION("Default constructor") {

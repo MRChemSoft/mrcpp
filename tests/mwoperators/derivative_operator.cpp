@@ -10,7 +10,6 @@
 #include "mwbuilders/apply.h"
 #include "mwbuilders/project.h"
 
-using namespace std;
 using namespace mrcpp;
 
 namespace derivative_operator {
@@ -41,12 +40,12 @@ template<int D> void testDifferentiationABGV(double a, double b) {
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
-        return exp(-R*R);
+        return std::exp(-R*R);
     };
 
     auto df = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
-        return -2.0*exp(-R*R)*(r[0]-r_0[0]);
+        return -2.0*std::exp(-R*R)*(r[0]-r_0[0]);
     };
 
     FunctionTree<D> f_tree(*mra);
@@ -61,11 +60,11 @@ template<int D> void testDifferentiationABGV(double a, double b) {
     FunctionTree<D> err_tree(*mra);
     add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
-    double df_norm = sqrt(df_tree.getSquareNorm());
-    double abs_err = sqrt(err_tree.getSquareNorm());
+    double df_norm = std::sqrt(df_tree.getSquareNorm());
+    double abs_err = std::sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err/df_norm;
 
-    REQUIRE( rel_err <= prec );
+    REQUIRE( rel_err == Approx(0.0).margin(prec) );
 
     delete mra;
 }
@@ -79,12 +78,12 @@ template<int D> void testDifferentiationPH(int order) {
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
-        return exp(-R*R);
+        return std::exp(-R*R);
     };
     auto df = [r_0, order] (const double *r) -> double {
         double R = MathUtils::calcDistance(D, r, r_0);
-        return -(2-order)*2*exp(-R*R)*(r[0]-pi)
-                + (order-1)*(-2*exp(-R*R)+4*exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]));
+        return -(2-order)*2*std::exp(-R*R)*(r[0]-pi)
+                + (order-1)*(-2*std::exp(-R*R)+4*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]));
                 // 2-order = 1 and order-1 = 0 in the first order case
                 // 2-order = 0 and order-1 = 1 in the second order case
     };
@@ -101,11 +100,11 @@ template<int D> void testDifferentiationPH(int order) {
     FunctionTree<D> err_tree(*mra);
     add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
-    double df_norm = sqrt(df_tree.getSquareNorm());
-    double abs_err = sqrt(err_tree.getSquareNorm());
+    double df_norm = std::sqrt(df_tree.getSquareNorm());
+    double abs_err = std::sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err/df_norm;
 
-    REQUIRE( rel_err <= prec );
+    REQUIRE( rel_err == Approx(0.0).margin(prec) );
 
     delete mra;
 }

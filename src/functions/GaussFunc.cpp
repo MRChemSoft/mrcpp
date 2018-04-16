@@ -14,8 +14,8 @@
 #include "GaussPoly.h"
 #include "Polynomial.h"
 #include "BoysFunction.h"
-#include "utils/MathUtils.h"
 #include "utils/Printer.h"
+#include "utils/mwmath.h"
 
 using namespace Eigen;
 

@@ -5,13 +5,11 @@
  *
  */
 
-#include <math.h>
-
 #include "constants.h"
 
 #include "BoundingBox.h"
-#include "utils/MathUtils.h"
 #include "utils/Printer.h"
+#include "utils/mwmath.h"
 
 using namespace std;
 

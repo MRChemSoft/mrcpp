@@ -1,6 +1,6 @@
 #include "OperatorNode.h"
 #include "SerialTree.h"
-#include "utils/MathUtils.h"
+#include "utils/mwmath.h"
 
 using namespace std;
 using namespace Eigen;
@@ -31,10 +31,10 @@ double OperatorNode::calcComponentNorm(int i) const {
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
     if (vecNorm > thrs) {
-        double infNorm = MathUtils::matrixNormInfinity(comp_vec);
-        double oneNorm = MathUtils::matrixNorm1(comp_vec);
+        double infNorm = mwmath::matrixNormInfinity(comp_vec);
+        double oneNorm = mwmath::matrixNorm1(comp_vec);
         if (sqrt(infNorm*oneNorm) > thrs) {
-            double twoNorm = MathUtils::matrixNorm2(comp_vec);
+            double twoNorm = mwmath::matrixNorm2(comp_vec);
             if (twoNorm > thrs) {
                 norm = twoNorm;
             }

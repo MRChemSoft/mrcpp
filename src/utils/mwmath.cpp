@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <fstream>
 
-#include "MathUtils.h"
+#include "mwmath.h"
 #include "Printer.h"
 #include "constants.h"
 
@@ -18,7 +18,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** Calculate \f$ m^e\f$ for integers. */
-int MathUtils::ipow(int m, int e) {
+int mwmath::ipow(int m, int e) {
     if (e < 0) MSG_FATAL("Exponent cannot be negative: " << e)
     int result = 1;
     for (int i = 0; i < e; i++) {
@@ -35,14 +35,14 @@ int MathUtils::ipow(int m, int e) {
  *	The norm of the matrix is obtained as:
  *	 \f$ ||M|| \lim_{n \rightarrow \infty} ||x_n||/||x_{n-1}||\f$
  */
-double MathUtils::matrixNorm2(const VectorXd &vector) {
+double mwmath::matrixNorm2(const VectorXd &vector) {
     int n = (int) std::sqrt(vector.size());
     MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
     return matrixNorm2(matrix);
 }
 
 /** Compute the norm of a matrix */
-double MathUtils::matrixNorm2(const MatrixXd &M) {
+double mwmath::matrixNorm2(const MatrixXd &M) {
     const int jMax = 100;
     const int maxTry = 10;
     int size = M.cols();
@@ -90,7 +90,7 @@ double MathUtils::matrixNorm2(const MatrixXd &M) {
  * The norm of the matrix is obtained by taking the column with the
  * largest norm.
  */
-double MathUtils::matrixNorm1(const VectorXd &vector) {
+double mwmath::matrixNorm1(const VectorXd &vector) {
     int n = (int) std::sqrt(vector.size());
     MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
     return matrixNorm1(matrix);
@@ -98,7 +98,7 @@ double MathUtils::matrixNorm1(const VectorXd &vector) {
 
 /** Compute the norm of a matrix.
 */
-double MathUtils::matrixNorm1(const MatrixXd &M) {
+double mwmath::matrixNorm1(const MatrixXd &M) {
     int nRows = M.rows();
     int nCols = M.rows();
     double maxNorm = 0.0;
@@ -118,7 +118,7 @@ double MathUtils::matrixNorm1(const MatrixXd &M) {
 /** Compute the infinity norm of a matrix given as a vector.
  * The norm of the matrix is obtained by taking the row with the largest norm.
  */
-double MathUtils::matrixNormInfinity(const VectorXd &vector) {
+double mwmath::matrixNormInfinity(const VectorXd &vector) {
     int n = (int) sqrt(vector.size());
     MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
     return matrixNormInfinity(matrix);
@@ -127,7 +127,7 @@ double MathUtils::matrixNormInfinity(const VectorXd &vector) {
 /** Compute the infinity norm of a matrix.
  * The norm of the matrix is obtained by taking the row with the largest norm.
  */
-double MathUtils::matrixNormInfinity(const MatrixXd &M) {
+double mwmath::matrixNormInfinity(const MatrixXd &M) {
     int nRows = M.rows();
     int nCols = M.rows();
     double maxNorm = 0.0;
@@ -142,7 +142,7 @@ double MathUtils::matrixNormInfinity(const MatrixXd &M) {
 }
 
 /** Compute the binomial coefficient n!/((n-j)! j!) */
-double MathUtils::binomialCoeff(int n, int j) {
+double mwmath::binomialCoeff(int n, int j) {
     double binomial_n_j = 1.0;
     int k = 0;
 
@@ -159,16 +159,16 @@ double MathUtils::binomialCoeff(int n, int j) {
     return binomial_n_j;
 }
 
-VectorXd MathUtils::getBinomialCoefs(unsigned int order) {
+VectorXd mwmath::getBinomialCoefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
     for (int k = 0; k <= order; k++) {
-        coefs[k] = MathUtils::binomialCoeff(order, k);
+        coefs[k] = mwmath::binomialCoeff(order, k);
     }
     return coefs;
 }
 
 /** Compute k! = GAMMA(k+1) for integer argument k */
-double MathUtils::factorial(int n) {
+double mwmath::factorial(int n) {
     int k = 1;
     double fac_n = 1.0;
 
@@ -186,7 +186,7 @@ double MathUtils::factorial(int n) {
 }
 
 /** Compute the tensor product of two matrices */
-MatrixXd MathUtils::tensorproduct(const MatrixXd &A,
+MatrixXd mwmath::tensorproduct(const MatrixXd &A,
                                   const MatrixXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
@@ -202,7 +202,7 @@ MatrixXd MathUtils::tensorproduct(const MatrixXd &A,
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd MathUtils::tensorproduct(const MatrixXd &A,
+MatrixXd mwmath::tensorproduct(const MatrixXd &A,
                                   const VectorXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
@@ -215,7 +215,7 @@ MatrixXd MathUtils::tensorproduct(const MatrixXd &A,
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd MathUtils::tensorproduct(const VectorXd &A,
+MatrixXd mwmath::tensorproduct(const VectorXd &A,
                                   const MatrixXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
@@ -228,7 +228,7 @@ MatrixXd MathUtils::tensorproduct(const VectorXd &A,
 }
 
 /** Compute the tensor product of a column vector and a row vector */
-MatrixXd MathUtils::tensorproduct(const VectorXd &A,
+MatrixXd mwmath::tensorproduct(const VectorXd &A,
                                   const VectorXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
@@ -240,7 +240,7 @@ MatrixXd MathUtils::tensorproduct(const VectorXd &A,
 }
 
 /** Compute the tensor product of a vector and itself */
-void MathUtils::tensorSelfProduct(const VectorXd &A, VectorXd &tprod) {
+void mwmath::tensorSelfProduct(const VectorXd &A, VectorXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) {
         tprod.segment(i*Ar, Ar) = A(i) * A;
@@ -248,14 +248,14 @@ void MathUtils::tensorSelfProduct(const VectorXd &A, VectorXd &tprod) {
 }
 
 /** Compute the tensor product of a vector and itself */
-void MathUtils::tensorSelfProduct(const VectorXd &A, MatrixXd &tprod) {
+void mwmath::tensorSelfProduct(const VectorXd &A, MatrixXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) {
         tprod.block(i, 0, 1, Ar) = A(i) * A;
     }
 }
 
-void MathUtils::applyFilter(double *out, double *in,
+void mwmath::applyFilter(double *out, double *in,
                             const MatrixXd &filter,
                             int kp1, int kp1_dm1, double fac) {
 #ifdef HAVE_BLAS
@@ -278,10 +278,10 @@ void MathUtils::applyFilter(double *out, double *in,
  * This method uses the "output" vector as initial input, in order to
  * avoid the use of temporaries.
  */
-void MathUtils::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
+void mwmath::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
                                   const MatrixXd &primitive, VectorXd &expanded) {
     if (dir < dim - 1) {
-        int idx = MathUtils::ipow(kp1, dir + 1);
+        int idx = mwmath::ipow(kp1, dir + 1);
         int nelem = idx * kp1;
         int pos = kp1_d - nelem;
         int inpos = kp1_d - idx;
@@ -293,7 +293,7 @@ void MathUtils::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
     }
 }
 
-void MathUtils::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
+void mwmath::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
@@ -304,7 +304,7 @@ void MathUtils::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, Matrix
     }
 }
 
-void MathUtils::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
+void mwmath::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
@@ -319,7 +319,7 @@ void MathUtils::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, Matrix
 }
 
 /** Calculate the distance between two points in n-dimensions */
-double MathUtils::calcDistance(int D, const double *a, const double *b) {
+double mwmath::calcDistance(int D, const double *a, const double *b) {
     assert(a != 0 and b != 0 and D >= 0);
     double r = 0.0;
     for (int i = 0; i < D; i++) {

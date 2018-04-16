@@ -10,7 +10,7 @@
 #include <Eigen/Core>
 
 #include "trees/MWNode.h"
-#include "utils/MathUtils.h"
+#include "utils/mwmath.h"
 
 namespace mrcpp {
 
@@ -22,8 +22,8 @@ public:
     OperatorState(MWNode<D> &gn, double *scr1) : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
-        this->kp1_2 = MathUtils::ipow(this->kp1, 2);
-        this->kp1_dm1 = MathUtils::ipow(this->kp1, D - 1);
+        this->kp1_2 = mwmath::ipow(this->kp1, 2);
+        this->kp1_dm1 = mwmath::ipow(this->kp1, D - 1);
         this->gData = this->gNode->getCoefs();
         this->maxDeltaL = -1;
 

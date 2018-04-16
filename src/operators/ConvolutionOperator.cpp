@@ -8,9 +8,9 @@
 #include "trees/OperatorTree.h"
 #include "trees/BandWidth.h"
 #include "functions/Gaussian.h"
-#include "utils/MathUtils.h"
 #include "utils/Timer.h"
 #include "utils/Printer.h"
+#include "utils/mwmath.h"
 
 using namespace std;
 using namespace Eigen;
@@ -78,7 +78,7 @@ template<int D>
 double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
     const double *lb = MRA.getWorldBox().getLowerBounds();
     const double *ub = MRA.getWorldBox().getUpperBounds();
-    return MathUtils::calcDistance(D, lb, ub);
+    return mwmath::calcDistance(D, lb, ub);
 }
 
 template class ConvolutionOperator<1>;

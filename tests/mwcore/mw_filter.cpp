@@ -9,8 +9,6 @@ using namespace mrcpp;
 namespace mw_filter {
 
 TEST_CASE("Interpolating filters", "[mw_filter]") {
-    const double thrs = 100*MachineZero;
-
     int maxOrder = 40;
     getInterpolatingFilterCache(ifilters);
 
@@ -24,8 +22,8 @@ TEST_CASE("Interpolating filters", "[mw_filter]") {
                     double sc = F.col(i).dot(F.col(j));
                     double sr = F.row(i).dot(F.row(j));
                     if (i == j) {
-                        REQUIRE( std::abs(sc - 1.0) < thrs);
-                        REQUIRE( std::abs(sr - 1.0) < thrs);
+                        REQUIRE( sc == Approx(1.0) );
+                        REQUIRE( sr == Approx(1.0) );
                     } else {
                         off_diag_col += fabs(sc);
                         off_diag_row += fabs(sr);
@@ -33,8 +31,8 @@ TEST_CASE("Interpolating filters", "[mw_filter]") {
                 }
             }
         }
-        REQUIRE( std::abs(off_diag_col) < thrs );
-        REQUIRE( std::abs(off_diag_row) < thrs );
+        REQUIRE( off_diag_col == Approx(0.0).margin(1.0e-12) );
+        REQUIRE( off_diag_row == Approx(0.0).margin(1.0e-12) );
     }
 }
 

@@ -102,7 +102,6 @@ TEST_CASE("LegendreBasis", "[legendre_basis], [scaling_basis]") {
 
 template<int K>
 void testOrthonormality(const ScalingBasis &basis) {
-    const double thrs = 1.0e-10;
     for (int i = 0; i < K; i++) {
         const Polynomial &P_i = basis.getFunc(i);
         double S_ii = P_i.innerProduct(P_i);
@@ -110,7 +109,7 @@ void testOrthonormality(const ScalingBasis &basis) {
         for (int j = 0; j < i; j++) {
             const Polynomial &P_j = basis.getFunc(j);
             double S_ij = P_i.innerProduct(P_j);
-            REQUIRE( std::abs(S_ij) < thrs );
+            REQUIRE( S_ij == Approx(0.0).margin(1.0e-10) );
         }
     }
 }

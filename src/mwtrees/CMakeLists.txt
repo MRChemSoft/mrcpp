@@ -44,7 +44,7 @@ list(APPEND mwtrees_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwtrees_h})                                                 
+foreach(_header IN LISTS mwtrees_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwtrees
@@ -54,4 +54,3 @@ foreach(_header ${mwtrees_h})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwtrees
     )
 endforeach() 
-

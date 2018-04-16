@@ -13,7 +13,7 @@ list(APPEND mwutils_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwutils_h})                                                 
+foreach(_header IN LISTS mwutils_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwutils
@@ -23,4 +23,3 @@ foreach(_header ${mwutils_h})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwutils
     )
 endforeach() 
-

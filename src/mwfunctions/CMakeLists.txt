@@ -22,7 +22,7 @@ list(APPEND mwfunctions_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwfunctions_h})                                                 
+foreach(_header IN LISTS mwfunctions_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwfunctions
@@ -32,4 +32,3 @@ foreach(_header ${mwfunctions_h})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwfunctions
     )
 endforeach() 
-

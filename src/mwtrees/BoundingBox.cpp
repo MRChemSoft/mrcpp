@@ -14,7 +14,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
@@ -207,9 +208,6 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
     return o;
 }
 
-// Template specializations
-namespace mrcpp {
-
 template<>
 int BoundingBox<1>::getBoxIndex(const double *r) const {
     double x = r[0];
@@ -247,9 +245,8 @@ int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
     }
 }
 
-}
-
 template class BoundingBox<1>;
 template class BoundingBox<2>;
 template class BoundingBox<3>;
 
+} //namespace mrcpp

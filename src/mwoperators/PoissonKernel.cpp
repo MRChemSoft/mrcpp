@@ -14,7 +14,7 @@
 #include "mwfunctions/GaussFunc.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 /** generate an approximation of the 3d poisson kernel expanded in
  * gaussian functions this routine assumes that the expansion be centered
@@ -73,3 +73,4 @@ std::ostream& PoissonKernel::print(std::ostream &o) const {
     return o;
 }
 
+} //namespace mrcpp

@@ -1,7 +1,7 @@
 #include "mwcore/ScalingBasis.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 ScalingBasis::ScalingBasis(int k, int t)
         : type(t),
@@ -55,3 +55,5 @@ std::ostream& ScalingBasis::print(std::ostream &o) const {
     }
     return o;
 }
+
+} //namespace mrcpp

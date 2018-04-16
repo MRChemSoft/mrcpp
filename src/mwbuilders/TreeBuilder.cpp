@@ -7,7 +7,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 void TreeBuilder<D>::build(MWTree<D> &tree,
@@ -125,3 +126,5 @@ double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector &vec) const {
 template class TreeBuilder<1>;
 template class TreeBuilder<2>;
 template class TreeBuilder<3>;
+
+} //namespace mrcpp

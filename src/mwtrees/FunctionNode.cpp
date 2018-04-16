@@ -12,7 +12,8 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */
@@ -171,7 +172,7 @@ void FunctionNode<D>::getValues(VectorXd &vec) {
   * orthonormal, and the inner product is simply the dot product of the
   * coefficient vectors. Assumes the nodes have identical support. */
 template<int D>
-double mrcpp::dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -197,7 +198,7 @@ double mrcpp::dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket)
   * orthonormal, and the inner product is simply the dot product of the
   * coefficient vectors. Assumes the nodes have identical support. */
 template<int D>
-double mrcpp::dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) {
         return 0.0;
     }
@@ -221,13 +222,15 @@ double mrcpp::dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket)
 #endif
 }
 
-template double mrcpp::dotScaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double mrcpp::dotScaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double mrcpp::dotScaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
-template double mrcpp::dotWavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double mrcpp::dotWavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double mrcpp::dotWavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double dotScaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double dotScaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double dotScaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double dotWavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double dotWavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double dotWavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
 
 template class FunctionNode<1>;
 template class FunctionNode<2>;
 template class FunctionNode<3>;
+
+} //namespace mrcpp

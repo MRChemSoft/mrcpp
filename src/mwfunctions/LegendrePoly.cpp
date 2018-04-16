@@ -13,7 +13,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 typedef ObjectCache<LegendrePoly> LegendreCache;
 
@@ -170,3 +171,5 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
     val(2) = d2y;
     return val;
 }
+
+} //namespace mrcpp

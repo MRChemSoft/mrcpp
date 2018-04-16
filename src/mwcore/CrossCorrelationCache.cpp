@@ -15,7 +15,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template <int T>
 CrossCorrelationCache<T>::CrossCorrelationCache() {
@@ -70,3 +71,4 @@ const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
 template class CrossCorrelationCache<Interpol>;
 template class CrossCorrelationCache<Legendre>;
 
+} //namespace mrcpp

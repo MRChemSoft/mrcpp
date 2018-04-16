@@ -16,7 +16,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D> double GaussExp<D>::defaultScreening = 10.0;
 
@@ -437,9 +438,6 @@ std::ostream& GaussExp<D>::print(std::ostream &o) const {
     return o;
 }
 
-// Template specializations
-namespace mrcpp {
-
 template<>
 double GaussExp<3>::calcCoulombEnergy() {
     double energy = 0.0;
@@ -461,9 +459,8 @@ double GaussExp<3>::calcCoulombEnergy() {
     return energy;
 }
 
-}
-
 template class GaussExp<1>;
 template class GaussExp<2>;
 template class GaussExp<3>;
 
+} //namespace mrcpp

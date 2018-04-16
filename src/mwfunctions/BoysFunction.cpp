@@ -4,7 +4,7 @@
 #include "mwutils/Printer.h"
 #include "mwbuilders/project.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 BoysFunction::BoysFunction(int n, double p)
         : RepresentableFunction<1>(),
@@ -35,3 +35,5 @@ double BoysFunction::evalf(const double *r) const {
     Printer::setPrintLevel(oldlevel);
     return result;
 }
+
+} //namespace mrcpp

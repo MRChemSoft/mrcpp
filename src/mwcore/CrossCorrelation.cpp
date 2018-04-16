@@ -18,7 +18,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
 
@@ -132,3 +133,5 @@ void CrossCorrelation::readCCCBin() {
     L_fis.close();
     R_fis.close();
 }
+
+} //namespace mrcpp

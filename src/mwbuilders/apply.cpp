@@ -11,14 +11,14 @@
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
-void mrcpp::apply(double prec,
-                  FunctionTree<D> &out,
-                  ConvolutionOperator<D> &oper,
-                  FunctionTree<D> &inp,
-                  int maxIter) {
+void apply(double prec,
+           FunctionTree<D> &out,
+           ConvolutionOperator<D> &oper,
+           FunctionTree<D> &inp,
+           int maxIter) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -43,10 +43,10 @@ void mrcpp::apply(double prec,
 }
 
 template<int D>
-void mrcpp::apply(FunctionTree<D> &out,
-                  DerivativeOperator<D> &oper,
-                  FunctionTree<D> &inp,
-                  int dir) {
+void apply(FunctionTree<D> &out,
+           DerivativeOperator<D> &oper,
+           FunctionTree<D> &inp,
+           int dir) {
     TreeBuilder<D> builder;
     int maxScale = out.getMRA().getMaxScale();
 
@@ -79,9 +79,11 @@ void mrcpp::apply(FunctionTree<D> &out,
     Printer::printSeparator(10, ' ');
 }
 
-template void mrcpp::apply(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter);
-template void mrcpp::apply(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter);
-template void mrcpp::apply(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter);
-template void mrcpp::apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
-template void mrcpp::apply(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
-template void mrcpp::apply(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
+template void apply(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter);
+template void apply(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter);
+template void apply(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter);
+template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
+template void apply(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
+template void apply(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
+
+} //namespace mrcpp

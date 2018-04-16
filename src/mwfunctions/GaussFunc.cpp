@@ -18,7 +18,8 @@
 #include "mwutils/Printer.h"
 
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
@@ -298,8 +299,6 @@ std::ostream& GaussFunc<D>::print(std::ostream &o) const {
     return o;
 }
 
-namespace mrcpp {
-
 /** NOTE: Gaussians must be normalized to unit charge coef = (alpha/pi)^(3/2)
  * for this to be correct!
  */
@@ -326,8 +325,8 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     return sqrt(4.0*alpha/pi)*boysFac;
 }
 
-}
-
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;
+
+} //namespace mrcpp

@@ -14,7 +14,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
@@ -208,3 +209,5 @@ void LegendreBasis::calcCVMaps() {
 //	}
 //	scs *= sqrt(1.0 / sfac);
 //}
+
+} //namespace mrcpp

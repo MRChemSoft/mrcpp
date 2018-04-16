@@ -1,7 +1,7 @@
 #include "mwtrees/FunctionTreeVector.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 FunctionTreeVector<D>::FunctionTreeVector(const FunctionTreeVector<D> &vec) {
@@ -80,3 +80,5 @@ const FunctionTree<D> *FunctionTreeVector<D>::operator[](int i) const {
 template class FunctionTreeVector<1>;
 template class FunctionTreeVector<2>;
 template class FunctionTreeVector<3>;
+
+} //namespace mrcpp

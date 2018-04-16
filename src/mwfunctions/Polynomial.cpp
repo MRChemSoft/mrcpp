@@ -13,7 +13,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** Construct polynomial of order zero with given size and bounds.
   * Includes default constructor. */
@@ -290,3 +291,5 @@ double Polynomial::innerProduct(const Polynomial &Q) const {
     pq.setBounds(P.getLowerBounds(), P.getUpperBounds());
     return pq.integrate();
 }
+
+} //namespace mrcpp

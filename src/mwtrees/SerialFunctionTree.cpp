@@ -6,7 +6,8 @@
 #include "mwparallel/mpi.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** SerialTree class constructor.
  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
@@ -493,3 +494,5 @@ int SerialFunctionTree<D>::getNChunksUsed() const {
 template class SerialFunctionTree<1>;
 template class SerialFunctionTree<2>;
 template class SerialFunctionTree<3>;
+
+} //namespace mrcpp

@@ -4,7 +4,7 @@
 #include "mwcore/FilterCache.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
@@ -126,3 +126,5 @@ void MultiResolutionAnalysis<D>::setupFilter() {
 template class MultiResolutionAnalysis<1>;
 template class MultiResolutionAnalysis<2>;
 template class MultiResolutionAnalysis<3>;
+
+} //namespace mrcpp

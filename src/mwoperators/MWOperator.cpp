@@ -5,7 +5,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 void MWOperator::clear(bool dealloc) {
     if (dealloc) {
@@ -73,3 +74,5 @@ void MWOperator::calcBandWidths(double prec) {
     }
     println(20, "  Maximum bandwidths:\n" << this->band_max << std::endl);
 }
+
+} //namespace mrcpp

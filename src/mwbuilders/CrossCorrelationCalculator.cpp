@@ -6,7 +6,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
@@ -72,3 +73,5 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
         coefs[i] = two_n*vec_o(i);
     }
 }
+
+} //namespace mrcpp

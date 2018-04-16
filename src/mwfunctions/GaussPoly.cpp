@@ -16,7 +16,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 GaussPoly<D>::GaussPoly(double alpha, double coef, const double pos[D],
@@ -254,3 +255,5 @@ std::ostream& GaussPoly<D>::print(std::ostream &o) const {
 template class GaussPoly<1>;
 template class GaussPoly<2>;
 template class GaussPoly<3>;
+
+} //namespace mrcpp

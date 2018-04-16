@@ -2,7 +2,7 @@
 #include "mwtrees/SerialTree.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 void GenNode<D>::createChildren() {
@@ -65,3 +65,5 @@ void GenNode<D>::reCompress() {
 template class GenNode<1>;
 template class GenNode<2>;
 template class GenNode<3>;
+
+} //namespace mrcpp

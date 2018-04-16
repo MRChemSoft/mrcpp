@@ -2,7 +2,7 @@
 #include "mwtrees/MWNode.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 TreeIterator<D>::TreeIterator(int dir)
@@ -172,3 +172,6 @@ IteratorNode<D>::IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx)
 template class TreeIterator<1>;
 template class TreeIterator<2>;
 template class TreeIterator<3>;
+
+} //namespace mrcpp
+

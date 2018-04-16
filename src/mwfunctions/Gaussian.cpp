@@ -12,7 +12,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
@@ -129,3 +130,5 @@ void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &values) const {
 template class Gaussian<1>;
 template class Gaussian<2>;
 template class Gaussian<3>;
+
+} //namespace mrcpp

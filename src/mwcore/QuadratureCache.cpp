@@ -11,7 +11,7 @@
 #include "mwcore/QuadratureCache.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 QuadratureCache::QuadratureCache() {
     this->A = 0.0;
@@ -68,3 +68,5 @@ void QuadratureCache::setIntervals(int ivals) {
         }
     }
 }
+
+} //namespace mrcpp

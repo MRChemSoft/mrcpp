@@ -14,7 +14,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
@@ -83,3 +84,5 @@ double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> 
 template class ConvolutionOperator<1>;
 template class ConvolutionOperator<2>;
 template class ConvolutionOperator<3>;
+
+} //namespace mrcpp

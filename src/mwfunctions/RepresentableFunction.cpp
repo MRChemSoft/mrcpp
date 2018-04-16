@@ -12,7 +12,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 RepresentableFunction<D>::RepresentableFunction(const double *a,
@@ -126,3 +127,5 @@ std::ostream& RepresentableFunction<D>::print(std::ostream &o) const {
 template class RepresentableFunction<1>;
 template class RepresentableFunction<2>;
 template class RepresentableFunction<3>;
+
+} //namespace mrcpp

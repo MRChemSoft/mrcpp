@@ -12,7 +12,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** MWTree constructor with SerialTree storage for nodes.
   * Creates an empty tree object. Node construction and assignment of most of
@@ -513,6 +514,9 @@ std::ostream& MWTree<D>::print(std::ostream &o) {
     }
     return o;
 }
+
 template class MWTree<1>;
 template class MWTree<2>;
 template class MWTree<3>;
+
+} //namespace mrcpp

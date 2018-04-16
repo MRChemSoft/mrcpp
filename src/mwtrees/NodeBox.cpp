@@ -10,7 +10,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 NodeBox<D>::NodeBox() {
@@ -130,3 +131,5 @@ const MWNode<D>& NodeBox<D>::getNode(int bIdx) const {
 template class NodeBox<1>;
 template class NodeBox<2>;
 template class NodeBox<3>;
+
+} //namespace mrcpp

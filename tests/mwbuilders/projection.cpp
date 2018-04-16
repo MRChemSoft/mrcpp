@@ -33,7 +33,7 @@ template<int D> void testProjectFunction() {
         FunctionTree<D> tree(*mra);
         project(-1.0, tree, *func);
         THEN("it integrates to approximately one") {
-            REQUIRE( tree.integrate() < 2.0 );
+            REQUIRE( tree.integrate() == Approx(1.0).margin(1.0) );
         }
         THEN("the dot product with itself is equal to its squared norm") {
             const double norm = tree.getSquareNorm();

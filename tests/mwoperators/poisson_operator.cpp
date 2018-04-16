@@ -14,7 +14,6 @@
 #include "mwbuilders/project.h"
 #include "mwbuilders/grid.h"
 
-using namespace std;
 using namespace mrcpp;
 
 namespace poisson_operator {
@@ -30,16 +29,12 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
     const int n = -3;
     const int k = 5;
 
-    cout << scientific;
-
     SECTION("Initialize Poisson's kernel") {
         PoissonKernel poisson(exp_prec, r_min, r_max);
         REQUIRE( poisson.size() == 26 );
 
         double x = r_min;
         while (x < r_max) {
-            //double rel_prec = std::abs(poisson.evalf(&x) - 1.0/x)*x;
-            //cout << x << setw(20) << poisson.evalf(&x) << setw(20) << rel_prec << endl;
             REQUIRE( poisson.evalf(&x) == Approx(1.0/x).epsilon(2.0*exp_prec) );
             x *= 1.5;
         }

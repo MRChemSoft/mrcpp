@@ -16,7 +16,6 @@
 #include "mwbuilders/grid.h"
 #include "mwutils/MathUtils.h"
 
-using namespace std;
 using namespace mrcpp;
 
 namespace helmholtz_operator {
@@ -131,22 +130,22 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     double Z = 1.0;             // Nuclear charge
     double E = -Z/(2.0*n*n);    // Total energy
 
-    double mu = sqrt(-2*E);
+    double mu = std::sqrt(-2*E);
     HelmholtzOperator H(MRA, mu, build_prec);
 
     // Defining analytic 1s function
     auto hFunc = [Z] (const double *r) -> double {
-        const double c_0 = 2.0*pow(Z, 3.0/2.0);
-        double rho = 2.0*Z*sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        double R_0 = c_0*exp(-rho/2.0);
-        double Y_00 = 1.0/sqrt(4.0*mrcpp::pi);
+        const double c_0 = 2.0*std::pow(Z, 3.0/2.0);
+        double rho = 2.0*Z*std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        double R_0 = c_0*std::exp(-rho/2.0);
+        double Y_00 = 1.0/std::sqrt(4.0*mrcpp::pi);
         return R_0*Y_00;
     };
     FunctionTree<3> psi_n(MRA);
     project(proj_prec, psi_n, hFunc);
 
     auto f = [Z] (const double *r) -> double {
-        double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        double x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return -Z/x;
     };
     FunctionTree<3> V(MRA);
@@ -161,15 +160,15 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     apply(apply_prec, psi_np1, H, Vpsi);
     psi_np1.rescale(-1.0/(2.0*pi));
 
-    double norm = sqrt(psi_np1.getSquareNorm());
+    double norm = std::sqrt(psi_np1.getSquareNorm());
     REQUIRE( norm == Approx(1.0).epsilon(apply_prec) );
 
     FunctionTree<3> d_psi(MRA);
     copy_grid(d_psi, psi_np1);
     add(-1.0, d_psi, 1.0, psi_np1, -1.0, psi_n);
 
-    double error = sqrt(d_psi.getSquareNorm());
-    REQUIRE( error < apply_prec );
+    double error = std::sqrt(d_psi.getSquareNorm());
+    REQUIRE( error == Approx(0.0).margin(apply_prec) );
 }
 
 } // namespace

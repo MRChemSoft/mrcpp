@@ -1,6 +1,6 @@
 #include "mwbuilders/CopyAdaptor.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
@@ -50,3 +50,5 @@ bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
 template class CopyAdaptor<1>;
 template class CopyAdaptor<2>;
 template class CopyAdaptor<3>;
+
+} //namespace mrcpp

@@ -16,7 +16,8 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 ConvolutionCalculator<D>::ConvolutionCalculator(double p,
@@ -375,3 +376,4 @@ template class ConvolutionCalculator<1>;
 template class ConvolutionCalculator<2>;
 template class ConvolutionCalculator<3>;
 
+} //namespace mrcpp

@@ -15,7 +15,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** generate an approximation of the 3d helmholtz kernel expanded in gaussian functions
  */
@@ -65,3 +66,5 @@ std::ostream& HelmholtzKernel::print(std::ostream &o) const {
     o << " mu:       " << this->mu << std::endl;
     return o;
 }
+
+} //namespace mrcpp

@@ -7,7 +7,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 ABGVCalculator::ABGVCalculator(const ScalingBasis &basis, double a, double b)
         : A(a), B(b) {
@@ -147,3 +148,5 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
     node.setHasCoefs();
     node.calcNorms();
 }
+
+} //namespace mrcpp

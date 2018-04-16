@@ -4,7 +4,8 @@
 #include "mwutils/Printer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 int NOtrees=0;
 
@@ -235,3 +236,5 @@ void SerialOperatorTree::deallocGenNodes(int serialIx) {
 void SerialOperatorTree::deallocGenNodeChunks() {
     NOT_REACHED_ABORT;
 }
+
+} //namespace mrcpp

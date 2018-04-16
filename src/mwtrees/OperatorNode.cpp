@@ -4,8 +4,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
 
+namespace mrcpp {
 
 void OperatorNode::dealloc() {
     this->tree->decrementNodeCount(this->getScale());
@@ -43,3 +43,4 @@ double OperatorNode::calcComponentNorm(int i) const {
     return norm;
 }
 
+} //namespace mrcpp

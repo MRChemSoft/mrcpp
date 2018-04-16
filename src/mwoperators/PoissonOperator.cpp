@@ -2,7 +2,7 @@
 #include "mwoperators/PoissonKernel.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double pr)
         : ConvolutionOperator<3>(mra, pr) {
@@ -16,3 +16,5 @@ PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double p
     initializeOperator(poisson_kernel);
     Printer::setPrintLevel(oldlevel);
 }
+
+} //namespace mrcpp

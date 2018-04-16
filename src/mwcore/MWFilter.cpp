@@ -19,7 +19,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 string MWFilter::default_filter_lib = MW_FILTER_DIR;
 
@@ -256,3 +257,5 @@ void MWFilter::readFilterBin() {
     G_fis.close();
     H_fis.close();
 }
+
+} //namespace mrcpp

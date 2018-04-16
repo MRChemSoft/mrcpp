@@ -5,7 +5,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
@@ -145,8 +146,6 @@ void SerialTree<D>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
     NOT_IMPLEMENTED_ABORT;
 }
 
-namespace mrcpp {
-
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
  * coeff_in are not modified.
@@ -228,8 +227,8 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
     }
 }
 
-}
-
 template class SerialTree<1>;
 template class SerialTree<2>;
 template class SerialTree<3>;
+
+} //namespace mrcpp

@@ -5,7 +5,7 @@
 #include "mwfunctions/LegendrePoly.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<class T>
 ObjectCache<T> &ObjectCache<T>::getInstance() {
@@ -83,3 +83,5 @@ template class ObjectCache<LegendrePoly>;
 template class ObjectCache<MWFilter>;
 template class ObjectCache<GaussQuadrature>;
 template class ObjectCache<CrossCorrelation>;
+
+} //namespace mrcpp

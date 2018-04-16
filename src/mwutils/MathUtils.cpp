@@ -15,7 +15,8 @@ extern "C" {
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** Calculate \f$ m^e\f$ for integers. */
 int MathUtils::ipow(int m, int e) {
@@ -447,3 +448,5 @@ void MathUtils::diagonalizeBlock(Eigen::MatrixXd &M , Eigen::MatrixXd &U, int ns
     U.block(nstart, nstart, nsize, nsize) = tmp.transpose();
     M.block(nstart, nstart, nsize, nsize) = es.eigenvalues().asDiagonal();
 }
+
+} //namespace mrcpp

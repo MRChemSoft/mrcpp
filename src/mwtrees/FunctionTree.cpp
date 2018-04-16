@@ -15,7 +15,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** FunctionTree constructor for Serial Tree.
   * */
@@ -259,7 +260,7 @@ std::ostream& FunctionTree<D>::print(std::ostream &o) {
 }
 
 template<int D>
-double mrcpp::dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
+double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()){
         MSG_FATAL("Trees not compatible");
     }
@@ -297,10 +298,12 @@ double mrcpp::dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     return result;
 }
 
-template double mrcpp::dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
-template double mrcpp::dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
-template double mrcpp::dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
+template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
+template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
+template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
 
 template class FunctionTree<1>;
 template class FunctionTree<2>;
 template class FunctionTree<3>;
+
+} //namespace mrcpp

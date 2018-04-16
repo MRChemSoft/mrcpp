@@ -14,7 +14,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** MWNode default constructor.
  *  Should be used only by SerialTree to obtain
@@ -1057,7 +1058,8 @@ std::ostream& MWNode<D>::print(std::ostream &o) const {
     return o;
 }
 
-
 template class MWNode<1>;
 template class MWNode<2>;
 template class MWNode<3>;
+
+} //namespace mrcpp

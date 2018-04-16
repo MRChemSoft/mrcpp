@@ -3,7 +3,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
@@ -82,3 +83,5 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
 template class ProjectionCalculator<1>;
 template class ProjectionCalculator<2>;
 template class ProjectionCalculator<3>;
+
+} //namespace mrcpp

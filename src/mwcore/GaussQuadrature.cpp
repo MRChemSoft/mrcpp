@@ -9,7 +9,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 /** Constructor for Gauss-Legendre quadrature.
  *
@@ -264,3 +265,4 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
     return sum;
 }
 
+} //namespace mrcpp

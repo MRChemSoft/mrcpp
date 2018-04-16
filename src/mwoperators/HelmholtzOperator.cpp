@@ -2,7 +2,7 @@
 #include "mwoperators/HelmholtzKernel.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
                                      double m, double pr)
@@ -17,3 +17,5 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
     initializeOperator(helmholtz_kernel);
     Printer::setPrintLevel(oldlevel);
 }
+
+} //namespace mrcpp

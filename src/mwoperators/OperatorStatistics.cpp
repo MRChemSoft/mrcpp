@@ -2,7 +2,8 @@
 #include "mwtrees/MWNode.h"
 
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 OperatorStatistics<D>::OperatorStatistics()
@@ -92,3 +93,5 @@ std::ostream& OperatorStatistics<D>::print(std::ostream &o) const {
 template class OperatorStatistics<1>;
 template class OperatorStatistics<2>;
 template class OperatorStatistics<3>;
+
+} //namespace mrcpp

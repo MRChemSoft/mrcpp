@@ -15,7 +15,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template <int T>
 FilterCache<T>::FilterCache() {
@@ -61,3 +62,5 @@ const MatrixXd &FilterCache<T>::getFilterMatrix(int order) {
 
 template class FilterCache<Interpol>;
 template class FilterCache<Legendre>;
+
+} //namespace mrcpp

@@ -4,7 +4,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 template<int D>
 void ProjectedNode<D>::createChildren() {
@@ -39,9 +40,6 @@ void ProjectedNode<D>::reCompress() {
     MWNode<D>::reCompress();
 }
 
-// Template specializations
-namespace mrcpp {
-
 template<>
 void ProjectedNode<3>::reCompress() {
     if (this->isBranchNode()) {
@@ -59,8 +57,8 @@ void ProjectedNode<3>::reCompress() {
     }
 }
 
-}
-
 template class ProjectedNode<1>;
 template class ProjectedNode<2>;
 template class ProjectedNode<3>;
+
+} //namespace mrcpp

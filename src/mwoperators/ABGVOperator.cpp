@@ -6,7 +6,7 @@
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b)
@@ -43,3 +43,5 @@ void ABGVOperator<D>::initializeOperator(double a, double b) {
 template class ABGVOperator<1>;
 template class ABGVOperator<2>;
 template class ABGVOperator<3>;
+
+} //namespace mrcpp

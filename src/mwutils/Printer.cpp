@@ -13,7 +13,8 @@
 #include "mwutils/Timer.h"
 
 using namespace std;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 static ofstream tp_outfile;
 int Printer::printLevel = -1;
@@ -154,3 +155,5 @@ int Printer::setPrecision(int i) {
     *out << std::setprecision(i);
     return oldPrec;
 }
+
+} //namespace mrcpp

@@ -5,7 +5,7 @@
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
@@ -40,3 +40,5 @@ void PHOperator<D>::initializeOperator(int order) {
 template class PHOperator<1>;
 template class PHOperator<2>;
 template class PHOperator<3>;
+
+} //namespace mrcpp

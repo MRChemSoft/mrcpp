@@ -1,7 +1,7 @@
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 Timer::Timer(bool start_timer) : running(false), time_used(0.0) {
     if (start_timer) {
@@ -56,3 +56,5 @@ std::ostream& Timer::print(std::ostream &o) const {
     Printer::setPrecision(old_prec);
     return o;
 }
+
+} //namespace mrcpp

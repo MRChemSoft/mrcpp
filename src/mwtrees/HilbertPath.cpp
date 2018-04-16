@@ -1,6 +1,6 @@
 #include "mwtrees/HilbertPath.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 template<>
 const short int HilbertPath<1>::pTable[1][8] = {
@@ -93,3 +93,4 @@ template class HilbertPath<1>;
 template class HilbertPath<2>;
 template class HilbertPath<3>;
 
+} //namespace mrcpp

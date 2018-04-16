@@ -1,7 +1,7 @@
 #include "mwtrees/BandWidth.h"
 #include "mwutils/Printer.h"
 
-using namespace mrcpp;
+namespace mrcpp {
 
 BandWidth& BandWidth::operator=(const BandWidth &bw) {
     this->widths = bw.widths;
@@ -61,3 +61,5 @@ std::ostream& BandWidth::print(std::ostream &o) const {
     o << std::endl;
     return o;
 }
+
+} //namespace mrcpp

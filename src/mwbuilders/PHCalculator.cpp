@@ -7,7 +7,8 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace mrcpp;
+
+namespace mrcpp {
 
 PHCalculator::PHCalculator(const ScalingBasis &basis, int n)
         : diff_order(n) {
@@ -99,3 +100,5 @@ void PHCalculator::calcNode(MWNode<2> &node) {
     node.setHasCoefs();
     node.calcNorms();
 }
+
+} //namespace mrcpp

@@ -9,7 +9,7 @@ list(APPEND api_list
     )
 
 # Sets install directory for all the headers in the list
-foreach(_header ${api_list})
+foreach(_header IN LISTS api_list)
   file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
@@ -19,4 +19,3 @@ foreach(_header ${api_list})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     )
 endforeach()
-

@@ -6,7 +6,7 @@ list(APPEND include_list
     )
 
 # Sets install directory for all the headers in the list
-foreach(_header ${include_list})
+foreach(_header IN LISTS include_list)
   file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
@@ -16,4 +16,3 @@ foreach(_header ${include_list})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     )
 endforeach()
-

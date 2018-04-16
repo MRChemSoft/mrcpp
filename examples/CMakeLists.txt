@@ -10,7 +10,7 @@ list(APPEND _examples
     mpi_matrix
     )
 
-foreach(_example ${_examples})
+foreach(_example IN LISTS _examples)
     add_executable(${_example}.x ${_example}.cpp)
     target_include_directories(${_example}.x PRIVATE
         ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}
@@ -20,4 +20,3 @@ foreach(_example ${_examples})
         ${BLAS_LIBRARIES}
         )
 endforeach()
-

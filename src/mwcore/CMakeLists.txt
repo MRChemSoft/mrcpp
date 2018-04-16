@@ -26,7 +26,7 @@ list(APPEND mwcore_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwcore_h})                                                 
+foreach(_header IN LISTS mwcore_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwcore
@@ -36,4 +36,3 @@ foreach(_header ${mwcore_h})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwcore
     )
 endforeach() 
-

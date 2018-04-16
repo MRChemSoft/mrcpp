@@ -30,7 +30,7 @@ list(APPEND mwoperators_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwoperators_h})                                                 
+foreach(_header IN LISTS mwoperators_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwoperators

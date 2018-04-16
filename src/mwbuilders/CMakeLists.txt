@@ -40,7 +40,7 @@ list(APPEND mwbuilders_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header ${mwbuilders_h})                                                 
+foreach(_header IN LISTS mwbuilders_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwbuilders
@@ -50,4 +50,3 @@ foreach(_header ${mwbuilders_h})
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwbuilders
     )
 endforeach() 
-

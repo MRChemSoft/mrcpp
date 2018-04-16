@@ -8,7 +8,7 @@ list(APPEND mwparallel_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list
-foreach(_header ${mwparallel_h})
+foreach(_header IN LISTS mwparallel_h)
  file(
     COPY ${_header}
     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwparallel
@@ -17,5 +17,4 @@ foreach(_header ${mwparallel_h})
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwparallel
     )
-endforeach() 
-
+endforeach()

@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/MathUtils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.cpp

@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FilterCache.cpp

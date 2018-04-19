@@ -21,7 +21,7 @@ macro(add_Catch_test)
     NAME
       ${add_Catch_test_NAME}
     COMMAND
-      ${PROJECT_BINARY_DIR}/tests/mrcpp-tests
+      ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/mrcpp-tests
       [${add_Catch_test_NAME}] --success --out
       ${PROJECT_BINARY_DIR}/tests/${add_Catch_test_NAME}.log --durations yes
     WORKING_DIRECTORY

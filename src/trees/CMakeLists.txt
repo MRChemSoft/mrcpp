@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.cpp

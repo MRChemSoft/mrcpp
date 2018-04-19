@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.cpp

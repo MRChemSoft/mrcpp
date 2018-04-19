@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CopyAdaptor.cpp

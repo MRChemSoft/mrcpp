@@ -1,4 +1,4 @@
-target_sources(mrcpp PRIVATE
+target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/BoysFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LegendrePoly.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.cpp

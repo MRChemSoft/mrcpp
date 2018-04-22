@@ -27,6 +27,7 @@ modules:
       - 'custom/eigen.cmake'
   - custom:
     - source:
+      - 'custom/static_library.cmake'
       - 'custom/python.cmake'
       - 'custom/git.cmake'
       - 'custom/mw_filters.cmake'

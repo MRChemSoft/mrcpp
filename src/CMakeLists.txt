@@ -35,10 +35,12 @@ if(NOT STATIC_LIBRARY_ONLY)
   #  INTERFACE
   #    $<INSTALL_INTERFACE:USING_mrcpp>
   #  )
-  #target_include_directories(mrcpp-shared
-  #  INTERFACE
-  #    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  #  )
+  target_include_directories(mrcpp-shared
+    INTERFACE
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}>
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/MRCPP>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
   # FIXME Fix versioning of DSO
   set_target_properties(mrcpp-shared
     PROPERTIES
@@ -58,10 +60,12 @@ if(NOT SHARED_LIBRARY_ONLY)
   #  INTERFACE
   #    $<INSTALL_INTERFACE:USING_mrcpp>
   #  )
-  #target_include_directories(mrcpp-static
-  #  INTERFACE
-  #    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  #  )
+  target_include_directories(mrcpp-static
+    INTERFACE
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}>
+      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/MRCPP>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
   set_target_properties(mrcpp-static
     PROPERTIES
        OUTPUT_NAME "mrcpp"

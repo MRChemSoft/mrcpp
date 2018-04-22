@@ -12,11 +12,6 @@ add_subdirectory(functions)
 add_subdirectory(operators)
 add_subdirectory(trees)
 
-target_include_directories(mrcpp-tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/include
-    )
-
 target_link_libraries(mrcpp-tests
     mrcpp
     Catch

@@ -17,8 +17,8 @@ Prerequisites
 -------------
 
 * g++-4.8 (or equivalent)
-* `CMake-2.8 <http://cmake.org>`_
-* `Eigen-3.1 <http://eigen.tuxfamily.org>`_
+* `CMake <http://cmake.org>`_ version 3.3 or higher.
+* `Eigen <http://eigen.tuxfamily.org>`_ version 3.1 or higher.
 * BLAS (optional)
 
 
@@ -43,7 +43,7 @@ important are:
 ``--mpi``
   Enable MPI parallelization [default: False]
 ``--enable-tests``
-  Enable tests [default: False]
+  Enable tests [default: True]
 ``--type=<TYPE>``
   Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release]
 ``--prefix=<PATH>``
@@ -145,3 +145,38 @@ free to do whatever you like in your own pilot code, but please don't add this
 file to git. Also, please don't commit any changes to the existing examples
 (unless you know what you're doing).
 
+---------------------
+MRCPP as a dependency
+---------------------
+
+Building MRCPP provides CMake configuration files exporting the libraries and
+headers as targets to be consumed by third-party projects also using CMake::
+
+    $ ./setup --prefix=$HOME/Software/mrcpp
+    $ cd build
+    $ make
+    $ ctest
+    $ make install
+
+Now libraries, headers and CMake configuration files can be found under the
+given prefix::
+
+    mrcpp/
+    ├── include/
+    │   └── MRCPP/
+    ├── lib64/
+    │   ├── libmrcpp.a
+    │   ├── libmrcpp.so -> libmrcpp.so.1*
+    │   └── libmrcpp.so.1*
+    └── share/
+        └── cmake/
+
+As an example, the ``pilot`` sample can be built with the following ``CMakeLists.txt``:
+
+.. literalinclude:: snippets/CMakeLists.txt
+
+This will set up the include paths and library paths correctly.
+During configuration you will have to specify *where* the CMake configuration
+file for MRCPP is located::
+
+   $ cmake -H. -Bbuild -DMRCPP_DIR=$HOME/Software/share/cmake/MRCPP

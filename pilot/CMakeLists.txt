@@ -5,4 +5,3 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mrcpp.cpp)
         ${BLAS_LIBRARIES}
         )
 endif()
-

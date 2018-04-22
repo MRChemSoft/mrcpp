@@ -2,8 +2,8 @@
 #
 # autocmake.yml configuration::
 #
-#   docopt: "--enable-tests Enable tests [default: True]."
-#   define: "'-DENABLE_TESTS={0}'.format(arguments['--enable-tests'])"
+#   docopt: "--enable-tests=<TESTS> Enable tests [default: True]."
+#   define: "'-DENABLE_TESTS=\"{0}\"'.format(arguments['--enable-tests'])"
 
 option(ENABLE_TESTS "Enable test suite" ON)
 

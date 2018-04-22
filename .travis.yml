@@ -52,7 +52,7 @@ before_script:
 
 script:
   - export OMP_NUM_THREADS=2
-  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP}
+  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
   - ctest --output-on-failure --verbose

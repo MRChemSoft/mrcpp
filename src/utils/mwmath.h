@@ -24,13 +24,9 @@ Eigen::MatrixXd tensorproduct(const Eigen::VectorXd &A, const Eigen::VectorXd &B
 void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::VectorXd &B);
 void tensorSelfProduct(const Eigen::VectorXd &A, Eigen::MatrixXd &B);
 
-double matrixNormInfinity(const Eigen::MatrixXd &M);
-double matrixNorm2(const Eigen::MatrixXd &M);
+double matrixNormInf(const Eigen::MatrixXd &M);
 double matrixNorm1(const Eigen::MatrixXd &M);
-
-double matrixNormInfinity(const Eigen::VectorXd &M);
-double matrixNorm2(const Eigen::VectorXd &M);
-double matrixNorm1(const Eigen::VectorXd &M);
+double matrixNorm2(const Eigen::MatrixXd &M);
 
 void applyFilter(double *out, double *in, const Eigen::MatrixXd &filter,
                  int kp1, int kp1_dm1, double fac);

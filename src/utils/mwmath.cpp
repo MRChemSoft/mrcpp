@@ -12,12 +12,11 @@ extern "C" {
 }
 #endif
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
 
-/** Calculate \f$ m^e\f$ for integers. */
+/** @brief Calculate \f$ m^e\f$ for integers (for convenience, not speed!) */
 int mwmath::ipow(int m, int e) {
     if (e < 0) MSG_FATAL("Exponent cannot be negative: " << e)
     int result = 1;
@@ -27,7 +26,7 @@ int mwmath::ipow(int m, int e) {
     return result;
 }
 
-/** Compute the norm of a matrix given as a vector
+/** @brief Compute the norm of a matrix given as a vector
  *
  * The norm of the matrix is computed by iterating the following operation:
  *	\f$ x_n = M^t \cdot M \cdot x_{n-1} \f$
@@ -35,54 +34,8 @@ int mwmath::ipow(int m, int e) {
  *	The norm of the matrix is obtained as:
  *	 \f$ ||M|| \lim_{n \rightarrow \infty} ||x_n||/||x_{n-1}||\f$
  */
-double mwmath::matrixNorm2(const VectorXd &vector) {
-    int n = (int) std::sqrt(vector.size());
-    MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
-    return matrixNorm2(matrix);
-}
-
-/** Compute the norm of a matrix */
 double mwmath::matrixNorm2(const MatrixXd &M) {
-    const int jMax = 100;
-    const int maxTry = 10;
-    int size = M.cols();
-
-    const double tol = 1.0e-2;
-    double newNorm;
-    double newOperNorm;
-    double oldOperNorm;
-    double ratio;
-
-    Eigen::VectorXd x(size);
-    Eigen::VectorXd y(size);
-
-    std::srand(1);
-    for (int i = 0; i < maxTry; i++) {
-        y = Eigen::VectorXd::Random(size);
-        newNorm = std::sqrt(y.squaredNorm());
-
-        ratio = 0.0;
-        oldOperNorm = 0.0;
-        newOperNorm = 0.0;
-
-        for (int j = 0; j <= jMax; j++) {
-            x = y / newNorm;
-            y = M.transpose() * M * x;
-            newNorm = std::sqrt(y.squaredNorm());
-            oldOperNorm = newOperNorm;
-            newOperNorm = std::sqrt(newNorm);
-            if (oldOperNorm == 0.0) {
-                continue;
-            }
-            ratio = newOperNorm/oldOperNorm;
-            if (std::abs(ratio - 1.0) <= tol) {
-                return newOperNorm;
-            }
-        }
-        MSG_WARN("Random guess did not converge, starting over!");
-    }
-    MSG_FATAL("Could not calculate matrix norm!");
-    return -1.0;
+    return M.lpNorm<2>();
 }
 
 /** Compute the norm of a matrix given as a vector.
@@ -90,55 +43,15 @@ double mwmath::matrixNorm2(const MatrixXd &M) {
  * The norm of the matrix is obtained by taking the column with the
  * largest norm.
  */
-double mwmath::matrixNorm1(const VectorXd &vector) {
-    int n = (int) std::sqrt(vector.size());
-    MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
-    return matrixNorm1(matrix);
-}
-
-/** Compute the norm of a matrix.
-*/
 double mwmath::matrixNorm1(const MatrixXd &M) {
-    int nRows = M.rows();
-    int nCols = M.rows();
-    double maxNorm = 0.0;
-    for (int i = 0; i < nCols; i++) {
-        double colNorm = 0.0;
-        for (int j = 0; j < nRows; j++) {
-            colNorm += std::abs(M(j,i));
-        }
-        if (colNorm > maxNorm) {
-            maxNorm = colNorm;
-        }
-    }
-    return maxNorm;
+    return M.colwise().lpNorm<1>().maxCoeff();
 }
-
 
 /** Compute the infinity norm of a matrix given as a vector.
  * The norm of the matrix is obtained by taking the row with the largest norm.
  */
-double mwmath::matrixNormInfinity(const VectorXd &vector) {
-    int n = (int) sqrt(vector.size());
-    MatrixXd matrix = MatrixXd::Map(vector.data(), n, n);
-    return matrixNormInfinity(matrix);
-}
-
-/** Compute the infinity norm of a matrix.
- * The norm of the matrix is obtained by taking the row with the largest norm.
- */
-double mwmath::matrixNormInfinity(const MatrixXd &M) {
-    int nRows = M.rows();
-    int nCols = M.rows();
-    double maxNorm = 0.0;
-    for (int i = 0; i < nRows; i++) {
-        double rowNorm = 0.0;
-        for (int j = 0; j < nCols; j++) {
-            rowNorm += std::abs(M(i,j));
-        }
-        if (rowNorm > maxNorm) {maxNorm = rowNorm;}
-    }
-    return maxNorm;
+double mwmath::matrixNormInf(const MatrixXd &M) {
+    return M.rowwise().lpNorm<1>().maxCoeff();
 }
 
 /** Compute the binomial coefficient n!/((n-j)! j!) */
@@ -186,8 +99,7 @@ double mwmath::factorial(int n) {
 }
 
 /** Compute the tensor product of two matrices */
-MatrixXd mwmath::tensorproduct(const MatrixXd &A,
-                                  const MatrixXd &B) {
+MatrixXd mwmath::tensorproduct(const MatrixXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
     int Br = B.rows();
@@ -202,8 +114,7 @@ MatrixXd mwmath::tensorproduct(const MatrixXd &A,
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd mwmath::tensorproduct(const MatrixXd &A,
-                                  const VectorXd &B) {
+MatrixXd mwmath::tensorproduct(const MatrixXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
     int Br = B.rows();
@@ -215,8 +126,7 @@ MatrixXd mwmath::tensorproduct(const MatrixXd &A,
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd mwmath::tensorproduct(const VectorXd &A,
-                                  const MatrixXd &B) {
+MatrixXd mwmath::tensorproduct(const VectorXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
     int Bc = B.cols();
@@ -228,8 +138,7 @@ MatrixXd mwmath::tensorproduct(const VectorXd &A,
 }
 
 /** Compute the tensor product of a column vector and a row vector */
-MatrixXd mwmath::tensorproduct(const VectorXd &A,
-                                  const VectorXd &B) {
+MatrixXd mwmath::tensorproduct(const VectorXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
     MatrixXd tprod(Ar, Br);
@@ -263,8 +172,8 @@ void mwmath::applyFilter(double *out, double *in,
                 kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(),
                 kp1, fac, out, kp1_dm1);
 #else
-    Eigen::Map<MatrixXd> f(in, kp1, kp1_dm1);
-    Eigen::Map<MatrixXd> g(out, kp1_dm1, kp1);
+    Map<MatrixXd> f(in, kp1, kp1_dm1);
+    Map<MatrixXd> g(out, kp1_dm1, kp1);
     if (fac < MachineZero) {
         g = f.transpose() * filter;
     } else {

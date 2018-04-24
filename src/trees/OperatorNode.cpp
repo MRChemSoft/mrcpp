@@ -32,10 +32,10 @@ double OperatorNode::calcComponentNorm(int i) const {
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
     if (vecNorm > thrs) {
-        double infNorm = mwmath::matrixNormInf(comp_mat);
-        double oneNorm = mwmath::matrixNorm1(comp_mat);
+        double infNorm = mwmath::matrix_norm_inf(comp_mat);
+        double oneNorm = mwmath::matrix_norm_1(comp_mat);
         if (std::sqrt(infNorm*oneNorm) > thrs) {
-            double twoNorm = mwmath::matrixNorm2(comp_mat);
+            double twoNorm = mwmath::matrix_norm_2(comp_mat);
             if (twoNorm > thrs) norm = twoNorm;
         }
     }

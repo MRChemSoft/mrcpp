@@ -78,7 +78,7 @@ template<int D>
 double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
     const double *lb = MRA.getWorldBox().getLowerBounds();
     const double *ub = MRA.getWorldBox().getUpperBounds();
-    return mwmath::calcDistance(D, lb, ub);
+    return mwmath::calc_distance(D, lb, ub);
 }
 
 template class ConvolutionOperator<1>;

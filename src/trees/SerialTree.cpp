@@ -66,7 +66,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-	        mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -86,7 +86,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	            int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	            const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 	  
-	            mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+                mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	            overwrite = 1.0;
 	        }
             }
@@ -109,7 +109,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	            int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	            const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-	            mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+                mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	            overwrite = 1.0;
                 }
             }
@@ -180,7 +180,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-	        mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -199,7 +199,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-	        mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -219,7 +219,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-	        mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }

@@ -2,7 +2,6 @@
 #include "SerialTree.h"
 #include "utils/mwmath.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -20,24 +19,24 @@ void OperatorNode::dealloc() {
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
-    double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
+    double thrs = std::max(MachinePrec, prec/(8.0 * (1 << depth)));
 
     VectorXd coef_vec;
     this->getCoefs(coef_vec);
 
+    int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
     const VectorXd &comp_vec = coef_vec.segment(i*kp1_d, kp1_d);
+    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1);
 
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
     if (vecNorm > thrs) {
-        double infNorm = mwmath::matrixNormInfinity(comp_vec);
-        double oneNorm = mwmath::matrixNorm1(comp_vec);
-        if (sqrt(infNorm*oneNorm) > thrs) {
-            double twoNorm = mwmath::matrixNorm2(comp_vec);
-            if (twoNorm > thrs) {
-                norm = twoNorm;
-            }
+        double infNorm = mwmath::matrixNormInf(comp_mat);
+        double oneNorm = mwmath::matrixNorm1(comp_mat);
+        if (std::sqrt(infNorm*oneNorm) > thrs) {
+            double twoNorm = mwmath::matrixNorm2(comp_mat);
+            if (twoNorm > thrs) norm = twoNorm;
         }
     }
     return norm;

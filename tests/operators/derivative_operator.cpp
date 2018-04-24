@@ -39,12 +39,12 @@ template<int D> void testDifferentiationABGV(double a, double b) {
 
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
-        double R = mwmath::calcDistance(D, r, r_0);
+        double R = mwmath::calc_distance(D, r, r_0);
         return std::exp(-R*R);
     };
 
     auto df = [r_0] (const double *r) -> double {
-        double R = mwmath::calcDistance(D, r, r_0);
+        double R = mwmath::calc_distance(D, r, r_0);
         return -2.0*std::exp(-R*R)*(r[0]-r_0[0]);
     };
 
@@ -77,11 +77,11 @@ template<int D> void testDifferentiationPH(int order) {
 
     const double r_0[3] = {pi, pi, pi};
     auto f = [r_0] (const double *r) -> double {
-        double R = mwmath::calcDistance(D, r, r_0);
+        double R = mwmath::calc_distance(D, r, r_0);
         return std::exp(-R*R);
     };
     auto df = [r_0, order] (const double *r) -> double {
-        double R = mwmath::calcDistance(D, r, r_0);
+        double R = mwmath::calc_distance(D, r, r_0);
         return -(2-order)*2*std::exp(-R*R)*(r[0]-pi)
                 + (order-1)*(-2*std::exp(-R*R)+4*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]));
                 // 2-order = 1 and order-1 = 0 in the first order case

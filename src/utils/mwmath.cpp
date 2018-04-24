@@ -34,7 +34,7 @@ int mwmath::ipow(int m, int e) {
  *	The norm of the matrix is obtained as:
  *	 \f$ ||M|| \lim_{n \rightarrow \infty} ||x_n||/||x_{n-1}||\f$
  */
-double mwmath::matrixNorm2(const MatrixXd &M) {
+double mwmath::matrix_norm_2(const MatrixXd &M) {
     return M.lpNorm<2>();
 }
 
@@ -43,19 +43,19 @@ double mwmath::matrixNorm2(const MatrixXd &M) {
  * The norm of the matrix is obtained by taking the column with the
  * largest norm.
  */
-double mwmath::matrixNorm1(const MatrixXd &M) {
+double mwmath::matrix_norm_1(const MatrixXd &M) {
     return M.colwise().lpNorm<1>().maxCoeff();
 }
 
 /** Compute the infinity norm of a matrix given as a vector.
  * The norm of the matrix is obtained by taking the row with the largest norm.
  */
-double mwmath::matrixNormInf(const MatrixXd &M) {
+double mwmath::matrix_norm_inf(const MatrixXd &M) {
     return M.rowwise().lpNorm<1>().maxCoeff();
 }
 
 /** Compute the binomial coefficient n!/((n-j)! j!) */
-double mwmath::binomialCoeff(int n, int j) {
+double mwmath::binomial_coeff(int n, int j) {
     double binomial_n_j = 1.0;
     int k = 0;
 
@@ -72,10 +72,10 @@ double mwmath::binomialCoeff(int n, int j) {
     return binomial_n_j;
 }
 
-VectorXd mwmath::getBinomialCoefs(unsigned int order) {
+VectorXd mwmath::get_binomial_coefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
     for (int k = 0; k <= order; k++) {
-        coefs[k] = mwmath::binomialCoeff(order, k);
+        coefs[k] = mwmath::binomial_coeff(order, k);
     }
     return coefs;
 }
@@ -99,7 +99,7 @@ double mwmath::factorial(int n) {
 }
 
 /** Compute the tensor product of two matrices */
-MatrixXd mwmath::tensorproduct(const MatrixXd &A, const MatrixXd &B) {
+MatrixXd mwmath::tensor_product(const MatrixXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
     int Br = B.rows();
@@ -114,7 +114,7 @@ MatrixXd mwmath::tensorproduct(const MatrixXd &A, const MatrixXd &B) {
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd mwmath::tensorproduct(const MatrixXd &A, const VectorXd &B) {
+MatrixXd mwmath::tensor_product(const MatrixXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
     int Br = B.rows();
@@ -126,7 +126,7 @@ MatrixXd mwmath::tensorproduct(const MatrixXd &A, const VectorXd &B) {
 }
 
 /** Compute the tensor product of a matrix and a vector */
-MatrixXd mwmath::tensorproduct(const VectorXd &A, const MatrixXd &B) {
+MatrixXd mwmath::tensor_product(const VectorXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
     int Bc = B.cols();
@@ -138,7 +138,7 @@ MatrixXd mwmath::tensorproduct(const VectorXd &A, const MatrixXd &B) {
 }
 
 /** Compute the tensor product of a column vector and a row vector */
-MatrixXd mwmath::tensorproduct(const VectorXd &A, const VectorXd &B) {
+MatrixXd mwmath::tensor_product(const VectorXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
     MatrixXd tprod(Ar, Br);
@@ -149,7 +149,7 @@ MatrixXd mwmath::tensorproduct(const VectorXd &A, const VectorXd &B) {
 }
 
 /** Compute the tensor product of a vector and itself */
-void mwmath::tensorSelfProduct(const VectorXd &A, VectorXd &tprod) {
+void mwmath::tensor_self_product(const VectorXd &A, VectorXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) {
         tprod.segment(i*Ar, Ar) = A(i) * A;
@@ -157,16 +157,16 @@ void mwmath::tensorSelfProduct(const VectorXd &A, VectorXd &tprod) {
 }
 
 /** Compute the tensor product of a vector and itself */
-void mwmath::tensorSelfProduct(const VectorXd &A, MatrixXd &tprod) {
+void mwmath::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) {
         tprod.block(i, 0, 1, Ar) = A(i) * A;
     }
 }
 
-void mwmath::applyFilter(double *out, double *in,
-                            const MatrixXd &filter,
-                            int kp1, int kp1_dm1, double fac) {
+void mwmath::apply_filter(double *out, double *in,
+                          const MatrixXd &filter,
+                          int kp1, int kp1_dm1, double fac) {
 #ifdef HAVE_BLAS
     cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
                 kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(),
@@ -187,8 +187,8 @@ void mwmath::applyFilter(double *out, double *in,
  * This method uses the "output" vector as initial input, in order to
  * avoid the use of temporaries.
  */
-void mwmath::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
-                                  const MatrixXd &primitive, VectorXd &expanded) {
+void mwmath::tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d,
+                                 const MatrixXd &primitive, VectorXd &expanded) {
     if (dir < dim - 1) {
         int idx = mwmath::ipow(kp1, dir + 1);
         int nelem = idx * kp1;
@@ -198,11 +198,11 @@ void mwmath::tensorExpandCoefs(int dim, int dir, int kp1, int kp1_d,
             expanded.segment(pos + i * idx, idx) =
                     expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
         }
-        tensorExpandCoefs(dim, dir + 1, kp1, kp1_d, primitive, expanded);
+        tensor_expand_coefs(dim, dir + 1, kp1, kp1_d, primitive, expanded);
     }
 }
 
-void mwmath::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
+void mwmath::tensor_expand_coords_2D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
@@ -213,7 +213,7 @@ void mwmath::tensorExpandCoords_2D(int kp1, const MatrixXd &primitive, MatrixXd 
     }
 }
 
-void mwmath::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
+void mwmath::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, MatrixXd &expanded) {
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
@@ -228,7 +228,7 @@ void mwmath::tensorExpandCoords_3D(int kp1, const MatrixXd &primitive, MatrixXd 
 }
 
 /** Calculate the distance between two points in n-dimensions */
-double mwmath::calcDistance(int D, const double *a, const double *b) {
+double mwmath::calc_distance(int D, const double *a, const double *b) {
     assert(a != 0 and b != 0 and D >= 0);
     double r = 0.0;
     for (int i = 0; i < D; i++) {

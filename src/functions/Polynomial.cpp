@@ -30,7 +30,7 @@ Polynomial::Polynomial(double c, int k, const double *a, const double *b)
         : RepresentableFunction<1>(a,b) {
     this->N = 1.0;
     this->L = 0.0;
-    this->coefs = mwmath::getBinomialCoefs(k);
+    this->coefs = mwmath::get_binomial_coefs(k);
     for (int i = 0; i <= k; i++) {
         this->coefs[i] *= pow(c, k - i);
     }

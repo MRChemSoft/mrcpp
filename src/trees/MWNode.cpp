@@ -371,7 +371,7 @@ void MWNode<D>::cvTransform(int operation) {
         for (int t = 0; t < this->getTDim(); t++) {
             double *out = out_vec + t*kp1_d;
             double *in = in_vec + t*kp1_d;
-            mwmath::applyFilter(out, in, S, kp1, kp1_dm1, 0.0);
+            mwmath::apply_filter(out, in, S, kp1, kp1_dm1, 0.0);
         }
         double *tmp = in_vec;
         in_vec = out_vec;
@@ -485,7 +485,7 @@ void MWNode<D>::mwTransform(int operation) {
                     double *in = in_vec + ft * kp1_d;
                     int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
-                    mwmath::applyFilter(out, in, oper, kp1, kp1_dm1, overwrite);
+                    mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                     overwrite = 1.0;
                 }
             }
@@ -793,8 +793,8 @@ void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
     pts = MatrixXd::Zero(D, kp1_d);
 
     if (D == 1) pts = prim_pts;
-    if (D == 2) mwmath::tensorExpandCoords_2D(kp1, prim_pts, pts);
-    if (D == 3) mwmath::tensorExpandCoords_3D(kp1, prim_pts, pts);
+    if (D == 2) mwmath::tensor_expand_coords_2D(kp1, prim_pts, pts);
+    if (D == 3) mwmath::tensor_expand_coords_3D(kp1, prim_pts, pts);
     if (D >= 4) NOT_IMPLEMENTED_ABORT;
 }
 
@@ -816,8 +816,8 @@ void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
             prim_t.row(d) = prim_pts.block(d, idx*kp1, 1, kp1);
         }
         if (D == 1) exp_t = prim_t;
-        if (D == 2) mwmath::tensorExpandCoords_2D(kp1, prim_t, exp_t);
-        if (D == 3) mwmath::tensorExpandCoords_3D(kp1, prim_t, exp_t);
+        if (D == 2) mwmath::tensor_expand_coords_2D(kp1, prim_t, exp_t);
+        if (D == 3) mwmath::tensor_expand_coords_3D(kp1, prim_t, exp_t);
         if (D >= 4) NOT_IMPLEMENTED_ABORT;
         pts.block(0, t*kp1_d, D, kp1_d) = exp_t;
     }

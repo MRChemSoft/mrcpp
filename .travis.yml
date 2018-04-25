@@ -14,7 +14,6 @@ matrix:
             - cmake3
             - cmake3-data
             - g++-4.8
-            - libeigen3-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++-4.8'
@@ -25,7 +24,6 @@ matrix:
             - cmake3
             - cmake3-data
             - g++-4.8
-            - libeigen3-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++-4.8'
@@ -37,7 +35,6 @@ matrix:
             - cmake3
             - cmake3-data
             - g++-4.8
-            - libeigen3-dev
             - lcov
       env:
         - BUILD_TYPE='debug'

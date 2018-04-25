@@ -17,6 +17,7 @@ matrix:
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++-4.8'
+        - EIGEN_VER='3.3.4'
     - os: linux
       addons:
         apt:
@@ -28,6 +29,7 @@ matrix:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++-4.8'
         - OPENMP='--omp'
+        - EIGEN_VER='3.3.4'
     - os: linux
       addons:
         apt:
@@ -40,11 +42,12 @@ matrix:
         - BUILD_TYPE='debug'
         - CXX_COMPILER='g++-4.8'
         - COVERAGE='--coverage'
+        - EIGEN_VER='3.3.4'
 
 before_script:
   - mkdir -p $HOME/Downloads/eigen
   - cd $HOME/Downloads
-  - curl -Ls http://bitbucket.org/eigen/eigen/get/${Eigen_VERSION}.tar.gz | tar -xz -C eigen --strip-components=1
+  - curl -Ls http://bitbucket.org/eigen/eigen/get/${EIGEN_VER}.tar.gz | tar -xz -C eigen --strip-components=1
   - cd eigen
   - cmake -H. -Bbuild_eigen -DCMAKE_INSTALL_PREFIX=$HOME/Deps/eigen &> /dev/null
   - cmake --build build_eigen -- install &> /dev/null

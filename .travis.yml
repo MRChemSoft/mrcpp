@@ -45,14 +45,21 @@ matrix:
         - COVERAGE='--coverage'
 
 before_script:
+  - cd $HOME/Downloads
+  - mkdir -p eigen
+  - curl -Ls http://bitbucket.org/eigen/eigen/get/${Eigen_VERSION}.tar.gz | tar -xz -C eigen --strip-components=1
+  - cd eigen
+  - cmake -H. -Bbuild_eigen -DCMAKE_INSTALL_PREFIX=$HOME/Deps/eigen &> /dev/null
+  - cmake --build build_eigen -- install &> /dev/null
   - cd ${TRAVIS_BUILD_DIR}
   - python --version
   - cmake --version
   - ${CXX_COMPILER} --version
+  - rm -rf $HOME/Downloads/eigen
 
 script:
   - export OMP_NUM_THREADS=2
-  - ./setup --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
+  - ./setup --cmake-options="-DEigen3_DIR=$HOME/Deps/eigen/share/eigen3/cmake/" --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
   - ctest --output-on-failure --verbose

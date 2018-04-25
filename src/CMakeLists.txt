@@ -33,6 +33,8 @@ if(NOT STATIC_LIBRARY_ONLY)
   target_compile_definitions(mrcpp-shared
     #PUBLIC
     #  MRCPP_EXPORTS # Probably not needed?
+    PUBLIC
+      Eigen3::Eigen
     INTERFACE
       $<INSTALL_INTERFACE:USING_MRCPP>
     )
@@ -73,6 +75,8 @@ if(NOT SHARED_LIBRARY_ONLY)
       $<INSTALL_INTERFACE:USING_MRCPP>
     )
   target_include_directories(mrcpp-static
+    PUBLIC
+      Eigen3::Eigen
     INTERFACE
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/MRCPP>

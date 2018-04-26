@@ -61,7 +61,7 @@ void pyTmpEverything(py::module &m) {
     std::stringstream funcTreeName;
     funcTreeName << "FunctionTree" << 3 << "D";
     py::class_<FunctionTree<3>> (m, funcTreeName.str().data(), mwtree)
-            .def(py::init<const MultiResolutionAnalysis<3>>())
+            .def(py::init<MultiResolutionAnalysis<3>>())
             .def("integrate", &FunctionTree<3>::integrate)
             .def("clear", &FunctionTree<3>::clear)
             .def("normalize", &FunctionTree<3>::normalize);
@@ -71,13 +71,15 @@ void pyTmpEverything(py::module &m) {
 
 
     py::class_<ScalingBasis> scalingbasis(m, "ScalingBasis");
-    scalingbasis.def(py::init<int, int>());
+         scalingbasis.def(py::init<int, int>());
 
     py::class_<InterpolatingBasis> (m, "InterpolatingBasis", scalingbasis)
-            .def(py::init<int>())
-            .def("getScalingOrder", &InterpolatingBasis::getScalingOrder);
+        .def(py::init<int>())
+        .def("getScalingOrder", &InterpolatingBasis::getScalingOrder);
 
     py::class_<LegendreBasis> (m, "LegendreBasis", scalingbasis)
-            .def(py::init<int>());
+        .def(py::init<int>())
+        .def("getScalingOrder", &LegendreBasis::getScalingOrder);
+
 
 }

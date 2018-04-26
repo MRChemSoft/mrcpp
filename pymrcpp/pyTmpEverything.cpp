@@ -5,12 +5,17 @@
  *          UiT - The Arctic University of Norway
  */
 
-#include "mwpython/PyBoundingBox.h"
+#include "PyBoundingBox.h"
+
 #include "mwtrees/BoundingBox.h"
 #include "mwtrees/MultiResolutionAnalysis.h"
 #include "mwtrees/MWTree.h"
 #include "mwtrees/FunctionTree.h"
 #include "mwtrees/FunctionTreeVector.h"
+
+#include "mwcore/ScalingBasis.h"
+#include "mwcore/InterpolatingBasis.h"
+#include "mwcore/LegendreBasis.h"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/numpy.h"
@@ -35,13 +40,13 @@ void pyTmpEverything(py::module &m) {
     pyBoundBoxName << "BoundingBox" << 3 << "D";
     py::class_<PyBoundingBox<3>> (m, pyBoundBoxName.str().data())
             .def(py::init<int, py::array_t<int>, py::array_t <int>>())
-            .def(py::init<int, int *,  int *>()); //1D cases can be initialized without array type input
-            //.def("getScale", &PyBoundingBox<3>::getScale);
+            .def(py::init<int, int *,  int *>()) //1D cases can be initialized without array type input
+            .def("getScale", &PyBoundingBox<3>::getScale);
 
     std::stringstream multResAnaName;
     multResAnaName << "MultiResolutionAnalysis" << 3 << "D";
     py::class_<MultiResolutionAnalysis<3>> (m, multResAnaName.str().data())
-            .def(py::init<PyBoundingBox<3>, ScalingBasis, int>())
+            .def(py::init<PyBoundingBox<3>, ScalingBasis, int>()) // Seems to work with PyBoundingBox here
             .def("getOrder", &MultiResolutionAnalysis<3>::getOrder)
             .def("getMaxDepth", &MultiResolutionAnalysis<3>::getMaxDepth)
             .def("getMaxScale", &MultiResolutionAnalysis<3>::getMaxScale);
@@ -63,4 +68,16 @@ void pyTmpEverything(py::module &m) {
             //.def("evalf", py::overload_cast<double>(&FunctionTree<3>::evalf))
             //.def("evalf", py::overload_cast<double, double>(&FunctionTree<3>::evalf))
             //.def("evalf", py::overload_cast<double, double, double>(&FunctionTree<3>::evalf));
+
+
+    py::class_<ScalingBasis> scalingbasis(m, "ScalingBasis");
+    scalingbasis.def(py::init<int, int>());
+
+    py::class_<InterpolatingBasis> (m, "InterpolatingBasis", scalingbasis)
+            .def(py::init<int>())
+            .def("getScalingOrder", &InterpolatingBasis::getScalingOrder);
+
+    py::class_<LegendreBasis> (m, "LegendreBasis", scalingbasis)
+            .def(py::init<int>());
+
 }

@@ -7,7 +7,6 @@
 
 
 #include "PyBoundingBox.h"
-
 using namespace mrcpp;
 
 namespace py = pybind11;
@@ -26,3 +25,7 @@ PyBoundingBox<D>::PyBoundingBox(int n, py::array_t<int> l, py::array_t<int> nb)
     this->setNBoxes(nbPtr);
     this->setDerivedParameters();
 }
+
+template class PyBoundingBox<1>;
+template class PyBoundingBox<2>;
+template class PyBoundingBox<3>;

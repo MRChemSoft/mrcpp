@@ -107,3 +107,6 @@ venv
 *.files
 *.includes
 
+#CLion
+.idea/
+cmake-build-debug/

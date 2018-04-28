@@ -7,7 +7,7 @@
 #include "treebuilders/grid.h"
 #include "mwtrees/OperatorTree.h"
 #include "mwtrees/BandWidth.h"
-#include "mwfunctions/Gaussian.h"
+#include "functions/Gaussian.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"

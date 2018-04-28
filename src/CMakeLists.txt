@@ -4,7 +4,7 @@ add_subdirectory(mwcore)
 add_subdirectory(mwutils)
 add_subdirectory(mwtrees)
 add_subdirectory(treebuilders)
-add_subdirectory(mwfunctions)
+add_subdirectory(functions)
 add_subdirectory(mwoperators)
 add_subdirectory(mwparallel)
 

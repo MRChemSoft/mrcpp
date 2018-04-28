@@ -2,7 +2,7 @@
 #include "mwcore/MWFilter.h"
 #include "mwcore/GaussQuadrature.h"
 #include "mwcore/CrossCorrelation.h"
-#include "mwfunctions/LegendrePoly.h"
+#include "functions/LegendrePoly.h"
 #include "mwutils/Printer.h"
 
 namespace mrcpp {

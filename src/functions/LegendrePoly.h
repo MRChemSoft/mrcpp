@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwfunctions/Polynomial.h"
+#include "functions/Polynomial.h"
 
 namespace mrcpp {
 

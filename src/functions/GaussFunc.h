@@ -18,7 +18,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "mwfunctions/Gaussian.h"
+#include "functions/Gaussian.h"
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {

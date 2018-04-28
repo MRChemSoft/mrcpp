@@ -9,7 +9,7 @@
 
 #include "mwcore/LegendreBasis.h"
 #include "mwcore/QuadratureCache.h"
-#include "mwfunctions/LegendrePoly.h"
+#include "functions/LegendrePoly.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

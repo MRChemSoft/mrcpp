@@ -3,7 +3,7 @@
 #include "factory_functions.h"
 
 #include "mwtrees/FunctionTreeVector.h"
-#include "mwfunctions/GaussPoly.h"
+#include "functions/GaussPoly.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/project.h"
 #include "treebuilders/grid.h"

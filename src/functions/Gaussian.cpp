@@ -7,7 +7,7 @@
  *
  */
 
-#include "mwfunctions/Gaussian.h"
+#include "functions/Gaussian.h"
 #include "mwtrees/NodeIndex.h"
 
 using namespace std;

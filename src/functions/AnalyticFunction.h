@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "mwfunctions/RepresentableFunction.h"
+#include "functions/RepresentableFunction.h"
 
 namespace mrcpp {
 

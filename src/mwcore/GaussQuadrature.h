@@ -3,7 +3,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "mwfunctions/RepresentableFunction.h"
+#include "functions/RepresentableFunction.h"
 
 namespace mrcpp {
 

@@ -8,7 +8,7 @@
  * \breif
  */
 
-#include "mwcore/CrossCorrelationCache.h"
+#include "core/CrossCorrelationCache.h"
 #include "mwutils/Printer.h"
 
 #include "constants.h"

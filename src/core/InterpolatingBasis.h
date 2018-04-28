@@ -1,20 +1,17 @@
 #pragma once
 
-#pragma GCC system_header
-#include <Eigen/Dense>
-
-#include "mwcore/ScalingBasis.h"
+#include "core/ScalingBasis.h"
 
 namespace mrcpp {
 
-class LegendreBasis : public ScalingBasis {
+class InterpolatingBasis : public ScalingBasis {
 public:
-    LegendreBasis(int k) : ScalingBasis(k, Legendre) {
+    InterpolatingBasis(int k) : ScalingBasis(k, Interpol) {
         initScalingBasis();
         calcQuadratureValues();
         calcCVMaps();
     }
-    virtual ~LegendreBasis() { }
+    virtual ~InterpolatingBasis() { }
 
     void initScalingBasis();
     void calcQuadratureValues();

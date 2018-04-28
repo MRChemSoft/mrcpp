@@ -8,7 +8,7 @@
  */
 
 #include "functions/LegendrePoly.h"
-#include "mwcore/ObjectCache.h"
+#include "core/ObjectCache.h"
 #include "mwutils/Printer.h"
 
 using namespace std;

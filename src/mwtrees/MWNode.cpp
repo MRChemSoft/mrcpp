@@ -7,7 +7,7 @@
 #include "mwtrees/SerialTree.h"
 #include "mwtrees/ProjectedNode.h"
 #include "mwtrees/GenNode.h"
-#include "mwcore/QuadratureCache.h"
+#include "core/QuadratureCache.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"

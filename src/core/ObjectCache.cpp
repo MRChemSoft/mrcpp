@@ -1,7 +1,7 @@
-#include "mwcore/ObjectCache.h"
-#include "mwcore/MWFilter.h"
-#include "mwcore/GaussQuadrature.h"
-#include "mwcore/CrossCorrelation.h"
+#include "core/ObjectCache.h"
+#include "core/MWFilter.h"
+#include "core/GaussQuadrature.h"
+#include "core/CrossCorrelation.h"
 #include "functions/LegendrePoly.h"
 #include "mwutils/Printer.h"
 

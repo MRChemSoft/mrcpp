@@ -3,8 +3,8 @@
 #include "mwtrees/FunctionTree.h"
 #include "mwtrees/FunctionTreeVector.h"
 
-#include "mwcore/InterpolatingBasis.h"
-#include "mwcore/LegendreBasis.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
 
 #include "treebuilders/grid.h"
 #include "treebuilders/project.h"

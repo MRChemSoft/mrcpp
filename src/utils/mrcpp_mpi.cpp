@@ -1,4 +1,4 @@
-#include "mwparallel/mpi.h"
+#include "utils/mrcpp_mpi.h"
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
 #include "trees/SerialFunctionTree.h"

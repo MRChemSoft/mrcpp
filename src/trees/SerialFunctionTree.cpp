@@ -3,7 +3,7 @@
 #include "trees/ProjectedNode.h"
 #include "trees/GenNode.h"
 #include "utils/Printer.h"
-#include "mwparallel/mpi.h"
+#include "utils/mrcpp_mpi.h"
 
 using namespace std;
 

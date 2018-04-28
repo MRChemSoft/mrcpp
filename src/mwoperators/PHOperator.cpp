@@ -1,7 +1,7 @@
 #include "mwoperators/PHOperator.h"
-#include "mwbuilders/TreeBuilder.h"
-#include "mwbuilders/PHCalculator.h"
-#include "mwbuilders/BandWidthAdaptor.h"
+#include "treebuilders/TreeBuilder.h"
+#include "treebuilders/PHCalculator.h"
+#include "treebuilders/BandWidthAdaptor.h"
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 

@@ -4,7 +4,7 @@ add_library(Catch INTERFACE)
 target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 
 add_executable(mrcpp-tests unit_tests.cpp)
-add_subdirectory(mwbuilders)
+add_subdirectory(treebuilders)
 add_subdirectory(mwcore)
 add_subdirectory(mwfunctions)
 add_subdirectory(mwoperators)

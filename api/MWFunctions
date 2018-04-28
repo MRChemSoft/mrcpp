@@ -6,10 +6,10 @@
 #include "mwcore/InterpolatingBasis.h"
 #include "mwcore/LegendreBasis.h"
 
-#include "mwbuilders/grid.h"
-#include "mwbuilders/project.h"
-#include "mwbuilders/multiply.h"
-#include "mwbuilders/add.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/project.h"
+#include "treebuilders/multiply.h"
+#include "treebuilders/add.h"
 
 #include "mwfunctions/RepresentableFunction.h"
 #include "mwfunctions/AnalyticFunction.h"

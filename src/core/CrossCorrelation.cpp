@@ -14,7 +14,7 @@
 #include "config.h"
 
 #include "core/CrossCorrelation.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

@@ -8,9 +8,9 @@
 #include "trees/ProjectedNode.h"
 #include "trees/GenNode.h"
 #include "core/QuadratureCache.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Timer.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Timer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

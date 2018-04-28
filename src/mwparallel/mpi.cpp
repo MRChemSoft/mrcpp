@@ -2,8 +2,8 @@
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
 #include "trees/SerialFunctionTree.h"
-#include "mwutils/Printer.h"
-#include "mwutils/Timer.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 using namespace std;
 

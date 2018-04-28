@@ -3,8 +3,8 @@
 #include "treebuilders/TreeAdaptor.h"
 #include "trees/MWTree.h"
 #include "trees/MWNode.h"
-#include "mwutils/Timer.h"
-#include "mwutils/Printer.h"
+#include "utils/Timer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 

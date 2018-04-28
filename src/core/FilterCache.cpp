@@ -9,7 +9,7 @@
  */
 
 #include "core/FilterCache.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 #include "constants.h"
 

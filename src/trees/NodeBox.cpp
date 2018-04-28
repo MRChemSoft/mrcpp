@@ -7,7 +7,7 @@
 
 #include "trees/NodeBox.h"
 #include "trees/MWNode.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 

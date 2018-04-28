@@ -1,7 +1,7 @@
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Printer.h"
 #include "core/QuadratureCache.h"
 
 #ifdef HAVE_BLAS

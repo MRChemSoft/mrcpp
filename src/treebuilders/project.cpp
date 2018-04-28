@@ -5,8 +5,8 @@
 #include "functions/AnalyticFunction.h"
 #include "trees/MultiResolutionAnalysis.h"
 #include "trees/FunctionTree.h"
-#include "mwutils/Printer.h"
-#include "mwutils/Timer.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 namespace mrcpp {
 

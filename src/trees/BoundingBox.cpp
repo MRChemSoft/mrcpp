@@ -10,8 +10,8 @@
 #include "constants.h"
 
 #include "trees/BoundingBox.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Printer.h"
 
 using namespace std;
 

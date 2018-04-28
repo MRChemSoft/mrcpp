@@ -3,7 +3,7 @@
 #include "core/GaussQuadrature.h"
 #include "core/CrossCorrelation.h"
 #include "functions/LegendrePoly.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

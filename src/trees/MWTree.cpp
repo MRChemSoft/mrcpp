@@ -7,8 +7,8 @@
 #include "trees/MWTree.h"
 #include "trees/MultiResolutionAnalysis.h"
 #include "trees/HilbertIterator.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

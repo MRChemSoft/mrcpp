@@ -12,7 +12,7 @@
 
 #include "operators/PoissonKernel.h"
 #include "functions/GaussFunc.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

@@ -12,7 +12,7 @@
 
 #include "operators/HelmholtzKernel.h"
 #include "functions/GaussFunc.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 

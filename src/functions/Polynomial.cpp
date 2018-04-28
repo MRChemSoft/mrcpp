@@ -8,8 +8,8 @@
  */
 
 #include "functions/Polynomial.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

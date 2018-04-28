@@ -1,7 +1,7 @@
 #include "functions/BoysFunction.h"
 #include "trees/FunctionTree.h"
 #include "core/InterpolatingBasis.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 #include "treebuilders/project.h"
 
 namespace mrcpp {

@@ -2,7 +2,7 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "core/FilterCache.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

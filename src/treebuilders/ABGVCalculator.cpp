@@ -3,7 +3,7 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "trees/MWNode.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

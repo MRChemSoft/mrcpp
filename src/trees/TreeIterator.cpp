@@ -1,6 +1,6 @@
 #include "trees/TreeIterator.h"
 #include "trees/MWNode.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

@@ -12,7 +12,7 @@
 #include "functions/GaussPoly.h"
 #include "functions/GaussFunc.h"
 #include "functions/GaussExp.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

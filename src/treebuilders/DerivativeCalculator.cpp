@@ -4,8 +4,8 @@
 #include "trees/BandWidth.h"
 #include "trees/OperatorNode.h"
 #include "trees/FunctionTree.h"
-#include "mwutils/Timer.h"
-#include "mwutils/Printer.h"
+#include "utils/Timer.h"
+#include "utils/Printer.h"
 #include "eigen_disable_warnings.h"
 
 #ifdef HAVE_BLAS

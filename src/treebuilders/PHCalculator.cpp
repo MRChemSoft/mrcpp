@@ -3,7 +3,7 @@
 #include "config.h"
 
 #include "treebuilders/PHCalculator.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

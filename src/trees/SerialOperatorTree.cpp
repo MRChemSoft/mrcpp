@@ -1,7 +1,7 @@
 #include "trees/SerialOperatorTree.h"
 #include "trees/OperatorTree.h"
 #include "trees/OperatorNode.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 

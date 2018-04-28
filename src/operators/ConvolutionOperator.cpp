@@ -8,9 +8,9 @@
 #include "trees/OperatorTree.h"
 #include "trees/BandWidth.h"
 #include "functions/Gaussian.h"
-#include "mwutils/MathUtils.h"
-#include "mwutils/Timer.h"
-#include "mwutils/Printer.h"
+#include "utils/MathUtils.h"
+#include "utils/Timer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

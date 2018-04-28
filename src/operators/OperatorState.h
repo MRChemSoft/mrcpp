@@ -10,7 +10,7 @@
 #include <Eigen/Core>
 
 #include "trees/MWNode.h"
-#include "mwutils/MathUtils.h"
+#include "utils/MathUtils.h"
 
 namespace mrcpp {
 

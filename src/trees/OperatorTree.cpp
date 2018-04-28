@@ -4,7 +4,7 @@
 #include "trees/SerialTree.h"
 #include "trees/LebesgueIterator.h"
 #include "trees/BandWidth.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

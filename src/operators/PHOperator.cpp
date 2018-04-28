@@ -2,8 +2,8 @@
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/PHCalculator.h"
 #include "treebuilders/BandWidthAdaptor.h"
-#include "mwutils/Printer.h"
-#include "mwutils/Timer.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 namespace mrcpp {
 

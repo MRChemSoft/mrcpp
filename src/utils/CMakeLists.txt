@@ -5,7 +5,7 @@ target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp
 )
 
-list(APPEND mwutils_h
+list(APPEND utils_h
     ${CMAKE_CURRENT_SOURCE_DIR}/MathUtils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.h
@@ -13,13 +13,13 @@ list(APPEND mwutils_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header IN LISTS mwutils_h)
+foreach(_header IN LISTS utils_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwutils
+    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
     )
  install(
     FILES ${_header}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwutils
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
     )
 endforeach() 

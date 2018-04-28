@@ -4,7 +4,7 @@
 #include "treebuilders/CopyAdaptor.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/DefaultCalculator.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

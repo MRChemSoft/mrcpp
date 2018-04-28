@@ -2,7 +2,7 @@
 
 #include "factory_functions.h"
 
-#include "mwutils/MathUtils.h"
+#include "utils/MathUtils.h"
 #include "operators/MWOperator.h"
 #include "operators/ABGVOperator.h"
 #include "operators/PHOperator.h"

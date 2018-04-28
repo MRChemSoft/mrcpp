@@ -2,7 +2,7 @@
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
 #include "trees/GenNode.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 #include "mwparallel/mpi.h"
 
 using namespace std;

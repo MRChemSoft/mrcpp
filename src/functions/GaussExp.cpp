@@ -11,8 +11,8 @@
 #include "functions/Gaussian.h"
 #include "functions/GaussFunc.h"
 #include "functions/GaussPoly.h"
-#include "mwutils/Printer.h"
-#include "mwutils/MathUtils.h"
+#include "utils/Printer.h"
+#include "utils/MathUtils.h"
 
 using namespace std;
 using namespace Eigen;

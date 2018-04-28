@@ -14,7 +14,7 @@
 #include "config.h"
 
 #include "core/MWFilter.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 #include "eigen_disable_warnings.h"
 
 using namespace std;

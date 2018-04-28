@@ -8,7 +8,7 @@
 #include "core/LegendreBasis.h"
 #include "trees/FunctionTree.h"
 #include "functions/GaussFunc.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 template<class T> void finalize(T **obj) {
     if (obj == 0) MSG_FATAL("Invalid argument");

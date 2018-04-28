@@ -9,7 +9,7 @@
 
 #include "functions/LegendrePoly.h"
 #include "core/ObjectCache.h"
-#include "mwutils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace std;
 using namespace Eigen;

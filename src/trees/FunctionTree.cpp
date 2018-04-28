@@ -10,8 +10,8 @@
 #include "trees/FunctionNode.h"
 #include "trees/ProjectedNode.h"
 #include "trees/HilbertIterator.h"
-#include "mwutils/Printer.h"
-#include "mwutils/Timer.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 using namespace std;
 using namespace Eigen;

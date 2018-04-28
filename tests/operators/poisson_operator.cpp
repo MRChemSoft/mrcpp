@@ -2,9 +2,9 @@
 
 #include "factory_functions.h"
 
-#include "mwoperators/PoissonOperator.h"
-#include "mwoperators/PoissonKernel.h"
-#include "mwoperators/MWOperator.h"
+#include "operators/PoissonOperator.h"
+#include "operators/PoissonKernel.h"
+#include "operators/MWOperator.h"
 #include "mwtrees/BandWidth.h"
 #include "functions/GaussFunc.h"
 #include "treebuilders/TreeBuilder.h"

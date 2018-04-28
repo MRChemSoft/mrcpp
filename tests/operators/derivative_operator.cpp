@@ -3,9 +3,9 @@
 #include "factory_functions.h"
 
 #include "mwutils/MathUtils.h"
-#include "mwoperators/MWOperator.h"
-#include "mwoperators/ABGVOperator.h"
-#include "mwoperators/PHOperator.h"
+#include "operators/MWOperator.h"
+#include "operators/ABGVOperator.h"
+#include "operators/PHOperator.h"
 #include "treebuilders/add.h"
 #include "treebuilders/apply.h"
 #include "treebuilders/project.h"

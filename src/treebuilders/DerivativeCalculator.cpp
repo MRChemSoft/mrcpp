@@ -1,6 +1,6 @@
 #include "treebuilders/DerivativeCalculator.h"
-#include "mwoperators/DerivativeOperator.h"
-#include "mwoperators/OperatorState.h"
+#include "operators/DerivativeOperator.h"
+#include "operators/OperatorState.h"
 #include "mwtrees/BandWidth.h"
 #include "mwtrees/OperatorNode.h"
 #include "mwtrees/FunctionTree.h"

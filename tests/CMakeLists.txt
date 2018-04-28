@@ -7,7 +7,7 @@ add_executable(mrcpp-tests unit_tests.cpp)
 add_subdirectory(treebuilders)
 add_subdirectory(core)
 add_subdirectory(functions)
-add_subdirectory(mwoperators)
+add_subdirectory(operators)
 add_subdirectory(mwtrees)
 
 target_include_directories(mrcpp-tests PRIVATE

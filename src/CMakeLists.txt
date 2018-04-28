@@ -5,7 +5,7 @@ add_subdirectory(mwutils)
 add_subdirectory(mwtrees)
 add_subdirectory(treebuilders)
 add_subdirectory(functions)
-add_subdirectory(mwoperators)
+add_subdirectory(operators)
 add_subdirectory(mwparallel)
 
 target_include_directories(mrcpp PRIVATE

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwoperators/ConvolutionOperator.h"
+#include "operators/ConvolutionOperator.h"
 
 namespace mrcpp {
 

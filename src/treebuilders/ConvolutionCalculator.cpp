@@ -1,6 +1,6 @@
 #include "treebuilders/ConvolutionCalculator.h"
-#include "mwoperators/ConvolutionOperator.h"
-#include "mwoperators/OperatorState.h"
+#include "operators/ConvolutionOperator.h"
+#include "operators/OperatorState.h"
 #include "mwtrees/BandWidth.h"
 #include "mwtrees/FunctionNode.h"
 #include "mwtrees/OperatorNode.h"

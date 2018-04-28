@@ -2,9 +2,9 @@
 
 #include "factory_functions.h"
 
-#include "mwoperators/HelmholtzOperator.h"
-#include "mwoperators/HelmholtzKernel.h"
-#include "mwoperators/MWOperator.h"
+#include "operators/HelmholtzOperator.h"
+#include "operators/HelmholtzKernel.h"
+#include "operators/MWOperator.h"
 #include "mwtrees/BandWidth.h"
 #include "treebuilders//OperatorAdaptor.h"
 #include "treebuilders/TreeBuilder.h"

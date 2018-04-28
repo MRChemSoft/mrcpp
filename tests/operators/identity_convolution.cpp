@@ -2,8 +2,8 @@
 
 #include "factory_functions.h"
 
-#include "mwoperators/IdentityConvolution.h"
-#include "mwoperators/IdentityKernel.h"
+#include "operators/IdentityConvolution.h"
+#include "operators/IdentityKernel.h"
 #include "mwtrees/OperatorTree.h"
 #include "mwtrees/BandWidth.h"
 #include "treebuilders/TreeBuilder.h"

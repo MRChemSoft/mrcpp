@@ -1,7 +1,7 @@
 #pragma once
 
 #include "treebuilders/TreeCalculator.h"
-#include "mwoperators/OperatorStatistics.h"
+#include "operators/OperatorStatistics.h"
 
 #include "mrcpp_declarations.h"
 

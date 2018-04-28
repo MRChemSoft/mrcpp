@@ -6,9 +6,9 @@
 #include "mwoperators/MWOperator.h"
 #include "mwoperators/ABGVOperator.h"
 #include "mwoperators/PHOperator.h"
-#include "mwbuilders/add.h"
-#include "mwbuilders/apply.h"
-#include "mwbuilders/project.h"
+#include "treebuilders/add.h"
+#include "treebuilders/apply.h"
+#include "treebuilders/project.h"
 
 using namespace mrcpp;
 

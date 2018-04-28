@@ -7,12 +7,12 @@
 #include "mwoperators/MWOperator.h"
 #include "mwtrees/BandWidth.h"
 #include "mwfunctions/GaussFunc.h"
-#include "mwbuilders/TreeBuilder.h"
-#include "mwbuilders/OperatorAdaptor.h"
-#include "mwbuilders/CrossCorrelationCalculator.h"
-#include "mwbuilders/apply.h"
-#include "mwbuilders/project.h"
-#include "mwbuilders/grid.h"
+#include "treebuilders/TreeBuilder.h"
+#include "treebuilders/OperatorAdaptor.h"
+#include "treebuilders/CrossCorrelationCalculator.h"
+#include "treebuilders/apply.h"
+#include "treebuilders/project.h"
+#include "treebuilders/grid.h"
 
 using namespace mrcpp;
 

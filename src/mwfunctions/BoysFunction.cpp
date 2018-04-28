@@ -2,7 +2,7 @@
 #include "mwtrees/FunctionTree.h"
 #include "mwcore/InterpolatingBasis.h"
 #include "mwutils/Printer.h"
-#include "mwbuilders/project.h"
+#include "treebuilders/project.h"
 
 namespace mrcpp {
 

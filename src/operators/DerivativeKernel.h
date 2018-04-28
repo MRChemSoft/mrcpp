@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwoperators/GreensKernel.h"
+#include "operators/GreensKernel.h"
 #include "functions/GaussFunc.h"
 #include "functions/GaussPoly.h"
 

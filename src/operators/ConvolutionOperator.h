@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwoperators/MWOperator.h"
+#include "operators/MWOperator.h"
 #include "mwtrees/FunctionTreeVector.h"
 
 namespace mrcpp {

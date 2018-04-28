@@ -1,4 +1,4 @@
-#include "mwoperators/ABGVOperator.h"
+#include "operators/ABGVOperator.h"
 #include "treebuilders/ABGVCalculator.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/BandWidthAdaptor.h"

@@ -1,4 +1,4 @@
-#include "mwoperators/MWOperator.h"
+#include "operators/MWOperator.h"
 #include "mwtrees/BandWidth.h"
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"

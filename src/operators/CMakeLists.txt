@@ -10,7 +10,7 @@ target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.cpp
 )
 
-list(APPEND mwoperators_h
+list(APPEND operators_h
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.h
@@ -30,14 +30,14 @@ list(APPEND mwoperators_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header IN LISTS mwoperators_h)
+foreach(_header IN LISTS operators_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwoperators
+    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
     )
  install(
     FILES ${_header}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwoperators
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
     )
 endforeach() 
 

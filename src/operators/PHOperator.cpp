@@ -1,4 +1,4 @@
-#include "mwoperators/PHOperator.h"
+#include "operators/PHOperator.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/PHCalculator.h"
 #include "treebuilders/BandWidthAdaptor.h"

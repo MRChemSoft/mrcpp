@@ -1,5 +1,5 @@
-#include "mwoperators/HelmholtzOperator.h"
-#include "mwoperators/HelmholtzKernel.h"
+#include "operators/HelmholtzOperator.h"
+#include "operators/HelmholtzKernel.h"
 #include "mwutils/Printer.h"
 
 namespace mrcpp {

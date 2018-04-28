@@ -1,4 +1,4 @@
-#include "mwoperators/OperatorStatistics.h"
+#include "operators/OperatorStatistics.h"
 #include "mwtrees/MWNode.h"
 
 using namespace Eigen;

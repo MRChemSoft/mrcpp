@@ -3,8 +3,8 @@
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/ProjectionCalculator.h"
 #include "functions/AnalyticFunction.h"
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwtrees/FunctionTree.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/FunctionTree.h"
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 

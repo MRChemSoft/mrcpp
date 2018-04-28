@@ -2,8 +2,8 @@
 #include "mwutils/Printer.h"
 #include "mwutils/MathUtils.h"
 #include "functions/RepresentableFunction.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/MWNode.h"
+#include "trees/FunctionTree.h"
+#include "trees/MWNode.h"
 
 using namespace std;
 using namespace Eigen;

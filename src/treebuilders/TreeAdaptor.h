@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwtrees/MWNode.h"
+#include "trees/MWNode.h"
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {

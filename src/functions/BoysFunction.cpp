@@ -1,5 +1,5 @@
 #include "functions/BoysFunction.h"
-#include "mwtrees/FunctionTree.h"
+#include "trees/FunctionTree.h"
 #include "core/InterpolatingBasis.h"
 #include "mwutils/Printer.h"
 #include "treebuilders/project.h"

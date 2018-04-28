@@ -1,7 +1,7 @@
 #include "mwparallel/mpi.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/ProjectedNode.h"
-#include "mwtrees/SerialFunctionTree.h"
+#include "trees/FunctionTree.h"
+#include "trees/ProjectedNode.h"
+#include "trees/SerialFunctionTree.h"
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 

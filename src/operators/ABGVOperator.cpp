@@ -2,7 +2,7 @@
 #include "treebuilders/ABGVCalculator.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/BandWidthAdaptor.h"
-#include "mwtrees/OperatorTree.h"
+#include "trees/OperatorTree.h"
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 

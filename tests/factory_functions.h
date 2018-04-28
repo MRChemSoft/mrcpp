@@ -1,12 +1,12 @@
 #ifndef FACTORY_FUNCTIONS_H
 #define FACTORY_FUNCTIONS_H
 
-#include "mwtrees/BoundingBox.h"
-#include "mwtrees/NodeIndex.h"
-#include "mwtrees/MultiResolutionAnalysis.h"
+#include "trees/BoundingBox.h"
+#include "trees/NodeIndex.h"
+#include "trees/MultiResolutionAnalysis.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
-#include "mwtrees/FunctionTree.h"
+#include "trees/FunctionTree.h"
 #include "functions/GaussFunc.h"
 #include "mwutils/Printer.h"
 

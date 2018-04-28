@@ -1,7 +1,7 @@
 #pragma once
 
 #include "treebuilders/TreeAdaptor.h"
-#include "mwtrees/FunctionTreeVector.h"
+#include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
 

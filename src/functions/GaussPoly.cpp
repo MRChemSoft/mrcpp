@@ -9,9 +9,9 @@
 
 #include "vector"
 
-#include "mwfunctions/GaussPoly.h"
-#include "mwfunctions/GaussFunc.h"
-#include "mwfunctions/GaussExp.h"
+#include "functions/GaussPoly.h"
+#include "functions/GaussFunc.h"
+#include "functions/GaussExp.h"
 #include "mwutils/Printer.h"
 
 using namespace std;

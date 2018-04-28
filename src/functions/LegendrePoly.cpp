@@ -7,7 +7,7 @@
  * \breif
  */
 
-#include "mwfunctions/LegendrePoly.h"
+#include "functions/LegendrePoly.h"
 #include "mwcore/ObjectCache.h"
 #include "mwutils/Printer.h"
 

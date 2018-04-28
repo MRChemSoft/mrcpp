@@ -4,7 +4,7 @@
 
 #include "mwtrees/FunctionTreeVector.h"
 #include "treebuilders/WaveletAdaptor.h"
-#include "mwfunctions/GaussExp.h"
+#include "functions/GaussExp.h"
 #include "treebuilders/project.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/add.h"

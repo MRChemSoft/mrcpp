@@ -9,11 +9,11 @@
  */
 #include <cmath>
 
-#include "mwfunctions/GaussExp.h"
-#include "mwfunctions/GaussFunc.h"
-#include "mwfunctions/GaussPoly.h"
-#include "mwfunctions/Polynomial.h"
-#include "mwfunctions/BoysFunction.h"
+#include "functions/GaussExp.h"
+#include "functions/GaussFunc.h"
+#include "functions/GaussPoly.h"
+#include "functions/Polynomial.h"
+#include "functions/BoysFunction.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Printer.h"
 

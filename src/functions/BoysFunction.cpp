@@ -1,4 +1,4 @@
-#include "mwfunctions/BoysFunction.h"
+#include "functions/BoysFunction.h"
 #include "mwtrees/FunctionTree.h"
 #include "mwcore/InterpolatingBasis.h"
 #include "mwutils/Printer.h"

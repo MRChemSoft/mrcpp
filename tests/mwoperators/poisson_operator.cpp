@@ -6,7 +6,7 @@
 #include "mwoperators/PoissonKernel.h"
 #include "mwoperators/MWOperator.h"
 #include "mwtrees/BandWidth.h"
-#include "mwfunctions/GaussFunc.h"
+#include "functions/GaussFunc.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/CrossCorrelationCalculator.h"

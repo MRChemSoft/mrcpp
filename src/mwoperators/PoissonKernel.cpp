@@ -11,7 +11,7 @@
 #include <cmath>
 
 #include "mwoperators/PoissonKernel.h"
-#include "mwfunctions/GaussFunc.h"
+#include "functions/GaussFunc.h"
 #include "mwutils/Printer.h"
 
 namespace mrcpp {

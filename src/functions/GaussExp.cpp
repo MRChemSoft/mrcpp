@@ -7,10 +7,10 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "mwfunctions/GaussExp.h"
-#include "mwfunctions/Gaussian.h"
-#include "mwfunctions/GaussFunc.h"
-#include "mwfunctions/GaussPoly.h"
+#include "functions/GaussExp.h"
+#include "functions/Gaussian.h"
+#include "functions/GaussFunc.h"
+#include "functions/GaussPoly.h"
 #include "mwutils/Printer.h"
 #include "mwutils/MathUtils.h"
 

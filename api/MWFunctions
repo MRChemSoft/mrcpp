@@ -11,5 +11,5 @@
 #include "treebuilders/multiply.h"
 #include "treebuilders/add.h"
 
-#include "mwfunctions/RepresentableFunction.h"
-#include "mwfunctions/AnalyticFunction.h"
+#include "functions/RepresentableFunction.h"
+#include "functions/AnalyticFunction.h"

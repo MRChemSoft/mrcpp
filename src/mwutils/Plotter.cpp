@@ -1,7 +1,7 @@
 #include "mwutils/Plotter.h"
 #include "mwutils/Printer.h"
 #include "mwutils/MathUtils.h"
-#include "mwfunctions/RepresentableFunction.h"
+#include "functions/RepresentableFunction.h"
 #include "mwtrees/FunctionTree.h"
 #include "mwtrees/MWNode.h"
 

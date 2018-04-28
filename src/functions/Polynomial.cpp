@@ -7,7 +7,7 @@
  *
  */
 
-#include "mwfunctions/Polynomial.h"
+#include "functions/Polynomial.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Printer.h"
 

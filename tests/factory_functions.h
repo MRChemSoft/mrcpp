@@ -7,7 +7,7 @@
 #include "mwcore/InterpolatingBasis.h"
 #include "mwcore/LegendreBasis.h"
 #include "mwtrees/FunctionTree.h"
-#include "mwfunctions/GaussFunc.h"
+#include "functions/GaussFunc.h"
 #include "mwutils/Printer.h"
 
 template<class T> void finalize(T **obj) {

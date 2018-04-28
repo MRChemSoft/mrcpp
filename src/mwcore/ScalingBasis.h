@@ -4,7 +4,7 @@
 
 #include "constants.h"
 
-#include "mwfunctions/Polynomial.h"
+#include "functions/Polynomial.h"
 
 namespace mrcpp {
 

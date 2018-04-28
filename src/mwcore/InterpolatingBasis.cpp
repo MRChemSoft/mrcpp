@@ -9,7 +9,7 @@
 
 #include "mwcore/InterpolatingBasis.h"
 #include "mwcore/QuadratureCache.h"
-#include "mwfunctions/LegendrePoly.h"
+#include "functions/LegendrePoly.h"
 
 using namespace std;
 using namespace Eigen;

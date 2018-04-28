@@ -2,7 +2,7 @@
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/ProjectionCalculator.h"
-#include "mwfunctions/AnalyticFunction.h"
+#include "functions/AnalyticFunction.h"
 #include "mwtrees/MultiResolutionAnalysis.h"
 #include "mwtrees/FunctionTree.h"
 #include "mwutils/Printer.h"

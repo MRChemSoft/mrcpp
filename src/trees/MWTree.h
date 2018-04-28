@@ -7,7 +7,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "mwparallel/omp.h"
+#include "utils/mrcpp_omp.h"
 #include "mrcpp_declarations.h"
 
 #include "trees/MultiResolutionAnalysis.h"

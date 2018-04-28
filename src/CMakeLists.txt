@@ -6,7 +6,6 @@ add_subdirectory(trees)
 add_subdirectory(treebuilders)
 add_subdirectory(functions)
 add_subdirectory(operators)
-add_subdirectory(mwparallel)
 
 target_include_directories(mrcpp PRIVATE
     ${CMAKE_BINARY_DIR}

@@ -2,7 +2,7 @@
 #include "core/QuadratureCache.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
-#include "mwtrees/MWNode.h"
+#include "trees/MWNode.h"
 #include "mwutils/Printer.h"
 
 using namespace std;

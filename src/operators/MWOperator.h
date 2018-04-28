@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwtrees/OperatorTree.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/OperatorTree.h"
 
 namespace mrcpp {
 

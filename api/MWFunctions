@@ -1,7 +1,7 @@
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwtrees/BoundingBox.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/FunctionTreeVector.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/BoundingBox.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"

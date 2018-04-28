@@ -1,6 +1,6 @@
 #include "treebuilders/CrossCorrelationCalculator.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/MWNode.h"
+#include "trees/FunctionTree.h"
+#include "trees/MWNode.h"
 #include "mwutils/Printer.h"
 #include "eigen_disable_warnings.h"
 

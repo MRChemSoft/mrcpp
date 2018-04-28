@@ -1,8 +1,8 @@
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/TreeCalculator.h"
 #include "treebuilders/TreeAdaptor.h"
-#include "mwtrees/MWTree.h"
-#include "mwtrees/MWNode.h"
+#include "trees/MWTree.h"
+#include "trees/MWNode.h"
 #include "mwutils/Timer.h"
 #include "mwutils/Printer.h"
 

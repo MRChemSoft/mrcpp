@@ -8,7 +8,7 @@ add_subdirectory(treebuilders)
 add_subdirectory(core)
 add_subdirectory(functions)
 add_subdirectory(operators)
-add_subdirectory(mwtrees)
+add_subdirectory(trees)
 
 target_include_directories(mrcpp-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/

@@ -4,8 +4,8 @@
 
 #include "operators/IdentityConvolution.h"
 #include "operators/IdentityKernel.h"
-#include "mwtrees/OperatorTree.h"
-#include "mwtrees/BandWidth.h"
+#include "trees/OperatorTree.h"
+#include "trees/BandWidth.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/CrossCorrelationCalculator.h"

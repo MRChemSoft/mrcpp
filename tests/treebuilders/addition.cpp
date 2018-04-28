@@ -2,7 +2,7 @@
 
 #include "factory_functions.h"
 
-#include "mwtrees/FunctionTreeVector.h"
+#include "trees/FunctionTreeVector.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "functions/GaussExp.h"
 #include "treebuilders/project.h"

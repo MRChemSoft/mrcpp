@@ -7,7 +7,7 @@
 #include "treebuilders/ConvolutionCalculator.h"
 #include "operators/DerivativeOperator.h"
 #include "operators/ConvolutionOperator.h"
-#include "mwtrees/FunctionTree.h"
+#include "trees/FunctionTree.h"
 #include "mwutils/Printer.h"
 #include "mwutils/Timer.h"
 

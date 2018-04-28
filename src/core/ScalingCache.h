@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mwcore/ObjectCache.h"
+#include "core/ObjectCache.h"
 
 namespace mrcpp {
 

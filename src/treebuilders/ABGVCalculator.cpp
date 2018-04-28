@@ -1,7 +1,7 @@
 #include "treebuilders/ABGVCalculator.h"
-#include "mwcore/QuadratureCache.h"
-#include "mwcore/InterpolatingBasis.h"
-#include "mwcore/LegendreBasis.h"
+#include "core/QuadratureCache.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
 #include "mwtrees/MWNode.h"
 #include "mwutils/Printer.h"
 

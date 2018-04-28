@@ -1,4 +1,4 @@
-#include "mwcore/ScalingBasis.h"
+#include "core/ScalingBasis.h"
 #include "mwutils/Printer.h"
 
 namespace mrcpp {

@@ -13,7 +13,7 @@
 #include "constants.h"
 #include "config.h"
 
-#include "mwcore/CrossCorrelation.h"
+#include "core/CrossCorrelation.h"
 #include "mwutils/Printer.h"
 
 using namespace std;

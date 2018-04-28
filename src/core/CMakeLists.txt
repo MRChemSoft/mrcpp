@@ -11,7 +11,7 @@ target_sources(mrcpp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.cpp
 )
 
-list(APPEND mwcore_h
+list(APPEND core_h
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCache.h
     ${CMAKE_CURRENT_SOURCE_DIR}/FilterCache.h
@@ -26,13 +26,13 @@ list(APPEND mwcore_h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         
-foreach(_header IN LISTS mwcore_h)
+foreach(_header IN LISTS core_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwcore
+    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
     )
  install(
     FILES ${_header}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/mwcore
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
     )
 endforeach() 

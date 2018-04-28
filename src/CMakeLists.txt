@@ -1,6 +1,6 @@
 add_library(mrcpp STATIC "")
 
-add_subdirectory(mwcore)
+add_subdirectory(core)
 add_subdirectory(mwutils)
 add_subdirectory(mwtrees)
 add_subdirectory(treebuilders)

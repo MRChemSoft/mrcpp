@@ -2,7 +2,7 @@
 #include "mwtrees/FunctionTree.h"
 #include "mwutils/MathUtils.h"
 #include "mwutils/Printer.h"
-#include "mwcore/QuadratureCache.h"
+#include "core/QuadratureCache.h"
 
 #ifdef HAVE_BLAS
 extern "C" {

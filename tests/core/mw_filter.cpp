@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#include "mwcore/FilterCache.h"
+#include "core/FilterCache.h"
 #include "constants.h"
 
 using namespace Eigen;

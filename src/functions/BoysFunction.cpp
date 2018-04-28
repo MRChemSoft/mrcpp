@@ -1,6 +1,6 @@
 #include "functions/BoysFunction.h"
 #include "mwtrees/FunctionTree.h"
-#include "mwcore/InterpolatingBasis.h"
+#include "core/InterpolatingBasis.h"
 #include "mwutils/Printer.h"
 #include "treebuilders/project.h"
 

@@ -8,11 +8,11 @@
 
 #include "pybind11/pybind11.h"
 
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwoperators/ABGVOperator.h"
-#include "mwoperators/PoissonOperator.h"
-#include "mwoperators/HelmholtzOperator.h"
-#include "mwoperators/ConvolutionOperator.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "operators/ABGVOperator.h"
+#include "operators/PoissonOperator.h"
+#include "operators/HelmholtzOperator.h"
+#include "operators/ConvolutionOperator.h"
 
 using namespace mrcpp;
 namespace py = pybind11;

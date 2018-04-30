@@ -7,15 +7,15 @@
 
 #include "PyBoundingBox.h"
 
-#include "mwtrees/BoundingBox.h"
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwtrees/MWTree.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/FunctionTreeVector.h"
+#include "trees/BoundingBox.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/MWTree.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 
-#include "mwcore/ScalingBasis.h"
-#include "mwcore/InterpolatingBasis.h"
-#include "mwcore/LegendreBasis.h"
+#include "core/ScalingBasis.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/numpy.h"

@@ -7,9 +7,9 @@
 //#include "pybind11/pybind11.h"
 //#include "pybind11/numpy.h"
 
-#include "mwfunctions/RepresentableFunction.h"
-#include "mwfunctions/Gaussian.h"
-#include "mwfunctions/GaussFunc.h"
+#include "functions/RepresentableFunction.h"
+#include "functions/Gaussian.h"
+#include "functions/GaussFunc.h"
 #include "PyRepresentableFunction.h" // Trampoline Class for Representable Function
 
 using namespace mrcpp;

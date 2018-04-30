@@ -7,9 +7,9 @@
 
 #include "pybind11/pybind11.h"
 
-#include "mwcore/ScalingBasis.h"
-#include "mwcore/InterpolatingBasis.h"
-#include "mwcore/LegendreBasis.h"
+#include "core/ScalingBasis.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
 
 using namespace mrcpp;
 namespace py = pybind11;

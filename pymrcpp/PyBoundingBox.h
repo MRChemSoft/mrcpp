@@ -10,7 +10,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/numpy.h"
 
-#include "mwtrees/BoundingBox.h"
+#include "trees/BoundingBox.h"
 
 template <int D>
 class PyBoundingBox : public mrcpp::BoundingBox<D> {

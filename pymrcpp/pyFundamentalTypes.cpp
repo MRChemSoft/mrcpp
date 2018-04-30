@@ -10,14 +10,14 @@
 #include "pybind11/eigen.h"
 #include "pybind11/functional.h"
 
-#include "mwtrees/BoundingBox.h"
-#include "mwtrees/MultiResolutionAnalysis.h"
-#include "mwtrees/MWTree.h"
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/FunctionTreeVector.h"
-#include "mwfunctions/RepresentableFunction.h"
-#include "mwfunctions/Gaussian.h"
-#include "mwfunctions/GaussFunc.h"
+#include "trees/BoundingBox.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/MWTree.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
+#include "functions/RepresentableFunction.h"
+#include "functions/Gaussian.h"
+#include "functions/GaussFunc.h"
 #include "PyRepresentableFunction.h" // Trampoline Class for Representable Function
 #include "PyBoundingBox.h"
 

@@ -6,7 +6,7 @@
  */
 #pragma once
 //#include "pybind11/pybind11.h"
-#include "mwfunctions/RepresentableFunction.h"
+#include "functions/RepresentableFunction.h"
 
 
 template <int D>

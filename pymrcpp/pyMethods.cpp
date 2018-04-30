@@ -8,15 +8,15 @@
 #include "pybind11/pybind11.h"
 //#include "pybind11/functional.h"
 
-#include "mwtrees/FunctionTree.h"
-#include "mwtrees/FunctionTreeVector.h"
-#include "mwoperators/DerivativeOperator.h"
-#include "mwoperators/ConvolutionOperator.h"
-#include "mwbuilders/add.h"
-#include "mwbuilders/multiply.h"
-#include "mwbuilders/apply.h"
-#include "mwbuilders/grid.h"
-#include "mwbuilders/project.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
+#include "operators/DerivativeOperator.h"
+#include "operators/ConvolutionOperator.h"
+#include "treebuilders/add.h"
+#include "treebuilders/multiply.h"
+#include "treebuilders/apply.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/project.h"
 
 namespace py = pybind11;
 using namespace mrcpp;

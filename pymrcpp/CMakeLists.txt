@@ -18,3 +18,4 @@ target_include_directories(pymrcpp PRIVATE
 target_link_libraries(pymrcpp PRIVATE
     mrcpp
     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_python.py ${CMAKE_CURRENT_BINARY_DIR}/test_python.py)

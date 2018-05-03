@@ -86,7 +86,7 @@ const FunctionTree<D> *FunctionTreeVector<D>::operator[](int i) const {
 }
 
 template<int D>
-int FunctionTreeVector<D>::sumNodes() {
+int FunctionTreeVector<D>::sumNodes() const {
     int nNodes = 0;
     for (int i = 0; i < size(); i++) {
         if (funcs[i] != 0) {

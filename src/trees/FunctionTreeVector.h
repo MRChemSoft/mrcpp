@@ -29,7 +29,7 @@ public:
 
     FunctionTree<D> *operator[](int i);
     const FunctionTree<D> *operator[](int i) const;
-    
+
 protected:
     std::vector<double> coefs;
     std::vector<FunctionTree<D> *> funcs;

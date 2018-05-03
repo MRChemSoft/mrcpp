@@ -17,9 +17,11 @@ public:
 
     int size() const { return this->funcs.size(); }
     void clear(bool dealloc = false);
+    int sumNodes();
 
     void push_back(double c, FunctionTree<D> *f);
     void push_back(FunctionTree<D> *f);
+    void push_back(FunctionTreeVector<D> &vec);
 
     double getCoef(int i) const;
     FunctionTree<D> &getFunc(int i);
@@ -28,6 +30,7 @@ public:
     FunctionTree<D> *operator[](int i);
     const FunctionTree<D> *operator[](int i) const;
 
+    
 protected:
     std::vector<double> coefs;
     std::vector<FunctionTree<D> *> funcs;

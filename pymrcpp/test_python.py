@@ -31,11 +31,18 @@ mr.project(prec, phi_tree, phi_exact)
 def test_IsIntWorking():
     assert isclose(1.0, phi_tree.integrate(), rel_tol = prec)
 
+
 def test_BBGetScale():
     assert world.getScale() == min_scale
+
 
 def test_IBGetScalingOrder():
     assert basis.getScalingOrder() == order
 
+
 def test_MRAGetOrder():
     assert MRA.getOrder() == order
+
+
+def test_evalf():
+    assert isclose(phi_tree.evalf(.2, .2 ,.2), phi_exact(.2, .2, .2), rel_tol = prec)

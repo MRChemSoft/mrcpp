@@ -5,13 +5,17 @@
  *          UiT - The Arctic University of Norway
  */
 
+#include "treebuilders/project.h"
+#include "trees/FunctionTree.h"
+#include "PyAnalyticFunction.h"
+
 #include "pyProject.h"
 
-using namespace mrcpp;
 
-void project3D(double prec, FunctionTree<3> &out,
-               std::function<double (double x, double y, double z)> func, int maxIter) {
-
-    AnalyticFu
-
+void project3D(double prec,
+               mrcpp::FunctionTree<3> &out,
+               std::function<double (double x, double y, double z)> func,
+               int maxIter) {
+    PyAnalyticFunction3D inp(func);
+    mrcpp::project(prec, out, inp, maxIter);
 }

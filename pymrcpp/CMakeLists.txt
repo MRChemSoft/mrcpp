@@ -5,9 +5,6 @@ pybind11_add_module(pymrcpp SHARED
     pyTmpEverything.cpp
     PyBoundingBox.cpp
     pyProject.cpp
-    PyFunctionTree.cpp
-        #pyFundamentalTypes.cpp
-    #pyGauss.cpp
 )
 
 target_include_directories(pymrcpp PRIVATE

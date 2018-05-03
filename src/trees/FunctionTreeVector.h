@@ -17,7 +17,7 @@ public:
 
     int size() const { return this->funcs.size(); }
     void clear(bool dealloc = false);
-    int sumNodes();
+    int sumNodes() const;
 
     void push_back(double c, FunctionTree<D> *f);
     void push_back(FunctionTree<D> *f);

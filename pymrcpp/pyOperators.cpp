@@ -41,7 +41,7 @@ void pyOperators(py::module &m) {
 
     if (D==3){
         py::class_<PoissonOperator> (m, "PoissonOperator", convop)
-            .def(py::init<const MultiResolutionAnalysis<3> &, double >());
+            .def(py::init<MultiResolutionAnalysis<3> &, double >());
         py::class_<HelmholtzOperator> (m, "HelmholtzOperator", convop)
             .def(py::init<MultiResolutionAnalysis<3> &, double, double>());
     }

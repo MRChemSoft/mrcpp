@@ -22,6 +22,9 @@
 #include "pybind11/functional.h"
 #include "pybind11/eigen.h"
 
+#include "pyProject.h"
+#include "PyFunctionTree.h"
+
 using namespace mrcpp;
 namespace py = pybind11;
 
@@ -60,14 +63,14 @@ void pyTmpEverything(py::module &m) {
 
     std::stringstream funcTreeName;
     funcTreeName << "FunctionTree" << 3 << "D";
-    py::class_<FunctionTree<3>> (m, funcTreeName.str().data(), mwtree)
+    py::class_<PyFunctionTree<3>> (m, funcTreeName.str().data(), mwtree)
             .def(py::init<MultiResolutionAnalysis<3>>())
-            .def("integrate", &FunctionTree<3>::integrate)
-            .def("clear", &FunctionTree<3>::clear)
-            .def("normalize", &FunctionTree<3>::normalize);
+            .def("integrate", &PyFunctionTree<3>::integrate)
+            .def("clear", &PyFunctionTree<3>::clear)
+            .def("normalize", &PyFunctionTree<3>::normalize)
             //.def("evalf", py::overload_cast<double>(&FunctionTree<3>::evalf))
             //.def("evalf", py::overload_cast<double, double>(&FunctionTree<3>::evalf))
-            //.def("evalf", py::overload_cast<double, double, double>(&FunctionTree<3>::evalf));
+            .def("evalf", py::overload_cast<double, double, double>(&PyFunctionTree<3>::evalf3D));
 
 
     py::class_<ScalingBasis> scalingbasis(m, "ScalingBasis");
@@ -81,5 +84,6 @@ void pyTmpEverything(py::module &m) {
         .def(py::init<int>())
         .def("getScalingOrder", &LegendreBasis::getScalingOrder);
 
-
+    m.def("project", py::overload_cast<double, PyFunctionTree<3> &, std::function<double (double, double, double)>, int>(&project3D),
+          py::arg("prec"), py::arg("out"), py::arg("func"), py::arg("maxIter")= -1);
 }

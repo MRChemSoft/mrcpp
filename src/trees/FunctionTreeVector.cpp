@@ -35,6 +35,14 @@ void FunctionTreeVector<D>::push_back(FunctionTree<D> *f) {
 }
 
 template<int D>
+void FunctionTreeVector<D>::push_back(FunctionTreeVector<D> &vec) {
+    for (int i = 0; i < vec.size(); i++) {
+        this->coefs.push_back(vec.coefs[i]);
+        this->funcs.push_back(vec.funcs[i]);
+    }
+}
+
+template<int D>
 void FunctionTreeVector<D>::clear(bool dealloc) {
     if (dealloc) {
         for (int i = 0; i < this->funcs.size(); i++) {
@@ -75,6 +83,17 @@ template<int D>
 const FunctionTree<D> *FunctionTreeVector<D>::operator[](int i) const {
     if (i < 0 or i >= this->funcs.size()) MSG_ERROR("Out of bounds");
     return this->funcs[i];
+}
+
+template<int D>
+int FunctionTreeVector<D>::sumNodes() const {
+    int nNodes = 0;
+    for (int i = 0; i < size(); i++) {
+        if (funcs[i] != 0) {
+            nNodes += funcs[i]->getNNodes();
+        }
+    }
+    return nNodes;
 }
 
 template class FunctionTreeVector<1>;

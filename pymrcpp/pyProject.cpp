@@ -19,3 +19,19 @@ void project3D(double prec,
     PyAnalyticFunction3D inp(func);
     mrcpp::project(prec, out, inp, maxIter);
 }
+
+void project2D(double prec,
+                      mrcpp::FunctionTree<2> &out,
+                      std::function<double (double x, double y)> func,
+                      int maxIter) {
+    PyAnalyticFunction2D inp(func);
+    mrcpp::project(prec, out, inp, maxIter);
+}
+
+void project1D(double prec,
+                      mrcpp::FunctionTree<1> &out,
+                      std::function<double (double x)> func,
+                      int maxIter) {
+    PyAnalyticFunction1D inp(func);
+    mrcpp::project(prec, out, inp, maxIter);
+}

@@ -6,7 +6,7 @@
  */
 
 #include "pybind11/pybind11.h"
-//#include "pybind11/functional.h"
+#include "pybind11/functional.h"
 
 #include "trees/FunctionTree.h"
 #include "trees/FunctionTreeVector.h"
@@ -16,11 +16,12 @@
 #include "treebuilders/multiply.h"
 #include "treebuilders/apply.h"
 #include "treebuilders/grid.h"
-#include "treebuilders/project.h"
+//#include "treebuilders/project.h"
+#include "pyProject.h"
 
 namespace py = pybind11;
 using namespace mrcpp;
-/*
+
 void pyProject1D(py::module &m) {
     m.def("project", py::overload_cast<double, FunctionTree<1> &, std::function<double (double)>, int>(&project1D),
     py::arg("prec"), py::arg("out"), py::arg("func"), py::arg("maxIter")= -1);
@@ -35,7 +36,7 @@ void pyProject3D(py::module &m) {
     m.def("project", py::overload_cast<double, FunctionTree<3> &, std::function<double (double, double, double)>, int>(&project3D),
     py::arg("prec"), py::arg("out"), py::arg("func"), py::arg("maxIter")= -1);
 }
-*/
+
 template <int D>
 void pyMethods(py::module &m) {
 
@@ -44,10 +45,12 @@ void pyMethods(py::module &m) {
         py::arg("prec"), py::arg("out"), py::arg("a"),  py::arg("three_a"), py::arg("b"), py::arg("three_b"), py::arg("maxIter") = -1,
         "Adds to function threes");
 
-    m.def("project", py::overload_cast<double, FunctionTree<D> &, RepresentableFunction<D> &, int>(&project<D>),
-        py::arg("prec"), py::arg("out"), py::arg("inp"), py::arg("maxIter")= -1);
+  //  m.def("project", py::overload_cast<double, FunctionTree<D> &, RepresentableFunction<D> &, int>(&project<D>),
+  //      py::arg("prec"), py::arg("out"), py::arg("inp"), py::arg("maxIter")= -1);
 
-    m.def("multiply", py::overload_cast<double, FunctionTree<D> &, double, FunctionTree<D> &, FunctionTree<D> &, int >(&multiply<D>));
+    m.def("multiply", py::overload_cast<double, FunctionTree<D> &, double, FunctionTree<D> &, FunctionTree<D> &, int >(&multiply<D>),
+            py::arg("prec"), py::arg("out"), py::arg("c"), py::arg("tree_a"), py::arg("tree_b"), py::arg("maxIter") = -1,
+            "Multiplies two function trees");
     m.def("multiply", py::overload_cast<double, FunctionTree<D> &, FunctionTreeVector<D> &, int >(&multiply<D>));
 
     m.def("build_grid", &build_grid<D>);

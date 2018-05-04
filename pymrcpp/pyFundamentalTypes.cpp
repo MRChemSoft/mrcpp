@@ -63,7 +63,7 @@ void pyFundamentalTypes(py::module &m) {
     std::stringstream funcTreeName;
     funcTreeName << "FunctionTree" << D << "D";
     py::class_<FunctionTree<D>> (m, funcTreeName.str().data(), mwtree)
-        .def(py::init<const MultiResolutionAnalysis<D>>())
+        .def(py::init<MultiResolutionAnalysis<D>>())
         .def("integrate", &FunctionTree<D>::integrate)
         .def("clear", &FunctionTree<D>::clear)
         .def("normalize", &FunctionTree<D>::normalize)

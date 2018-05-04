@@ -5,6 +5,9 @@ pybind11_add_module(pymrcpp SHARED
     pyTmpEverything.cpp
     PyBoundingBox.cpp
     pyProject.cpp
+    pyOperators.cpp
+    pyMethods.cpp
+    pyBases.cpp
 )
 
 target_include_directories(pymrcpp PRIVATE

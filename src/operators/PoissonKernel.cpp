@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-#include "operators/PoissonKernel.h"
+#include "PoissonKernel.h"
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 

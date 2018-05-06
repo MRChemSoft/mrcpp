@@ -3,7 +3,7 @@
 #pragma GCC system_header
 #include <Eigen/Dense>
 
-#include "core/ScalingBasis.h"
+#include "ScalingBasis.h"
 
 namespace mrcpp {
 

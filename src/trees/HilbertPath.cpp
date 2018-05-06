@@ -1,4 +1,4 @@
-#include "trees/HilbertPath.h"
+#include "HilbertPath.h"
 
 namespace mrcpp {
 

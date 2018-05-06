@@ -3,8 +3,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "core/GaussQuadrature.h"
-#include "core/ObjectCache.h"
+#include "GaussQuadrature.h"
+#include "ObjectCache.h"
 
 namespace mrcpp {
 

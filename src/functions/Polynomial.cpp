@@ -7,7 +7,7 @@
  *
  */
 
-#include "functions/Polynomial.h"
+#include "Polynomial.h"
 #include "utils/MathUtils.h"
 #include "utils/Printer.h"
 

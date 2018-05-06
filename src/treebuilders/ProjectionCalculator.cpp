@@ -1,4 +1,4 @@
-#include "treebuilders/ProjectionCalculator.h"
+#include "ProjectionCalculator.h"
 #include "trees/MWNode.h"
 
 using namespace std;

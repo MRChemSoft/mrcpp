@@ -1,6 +1,6 @@
 #pragma once
 
-#include "operators/DerivativeOperator.h"
+#include "DerivativeOperator.h"
 
 namespace mrcpp {
 

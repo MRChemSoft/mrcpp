@@ -7,10 +7,10 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "functions/GaussExp.h"
-#include "functions/Gaussian.h"
-#include "functions/GaussFunc.h"
-#include "functions/GaussPoly.h"
+#include "GaussExp.h"
+#include "Gaussian.h"
+#include "GaussFunc.h"
+#include "GaussPoly.h"
 #include "utils/Printer.h"
 #include "utils/MathUtils.h"
 

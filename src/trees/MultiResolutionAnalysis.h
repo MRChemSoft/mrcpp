@@ -1,6 +1,6 @@
 #pragma once
 
-#include "trees/BoundingBox.h"
+#include "BoundingBox.h"
 #include "core/ScalingBasis.h"
 #include "core/MWFilter.h"
 

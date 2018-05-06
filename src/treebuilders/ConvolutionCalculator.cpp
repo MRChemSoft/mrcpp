@@ -1,4 +1,4 @@
-#include "treebuilders/ConvolutionCalculator.h"
+#include "ConvolutionCalculator.h"
 #include "operators/ConvolutionOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"

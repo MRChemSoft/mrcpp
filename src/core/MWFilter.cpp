@@ -13,7 +13,7 @@
 #include "constants.h"
 #include "config.h"
 
-#include "core/MWFilter.h"
+#include "MWFilter.h"
 #include "utils/Printer.h"
 #include "eigen_disable_warnings.h"
 

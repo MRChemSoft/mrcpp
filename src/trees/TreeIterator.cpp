@@ -1,5 +1,5 @@
-#include "trees/TreeIterator.h"
-#include "trees/MWNode.h"
+#include "TreeIterator.h"
+#include "MWNode.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

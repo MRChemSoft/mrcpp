@@ -11,7 +11,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "functions/RepresentableFunction.h"
+#include "RepresentableFunction.h"
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {

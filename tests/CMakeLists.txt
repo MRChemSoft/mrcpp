@@ -12,6 +12,10 @@ add_subdirectory(functions)
 add_subdirectory(operators)
 add_subdirectory(trees)
 
+target_include_directories(mrcpp-tests
+  PRIVATE
+    ${PROJECT_BINARY_DIR}/include/MRCPP
+  )
 target_link_libraries(mrcpp-tests
     mrcpp
     Catch

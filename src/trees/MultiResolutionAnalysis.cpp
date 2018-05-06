@@ -1,4 +1,4 @@
-#include "trees/MultiResolutionAnalysis.h"
+#include "MultiResolutionAnalysis.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "core/FilterCache.h"

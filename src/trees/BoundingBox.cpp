@@ -9,7 +9,7 @@
 
 #include "constants.h"
 
-#include "trees/BoundingBox.h"
+#include "BoundingBox.h"
 #include "utils/MathUtils.h"
 #include "utils/Printer.h"
 

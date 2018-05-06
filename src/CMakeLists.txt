@@ -39,7 +39,6 @@ if(NOT STATIC_LIBRARY_ONLY)
   target_include_directories(mrcpp-shared
     INTERFACE
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/MRCPP>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
   # FIXME Fix versioning of DSO
@@ -74,7 +73,6 @@ if(NOT SHARED_LIBRARY_ONLY)
   target_include_directories(mrcpp-static
     INTERFACE
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-      $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/MRCPP>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
   set_target_properties(mrcpp-static

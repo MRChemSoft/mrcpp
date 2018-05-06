@@ -5,11 +5,11 @@
 
 #include <fstream>
 
-#include "trees/FunctionTree.h"
-#include "trees/SerialFunctionTree.h"
-#include "trees/FunctionNode.h"
-#include "trees/ProjectedNode.h"
-#include "trees/HilbertIterator.h"
+#include "FunctionTree.h"
+#include "SerialFunctionTree.h"
+#include "FunctionNode.h"
+#include "ProjectedNode.h"
+#include "HilbertIterator.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 

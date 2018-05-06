@@ -7,7 +7,7 @@
  * \breif
  */
 
-#include "functions/LegendrePoly.h"
+#include "LegendrePoly.h"
 #include "core/ObjectCache.h"
 #include "utils/Printer.h"
 

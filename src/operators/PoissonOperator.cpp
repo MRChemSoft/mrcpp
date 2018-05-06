@@ -1,5 +1,5 @@
-#include "operators/PoissonOperator.h"
-#include "operators/PoissonKernel.h"
+#include "PoissonOperator.h"
+#include "PoissonKernel.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

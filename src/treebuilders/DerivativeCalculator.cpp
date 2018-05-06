@@ -1,4 +1,4 @@
-#include "treebuilders/DerivativeCalculator.h"
+#include "DerivativeCalculator.h"
 #include "operators/DerivativeOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"

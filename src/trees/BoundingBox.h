@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-#include "trees/NodeIndex.h"
+#include "NodeIndex.h"
 
 namespace mrcpp {
 

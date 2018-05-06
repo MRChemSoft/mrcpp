@@ -10,9 +10,9 @@
 #include "utils/mrcpp_omp.h"
 #include "macros.h"
 
-#include "trees/MWTree.h"
-#include "trees/NodeIndex.h"
-#include "trees/HilbertPath.h"
+#include "MWTree.h"
+#include "NodeIndex.h"
+#include "HilbertPath.h"
 
 namespace mrcpp {
 

@@ -4,9 +4,9 @@
  *
  */
 
-#include "trees/MWTree.h"
-#include "trees/MultiResolutionAnalysis.h"
-#include "trees/HilbertIterator.h"
+#include "MWTree.h"
+#include "MultiResolutionAnalysis.h"
+#include "HilbertIterator.h"
 #include "utils/MathUtils.h"
 #include "utils/Printer.h"
 

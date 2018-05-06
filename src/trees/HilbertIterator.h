@@ -1,9 +1,9 @@
 #pragma once
 
-#include "trees/MWTree.h"
-#include "trees/MWNode.h"
-#include "trees/TreeIterator.h"
-#include "trees/HilbertPath.h"
+#include "MWTree.h"
+#include "MWNode.h"
+#include "TreeIterator.h"
+#include "HilbertPath.h"
 
 namespace mrcpp {
 

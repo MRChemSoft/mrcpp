@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-#include "operators/HelmholtzKernel.h"
+#include "HelmholtzKernel.h"
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 

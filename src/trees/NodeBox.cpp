@@ -5,8 +5,8 @@
  *
  */
 
-#include "trees/NodeBox.h"
-#include "trees/MWNode.h"
+#include "NodeBox.h"
+#include "MWNode.h"
 #include "utils/Printer.h"
 
 using namespace std;

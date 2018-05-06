@@ -8,7 +8,7 @@
  * \breif
  */
 
-#include "core/FilterCache.h"
+#include "FilterCache.h"
 #include "utils/Printer.h"
 
 #include "constants.h"

@@ -1,7 +1,7 @@
 /*
  */
 
-#include "core/GaussQuadrature.h"
+#include "GaussQuadrature.h"
 #include "functions/LegendrePoly.h"
 #include "utils/Printer.h"
 #include "macros.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "treebuilders/TreeCalculator.h"
+#include "TreeCalculator.h"
 #include "core/CrossCorrelationCache.h"
 
 namespace mrcpp {

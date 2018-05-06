@@ -1,4 +1,4 @@
-#include "trees/BandWidth.h"
+#include "BandWidth.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

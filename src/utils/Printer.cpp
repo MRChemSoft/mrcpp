@@ -9,8 +9,8 @@
 
 #include "config.h"
 
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "Printer.h"
+#include "Timer.h"
 
 using namespace std;
 

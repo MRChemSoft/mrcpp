@@ -1,5 +1,5 @@
-#include "operators/ConvolutionOperator.h"
-#include "operators/GreensKernel.h"
+#include "ConvolutionOperator.h"
+#include "GreensKernel.h"
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/TreeBuilder.h"

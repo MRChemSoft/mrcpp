@@ -16,9 +16,9 @@ set_target_properties(mrcpp-objlib
 #  )
 target_include_directories(mrcpp-objlib
   PRIVATE
-    ${PROJECT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}
+    ${CMAKE_CURRENT_LIST_DIR}
   )
 
 add_subdirectory(core)
@@ -40,6 +40,7 @@ if(NOT STATIC_LIBRARY_ONLY)
     INTERFACE
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/MRCPP>
     )
   # FIXME Fix versioning of DSO
   set_target_properties(mrcpp-shared
@@ -74,6 +75,7 @@ if(NOT SHARED_LIBRARY_ONLY)
     INTERFACE
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/MRCPP>
     )
   set_target_properties(mrcpp-static
     PROPERTIES

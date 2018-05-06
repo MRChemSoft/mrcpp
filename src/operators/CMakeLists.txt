@@ -27,9 +27,9 @@ list(APPEND operators_h
     ${CMAKE_CURRENT_SOURCE_DIR}/PHOperator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonKernel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.h
-    )                                                       
-                                                                                 
-# Sets install directory for all the headers in the list                         
+    )
+
+# Sets install directory for all the headers in the list
 foreach(_header IN LISTS operators_h)
  file(
     COPY ${_header}
@@ -39,5 +39,5 @@ foreach(_header IN LISTS operators_h)
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
     )
-endforeach() 
+endforeach()
 

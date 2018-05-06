@@ -1,4 +1,4 @@
-#include "trees/FunctionTreeVector.h"
+#include "FunctionTreeVector.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

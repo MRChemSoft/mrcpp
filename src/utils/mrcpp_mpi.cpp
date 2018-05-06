@@ -1,9 +1,9 @@
-#include "utils/mrcpp_mpi.h"
+#include "mrcpp_mpi.h"
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
 #include "trees/SerialFunctionTree.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "Printer.h"
+#include "Timer.h"
 
 using namespace std;
 

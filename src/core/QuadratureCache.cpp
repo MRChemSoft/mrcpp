@@ -8,7 +8,7 @@
  * \breif
  */
 
-#include "core/QuadratureCache.h"
+#include "QuadratureCache.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

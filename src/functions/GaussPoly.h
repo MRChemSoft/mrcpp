@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "functions/Gaussian.h"
-#include "functions/Polynomial.h"
+#include "Gaussian.h"
+#include "Polynomial.h"
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {

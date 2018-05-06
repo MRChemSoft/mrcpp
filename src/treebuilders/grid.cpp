@@ -1,9 +1,9 @@
-#include "treebuilders/grid.h"
-#include "treebuilders/TreeBuilder.h"
-#include "treebuilders/AnalyticAdaptor.h"
-#include "treebuilders/CopyAdaptor.h"
-#include "treebuilders/WaveletAdaptor.h"
-#include "treebuilders/DefaultCalculator.h"
+#include "grid.h"
+#include "TreeBuilder.h"
+#include "AnalyticAdaptor.h"
+#include "CopyAdaptor.h"
+#include "WaveletAdaptor.h"
+#include "DefaultCalculator.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

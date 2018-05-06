@@ -41,9 +41,9 @@ list(APPEND trees_h
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialOperatorTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SerialTree.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.h
-    )                                                       
-                                                                                 
-# Sets install directory for all the headers in the list                         
+    )
+
+# Sets install directory for all the headers in the list
 foreach(_header IN LISTS trees_h)
  file(
     COPY ${_header}
@@ -53,4 +53,4 @@ foreach(_header IN LISTS trees_h)
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees
     )
-endforeach() 
+endforeach()

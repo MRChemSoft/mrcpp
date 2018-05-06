@@ -2,8 +2,8 @@
 #include <cstdio>
 #include <fstream>
 
-#include "utils/MathUtils.h"
-#include "utils/Printer.h"
+#include "MathUtils.h"
+#include "Printer.h"
 #include "constants.h"
 #include "eigen_disable_warnings.h"
 

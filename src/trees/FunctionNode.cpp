@@ -1,5 +1,5 @@
-#include "trees/FunctionNode.h"
-#include "trees/FunctionTree.h"
+#include "FunctionNode.h"
+#include "FunctionTree.h"
 #include "utils/MathUtils.h"
 #include "utils/Printer.h"
 #include "core/QuadratureCache.h"

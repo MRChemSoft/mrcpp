@@ -1,5 +1,5 @@
-#include "trees/OperatorNode.h"
-#include "trees/SerialTree.h"
+#include "OperatorNode.h"
+#include "SerialTree.h"
 #include "utils/MathUtils.h"
 
 using namespace std;

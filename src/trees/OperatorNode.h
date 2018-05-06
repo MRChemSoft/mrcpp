@@ -1,7 +1,7 @@
 #pragma once
 
-#include "trees/MWNode.h"
-#include "trees/OperatorTree.h"
+#include "MWNode.h"
+#include "OperatorTree.h"
 
 namespace mrcpp {
 

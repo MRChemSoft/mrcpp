@@ -7,8 +7,8 @@
  *
  */
 
-#include "core/InterpolatingBasis.h"
-#include "core/QuadratureCache.h"
+#include "InterpolatingBasis.h"
+#include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
 
 using namespace std;

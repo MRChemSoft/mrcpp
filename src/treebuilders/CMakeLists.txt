@@ -37,9 +37,9 @@ list(APPEND treebuilders_h
     ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
     ${CMAKE_CURRENT_SOURCE_DIR}/multiply.h
     ${CMAKE_CURRENT_SOURCE_DIR}/project.h
-    )                                                       
-                                                                                 
-# Sets install directory for all the headers in the list                         
+    )
+
+# Sets install directory for all the headers in the list
 foreach(_header IN LISTS treebuilders_h)
  file(
     COPY ${_header}
@@ -49,4 +49,4 @@ foreach(_header IN LISTS treebuilders_h)
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/treebuilders
     )
-endforeach() 
+endforeach()

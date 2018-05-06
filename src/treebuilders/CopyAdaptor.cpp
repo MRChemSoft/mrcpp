@@ -1,4 +1,4 @@
-#include "treebuilders/CopyAdaptor.h"
+#include "CopyAdaptor.h"
 
 namespace mrcpp {
 

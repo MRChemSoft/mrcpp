@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "trees/FunctionNode.h"
+#include "FunctionNode.h"
 
 namespace mrcpp {
 

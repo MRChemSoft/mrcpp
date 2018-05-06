@@ -2,11 +2,11 @@
  *  Simple n-dimensional node
  */
 
-#include "trees/MWNode.h"
-#include "trees/MWTree.h"
-#include "trees/SerialTree.h"
-#include "trees/ProjectedNode.h"
-#include "trees/GenNode.h"
+#include "MWNode.h"
+#include "MWTree.h"
+#include "SerialTree.h"
+#include "ProjectedNode.h"
+#include "GenNode.h"
 #include "core/QuadratureCache.h"
 #include "utils/MathUtils.h"
 #include "utils/Timer.h"

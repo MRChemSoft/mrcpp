@@ -7,8 +7,8 @@
  *
  */
 
-#include "core/LegendreBasis.h"
-#include "core/QuadratureCache.h"
+#include "LegendreBasis.h"
+#include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
 #include "eigen_disable_warnings.h"
 

@@ -1,7 +1,7 @@
-#include "trees/SerialFunctionTree.h"
-#include "trees/FunctionTree.h"
-#include "trees/ProjectedNode.h"
-#include "trees/GenNode.h"
+#include "SerialFunctionTree.h"
+#include "FunctionTree.h"
+#include "ProjectedNode.h"
+#include "GenNode.h"
 #include "utils/Printer.h"
 #include "utils/mrcpp_mpi.h"
 

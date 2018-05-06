@@ -1,6 +1,6 @@
 #pragma once
 
-#include "functions/RepresentableFunction.h"
+#include "RepresentableFunction.h"
 #include "trees/MultiResolutionAnalysis.h"
 
 namespace mrcpp {

@@ -1,9 +1,9 @@
-#include "trees/OperatorTree.h"
-#include "trees/SerialOperatorTree.h"
-#include "trees/OperatorNode.h"
-#include "trees/SerialTree.h"
-#include "trees/LebesgueIterator.h"
-#include "trees/BandWidth.h"
+#include "OperatorTree.h"
+#include "SerialOperatorTree.h"
+#include "OperatorNode.h"
+#include "SerialTree.h"
+#include "LebesgueIterator.h"
+#include "BandWidth.h"
 #include "utils/Printer.h"
 
 using namespace std;

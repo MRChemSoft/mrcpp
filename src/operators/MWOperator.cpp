@@ -1,4 +1,4 @@
-#include "operators/MWOperator.h"
+#include "MWOperator.h"
 #include "trees/BandWidth.h"
 #include "utils/Timer.h"
 #include "utils/Printer.h"

@@ -8,7 +8,7 @@
  * \breif
  */
 
-#include "core/CrossCorrelationCache.h"
+#include "CrossCorrelationCache.h"
 #include "utils/Printer.h"
 
 #include "constants.h"

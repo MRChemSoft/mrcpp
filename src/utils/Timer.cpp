@@ -1,5 +1,5 @@
-#include "utils/Timer.h"
-#include "utils/Printer.h"
+#include "Timer.h"
+#include "Printer.h"
 
 namespace mrcpp {
 

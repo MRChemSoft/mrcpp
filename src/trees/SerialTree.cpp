@@ -1,5 +1,5 @@
-#include "trees/SerialTree.h"
-#include "trees/MWTree.h"
+#include "SerialTree.h"
+#include "MWTree.h"
 #include "utils/Printer.h"
 #include "utils/MathUtils.h"
 

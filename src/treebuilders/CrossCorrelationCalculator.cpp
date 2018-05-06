@@ -1,4 +1,4 @@
-#include "treebuilders/CrossCorrelationCalculator.h"
+#include "CrossCorrelationCalculator.h"
 #include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 #include "utils/Printer.h"

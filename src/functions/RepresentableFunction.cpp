@@ -8,7 +8,7 @@
  *
  */
 
-#include "functions/RepresentableFunction.h"
+#include "RepresentableFunction.h"
 #include "utils/Printer.h"
 
 using namespace std;

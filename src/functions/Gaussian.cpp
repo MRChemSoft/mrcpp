@@ -7,7 +7,7 @@
  *
  */
 
-#include "functions/Gaussian.h"
+#include "Gaussian.h"
 #include "trees/NodeIndex.h"
 
 using namespace std;

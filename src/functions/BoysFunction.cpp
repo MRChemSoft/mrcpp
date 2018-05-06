@@ -1,4 +1,4 @@
-#include "functions/BoysFunction.h"
+#include "BoysFunction.h"
 #include "trees/FunctionTree.h"
 #include "core/InterpolatingBasis.h"
 #include "utils/Printer.h"

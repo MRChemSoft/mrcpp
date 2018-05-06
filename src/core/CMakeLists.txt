@@ -23,9 +23,9 @@ list(APPEND core_h
     ${CMAKE_CURRENT_SOURCE_DIR}/QuadratureCache.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ScalingCache.h
-    )                                                       
-                                                                                 
-# Sets install directory for all the headers in the list                         
+    )
+
+# Sets install directory for all the headers in the list
 foreach(_header IN LISTS core_h)
  file(
     COPY ${_header}
@@ -35,4 +35,4 @@ foreach(_header IN LISTS core_h)
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
     )
-endforeach() 
+endforeach()

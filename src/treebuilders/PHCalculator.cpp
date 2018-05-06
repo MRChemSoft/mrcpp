@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#include "treebuilders/PHCalculator.h"
+#include "PHCalculator.h"
 #include "utils/Printer.h"
 
 using namespace std;

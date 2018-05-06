@@ -1,5 +1,5 @@
-#include "trees/GenNode.h"
-#include "trees/SerialTree.h"
+#include "GenNode.h"
+#include "SerialTree.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {

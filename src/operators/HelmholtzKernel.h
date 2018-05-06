@@ -1,6 +1,6 @@
 #pragma once
 
-#include "operators/GreensKernel.h"
+#include "GreensKernel.h"
 
 namespace mrcpp {
 

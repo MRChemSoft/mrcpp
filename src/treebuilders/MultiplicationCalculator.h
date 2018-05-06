@@ -1,6 +1,6 @@
 #pragma once
 
-#include "treebuilders/TreeCalculator.h"
+#include "TreeCalculator.h"
 #include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {

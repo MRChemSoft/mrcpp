@@ -1,6 +1,6 @@
 #pragma once
 
-#include "treebuilders/TreeAdaptor.h"
+#include "TreeAdaptor.h"
 #include "constants.h"
 
 namespace mrcpp {

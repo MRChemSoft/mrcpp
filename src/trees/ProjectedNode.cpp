@@ -1,5 +1,5 @@
-#include "trees/ProjectedNode.h"
-#include "trees/SerialTree.h"
+#include "ProjectedNode.h"
+#include "SerialTree.h"
 #include "utils/Printer.h"
 
 using namespace std;

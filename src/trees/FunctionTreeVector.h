@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "trees/FunctionTree.h"
+#include "FunctionTree.h"
 
 namespace mrcpp {
 

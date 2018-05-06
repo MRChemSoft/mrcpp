@@ -15,10 +15,6 @@
 #include "trees/MWTree.h"
 #include "trees/FunctionTree.h"
 #include "trees/FunctionTreeVector.h"
-#include "functions/RepresentableFunction.h"
-#include "functions/Gaussian.h"
-#include "functions/GaussFunc.h"
-#include "PyRepresentableFunction.h" // Trampoline Class for Representable Function
 #include "PyBoundingBox.h"
 
 using namespace mrcpp;
@@ -71,25 +67,6 @@ void pyFundamentalTypes(py::module &m) {
         .def("evalf", py::overload_cast<double, double>(&FunctionTree<D>::evalf))
         .def("evalf", py::overload_cast<double, double, double>(&FunctionTree<D>::evalf));
 
- //   std::stringstream repFuncName;
- //   repFuncName << "RepresentableFunction" << D << "D";
- //   py::class_<RepresentableFunction<D>, PyRepresentableFunction<D>> repfunc(m, repFuncName.str().data());
- //       repfunc
- //       .def(py::init<>())
- //       .def("evalf", &RepresentableFunction<D>::evalf);
-
-//Gaussians
-
-//    std::stringstream gaussianName;
-//    gaussianName << "Gaussian" << D << "D";
-//    py::class_<Gaussian<D>> gaussian(m, gaussianName.str().data(), repfunc);
-//
-//    std::stringstream gausFuncName;
-//    gausFuncName << "GaussFunc" << D << "D";
-//    py::class_<GaussFunc<D>>(m, gausFuncName.str().data(), gaussian)
-//        .def(py::init<double, double, py::array_t <double>, py::array_t <double>>())
-//        .def("evalf", py::overload_cast<py::array_t <double>>(&GaussFunc<D>::evalf))
-//        .def("calcCoulombEnergy", &GaussFunc<D>::calcCoulombEnergy);
 }
 
 template void pyFundamentalTypes<1>(py::module &m);

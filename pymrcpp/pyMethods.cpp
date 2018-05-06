@@ -16,7 +16,7 @@
 #include "treebuilders/multiply.h"
 #include "treebuilders/apply.h"
 #include "treebuilders/grid.h"
-//#include "treebuilders/project.h"
+#include "treebuilders/project.h"
 #include "pyProject.h"
 
 namespace py = pybind11;
@@ -45,8 +45,8 @@ void pyMethods(py::module &m) {
         py::arg("prec"), py::arg("out"), py::arg("a"),  py::arg("three_a"), py::arg("b"), py::arg("three_b"), py::arg("maxIter") = -1,
         "Adds to function threes");
 
-  //  m.def("project", py::overload_cast<double, FunctionTree<D> &, RepresentableFunction<D> &, int>(&project<D>),
-  //      py::arg("prec"), py::arg("out"), py::arg("inp"), py::arg("maxIter")= -1);
+    m.def("project", py::overload_cast<double, FunctionTree<D> &, RepresentableFunction<D> &, int>(&project<D>),
+        py::arg("prec"), py::arg("out"), py::arg("inp"), py::arg("maxIter")= -1);
 
     m.def("multiply", py::overload_cast<double, FunctionTree<D> &, double, FunctionTree<D> &, FunctionTree<D> &, int >(&multiply<D>),
             py::arg("prec"), py::arg("out"), py::arg("c"), py::arg("tree_a"), py::arg("tree_b"), py::arg("maxIter") = -1,

@@ -20,6 +20,3 @@ target_include_directories(pymrcpp PRIVATE
 target_link_libraries(pymrcpp PRIVATE
     mrcpp
     )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pymrcpp3d.py ${CMAKE_CURRENT_BINARY_DIR}/test_pymrcpp3d.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pymrcpp2d.py ${CMAKE_CURRENT_BINARY_DIR}/test_pymrcpp2d.py)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pymrcpp1d.py ${CMAKE_CURRENT_BINARY_DIR}/test_pymrcpp1d.py)

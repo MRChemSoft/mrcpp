@@ -5,8 +5,8 @@ from math import isclose
 
 min_scale = -4
 max_depth = 25
-order = 7
-prec = 1e-5
+order = 5
+prec = 1e-3
 
 corner = np.array([-1, -1, -1])
 boxes = np.array([2, 2, 2])

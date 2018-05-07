@@ -2,7 +2,7 @@
 #include "FunctionTree.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -40,7 +40,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
 
     int fact[D + 1];
     for (int i = 0; i < D + 1; i++) {
-        fact[i] = mwmath::ipow(this->getKp1(), i);
+        fact[i] = math_utils::ipow(this->getKp1(), i);
     }
 
     MatrixXd val(this->getKp1(), D);
@@ -119,7 +119,7 @@ double FunctionNode<D>::integrateInterpolating() const {
 
     int kp1_p[D];
     for (int i = 0; i < D; i++) {
-        kp1_p[i] = mwmath::ipow(qOrder, i);
+        kp1_p[i] = math_utils::ipow(qOrder, i);
     }
 
     VectorXd coefs;

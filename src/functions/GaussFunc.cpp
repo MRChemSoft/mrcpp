@@ -15,7 +15,7 @@
 #include "Polynomial.h"
 #include "BoysFunction.h"
 #include "utils/Printer.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 using namespace Eigen;
 

@@ -1,5 +1,5 @@
 target_sources(mrcpp-objlib PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/mwmath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp
@@ -12,7 +12,7 @@ list(APPEND utils_h
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mrcpp_mpi.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mrcpp_omp.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mwmath.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.h
     )                                                       
                                                                                  
 # Sets install directory for all the headers in the list                         

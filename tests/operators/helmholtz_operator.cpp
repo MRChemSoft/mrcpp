@@ -14,7 +14,7 @@
 #include "treebuilders/multiply.h"
 #include "treebuilders/add.h"
 #include "treebuilders/grid.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 using namespace mrcpp;
 

@@ -10,7 +10,7 @@
 #include "functions/Gaussian.h"
 #include "utils/Timer.h"
 #include "utils/Printer.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 using namespace std;
 using namespace Eigen;
@@ -78,7 +78,7 @@ template<int D>
 double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
     const double *lb = MRA.getWorldBox().getLowerBounds();
     const double *ub = MRA.getWorldBox().getUpperBounds();
-    return mwmath::calc_distance(D, lb, ub);
+    return math_utils::calc_distance(D, lb, ub);
 }
 
 template class ConvolutionOperator<1>;

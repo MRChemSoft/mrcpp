@@ -9,7 +9,7 @@
 
 #include "BoundingBox.h"
 #include "utils/Printer.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 using namespace std;
 

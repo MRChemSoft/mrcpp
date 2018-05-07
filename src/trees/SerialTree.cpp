@@ -1,7 +1,7 @@
 #include "SerialTree.h"
 #include "MWTree.h"
 #include "utils/Printer.h"
-#include "utils/mwmath.h"
+#include "utils/math_utils.h"
 
 using namespace std;
 using namespace Eigen;
@@ -35,7 +35,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
     int kp1 = this->getTree()->getKp1();
     int kp1_d = this->getTree()->getKp1_d();
     int tDim = (1<<D);
-    int kp1_dm1 = mwmath::ipow(kp1, D - 1);
+    int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     const MWFilter &filter = this->getTree()->getMRA().getFilter();
     double overwrite = 0.0;
     double *tmp;
@@ -66,7 +66,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+            math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -86,7 +86,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	            int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	            const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 	  
-                mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+                math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	            overwrite = 1.0;
 	        }
             }
@@ -109,7 +109,7 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
 	            int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	            const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-                mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+                math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	            overwrite = 1.0;
                 }
             }
@@ -158,7 +158,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
   int kp1 = this->getTree()->getKp1();
   int kp1_d = this->getTree()->getKp1_d();
   int tDim = 8;
-  int kp1_dm1 = mwmath::ipow(kp1, 2);
+  int kp1_dm1 = math_utils::ipow(kp1, 2);
   const MWFilter &filter = this->getTree()->getMRA().getFilter();
   double overwrite = 0.0;
   double tmpcoeff[kp1_d*tDim];
@@ -180,7 +180,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+            math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -199,7 +199,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+            math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }
@@ -219,7 +219,7 @@ void SerialTree<3>::S_mwTransformBack(double* coeff_in, double* coeff_out, int s
 	        int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
 	        const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
-            mwmath::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
+            math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
 	        overwrite = 1.0;
             }
         }

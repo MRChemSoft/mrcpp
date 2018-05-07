@@ -11,7 +11,7 @@ list(APPEND utils_h
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mpi_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mrcpp_omp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/omp_utils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.h
     )                                                       
                                                                                  

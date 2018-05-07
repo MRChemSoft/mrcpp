@@ -1,3 +1,9 @@
+find_package(Eigen3 3.3 REQUIRED CONFIG)
+if(TARGET Eigen3::Eigen)
+  get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+  message(STATUS "Eigen3 version ${EIGEN3_VERSION_STRING} found in ${EIGEN3_INCLUDE_DIR}")
+endif()
+
 add_library(mrcpp-objlib OBJECT "")
 # FIXME Fix visibility of symbols
 set_target_properties(mrcpp-objlib
@@ -14,6 +20,10 @@ set_target_properties(mrcpp-objlib
 #  PUBLIC
 #    mrcpp_EXPORTS
 #  )
+target_include_directories(mrcpp-objlib SYSTEM
+  PUBLIC
+    ${EIGEN3_INCLUDE_DIR}
+  )
 target_include_directories(mrcpp-objlib
   PRIVATE
     ${PROJECT_SOURCE_DIR}/include
@@ -38,6 +48,7 @@ if(NOT STATIC_LIBRARY_ONLY)
     )
   target_include_directories(mrcpp-shared
     INTERFACE
+      $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/MRCPP>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -74,6 +85,7 @@ if(NOT SHARED_LIBRARY_ONLY)
     )
   target_include_directories(mrcpp-static
     INTERFACE
+      $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/MRCPP>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

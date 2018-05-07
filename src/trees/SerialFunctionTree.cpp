@@ -3,7 +3,7 @@
 #include "ProjectedNode.h"
 #include "GenNode.h"
 #include "utils/Printer.h"
-#include "utils/mrcpp_mpi.h"
+#include "utils/mpi_utils.h"
 
 using namespace std;
 

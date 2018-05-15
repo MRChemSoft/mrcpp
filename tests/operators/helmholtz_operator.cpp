@@ -57,7 +57,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
                 build_grid(*kern_tree, kern_gauss);
                 project(proj_prec, *kern_tree, kern_gauss);
-                K.push_back(std::make_tuple(1.0, kern_tree));
+                K.push_back({1.0, kern_tree});
             }
 
             SECTION("Build operator tree by cross correlation") {

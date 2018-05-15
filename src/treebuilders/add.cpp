@@ -18,8 +18,8 @@ void add(double prec, FunctionTree<D> &out,
          double b, FunctionTree<D> &tree_b,
          int maxIter) {
     FunctionTreeVector<D> tree_vec;
-    tree_vec.push_back(std::make_tuple(a, &tree_a));
-    tree_vec.push_back(std::make_tuple(b, &tree_b));
+    tree_vec.push_back({a, &tree_a});
+    tree_vec.push_back({b, &tree_b});
     add(prec, out, tree_vec, maxIter);
 }
 

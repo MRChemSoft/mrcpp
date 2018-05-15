@@ -75,8 +75,8 @@ template<int D> void testAddition() {
     FunctionTreeVector<D> sum_vec;
     WHEN("the functions are added") {
         FunctionTree<D> c_tree(*mra);
-        sum_vec.push_back(std::make_tuple(a_coef, &a_tree));
-        sum_vec.push_back(std::make_tuple(b_coef, &b_tree));
+        sum_vec.push_back({a_coef, &a_tree});
+        sum_vec.push_back({b_coef, &b_tree});
         add(-1.0, c_tree, sum_vec);
         sum_vec.clear();
 
@@ -97,8 +97,8 @@ template<int D> void testAddition() {
 
         AND_WHEN("the first function is subtracted") {
             FunctionTree<D> d_tree(*mra);
-            sum_vec.push_back(std::make_tuple(1.0, &c_tree));
-            sum_vec.push_back(std::make_tuple(-1.0, &a_tree));
+            sum_vec.push_back({ 1.0, &c_tree});
+            sum_vec.push_back({-1.0, &a_tree});
             add(-1.0, d_tree, sum_vec);
             sum_vec.clear();
 
@@ -110,8 +110,8 @@ template<int D> void testAddition() {
 
             AND_WHEN("the second function is subtracted") {
                 FunctionTree<D> e_tree(*mra);
-                sum_vec.push_back(std::make_tuple(1.0, &d_tree));
-                sum_vec.push_back(std::make_tuple(-b_coef, &b_tree));
+                sum_vec.push_back({1.0, &d_tree});
+                sum_vec.push_back({-b_coef, &b_tree});
                 add(-1.0, e_tree, sum_vec);
                 sum_vec.clear();
 

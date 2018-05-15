@@ -40,7 +40,7 @@ void multiply(double prec,
 
     Timer clean_t;
     for (int i = 0; i < inp.size(); i++) {
-        FunctionTree<D> &tree = getFunc(inp, i);
+        FunctionTree<D> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
     clean_t.stop();

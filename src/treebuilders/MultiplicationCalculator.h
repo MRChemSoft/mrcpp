@@ -21,8 +21,8 @@ protected:
             coefs_o[j] = 1.0;
         }
         for (int i = 0; i < this->prod_vec.size(); i++) {
-            double c_i = getCoef(this->prod_vec, i);
-            FunctionTree<D> &func_i = getFunc(this->prod_vec, i);
+            double c_i = get_coef(this->prod_vec, i);
+            FunctionTree<D> &func_i = get_func(this->prod_vec, i);
             // This generates missing nodes
             MWNode<D> node_i = func_i.getNode(idx); // Copy node
             node_i.mwTransform(Reconstruction);

@@ -68,7 +68,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
 
                 MWOperator O(oper_mra);
                 for (int i = 0; i < kern_vec.size(); i++) {
-                    FunctionTree<1> &kern_tree = getFunc(kern_vec, i);
+                    FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
                     OperatorTree *oper_tree = new OperatorTree(oper_mra, ccc_prec);

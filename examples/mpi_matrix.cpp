@@ -69,10 +69,10 @@ int main(int argc, char **argv) {
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(nFuncs, nFuncs);
     for (int j = 0; j < f_vec.size(); j++) {
         int dst = j%wsize;
-        mrcpp::FunctionTree<3> &f_j = getFunc(f_vec, j);
+        mrcpp::FunctionTree<3> &f_j = get_func(f_vec, j);
         for (int i = 0; i < f_vec.size(); i++) {
             int src = i%wsize;
-            mrcpp::FunctionTree<3> &f_i = getFunc(f_vec, i);
+            mrcpp::FunctionTree<3> &f_i = get_func(f_vec, i);
             if (src != dst) {
                 int tag = 1000000*dst;
                 MPI_Request req = req_null;

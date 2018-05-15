@@ -72,7 +72,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
 
                 MWOperator O(oper_mra);
                 for (int i = 0; i < K.size(); i++) {
-                  FunctionTree<1> &kern_tree = getFunc(K, i);
+                    FunctionTree<1> &kern_tree = getFunc(K, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
                     OperatorTree *oper_tree = new OperatorTree(oper_mra, ccc_prec);

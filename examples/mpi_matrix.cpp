@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "MRCPP/MWFunctions"
 #include "MRCPP/Parallel"
 #include "MRCPP/Printer"
@@ -60,17 +62,17 @@ int main(int argc, char **argv) {
             mrcpp::project(prec, *tree, f);
             tree->normalize();
         }
-        f_vec.push_back(tree);
+        f_vec.push_back(std::make_tuple(1.0, tree));
     }
 
     std::vector<MPI_Request> requests;
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(nFuncs, nFuncs);
     for (int j = 0; j < f_vec.size(); j++) {
         int dst = j%wsize;
-        mrcpp::FunctionTree<3> &f_j = *f_vec[j];
+        mrcpp::FunctionTree<3> &f_j = getFunc(f_vec, j);
         for (int i = 0; i < f_vec.size(); i++) {
             int src = i%wsize;
-            mrcpp::FunctionTree<3> &f_i = *f_vec[i];
+            mrcpp::FunctionTree<3> &f_i = getFunc(f_vec, i);
             if (src != dst) {
                 int tag = 1000000*dst;
                 MPI_Request req = req_null;
@@ -90,7 +92,7 @@ int main(int argc, char **argv) {
 #endif
 
     // Delete all trees
-    f_vec.clear(true);
+    clear(f_vec, true);
 
     // Print overlap matrix
     mrcpp::Printer::setPrecision(5);

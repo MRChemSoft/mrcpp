@@ -1,12 +1,14 @@
 #include "CopyAdaptor.h"
 
+#include <tuple>
+
 namespace mrcpp {
 
 template<int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms) {
     setBandWidth(bw);
-    tree_vec.push_back(&t);
+    tree_vec.push_back(std::make_tuple(1.0, &t));
 }
 
 template<int D>
@@ -37,7 +39,7 @@ bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
                 NodeIndex<D> bwIdx(cIdx);
                 bwIdx.getTranslation()[d] += bw;
                 for (int i = 0; i < this->tree_vec.size(); i++) {
-                    const FunctionTree<D> &func_i = tree_vec.getFunc(i);
+                    const FunctionTree<D> &func_i = get_func(tree_vec, i);
                     const MWNode<D> *node_i = func_i.findNode(bwIdx);
                     if (node_i != 0) return true;
                 }

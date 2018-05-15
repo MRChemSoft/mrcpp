@@ -7,6 +7,7 @@
 #include "treebuilders/grid.h"
 #include "trees/OperatorTree.h"
 #include "trees/BandWidth.h"
+#include "trees/FunctionTreeVector.h"
 #include "functions/Gaussian.h"
 #include "utils/Timer.h"
 #include "utils/Printer.h"
@@ -55,17 +56,15 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
 
-        this->kern_exp.push_back(k_tree);
+        this->kern_exp.push_back(std::make_tuple(1.0, k_tree));
         this->oper_exp.push_back(o_tree);
     }
 }
 
 template<int D>
 void ConvolutionOperator<D>::clearKernel() {
-    for (int i = 0; i < this->kern_exp.size(); i++) {
-        if (this->kern_exp[i] != 0) delete this->kern_exp[i];
-    }
-    this->kern_exp.clear();
+  // namespace explicitly needed to disambiguate...
+  mrcpp::clear(this->kern_exp, true);
 }
 
 template<int D>

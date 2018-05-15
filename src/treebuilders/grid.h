@@ -1,6 +1,8 @@
 #pragma once
 
-#include "mrcpp_declarations.h"
+#include "functions/RepresentableFunction.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
 template<int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter = -1);

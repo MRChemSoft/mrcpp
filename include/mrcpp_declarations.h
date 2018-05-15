@@ -29,7 +29,6 @@ template <int D> class MultiResolutionAnalysis;
 
 template <int D> class MWTree;
 template <int D> class FunctionTree;
-template <int D> class FunctionTreeVector;
 class OperatorTree;
 template <int D> class SerialTree;
 template <int D> class SerialFunctionTree;
@@ -80,7 +79,8 @@ template <int D> class IteratorNode;
 class BandWidth;
 template <int D> class OperatorState;
 
-#define OperatorTreeVector std::vector<OperatorTree *>
+using OperatorTreeVector = std::vector<OperatorTree *>;
+
 #define MWNodeVector std::vector<MWNode<D> *>
 #define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
 

@@ -1,8 +1,12 @@
+#include <tuple>
+#include <vector>
+
 #include "add.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "AdditionCalculator.h"
 #include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
@@ -14,8 +18,8 @@ void add(double prec, FunctionTree<D> &out,
          double b, FunctionTree<D> &tree_b,
          int maxIter) {
     FunctionTreeVector<D> tree_vec;
-    tree_vec.push_back(a, &tree_a);
-    tree_vec.push_back(b, &tree_b);
+    tree_vec.push_back(std::make_tuple(a, &tree_a));
+    tree_vec.push_back(std::make_tuple(b, &tree_b));
     add(prec, out, tree_vec, maxIter);
 }
 
@@ -38,7 +42,7 @@ void add(double prec,
 
     Timer clean_t;
     for (int i = 0; i < inp.size(); i++) {
-        FunctionTree<D> &tree = inp.getFunc(i);
+        FunctionTree<D> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
     clean_t.stop();

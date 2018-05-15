@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "MRCPP/MWFunctions"
 #include "MRCPP/Gaussians"
 #include "MRCPP/Printer"
@@ -50,9 +52,9 @@ int main(int argc, char **argv) {
 
     // g = f_1 - 2*f_2 + 3*f_3
     mrcpp::FunctionTreeVector<3> f_vec;
-    f_vec.push_back( 1.0, &f_tree_1);
-    f_vec.push_back(-2.0, &f_tree_2);
-    f_vec.push_back( 3.0, &f_tree_3);
+    f_vec.push_back(std::make_tuple( 1.0, &f_tree_1));
+    f_vec.push_back(std::make_tuple(-2.0, &f_tree_2));
+    f_vec.push_back(std::make_tuple( 3.0, &f_tree_3));
     mrcpp::add(prec, g_tree, f_vec);
 
     double integral = g_tree.integrate();

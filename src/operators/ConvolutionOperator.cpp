@@ -56,7 +56,7 @@ void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
         println(10, "Time transform      " << trans_t);
         println(10, std::endl);
 
-        this->kern_exp.push_back(std::make_tuple(1.0, k_tree));
+        this->kern_exp.push_back({1.0, k_tree});
         this->oper_exp.push_back(o_tree);
     }
 }

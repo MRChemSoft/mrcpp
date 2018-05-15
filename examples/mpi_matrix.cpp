@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
             mrcpp::project(prec, *tree, f);
             tree->normalize();
         }
-        f_vec.push_back(std::make_tuple(1.0, tree));
+        f_vec.push_back({1.0, tree});
     }
 
     std::vector<MPI_Request> requests;

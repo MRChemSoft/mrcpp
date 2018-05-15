@@ -53,7 +53,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
                 build_grid(*kern_tree, kern_gauss);
                 project(proj_prec, *kern_tree, kern_gauss);
-                kern_vec.push_back(std::make_tuple(1.0, kern_tree));
+                kern_vec.push_back({1.0, kern_tree});
             }
 
             SECTION("Build operator tree by cross correlation") {

@@ -1,14 +1,12 @@
 #include "CopyAdaptor.h"
 
-#include <tuple>
-
 namespace mrcpp {
 
 template<int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms) {
     setBandWidth(bw);
-    tree_vec.push_back(std::make_tuple(1.0, &t));
+    tree_vec.push_back({1.0, &t});
 }
 
 template<int D>

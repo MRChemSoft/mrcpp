@@ -3,7 +3,6 @@ target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTreeVector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GenNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HilbertPath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MWNode.cpp

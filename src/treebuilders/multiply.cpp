@@ -16,8 +16,8 @@ void multiply(double prec,
               FunctionTree<D> &tree_b,
               int maxIter) {
     FunctionTreeVector<D> tree_vec;
-    tree_vec.push_back(c, &tree_a);
-    tree_vec.push_back(1.0, &tree_b);
+    tree_vec.push_back(std::make_tuple(c, &tree_a));
+    tree_vec.push_back(std::make_tuple(1.0, &tree_b));
     mrcpp::multiply(prec, out, tree_vec, maxIter);
 }
 
@@ -40,7 +40,7 @@ void multiply(double prec,
 
     Timer clean_t;
     for (int i = 0; i < inp.size(); i++) {
-        FunctionTree<D> &tree = inp.getFunc(i);
+        FunctionTree<D> &tree = getFunc(inp, i);
         tree.deleteGenerated();
     }
     clean_t.stop();

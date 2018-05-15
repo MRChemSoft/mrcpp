@@ -1,38 +1,53 @@
 #pragma once
 
+#include <tuple>
 #include <vector>
 
 #include "FunctionTree.h"
 
 namespace mrcpp {
 
-template<int D>
-class FunctionTreeVector {
-public:
-    FunctionTreeVector() { }
-    virtual ~FunctionTreeVector() { }
+template <int D>
+using CoefsFunctionTree = std::tuple<double, FunctionTree<D> *>;
 
-    FunctionTreeVector(const FunctionTreeVector<D> &vec);
-    FunctionTreeVector& operator=(const FunctionTreeVector<D> &vec);
+template <int D>
+using FunctionTreeVector = std::vector<CoefsFunctionTree<D>>;
 
-    int size() const { return this->funcs.size(); }
-    void clear(bool dealloc = false);
-    int sumNodes() const;
+template <int D>
+void clear(FunctionTreeVector<D> & fs, bool dealloc = false) {
+   if (dealloc) {
+     for (auto & t : fs) {
+       auto f = std::get<1>(t);
+       if (f != nullptr) delete f;
+     }
+   }
+   fs.clear();
+}
 
-    void push_back(double c, FunctionTree<D> *f);
-    void push_back(FunctionTree<D> *f);
-    void push_back(FunctionTreeVector<D> &vec);
+template <int D>
+int sumNodes(const FunctionTreeVector<D> & fs) {
+  int nNodes = 0;
+  for (const auto & t : fs) {
+    auto f = std::get<1>(t);
+    if (f != nullptr) {
+      nNodes += f->getNNodes();
+    }
+  }
+  return nNodes;
+}
 
-    double getCoef(int i) const;
-    FunctionTree<D> &getFunc(int i);
-    const FunctionTree<D> &getFunc(int i) const;
+template <int D>
+double getCoef(const FunctionTreeVector<D> & fs, int i) {
+  return std::get<0>(fs[i]);
+}
 
-    FunctionTree<D> *operator[](int i);
-    const FunctionTree<D> *operator[](int i) const;
+template <int D>
+FunctionTree<D> & getFunc(FunctionTreeVector<D> & fs, int i) {
+  return *(std::get<1>(fs[i]));
+}
 
-protected:
-    std::vector<double> coefs;
-    std::vector<FunctionTree<D> *> funcs;
-};
-
+template <int D>
+const FunctionTree<D> & getFunc(const FunctionTreeVector<D> & fs, int i) {
+   return *(std::get<1>(fs[i]));
+}
 }

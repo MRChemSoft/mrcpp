@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mrcpp_declarations.h"
+#include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
 template<int D> void add(double prec, FunctionTree<D> &out, double a, FunctionTree<D> &tree_a, double b, FunctionTree<D> &tree_b, int maxIter = -1);

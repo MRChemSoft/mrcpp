@@ -53,7 +53,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                 FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
                 build_grid(*kern_tree, kern_gauss);
                 project(proj_prec, *kern_tree, kern_gauss);
-                kern_vec.push_back(kern_tree);
+                kern_vec.push_back(std::make_tuple(1.0, kern_tree));
             }
 
             SECTION("Build operator tree by cross correlation") {
@@ -68,7 +68,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
 
                 MWOperator O(oper_mra);
                 for (int i = 0; i < kern_vec.size(); i++) {
-                    FunctionTree<1> &kern_tree = *kern_vec[i];
+                    FunctionTree<1> &kern_tree = getFunc(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
                     OperatorTree *oper_tree = new OperatorTree(oper_mra, ccc_prec);
@@ -101,10 +101,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
 
                 O.clear(true);
             }
-            for (int i = 0; i < kern_vec.size(); i++) {
-                delete kern_vec[i];
-            }
-            kern_vec.clear();
+            clear(kern_vec, true);
         }
     }
 }

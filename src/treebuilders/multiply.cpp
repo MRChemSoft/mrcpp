@@ -86,6 +86,45 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
     clear(tmp_vec, true);
 }
 
+template<int D>
+double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
+    if (bra.getMRA() != ket.getMRA()){
+        MSG_FATAL("Trees not compatible");
+    }
+    MWNodeVector nodeTable;
+    HilbertIterator<D> it(&bra);
+    it.setReturnGenNodes(false);
+    while(it.next()) {
+        MWNode<D> &node = it.getNode();
+        nodeTable.push_back(&node);
+    }
+    int nNodes = nodeTable.size();
+    double result = 0.0;
+    double locResult = 0.0;
+//OMP is disabled in order to get EXACT results (to the very last digit), the
+//order of summation makes the result different beyond the 14th digit or so.
+//OMP does improve the performace, but its not worth it for the time being.
+//#pragma omp parallel firstprivate(n_nodes, locResult)
+//		shared(nodeTable,rhs,result)
+//    {
+//#pragma omp for schedule(guided)
+    for (int n = 0; n < nNodes; n++) {
+        const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
+        const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
+        if (mwNode == 0) continue;
+
+        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
+        if (braNode.isRootNode()) {
+            locResult += dotScaling(braNode, ketNode);
+        }
+        locResult += dotWavelet(braNode, ketNode);
+    }
+//#pragma omp critical
+    result += locResult;
+//    }
+    return result;
+}
+
 template void multiply(double prec, FunctionTree<1> &out, double c, FunctionTree<1> &tree_a, FunctionTree<1> &tree_b, int maxIter);
 template void multiply(double prec, FunctionTree<2> &out, double c, FunctionTree<2> &tree_a, FunctionTree<2> &tree_b, int maxIter);
 template void multiply(double prec, FunctionTree<3> &out, double c, FunctionTree<3> &tree_a, FunctionTree<3> &tree_b, int maxIter);
@@ -101,5 +140,8 @@ template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, Repre
 template void dot(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp_a, FunctionTreeVector<1> &inp_b, int maxIter);
 template void dot(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp_a, FunctionTreeVector<2> &inp_b, int maxIter);
 template void dot(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp_a, FunctionTreeVector<3> &inp_b, int maxIter);
+template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
+template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
+template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
 
 } //namespace mrcpp

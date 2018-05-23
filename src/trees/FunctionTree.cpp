@@ -259,49 +259,6 @@ std::ostream& FunctionTree<D>::print(std::ostream &o) {
     return MWTree<D>::print(o);
 }
 
-template<int D>
-double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
-    if (bra.getMRA() != ket.getMRA()){
-        MSG_FATAL("Trees not compatible");
-    }
-    MWNodeVector nodeTable;
-    HilbertIterator<D> it(&bra);
-    it.setReturnGenNodes(false);
-    while(it.next()) {
-        MWNode<D> &node = it.getNode();
-        nodeTable.push_back(&node);
-    }
-    int nNodes = nodeTable.size();
-    double result = 0.0;
-    double locResult = 0.0;
-//OMP is disabled in order to get EXACT results (to the very last digit), the
-//order of summation makes the result different beyond the 14th digit or so.
-//OMP does improve the performace, but its not worth it for the time being.
-//#pragma omp parallel firstprivate(n_nodes, locResult)
-//		shared(nodeTable,rhs,result)
-//    {
-//#pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
-        const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
-        if (mwNode == 0) continue;
-
-        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
-        if (braNode.isRootNode()) {
-            locResult += dotScaling(braNode, ketNode);
-        }
-        locResult += dotWavelet(braNode, ketNode);
-    }
-//#pragma omp critical
-    result += locResult;
-//    }
-    return result;
-}
-
-template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
-template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
-template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
-
 template class FunctionTree<1>;
 template class FunctionTree<2>;
 template class FunctionTree<3>;

@@ -1,4 +1,6 @@
 #include "apply.h"
+#include "grid.h"
+#include "add.h"
 #include "TreeBuilder.h"
 #include "CopyAdaptor.h"
 #include "WaveletAdaptor.h"
@@ -79,11 +81,45 @@ void apply(FunctionTree<D> &out,
     Printer::printSeparator(10, ' ');
 }
 
+template<int D>
+FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
+    FunctionTreeVector<D> out;
+    for (int d = 0; d < D; d++) {
+        FunctionTree<D> *grad_d = new FunctionTree<D>(inp.getMRA());
+        apply(*grad_d, oper, inp, d);
+        out.push_back(std::make_tuple(1.0, grad_d));
+    }
+    return out;
+}
+
+template<int D>
+void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
+    if (inp.size() != D) MSG_FATAL("Dimension mismatch");
+
+    FunctionTreeVector<D> tmp_vec;
+    for (int d = 0; d < D; d++) {
+        double coef_d = get_coef(inp, d);
+        FunctionTree<D> &func_d = get_func(inp, d);
+        FunctionTree<D> *out_d = new FunctionTree<D>(func_d.getMRA());
+        apply(*out_d, oper, func_d, d);
+        tmp_vec.push_back(std::make_tuple(coef_d, out_d));
+    }
+    copy_grid(out, tmp_vec);
+    add(-1.0, out, tmp_vec, 0); // Addition on union grid
+    clear(tmp_vec, true);
+}
+
 template void apply(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter);
 template void apply(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter);
 template void apply(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter);
 template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
 template void apply(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
 template void apply(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
+template void divergence(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
+template void divergence(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
+template void divergence(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
+template FunctionTreeVector<1> gradient(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
+template FunctionTreeVector<2> gradient(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
+template FunctionTreeVector<3> gradient(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
 
 } //namespace mrcpp

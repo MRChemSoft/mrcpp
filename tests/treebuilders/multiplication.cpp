@@ -2,7 +2,6 @@
 
 #include "factory_functions.h"
 
-#include "trees/FunctionTreeVector.h"
 #include "functions/GaussPoly.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/project.h"

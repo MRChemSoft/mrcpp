@@ -12,6 +12,28 @@
 
 namespace mrcpp {
 
+/** @brief Multiplication of two MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] c Numerical coefficient
+ * @param[in] inp_a Input function a
+ * @param[in] inp_b Input function b
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the product of the two input functions
+ * (including the numerical coefficient), using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void multiply(double prec,
               FunctionTree<D> &out,
@@ -25,6 +47,27 @@ void multiply(double prec,
     multiply(prec, out, tmp_vec, maxIter);
 }
 
+/** @brief Multiplication of several MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Vector of input function
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the product of all the functions
+ * in the input vector (including their numerical coefficients), using the
+ * general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void multiply(double prec,
               FunctionTree<D> &out,
@@ -64,6 +107,22 @@ void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableF
     NOT_IMPLEMENTED_ABORT;
 }
 
+/** @brief Dot product of two MW function vectors
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp_a Input function vector
+ * @param[in] inp_b Input function vector
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the dot product of the two input
+ * vectors (including their numerical coefficients). The precision parameter
+ * is used only in the multiplication part, the final addition will be on
+ * the fixed union grid of the components.
+ *
+ * The length of the input vectors must be the same.
+ *
+ */
 template<int D>
 void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, FunctionTreeVector<D> &inp_b, int maxIter) {
     if (inp_a.size() != inp_b.size()) MSG_FATAL("Input length mismatch");
@@ -86,6 +145,19 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
     clear(tmp_vec, true);
 }
 
+/** @brief Dot product of two MW function representations
+ *
+ * @param[in] bra Bra side input function
+ * @param[in] ket Ket side input function
+ *
+ * The dot product is computed with the trees in compressed form, e.i. scaling
+ * coefs only on root nodes, wavelet coefs on all nodes. Since wavelet functions
+ * are orthonormal through ALL scales and the root scaling functions are
+ * orthonormal to all finer level wavelet functions, this becomes a rather
+ * efficient procedure as you only need to compute the dot product where the
+ * grids overlaps.
+ *
+ */
 template<int D>
 double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()){

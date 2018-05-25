@@ -10,6 +10,25 @@
 
 namespace mrcpp {
 
+/** @brief Projection of analytic function into MW representation
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Input function
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void project(double prec,
              FunctionTree<D> &out,
@@ -19,6 +38,25 @@ void project(double prec,
     mrcpp::project(prec, out, inp, maxIter);
 }
 
+/** @brief Projection of analytic function into MW representation
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Input function
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void project(double prec,
              FunctionTree<D> &out,

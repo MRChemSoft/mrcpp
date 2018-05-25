@@ -159,4 +159,42 @@ TEST_CASE("PH differentiantion second order", "[derivative_operator], [PH_second
     }
 }
 
+TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
+    MultiResolutionAnalysis<3> *mra = initializeMRA<3>();
+
+    double prec = 1.0e-3;
+    ABGVOperator<3> diff(*mra, 0.0, 0.0);
+
+    auto f = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return std::exp(-r2);
+    };
+    auto fx = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[0]*std::exp(-r2);
+    };
+    auto fy = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[1]*std::exp(-r2);
+    };
+    auto fz = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[2]*std::exp(-r2);
+    };
+
+    FunctionTree<3> f_tree(*mra);
+    project(prec, f_tree, f);
+
+    FunctionTreeVector<3> grad_f = gradient(diff, f_tree);
+    REQUIRE( grad_f.size() == 3 );
+
+    const double r[3] = {1.1, 0.4, 0.2};
+    REQUIRE( get_func(grad_f, 0).evalf(r) == Approx(fx(r)).epsilon(prec) );
+    REQUIRE( get_func(grad_f, 1).evalf(r) == Approx(fy(r)).epsilon(prec) );
+    REQUIRE( get_func(grad_f, 2).evalf(r) == Approx(fz(r)).epsilon(prec) );
+    clear(grad_f, true);
+
+    delete mra;
+}
+
 } // namespace

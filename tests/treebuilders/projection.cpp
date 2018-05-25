@@ -3,6 +3,7 @@
 #include "factory_functions.h"
 
 #include "treebuilders/project.h"
+#include "treebuilders/multiply.h"
 #include "treebuilders/grid.h"
 
 using namespace mrcpp;

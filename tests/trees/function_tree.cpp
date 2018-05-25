@@ -2,6 +2,8 @@
 
 #include "factory_functions.h"
 
+#include "treebuilders/multiply.h"
+
 using namespace mrcpp;
 
 namespace function_tree {

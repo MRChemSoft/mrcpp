@@ -2,7 +2,6 @@
 
 #include "factory_functions.h"
 
-#include "trees/FunctionTreeVector.h"
 #include "functions/GaussPoly.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/project.h"
@@ -78,6 +77,57 @@ template<int D> void testMultiplication() {
             REQUIRE( c_norm == Approx(ref_norm) );
         }
     }
+    finalize(&mra);
+}
+
+TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot]") {
+    MultiResolutionAnalysis<3> *mra = 0;
+    initialize(&mra);
+
+    double prec = 1.0e-4;
+
+    auto fx = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return r[1]*r[2]*std::exp(-1.0*r2);
+    };
+    auto fy = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return r[0]*r[2]*std::exp(-1.5*r2);
+    };
+    auto fz = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return r[0]*r[1]*std::exp(-2.0*r2);
+    };
+
+    FunctionTree<3> fx_tree(*mra);
+    FunctionTree<3> fy_tree(*mra);
+    FunctionTree<3> fz_tree(*mra);
+
+    project(prec, fx_tree, fx);
+    project(prec, fy_tree, fy);
+    project(prec, fz_tree, fz);
+
+    FunctionTreeVector<3> vec_a;
+    vec_a.push_back(std::make_tuple(1.0, &fx_tree));
+    vec_a.push_back(std::make_tuple(2.0, &fy_tree));
+    vec_a.push_back(std::make_tuple(3.0, &fz_tree));
+
+    FunctionTreeVector<3> vec_b;
+    vec_b.push_back(std::make_tuple(1.0, &fz_tree));
+    vec_b.push_back(std::make_tuple(2.0, &fy_tree));
+    vec_b.push_back(std::make_tuple(3.0, &fx_tree));
+
+    FunctionTree<3> dot_ab(*mra);
+    copy_grid(dot_ab, vec_a);
+    copy_grid(dot_ab, vec_b);
+    dot(0.1*prec, dot_ab, vec_a, vec_b);
+
+    for (int i = 0; i < 10; i++) {
+        const double r[3] = {-0.4 + 0.01*i, 0.9 - 0.05*i, 0.7 + 0.1*i};
+        const double ref = 1.0*fx(r)*fz(r) + 4.0*fy(r)*fy(r) + 9.0*fz(r)*fx(r);
+        REQUIRE( dot_ab.evalf(r) == Approx(ref).epsilon(prec) );
+    }
+
     finalize(&mra);
 }
 

@@ -46,6 +46,4 @@ protected:
     std::ostream& print(std::ostream &o);
 };
 
-template<int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket);
-
 }

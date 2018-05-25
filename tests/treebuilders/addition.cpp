@@ -2,12 +2,12 @@
 
 #include "factory_functions.h"
 
-#include "trees/FunctionTreeVector.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "functions/GaussExp.h"
 #include "treebuilders/project.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/add.h"
+#include "treebuilders/multiply.h"
 
 using namespace mrcpp;
 

@@ -7,6 +7,7 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 

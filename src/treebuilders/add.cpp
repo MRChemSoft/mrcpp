@@ -12,17 +12,61 @@
 
 namespace mrcpp {
 
+/** @brief Addition of two MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] a Numerical coefficient of function a
+ * @param[in] inp_a Input function a
+ * @param[in] a Numerical coefficient of function b
+ * @param[in] inp_b Input function b
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the sum of the two input functions
+ * (including the numerical coefficient), using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void add(double prec, FunctionTree<D> &out,
-         double a, FunctionTree<D> &tree_a,
-         double b, FunctionTree<D> &tree_b,
+         double a, FunctionTree<D> &inp_a,
+         double b, FunctionTree<D> &inp_b,
          int maxIter) {
-    FunctionTreeVector<D> tree_vec;
-    tree_vec.push_back(std::make_tuple(a, &tree_a));
-    tree_vec.push_back(std::make_tuple(b, &tree_b));
-    add(prec, out, tree_vec, maxIter);
+    FunctionTreeVector<D> tmp_vec;
+    tmp_vec.push_back(std::make_tuple(a, &inp_a));
+    tmp_vec.push_back(std::make_tuple(b, &inp_b));
+    add(prec, out, tmp_vec, maxIter);
 }
 
+/** @brief Addition of several MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Vector of input function
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the sum of all the functions
+ * in the input vector (including their numerical coefficients), using the
+ * general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void add(double prec,
          FunctionTree<D> &out,

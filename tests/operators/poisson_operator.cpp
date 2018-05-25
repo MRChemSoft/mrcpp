@@ -11,6 +11,7 @@
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/apply.h"
+#include "treebuilders/multiply.h"
 #include "treebuilders/project.h"
 #include "treebuilders/grid.h"
 

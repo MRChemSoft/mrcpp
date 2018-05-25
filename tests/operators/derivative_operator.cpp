@@ -197,4 +197,46 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     delete mra;
 }
 
+TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]") {
+    MultiResolutionAnalysis<3> *mra = initializeMRA<3>();
+
+    double prec = 1.0e-3;
+    ABGVOperator<3> diff(*mra, 0.5, 0.5);
+
+    auto f = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return std::exp(-r2);
+    };
+    auto fx = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[0]*std::exp(-r2);
+    };
+    auto fy = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[1]*std::exp(-r2);
+    };
+    auto fz = [] (const double *r) -> double {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[2]*std::exp(-r2);
+    };
+
+    FunctionTree<3> f_tree(*mra);
+    project(prec, f_tree, f);
+    FunctionTreeVector<3> f_vec;
+    f_vec.push_back(std::make_tuple(1.0, &f_tree));
+    f_vec.push_back(std::make_tuple(2.0, &f_tree));
+    f_vec.push_back(std::make_tuple(3.0, &f_tree));
+
+    FunctionTree<3> div_f(*mra);
+    divergence(div_f, diff, f_vec);
+
+    for (int i = 0; i < 10; i++) {
+        const double r[3] = {-0.8 + 0.3*i, 0.4 - 0.1*i, 0.2 + 0.01*i};
+        const double ref = 1.0*fx(r) + 2.0*fy(r) + 3.0*fz(r);
+        REQUIRE( div_f.evalf(r) == Approx(ref).epsilon(prec) );
+    }
+
+    delete mra;
+}
+
 } // namespace

@@ -156,12 +156,12 @@ MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, vec
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
             int c_i = cIdx.getTranslation(i) * (1 << depth);
-            if (l_start[i] < c_i) {
-                l_start[i] = c_i;
-            }
-            if (l_end[i] > c_i + nboxes - 1) {
-                l_end[i] = c_i + nboxes - 1;
-            }
+           // if (l_start[i] < c_i) {
+           //     l_start[i] = c_i;
+           // }
+           // if (l_end[i] > c_i + nboxes - 1) {
+           //     l_end[i] = c_i + nboxes - 1;
+           // }
             nbox[i] = l_end[i] - l_start[i] + 1;
         }
 

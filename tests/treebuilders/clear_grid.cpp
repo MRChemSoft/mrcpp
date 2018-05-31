@@ -59,7 +59,7 @@ template<int D> void testClearGrid() {
         }
     }
     WHEN("the grid is cleared") {
-        clear_grid(-1.0, tree);
+        clear_grid(tree);
         THEN("it represents an undefined function on the same grid") {
             REQUIRE( tree.getDepth() == refDepth );
             REQUIRE( tree.getNNodes() == refNodes );
@@ -76,23 +76,14 @@ template<int D> void testClearGrid() {
             }
         }
     }
-    WHEN("the grid is cleared adaptively") {
+    WHEN("the grid is refined adaptively") {
         const double new_prec = 1.0e-5;
-        clear_grid(new_prec, tree);
-        THEN("it represents an undefined function on a larger grid") {
+        refine_grid(tree, new_prec);
+        THEN("it represents the same function on a larger grid") {
             REQUIRE( tree.getDepth() >= refDepth );
             REQUIRE( tree.getNNodes() > refNodes );
-            REQUIRE( tree.integrate() == Approx(0.0) );
-            REQUIRE( tree.getSquareNorm() == Approx(-1.0) );
-            AND_WHEN("the function is re-projected on the new grid") {
-                project(-1.0, tree, *func);
-                THEN("it becomes a larger representation of the same function") {
-                    REQUIRE( tree.getDepth() >= refDepth );
-                    REQUIRE( tree.getNNodes() > refNodes );
-                    REQUIRE( tree.integrate() == Approx(refInt).epsilon(1.0e-8) );
-                    REQUIRE( tree.getSquareNorm() == Approx(refNorm).epsilon(1.0e-8) );
-                }
-            }
+            REQUIRE( tree.integrate() == Approx(refInt).epsilon(1.0e-8) );
+            REQUIRE( tree.getSquareNorm() == Approx(refNorm).epsilon(1.0e-8) );
         }
     }
     finalize(&mra);

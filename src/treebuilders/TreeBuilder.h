@@ -15,9 +15,10 @@ public:
                TreeAdaptor<D> &adaptor,
                int maxIter) const;
 
-    int clear(MWTree<D> &tree,
-              TreeCalculator<D> &calculator,
-              TreeAdaptor<D> &adaptor) const;
+    int split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const;
+    void calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
+    void clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
+
 protected:
     double calcScalingNorm(const MWNodeVector &vec) const;
     double calcWaveletNorm(const MWNodeVector &vec) const;

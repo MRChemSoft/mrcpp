@@ -166,7 +166,7 @@ void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeV
         apply(*out_d, oper, func_d, d);
         tmp_vec.push_back(std::make_tuple(coef_d, out_d));
     }
-    copy_grid(out, tmp_vec);
+    build_grid(out, tmp_vec);
     add(-1.0, out, tmp_vec, 0); // Addition on union grid
     clear(tmp_vec, true);
 }

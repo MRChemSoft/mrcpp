@@ -118,8 +118,8 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     vec_b.push_back(std::make_tuple(3.0, &fx_tree));
 
     FunctionTree<3> dot_ab(*mra);
-    copy_grid(dot_ab, vec_a);
-    copy_grid(dot_ab, vec_b);
+    build_grid(dot_ab, vec_a);
+    build_grid(dot_ab, vec_b);
     dot(0.1*prec, dot_ab, vec_a, vec_b);
 
     for (int i = 0; i < 10; i++) {

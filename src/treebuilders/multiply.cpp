@@ -136,11 +136,11 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
         if (out.getMRA() != tree_a.getMRA()) MSG_FATAL("Trees not compatible");
         if (out.getMRA() != tree_b.getMRA()) MSG_FATAL("Trees not compatible");
         FunctionTree<D> *out_d = new FunctionTree<D>(out.getMRA());
-        copy_grid(*out_d, out);
+        build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter);
         tmp_vec.push_back(std::make_tuple(coef_a*coef_b, out_d));
     }
-    copy_grid(out, tmp_vec);
+    build_grid(out, tmp_vec);
     add(-1.0, out, tmp_vec, 0);
     clear(tmp_vec, true);
 }

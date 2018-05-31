@@ -68,39 +68,69 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
 }
 
 template<int D>
-int TreeBuilder<D>::clear(MWTree<D> &tree,
-                          TreeCalculator<D> &calculator,
-                          TreeAdaptor<D> &adaptor) const {
+void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const {
     println(10, " == Clearing tree");
+
+    Timer clean_t;
+    MWNodeVector nodeVec;
+    tree.makeNodeTable(nodeVec);
+    calculator.calcNodeVector(nodeVec);//clear all coefficients
+    clean_t.stop();
+
+    tree.clearSquareNorm();
+
+    println(10, "  -- #  1: Cleared      " << setw(6) << nodeVec.size() << " nodes");
+    Printer::printSeparator(10, ' ');
+    Printer::printTime(10, "Time clean", clean_t);
+    Printer::printSeparator(10, ' ');
+}
+
+template<int D>
+int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const {
+    println(10, " == Refining tree");
 
     Timer split_t;
     MWNodeVector newVec;
     MWNodeVector *workVec = tree.copyEndNodeTable();
     adaptor.splitNodeVector(newVec, *workVec);
-    int nSplit = newVec.size();
+    if (passCoefs) {
+        for (int i = 0; i < workVec->size(); i++) {
+            MWNode<D> &node = *(*workVec)[i];
+            if (node.isBranchNode()) {
+                node.giveChildrenCoefs(true);
+            }
+        }
+    }
     delete workVec;
+    tree.resetEndNodeTable();
     split_t.stop();
 
     printout(10, "  -- #  0: Split        ");
-    printout(10, setw(6) << nSplit << " nodes\n");
+    printout(10, setw(6) << newVec.size() << " nodes\n");
 
-    Timer clean_t;
-    MWNodeVector nodeVec;
-    tree.makeNodeTable(nodeVec);
-    int nClear = nodeVec.size();
-    calculator.calcNodeVector(nodeVec);//clear all coefficients
-    clean_t.stop();
-
-    tree.resetEndNodeTable();
-    tree.clearSquareNorm();
-
-    println(10, "  -- #  1: Cleared      " << setw(6) << nClear << " nodes");
     Printer::printSeparator(10, ' ');
     Printer::printTime(10, "Time split", split_t);
-    Printer::printTime(10, "Time clean", clean_t);
     Printer::printSeparator(10, ' ');
 
-    return nSplit;
+    return newVec.size();
+}
+
+template<int D>
+void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const {
+    println(10, " == Calculating tree");
+
+    Timer calc_t;
+    MWNodeVector *workVec = calculator.getInitialWorkVector(tree);
+    calculator.calcNodeVector(*workVec);
+    printout(10, "  -- #" << setw(3) << 0 << ": Calculated ");
+    printout(10, setw(6) << workVec->size() << " nodes ");
+    delete workVec;
+    calc_t.stop();
+
+    tree.calcSquareNorm();
+
+    Printer::printSeparator(10, ' ');
+    Printer::printTime(10, "Time calc", calc_t);
 }
 
 template<int D>

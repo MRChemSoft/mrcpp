@@ -114,13 +114,13 @@ public:
 
     friend std::ostream& operator<<(std::ostream &o, const MWNode<D> &nd) { return nd.print(o); }
 
+    friend class TreeBuilder<D>;
     friend class MultiplicationCalculator<D>;
     friend class SerialFunctionTree<D>;
     friend class SerialOperatorTree;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
-    friend class Density;
 
 protected:
     MWTree<D> *tree;

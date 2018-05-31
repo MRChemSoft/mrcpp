@@ -63,7 +63,7 @@ template<int D> void testBuildGrid() {
 
             AND_WHEN("the empty tree is passed to the GridGenerator") {
                 FunctionTree<D> g_tree(*mra);
-                copy_grid(g_tree, f_tree);
+                build_grid(g_tree, f_tree);
 
                 THEN("we get an identical empty grid") {
                     REQUIRE( g_tree.getSquareNorm() == Approx(-1.0) );

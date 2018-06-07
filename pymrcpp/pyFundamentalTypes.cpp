@@ -26,13 +26,13 @@ void pyFundamentalTypes(py::module &m) {
 
 //MWFunctions
 
-    std::stringstream funcTreeVecName;
-    funcTreeVecName << "FunctionTreeVector" << D << "D";
-    py::class_<FunctionTreeVector<D>> (m, funcTreeVecName.str().data())
-        .def(py::init<>())
-        .def("size", &FunctionTreeVector<D>::size)
-        .def("push_back", py::overload_cast<double, FunctionTree<D> *>(&FunctionTreeVector<D>::push_back))
-        .def("push_back", py::overload_cast<FunctionTree<D> *>(&FunctionTreeVector<D>::push_back));
+//    std::stringstream funcTreeVecName;
+//    funcTreeVecName << "FunctionTreeVector" << D << "D";
+//    py::class_<FunctionTreeVector<D>> (m, funcTreeVecName.str().data())
+//        .def(py::init<>())
+//        .def("size", &FunctionTreeVector<D>::size)
+//        .def("push_back", py::overload_cast<double, FunctionTree<D> *>(&FunctionTreeVector<D>::push_back))
+//        .def("push_back", py::overload_cast<FunctionTree<D> *>(&FunctionTreeVector<D>::push_back));
 
     std::stringstream pyBoundBoxName;
     pyBoundBoxName << "BoundingBox" << D << "D";

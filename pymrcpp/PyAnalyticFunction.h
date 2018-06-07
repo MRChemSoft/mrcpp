@@ -9,9 +9,6 @@
 
 #include "functions/RepresentableFunction.h"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/numpy.h"
-
 class PyAnalyticFunction3D : public mrcpp::RepresentableFunction<3> {
 public:
     PyAnalyticFunction3D(std::function<double (double x, double y, double z)> f)

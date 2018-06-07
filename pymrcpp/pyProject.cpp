@@ -10,13 +10,13 @@
 #include "PyAnalyticFunction.h"
 
 #include "pyProject.h"
-
+#include <utility>
 
 void project3D(double prec,
                mrcpp::FunctionTree<3> &out,
                std::function<double (double x, double y, double z)> func,
                int maxIter) {
-    PyAnalyticFunction3D inp(func);
+    PyAnalyticFunction3D inp(std::move(func));
     mrcpp::project(prec, out, inp, maxIter);
 }
 
@@ -24,7 +24,7 @@ void project2D(double prec,
                       mrcpp::FunctionTree<2> &out,
                       std::function<double (double x, double y)> func,
                       int maxIter) {
-    PyAnalyticFunction2D inp(func);
+    PyAnalyticFunction2D inp(std::move(func));
     mrcpp::project(prec, out, inp, maxIter);
 }
 
@@ -32,6 +32,6 @@ void project1D(double prec,
                       mrcpp::FunctionTree<1> &out,
                       std::function<double (double x)> func,
                       int maxIter) {
-    PyAnalyticFunction1D inp(func);
+    PyAnalyticFunction1D inp(std::move(func));
     mrcpp::project(prec, out, inp, maxIter);
 }

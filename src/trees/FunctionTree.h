@@ -21,9 +21,9 @@ public:
     virtual double evalf(const double *r);
 
     // Python friendly evalf
-    virtual double evalf(double x);
-    virtual double evalf(double x, double y);
-    virtual double evalf(double x, double y, double z);
+    double evalf(double x);
+    double evalf(double x, double y);
+    double evalf(double x, double y, double z);
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);

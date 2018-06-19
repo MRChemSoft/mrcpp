@@ -426,11 +426,15 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     this->genNodeChunks.clear();
     this->nGenNodes = 0;
     this->maxGenNodes = 0;
+    this->nNodes = 0;
 
     for(int ichunk = 0 ; ichunk < nChunks; ichunk++){
+        int chunkStart = ichunk*this->maxNodesPerChunk;
         for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++){
             ProjectedNode<D>* Node = (this->nodeChunks[ichunk]) + inode;
             if (Node->serialIx >= 0) {
+                this->nNodes = chunkStart + inode;
+
                 //Node is part of tree, should be processed
                 this->getTree()->incrementNodeCount(Node->getScale());
                 if (Node->isEndNode()) this->getTree()->squareNorm += Node->getSquareNorm();
@@ -460,6 +464,7 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
             }
 
         }
+        this->lastNode = this->nodeChunks[ichunk] + this->nNodes%(this->maxNodesPerChunk);
     }
 
     //update other MWTree data

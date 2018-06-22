@@ -429,11 +429,10 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     this->nNodes = 0;
 
     for(int ichunk = 0 ; ichunk < nChunks; ichunk++){
-        int chunkStart = ichunk*this->maxNodesPerChunk;
         for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++){
             ProjectedNode<D>* Node = (this->nodeChunks[ichunk]) + inode;
             if (Node->serialIx >= 0) {
-                this->nNodes = chunkStart + inode;
+                this->nNodes = ichunk*this->maxNodesPerChunk + (inode + 1);
 
                 //Node is part of tree, should be processed
                 this->getTree()->incrementNodeCount(Node->getScale());

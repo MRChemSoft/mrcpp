@@ -3,6 +3,7 @@
 #include "TreeBuilder.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
+#include "SplitAdaptor.h"
 #include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
 #include "utils/Printer.h"
@@ -154,6 +155,28 @@ void clear_grid(FunctionTree<D> &out) {
 /** @brief Refine the grid of a MW function representation
  *
  * @param[in,out] out Output tree to be refined
+ * @param[in] scales Number of refinement levels
+ *
+ * This will split ALL nodes in the tree the given number of times, then it will
+ * compute scaling coefs of the new nodes, thus leaving the function representation
+ * unchanged, but on a larger grid.
+ *
+ */
+template<int D>
+int refine_grid(FunctionTree<D> &out, int scales) {
+    int nSplit = 0;
+    int maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    SplitAdaptor<D> adaptor(maxScale, true); // Splits all nodes
+    for (int n = 0; n < scales; n++) {
+        nSplit += builder.split(out, adaptor, true); // Transfers coefs to children
+    }
+    return nSplit;
+}
+
+/** @brief Refine the grid of a MW function representation
+ *
+ * @param[in,out] out Output tree to be refined
  * @param[in] prec Precision for initial split check
  *
  * This will first perform a split check on the existing end nodes in the tree
@@ -208,6 +231,9 @@ template void copy_grid(FunctionTree<3> &out, FunctionTree<3> &inp);
 template void clear_grid(FunctionTree<1> &out);
 template void clear_grid(FunctionTree<2> &out);
 template void clear_grid(FunctionTree<3> &out);
+template int refine_grid(FunctionTree<1> &out, int scales);
+template int refine_grid(FunctionTree<2> &out, int scales);
+template int refine_grid(FunctionTree<3> &out, int scales);
 template int refine_grid(FunctionTree<1> &out, double prec);
 template int refine_grid(FunctionTree<2> &out, double prec);
 template int refine_grid(FunctionTree<3> &out, double prec);

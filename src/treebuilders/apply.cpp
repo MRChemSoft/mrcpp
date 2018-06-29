@@ -3,6 +3,7 @@
 #include "add.h"
 #include "TreeBuilder.h"
 #include "CopyAdaptor.h"
+#include "SplitAdaptor.h"
 #include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
@@ -101,7 +102,7 @@ void apply(FunctionTree<D> &out,
     pre_t.stop();
 
     // Apply operator on fixed expanded grid
-    TreeAdaptor<D> apply_adaptor(maxScale);
+    SplitAdaptor<D> apply_adaptor(maxScale, false); // Splits no nodes
     DerivativeCalculator<D> apply_calculator(dir, oper, inp);
     builder.build(out, apply_calculator, apply_adaptor, 0);
 

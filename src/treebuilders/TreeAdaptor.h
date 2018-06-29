@@ -31,7 +31,7 @@ public:
 protected:
     int maxScale;
 
-    virtual bool splitNode(const MWNode<D> &node) const { return false; }
+    virtual bool splitNode(const MWNode<D> &node) const = 0;
 };
 
 }

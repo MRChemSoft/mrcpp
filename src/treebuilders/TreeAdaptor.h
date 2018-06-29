@@ -9,7 +9,7 @@ template<int D>
 class TreeAdaptor {
 public:
     TreeAdaptor(int ms) : maxScale(ms) { }
-    virtual ~TreeAdaptor() { }
+    virtual ~TreeAdaptor() = default;
 
     void setMaxScale(int ms) { this->maxScale = ms; }
 

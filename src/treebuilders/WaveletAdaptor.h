@@ -1,25 +1,18 @@
 #pragma once
 
 #include "TreeAdaptor.h"
-#include "constants.h"
 
 namespace mrcpp {
 
 template<int D>
 class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double pr,
-		   int ms,
-		   bool ap = false,
-		   double sf = 1.0)
-            : TreeAdaptor<D>(ms),
-              absPrec(ap),
-              prec(pr),
-	      splitFac(sf) { }
-    virtual ~WaveletAdaptor() { }
-
-    void setPrecision(double pr) { this->prec = pr; }
-    void setAbsPrec(bool ap) { this->absPrec = ap; }
+    WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
+        : TreeAdaptor<D>(ms),
+          absPrec(ap),
+          prec(pr),
+          splitFac(sf) { }
+    virtual ~WaveletAdaptor() = default;
 
 protected:
     bool absPrec;

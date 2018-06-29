@@ -30,6 +30,8 @@ public:
     void square();
     void rescale(double c);
     void normalize();
+    void add(double c, FunctionTree<D> &inp);
+    void multiply(double c, FunctionTree<D> &inp);
 
     int getNChunks();
     int getNChunksUsed();

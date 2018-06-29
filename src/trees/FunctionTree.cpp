@@ -164,7 +164,8 @@ double FunctionTree<D>::evalf(const double *r) {
 
 template<int D>
 void FunctionTree<D>::square() {
-    this->deleteGenerated();
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
+
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim()*this->getKp1_d();
     for (int n = 0; n < nNodes; n++) {
@@ -185,6 +186,7 @@ void FunctionTree<D>::square() {
 
 template<int D>
 void FunctionTree<D>::rescale(double c) {
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim()*this->getKp1_d();
     for (int i = 0; i < nNodes; i++) {
@@ -202,6 +204,7 @@ void FunctionTree<D>::rescale(double c) {
 
 template<int D>
 void FunctionTree<D>::normalize() {
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
     if (sq_norm < 0.0) MSG_ERROR("Normalizing uninitialized function");
     this->rescale(1.0/sqrt(sq_norm));
@@ -247,6 +250,7 @@ int FunctionTree<D>::getNChunksUsed() {
 
 template<int D>
 void FunctionTree<D>::getEndValues(VectorXd &data) {
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim()*this->getKp1_d();
     data = VectorXd::Zero(nNodes*nCoefs);
@@ -265,6 +269,7 @@ void FunctionTree<D>::getEndValues(VectorXd &data) {
 
 template<int D>
 void FunctionTree<D>::setEndValues(VectorXd &data) {
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim()*this->getKp1_d();
     for (int i = 0; i < nNodes; i++) {

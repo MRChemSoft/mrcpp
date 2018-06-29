@@ -13,7 +13,6 @@
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -59,14 +58,14 @@ void FunctionTree<D>::clear() {
 /** Write the tree structure to disk, for later use.
   * Argument file name will get a ".tree" file extension. */
 template<int D>
-void FunctionTree<D>::saveTree(const string &file) {
+void FunctionTree<D>::saveTree(const std::string &file) {
     // This is basically a copy of MPI send_tree
     Timer t1;
-    stringstream fname;
+    std::stringstream fname;
     fname << file << ".tree";
 
-    fstream f;
-    f.open(fname.str(), ios::out | ios::binary);
+    std::fstream f;
+    f.open(fname.str(), std::ios::out | std::ios::binary);
     if (not f.is_open()) MSG_ERROR("Unable to open file");
 
     this->deleteGenerated();
@@ -100,14 +99,14 @@ void FunctionTree<D>::saveTree(const string &file) {
 /** Read a previously stored tree structure from disk.
   * Argument file name will get a ".tree" file extension. */
 template<int D>
-void FunctionTree<D>::loadTree(const string &file) {
+void FunctionTree<D>::loadTree(const std::string &file) {
     // This is basically a copy of MPI recv_tree
     Timer t1;
-    stringstream fname;
+    std::stringstream fname;
     fname << file << ".tree";
 
-    fstream f;
-    f.open(fname.str(), ios::in | ios::binary);
+    std::fstream f;
+    f.open(fname.str(), std::ios::in | std::ios::binary);
     if (not f.is_open()) MSG_ERROR("Unable to open file");
 
     // Read size of tree
@@ -207,7 +206,7 @@ void FunctionTree<D>::normalize() {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
     if (sq_norm < 0.0) MSG_ERROR("Normalizing uninitialized function");
-    this->rescale(1.0/sqrt(sq_norm));
+    this->rescale(1.0/std::sqrt(sq_norm));
 }
 
 template<int D>

@@ -41,7 +41,7 @@ bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
                 for (int i = 0; i < this->tree_vec.size(); i++) {
                     const FunctionTree<D> &func_i = get_func(tree_vec, i);
                     const MWNode<D> *node_i = func_i.findNode(bwIdx);
-                    if (node_i != 0) return true;
+                    if (node_i != nullptr) return true;
                 }
             }
         }

@@ -4,11 +4,10 @@
 
 namespace mrcpp {
 
-class OperatorAdaptor : public WaveletAdaptor<2> {
+class OperatorAdaptor final : public WaveletAdaptor<2> {
 public:
     OperatorAdaptor(double pr, int ms, bool ap = false)
             : WaveletAdaptor<2>(pr, ms, ap) { }
-    virtual ~OperatorAdaptor() { }
 
 protected:
     virtual bool splitNode(const MWNode<2> &node) const {

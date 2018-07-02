@@ -6,10 +6,9 @@
 namespace mrcpp {
 
 template<int D>
-class MultiplicationCalculator : public TreeCalculator<D> {
+class MultiplicationCalculator final : public TreeCalculator<D> {
 public:
     MultiplicationCalculator(const FunctionTreeVector<D> &inp) : prod_vec(inp) { }
-    virtual ~MultiplicationCalculator() { }
 
 protected:
     FunctionTreeVector<D> prod_vec;

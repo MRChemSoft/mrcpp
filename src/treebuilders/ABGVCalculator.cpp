@@ -5,8 +5,8 @@
 #include "trees/MWNode.h"
 #include "utils/Printer.h"
 
-using namespace std;
-using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 namespace mrcpp {
 
@@ -24,7 +24,7 @@ void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
     for (int i = 0; i < kp1; i++) {
-        sqrtCoef[i] = sqrt(2.0 * i + 1.0);
+        sqrtCoef[i] = std::sqrt(2.0 * i + 1.0);
     }
 
     switch (basis.getScalingType()) {
@@ -52,7 +52,7 @@ void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
     for (int i = 0; i < kp1; i++) {
-        sqrtCoef[i] = sqrt(2.0 * i + 1.0);
+        sqrtCoef[i] = std::sqrt(2.0 * i + 1.0);
     }
     getQuadratureCache(qCache);
     const VectorXd &roots = qCache.getRoots(kp1);
@@ -88,7 +88,7 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();
     int l = node.getTranslation()[1] - node.getTranslation()[0];
-    double two_np1 = pow(2.0, node.getScale() + 1);
+    double two_np1 = std::pow(2.0, node.getScale() + 1);
     double *coefs = node.getCoefs();
 
     double a = this->A;

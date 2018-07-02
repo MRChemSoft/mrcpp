@@ -1,8 +1,7 @@
 #include "ProjectionCalculator.h"
 #include "trees/MWNode.h"
 
-using namespace std;
-using namespace Eigen;
+using Eigen::MatrixXd;
 
 namespace mrcpp {
 

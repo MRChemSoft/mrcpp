@@ -5,10 +5,9 @@
 namespace mrcpp {
 
 template<int D>
-class ProjectionCalculator : public TreeCalculator<D> {
+class ProjectionCalculator final : public TreeCalculator<D> {
 public:
     ProjectionCalculator(const RepresentableFunction<D> &inp_func) : func(&inp_func) { }
-    virtual ~ProjectionCalculator() { }
 
 protected:
     const RepresentableFunction<D> *func;

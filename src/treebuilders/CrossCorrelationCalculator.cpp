@@ -4,8 +4,8 @@
 #include "utils/Printer.h"
 #include "eigen_disable_warnings.h"
 
-using namespace std;
-using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 namespace mrcpp {
 
@@ -68,7 +68,7 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
         vec_o.segment(i*kp1_d, kp1_d) = (lMat*seg_a + rMat*seg_b);
     }
     double *coefs = node.getCoefs();
-    double two_n = pow(2.0, -scale/2.0);
+    double two_n = std::pow(2.0, -scale/2.0);
     for (int i = 0; i < t_dim*kp1_d; i++) {
         coefs[i] = two_n*vec_o(i);
     }

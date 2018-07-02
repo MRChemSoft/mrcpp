@@ -7,10 +7,9 @@
 
 namespace mrcpp {
 
-class PHCalculator : public TreeCalculator<2> {
+class PHCalculator final : public TreeCalculator<2> {
 public:
     PHCalculator(const ScalingBasis &basis, int n);
-    virtual ~PHCalculator() { }
 
 protected:
     const int diff_order;

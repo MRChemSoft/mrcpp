@@ -8,7 +8,7 @@
 namespace mrcpp {
 
 template<int D>
-class ConvolutionCalculator : public TreeCalculator<D> {
+class ConvolutionCalculator final : public TreeCalculator<D> {
 public:
     ConvolutionCalculator(double p,
                           ConvolutionOperator<D> &o,

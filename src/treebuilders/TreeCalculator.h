@@ -8,7 +8,7 @@ template<int D>
 class TreeCalculator {
 public:
     TreeCalculator() { }
-    virtual ~TreeCalculator() { }
+    virtual ~TreeCalculator() = default;
 
     virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const {
         return tree.copyEndNodeTable();

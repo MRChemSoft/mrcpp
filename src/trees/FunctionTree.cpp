@@ -268,7 +268,31 @@ void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
 
 template<int D>
 void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
-    NOT_IMPLEMENTED_ABORT;
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
+#pragma omp parallel firstprivate(c), shared(inp)
+{
+    int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+    for (int n = 0; n < nNodes; n++) {
+        MWNode<D> &out_node = *this->endNodeTable[n];
+        MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); //Full copy
+        out_node.mwTransform(Reconstruction);
+        out_node.cvTransform(Forward);
+        inp_node.mwTransform(Reconstruction);
+        inp_node.cvTransform(Forward);
+        double *out_coefs = out_node.getCoefs();
+        const double *inp_coefs = inp_node.getCoefs();
+        for (int i = 0; i < inp_node.getNCoefs(); i++) {
+            out_coefs[i] *= c * inp_coefs[i];
+        }
+        out_node.cvTransform(Backward);
+        out_node.mwTransform(Compression);
+        out_node.calcNorms();
+    }
+}
+    this->mwTransform(BottomUp);
+    this->calcSquareNorm();
+    inp.deleteGenerated();
 }
 
 template<int D>

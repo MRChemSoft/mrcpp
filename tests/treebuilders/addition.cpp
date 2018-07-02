@@ -121,6 +121,15 @@ template<int D> void testAddition() {
                     REQUIRE( e_int == Approx(ref_int).margin(prec*prec) );
                 }
             }
+            AND_WHEN("the second function is subtracted in-place") {
+                d_tree.add(-b_coef, b_tree);
+
+                THEN("the integral is zero") {
+                    double d_int = d_tree.integrate();
+                    double ref_int = 0.0;
+                    REQUIRE( d_int == Approx(ref_int).margin(prec*prec) );
+                }
+            }
         }
     }
     finalize(&mra);

@@ -13,6 +13,7 @@ using namespace mrcpp;
 namespace multiplication {
 
 template<int D> void testMultiplication();
+template<int D> void testSquare();
 
 SCENARIO("Multiplying MW trees", "[multiplication], [tree_builder]") {
     GIVEN("Two MW functions in 1D") {
@@ -75,6 +76,111 @@ template<int D> void testMultiplication() {
             REQUIRE( c_int == Approx(ref_int) );
             REQUIRE( c_dot == Approx(ref_norm) );
             REQUIRE( c_norm == Approx(ref_norm) );
+        }
+    }
+    WHEN("the functions are multiplied in-place") {
+        a_tree.multiply(1.0, b_tree);
+
+        THEN("the first function equals the analytic product") {
+            double a_int = a_tree.integrate();
+            double a_dot = dot(a_tree, ref_tree);
+            double a_norm = a_tree.getSquareNorm();
+            REQUIRE( a_int == Approx(ref_int) );
+            REQUIRE( a_dot == Approx(ref_norm) );
+            REQUIRE( a_norm == Approx(ref_norm) );
+        }
+    }
+    finalize(&mra);
+}
+
+SCENARIO("Squaring MW trees", "[square], [tree_builder]") {
+    GIVEN("A MW function in 1D") {
+        testSquare<1>();
+    }
+    GIVEN("A MW function in 2D") {
+        testSquare<2>();
+    }
+    GIVEN("A MW function in 3D") {
+        testSquare<3>();
+    }
+}
+
+template<int D> void testSquare() {
+    const double prec = 1.0e-4;
+
+    double alpha = 1.0;
+    double beta = 50.0;
+    double pos[3] = {-0.25, 0.35, 1.05};
+
+    GaussFunc<D> f_func(beta, alpha, pos);
+    GaussPoly<D> ref_func = f_func*f_func;
+
+    MultiResolutionAnalysis<D> *mra = 0;
+    initialize(&mra);
+
+    // Initialize trees
+    FunctionTree<D> f_tree(*mra);
+    FunctionTree<D> ref_tree(*mra);
+
+    // Build empty grids
+    build_grid(f_tree, f_func);
+    build_grid(ref_tree, ref_func);
+
+    // Project functions
+    project(prec, f_tree, f_func);
+    project(prec, ref_tree, ref_func);
+
+    const double ref_int = ref_tree.integrate();
+    const double ref_norm = ref_tree.getSquareNorm();
+
+    WHEN("the function is squared out-of-place") {
+        FunctionTree<D> ff_tree(*mra);
+        square(prec, ff_tree, f_tree);
+
+        THEN("the MW square equals the analytic square") {
+            double ff_int = ff_tree.integrate();
+            double ff_dot = dot(ff_tree, ref_tree);
+            double ff_norm = ff_tree.getSquareNorm();
+            REQUIRE( ff_int == Approx(ref_int) );
+            REQUIRE( ff_dot == Approx(ref_norm) );
+            REQUIRE( ff_norm == Approx(ref_norm) );
+        }
+    }
+    WHEN("the function is squared in-place") {
+        f_tree.square();
+
+        THEN("the MW square equals the analytic square") {
+            double f_int = f_tree.integrate();
+            double f_dot = dot(f_tree, ref_tree);
+            double f_norm = f_tree.getSquareNorm();
+            REQUIRE( f_int == Approx(ref_int) );
+            REQUIRE( f_dot == Approx(ref_norm) );
+            REQUIRE( f_norm == Approx(ref_norm) );
+        }
+    }
+    WHEN("the function is raised to the second power out-of-place") {
+        FunctionTree<D> ff_tree(*mra);
+        power(prec, ff_tree, f_tree, 2.0);
+
+        THEN("the MW power equals the analytic power") {
+            double ff_int = ff_tree.integrate();
+            double ff_dot = dot(ff_tree, ref_tree);
+            double ff_norm = ff_tree.getSquareNorm();
+            REQUIRE( ff_int == Approx(ref_int) );
+            REQUIRE( ff_dot == Approx(ref_norm) );
+            REQUIRE( ff_norm == Approx(ref_norm) );
+        }
+    }
+    WHEN("the function is raised to second power in-place") {
+        f_tree.power(2.0);
+
+        THEN("the MW power(2.0) equals the analytic square") {
+            double f_int = f_tree.integrate();
+            double f_dot = dot(f_tree, ref_tree);
+            double f_norm = f_tree.getSquareNorm();
+            REQUIRE( f_int == Approx(ref_int) );
+            REQUIRE( f_dot == Approx(ref_norm) );
+            REQUIRE( f_norm == Approx(ref_norm) );
         }
     }
     finalize(&mra);

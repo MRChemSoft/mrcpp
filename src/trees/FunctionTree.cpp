@@ -188,6 +188,32 @@ void FunctionTree<D>::square() {
 }
 
 template<int D>
+void FunctionTree<D>::power(double p) {
+    if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
+
+#pragma omp parallel
+{
+    int nNodes = this->getNEndNodes();
+    int nCoefs = this->getTDim()*this->getKp1_d();
+#pragma omp for schedule(guided)
+    for (int n = 0; n < nNodes; n++) {
+        MWNode<D> &node = *this->endNodeTable[n];
+        node.mwTransform(Reconstruction);
+        node.cvTransform(Forward);
+        double *coefs = node.getCoefs();
+        for (int i = 0; i < nCoefs; i++) {
+            coefs[i] = std::pow(coefs[i], p);
+        }
+        node.cvTransform(Backward);
+        node.mwTransform(Compression);
+        node.calcNorms();
+    }
+}
+    this->mwTransform(BottomUp);
+    this->calcSquareNorm();
+}
+
+template<int D>
 void FunctionTree<D>::rescale(double c) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 #pragma omp parallel firstprivate(c)

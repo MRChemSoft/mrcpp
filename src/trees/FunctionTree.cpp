@@ -161,6 +161,12 @@ double FunctionTree<D>::evalf(const double *r) {
     return result;
 }
 
+/** @brief In-place square of function
+ *
+ * The leaf node point values of the output function will be in-place
+ * squared, no grid refinement.
+ *
+ */
 template<int D>
 void FunctionTree<D>::square() {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
@@ -187,6 +193,14 @@ void FunctionTree<D>::square() {
     this->calcSquareNorm();
 }
 
+/** @brief In-place raise to given power
+ *
+ * @param[in] c Numerical power
+ *
+ * The leaf node point values of the output function will be in-place
+ * raised to the given power, no grid refinement.
+ *
+ */
 template<int D>
 void FunctionTree<D>::power(double p) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
@@ -213,6 +227,14 @@ void FunctionTree<D>::power(double p) {
     this->calcSquareNorm();
 }
 
+/** @brief In-place multiplication by a scalar
+ *
+ * @param[in] c Scalar coefficient
+ *
+ * The leaf node point values of the output function will be in-place
+ * multiplied by the given coefficient, no grid refinement.
+ *
+ */
 template<int D>
 void FunctionTree<D>::rescale(double c) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
@@ -243,6 +265,15 @@ void FunctionTree<D>::normalize() {
     this->rescale(1.0/std::sqrt(sq_norm));
 }
 
+/** @brief In-place addition of MW function representations
+ *
+ * @param[in] c Numerical coefficient of input function
+ * @param[in] inp Input function to add
+ *
+ * The input function will be added in-place on the current grid of the output
+ * function, i.e. no further grid refinement.
+ *
+ */
 template<int D>
 void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
@@ -266,6 +297,15 @@ void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     inp.deleteGenerated();
 }
 
+/** @brief In-place multiplication of MW function representations
+ *
+ * @param[in] c Numerical coefficient of input function
+ * @param[in] inp Input function to multiply
+ *
+ * The input function will be multiplied in-place on the current grid of the
+ * output function, i.e. no further grid refinement.
+ *
+ */
 template<int D>
 void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");

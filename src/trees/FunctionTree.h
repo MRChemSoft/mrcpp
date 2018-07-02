@@ -28,6 +28,7 @@ public:
 
     // In place operations
     void square();
+    void power(double p);
     void rescale(double c);
     void normalize();
     void add(double c, FunctionTree<D> &inp);

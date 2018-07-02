@@ -4,6 +4,7 @@
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "PowerCalculator.h"
+#include "SquareCalculator.h"
 #include "MultiplicationCalculator.h"
 #include "trees/HilbertIterator.h"
 #include "trees/FunctionTree.h"
@@ -91,6 +92,29 @@ void multiply(double prec,
         FunctionTree<D> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
+    clean_t.stop();
+
+    Printer::printTime(10, "Time transform", trans_t);
+    Printer::printTime(10, "Time cleaning", clean_t);
+    Printer::printSeparator(10, ' ');
+}
+
+template<int D>
+void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
+    int maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    WaveletAdaptor<D> adaptor(prec, maxScale);
+    SquareCalculator<D> calculator(inp);
+
+    builder.build(out, calculator, adaptor, maxIter);
+
+    Timer trans_t;
+    out.mwTransform(BottomUp);
+    out.calcSquareNorm();
+    trans_t.stop();
+
+    Timer clean_t;
+    inp.deleteGenerated();
     clean_t.stop();
 
     Printer::printTime(10, "Time transform", trans_t);
@@ -225,6 +249,9 @@ template void multiply(double prec, FunctionTree<3> &out, FunctionTreeVector<3> 
 template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter);
 template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter);
 template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter);
+template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter);
+template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter);
+template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter);
 template void map(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, RepresentableFunction<1> &func);
 template void map(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, RepresentableFunction<2> &func);
 template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, RepresentableFunction<3> &func);

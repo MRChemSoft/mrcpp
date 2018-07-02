@@ -3,6 +3,7 @@ list(APPEND _examples
     projection
     derivative
     addition
+    multiplication
     poisson
     scf
     mpi_shared_tree

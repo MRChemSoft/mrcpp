@@ -124,6 +124,9 @@ add
 multiply
   Multiply existing functions, adaptive grid.
 
+square
+  Multiply an existing function with itself, adaptive grid.
+
 power
   Raise an existing function to a given power, adaptive grid.
 
@@ -164,8 +167,17 @@ rescale
 normalize
   Rescale the function by its norm, fixed grid.
 
+add
+  Add an existing function, fixed grid.
+
+multiply
+  Multiply an existing function, fixed grid.
+
 square
   Multiply an existing function with itself, fixed grid.
+
+power
+  Raise an existing function to a given power, fixed grid.
 
 crop
   Truncate the wavelet expansion accoring to a new precision threshold.

@@ -9,5 +9,6 @@ target_sources(mrcpp-tests PRIVATE
 add_Catch_test(NAME clear_grid              LABELS clear_grid)
 add_Catch_test(NAME build_grid              LABELS build_grid)
 add_Catch_test(NAME addition                LABELS addition)
-add_Catch_test(NAME multiplication          LABELS multiplicationx)
+add_Catch_test(NAME multiplication          LABELS multiplication)
+add_Catch_test(NAME square                  LABELS square)
 add_Catch_test(NAME projection              LABELS projection)

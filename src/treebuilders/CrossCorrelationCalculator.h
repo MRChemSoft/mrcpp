@@ -5,10 +5,9 @@
 
 namespace mrcpp {
 
-class CrossCorrelationCalculator : public TreeCalculator<2> {
+class CrossCorrelationCalculator final : public TreeCalculator<2> {
 public:
     CrossCorrelationCalculator(FunctionTree<1> &k) : kernel(&k) { }
-    virtual ~CrossCorrelationCalculator() { }
 
 protected:
     FunctionTree<1> *kernel;

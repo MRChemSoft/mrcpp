@@ -14,8 +14,8 @@ extern "C" {
 }
 #endif
 
-using namespace std;
-using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::MatrixXi;
 
 namespace mrcpp {
 
@@ -70,25 +70,23 @@ template<int D>
 void ConvolutionCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = omp_get_max_threads();
-    printout(20, endl);
-    printout(20, endl << "thread ");
+    printout(20, "\n\nthread ");
     for (int i = 0; i < nThreads; i++) {
-        printout(20, setw(9) << i);
+        printout(20, std::setw(9) << i);
     }
-    printout(20, endl << "band     ");
+    printout(20, "\nband     ");
     for (int i = 0; i < nThreads; i++) {
         printout(20, this->band_t[i]->getWallTime() << "  ");
     }
-    printout(20, endl << "calc     ");
+    printout(20, "\ncalc     ");
     for (int i = 0; i < nThreads; i++) {
         printout(20, this->calc_t[i]->getWallTime() << "  ");
     }
-    printout(20, endl << "norm     ");
+    printout(20, "\nnorm     ");
     for (int i = 0; i < nThreads; i++) {
         printout(20, this->norm_t[i]->getWallTime() << "  ");
     }
-    printout(20, endl);
-    printout(20, endl);
+    printout(20, "\n\n");
     Printer::setPrecision(oldprec);
 }
 
@@ -224,7 +222,7 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
         double nTerms = (double) this->oper->size();
-        gThrs = this->prec*sqrt(gThrs/nTerms);
+        gThrs = this->prec*std::sqrt(gThrs/nTerms);
     }
     os.gThreshold = gThrs;
 
@@ -331,8 +329,8 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
                     os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
         } else {
             // Identity operator in direction i
-            Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
-            Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
+            Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
+            Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
             if (oData[i] == 0) {
                 if (i == D - 1) { // Last dir: Add up into g
                     g += f.transpose();
@@ -344,8 +342,8 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     }
 #else
     for (int i = 0; i < D; i++) {
-        Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
-        Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
+        Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
+        Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
         if (oData[i] != 0) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g

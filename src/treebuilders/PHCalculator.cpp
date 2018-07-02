@@ -5,8 +5,7 @@
 #include "PHCalculator.h"
 #include "utils/Printer.h"
 
-using namespace std;
-using namespace Eigen;
+using Eigen::MatrixXd;
 
 namespace mrcpp {
 
@@ -19,20 +18,20 @@ PHCalculator::PHCalculator(const ScalingBasis &basis, int n)
 }
 
 void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
-    string file;
-    string path = MW_FILTER_DIR;
+    std::string file;
+    std::string path = MW_FILTER_DIR;
     if (basis.getScalingType() == Legendre) file = path + "/L_ph_deriv_" + n + ".txt";
     if (basis.getScalingType() == Interpol) file = path + "/I_ph_deriv_" + n + ".txt";
     if (basis.getScalingOrder() <  0) MSG_FATAL("Scaling order not supported");
     if (basis.getScalingOrder() > 29) MSG_FATAL("Scaling order not supported");
 
-    fstream ifs;
+    std::fstream ifs;
     ifs.open(file.c_str());
     if (not ifs) MSG_ERROR("Failed to open file: " << file);
     for (int kp1 = 2; kp1 < 30; kp1++) {
-        string line;
+        std::string line;
         getline(ifs, line);
-        istringstream iss(line);
+        std::istringstream iss(line);
 
         int order;
         iss >> order;
@@ -41,7 +40,7 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
         MatrixXd data = MatrixXd::Zero(3*kp1, kp1);
         for (int i = 0; i < 3*kp1; i++) {
             getline(ifs, line);
-            istringstream iss(line);
+            std::istringstream iss(line);
             for (int j = 0; j < kp1; j++) {
                 iss >> data(i,j);
             }
@@ -61,7 +60,7 @@ void PHCalculator::calcNode(MWNode<2> &node) {
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();
     int l = node.getTranslation()[1] - node.getTranslation()[0];
-    double two_np1 = pow(2.0, this->diff_order*np1);
+    double two_np1 = std::pow(2.0, this->diff_order*np1);
     double *coefs = node.getCoefs();
 
     switch (l) {

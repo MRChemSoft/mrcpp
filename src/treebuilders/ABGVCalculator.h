@@ -4,10 +4,9 @@
 
 namespace mrcpp {
 
-class ABGVCalculator : public TreeCalculator<2> {
+class ABGVCalculator final : public TreeCalculator<2> {
 public:
     ABGVCalculator(const ScalingBasis &basis, double a, double b);
-    virtual ~ABGVCalculator() { }
 
 protected:
     const double A;	 ///< Left boundary conditions, ref. Alpert et al.

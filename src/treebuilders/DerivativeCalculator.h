@@ -6,7 +6,7 @@
 namespace mrcpp {
 
 template<int D>
-class DerivativeCalculator : public TreeCalculator<D> {
+class DerivativeCalculator final : public TreeCalculator<D> {
 public:
     DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
     virtual ~DerivativeCalculator();

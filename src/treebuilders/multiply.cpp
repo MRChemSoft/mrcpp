@@ -3,6 +3,7 @@
 #include "grid.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
+#include "PowerCalculator.h"
 #include "MultiplicationCalculator.h"
 #include "trees/HilbertIterator.h"
 #include "trees/FunctionTree.h"
@@ -98,8 +99,26 @@ void multiply(double prec,
 }
 
 template<int D>
-void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow) {
-    NOT_IMPLEMENTED_ABORT;
+void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter) {
+    int maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    WaveletAdaptor<D> adaptor(prec, maxScale);
+    PowerCalculator<D> calculator(inp, pow);
+
+    builder.build(out, calculator, adaptor, maxIter);
+
+    Timer trans_t;
+    out.mwTransform(BottomUp);
+    out.calcSquareNorm();
+    trans_t.stop();
+
+    Timer clean_t;
+    inp.deleteGenerated();
+    clean_t.stop();
+
+    Printer::printTime(10, "Time transform", trans_t);
+    Printer::printTime(10, "Time cleaning", clean_t);
+    Printer::printSeparator(10, ' ');
 }
 
 template<int D>
@@ -203,9 +222,9 @@ template void multiply(double prec, FunctionTree<3> &out, double c, FunctionTree
 template void multiply(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
 template void multiply(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void multiply(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
-template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow);
-template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow);
-template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow);
+template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter);
+template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter);
+template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter);
 template void map(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, RepresentableFunction<1> &func);
 template void map(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, RepresentableFunction<2> &func);
 template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, RepresentableFunction<3> &func);

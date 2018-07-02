@@ -27,7 +27,10 @@ list(APPEND treebuilders_h
     ${CMAKE_CURRENT_SOURCE_DIR}/MultiplicationCalculator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorAdaptor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/PHCalculator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PowerCalculator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectionCalculator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SplitAdaptor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SquareCalculator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeAdaptor.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeBuilder.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeCalculator.h

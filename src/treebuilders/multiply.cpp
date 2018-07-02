@@ -99,6 +99,26 @@ void multiply(double prec,
     Printer::printSeparator(10, ' ');
 }
 
+/** @brief Out-of-place square of MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Input function to square
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the square of the input function,
+ * using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
@@ -122,6 +142,27 @@ void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter
     Printer::printSeparator(10, ' ');
 }
 
+/** @brief Out-of-place power of MW function representations
+ *
+ * @param[in] prec Build precision of output function
+ * @param[in,out] out Output function to be built
+ * @param[in] inp Input function to square
+ * @param[in] pow Numerical power
+ * @param[in] maxIter Maximum number of refinement iterations in output tree
+ *
+ * The output function will be computed as the input function raised to the
+ * given power, using the general algorithm:
+ *  1) Compute MW coefs on current grid
+ *  2) Refine grid where necessary based on prec
+ *  3) Repeat until convergence or maxIter is reached
+ *
+ * This algorithm will start at whatever grid is present in the output tree when
+ * the function is called (this grid should however be EMPTY, e.i. no coefs).
+ *
+ * A negative precision means NO refinement, as do maxIter = 0.
+ * A negative maxIter means no bound.
+ *
+ */
 template<int D>
 void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();

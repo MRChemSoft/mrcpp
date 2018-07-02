@@ -18,7 +18,7 @@ namespace mrcpp {
  * @param[in,out] out Output function to be built
  * @param[in] a Numerical coefficient of function a
  * @param[in] inp_a Input function a
- * @param[in] a Numerical coefficient of function b
+ * @param[in] b Numerical coefficient of function b
  * @param[in] inp_b Input function b
  * @param[in] maxIter Maximum number of refinement iterations in output tree
  *

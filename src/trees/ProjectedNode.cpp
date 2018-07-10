@@ -28,8 +28,12 @@ void ProjectedNode<D>::deleteChildren() {
 
 template<int D>
 void ProjectedNode<D>::dealloc() {
+    int sIdx = this->serialIx;
+    this->serialIx = -1;
+    this->parentSerialIx = -1;
+    this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+    this->tree->getSerialTree()->deallocNodes(sIdx);
 }
 
 /** Update the coefficients of the node by a mw transform of the scaling

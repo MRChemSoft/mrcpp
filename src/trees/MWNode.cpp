@@ -667,12 +667,13 @@ void MWNode<D>::deleteChildren() {
     if (this->isLeafNode()) return;
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
         if (this->children[cIdx] != 0) {
-	    MWNode<D> &child = getMWChild(cIdx);
-	    child.deleteChildren();
+            MWNode<D> &child = getMWChild(cIdx);
+            child.deleteChildren();
             child.dealloc();
-	}
-	this->children[cIdx] = 0;
+        }
+        this->children[cIdx] = 0;
     }
+    this->childSerialIx = -1;
     this->setIsLeafNode();
 }
 

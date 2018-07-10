@@ -53,13 +53,6 @@ void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChun
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        //set serialIx of the unused nodes to -1
-        int iShift = iChunk*sTree.maxNodesPerChunk;
-        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            if (sTree.nodeStackStatus[iShift+i] != 1) {
-                sTree.nodeChunks[iChunk][i].setSerialIx(-1);
-            }
-        }
         MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk+1, comm);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1001, comm);
@@ -119,13 +112,6 @@ void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Requ
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        //set serialIx of the unused nodes to -1
-        int iShift = iChunk*sTree.maxNodesPerChunk;
-        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            if (sTree.nodeStackStatus[iShift+i] != 1) {
-                sTree.nodeChunks[iChunk][i].setSerialIx(-1);
-            }
-        }
         MPI_Isend(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag+iChunk+1, comm, req);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag+iChunk+1001, comm, req);
@@ -156,13 +142,6 @@ void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
             int count = 1;
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
                 count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-                //set serialIx of the unused nodes to -1
-                int iShift = iChunk*sTree.maxNodesPerChunk;
-                for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-                    if (sTree.nodeStackStatus[iShift+i] != 1) {
-                        sTree.nodeChunks[iChunk][i].setSerialIx(-1);
-                    }
-                }
                 println(10, " Sending chunk " << iChunk);
                 MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag+iChunk+1, comm);
                 count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;

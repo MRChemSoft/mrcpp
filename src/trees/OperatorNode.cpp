@@ -7,8 +7,12 @@ using namespace Eigen;
 namespace mrcpp {
 
 void OperatorNode::dealloc() {
+    int sIdx = this->serialIx;
+    this->serialIx = -1;
+    this->parentSerialIx = -1;
+    this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getSerialTree()->deallocNodes(this->getSerialIx());
+    this->tree->getSerialTree()->deallocNodes(sIdx);
 }
 
 /** Calculate one specific component norm of the OperatorNode.

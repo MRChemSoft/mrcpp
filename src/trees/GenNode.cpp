@@ -53,8 +53,12 @@ double GenNode<D>::calcComponentNorm(int i) const {
 
 template<int D>
 void GenNode<D>::dealloc() {
+    int sIdx = this->serialIx;
+    this->serialIx = -1;
+    this->parentSerialIx = -1;
+    this->childSerialIx = -1;
     this->tree->decrementGenNodeCount();
-    this->tree->getSerialTree()->deallocGenNodes(this->getSerialIx());
+    this->tree->getSerialTree()->deallocGenNodes(sIdx);
 }
 
 template<int D>

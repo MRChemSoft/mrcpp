@@ -79,13 +79,6 @@ void FunctionTree<D>::saveTree(const std::string &file) {
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        //set serialIx of the unused nodes to -1
-        int iShift = iChunk*sTree.maxNodesPerChunk;
-        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            if (sTree.nodeStackStatus[iShift+i] != 1) {
-                sTree.nodeChunks[iChunk][i].setSerialIx(-1);
-            }
-        }
         f.write((char *) sTree.nodeChunks[iChunk], count);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         f.write((char *) sTree.nodeCoeffChunks[iChunk], count*sizeof(double));
@@ -120,8 +113,7 @@ void FunctionTree<D>::loadTree(const std::string &file) {
         if (iChunk < sTree.nodeChunks.size()) {
             sTree.sNodes = sTree.nodeChunks[iChunk];
         } else {
-            double *sNodesCoeff;
-            sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            double *sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
             sTree.nodeCoeffChunks.push_back(sNodesCoeff);
             sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
             sTree.nodeChunks.push_back(sTree.sNodes);
@@ -386,6 +378,28 @@ template<int D>
 std::ostream& FunctionTree<D>::print(std::ostream &o) {
     o << std::endl << "*FunctionTree: " << this->name << std::endl;
     return MWTree<D>::print(o);
+}
+
+template<int D>
+void FunctionTree<D>::printSerialIndices() {
+    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
+    int n = 0;
+    for (int iChunk = 0; iChunk < sTree.getNChunks(); iChunk++) {
+        int iShift = iChunk*sTree.maxNodesPerChunk;
+        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
+            int status = sTree.nodeStackStatus[iShift+i];
+            int sIdx = sTree.nodeChunks[iChunk][i].serialIx;
+            int pIdx = sTree.nodeChunks[iChunk][i].parentSerialIx;
+            int cIdx = sTree.nodeChunks[iChunk][i].childSerialIx;
+            printout(0, std::setw(4) << n++);
+            printout(0, std::setw(4) << status);
+            printout(0, std::setw(6) << sIdx);
+            printout(0, std::setw(6) << pIdx);
+            printout(0, std::setw(6) << cIdx << "   ");
+            if (status == 1) printout(0, sTree.nodeChunks[iChunk][i].getNodeIndex());
+            printout(0, "\n");
+        }
+    }
 }
 
 template class FunctionTree<1>;

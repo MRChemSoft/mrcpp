@@ -7,3 +7,11 @@
 # MRCPP: MultiResolution Computation Program Package
 
  Documentation: http://mrcpp.readthedocs.io
+ 
+The MultiResolution Computation Program Package (MRCPP) is a general
+purpose numerical mathematics library based on multiresolution analysis
+and the multiwavelet basis which provide low-scaling algorithms as well
+as rigorous error control in numerical computations.
+
+The code is being developed at the Hylleraas Centre for Quantum Molecular
+Sciences at UiT - The Arctic University of Norway.

@@ -11,7 +11,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 
 namespace mrcpp {
 
@@ -50,7 +49,7 @@ template<int D>
 void BoundingBox<D>::setNBoxes(const int *nb) {
     this->nBoxes[D] = 1;
     for (int d = 0; d < D; d++) {
-        if (nb == 0) {
+        if (nb == nullptr) {
             this->nBoxes[d] = 1;
         } else {
             if (nb[d] <= 0) MSG_ERROR("Invalid box size");
@@ -76,7 +75,7 @@ void BoundingBox<D>::setDerivedParameters() {
 
 template<int D>
 NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
-    assert(r != 0);
+    assert(r != nullptr);
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -84,7 +83,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        modf(div,&iint);
+        modf(div, &iint);
         idx[d] = (int) iint;
     }
 
@@ -129,7 +128,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 // Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const double *r) const {
-    assert(r != 0);
+    assert(r != nullptr);
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -247,4 +246,4 @@ template class BoundingBox<1>;
 template class BoundingBox<2>;
 template class BoundingBox<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

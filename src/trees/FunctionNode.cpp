@@ -233,4 +233,4 @@ template class FunctionNode<1>;
 template class FunctionNode<2>;
 template class FunctionNode<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

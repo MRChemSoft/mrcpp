@@ -156,4 +156,4 @@ int Printer::setPrecision(int i) {
     return oldPrec;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

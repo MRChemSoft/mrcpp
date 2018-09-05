@@ -205,4 +205,4 @@ void InterpolatingBasis::calcCVMaps() {
 //	}
 //}
 
-} //namespace mrcpp
+} // namespace mrcpp

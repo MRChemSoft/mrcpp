@@ -251,4 +251,4 @@ template class DerivativeCalculator<1>;
 template class DerivativeCalculator<2>;
 template class DerivativeCalculator<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

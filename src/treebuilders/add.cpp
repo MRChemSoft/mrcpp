@@ -103,4 +103,4 @@ template void add(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp,
 template void add(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void add(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
 
-} //namespace mrcpp
+} // namespace mrcpp

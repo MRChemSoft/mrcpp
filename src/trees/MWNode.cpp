@@ -1063,4 +1063,4 @@ template class MWNode<1>;
 template class MWNode<2>;
 template class MWNode<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

@@ -303,4 +303,4 @@ template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
 template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
 template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
 
-} //namespace mrcpp
+} // namespace mrcpp

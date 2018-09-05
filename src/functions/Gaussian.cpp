@@ -131,4 +131,4 @@ template class Gaussian<1>;
 template class Gaussian<2>;
 template class Gaussian<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

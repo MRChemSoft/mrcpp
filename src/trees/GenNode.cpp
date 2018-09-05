@@ -70,4 +70,4 @@ template class GenNode<1>;
 template class GenNode<2>;
 template class GenNode<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

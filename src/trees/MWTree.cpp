@@ -519,4 +519,4 @@ template class MWTree<1>;
 template class MWTree<2>;
 template class MWTree<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

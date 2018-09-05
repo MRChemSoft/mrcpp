@@ -192,4 +192,4 @@ template void share_tree(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm)
 template void share_tree(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
 template void share_tree(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);
 
-} //namespace mrcpp
+} // namespace mrcpp

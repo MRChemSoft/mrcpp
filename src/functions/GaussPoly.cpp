@@ -256,4 +256,4 @@ template class GaussPoly<1>;
 template class GaussPoly<2>;
 template class GaussPoly<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

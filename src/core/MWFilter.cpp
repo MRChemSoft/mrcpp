@@ -258,4 +258,4 @@ void MWFilter::readFilterBin() {
     H_fis.close();
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

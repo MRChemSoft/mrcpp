@@ -210,4 +210,4 @@ void LegendreBasis::calcCVMaps() {
 //	scs *= sqrt(1.0 / sfac);
 //}
 
-} //namespace mrcpp
+} // namespace mrcpp

@@ -292,4 +292,4 @@ double Polynomial::innerProduct(const Polynomial &Q) const {
     return pq.integrate();
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

@@ -231,4 +231,4 @@ template class SerialTree<1>;
 template class SerialTree<2>;
 template class SerialTree<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

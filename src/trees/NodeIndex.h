@@ -76,7 +76,7 @@ NodeIndex<D>& NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
 template<int D>
 void NodeIndex<D>::setTranslation(const int *l) {
     for (int d = 0; d < D; d++) {
-        if (l != 0) {
+        if (l != nullptr) {
             this->L[d] = l[d];
         } else {
             this->L[d] = 0;

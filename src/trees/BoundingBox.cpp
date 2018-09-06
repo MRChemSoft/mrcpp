@@ -34,6 +34,12 @@ BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
     setNBoxes(box.nBoxes);
     setDerivedParameters();
 }
+template<int D>
+BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb, const double sf)
+        : cornerIndex(n, l) {
+    setNBoxes(nb);
+    setDerivedParameters();
+}
 
 template<int D>
 BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> &box) {

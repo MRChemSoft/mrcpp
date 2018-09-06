@@ -18,6 +18,7 @@ public:
     BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
+    BoundingBox(int n, const int *l, const int *nb, const double sf);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() { }
 

@@ -21,12 +21,12 @@ Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
     this->coef = c;
     this->screen = false;
     for (int d = 0; d < D; d++) {
-        if (r == 0) {
+        if (r == nullptr) {
             this->pos[d] = 0.0;
         } else {
             this->pos[d] = r[d];
         }
-        if (p == 0) {
+        if (p == nullptr) {
             this->power[d] = 0;
         } else {
             this->power[d] = p[d];

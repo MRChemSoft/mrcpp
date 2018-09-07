@@ -264,14 +264,14 @@ void Polynomial::calcAntiDerivativeInPlace() {
 /** Integrate the polynomial P on [a,b] analytically */
 double Polynomial::integrate(const double *a, const double *b) const {
     double lb, ub;
-    if (a == 0) {
+    if (a == nullptr) {
         if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
         lb = getScaledLowerBound();
     } else {
         if (this->outOfBounds(a)) MSG_ERROR("Integration out of bounds");
         lb = a[0];
     }
-    if (b == 0) {
+    if (b == nullptr) {
         if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
         ub = getScaledUpperBound();
     } else {

@@ -15,7 +15,7 @@ namespace mrcpp {
 template<int D>
 class NodeIndex {
 public:
-    NodeIndex(int n = 0, const int *l = 0);
+    NodeIndex(int n = 0, const int *l = nullptr);
     NodeIndex(const NodeIndex<D> &idx);
     NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
     virtual ~NodeIndex() { }

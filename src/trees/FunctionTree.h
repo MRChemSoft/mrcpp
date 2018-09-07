@@ -12,7 +12,7 @@ namespace mrcpp {
 template<int D>
 class FunctionTree: public MWTree<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = 0);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
     virtual ~FunctionTree();
 
     void clear();

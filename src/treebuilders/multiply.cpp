@@ -267,7 +267,7 @@ double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     for (int n = 0; n < nNodes; n++) {
         const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
         const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
-        if (mwNode == 0) continue;
+        if (mwNode == nullptr) continue;
 
         const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
         if (braNode.isRootNode()) {

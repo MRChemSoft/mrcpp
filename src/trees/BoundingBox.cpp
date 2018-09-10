@@ -11,7 +11,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 
 namespace mrcpp {
 
@@ -84,7 +83,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        modf(div,&iint);
+        std::modf(div,&iint);
         idx[d] = (int) iint;
     }
 
@@ -112,7 +111,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
         }
         double div = bIdx / ncells;
         double iint;
-        modf(div, &iint);
+        std::modf(div, &iint);
         l[d] = (int) iint;
         bIdx -= ncells * l[d];
     }
@@ -137,7 +136,7 @@ int BoundingBox<D>::getBoxIndex(const double *r) const {
         if (x >= this->upperBounds[d]) return -1;
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        modf(div,&iint);
+        std::modf(div,&iint);
         idx[d] = (int) iint;
     }
 
@@ -213,7 +212,7 @@ int BoundingBox<1>::getBoxIndex(const double *r) const {
     if (x >= this->upperBounds[0]) return -1;
     double div = (x - this->lowerBounds[0]) / this->unitLength;
     double iint;
-    modf(div,&iint);
+    std::modf(div,&iint);
     return (int) iint;
 }
 

@@ -406,4 +406,4 @@ template class FunctionTree<1>;
 template class FunctionTree<2>;
 template class FunctionTree<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

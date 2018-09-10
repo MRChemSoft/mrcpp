@@ -172,4 +172,4 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
     return val;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

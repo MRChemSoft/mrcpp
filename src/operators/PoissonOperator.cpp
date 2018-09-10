@@ -17,4 +17,4 @@ PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double p
     Printer::setPrintLevel(oldlevel);
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

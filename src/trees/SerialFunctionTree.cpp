@@ -510,4 +510,4 @@ template class SerialFunctionTree<1>;
 template class SerialFunctionTree<2>;
 template class SerialFunctionTree<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

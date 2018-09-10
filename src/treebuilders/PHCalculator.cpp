@@ -100,4 +100,4 @@ void PHCalculator::calcNode(MWNode<2> &node) {
     node.calcNorms();
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

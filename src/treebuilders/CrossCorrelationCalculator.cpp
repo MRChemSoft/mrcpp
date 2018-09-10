@@ -74,4 +74,4 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     }
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

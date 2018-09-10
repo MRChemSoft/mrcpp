@@ -173,5 +173,5 @@ template class TreeIterator<1>;
 template class TreeIterator<2>;
 template class TreeIterator<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp
 

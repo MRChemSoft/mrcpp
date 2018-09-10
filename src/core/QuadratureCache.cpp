@@ -69,4 +69,4 @@ void QuadratureCache::setIntervals(int ivals) {
     }
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

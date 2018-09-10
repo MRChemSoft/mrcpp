@@ -329,4 +329,4 @@ template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

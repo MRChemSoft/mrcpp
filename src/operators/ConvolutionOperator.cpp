@@ -84,4 +84,4 @@ template class ConvolutionOperator<1>;
 template class ConvolutionOperator<2>;
 template class ConvolutionOperator<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

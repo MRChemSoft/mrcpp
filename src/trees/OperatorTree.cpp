@@ -187,4 +187,4 @@ std::ostream& OperatorTree::print(std::ostream &o) {
     return MWTree<2>::print(o);
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

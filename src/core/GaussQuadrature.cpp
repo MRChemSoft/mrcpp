@@ -265,4 +265,4 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
     return sum;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

@@ -40,5 +40,5 @@ void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::M
 
 double calc_distance(int D, const double *a, const double *b);
 
-} //namespace math_utils
-} //namespace mrcpp
+} // namespace math_utils
+} // namespace mrcpp

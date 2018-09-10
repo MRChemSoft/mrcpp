@@ -75,4 +75,4 @@ void MWOperator::calcBandWidths(double prec) {
     println(20, "  Maximum bandwidths:\n" << this->band_max << std::endl);
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

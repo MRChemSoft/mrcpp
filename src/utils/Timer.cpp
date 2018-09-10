@@ -57,4 +57,4 @@ std::ostream& Timer::print(std::ostream &o) const {
     return o;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

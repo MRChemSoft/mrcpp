@@ -11,6 +11,7 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
+using namespace std;
 
 namespace mrcpp {
 
@@ -32,12 +33,6 @@ template<int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
     setNBoxes(box.nBoxes);
-    setDerivedParameters();
-}
-template<int D>
-BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb, const double sf)
-        : cornerIndex(n, l) {
-    setNBoxes(nb);
     setDerivedParameters();
 }
 
@@ -89,7 +84,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        modf(div, &iint);
+        modf(div,&iint);
         idx[d] = (int) iint;
     }
 

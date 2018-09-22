@@ -80,7 +80,18 @@ void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChun
             sTree.sNodes = sTree.nodeChunks[iChunk];
         } else {
             double *sNodesCoeff;
-            sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            if (sTree.isShared()) {
+                //for coefficients, take from the shared memory block
+                SharedMemory* shMem = sTree.getMemory();
+                sNodesCoeff = shMem->sh_end_ptr;
+                shMem->sh_end_ptr += (sTree.sizeNodeCoeff*sTree.maxNodesPerChunk);
+                //may increase size dynamically in the future
+                if (shMem->sh_max_ptr < shMem->sh_end_ptr) {
+                    MSG_FATAL("Shared block too small");
+                }
+            } else {
+                sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            }
             sTree.nodeCoeffChunks.push_back(sNodesCoeff);
             sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
             sTree.nodeChunks.push_back(sTree.sNodes);

@@ -134,4 +134,4 @@ void CrossCorrelation::readCCCBin() {
     R_fis.close();
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

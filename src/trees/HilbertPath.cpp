@@ -93,4 +93,4 @@ template class HilbertPath<1>;
 template class HilbertPath<2>;
 template class HilbertPath<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

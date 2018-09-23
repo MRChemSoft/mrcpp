@@ -62,4 +62,4 @@ std::ostream& BandWidth::print(std::ostream &o) const {
     return o;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

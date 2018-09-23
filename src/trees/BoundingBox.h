@@ -15,8 +15,8 @@ namespace mrcpp {
 template<int D>
 class BoundingBox {
 public:
-    BoundingBox(int n = 0, const int *l = 0, const int *nb = 0);
-    BoundingBox(const NodeIndex<D> &idx, const int *nb = 0);
+    BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
+    BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() { }
@@ -79,5 +79,4 @@ bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
     return false;
 }
 
-}
-
+} // namespace mrcpp

@@ -71,4 +71,4 @@ const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
 template class CrossCorrelationCache<Interpol>;
 template class CrossCorrelationCache<Legendre>;
 
-} //namespace mrcpp
+} // namespace mrcpp

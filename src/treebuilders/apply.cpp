@@ -185,4 +185,4 @@ template FunctionTreeVector<1> gradient(DerivativeOperator<1> &oper, FunctionTre
 template FunctionTreeVector<2> gradient(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
 template FunctionTreeVector<3> gradient(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
 
-} //namespace mrcpp
+} // namespace mrcpp

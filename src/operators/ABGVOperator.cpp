@@ -44,4 +44,4 @@ template class ABGVOperator<1>;
 template class ABGVOperator<2>;
 template class ABGVOperator<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

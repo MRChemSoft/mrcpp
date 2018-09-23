@@ -15,7 +15,7 @@ namespace mrcpp {
 template<int D>
 class NodeIndex {
 public:
-    NodeIndex(int n = 0, const int *l = 0);
+    NodeIndex(int n = 0, const int *l = nullptr);
     NodeIndex(const NodeIndex<D> &idx);
     NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
     virtual ~NodeIndex() { }
@@ -76,7 +76,7 @@ NodeIndex<D>& NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
 template<int D>
 void NodeIndex<D>::setTranslation(const int *l) {
     for (int d = 0; d < D; d++) {
-        if (l != 0) {
+        if (l != nullptr) {
             this->L[d] = l[d];
         } else {
             this->L[d] = 0;

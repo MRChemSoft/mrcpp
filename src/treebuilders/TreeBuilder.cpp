@@ -157,4 +157,4 @@ template class TreeBuilder<1>;
 template class TreeBuilder<2>;
 template class TreeBuilder<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

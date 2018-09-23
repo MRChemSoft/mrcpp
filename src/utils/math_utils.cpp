@@ -237,4 +237,4 @@ double math_utils::calc_distance(int D, const double *a, const double *b) {
     return std::sqrt(r);
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

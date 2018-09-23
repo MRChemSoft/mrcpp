@@ -46,4 +46,4 @@ double OperatorNode::calcComponentNorm(int i) const {
     return norm;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

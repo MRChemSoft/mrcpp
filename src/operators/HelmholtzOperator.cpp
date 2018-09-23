@@ -18,4 +18,4 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra,
     Printer::setPrintLevel(oldlevel);
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

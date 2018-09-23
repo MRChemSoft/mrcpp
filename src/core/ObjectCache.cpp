@@ -84,4 +84,4 @@ template class ObjectCache<MWFilter>;
 template class ObjectCache<GaussQuadrature>;
 template class ObjectCache<CrossCorrelation>;
 
-} //namespace mrcpp
+} // namespace mrcpp

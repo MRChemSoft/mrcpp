@@ -18,7 +18,7 @@ namespace mrcpp {
 template<int D>
 RepresentableFunction<D>::RepresentableFunction(const double *a,
                                                 const double *b) {
-    if (a == 0 or b == 0) {
+    if (a == nullptr or b == nullptr) {
         this->bounded = false;
         this->A = 0;
         this->B = 0;
@@ -75,7 +75,7 @@ RepresentableFunction<D>::~RepresentableFunction() {
 
 template<int D>
 void RepresentableFunction<D>::setBounds(const double *a, const double *b) {
-    if (a == 0 or b == 0) {
+    if (a == nullptr or b == nullptr) {
         MSG_ERROR("Invalid arguments");
     }
     if (not isBounded()) {
@@ -128,4 +128,4 @@ template class RepresentableFunction<1>;
 template class RepresentableFunction<2>;
 template class RepresentableFunction<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

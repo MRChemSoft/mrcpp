@@ -40,12 +40,12 @@ Plotter<D>::Plotter(int npts, const double *a, const double *b)
 template<int D>
 void Plotter<D>::setRange(const double *a, const double *b) {
     for (int d = 0; d < D; d++) {
-        if (a == 0) {
+        if (a == nullptr) {
             A[d] = 0.0;
         } else {
             A[d] = a[d];
         }
-        if (b == 0) {
+        if (b == nullptr) {
             B[d] = 0.0;
         } else {
             B[d] = b[d];
@@ -702,4 +702,4 @@ template class Plotter<1>;
 template class Plotter<2>;
 template class Plotter<3>;
 
-} //namespace mrcpp
+} // namespace mrcpp

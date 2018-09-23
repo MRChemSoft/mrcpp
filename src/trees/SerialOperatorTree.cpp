@@ -237,4 +237,4 @@ void SerialOperatorTree::deallocGenNodeChunks() {
     NOT_REACHED_ABORT;
 }
 
-} //namespace mrcpp
+} // namespace mrcpp

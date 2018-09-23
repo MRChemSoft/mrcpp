@@ -85,4 +85,4 @@ template void project(double prec, FunctionTree<1> &out, std::function<double (c
 template void project(double prec, FunctionTree<2> &out, std::function<double (const double *r)> func, int maxIter);
 template void project(double prec, FunctionTree<3> &out, std::function<double (const double *r)> func, int maxIter);
 
-} //namespace mrcpp
+} // namespace mrcpp

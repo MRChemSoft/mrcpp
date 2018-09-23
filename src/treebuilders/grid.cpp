@@ -241,4 +241,4 @@ template int refine_grid(FunctionTree<1> &out, FunctionTree<1> &inp);
 template int refine_grid(FunctionTree<2> &out, FunctionTree<2> &inp);
 template int refine_grid(FunctionTree<3> &out, FunctionTree<3> &inp);
 
-} //namespace mrcpp
+} // namespace mrcpp

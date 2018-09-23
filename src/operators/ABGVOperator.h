@@ -14,4 +14,4 @@ protected:
     void initializeOperator(double a, double b);
 };
 
-}
+} // namespace mrcpp

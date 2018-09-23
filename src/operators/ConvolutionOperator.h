@@ -23,4 +23,4 @@ protected:
     double calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const;
 };
 
-}
+} // namespace mrcpp

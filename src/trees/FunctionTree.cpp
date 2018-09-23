@@ -12,6 +12,7 @@
 #include "HilbertIterator.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include "utils/mpi_utils.h"
 
 using namespace Eigen;
 
@@ -113,7 +114,19 @@ void FunctionTree<D>::loadTree(const std::string &file) {
         if (iChunk < sTree.nodeChunks.size()) {
             sTree.sNodes = sTree.nodeChunks[iChunk];
         } else {
-            double *sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            double *sNodesCoeff;
+            if (sTree.isShared()) {
+                //for coefficients, take from the shared memory block
+                SharedMemory* shMem = sTree.getMemory();
+                sNodesCoeff = shMem->sh_end_ptr;
+                shMem->sh_end_ptr += (sTree.sizeNodeCoeff*sTree.maxNodesPerChunk);
+                //may increase size dynamically in the future
+                if (shMem->sh_max_ptr < shMem->sh_end_ptr) {
+                    MSG_FATAL("Shared block too small");
+                }
+            } else {
+                sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+            }
             sTree.nodeCoeffChunks.push_back(sNodesCoeff);
             sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
             sTree.nodeChunks.push_back(sTree.sNodes);

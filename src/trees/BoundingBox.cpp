@@ -22,7 +22,7 @@ BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
 }
 
 template<int D>
-BoundingBox<D>::BoundingBox(int n, const std::vector<int> &l, const std::vector<int> &nb)
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb)
         : cornerIndex(n, l.data()) {
     setNBoxes(nb.data());
     setDerivedParameters();

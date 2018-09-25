@@ -9,7 +9,7 @@ const auto min_scale = -4;
 const auto max_depth = 25;
 
 const auto order = 5;
-const auto prec = 1.0e-2;
+const auto prec = 1.0e-3;
 
 using namespace mrcpp;
 
@@ -65,8 +65,8 @@ int main(int argc, char **argv) {
 
     // Constructing world box
     auto min_scale = -4;
-    auto corner = std::vector<int>{-1, -1, -1};
-    auto boxes = std::vector<int>{2, 2, 2};
+    auto corner = std::array<int, 3>{-1, -1, -1};
+    auto boxes = std::array<int, 3>{2, 2, 2};
     auto world = BoundingBox<3>(min_scale, corner, boxes);
     // Constructing basis and MRA
     auto basis = InterpolatingBasis(order);

@@ -16,7 +16,7 @@ template<int D>
 class BoundingBox {
 public:
     BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
-    BoundingBox(int n, const std::vector<int> &l, const std::vector<int> &nb);
+    BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb);
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);

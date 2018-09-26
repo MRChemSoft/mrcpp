@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <array>
 
 #pragma GCC system_header
 #include <Eigen/Core>

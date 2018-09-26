@@ -7,6 +7,7 @@
 #pragma once
 
 #include <iomanip>
+#include <array>
 
 #include "NodeIndex.h"
 

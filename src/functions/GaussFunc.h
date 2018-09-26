@@ -17,6 +17,7 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
+#include <array>
 
 #include "Gaussian.h"
 #include "mrcpp_declarations.h"

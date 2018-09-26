@@ -39,6 +39,7 @@ public:
     double calcSquareNorm();
 
     double evalf(const double *r) const;
+    double evalf(const std::array<double, D> &r) const;
     double evalf(double r, int dim) const;
 
     static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);

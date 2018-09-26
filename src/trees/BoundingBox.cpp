@@ -90,7 +90,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        std::modf(div,&iint);
+        std::modf(div, &iint);
         idx[d] = (int) iint;
     }
 

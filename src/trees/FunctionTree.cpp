@@ -166,6 +166,10 @@ double FunctionTree<D>::evalf(const double *r) {
     return result;
 }
 
+template<int D>
+double FunctionTree<D>::evalf(const std::array<double, D> &r) {
+    return this->evalf(r.data());
+}
 /** @brief In-place square of function
  *
  * The leaf node point values of the output function will be in-place

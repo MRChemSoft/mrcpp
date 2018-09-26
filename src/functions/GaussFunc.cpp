@@ -51,6 +51,11 @@ double GaussFunc<D>::evalf(const double *r) const {
     return this->coef * p2 * exp(-this->alpha * q2);
 }
 
+template<int D>
+double GaussFunc<D>::evalf(const std::array<double, D> &r) const {
+    return this->evalf(r.data());
+}
+
 /** NOTE!
  *	This function evaluation will give the first dimension the full coef
  *	amplitude, leaving all other directions with amplitude 1.0. This is to

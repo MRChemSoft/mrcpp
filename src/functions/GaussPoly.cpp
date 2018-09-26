@@ -109,6 +109,25 @@ double GaussPoly<D>::evalf(const double *r) const {
     return this->coef * p2 * exp(-this->alpha * q2);
 }
 
+template<int D>
+double GaussPoly<D>::evalf(const std::array<double, D> &r) const {
+    if (this->getScreen()) {
+        for (int d = 0; d < D; d++) {
+            if (r[d] < this->A[d] or r[d] > this->B[d]) {
+                return 0.0;
+            }
+        }
+    }
+    double q2 = 0.0, p2 = 1.0;
+    for (int d = 0; d < D; d++) {
+        //assert(this->poly[d]->getCheckBounds() == false);
+        double q = r[d] - this->pos[d];
+        q2 += q * q;
+        p2 *= poly[d]->evalf(r[d] - this->pos[d]);
+    }
+    return this->coef * p2 * exp(-this->alpha * q2);
+}
+
 /** NOTE!
  *	This function evaluation will give the first dimension the full coef
  *	amplitude, leaving all other directions with amplitude 1.0. This is to

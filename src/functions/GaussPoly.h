@@ -12,6 +12,7 @@
 #include <Eigen/Core>
 
 #include <vector>
+#include <array>
 
 #include "Gaussian.h"
 #include "Polynomial.h"
@@ -22,8 +23,8 @@ namespace mrcpp {
 template<int D>
 class GaussPoly : public Gaussian<D> {
 public:
-    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = 0,
-        const int pow[D] = 0);
+    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr,
+        const int pow[D] = nullptr);
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
     Gaussian<D> *copy() const;
@@ -32,6 +33,7 @@ public:
     double calcSquareNorm();
 
     double evalf(const double *r) const;
+    double evalf(const std::array<double, D> &r) const;
     double evalf(double r, int dim) const;
 
     double calcOverlap(GaussFunc<D> &b);

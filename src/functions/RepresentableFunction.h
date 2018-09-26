@@ -7,6 +7,7 @@
 #pragma once
 
 #include <iostream>
+#include <array>
 
 #include "constants.h"
 
@@ -15,12 +16,13 @@ namespace mrcpp {
 template<int D>
 class RepresentableFunction {
 public:
-    RepresentableFunction(const double *a = 0, const double *b = 0);
+    RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
     RepresentableFunction(const RepresentableFunction<D> &func);
     RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
     virtual ~RepresentableFunction();
 
     virtual double evalf(const double *r) const = 0;
+    virtual double evalf(const std::array<double, D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);
     void clearBounds();
@@ -47,4 +49,4 @@ protected:
     std::ostream& print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

@@ -10,10 +10,11 @@ const auto max_depth = 25;
 
 const auto order = 5;
 const auto prec = 1.0e-3;
+const auto D = 3; // Dimensions
 
 using namespace mrcpp;
 
-void setupNuclearPotential(double Z, FunctionTree<3> &V) {
+void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     Timer timer;
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting nuclear potential");
@@ -36,7 +37,7 @@ void setupNuclearPotential(double Z, FunctionTree<3> &V) {
     Printer::setPrintLevel(oldlevel);
 }
 
-void setupInitialGuess(FunctionTree<3> &phi) {
+void setupInitialGuess(FunctionTree<D> &phi) {
     Timer timer;
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
@@ -56,7 +57,7 @@ void setupInitialGuess(FunctionTree<3> &phi) {
 }
 
 int main(int argc, char **argv) {
-    Timer timer;
+    auto timer = Timer();
 
     // Initialize printing
     auto printlevel = 0;
@@ -65,21 +66,21 @@ int main(int argc, char **argv) {
 
     // Constructing world box
     auto min_scale = -4;
-    auto corner = std::array<int, 3>{-1, -1, -1};
-    auto boxes = std::array<int, 3>{2, 2, 2};
-    auto world = BoundingBox<3>(min_scale, corner, boxes);
+    auto corner = std::array<int, D>{-1, -1, -1};
+    auto boxes = std::array<int, D>{2, 2, 2};
+    auto world = BoundingBox<D>(min_scale, corner, boxes);
     // Constructing basis and MRA
     auto basis = InterpolatingBasis(order);
-    auto MRA = MultiResolutionAnalysis<3>(world, basis, max_depth);
+    auto MRA = MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Nuclear potential
     auto Z = 1.0;
-    auto V = FunctionTree<3>(MRA);
+    auto V = FunctionTree<D>(MRA);
     setupNuclearPotential(Z, V);
 
     // Wave function
-    auto phi_n = std::make_shared<FunctionTree<3>>(MRA);
-    auto phi_np1 = std::make_shared<FunctionTree<3>>(MRA);
+    auto phi_n = std::make_shared<FunctionTree<D>>(MRA);
+    auto phi_np1 = std::make_shared<FunctionTree<D>>(MRA);
     setupInitialGuess(*phi_n);
 
     Printer::printHeader(0, "Running SCF");
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
         auto H = HelmholtzOperator(MRA, mu_n, prec);
 
         // Compute Helmholtz argument V*phi
-        auto Vphi = FunctionTree<3>(MRA);
+        auto Vphi = FunctionTree<D>(MRA);
         copy_grid(Vphi, *phi_n); // Copy grid from orbital
         multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
@@ -114,7 +115,7 @@ int main(int argc, char **argv) {
         phi_np1->rescale(-1.0/(2.0*mrcpp::pi));
 
         // Compute orbital residual
-        auto d_phi_n = FunctionTree<3>(MRA);
+        auto d_phi_n = FunctionTree<D>(MRA);
         copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
         add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
         error = sqrt(d_phi_n.getSquareNorm());
@@ -138,7 +139,7 @@ int main(int argc, char **argv) {
         // Prepare for next iteration
         epsilon_n = epsilon_np1;
         phi_n = phi_np1;
-        phi_np1 = std::make_shared<FunctionTree<3>>(MRA);
+        phi_np1 = std::make_shared<FunctionTree<D>>(MRA);
         phi_n->normalize();
 
         cycle_t.stop();

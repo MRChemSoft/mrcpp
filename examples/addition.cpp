@@ -10,7 +10,7 @@ const auto max_depth = 25;
 
 const auto order = 7;
 const auto prec = 1.0e-5;
-const auto D = 3;
+const auto D = 3; // Dimensions
 
 int main(int argc, char **argv) {
     auto timer = mrcpp::Timer();

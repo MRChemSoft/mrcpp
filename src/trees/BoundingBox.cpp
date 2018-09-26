@@ -22,6 +22,13 @@ BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
 }
 
 template<int D>
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb)
+        : cornerIndex(n, l.data()) {
+    setNBoxes(nb.data());
+    setDerivedParameters();
+}
+
+template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
         : cornerIndex(idx) {
     setNBoxes(nb);
@@ -83,7 +90,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        std::modf(div,&iint);
+        std::modf(div, &iint);
         idx[d] = (int) iint;
     }
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "MWTree.h"
+#include <array>
 
 namespace mrcpp {
 
@@ -19,6 +20,7 @@ public:
 
     double integrate() const;
     virtual double evalf(const double *r);
+    virtual double evalf(const std::array<double, D> &r);
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);

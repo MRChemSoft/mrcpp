@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <array>
 #include <vector>
 #include <iostream>
 
@@ -46,6 +47,7 @@ public:
     bool isZeroOnInterval(const double *lb, const double *ub) const;
 
     double evalf(const double *r) const;
+    double evalf(const std::array <double, D> &r) const;
 
     GaussExp<D> differentiate(int dir);
 
@@ -109,4 +111,4 @@ protected:
     std::ostream& print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

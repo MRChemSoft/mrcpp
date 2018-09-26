@@ -17,6 +17,7 @@
 
 #pragma GCC system_header
 #include <Eigen/Core>
+#include <array>
 
 #include "Gaussian.h"
 #include "mrcpp_declarations.h"
@@ -26,8 +27,10 @@ namespace mrcpp {
 template<int D>
 class GaussFunc: public Gaussian<D> {
 public:
-    GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = 0,
-            const int pow[D] = 0) : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr,
+            const int pow[D] = nullptr) : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(double alpha, double coef, const std::array<double, D> &pos,
+            const std::array<int, D> &pow) : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf) : Gaussian<D>(gf) {}
     Gaussian<D> *copy() const;
     ~GaussFunc() { }
@@ -36,6 +39,7 @@ public:
     double calcSquareNorm();
 
     double evalf(const double *r) const;
+    double evalf(const std::array<double, D> &r) const;
     double evalf(double r, int dim) const;
 
     static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);

@@ -109,6 +109,11 @@ double GaussExp<D>::evalf(const double *r) const {
 }
 
 template<int D>
+double GaussExp<D>::evalf(const std::array<double, D> &r) const {
+    return this->evalf(r.data());
+}
+
+template<int D>
 bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
     for (unsigned int i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) {

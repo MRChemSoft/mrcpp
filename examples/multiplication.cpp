@@ -3,42 +3,47 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-const int min_scale = -4;
-const int max_depth = 25;
+#include <array>
 
-const int order = 7;
-const double prec = 1.0e-5;
+const auto min_scale = -4;
+const auto max_depth = 25;
+
+const auto order = 7;
+const auto prec = 1.0e-5;
+
+const auto D = 3;
 
 int main(int argc, char **argv) {
-    mrcpp::Timer timer;
+    auto timer = mrcpp::Timer();
 
     // Initialize printing
-    int printlevel = 0;
+    auto printlevel = 0;
     mrcpp::Printer::init(printlevel);
     mrcpp::Printer::printEnvironment();
     mrcpp::Printer::printHeader(0, "Multiplying MW functions");
 
     // Constructing world box
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
-    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
+    auto corner = std::array<int, D>{-1,-1,-1};
+    auto boxes  = std::array<int, D>{2, 2, 2};
+    auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    mrcpp::InterpolatingBasis basis(order);
-    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    auto basis = mrcpp::InterpolatingBasis(order);
+    auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Setting up analytic Gaussians
-    double beta = 20.0;
-    double alpha = pow(beta/mrcpp::pi, 3.0/2.0);
-    double f_pos[3] = {0.0, 0.0,  0.1};
-    double g_pos[3] = {0.0, 0.0, -0.1};
-    mrcpp::GaussFunc<3> f_func(beta, alpha, f_pos);
-    mrcpp::GaussFunc<3> g_func(beta, alpha, g_pos);
+    auto beta = 20.0;
+    auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);
+    auto f_pos = std::array<double, D>{0.0, 0.0, 0.1};
+    auto g_pos = std::array<double, D>{0.0, 0.0, -0.1};
+    auto power = std::array<int, D>{0, 0, 0};
+    auto f_func = mrcpp::GaussFunc<D>(beta, alpha, f_pos, power);
+    auto g_func = mrcpp::GaussFunc<D>(beta, alpha, g_pos, power);
 
     // Initialize MW functions
-    mrcpp::FunctionTree<3> f_tree(MRA);
-    mrcpp::FunctionTree<3> g_tree(MRA);
-    mrcpp::FunctionTree<3> h_tree(MRA);
+    auto f_tree = mrcpp::FunctionTree<D>(MRA);
+    auto g_tree = mrcpp::FunctionTree<D>(MRA);
+    auto h_tree = mrcpp::FunctionTree<D>(MRA);
 
     // Projecting f and g
     mrcpp::project(prec, f_tree, f_func);
@@ -47,8 +52,8 @@ int main(int argc, char **argv) {
     // h = f*g
     mrcpp::multiply(prec, h_tree, 1.0, f_tree, g_tree);
 
-    double integral = h_tree.integrate();
-    double sq_norm = h_tree.getSquareNorm();
+    auto integral = h_tree.integrate();
+    auto sq_norm = h_tree.getSquareNorm();
     mrcpp::Printer::printDouble(0, "Integral", integral);
     mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
 
@@ -57,4 +62,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-

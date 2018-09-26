@@ -36,4 +36,8 @@ double BoysFunction::evalf(const double *r) const {
     return result;
 }
 
+double BoysFunction::evalf(const std::array<double, 1> &r) const {
+    return this->evalf(r.data());
+}
+
 } // namespace mrcpp

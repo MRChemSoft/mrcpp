@@ -20,6 +20,7 @@ template<int D>
 class Gaussian: public RepresentableFunction<D> {
 public:
     Gaussian(double a, double c, const double r[D], const int p[D]);
+    Gaussian(double a, double c, const std::array<double, D> &r, const std::array<int, D> &p);
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian();
 

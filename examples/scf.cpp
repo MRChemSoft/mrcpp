@@ -15,7 +15,7 @@ const auto D = 3; // Dimensions
 using namespace mrcpp;
 
 void setupNuclearPotential(double Z, FunctionTree<D> &V) {
-    Timer timer;
+    auto timer = Timer();
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting nuclear potential");
 
@@ -38,7 +38,7 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
 }
 
 void setupInitialGuess(FunctionTree<D> &phi) {
-    Timer timer;
+    auto timer = Timer();
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
 

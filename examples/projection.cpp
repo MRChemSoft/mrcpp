@@ -2,44 +2,46 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-const int min_scale = -4;
-const int max_depth = 25;
+const auto min_scale = -4;
+const auto max_depth = 25;
 
-const int order = 7;
-const double prec = 1.0e-5;
+const auto order = 7;
+const auto prec = 1.0e-5;
 
+const auto D = 3;
 int main(int argc, char **argv) {
-    mrcpp::Timer timer;
+    auto timer = mrcpp::Timer();
 
     // Initialize printing
-    int printlevel = 0;
+    auto printlevel = 0;
     mrcpp::Printer::init(printlevel);
     mrcpp::Printer::printEnvironment();
     mrcpp::Printer::printHeader(0, "Projecting analytic function");
 
+
     // Constructing world box
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
-    mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
+    auto corner = std::array<int, D>{-1,-1,-1};
+    auto boxes  = std::array<int, D>{ 2, 2, 2};
+    auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    mrcpp::InterpolatingBasis basis(order);
-    mrcpp::MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    auto basis = mrcpp::InterpolatingBasis(order);
+    auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Defining analytic function
     auto f = [] (const double *r) -> double {
-        const double beta = 100.0;
-        const double alpha = pow(beta/mrcpp::pi, 3.0/2.0);;
-        double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        const auto beta = 100.0;
+        const auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);;
+        auto R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return alpha*exp(-beta*R*R);
     };
 
     // Projecting function
-    mrcpp::FunctionTree<3> f_tree(MRA);
+    auto f_tree = mrcpp::FunctionTree<D>(MRA);
     mrcpp::project(prec, f_tree, f);
 
-    double integral = f_tree.integrate();
-    double sq_norm = f_tree.getSquareNorm();
+    auto integral = f_tree.integrate();
+    auto sq_norm = f_tree.getSquareNorm();
     mrcpp::Printer::printDouble(0, "Integral", integral);
     mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
 
@@ -48,4 +50,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-

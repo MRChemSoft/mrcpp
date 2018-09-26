@@ -77,7 +77,7 @@ which can be written as the lambda function
     auto f = [Z] (const double *r) -> double {
         double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return Z/R;
-    }
+    };
 
 Note that the function signature must be *exactly* as given above, which means
 that any additional arguments (such as :math:`Z` in this case) must be given in

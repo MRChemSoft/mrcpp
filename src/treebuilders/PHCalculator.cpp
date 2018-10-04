@@ -25,8 +25,7 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     if (basis.getScalingOrder() <  0) MSG_FATAL("Scaling order not supported");
     if (basis.getScalingOrder() > 29) MSG_FATAL("Scaling order not supported");
 
-    std::fstream ifs;
-    ifs.open(file.c_str());
+    std::ifstream ifs(file.c_str());
     if (not ifs) MSG_ERROR("Failed to open file: " << file);
     for (int kp1 = 2; kp1 < 30; kp1++) {
         std::string line;

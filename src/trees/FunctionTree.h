@@ -22,6 +22,11 @@ public:
     virtual double evalf(const double *r);
     virtual double evalf(const std::array<double, D> &r);
 
+    // Python friendly evalf
+    double evalf(double x);
+    double evalf(double x, double y);
+    double evalf(double x, double y, double z);
+
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 

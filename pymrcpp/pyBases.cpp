@@ -1,0 +1,30 @@
+/*
+ *  \date Mar 08, 2018
+ *  \author Magnar Bjørgve <magnar.bjorgve@uit.no> \n
+ *          Hylleraas Centre for Quantum Molecular Sciences \n
+ *          UiT - The Arctic University of Norway
+ */
+
+#include "pybind11/pybind11.h"
+
+#include "core/ScalingBasis.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
+
+using namespace mrcpp;
+namespace py = pybind11;
+
+
+void pyBases(py::module &m) {
+
+py::class_<ScalingBasis> scalingbasis(m, "ScalingBasis");
+    scalingbasis.def(py::init<int, int>());
+
+py::class_<InterpolatingBasis> (m, "InterpolatingBasis", scalingbasis)
+    .def(py::init<int>())
+    .def("getScalingOrder", &InterpolatingBasis::getScalingOrder);
+
+py::class_<LegendreBasis> (m, "LegendreBasis", scalingbasis)
+    .def(py::init<int>())
+    .def("getScalingOrder", &LegendreBasis::getScalingOrder);
+}

@@ -28,11 +28,11 @@ public:
     void clearNode(int idx) { this->nodes[idx] = 0; }
 
     MWNode<D> &getNode(const NodeIndex<D> &idx);
-    MWNode<D> &getNode(const double *r);
+    MWNode<D> &getNode(const Coord<D> &r);
     MWNode<D> &getNode(int i = 0);
 
     const MWNode<D> &getNode(const NodeIndex<D> &idx) const;
-    const MWNode<D> &getNode(const double *r) const;
+    const MWNode<D> &getNode(const Coord<D> &r) const;
     const MWNode<D> &getNode(int i = 0) const;
 
     int getNOccupied() const { return this->nOccupied; }

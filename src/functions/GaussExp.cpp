@@ -100,17 +100,12 @@ GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
 }
 
 template<int D>
-double GaussExp<D>::evalf(const double *r) const {
+double GaussExp<D>::evalf(const Coord<D> &r) const {
     double val = 0.0;
     for (int i = 0; i < this->size(); i++) {
         val += this->getFunc(i).evalf(r);
     }
     return val;
-}
-
-template<int D>
-double GaussExp<D>::evalf(const std::array<double, D> &r) const {
-    return this->evalf(r.data());
 }
 
 template<int D>
@@ -223,27 +218,21 @@ GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) {
         for (int j = 0; j < gexp.size(); j++) {
-            if (GaussFunc<D> *f =
-                                dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g =
-                                dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
+                if (GaussFunc<D> *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g =
-                                dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (GaussPoly<D> *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
                 } else {
                     MSG_FATAL("Invalid Gaussian type!");
                 }
-            } else if (GaussPoly<D> *f =
-                                dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g =
-                                dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
+                if (GaussFunc<D> *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g =
-                                dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (GaussPoly<D> *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
                 } else {
@@ -344,7 +333,7 @@ double GaussExp<D>::calcSquareNorm() {
 
 template<int D>
 void GaussExp<D>::normalize() {
-    double norm = sqrt(this->getSquareNorm());
+    double norm = std::sqrt(this->getSquareNorm());
     double coef;
     for (int i = 0; i < this->size(); i++) {
         coef = this->funcs[i]->getCoef();

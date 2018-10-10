@@ -28,8 +28,8 @@ protected:
     FunctionNode() : MWNode<D>() { }
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
-    double evalf(const double *r);
-    double evalScaling(const double *r) const;
+    double evalf(const Coord<D> &r);
+    double evalScaling(const Coord<D> &r) const;
 
     double integrate() const;
     double integrateLegendre() const;

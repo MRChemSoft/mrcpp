@@ -158,17 +158,12 @@ double FunctionTree<D>::integrate() const {
 }
 
 template<int D>
-double FunctionTree<D>::evalf(const double *r) {
+double FunctionTree<D>::evalf(const Coord<D> &r) {
     MWNode<D> &mr_node = this->getNodeOrEndNode(r);
     FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
     double result = f_node.evalf(r);
     this->deleteGenerated();
     return result;
-}
-
-template<int D>
-double FunctionTree<D>::evalf(const std::array<double, D> &r) {
-    return this->evalf(r.data());
 }
 /** @brief In-place square of function
  *

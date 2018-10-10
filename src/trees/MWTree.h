@@ -59,7 +59,7 @@ public:
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
-    int getRootIndex(const double *r) const { return this->rootBox.getBoxIndex(r); }
+    int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
     int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
     MWNode<D> *findNode(const NodeIndex<D> &nIdx);
@@ -69,9 +69,9 @@ public:
     MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx);
     const MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx) const;
 
-    MWNode<D> &getNode(const double *r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1) const;
+    MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
+    MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1);
+    const MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1) const;
 
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
     MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }

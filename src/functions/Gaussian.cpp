@@ -36,7 +36,7 @@ Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
 }
 
 template<int D>
-Gaussian<D>::Gaussian(double a, double c, const std::array<double, D> &r,
+Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r,
                       const std::array<int, D> &p) {
     this->alpha = a;
     this->coef = c;
@@ -61,7 +61,7 @@ void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs,	const Gaussian<D> &rhs) 
     for (int d = 0; d < D; d++) {
         newPos[d] = (lhs.alpha*lhs.pos[d] + rhs.alpha*rhs.pos[d])/newAlpha;
         relPos[d] = lhs.pos[d] - rhs.pos[d];
-        newCoef *= exp(-mju * pow(relPos[d], 2.0));
+        newCoef *= std::exp(-mju * std::pow(relPos[d], 2.0));
     }
     setExp(newAlpha);
     setPos(newPos);
@@ -72,7 +72,7 @@ void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs,	const Gaussian<D> &rhs) 
 template<int D>
 void Gaussian<D>::calcScreening(double nStdDev) {
     assert(nStdDev > 0);
-    double limit = sqrt(nStdDev/this->alpha);
+    double limit = std::sqrt(nStdDev/this->alpha);
     if (not this->isBounded()) {
         this->bounded = true;
         this->A = new double[D];
@@ -90,7 +90,7 @@ bool Gaussian<D>::checkScreen(int n, const int *l) const {
     if (not getScreen()) {
         return false;
     }
-    double length = pow(2.0, -n);
+    double length = std::pow(2.0, -n);
     const double *A = this->getLowerBounds();
     const double *B = this->getUpperBounds();
     for (int d = 0; d < D; d++) {
@@ -105,7 +105,7 @@ bool Gaussian<D>::checkScreen(int n, const int *l) const {
 
 template<int D>
 bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    double stdDeviation = pow(2.0*this->alpha, -0.5);
+    double stdDeviation = std::pow(2.0*this->alpha, -0.5);
     int visibleScale = int(-floor(log2(nQuadPts*2.0*stdDeviation)));
     if (scale < visibleScale) {
         return false;
@@ -115,7 +115,7 @@ bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
 
 template<int D>
 bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
-    double stdDeviation = pow(2.0*this->alpha, -0.5);
+    double stdDeviation = std::pow(2.0*this->alpha, -0.5);
     double gaussBoxMin;
     double gaussBoxMax;
     for (int i=0; i < D; i++) {

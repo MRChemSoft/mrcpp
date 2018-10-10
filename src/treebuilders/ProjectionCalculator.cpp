@@ -12,9 +12,10 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
 
     assert(exp_pts.cols() == node.getNCoefs());
 
+    Coord<D> r;
     double *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {
-        const double *r = exp_pts.col(i).data();
+        for (int d = 0; d < D; d++) r[d] = exp_pts(d, i);
         coefs[i] = this->func->evalf(r);
     }
     node.cvTransform(Backward);

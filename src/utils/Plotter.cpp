@@ -341,7 +341,7 @@ void Plotter<D>::evaluateFunction(const RepresentableFunction<D> &func) {
         MSG_ERROR("Coordinates not set, cannot evaluate");
         return;
     }
-    double r[D];
+    Coord<D> r;
     this->values = VectorXd::Zero(totNPoints);
     for (int i = 0; i < totNPoints; i++) {
         for (int d = 0; d < D; d++) {
@@ -364,7 +364,7 @@ void Plotter<D>::evaluateFunction(FunctionTree<D> &tree) {
         MSG_ERROR("Coordinates not set, cannot evaluate");
         return;
     }
-    double r[D];
+    Coord<D> r;
     this->values = VectorXd::Zero(totNPoints);
     for (int i = 0; i < totNPoints; i++) {
         for (int d = 0; d < D; d++) {

@@ -51,15 +51,14 @@ int main(int argc, char **argv) {
     int nFuncs = 5;
     mrcpp::FunctionTreeVector<3> f_vec;
     for (int i = 0; i < nFuncs; i++) {
-        auto f = [i] (const double *r) -> double {
+        auto f = [i] (const mrcpp::Coord<3> &r) -> double {
             const double beta = 1.0*i*i;
-            const double r_0[3] = {0.0, 0.0, 0.0};
-            double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-            return exp(-beta*R*R);
+            double R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+            return std::exp(-beta*R*R);
         };
         mrcpp::FunctionTree<3> *tree = new mrcpp::FunctionTree<3>(MRA);
         if (i%wsize == wrank) {
-            mrcpp::project(prec, *tree, f);
+            mrcpp::project<3>(prec, *tree, f);
             tree->normalize();
         }
         f_vec.push_back(std::make_tuple(1.0, tree));

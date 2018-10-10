@@ -3,8 +3,6 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-#include <array>
-
 const auto min_scale = -4;
 const auto max_depth = 25;
 
@@ -49,18 +47,18 @@ int main(int argc, char **argv) {
     auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Defining analytic function
-    auto f = [] (const double *r) -> double {
+    auto f = [] (const mrcpp::Coord<D> &r) -> double {
         const auto beta = 100.0;
-        const auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);
-        auto R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return alpha*exp(-beta*R*R);
+        const auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
+        auto R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return alpha*std::exp(-beta*R*R);
     };
 
     // All ranks define the function
     auto f_tree = mrcpp::FunctionTree<D>(MRA);
 
     // Only rank 0 projects the function
-    if (wrank == 0) mrcpp::project(prec, f_tree, f);
+    if (wrank == 0) mrcpp::project<D>(prec, f_tree, f);
 
     {   // Print data before send
         auto integral = f_tree.integrate();

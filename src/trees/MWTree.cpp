@@ -328,7 +328,7 @@ const MWNode<D>& MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) const {
   * that does not exist. Recursion starts at the appropriate rootNode and
   * decends from this. */
 template<int D>
-MWNode<D>& MWTree<D>::getNode(const double *r, int depth) {
+MWNode<D>& MWTree<D>::getNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     if (depth >= 0) {
         return *root.retrieveNode(r, depth);
@@ -343,7 +343,7 @@ MWNode<D>& MWTree<D>::getNode(const double *r, int depth) {
   * the path to the requested node, and will never create or return GenNodes.
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
-MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
+MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }
@@ -354,7 +354,7 @@ MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
   * the path to the requested node, and will never create or return GenNodes.
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
-const MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) const {
+const MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) const {
     const MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }

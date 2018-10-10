@@ -18,7 +18,7 @@ namespace mrcpp {
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */
 template<int D>
-double FunctionNode<D>::evalf(const double *r) {
+double FunctionNode<D>::evalf(const Coord<D> &r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     this->threadSafeGenChildren();
@@ -28,11 +28,11 @@ double FunctionNode<D>::evalf(const double *r) {
 }
 
 template<int D>
-double FunctionNode<D>::evalScaling(const double *r) const {
+double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     double arg[D];
-    double n_factor = pow(2.0, this->getScale());
+    double n_factor = std::pow(2.0, this->getScale());
     const int *l_factor = this->getTranslation();
     for (int i = 0; i < D; i++) {
         arg[i] = r[i] * n_factor - (double) l_factor[i];
@@ -58,7 +58,7 @@ double FunctionNode<D>::evalScaling(const double *r) const {
         result += temp;
     }
     double n = (D * this->getScale()) / 2.0;
-    double two_n = pow(2.0, n);
+    double two_n = std::pow(2.0, n);
     return two_n * result;
 }
 

@@ -7,6 +7,8 @@
 
 #include <Eigen/Core>
 
+#include "mrcpp_declarations.h"
+
 namespace mrcpp {
 namespace math_utils {
 
@@ -38,7 +40,7 @@ void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d,
 void tensor_expand_coords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 
-double calc_distance(int D, const double *a, const double *b);
+template<int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
 
 } // namespace math_utils
 } // namespace mrcpp

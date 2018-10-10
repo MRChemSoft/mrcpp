@@ -738,7 +738,7 @@ int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
   * Given a point in space, determines which child should be followed
   * to get to the corresponding terminal node. */
 template<int D>
-int MWNode<D>::getChildIndex(const double *r) const {
+int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     assert(hasCoord(r));
     int cIdx = 0;
     double sFac = pow(2.0, -getScale());
@@ -867,7 +867,7 @@ MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
 }
 
 template<int D>
-const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) const {
+const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
     if (getDepth() == depth or this->isEndNode()) {
         return this;
     }
@@ -884,7 +884,7 @@ const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) co
   * Recursion starts at at this node and ASSUMES the requested node is in fact
   * decending from this node. */
 template<int D>
-MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) {
+MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
     if (getDepth() == depth or this->isEndNode()) {
         return this;
     }
@@ -934,7 +934,7 @@ MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
   * that does not exist. Recursion starts at this node and ASSUMES the
   * requested node is in fact decending from this node. */
 template<int D>
-MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
+MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
     if (depth < 0) MSG_FATAL("Invalid argument");
 
     if (getDepth() == depth) {
@@ -968,7 +968,7 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
 
 /** Test if a given coordinate is within the boundaries of the node. */
 template<int D>
-bool MWNode<D>::hasCoord(const double *r) const {
+bool MWNode<D>::hasCoord(const Coord<D> &r) const {
     double sFac = pow(2.0, -getScale());
     const int *l = getTranslation();
     //    println(1, "[" << r[0] << "," << r[1] << "," << r[2] << "]");

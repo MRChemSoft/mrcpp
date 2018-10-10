@@ -22,7 +22,10 @@ TEST_CASE("MWTree: Fetching nodes", "[mw_tree_fetch], [mw_tree], [trees]") {
 }
 
 template<int D> void testNodeFetchers() {
-    const double r[3] = {-0.3, 0.6, 1.9};
+    Coord<D> r;
+    if (D >= 1) r[0] = -0.3;
+    if (D >= 2) r[1] =  0.6;
+    if (D >= 3) r[2] =  1.9;
 
     const int cIdx = 1 << (D - 1);
     NodeIndex<D> *root = 0;

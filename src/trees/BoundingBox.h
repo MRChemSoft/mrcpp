@@ -26,10 +26,10 @@ public:
     inline bool operator==(const BoundingBox<D> &box) const;
     inline bool operator!=(const BoundingBox<D> &box) const;
 
-    NodeIndex<D> getNodeIndex(const double *r) const;
+    NodeIndex<D> getNodeIndex(const Coord<D> &r) const;
     NodeIndex<D> getNodeIndex(int bIdx) const;
 
-    int getBoxIndex(const double *r) const;
+    int getBoxIndex(const Coord<D> &r) const;
     int getBoxIndex(const NodeIndex<D> &nIdx) const;
 
     int size() const { return this->nBoxes[D]; }
@@ -39,9 +39,9 @@ public:
     double getBoxLength(int d) const { return this->boxLengths[d]; }
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
     double getUpperBound(int d) const { return this->upperBounds[d]; }
-    const double *getBoxLengths() const { return this->boxLengths; }
-    const double *getLowerBounds() const { return this->lowerBounds; }
-    const double *getUpperBounds() const { return this->upperBounds; }
+    const Coord<D> &getBoxLengths() const { return this->boxLengths; }
+    const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
+    const Coord<D> &getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
 
     friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
@@ -53,9 +53,9 @@ protected:
 
     // Derived parameters
     double unitLength;		    ///< 1/2^initialScale
-    double boxLengths[D];	    ///< Total length (unitLength times nBoxes)
-    double lowerBounds[D];	    ///< Box lower bound (not real)
-    double upperBounds[D];	    ///< Box upper bound (not real)
+    Coord<D> boxLengths;	    ///< Total length (unitLength times nBoxes)
+    Coord<D> lowerBounds;	    ///< Box lower bound (not real)
+    Coord<D> upperBounds;	    ///< Box upper bound (not real)
 
     void setNBoxes(const int *nb);
     void setDerivedParameters();

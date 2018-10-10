@@ -33,9 +33,9 @@ int main(int argc, char **argv) {
 
     // Setting up analytic Gaussians
     auto beta = 20.0;
-    auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);
-    auto f_pos = std::array<double, D>{0.0, 0.0, 0.1};
-    auto g_pos = std::array<double, D>{0.0, 0.0, -0.1};
+    auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
+    auto f_pos = mrcpp::Coord<D>{0.0, 0.0, 0.1};
+    auto g_pos = mrcpp::Coord<D>{0.0, 0.0, -0.1};
     auto power = std::array<int, D>{0, 0, 0};
     auto f_func = mrcpp::GaussFunc<D>(beta, alpha, f_pos, power);
     auto g_func = mrcpp::GaussFunc<D>(beta, alpha, g_pos, power);
@@ -46,8 +46,8 @@ int main(int argc, char **argv) {
     auto h_tree = mrcpp::FunctionTree<D>(MRA);
 
     // Projecting f and g
-    mrcpp::project(prec, f_tree, f_func);
-    mrcpp::project(prec, g_tree, g_func);
+    mrcpp::project<D>(prec, f_tree, f_func);
+    mrcpp::project<D>(prec, g_tree, g_func);
 
     // h = f*g
     mrcpp::multiply(prec, h_tree, 1.0, f_tree, g_tree);

@@ -55,15 +55,15 @@ TEST_CASE("Polynomial evaluation", "[poly_evalf], [polynomials]") {
     Polynomial P(c, &a, &b);
 
     SECTION("Evaluation within bounds") {
-        double x = 1.5;
-        double calc_val = P.evalf(&x);
-        double ref_val = 1.0 + 2.0*x*x;
+        Coord<1> x = {1.5};
+        double calc_val = P.evalf(x);
+        double ref_val = 1.0 + 2.0*x[0]*x[0];
         REQUIRE( calc_val == Approx(ref_val) );
     }
 
     SECTION("Evaluation out of bounds") {
-        double x = 2.5;
-        double calc_val = P.evalf(&x);
+        Coord<1> x = {2.5};
+        double calc_val = P.evalf(x);
         double ref_val = 0.0;
         REQUIRE( calc_val == Approx(ref_val) );
     }
@@ -94,9 +94,9 @@ SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomials
                 REQUIRE( P.getUpperBound(0) == Approx(1.0) );
             }
             THEN("The scaled evaluation is known") {
-                double x = 0.3;
-                double calc_val = P.evalf(&x);
-                double ref_val = (2.0*x - 1.0) + (2.0*x - 1.0)*(2.0*x - 1.0);
+                Coord<1> x = {0.3};
+                double calc_val = P.evalf(x);
+                double ref_val = (2.0*x[0] - 1.0) + (2.0*x[0] - 1.0)*(2.0*x[0] - 1.0);
                 REQUIRE( calc_val == Approx(ref_val) );
             }
         }

@@ -11,7 +11,6 @@
 #include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -24,7 +23,7 @@ void InterpolatingBasis::initScalingBasis() {
     const VectorXd roots = qc.getRoots(qOrder);
     const VectorXd wgts = qc.getWeights(qOrder);
 
-    vector<LegendrePoly> L_k;
+    std::vector<LegendrePoly> L_k;
     for (int k = 0; k < qOrder; k++) {
         L_k.push_back(LegendrePoly(k, 2.0, 1.0));
     }
@@ -39,7 +38,7 @@ void InterpolatingBasis::initScalingBasis() {
             double val = L_k[i].evalf(roots(k)) * (2.0 * i + 1);
             I_k.addInPlace(val, L_k[i]);
         }
-        I_k *= sqrt(wgts[k]);
+        I_k *= std::sqrt(wgts[k]);
         this->funcs.push_back(I_k);
     }
 }
@@ -47,7 +46,7 @@ void InterpolatingBasis::initScalingBasis() {
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
     for (int k = 0; k < q_order; k++) {
-	this->quadVals(k, k) = 1.0;
+        this->quadVals(k, k) = 1.0;
     }
 }
 
@@ -57,8 +56,8 @@ void InterpolatingBasis::calcCVMaps() {
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
-	this->cvMap(k, k) = sqrt(1.0/wgts(k));
-	this->vcMap(k, k) = sqrt(wgts(k));
+        this->cvMap(k, k) = std::sqrt(1.0/wgts(k));
+        this->vcMap(k, k) = std::sqrt(wgts(k));
     }
 }
 
@@ -75,7 +74,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -84,7 +83,7 @@ void InterpolatingBasis::calcCVMaps() {
 //		r = (pts(i) + l) / sfac;
 //		scs.col(d)(i) = func.evalf(r, d) * preVals(i, i);
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -99,7 +98,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -108,7 +107,7 @@ void InterpolatingBasis::calcCVMaps() {
 //		r = (pts(i) + l) / sfac;
 //		scs.col(d)(i) = func.evalf(r, d) * preVals(i, i);
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -121,7 +120,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -130,7 +129,7 @@ void InterpolatingBasis::calcCVMaps() {
 //		r = (pts(i) + l) / sfac;
 //		scs.col(d)(i) = func.evalf(r, d) * preVals(i, i);
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -143,7 +142,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -154,7 +153,7 @@ void InterpolatingBasis::calcCVMaps() {
 //			scs.col(d)(i) = func.evalf(r, d) * preVals(i,i);
 //		}
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //}
 
 //void InterpolatingBasis::calcScalingCoefs(const SeparableFunction<2> &func,
@@ -166,7 +165,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -177,7 +176,7 @@ void InterpolatingBasis::calcCVMaps() {
 //			scs.col(d)(i) = func.evalf(r, d) * preVals(i,i);
 //		}
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //}
 
 //void InterpolatingBasis::calcScalingCoefs(const SeparableFunction<3> &func,
@@ -189,7 +188,7 @@ void InterpolatingBasis::calcCVMaps() {
 //	double r;
 //	double sfac = 1.0;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else if (n > 0) {
 //		sfac = 1 << n;
 //	}
@@ -201,7 +200,7 @@ void InterpolatingBasis::calcCVMaps() {
 //		}
 //	}
 //	if (n != 0) {
-//		scs *= sqrt(1.0 / sfac);
+//		scs *= std::sqrt(1.0 / sfac);
 //	}
 //}
 

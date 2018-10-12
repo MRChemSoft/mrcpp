@@ -27,7 +27,7 @@ public:
     void rescale(int d) {
         for (int i = 0; i < this->size(); i++) {
             Gaussian<1> &gauss = this->getFunc(i);
-            double coef = pow(gauss.getCoef(), 1.0/d);
+            double coef = std::pow(gauss.getCoef(), 1.0/d);
             gauss.setCoef(coef);
         }
     }

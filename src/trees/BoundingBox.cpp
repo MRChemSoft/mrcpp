@@ -71,7 +71,7 @@ void BoundingBox<D>::setDerivedParameters() {
     assert(this->nBoxes[D] > 0);
     int scale = this->cornerIndex.getScale();
     const int *l = this->cornerIndex.getTranslation();
-    this->unitLength = pow(2.0, -scale);
+    this->unitLength = std::pow(2.0, -scale);
     for (int d = 0; d < D; d++) {
         assert(this->nBoxes[d] > 0);
         this->boxLengths[d] = this->unitLength * this->nBoxes[d];

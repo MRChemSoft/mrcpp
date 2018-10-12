@@ -41,8 +41,8 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     int scale = node.getScale();
     int kp1_d = node.getKp1_d();
 
-    double scaleFactor = 1.0 / pow(2.0, scale + 1.0);
-    double sqrtScaleFactor = sqrt(scaleFactor);
+    double scaleFactor = 1.0 / std::pow(2.0, scale + 1.0);
+    double sqrtScaleFactor = std::sqrt(scaleFactor);
     double point[D];
 
     static int tDim = 1 << D;
@@ -59,7 +59,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
             double coef = 1.0;
             for (int j = 0; j < D; j++) {
                 point[j] = scaleFactor * (pts(indexCounter[j]) + l[j]);
-                coef *= sqrt(wgts(indexCounter[j])) * sqrtScaleFactor;
+                coef *= std::sqrt(wgts(indexCounter[j])) * sqrtScaleFactor;
             }
 
             tmp_coefs[i] = coef * this->func->evalf(point);

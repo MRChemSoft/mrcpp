@@ -10,7 +10,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -100,7 +99,7 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
   * coefficients of BranchNodes (can be used after operator application). */
 template<int D>
 void MWTree<D>::mwTransformUp() {
-    vector<MWNodeVector<D>> nodeTable;
+    std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
 #pragma omp parallel shared(nodeTable)
 {
@@ -123,7 +122,7 @@ void MWTree<D>::mwTransformUp() {
   * existing scaling coefficients (can be used after operator application). */
 template<int D>
 void MWTree<D>::mwTransformDown(bool overwrite) {
-    vector<MWNodeVector<D>> nodeTable;
+    std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
 #pragma omp parallel shared(nodeTable)
 {
@@ -490,12 +489,12 @@ void MWTree<D>::deleteGenerated() {
 }
 
 template<int D>
-void MWTree<D>::saveTree(const string &file) {
+void MWTree<D>::saveTree(const std::string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>
-void MWTree<D>::loadTree(const string &file) {
+void MWTree<D>::loadTree(const std::string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 

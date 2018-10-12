@@ -5,8 +5,6 @@
 #include "Printer.h"
 #include "Timer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 /** sh_size in MB

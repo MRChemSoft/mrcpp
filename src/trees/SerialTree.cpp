@@ -3,7 +3,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {

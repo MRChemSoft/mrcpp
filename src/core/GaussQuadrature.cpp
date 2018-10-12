@@ -7,7 +7,6 @@
 #include "macros.h"
 #include "constants.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -48,7 +47,7 @@ GaussQuadrature::GaussQuadrature(int k, double a, double b, int inter) {
 }
 
 void GaussQuadrature::setBounds(double a, double b) {
-    if (fabs(this->A - a) < MachineZero and fabs(this->B - b) < MachineZero) {
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
         return;
     }
     if (a >= b) {
@@ -172,7 +171,7 @@ int GaussQuadrature::calcGaussPtsWgts() {
 
             z1 = z;
             z = z1 - lp(0) / lp(1);
-            if (fabs(z - z1) <= EPS) {
+            if (std::abs(z - z1) <= EPS) {
                 break;
             }
         }

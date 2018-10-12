@@ -10,7 +10,6 @@ extern "C" {
 }
 #endif
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -97,7 +96,7 @@ double FunctionNode<D>::integrate() const {
 template<int D>
 double FunctionNode<D>::integrateLegendre() const {
     double n = (D * this->getScale()) / 2.0;
-    double two_n = pow(2.0, -n);
+    double two_n = std::pow(2.0, -n);
     return two_n * this->getCoefs()[0];
 }
 
@@ -114,7 +113,7 @@ double FunctionNode<D>::integrateInterpolating() const {
 
     double sqWeights[qOrder];
     for (int i = 0; i < qOrder; i++) {
-        sqWeights[i] = sqrt(weights[i]);
+        sqWeights[i] = std::sqrt(weights[i]);
     }
 
     int kp1_p[D];
@@ -137,7 +136,7 @@ double FunctionNode<D>::integrateInterpolating() const {
         }
     }
     double n = (D * this->getScale()) / 2.0;
-    double two_n = pow(2.0, -n);
+    double two_n = std::pow(2.0, -n);
     double sum = coefs.segment(0, this->getKp1_d()).sum();
 
     return two_n * sum;

@@ -11,7 +11,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -32,7 +31,7 @@ Polynomial::Polynomial(double c, int k, const double *a, const double *b)
     this->L = 0.0;
     this->coefs = math_utils::get_binomial_coefs(k);
     for (int i = 0; i <= k; i++) {
-        this->coefs[i] *= pow(c, k - i);
+        this->coefs[i] *= std::pow(c, k - i);
     }
 }
 
@@ -91,7 +90,7 @@ double Polynomial::getScaledUpperBound() const {
 void Polynomial::normalize() {
     double sqNorm = calcSquareNorm();
     if (sqNorm < 0.0) MSG_FATAL("Cannot normalize polynomial");
-    (*this) *= 1.0/sqrt(sqNorm);
+    (*this) *= 1.0/std::sqrt(sqNorm);
 }
 
 /** Compute the squared L2-norm of the (bounded) polynomial.
@@ -117,7 +116,7 @@ void Polynomial::rescale(double n, double l) {
 int Polynomial::getOrder() const {
     int n = 0;
     for (int i = 0; i < this->coefs.size(); i++) {
-        if (fabs(this->coefs[i]) > MachineZero) {
+        if (std::abs(this->coefs[i]) > MachineZero) {
             n = i;
         }
     }
@@ -133,10 +132,10 @@ Polynomial& Polynomial::operator*=(double c) {
 /** Calculate P = P*Q */
 Polynomial& Polynomial::operator*=(const Polynomial &Q) {
     Polynomial &P = *this;
-    if (fabs(P.getDilation() - Q.getDilation()) > MachineZero) {
+    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) {
         MSG_ERROR("Polynomials not defined on same scale.");
     }
-    if (fabs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
+    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
         MSG_ERROR("Polynomials not defined on same translation.");
     }
 
@@ -186,16 +185,16 @@ Polynomial& Polynomial::operator-=(const Polynomial &Q) {
 /** Calculate P = P + c*Q. */
 void Polynomial::addInPlace(double c, const Polynomial &Q) {
     Polynomial &P = *this;
-    if (fabs(P.getDilation() - Q.getDilation()) > MachineZero) {
+    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) {
         MSG_ERROR("Polynomials not defined on same scale.");
     }
-    if (fabs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
+    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
         MSG_ERROR("Polynomials not defined on same translation.");
     }
 
     int P_order = P.getOrder();
     int Q_order = Q.getOrder();
-    int new_order = max(P_order, Q_order);
+    int new_order = std::max(P_order, Q_order);
     VectorXd newCoefs = VectorXd::Zero(new_order + 1);
 
     for (int i = 0; i < new_order + 1; i++) {

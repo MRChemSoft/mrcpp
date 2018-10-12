@@ -40,7 +40,7 @@ GaussQuadrature &QuadratureCache::get(int k) {
 }
 
 void QuadratureCache::setBounds(double a, double b) {
-    if (fabs(this->A - a) < MachineZero and fabs(this->B - b) < MachineZero) {
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
         return;
     }
     if (a >= b) {

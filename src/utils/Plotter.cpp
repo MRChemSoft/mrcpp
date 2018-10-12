@@ -5,7 +5,6 @@
 #include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -75,8 +74,8 @@ void Plotter<D>::setNPoints(int npts) {
     grid:    ".grid"
 */
 template<int D>
-void Plotter<D>::setSuffix(int t, const string &s) {
-    this->suffix.insert(pair<int, string>(t, s));
+void Plotter<D>::setSuffix(int t, const std::string &s) {
+    this->suffix.insert(std::pair<int, std::string>(t, s));
 }
 
 /** Parametric plot of a function
@@ -87,17 +86,17 @@ void Plotter<D>::setSuffix(int t, const string &s) {
     1000 points between the boundaries of the function).
 */
 template<int D>
-void Plotter<D>::linePlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::linePlot(const RepresentableFunction<D> &func, const std::string &fname) {
     println(20, "----------Line Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcLineCoordinates();
     evaluateFunction(func);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Line];
     openPlot(file.str());
     writeLineData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Surface plot of a function
@@ -109,17 +108,17 @@ void Plotter<D>::linePlot(const RepresentableFunction<D> &func, const string &fn
     will be distributed evenly in the two dimensions.
 */
 template<int D>
-void Plotter<D>::surfPlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::surfPlot(const RepresentableFunction<D> &func, const std::string &fname) {
     println(20, "--------Surface Plot----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcSurfCoordinates();
     evaluateFunction(func);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Surface];
     openPlot(file.str());
     writeSurfData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Cubic plot of a function
@@ -131,17 +130,17 @@ void Plotter<D>::surfPlot(const RepresentableFunction<D> &func, const string &fn
     will be distributed evenly in the three dimensions.
 */
 template<int D>
-void Plotter<D>::cubePlot(const RepresentableFunction<D> &func, const string &fname) {
+void Plotter<D>::cubePlot(const RepresentableFunction<D> &func, const std::string &fname) {
     println(20, "----------Cube Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcCubeCoordinates();
     evaluateFunction(func);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Cube];
     openPlot(file.str());
     writeCubeData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Parametric plot of a FunctionTree
@@ -152,17 +151,17 @@ void Plotter<D>::cubePlot(const RepresentableFunction<D> &func, const string &fn
     1000 points between the boundaries of the function).
 */
 template<int D>
-void Plotter<D>::linePlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::linePlot(FunctionTree<D> &tree, const std::string &fname) {
     println(20, "----------Line Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcLineCoordinates();
     evaluateFunction(tree);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Line];
     openPlot(file.str());
     writeLineData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Surface plot of a function
@@ -174,17 +173,17 @@ void Plotter<D>::linePlot(FunctionTree<D> &tree, const string &fname) {
     will be distributed evenly in the two dimensions.
 */
 template<int D>
-void Plotter<D>::surfPlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::surfPlot(FunctionTree<D> &tree, const std::string &fname) {
     println(20, "--------Surface Plot----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcSurfCoordinates();
     evaluateFunction(tree);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Surface];
     openPlot(file.str());
     writeSurfData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Cubic plot of a function
@@ -196,17 +195,17 @@ void Plotter<D>::surfPlot(FunctionTree<D> &tree, const string &fname) {
     will be distributed evenly in the three dimensions.
 */
 template<int D>
-void Plotter<D>::cubePlot(FunctionTree<D> &tree, const string &fname) {
+void Plotter<D>::cubePlot(FunctionTree<D> &tree, const std::string &fname) {
     println(20, "----------Cube Plot-----------");
     if (not verifyRange()) MSG_ERROR("Zero range");
     calcCubeCoordinates();
     evaluateFunction(tree);
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Cube];
     openPlot(file.str());
     writeCubeData();
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 /** Grid plot of a MWTree
 
@@ -216,14 +215,14 @@ void Plotter<D>::cubePlot(FunctionTree<D> &tree, const string &fname) {
     will print only	nodes owned by itself (pluss the rootNodes).
 */
 template<int D>
-void Plotter<D>::gridPlot(const MWTree<D> &tree, const string &fname) {
+void Plotter<D>::gridPlot(const MWTree<D> &tree, const std::string &fname) {
     println(20, "----------Grid Plot-----------");
-    stringstream file;
+    std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Grid];
     openPlot(file.str());
     writeGrid(tree);
     closePlot();
-    printout(20, endl);
+    printout(20, std::endl);
 }
 
 /** Parametric plot of a function
@@ -303,7 +302,7 @@ void Plotter<D>::calcSurfCoordinates() {
 //        return;
 //    }
 
-//    int nPerDim = (int) floor(sqrt(this->nPoints));
+//    int nPerDim = (int) std::floor(std::sqrt(this->nPoints));
 //    int nRealPoints = math_utils::ipow(nPerDim, 2);
 //    this->coords = MatrixXd::Zero(nRealPoints, 2);
 
@@ -383,11 +382,11 @@ void Plotter<D>::evaluateFunction(FunctionTree<D> &tree) {
 */
 template<int D>
 void Plotter<D>::writeLineData() {
-    ostream &o = *this->fout;
+    std::ostream &o = *this->fout;
     int totNPoints = this->coords.rows();
     for (int i = 0; i < totNPoints; i++) {
         o.precision(8);
-        o.setf(ios::showpoint);
+        o.setf(std::ios::showpoint);
         for (int d = 0; d < D; d++) {
             o << this->coords(i, d) << " ";
         }
@@ -396,7 +395,7 @@ void Plotter<D>::writeLineData() {
         o << this->values[i];
 //        o << ", ";
 //        o << i;
-        o << endl;
+        o << std::endl;
     }
 }
 
@@ -413,7 +412,7 @@ void Plotter<D>::writeCubeData() {
 
 // Specialized for D=3 below
 template<int D>
-void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const string &color) {
+void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const std::string &color) {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -428,7 +427,7 @@ void Plotter<D>::writeGrid(const MWTree<D> &tree) {
     Opens a file output stream fout for file named fname.
 */
 template<int D>
-void Plotter<D>::openPlot(const string &fname) {
+void Plotter<D>::openPlot(const std::string &fname) {
     if (fname.empty()) {
         if (this->fout == 0) {
             MSG_ERROR("Plot file not set!");
@@ -481,7 +480,7 @@ bool Plotter<D>::verifyRange() {
 */
 template<>
 void Plotter<3>::calcCubeCoordinates() {
-    int nPerDim = (int) floor(cbrt(this->nPoints));
+    int nPerDim = (int) std::floor(std::cbrt(this->nPoints));
     int nRealPoints = math_utils::ipow(nPerDim, 3);
     this->coords = MatrixXd::Zero(nRealPoints, 3);
 
@@ -517,11 +516,11 @@ void Plotter<3>::writeCubeData() {
     double step[3];
     double p = 0.0;
 
-    ofstream &o = *this->fout;
+    std::ofstream &o = *this->fout;
 
-    o << "Cube file format. Generated by MRCPP.\n" << endl;
+    o << "Cube file format. Generated by MRCPP.\n" << std::endl;
 
-    int nPerDim = (int) floor(cbrt(this->nPoints));
+    int nPerDim = (int) std::floor(std::cbrt(this->nPoints));
     int nRealPoints = math_utils::ipow(nPerDim, 3);
 
     for (int d = 0; d < 3; d++) {
@@ -529,18 +528,18 @@ void Plotter<3>::writeCubeData() {
     }
 
     //	"%5d %12.6f %12.6f %12.6f\n"
-    o.setf(ios::scientific);
+    o.setf(std::ios::scientific);
     o.precision(12);
-    o << 0       << " " << 0.0     << " " << 0.0     << " " << 0.0     << endl;
-    o << nPerDim << " " << step[0] << " " << 0.0     << " " << 0.0     << endl;
-    o << nPerDim << " " << 0.0     << " " << step[1] << " " << 0.0     << endl;
-    o << nPerDim << " " << 0.0     << " " << 0.0     << " " << step[2] << endl;
+    o << 0       << " " << 0.0     << " " << 0.0     << " " << 0.0     << std::endl;
+    o << nPerDim << " " << step[0] << " " << 0.0     << " " << 0.0     << std::endl;
+    o << nPerDim << " " << 0.0     << " " << step[1] << " " << 0.0     << std::endl;
+    o << nPerDim << " " << 0.0     << " " << 0.0     << " " << step[2] << std::endl;
 
-    o << endl;
+    o << std::endl;
     for (int n = 0; n < nRealPoints; n++) {
         o << this->values[n] << " "; //12.5E
         if (n % 6 == 5)
-            o << endl;
+            o << std::endl;
         if (this->values[n] < min)
             min = this->values[n];
         if (this->values[n] > max)
@@ -559,10 +558,10 @@ void Plotter<3>::writeCubeData() {
 }
 
 template<>
-void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
+void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::string &color) {
     double origin[3] = {0, 0, 0};
     double length = pow(2.0, -node.getScale());
-    ostream &o = *this->fout;
+    std::ostream &o = *this->fout;
 
     for (int d = 0; d < 3; d++) {
         origin[d] = node.getTranslation()[d] * length;
@@ -583,7 +582,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] + length << " " <<
          origin[2] <<
          color <<
-         endl;
+         std::endl;
 
     o << origin[0] << " " <<
          origin[1] << " " <<
@@ -601,7 +600,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] << " " <<
          origin[2] <<
          color <<
-         endl;
+         std::endl;
     o << origin[0] << " " <<
          origin[1] << " " <<
          origin[2] << " " <<
@@ -618,7 +617,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] << " " <<
          origin[2] <<
          color <<
-         endl;
+         std::endl;
 
     o << origin[0] + length << " " <<
          origin[1] + length << " " <<
@@ -636,7 +635,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] << " " <<
          origin[2] + length <<
          color <<
-         endl;
+         std::endl;
 
     o << origin[0] + length << " " <<
          origin[1] + length << " " <<
@@ -654,7 +653,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] + length << " " <<
          origin[2] + length <<
          color <<
-         endl;
+         std::endl;
 
     o << origin[0] + length << " " <<
          origin[1] + length << " " <<
@@ -672,7 +671,7 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
          origin[1] + length << " " <<
          origin[2] + length <<
          color <<
-         endl;
+         std::endl;
 }
 
 /** Writing grid data to file
@@ -683,11 +682,11 @@ void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const string &color) {
 */
 template<>
 void Plotter<3>::writeGrid(const MWTree<3> &tree) {
-    ostream &o = *this->fout;
-    o << "CQUAD" << endl;
+    std::ostream &o = *this->fout;
+    o << "CQUAD" << std::endl;
     o.precision(6);
-    string rootColor = " 1 1 1 0 ";
-    string color = " 0 0 1 1 ";
+    std::string rootColor = " 1 1 1 0 ";
+    std::string color = " 0 0 1 1 ";
     for (int i = 0; i < tree.getRootBox().size(); i++) {
         const MWNode<3> &rootNode = tree.getRootMWNode(i);
         writeNodeGrid(rootNode, rootColor);

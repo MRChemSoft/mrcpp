@@ -2,7 +2,6 @@
 #include "SerialTree.h"
 #include "utils/Printer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {

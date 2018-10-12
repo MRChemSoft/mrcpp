@@ -33,14 +33,14 @@ int main(int argc, char **argv) {
     const auto alpha = 3.0;
     const auto r_0 = mrcpp::pi - 3.0;
     auto f = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
-        auto R = fabs(r[0] - r_0);
-        return exp(-alpha*R);
+        auto R = std::abs(r[0] - r_0);
+        return std::exp(-alpha*R);
     };
     auto df = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
-        auto R = fabs(r[0] - r_0);
+        auto R = std::abs(r[0] - r_0);
         auto sign = 1.0;
         if (r[0] > r_0) sign = -1.0;
-        return sign*alpha*exp(-alpha*R);
+        return sign*alpha*std::exp(-alpha*R);
     };
 
     // Initializing MW functions and operators
@@ -61,12 +61,12 @@ int main(int argc, char **argv) {
     mrcpp::add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
     auto f_int = f_tree.integrate();
-    auto f_norm = sqrt(f_tree.getSquareNorm());
+    auto f_norm = std::sqrt(f_tree.getSquareNorm());
     auto df_int = df_tree.integrate();
-    auto df_norm = sqrt(df_tree.getSquareNorm());
+    auto df_norm = std::sqrt(df_tree.getSquareNorm());
     auto dg_int = dg_tree.integrate();
-    auto dg_norm = sqrt(dg_tree.getSquareNorm());
-    auto abs_err = sqrt(err_tree.getSquareNorm());
+    auto dg_norm = std::sqrt(dg_tree.getSquareNorm());
+    auto abs_err = std::sqrt(err_tree.getSquareNorm());
     auto rel_err = abs_err/df_norm;
 
     mrcpp::Printer::printSeparator(0, ' ');

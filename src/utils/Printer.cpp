@@ -12,11 +12,9 @@
 #include "Printer.h"
 #include "Timer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
-static ofstream tp_outfile;
+static std::ofstream tp_outfile;
 int Printer::printLevel = -1;
 int Printer::printPrec = 12;
 int Printer::printRank = 0;
@@ -28,7 +26,7 @@ void Printer::init(int level, int rank, int size, const char *file) {
     printRank = rank;
     printSize = size;
     if (file != 0) {
-        stringstream fname;
+        std::stringstream fname;
         if (printSize > 1) {
             fname << file << "-" << printRank << ".out";
         } else {
@@ -48,10 +46,10 @@ void Printer::init(int level, int rank, int size, const char *file) {
 }
 
 void Printer::printEnvironment(int level) {
-    printout(level, endl);
+    printout(level, std::endl);
     printSeparator(level, '-', 1);
     println(level, " MRCPP version   : " << PROGRAM_VERSION);
-    println(level, " Git revision    : " << GIT_REVISION << endl);
+    println(level, " Git revision    : " << GIT_REVISION << std::endl);
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra  : BLAS");
@@ -73,7 +71,7 @@ void Printer::printEnvironment(int level) {
 #endif
 #endif
 
-    printout(level, endl);
+    printout(level, std::endl);
     printSeparator(level, '-', 2);
 }
 
@@ -84,11 +82,11 @@ void Printer::printSeparator(int level, const char &sep, int newlines) {
         printout(level, sep);
     }
     for (int i = 0; i <= newlines; i++) {
-        printout(level, endl);
+        printout(level, std::endl);
     }
 }
 
-void Printer::printHeader(int level, const string &str, int newlines) {
+void Printer::printHeader(int level, const std::string &str, int newlines) {
     int N = 60;
     int len = str.size();
     printSeparator(level, '=', 0);
@@ -102,7 +100,7 @@ void Printer::printHeader(int level, const string &str, int newlines) {
 
 void Printer::printFooter(int level, const Timer &t, int newlines) {
     printSeparator(level, '-');
-    println(level, "                 Wall time: " << setw(11) << t << " sec ");
+    println(level, "                 Wall time: " << std::setw(11) << t << " sec ");
     printSeparator(level, '=', newlines);
 }
 
@@ -115,7 +113,7 @@ void Printer::printDouble(int level, const std::string &str, double d, int p) {
     }
     int oldPrec = getPrecision();
     if (p > 0) setPrecision(p);
-    println(level, cStr << setw(29) << d);
+    println(level, cStr << std::setw(29) << d);
     setPrecision(oldPrec);
 }
 
@@ -127,7 +125,7 @@ void Printer::printTree(int level, const std::string &str, int n, double t) {
         }
     }
     int oldPrec = setPrecision(5);
-    println(level, cStr << setw(12) << n << setw(17) << t);
+    println(level, cStr << std::setw(12) << n << std::setw(17) << t);
     setPrecision(oldPrec);
 }
 
@@ -139,7 +137,7 @@ void Printer::printTime(int level, const std::string &str, const Timer &t) {
         }
     }
     int oldPrec = setPrecision(5);
-    println(level, cStr << setw(29) << t);
+    println(level, cStr << std::setw(29) << t);
     setPrecision(oldPrec);
 }
 

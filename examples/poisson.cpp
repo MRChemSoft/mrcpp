@@ -31,8 +31,8 @@ int main(int argc, char **argv) {
 
     // Setting up analytic Gaussian
     auto beta = 100.0;
-    auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);
-    auto pos = std::array<double, D>{mrcpp::pi/3.0,mrcpp::pi/3.0,mrcpp::pi/3.0};
+    auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
+    auto pos = mrcpp::Coord<D>{mrcpp::pi/3.0, mrcpp::pi/3.0, mrcpp::pi/3.0};
     auto power = std::array<int, D>{0, 0, 0};
     auto f_func = mrcpp::GaussFunc<D>(beta, alpha, pos, power);
 
@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
     mrcpp::apply(prec, g_tree, P, f_tree);
 
     auto f_int = f_tree.integrate();
-    auto f_norm = sqrt(f_tree.getSquareNorm());
+    auto f_norm = std::sqrt(f_tree.getSquareNorm());
     auto g_int = g_tree.integrate();
-    auto g_norm = sqrt(g_tree.getSquareNorm());
+    auto g_norm = std::sqrt(g_tree.getSquareNorm());
     auto num_energy = mrcpp::dot(g_tree, f_tree);
     auto error = (num_energy-ana_energy)/num_energy;
 

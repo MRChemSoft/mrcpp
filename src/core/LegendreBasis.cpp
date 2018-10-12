@@ -12,7 +12,6 @@
 #include "functions/LegendrePoly.h"
 #include "eigen_disable_warnings.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -20,7 +19,7 @@ namespace mrcpp {
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
         LegendrePoly L_k(k, 2.0, 1.0);
-        L_k *= sqrt(2.0 * k + 1.0); // exact normalization
+        L_k *= std::sqrt(2.0 * k + 1.0); // exact normalization
         this->funcs.push_back(L_k);
     }
 }
@@ -66,7 +65,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -76,7 +75,7 @@ void LegendreBasis::calcCVMaps() {
 //		fvals(i) = func.evalf(r, d);
 //	}
 //	scs = fvals * preVals;
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -91,7 +90,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -101,7 +100,7 @@ void LegendreBasis::calcCVMaps() {
 //		fvals(i) = func.evalf(r, d);
 //	}
 //	scs = fvals * preVals;
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -116,7 +115,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -126,7 +125,7 @@ void LegendreBasis::calcCVMaps() {
 //		fvals(i) = func.evalf(r, d);
 //	}
 //	scs = fvals * preVals;
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //	return scs;
 //}
 
@@ -141,7 +140,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -154,7 +153,7 @@ void LegendreBasis::calcCVMaps() {
 //		scs.col(d) = fvals * preVals;
 //	}
 
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //}
 
 //void LegendreBasis::calcScalingCoefs(const SeparableFunction<2> &func,
@@ -168,7 +167,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -181,7 +180,7 @@ void LegendreBasis::calcCVMaps() {
 //		scs.col(d) = fvals * preVals;
 //	}
 
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //}
 
 //void LegendreBasis::calcScalingCoefs(const SeparableFunction<3> &func,
@@ -195,7 +194,7 @@ void LegendreBasis::calcCVMaps() {
 //	double r;
 //	double sfac;
 //	if (n < 0) {
-//		sfac = pow(2.0, n);
+//		sfac = std::pow(2.0, n);
 //	} else {
 //		sfac = 1 << n;
 //	}
@@ -207,7 +206,7 @@ void LegendreBasis::calcCVMaps() {
 //		}
 //		scs.col(d) = fvals * preVals;
 //	}
-//	scs *= sqrt(1.0 / sfac);
+//	scs *= std::sqrt(1.0 / sfac);
 //}
 
 } // namespace mrcpp

@@ -192,7 +192,7 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     FunctionTreeVector<3> grad_f = gradient(diff, f_tree);
     REQUIRE( grad_f.size() == 3 );
 
-    const Coord<3> r = {1.1, 0.4, 0.2};
+    const Coord<3> r{1.1, 0.4, 0.2};
     REQUIRE( get_func(grad_f, 0).evalf(r) == Approx(fx(r)).epsilon(prec) );
     REQUIRE( get_func(grad_f, 1).evalf(r) == Approx(fy(r)).epsilon(prec) );
     REQUIRE( get_func(grad_f, 2).evalf(r) == Approx(fz(r)).epsilon(prec) );
@@ -235,7 +235,7 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     divergence(div_f, diff, f_vec);
 
     for (int i = 0; i < 10; i++) {
-        const Coord<3> r = {-0.8 + 0.3*i, 0.4 - 0.1*i, 0.2 + 0.01*i};
+        const Coord<3> r{-0.8 + 0.3*i, 0.4 - 0.1*i, 0.2 + 0.01*i};
         const double ref = 1.0*fx(r) + 2.0*fy(r) + 3.0*fz(r);
         REQUIRE( div_f.evalf(r) == Approx(ref).epsilon(prec) );
     }

@@ -37,7 +37,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
         REQUIRE( helmholtz.size() == 33 );
 
         int foo = 0;
-        Coord<1> x = {r_min};
+        Coord<1> x{r_min};
         while (x[0] < r_max) {
             REQUIRE( helmholtz.evalf(x) == Approx(std::exp(-mu*x[0])/x[0]).epsilon(2.0*exp_prec) );
             x[0] *= 1.5;

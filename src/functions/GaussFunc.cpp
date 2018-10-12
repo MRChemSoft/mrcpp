@@ -319,7 +319,7 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     BoysFunction boys(0);
 
-    Coord<1> boysArg = {alpha*Rpq_2};
+    Coord<1> boysArg{alpha*Rpq_2};
     double boysFac = boys.evalf(boysArg);
 
     return std::sqrt(4.0*alpha/pi)*boysFac;

@@ -14,7 +14,6 @@
 #include "GaussExp.h"
 #include "utils/Printer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -144,7 +143,7 @@ void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
 }
 
 template<int D>
-void GaussPoly<D>::fillCoefPowVector(vector<double> &coefs, vector<int *> &power, int pow[D], int dir) const {
+void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const {
     dir--;
     for (int i = 0; i < this->getPower(dir) + 1; i++) {
         pow[dir] = i;

@@ -11,8 +11,6 @@
 #include "RepresentableFunction.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 template<int D>

@@ -20,7 +20,7 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     Printer::printHeader(0, "Projecting nuclear potential");
 
     // Smoothing parameter
-    auto c = 0.00435*prec/pow(Z, 5);
+    auto c = 0.00435*prec/std::pow(Z, 5);
     auto u = [] (double r) -> double {
         return std::erf(r)/r + 1.0/(3.0*std::sqrt(mrcpp::pi))*(std::exp(-r*r) + 16.0*std::exp(-4.0*r*r));
     };
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 
         // Initialize Helmholtz operator
         if (epsilon_n > 0.0) epsilon_n *= -1.0;
-        auto mu_n = sqrt(-2.0*epsilon_n);
+        auto mu_n = std::sqrt(-2.0*epsilon_n);
         auto H = HelmholtzOperator(MRA, mu_n, prec);
 
         // Compute Helmholtz argument V*phi
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
         auto d_phi_n = FunctionTree<D>(MRA);
         copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
         add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
-        error = sqrt(d_phi_n.getSquareNorm());
+        error = std::sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||
         d_epsilon_n = dot(Vphi, d_phi_n)/phi_np1->getSquareNorm();

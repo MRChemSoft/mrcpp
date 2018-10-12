@@ -13,7 +13,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -70,7 +69,7 @@ void ConvolutionOperator<D>::clearKernel() {
 template<int D>
 double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
     int maxScale = MRA.getMaxScale();
-    return sqrt(epsilon * pow(2.0, -maxScale));
+    return std::sqrt(epsilon * std::pow(2.0, -maxScale));
 }
 
 template<int D>

@@ -14,7 +14,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -51,8 +50,8 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1
         pos[d] = gPoly.getPos()[d];
     }
 
-    vector<double> coefs;
-    vector<int *> power;
+    std::vector<double> coefs;
+    std::vector<int *> power;
 
     gPoly.fillCoefPowVector(coefs, power, pow, D);
 
@@ -364,9 +363,9 @@ void GaussExp<D>::calcScreening(double nStdDev) {
 template<int D>
 void GaussExp<D>::setScreen(bool screen) {
     if (screen) {
-        this->screening = fabs(this->screening);
+        this->screening = std::abs(this->screening);
     } else {
-        this->screening = -fabs(this->screening);
+        this->screening = -std::abs(this->screening);
     }
     for (int i = 0; i < this->size(); i++) {
         this->funcs[i]->setScreen(screen);

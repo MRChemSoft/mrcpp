@@ -17,8 +17,8 @@ ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, d
 template<int D>
 void ABGVOperator<D>::initializeOperator(double a, double b) {
     int bw = 0; // Operator bandwidth
-    if (fabs(a) > MachineZero) bw = 1;
-    if (fabs(b) > MachineZero) bw = 1;
+    if (std::abs(a) > MachineZero) bw = 1;
+    if (std::abs(b) > MachineZero) bw = 1;
     int max_scale = this->oper_mra.getMaxScale();
     const ScalingBasis &basis = this->oper_mra.getScalingBasis();
 

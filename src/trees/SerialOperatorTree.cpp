@@ -3,8 +3,6 @@
 #include "OperatorNode.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 int NOtrees=0;

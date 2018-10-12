@@ -5,8 +5,6 @@
 #include "utils/Printer.h"
 #include "utils/mpi_utils.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 /** SerialTree class constructor.
@@ -266,7 +264,7 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
             this->maxNodes = newsize;
 
-            if (chunk%100==99 and D==3) println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes * this->sizeNodeCoeff)/1024/128);
+            if (chunk%100==99 and D==3) println(10, std::endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes * this->sizeNodeCoeff)/1024/128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -348,7 +346,7 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
             for (int i = oldsize; i < newsize; i++) this->genNodeStackStatus.push_back(0);
             this->maxGenNodes = newsize;
 
-            if(chunk%100==99 and D==3)println(10,endl<<" number of GenNodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->genNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
+            if(chunk%100==99 and D==3)println(10, "\n number of GenNodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->genNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
         }
         this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes%(this->maxNodesPerChunk);
         *serialIx = this->nGenNodes;

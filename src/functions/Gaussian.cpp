@@ -10,7 +10,6 @@
 #include "Gaussian.h"
 #include "trees/NodeIndex.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -106,7 +105,7 @@ bool Gaussian<D>::checkScreen(int n, const int *l) const {
 template<int D>
 bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
     double stdDeviation = std::pow(2.0*this->alpha, -0.5);
-    int visibleScale = int(-floor(log2(nQuadPts*2.0*stdDeviation)));
+    int visibleScale = int(-std::floor(std::log2(nQuadPts*2.0*stdDeviation)));
     if (scale < visibleScale) {
         return false;
     }

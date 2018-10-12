@@ -16,7 +16,7 @@ public:
 protected:
     virtual void initializeKernel() {
         double alpha = 1.0/this->epsilon;
-        double coef = pow(alpha/pi, 1.0/2.0);
+        double coef = std::pow(alpha/mrcpp::pi, 1.0/2.0);
         GaussFunc<1> g(alpha, coef);
         GaussPoly<1> dg = g.differentiate(0);
         this->append(dg);

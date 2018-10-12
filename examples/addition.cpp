@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
     // Setting up analytic Gaussians
     auto beta = 20.0;
-    auto alpha = pow(beta/mrcpp::pi, 3.0/2.0);
+    auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
     auto pos_1 = std::array<double, D>{0.0, 0.0, 0.1};
     auto pos_2 = std::array<double, D>{0.0, 0.0, -0.1};
     auto pos_3 = std::array<double, D>{0.0, 0.0, 0.3};

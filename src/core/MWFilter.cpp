@@ -17,14 +17,13 @@
 #include "utils/Printer.h"
 #include "eigen_disable_warnings.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
 
-string MWFilter::default_filter_lib = MW_FILTER_DIR;
+std::string MWFilter::default_filter_lib = MW_FILTER_DIR;
 
-MWFilter::MWFilter(int k, int t, const string &lib)
+MWFilter::MWFilter(int k, int t, const std::string &lib)
         : type(t),
           order(k) {
     if (this->order < 1 or this->order > MaxOrder) {
@@ -181,11 +180,11 @@ void MWFilter::applyInverse(VectorXd &data) const {
     data = this->filter.transpose() * data;
 }
 
-void MWFilter::setFilterPaths(const string &lib) {
-    ostringstream oss;
+void MWFilter::setFilterPaths(const std::string &lib) {
+    std::ostringstream oss;
     oss << this->order;
-    string ordr = oss.str();
-    string flib;
+    std::string ordr = oss.str();
+    std::string flib;
 
     if (lib.empty()) {
         flib = default_filter_lib;
@@ -207,8 +206,8 @@ void MWFilter::setFilterPaths(const string &lib) {
 }
 
 void MWFilter::readFilterBin() {
-    ifstream H_fis(this->H_path.c_str(), ios::binary);
-    ifstream G_fis(this->G_path.c_str(), ios::binary);
+    std::ifstream H_fis(this->H_path.c_str(), std::ios::binary);
+    std::ifstream G_fis(this->G_path.c_str(), std::ios::binary);
 
     if (H_fis.fail()) MSG_FATAL("Could not open filter: " << this->H_path);
     if (G_fis.fail()) MSG_FATAL("Could not open filter: " << this->G_path);
@@ -239,7 +238,7 @@ void MWFilter::readFilterBin() {
     case Interpol:
         for (i = 0; i < K; i++) {
             for (j = 0; j < K; j++) {
-                g1(i, j) = pow(-1.0, i + K) * g0(i, K - j - 1);
+                g1(i, j) = std::pow(-1.0, i + K) * g0(i, K - j - 1);
                 h1(i, j) = h0(K - i - 1, K - j - 1);
             }
         }
@@ -247,8 +246,8 @@ void MWFilter::readFilterBin() {
     case Legendre:
         for (i = 0; i < K; i++) {
             for (j = 0; j < K; j++) {
-                g1(i, j) = pow(-1.0, i + j + K) * g0(i, j);
-                h1(i, j) = pow(-1.0, i + j) * h0(i, j);
+                g1(i, j) = std::pow(-1.0, i + j + K) * g0(i, j);
+                h1(i, j) = std::pow(-1.0, i + j) * h0(i, j);
 
             }
         }

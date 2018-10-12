@@ -6,8 +6,6 @@
 #include "utils/Timer.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 template<int D>
@@ -26,8 +24,8 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
 
     int iter = 0;
     while (workVec->size() > 0) {
-        printout(10, "  -- #" << setw(3) << iter << ": Calculated ");
-        printout(10, setw(6) << workVec->size() << " nodes ");
+        printout(10, "  -- #" << std::setw(3) << iter << ": Calculated ");
+        printout(10, std::setw(6) << workVec->size() << " nodes ");
         calc_t.resume();
         calculator.calcNodeVector(*workVec);
         calc_t.stop();
@@ -45,7 +43,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
             // exact norm is recomputed after mwTransform
             tree.squareNorm = sNorm + wNorm;
         }
-        println(10, setw(24) << tree.squareNorm);
+        println(10, std::setw(24) << tree.squareNorm);
         norm_t.stop();
 
         split_t.resume();
@@ -79,7 +77,7 @@ void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const
 
     tree.clearSquareNorm();
 
-    println(10, "  -- #  1: Cleared      " << setw(6) << nodeVec.size() << " nodes");
+    println(10, "  -- #  1: Cleared      " << std::setw(6) << nodeVec.size() << " nodes");
     Printer::printSeparator(10, ' ');
     Printer::printTime(10, "Time clean", clean_t);
     Printer::printSeparator(10, ' ');
@@ -106,7 +104,7 @@ int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoe
     split_t.stop();
 
     printout(10, "  -- #  0: Split        ");
-    printout(10, setw(6) << newVec.size() << " nodes\n");
+    printout(10, std::setw(6) << newVec.size() << " nodes\n");
 
     Printer::printSeparator(10, ' ');
     Printer::printTime(10, "Time split", split_t);
@@ -122,8 +120,8 @@ void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const 
     Timer calc_t;
     MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
     calculator.calcNodeVector(*workVec);
-    printout(10, "  -- #" << setw(3) << 0 << ": Calculated ");
-    printout(10, setw(6) << workVec->size() << " nodes ");
+    printout(10, "  -- #" << std::setw(3) << 0 << ": Calculated ");
+    printout(10, std::setw(6) << workVec->size() << " nodes ");
     delete workVec;
     calc_t.stop();
 

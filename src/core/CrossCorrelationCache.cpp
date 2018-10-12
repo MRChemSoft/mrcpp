@@ -13,7 +13,6 @@
 
 #include "constants.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {

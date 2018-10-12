@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "RepresentableFunction.h"
 #include "trees/MultiResolutionAnalysis.h"
 
@@ -12,8 +10,7 @@ public:
     BoysFunction(int n, double prec = 1.0e-10);
     virtual ~BoysFunction() { }
 
-    double evalf(const double *r) const;
-    double evalf(const std::array<double, 1> &r) const;
+    double evalf(const Coord<1> &r) const;
 
 protected:
     const int order;

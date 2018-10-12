@@ -97,7 +97,7 @@ template<int D> void testFetch() {
     BoundingBox<D> *box = 0;
     initialize(&box);
     SECTION("Fetch by coord") {
-        double r[D];
+        Coord<D> r;
         SECTION("Within bounds") {
             for (int d = 0; d < D; d++) {
                 r[d] = box->getUpperBound(d) - 1.0e-15;

@@ -12,7 +12,6 @@
 #include <Eigen/Core>
 
 #include <vector>
-#include <array>
 
 #include "Gaussian.h"
 #include "Polynomial.h"
@@ -32,8 +31,7 @@ public:
 
     double calcSquareNorm();
 
-    double evalf(const double *r) const;
-    double evalf(const std::array<double, D> &r) const;
+    double evalf(const Coord<D> &r) const;
     double evalf(double r, int dim) const;
 
     double calcOverlap(GaussFunc<D> &b);

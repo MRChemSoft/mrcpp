@@ -192,7 +192,7 @@ int GaussQuadrature::calcGaussPtsWgts() {
 /** Integrate a 1D-function f(x) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
     double isum = 0.e0;
-    double r[1];
+    Coord<1> r;
     for (int i = 0; i < this->npts; i++) {
         r[0] = this->roots(i);
         isum += this->weights(i) * func.evalf(r);
@@ -203,7 +203,7 @@ double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
 /** Integrate a 2D-function f(x1, x2) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
     double jsum;
-    double r[2];
+    Coord<2> r;
     double isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
         jsum = 0.e0;
@@ -221,7 +221,7 @@ double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
 /** Integrate a 3D-function f(x1, x2, x3) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
     double isum, jsum, ksum;
-    double r[3];
+    Coord<3> r;
 
     isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
@@ -250,6 +250,7 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
     NOT_IMPLEMENTED_ABORT;
     NEEDS_TESTING
 
+    /*
     double sum;
     static double r[MaxQuadratureDim];
 
@@ -263,6 +264,7 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
         }
     }
     return sum;
+    */
 }
 
 } // namespace mrcpp

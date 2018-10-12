@@ -3,8 +3,6 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-#include <array>
-
 const auto min_scale = -4;
 const auto max_depth = 25;
 
@@ -34,11 +32,11 @@ int main(int argc, char **argv) {
     // Setting up analytic functions
     const auto alpha = 3.0;
     const auto r_0 = mrcpp::pi - 3.0;
-    auto f = [alpha, r_0] (const double *r) -> double {
+    auto f = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
         auto R = fabs(r[0] - r_0);
         return exp(-alpha*R);
     };
-    auto df = [alpha, r_0] (const double *r) -> double {
+    auto df = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
         auto R = fabs(r[0] - r_0);
         auto sign = 1.0;
         if (r[0] > r_0) sign = -1.0;
@@ -53,8 +51,8 @@ int main(int argc, char **argv) {
     auto err_tree = mrcpp::FunctionTree<D>(MRA);
 
     // Projecting functions
-    mrcpp::project(prec, f_tree, f);
-    mrcpp::project(prec, df_tree, df);
+    mrcpp::project<D>(prec, f_tree, f);
+    mrcpp::project<D>(prec, df_tree, df);
 
     // Applying derivative operator
     mrcpp::apply(dg_tree, D_00, f_tree, 0);

@@ -40,7 +40,7 @@ public:
     void getCenter(double *r) const;
     void getBounds(double *lb, double *ub) const;
 
-    bool hasCoord(const double *r) const;
+    bool hasCoord(const Coord<D> &r) const;
     bool isCompatible(const MWNode<D> &node);
     bool isAncestor(const NodeIndex<D> &idx) const;
     bool isDecendant(const NodeIndex<D> &idx) const;
@@ -152,26 +152,24 @@ protected:
 
     virtual double calcComponentNorm(int i) const;
 
-    bool crop(double prec, NodeIndexSet *cropIdx = 0);
-
     virtual void reCompress();
     virtual void giveChildrenCoefs(bool overwrite = true);
     virtual void copyCoefsFromChildren();
 
     int getChildIndex(const NodeIndex<D> &nIdx) const;
-    int getChildIndex(const double *r) const;
+    int getChildIndex(const Coord<D> &r) const;
 
     bool diffBranch(const MWNode<D> &rhs) const;
     inline bool checkStatus(unsigned char mask) const;
 
-    MWNode<D> *retrieveNode(const double *r, int depth);
+    MWNode<D> *retrieveNode(const Coord<D> &r, int depth);
     MWNode<D> *retrieveNode(const NodeIndex<D> &idx);
 
     const MWNode<D> *retrieveNodeNoGen(const NodeIndex<D> &idx) const;
     MWNode<D> *retrieveNodeNoGen(const NodeIndex<D> &idx);
 
-    const MWNode<D> *retrieveNodeOrEndNode(const double *r, int depth) const;
-    MWNode<D> *retrieveNodeOrEndNode(const double *r, int depth);
+    const MWNode<D> *retrieveNodeOrEndNode(const Coord<D> &r, int depth) const;
+    MWNode<D> *retrieveNodeOrEndNode(const Coord<D> &r, int depth);
 
     const MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
     MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);

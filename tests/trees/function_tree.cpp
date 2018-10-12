@@ -30,7 +30,10 @@ template<int D> void testZeroFunction() {
     WHEN("the function is set to zero") {
         tree.setZero();
         THEN("its value in an arbitrary point is zero") {
-            double r[3] = {-0.2, 0.6, 0.76};
+            Coord<D> r;
+            if (r.size() >= 1) r[0] = -0.20;
+            if (r.size() >= 2) r[1] =  0.60;
+            if (r.size() >= 3) r[2] =  0.76;
             REQUIRE( tree.evalf(r) == Approx(0.0) );
         }
         THEN("its squared norm is zero") {
@@ -59,8 +62,12 @@ SCENARIO("Generating FunctionTree nodes", "[function_tree_generating], [function
 }
 
 template<int D> void testGeneratedNodes() {
-    const double r[3] = {-0.3, 0.6, 1.9};
     const int depth = 3;
+
+    Coord<D> r;
+    if (r.size() >= 1) r[0] = -0.3;
+    if (r.size() >= 2) r[1] =  0.6;
+    if (r.size() >= 3) r[2] =  1.9;
 
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);

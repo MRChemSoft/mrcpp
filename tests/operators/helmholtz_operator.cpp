@@ -37,10 +37,10 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
         REQUIRE( helmholtz.size() == 33 );
 
         int foo = 0;
-        double x = r_min;
-        while (x < r_max) {
-            REQUIRE( helmholtz.evalf(&x) == Approx(std::exp(-mu*x)/x).epsilon(2.0*exp_prec) );
-            x *= 1.5;
+        Coord<1> x{r_min};
+        while (x[0] < r_max) {
+            REQUIRE( helmholtz.evalf(x) == Approx(std::exp(-mu*x[0])/x[0]).epsilon(2.0*exp_prec) );
+            x[0] *= 1.5;
         }
         SECTION("Project Helmholtz' kernel") {
             int l = -1;
@@ -134,7 +134,7 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     HelmholtzOperator H(MRA, mu, build_prec);
 
     // Defining analytic 1s function
-    auto hFunc = [Z] (const double *r) -> double {
+    auto hFunc = [Z] (const Coord<3> &r) -> double {
         const double c_0 = 2.0*std::pow(Z, 3.0/2.0);
         double rho = 2.0*Z*std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         double R_0 = c_0*std::exp(-rho/2.0);
@@ -142,14 +142,14 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
         return R_0*Y_00;
     };
     FunctionTree<3> psi_n(MRA);
-    project(proj_prec, psi_n, hFunc);
+    project<3>(proj_prec, psi_n, hFunc);
 
-    auto f = [Z] (const double *r) -> double {
+    auto f = [Z] (const Coord<3> &r) -> double {
         double x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return -Z/x;
     };
     FunctionTree<3> V(MRA);
-    project(proj_prec, V, f);
+    project<3>(proj_prec, V, f);
 
     FunctionTree<3> Vpsi(MRA);
     copy_grid(Vpsi, psi_n);

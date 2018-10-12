@@ -11,7 +11,7 @@ public:
     virtual ~DefaultCalculator() { }
 
     // Reimplementation without OpenMP, the default is faster this way
-    virtual void calcNodeVector(MWNodeVector &nodeVec) {
+    virtual void calcNodeVector(MWNodeVector<D> &nodeVec) {
         int nNodes = nodeVec.size();
         for (int n = 0; n < nNodes; n++) {
             calcNode(*nodeVec[n]);

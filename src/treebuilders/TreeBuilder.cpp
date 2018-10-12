@@ -18,8 +18,8 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
     Timer calc_t(false), split_t(false), norm_t(false);
     println(10, " == Building tree");
 
-    MWNodeVector *newVec = 0;
-    MWNodeVector *workVec = calculator.getInitialWorkVector(tree);
+    MWNodeVector<D> *newVec = 0;
+    MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
 
     double sNorm = 0.0;
     double wNorm = 0.0;
@@ -49,7 +49,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree,
         norm_t.stop();
 
         split_t.resume();
-        newVec = new MWNodeVector;
+        newVec = new MWNodeVector<D>;
         if (iter >= maxIter and maxIter >= 0) workVec->clear();
         adaptor.splitNodeVector(*newVec, *workVec);
         split_t.stop();
@@ -72,7 +72,7 @@ void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const
     println(10, " == Clearing tree");
 
     Timer clean_t;
-    MWNodeVector nodeVec;
+    MWNodeVector<D> nodeVec;
     tree.makeNodeTable(nodeVec);
     calculator.calcNodeVector(nodeVec);//clear all coefficients
     clean_t.stop();
@@ -90,8 +90,8 @@ int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoe
     println(10, " == Refining tree");
 
     Timer split_t;
-    MWNodeVector newVec;
-    MWNodeVector *workVec = tree.copyEndNodeTable();
+    MWNodeVector<D> newVec;
+    MWNodeVector<D> *workVec = tree.copyEndNodeTable();
     adaptor.splitNodeVector(newVec, *workVec);
     if (passCoefs) {
         for (int i = 0; i < workVec->size(); i++) {
@@ -120,7 +120,7 @@ void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const 
     println(10, " == Calculating tree");
 
     Timer calc_t;
-    MWNodeVector *workVec = calculator.getInitialWorkVector(tree);
+    MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
     calculator.calcNodeVector(*workVec);
     printout(10, "  -- #" << setw(3) << 0 << ": Calculated ");
     printout(10, setw(6) << workVec->size() << " nodes ");
@@ -134,7 +134,7 @@ void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const 
 }
 
 template<int D>
-double TreeBuilder<D>::calcScalingNorm(const MWNodeVector &vec) const {
+double TreeBuilder<D>::calcScalingNorm(const MWNodeVector<D> &vec) const {
     double sNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
         const MWNode<D> &node = *vec[i];
@@ -144,7 +144,7 @@ double TreeBuilder<D>::calcScalingNorm(const MWNodeVector &vec) const {
 }
 
 template<int D>
-double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector &vec) const {
+double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector<D> &vec) const {
     double wNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
         const MWNode<D> &node = *vec[i];

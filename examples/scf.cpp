@@ -22,15 +22,15 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     // Smoothing parameter
     auto c = 0.00435*prec/pow(Z, 5);
     auto u = [] (double r) -> double {
-        return erf(r)/r + 1.0/(3.0*sqrt(mrcpp::pi))*(exp(-r*r) + 16.0*exp(-4.0*r*r));
+        return std::erf(r)/r + 1.0/(3.0*std::sqrt(mrcpp::pi))*(std::exp(-r*r) + 16.0*std::exp(-4.0*r*r));
     };
-    auto f = [u, c, Z] (const double *r) -> double {
-        auto x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+    auto f = [u, c, Z] (const Coord<3> &r) -> double {
+        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return -1.0*Z*u(x/c)/c;
     };
 
     // Projecting function
-    project(prec, V, f);
+    project<D>(prec, V, f);
 
     timer.stop();
     Printer::printFooter(0, timer, 2);
@@ -42,13 +42,13 @@ void setupInitialGuess(FunctionTree<D> &phi) {
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
 
-    auto f = [] (const double *r) -> double {
-        auto x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return 1.0*exp(-1.0*x*x);
+    auto f = [] (const Coord<D> &r) -> double {
+        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return 1.0*std::exp(-1.0*x*x);
     };
 
     // Projecting and normalizing function
-    project(prec, phi, f);
+    project<D>(prec, phi, f);
     phi.normalize();
 
     timer.stop();

@@ -16,7 +16,7 @@ public:
                           int depth = MaxDepth);
     virtual ~ConvolutionCalculator();
 
-    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
+    virtual MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
     int maxDepth;
@@ -33,8 +33,8 @@ protected:
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);
 
-    MWNodeVector* makeOperBand(const MWNode<D> &gNode);
-    void fillOperBand(MWNodeVector *band, NodeIndex<D> &idx, const int *nbox, int dim);
+    MWNodeVector<D>* makeOperBand(const MWNode<D> &gNode);
+    void fillOperBand(MWNodeVector<D> *band, NodeIndex<D> &idx, const int *nbox, int dim);
 
     void initTimers();
     void clearTimers();

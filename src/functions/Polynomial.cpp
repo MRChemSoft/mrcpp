@@ -63,7 +63,7 @@ Polynomial& Polynomial::operator=(const Polynomial &poly) {
 
 /** Evaluate scaled and translated polynomial */
 double Polynomial::evalf(double x) const {
-    if (this->outOfBounds(&x)) {
+    if (this->outOfBounds({x})) {
         return 0.0;
     }
     double xp = 1.0;
@@ -268,14 +268,14 @@ double Polynomial::integrate(const double *a, const double *b) const {
         if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
         lb = getScaledLowerBound();
     } else {
-        if (this->outOfBounds(a)) MSG_ERROR("Integration out of bounds");
+        if (this->outOfBounds({a[0]})) MSG_ERROR("Integration out of bounds");
         lb = a[0];
     }
     if (b == nullptr) {
         if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
         ub = getScaledUpperBound();
     } else {
-        if (this->outOfBounds(b)) MSG_ERROR("Integration out of bounds");
+        if (this->outOfBounds({b[0]})) MSG_ERROR("Integration out of bounds");
         ub = b[0];
     }
     double sfac = 1.0/this->N;

@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <cmath>
-#include <array>
 
 #pragma GCC system_header
 #include <Eigen/Core>
@@ -21,12 +20,11 @@ template<int D>
 class Gaussian: public RepresentableFunction<D> {
 public:
     Gaussian(double a, double c, const double r[D], const int p[D]);
-    Gaussian(double a, double c, const std::array<double, D> &r, const std::array<int, D> &p);
+    Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p);
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian();
 
-    virtual double evalf(const double *r) const = 0;
-    virtual double evalf(const std::array<double, D> &r) const = 0;
+    virtual double evalf(const Coord<D> &r) const = 0;
     virtual double evalf(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
@@ -45,7 +43,7 @@ public:
         return this->squareNorm;
     }
     void normalize() {
-        double norm = sqrt(getSquareNorm());
+        double norm = std::sqrt(getSquareNorm());
         multConstInPlace(1.0/norm);
     }
     void multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs);

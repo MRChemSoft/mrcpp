@@ -12,7 +12,6 @@
 #pragma once
 
 #pragma GCC system_header
-#include <array>
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"
@@ -29,8 +28,7 @@ public:
     virtual ~Polynomial() { }
 
     double evalf(double x) const;
-    double evalf(const double *r) const { return evalf(r[0]); }
-    double evalf(const std::array<double, 1> &r) const { return evalf(r[0]); }
+    double evalf(const Coord<1> &r) const { return evalf(r[0]); }
 
     double getScaledLowerBound() const;
     double getScaledUpperBound() const;

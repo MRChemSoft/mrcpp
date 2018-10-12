@@ -34,10 +34,10 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
         PoissonKernel poisson(exp_prec, r_min, r_max);
         REQUIRE( poisson.size() == 26 );
 
-        double x = r_min;
-        while (x < r_max) {
-            REQUIRE( poisson.evalf(&x) == Approx(1.0/x).epsilon(2.0*exp_prec) );
-            x *= 1.5;
+        Coord<1> x{r_min};
+        while (x[0] < r_max) {
+            REQUIRE( poisson.evalf(x) == Approx(1.0/x[0]).epsilon(2.0*exp_prec) );
+            x[0] *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
             int l = -1;

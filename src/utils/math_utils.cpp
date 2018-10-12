@@ -228,8 +228,8 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
 }
 
 /** Calculate the distance between two points in n-dimensions */
-double math_utils::calc_distance(int D, const double *a, const double *b) {
-    assert(a != 0 and b != 0 and D >= 0);
+template<int D>
+double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
     double r = 0.0;
     for (int i = 0; i < D; i++) {
         r += std::pow(a[i] - b[i], 2.0);
@@ -237,4 +237,7 @@ double math_utils::calc_distance(int D, const double *a, const double *b) {
     return std::sqrt(r);
 }
 
+template double math_utils::calc_distance<1>(const Coord<1> &a, const Coord<1> &b);
+template double math_utils::calc_distance<2>(const Coord<2> &a, const Coord<2> &b);
+template double math_utils::calc_distance<3>(const Coord<3> &a, const Coord<3> &b);
 } // namespace mrcpp

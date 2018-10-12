@@ -81,8 +81,7 @@ void BoundingBox<D>::setDerivedParameters() {
 }
 
 template<int D>
-NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
-    assert(r != nullptr);
+NodeIndex<D> BoundingBox<D>::getNodeIndex(const Coord<D> &r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -134,8 +133,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 
 // Specialized for D=1 below
 template<int D>
-int BoundingBox<D>::getBoxIndex(const double *r) const {
-    assert(r != nullptr);
+int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -213,7 +211,7 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
 }
 
 template<>
-int BoundingBox<1>::getBoxIndex(const double *r) const {
+int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
     double x = r[0];
     if (x < this->lowerBounds[0]) return -1;
     if (x >= this->upperBounds[0]) return -1;

@@ -135,8 +135,8 @@ void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
-    MWNodeVector *band = new MWNodeVector();
+MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+    MWNodeVector<D> *band = new MWNodeVector<D>;
 
     int depth = gNode.getDepth();
     int width = this->oper->getMaxBandWidth(depth);
@@ -173,10 +173,10 @@ MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
 
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
 template<int D>
-void ConvolutionCalculator<D>::fillOperBand(MWNodeVector *band,
-                                                NodeIndex<D> &idx,
-                                                const int *nbox,
-                                                int dim) {
+void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
+                                            NodeIndex<D> &idx,
+                                            const int *nbox,
+                                            int dim) {
     int *l = idx.getTranslation();
     int l_start = l[dim];
     for (int j = 0; j < nbox[dim]; j++) {
@@ -215,7 +215,7 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()]->resume();
-    MWNodeVector *fBand = makeOperBand(gNode);
+    MWNodeVector<D> *fBand = makeOperBand(gNode);
     this->band_t[omp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
@@ -364,8 +364,8 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 }
 
 template<int D>
-MWNodeVector* ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
-    MWNodeVector *nodeVec = new MWNodeVector;
+MWNodeVector<D>* ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+    MWNodeVector<D> *nodeVec = new MWNodeVector<D>;
     tree.makeNodeTable(*nodeVec);
     return nodeVec;
 }

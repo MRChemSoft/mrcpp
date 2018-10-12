@@ -28,7 +28,7 @@ Gaussian<D> *GaussFunc<D>::copy() const{
 }
 
 template<int D>
-double GaussFunc<D>::evalf(const double *r) const {
+double GaussFunc<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) {
@@ -45,15 +45,10 @@ double GaussFunc<D>::evalf(const double *r) const {
         } else if (this->power[d] == 1) {
             p2 *= q;
         } else {
-            p2 *= pow(q, this->power[d]);
+            p2 *= std::pow(q, this->power[d]);
         }
     }
-    return this->coef * p2 * exp(-this->alpha * q2);
-}
-
-template<int D>
-double GaussFunc<D>::evalf(const std::array<double, D> &r) const {
-    return this->evalf(r.data());
+    return this->coef * p2 * std::exp(-this->alpha * q2);
 }
 
 /** NOTE!
@@ -80,7 +75,7 @@ double GaussFunc<D>::evalf(double r, int d) const {
     } else {
         p2 = pow(q, this->power[d]);
     }
-    double result = p2 * exp(-this->alpha * q2);
+    double result = p2 * std::exp(-this->alpha * q2);
     if (d == 0)
         result *= this->coef;
     return result;
@@ -104,7 +99,7 @@ double GaussFunc<D>::calcSquareNorm() {
             }
         }
         a = pi / a;
-        sq_norm *= sqrt(a);
+        sq_norm *= std::sqrt(a);
         norm *= sq_norm;
     }
     this->squareNorm = norm * this->coef * this->coef;
@@ -246,7 +241,7 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     x_pa = pos_p - pos_a; /* X_{PA} */
     x_pb = pos_p - pos_b; /* X_{PB} */
     s_00 = pi / expo_p;
-    s_00 = sqrt(s_00) * exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
+    s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
     n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
     n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
 
@@ -324,10 +319,10 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     BoysFunction boys(0);
 
-    double boysArg = alpha*Rpq_2;
-    double boysFac = boys.evalf(&boysArg);
+    Coord<1> boysArg{alpha*Rpq_2};
+    double boysFac = boys.evalf(boysArg);
 
-    return sqrt(4.0*alpha/pi)*boysFac;
+    return std::sqrt(4.0*alpha/pi)*boysFac;
 }
 
 template class GaussFunc<1>;

@@ -91,26 +91,7 @@ double GaussPoly<D>::calcSquareNorm() {
 }
 
 template<int D>
-double GaussPoly<D>::evalf(const double *r) const {
-    if (this->getScreen()) {
-        for (int d = 0; d < D; d++) {
-            if ((r[d] < this->A[d]) or (r[d] > this->B[d])) {
-                return 0.0;
-            }
-        }
-    }
-    double q2 = 0.0, p2 = 1.0;
-    for (int d = 0; d < D; d++) {
-        //assert(this->poly[d]->getCheckBounds() == false);
-        double q = r[d] - this->pos[d];
-        q2 += q * q;
-        p2 *= poly[d]->evalf(r[d] - this->pos[d]);
-    }
-    return this->coef * p2 * exp(-this->alpha * q2);
-}
-
-template<int D>
-double GaussPoly<D>::evalf(const std::array<double, D> &r) const {
+double GaussPoly<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) {
@@ -125,7 +106,7 @@ double GaussPoly<D>::evalf(const std::array<double, D> &r) const {
         q2 += q * q;
         p2 *= poly[d]->evalf(r[d] - this->pos[d]);
     }
-    return this->coef * p2 * exp(-this->alpha * q2);
+    return this->coef * p2 * std::exp(-this->alpha * q2);
 }
 
 /** NOTE!
@@ -149,7 +130,7 @@ double GaussPoly<D>::evalf(const double r, int d) const {
     if (d == 0) {
         p2 *= this->coef;
     }
-    return p2 * exp(-this->alpha * q2);
+    return p2 * std::exp(-this->alpha * q2);
 }
 
 template<int D>
@@ -163,8 +144,7 @@ void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
 }
 
 template<int D>
-void GaussPoly<D>::fillCoefPowVector(vector<double> &coefs, vector<int *> &power,
-        int pow[D], int dir) const {
+void GaussPoly<D>::fillCoefPowVector(vector<double> &coefs, vector<int *> &power, int pow[D], int dir) const {
     dir--;
     for (int i = 0; i < this->getPower(dir) + 1; i++) {
         pow[dir] = i;

@@ -13,7 +13,7 @@ public:
 
     void setMaxScale(int ms) { this->maxScale = ms; }
 
-    void splitNodeVector(MWNodeVector &out, MWNodeVector &inp) const {
+    void splitNodeVector(MWNodeVector<D> &out, MWNodeVector<D> &inp) const {
         for (int n = 0; n < inp.size(); n++) {
             MWNode<D> &node = *inp[n];
             // Can be BranchNode in operator application

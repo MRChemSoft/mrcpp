@@ -88,7 +88,7 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()].resume();
-    MWNodeVector fBand = makeOperBand(gNode);
+    MWNodeVector<D> fBand = makeOperBand(gNode);
     this->band_t[omp_get_thread_num()].stop();
 
     assert(this->oper->size() == 1);
@@ -120,11 +120,11 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
-    MWNodeVector band;
+    MWNodeVector<D> band;
     const NodeIndex<D> &idx_0 = gNode.getNodeIndex();
 
     // Assumes given width only in applyDir, otherwise width = 0
@@ -243,7 +243,7 @@ void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 }
 
 template<int D>
-MWNodeVector* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+MWNodeVector<D>* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     return tree.copyEndNodeTable();
 }
 

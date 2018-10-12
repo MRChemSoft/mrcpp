@@ -247,7 +247,7 @@ double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()){
         MSG_FATAL("Trees not compatible");
     }
-    MWNodeVector nodeTable;
+    MWNodeVector<D> nodeTable;
     HilbertIterator<D> it(&bra);
     it.setReturnGenNodes(false);
     while(it.next()) {

@@ -79,11 +79,11 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
-    void makeNodeTable(MWNodeVector &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
+    void makeNodeTable(MWNodeVector<D> &nodeTable);
+    void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
 
-    MWNodeVector* copyEndNodeTable();
-    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
+    MWNodeVector<D>* copyEndNodeTable();
+    MWNodeVector<D>* getEndNodeTable() { return &this->endNodeTable; }
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
@@ -136,7 +136,7 @@ protected:
     int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
-    MWNodeVector endNodeTable;	   ///< Final projected nodes
+    MWNodeVector<D> endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);

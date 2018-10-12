@@ -152,8 +152,6 @@ protected:
 
     virtual double calcComponentNorm(int i) const;
 
-    bool crop(double prec, NodeIndexSet *cropIdx = 0);
-
     virtual void reCompress();
     virtual void giveChildrenCoefs(bool overwrite = true);
     virtual void copyCoefsFromChildren();

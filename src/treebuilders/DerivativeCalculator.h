@@ -11,7 +11,7 @@ public:
     DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
     virtual ~DerivativeCalculator();
 
-    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
+    virtual MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
     int applyDir;
@@ -23,7 +23,7 @@ protected:
     std::vector<Timer> norm_t;
     OperatorStatistics<D> operStat;
 
-    MWNodeVector makeOperBand(const MWNode<D> &gNode);
+    MWNodeVector<D> makeOperBand(const MWNode<D> &gNode);
 
     void initTimers();
     void clearTimers();

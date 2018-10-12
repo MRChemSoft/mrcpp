@@ -20,8 +20,8 @@ public:
     void clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
 
 protected:
-    double calcScalingNorm(const MWNodeVector &vec) const;
-    double calcWaveletNorm(const MWNodeVector &vec) const;
+    double calcScalingNorm(const MWNodeVector<D> &vec) const;
+    double calcWaveletNorm(const MWNodeVector<D> &vec) const;
 };
 
 }

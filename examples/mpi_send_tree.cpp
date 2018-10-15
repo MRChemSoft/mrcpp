@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     };
 
     // All ranks define the function
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::FunctionTree<D> f_tree(MRA);
 
     // Only rank 0 projects the function
     if (wrank == 0) mrcpp::project<D>(prec, f_tree, f);

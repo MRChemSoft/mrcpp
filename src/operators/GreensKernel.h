@@ -17,7 +17,8 @@ public:
           rMin(r_min),
           rMax(r_max) {
     }
-
+    GreensKernel(const GreensKernel &kern) = delete;
+    GreensKernel &operator=(const GreensKernel &kern) = delete;
     virtual ~GreensKernel() = default;
 
     double getEpsilon() const { return this->epsilon; }

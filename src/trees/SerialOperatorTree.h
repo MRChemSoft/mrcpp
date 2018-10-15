@@ -18,6 +18,8 @@ namespace mrcpp {
 class SerialOperatorTree final : public SerialTree<2> {
 public:
     SerialOperatorTree(OperatorTree *tree);
+    SerialOperatorTree(const SerialOperatorTree &tree) = delete;
+    SerialOperatorTree &operator=(const SerialOperatorTree &tree) = delete;
     ~SerialOperatorTree();
 
     void allocRoots(MWTree<2> &tree);

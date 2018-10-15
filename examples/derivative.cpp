@@ -44,11 +44,11 @@ int main(int argc, char **argv) {
     };
 
     // Initializing MW functions and operators
-    auto D_00 = mrcpp::ABGVOperator<D>(MRA, 0.0, 0.0);
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
-    auto df_tree = mrcpp::FunctionTree<D>(MRA);
-    auto dg_tree = mrcpp::FunctionTree<D>(MRA);
-    auto err_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::ABGVOperator<D> D_00(MRA, 0.0, 0.0);
+    mrcpp::FunctionTree<D> f_tree(MRA);
+    mrcpp::FunctionTree<D> df_tree(MRA);
+    mrcpp::FunctionTree<D> dg_tree(MRA);
+    mrcpp::FunctionTree<D> err_tree(MRA);
 
     // Projecting functions
     mrcpp::project<D>(prec, f_tree, f);

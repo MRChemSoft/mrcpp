@@ -11,6 +11,8 @@ public:
               mu(m) {
         initializeKernel();
     }
+    HelmholtzKernel(const HelmholtzKernel &kern) = delete;
+    HelmholtzKernel &operator=(const HelmholtzKernel &kern) = delete;
 
 protected:
     const double mu; /**< exponent */

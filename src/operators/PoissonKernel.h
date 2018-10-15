@@ -10,6 +10,8 @@ public:
             : GreensKernel(eps, r_min, r_max) {
         initializeKernel();
     }
+    PoissonKernel(const PoissonKernel &kern) = delete;
+    PoissonKernel &operator=(const PoissonKernel &kern) = delete;
 
 protected:
     void initializeKernel();

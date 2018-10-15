@@ -14,6 +14,8 @@ public:
         IdentityKernel identity_kernel(epsilon);
         this->initializeOperator(identity_kernel);
     }
+    IdentityConvolution(const IdentityConvolution &oper) = delete;
+    IdentityConvolution &operator=(const IdentityConvolution &oper) = delete;
 };
 
 }

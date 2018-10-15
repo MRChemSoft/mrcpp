@@ -13,6 +13,8 @@ template<int D>
 class FunctionTree final : public MWTree<D> {
 public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
+    FunctionTree(const FunctionTree<D> &tree) = delete;
+    FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
     ~FunctionTree();
 
     void clear();

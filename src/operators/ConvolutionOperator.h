@@ -9,6 +9,8 @@ template<int D>
 class ConvolutionOperator : public MWOperator {
 public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr);
+    ConvolutionOperator(const ConvolutionOperator &oper) = delete;
+    ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
     virtual ~ConvolutionOperator();
 
 protected:

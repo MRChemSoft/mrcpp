@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 
     // Nuclear potential
     auto Z = 1.0;
-    auto V = FunctionTree<D>(MRA);
+    FunctionTree<D> V(MRA);
     setupNuclearPotential(Z, V);
 
     // Wave function
@@ -103,10 +103,10 @@ int main(int argc, char **argv) {
         // Initialize Helmholtz operator
         if (epsilon_n > 0.0) epsilon_n *= -1.0;
         auto mu_n = std::sqrt(-2.0*epsilon_n);
-        auto H = HelmholtzOperator(MRA, mu_n, prec);
+        HelmholtzOperator H(MRA, mu_n, prec);
 
         // Compute Helmholtz argument V*phi
-        auto Vphi = FunctionTree<D>(MRA);
+        FunctionTree<D> Vphi(MRA);
         copy_grid(Vphi, *phi_n); // Copy grid from orbital
         multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
         phi_np1->rescale(-1.0/(2.0*mrcpp::pi));
 
         // Compute orbital residual
-        auto d_phi_n = FunctionTree<D>(MRA);
+        FunctionTree<D> d_phi_n(MRA);
         copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
         add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
         error = std::sqrt(d_phi_n.getSquareNorm());
@@ -159,7 +159,6 @@ int main(int argc, char **argv) {
     Printer::printHeader(0, "Final energy");
     Printer::printDouble(0, "Eigenvalue", epsilon_n);
     Printer::printSeparator(0, '=', 2);
-
 
     return 0;
 }

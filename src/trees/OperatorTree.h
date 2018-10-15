@@ -7,6 +7,8 @@ namespace mrcpp {
 class OperatorTree final : public MWTree<2> {
 public:
     OperatorTree(const MultiResolutionAnalysis<2> &mra, double np);
+    OperatorTree(const OperatorTree &tree) = delete;
+    OperatorTree &operator=(const OperatorTree &tree) = delete;
     virtual ~OperatorTree();
 
     double getNormPrecision() const { return this->normPrec; }

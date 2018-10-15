@@ -15,6 +15,8 @@ public:
 
 protected:
     ProjectedNode() : FunctionNode<D>() { }
+    ProjectedNode(const ProjectedNode<D> &node) = delete;
+    ProjectedNode<D> &operator=(const ProjectedNode<D> &node) = delete;
     ~ProjectedNode() { assert(this->tree == 0); }
 
     void dealloc();

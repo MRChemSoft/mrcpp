@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     };
 
     // Initializing MW function
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::FunctionTree<D> f_tree(MRA);
 
     auto iter = 0;
     auto n_nodes = 1;

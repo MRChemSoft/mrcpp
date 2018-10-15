@@ -19,6 +19,8 @@ template<int D>
 class SerialFunctionTree final : public SerialTree<D> {
 public:
     SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *sh_mem);
+    SerialFunctionTree(const SerialFunctionTree<D> &tree) = delete;
+    SerialFunctionTree<D> &operator=(const SerialFunctionTree<D> &tree) = delete;
     ~SerialFunctionTree();
 
     void allocRoots(MWTree<D> &tree);

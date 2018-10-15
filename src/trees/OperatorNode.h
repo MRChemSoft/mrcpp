@@ -35,6 +35,8 @@ public:
 
 protected:
     OperatorNode() : MWNode<2>() { }
+    OperatorNode(const OperatorNode &node) = delete;
+    OperatorNode &operator=(const OperatorNode &node) = delete;
 
     void dealloc();
     double calcComponentNorm(int i) const;

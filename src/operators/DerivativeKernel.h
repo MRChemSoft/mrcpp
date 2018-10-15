@@ -12,6 +12,8 @@ public:
             : GreensKernel(eps, -1.0, -1.0) {
         initializeKernel();
     }
+    DerivativeKernel(const DerivativeKernel &kern) = delete;
+    DerivativeKernel &operator=(const DerivativeKernel &kern) = delete;
 
 protected:
     void initializeKernel() {

@@ -11,6 +11,8 @@ public:
             : GreensKernel(eps, -1.0, -1.0) {
         initializeKernel();
     }
+    IdentityKernel(const IdentityKernel &kern) = delete;
+    IdentityKernel &operator=(const IdentityKernel &kern) = delete;
 
 protected:
     void initializeKernel() {

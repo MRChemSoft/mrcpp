@@ -26,6 +26,8 @@ public:
 
 protected:
     FunctionNode() : MWNode<D>() { }
+    FunctionNode(const FunctionNode<D> &node) = delete;
+    FunctionTree<D> &operator=(const FunctionNode<D> &node) = delete;
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
     double evalf(const Coord<D> &r);

@@ -20,6 +20,8 @@ template<int D>
 class SerialTree {
 public:
     SerialTree(MWTree<D> *tree, SharedMemory *mem);
+    SerialTree(const SerialTree<D> &tree) = delete;
+    SerialTree<D> &operator=(const SerialTree<D> &tree) = delete;
     virtual ~SerialTree() = default;
 
     MWTree<D>* getTree() { return this->tree_p; }

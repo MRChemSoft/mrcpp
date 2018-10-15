@@ -15,6 +15,8 @@ public:
         this->initializeOperator(derivative_kernel);
         this->setApplyDir(d);
     }
+    DerivativeConvolution(const DerivativeConvolution &oper) = delete;
+    DerivativeConvolution &operator=(const DerivativeConvolution &oper) = delete;
 };
 
 }

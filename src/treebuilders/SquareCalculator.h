@@ -12,7 +12,7 @@ public:
 protected:
     FunctionTree<D> *func;
 
-    virtual void calcNode(MWNode<D> &node_o) {
+    void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         int n_coefs = node_o.getNCoefs();
         double *coefs_o = node_o.getCoefs();

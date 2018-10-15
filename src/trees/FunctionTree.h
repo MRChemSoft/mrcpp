@@ -10,15 +10,15 @@
 namespace mrcpp {
 
 template<int D>
-class FunctionTree: public MWTree<D> {
+class FunctionTree final : public MWTree<D> {
 public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
-    virtual ~FunctionTree();
+    ~FunctionTree();
 
     void clear();
 
     double integrate() const;
-    virtual double evalf(const Coord<D> &r);
+    double evalf(const Coord<D> &r);
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);

@@ -15,14 +15,14 @@
 namespace mrcpp {
 
 template<int D>
-class NodeBox : public BoundingBox<D> {
+class NodeBox final : public BoundingBox<D> {
 public:
     NodeBox();
     NodeBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     NodeBox(const NodeBox<D> &box);
     NodeBox(const BoundingBox<D> &box);
     NodeBox<D> &operator=(const NodeBox<D> &box);
-    virtual ~NodeBox();
+    ~NodeBox();
 
     void setNode(int idx, MWNode<D> **node);
     void clearNode(int idx) { this->nodes[idx] = 0; }

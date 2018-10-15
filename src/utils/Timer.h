@@ -7,7 +7,7 @@ namespace mrcpp {
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
 
-class Timer {
+class Timer final {
 public:
     Timer(bool start_timer = true);
     Timer& operator=(const Timer &timer);

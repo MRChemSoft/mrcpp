@@ -20,7 +20,7 @@ template<int D>
 class SerialTree {
 public:
     SerialTree(MWTree<D> *tree, SharedMemory *mem);
-    virtual ~SerialTree() { }
+    virtual ~SerialTree() = default;
 
     MWTree<D>* getTree() { return this->tree_p; }
     SharedMemory* getMemory() { return this->shMem; }

@@ -15,18 +15,18 @@
 
 namespace mrcpp {
 
-class SerialOperatorTree : public SerialTree<2> {
+class SerialOperatorTree final : public SerialTree<2> {
 public:
     SerialOperatorTree(OperatorTree *tree);
-    virtual ~SerialOperatorTree();
+    ~SerialOperatorTree();
 
-    virtual void allocRoots(MWTree<2> &tree);
-    virtual void allocChildren(MWNode<2> &parent);
-    virtual void allocGenChildren(MWNode<2> &parent);
+    void allocRoots(MWTree<2> &tree);
+    void allocChildren(MWNode<2> &parent);
+    void allocGenChildren(MWNode<2> &parent);
 
-    virtual void deallocNodes(int serialIx);
-    virtual void deallocGenNodes(int serialIx);
-    virtual void deallocGenNodeChunks();
+    void deallocNodes(int serialIx);
+    void deallocGenNodes(int serialIx);
+    void deallocGenNodeChunks();
 
 protected:
     OperatorNode *sNodes;       //serial OperatorNodes

@@ -9,7 +9,7 @@ class DerivativeOperator : public MWOperator {
 public:
     DerivativeOperator(const MultiResolutionAnalysis<D> &mra) 
             : MWOperator(mra.getOperatorMRA()) { }
-    virtual ~DerivativeOperator() { }
+    virtual ~DerivativeOperator() = default;
 };
 
 }

@@ -9,12 +9,13 @@ namespace mrcpp {
 template<int D>
 class AnalyticFunction : public RepresentableFunction<D> {
 public:
-    AnalyticFunction() { }
+    AnalyticFunction() = default;
+    virtual ~AnalyticFunction() = default;
+
     AnalyticFunction(std::function<double (const Coord<D> &r)> f,
                      const double *a = nullptr,
                      const double *b = nullptr)
         : RepresentableFunction<D>(a, b), func(f) { }
-    virtual ~AnalyticFunction() { }
 
     void set(std::function<double (const Coord<D> &r)> f) { this->func = f; }
 

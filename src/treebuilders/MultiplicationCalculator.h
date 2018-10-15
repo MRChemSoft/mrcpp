@@ -13,7 +13,7 @@ public:
 protected:
     FunctionTreeVector<D> prod_vec;
 
-    virtual void calcNode(MWNode<D> &node_o) {
+    void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         double *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) {

@@ -6,7 +6,7 @@
 namespace mrcpp {
 
 template<int D>
-class IdentityConvolution : public ConvolutionOperator<D> {
+class IdentityConvolution final : public ConvolutionOperator<D> {
 public:
     IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
             : ConvolutionOperator<D>(mra, pr) {
@@ -14,7 +14,6 @@ public:
         IdentityKernel identity_kernel(epsilon);
         this->initializeOperator(identity_kernel);
     }
-    virtual ~IdentityConvolution() { }
 };
 
 }

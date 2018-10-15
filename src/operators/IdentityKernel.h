@@ -5,21 +5,21 @@
 
 namespace mrcpp {
 
-class IdentityKernel : public GreensKernel {
+class IdentityKernel final : public GreensKernel {
 public:
     IdentityKernel(double eps)
             : GreensKernel(eps, -1.0, -1.0) {
         initializeKernel();
     }
-    virtual ~IdentityKernel() { }
+
 protected:
-    virtual void initializeKernel() {
+    void initializeKernel() {
         double alpha = std::sqrt(1.0/this->epsilon);
         double coef = std::pow(alpha/mrcpp::pi, 1.0/2.0);
         GaussFunc<1> gFunc(alpha, coef);
         this->append(gFunc);
     }
-    virtual std::ostream& print(std::ostream &o) const {
+    std::ostream& print(std::ostream &o) const {
         o << "Kernel: " << std::endl;
         o << "epsilon:  " << this->epsilon << std::endl;
         o << "rMin:     " << this->rMin << std::endl;

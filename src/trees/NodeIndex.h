@@ -13,12 +13,11 @@
 namespace mrcpp {
 
 template<int D>
-class NodeIndex {
+class NodeIndex final {
 public:
     NodeIndex(int n = 0, const int *l = nullptr);
     NodeIndex(const NodeIndex<D> &idx);
     NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
-    virtual ~NodeIndex() { }
 
     inline NodeIndex<D>& operator=(const NodeIndex<D> &idx);
     inline bool operator==(const NodeIndex<D> &idx) const;

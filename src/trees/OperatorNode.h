@@ -5,7 +5,7 @@
 
 namespace mrcpp {
 
-class OperatorNode : public MWNode<2> {
+class OperatorNode final : public MWNode<2> {
 public:
     OperatorTree &getOperTree() { return static_cast<OperatorTree &>(*this->tree); }
     OperatorNode &getOperParent() { return static_cast<OperatorNode &>(*this->parent); }
@@ -35,7 +35,6 @@ public:
 
 protected:
     OperatorNode() : MWNode<2>() { }
-    virtual ~OperatorNode() { }
 
     void dealloc();
     double calcComponentNorm(int i) const;

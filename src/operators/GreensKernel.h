@@ -18,7 +18,7 @@ public:
           rMax(r_max) {
     }
 
-    virtual ~GreensKernel() { }
+    virtual ~GreensKernel() = default;
 
     double getEpsilon() const { return this->epsilon; }
     double getRMin() const { return this->rMin; }

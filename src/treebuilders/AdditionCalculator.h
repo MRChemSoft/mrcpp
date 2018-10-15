@@ -13,7 +13,7 @@ public:
 protected:
     FunctionTreeVector<D> sum_vec;
 
-    virtual void calcNode(MWNode<D> &node_o) {
+    void calcNode(MWNode<D> &node_o) {
         node_o.zeroCoefs();
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         double *coefs_o = node_o.getCoefs();

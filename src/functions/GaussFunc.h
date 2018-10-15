@@ -24,7 +24,7 @@
 namespace mrcpp {
 
 template<int D>
-class GaussFunc: public Gaussian<D> {
+class GaussFunc final : public Gaussian<D> {
 public:
     GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr)
         : Gaussian<D>(alpha, coef, pos, pow) {}
@@ -32,7 +32,6 @@ public:
         : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf) : Gaussian<D>(gf) {}
     Gaussian<D> *copy() const;
-    ~GaussFunc() { }
 
     double calcCoulombEnergy(GaussFunc<D> &gf);
     double calcSquareNorm();
@@ -64,8 +63,7 @@ public:
         this->squareNorm = -1.0;
     }
 protected:
-    static double ObaraSaika_ab(int power_a, int power_b, double pos_a,
-            double pos_b, double expo_a, double expo_b);
+    static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
 
     std::ostream& print(std::ostream &o) const;
 };

@@ -12,13 +12,13 @@ namespace mrcpp {
     ScalingCache<InterpolatingBasis>::getInstance()
 
 template<class P>
-class ScalingCache: public ObjectCache<P> {
+class ScalingCache final : public ObjectCache<P> {
 public:
     static ScalingCache &getInstance() {
         static ScalingCache theScalingCache;
         return theScalingCache;
     }
-    virtual void load(int order) {
+    void load(int order) {
         SET_CACHE_LOCK();
         if (not this->hasId(order)) {
             P *f = new P(order);
@@ -36,7 +36,6 @@ public:
     }
 private:
     ScalingCache() { }
-    virtual ~ScalingCache() { }
     ScalingCache(const ScalingCache<P> &sc);
     ScalingCache<P> &operator=(const ScalingCache<P> &sc) { return *this;	}
 };

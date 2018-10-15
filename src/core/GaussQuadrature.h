@@ -12,10 +12,9 @@ static const double EPS = 3.0e-12;
 static const int NewtonMaxIter = 10;
 static const int MaxQuadratureDim = 7;
 
-class GaussQuadrature {
+class GaussQuadrature final {
 public:
     GaussQuadrature(int k, double a = -1.0, double b = 1.0, int inter = 1);
-    virtual ~GaussQuadrature() { }
 
     double integrate(RepresentableFunction<1> &func) const;
     double integrate(RepresentableFunction<2> &func) const;

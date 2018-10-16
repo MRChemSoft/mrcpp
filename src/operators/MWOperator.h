@@ -9,7 +9,9 @@ namespace mrcpp {
 
 class MWOperator {
 public:
-    MWOperator(MultiResolutionAnalysis<2> mra) : oper_mra(mra) { }
+    MWOperator(const MultiResolutionAnalysis<2> &mra) : oper_mra(mra) { }
+    MWOperator(const MWOperator &oper) = delete;
+    MWOperator &operator=(const MWOperator &oper) = delete;
     virtual ~MWOperator() { this->clear(true); }
 
     int size() const { return this->oper_exp.size(); }

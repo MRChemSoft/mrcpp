@@ -10,11 +10,10 @@
 
 namespace mrcpp {
 
-class BandWidth {
+class BandWidth final {
 public:
     BandWidth(int depth = 0) : widths(depth + 1, 5) { this->clear(); }
     BandWidth &operator=(const BandWidth &bw);
-    virtual ~BandWidth() { }
 
     void clear() { this->widths.setConstant(-1); }
 

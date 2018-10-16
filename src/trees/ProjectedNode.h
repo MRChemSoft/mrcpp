@@ -5,7 +5,7 @@
 namespace mrcpp {
 
 template<int D>
-class ProjectedNode: public FunctionNode<D> {
+class ProjectedNode final : public FunctionNode<D> {
 public:
     void createChildren();
     void genChildren();
@@ -15,7 +15,9 @@ public:
 
 protected:
     ProjectedNode() : FunctionNode<D>() { }
-    virtual ~ProjectedNode() { assert(this->tree == 0); }
+    ProjectedNode(const ProjectedNode<D> &node) = delete;
+    ProjectedNode<D> &operator=(const ProjectedNode<D> &node) = delete;
+    ~ProjectedNode() { assert(this->tree == 0); }
 
     void dealloc();
     void reCompress();

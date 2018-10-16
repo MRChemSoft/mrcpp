@@ -9,10 +9,10 @@
 namespace mrcpp {
 
 template<int D>
-class OperatorStatistics {
+class OperatorStatistics final {
 public:
     OperatorStatistics();
-    virtual ~OperatorStatistics();
+    ~OperatorStatistics();
 
     void flushNodeCounters();
     void incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt);

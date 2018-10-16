@@ -12,7 +12,7 @@ public:
 protected:
     FunctionTree<1> *kernel;
 
-    virtual void calcNode(MWNode<2> &node);
+    void calcNode(MWNode<2> &node);
 
     template<int T>
     void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);

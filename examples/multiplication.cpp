@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
     auto g_func = mrcpp::GaussFunc<D>(beta, alpha, g_pos, power);
 
     // Initialize MW functions
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
-    auto g_tree = mrcpp::FunctionTree<D>(MRA);
-    auto h_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::FunctionTree<D> f_tree(MRA);
+    mrcpp::FunctionTree<D> g_tree(MRA);
+    mrcpp::FunctionTree<D> h_tree(MRA);
 
     // Projecting f and g
     mrcpp::project<D>(prec, f_tree, f_func);

@@ -7,7 +7,7 @@ namespace mrcpp {
 template<int D>
 class TreeCalculator {
 public:
-    TreeCalculator() { }
+    TreeCalculator() = default;
     virtual ~TreeCalculator() = default;
 
     virtual MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const {

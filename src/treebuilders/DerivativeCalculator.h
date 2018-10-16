@@ -9,9 +9,9 @@ template<int D>
 class DerivativeCalculator final : public TreeCalculator<D> {
 public:
     DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
-    virtual ~DerivativeCalculator();
+    ~DerivativeCalculator();
 
-    virtual MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
+    MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
     int applyDir;
@@ -29,8 +29,8 @@ protected:
     void clearTimers();
     void printTimers() const;
 
-    virtual void calcNode(MWNode<D> &node);
-    virtual void postProcess() {
+    void calcNode(MWNode<D> &node);
+    void postProcess() {
         printTimers();
         clearTimers();
         initTimers();

@@ -6,15 +6,17 @@
 
 namespace mrcpp {
 
-class DerivativeKernel : public GreensKernel {
+class DerivativeKernel final : public GreensKernel {
 public:
     DerivativeKernel(double eps)
             : GreensKernel(eps, -1.0, -1.0) {
         initializeKernel();
     }
-    virtual ~DerivativeKernel() { }
+    DerivativeKernel(const DerivativeKernel &kern) = delete;
+    DerivativeKernel &operator=(const DerivativeKernel &kern) = delete;
+
 protected:
-    virtual void initializeKernel() {
+    void initializeKernel() {
         double alpha = 1.0/this->epsilon;
         double coef = std::pow(alpha/mrcpp::pi, 1.0/2.0);
         GaussFunc<1> g(alpha, coef);
@@ -22,7 +24,7 @@ protected:
         this->append(dg);
     }
 
-    virtual std::ostream& print(std::ostream &o) const {
+    std::ostream& print(std::ostream &o) const {
         o << " DerivativeKernel: " << std::endl;
         o << " epsilon:  " << this->epsilon << std::endl;
         return o;

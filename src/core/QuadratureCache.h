@@ -10,7 +10,7 @@ namespace mrcpp {
 
 #define getQuadratureCache(X) QuadratureCache &X=QuadratureCache::getInstance()
 
-class QuadratureCache: public ObjectCache<GaussQuadrature> {
+class QuadratureCache final : public ObjectCache<GaussQuadrature> {
 public:
     static QuadratureCache &getInstance() {
         static QuadratureCache theQuadratureCache;
@@ -35,7 +35,7 @@ private:
     int intervals;
 
     QuadratureCache();
-    virtual ~QuadratureCache();
+    ~QuadratureCache();
 
     QuadratureCache(QuadratureCache const &qc) : ObjectCache<GaussQuadrature>(qc) { }
     QuadratureCache &operator=(QuadratureCache const&) { return *this; }

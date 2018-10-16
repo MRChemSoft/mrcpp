@@ -15,7 +15,7 @@ protected:
     Eigen::VectorXd valueZero;
     Eigen::VectorXd valueOne;
 
-    virtual void calcNode(MWNode<2> &node);
+    void calcNode(MWNode<2> &node);
 
     void calcKMatrix(const ScalingBasis &basis);
     void calcValueVectors(const ScalingBasis &basis);

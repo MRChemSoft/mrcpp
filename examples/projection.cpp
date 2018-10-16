@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     };
 
     // Projecting function
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::FunctionTree<D> f_tree(MRA);
     mrcpp::project<D>(prec, f_tree, f, -1);
 
     auto integral = f_tree.integrate();

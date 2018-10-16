@@ -17,8 +17,7 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysi
 }
 
 template<int D>
-MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb,
-                        const ScalingBasis &sb, int depth)
+MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth)
         : maxDepth(depth),
           basis(sb),
           world(bb) {

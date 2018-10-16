@@ -3,7 +3,7 @@
 namespace mrcpp {
 
 template<int D>
-class HilbertPath {
+class HilbertPath final {
 public:
     HilbertPath() : path(0) { }
     HilbertPath(const HilbertPath<D> &p) : path(p.path) { }
@@ -11,7 +11,6 @@ public:
         int hIdx = p.getHIndex(cIdx);
         this->path = p.getChildPath(hIdx);
     }
-    virtual ~HilbertPath() { }
 
     short int getPath() const { return this->path; }
     short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }

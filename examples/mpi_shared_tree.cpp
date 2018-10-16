@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
     // Initialize a shared memory tree, max 100MB
     auto shared_mem = new mrcpp::SharedMemory(scomm, 100);
-    auto f_tree = mrcpp::FunctionTree<D>(MRA, shared_mem);
+    mrcpp::FunctionTree<D> f_tree(MRA, shared_mem);
 
     // Only first rank projects
     auto frank = 0;

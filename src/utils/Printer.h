@@ -15,7 +15,7 @@ namespace mrcpp {
 
 class Timer;
 
-class Printer {
+class Printer final {
 public:
     static void init(int level = 0, int rank = 0, int size = 1, const char *file = 0);
     static void printEnvironment(int level = 0);

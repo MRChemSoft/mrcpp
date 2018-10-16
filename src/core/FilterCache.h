@@ -30,7 +30,7 @@ namespace mrcpp {
 /** This class is an abstract base class for the various filter caches.
  * It's needed in order to be able to use the actual filter caches
  * without reference to the actual filter types */
-class BaseFilterCache: public ObjectCache<MWFilter> {
+class BaseFilterCache : public ObjectCache<MWFilter> {
 public:
     virtual void load(int order) = 0;
     virtual MWFilter &get(int order) = 0;
@@ -40,25 +40,24 @@ public:
 };
 
 template <int T>
-class FilterCache: public BaseFilterCache {
+class FilterCache final : public BaseFilterCache {
 public:
     static FilterCache &getInstance() {
         static FilterCache theFilterCache;
         return theFilterCache;
     }
 
-    virtual void load(int order);
-    virtual MWFilter &get(int order);
-    virtual const Eigen::MatrixXd &getFilterMatrix(int order);
+    void load(int order);
+    MWFilter &get(int order);
+    const Eigen::MatrixXd &getFilterMatrix(int order);
 
-    virtual const std::string &getLibPath() { return this->libPath; }
-    virtual void setLibPath(const std::string &path) { this->libPath = path; }
+    const std::string &getLibPath() { return this->libPath; }
+    void setLibPath(const std::string &path) { this->libPath = path; }
 protected:
     int type;
     std::string libPath; ///< Base path to filter library
 private:
     FilterCache();
-    virtual ~FilterCache() { }
     FilterCache(FilterCache<T> const &fc) { }
     FilterCache &operator=(FilterCache<T> const &fc) { return *this; }
 };

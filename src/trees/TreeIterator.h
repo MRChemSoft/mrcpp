@@ -41,7 +41,7 @@ protected:
 };
 
 template<int D>
-class IteratorNode {
+class IteratorNode final {
 public:
     MWNode<D> *node;
     IteratorNode<D> *next;

@@ -16,18 +16,20 @@
 namespace mrcpp {
 
 template<int D>
-class SerialFunctionTree : public SerialTree<D> {
+class SerialFunctionTree final : public SerialTree<D> {
 public:
     SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *sh_mem);
-    virtual ~SerialFunctionTree();
+    SerialFunctionTree(const SerialFunctionTree<D> &tree) = delete;
+    SerialFunctionTree<D> &operator=(const SerialFunctionTree<D> &tree) = delete;
+    ~SerialFunctionTree();
 
-    virtual void allocRoots(MWTree<D> &tree);
-    virtual void allocChildren(MWNode<D> &parent);
-    virtual void allocGenChildren(MWNode<D> &parent);
+    void allocRoots(MWTree<D> &tree);
+    void allocChildren(MWNode<D> &parent);
+    void allocGenChildren(MWNode<D> &parent);
 
-    virtual void deallocNodes(int serialIx);
-    virtual void deallocGenNodes(int serialIx);
-    virtual void deallocGenNodeChunks();
+    void deallocNodes(int serialIx);
+    void deallocGenNodes(int serialIx);
+    void deallocGenNodeChunks();
 
     int getNChunks() const { return this->nodeChunks.size(); }
     int getNChunksUsed() const;

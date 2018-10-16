@@ -20,6 +20,7 @@ template<int D>
 class MWNode {
 public:
     MWNode(const MWNode<D> &node);
+    MWNode<D> &operator=(const MWNode<D> &node) = delete;
     virtual ~MWNode();
 
     int getKp1() const { return getMWTree().getKp1(); }

@@ -17,7 +17,7 @@ protected:
     Eigen::MatrixXd S_0;
     Eigen::MatrixXd S_p1;
 
-    virtual void calcNode(MWNode<2> &node);
+    void calcNode(MWNode<2> &node);
     void readSMatrix(const ScalingBasis &basis, char n);
 };
 

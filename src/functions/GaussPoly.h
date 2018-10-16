@@ -20,10 +20,9 @@
 namespace mrcpp {
 
 template<int D>
-class GaussPoly : public Gaussian<D> {
+class GaussPoly final : public Gaussian<D> {
 public:
-    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr,
-        const int pow[D] = nullptr);
+    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr);
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
     Gaussian<D> *copy() const;
@@ -55,8 +54,7 @@ public:
     void setPower(const int pow[D]);
     void setPoly(int d, Polynomial &poly);
 
-    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power,
-        int pow[D], int dir) const;
+    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
 
 private:
     Polynomial *poly[D];

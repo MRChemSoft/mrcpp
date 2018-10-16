@@ -21,7 +21,7 @@ public:
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
-    virtual ~BoundingBox() { }
+    virtual ~BoundingBox() = default;
 
     inline bool operator==(const BoundingBox<D> &box) const;
     inline bool operator!=(const BoundingBox<D> &box) const;

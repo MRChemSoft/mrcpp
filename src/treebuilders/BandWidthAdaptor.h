@@ -9,17 +9,14 @@
 
 namespace mrcpp {
 
-class BandWidthAdaptor : public TreeAdaptor<2> {
+class BandWidthAdaptor final : public TreeAdaptor<2> {
 public:
-    BandWidthAdaptor(int bw, int ms)
-            : TreeAdaptor<2>(ms),
-              bandWidth(bw) { }
-    virtual ~BandWidthAdaptor() { }
+    BandWidthAdaptor(int bw, int ms) : TreeAdaptor<2>(ms), bandWidth(bw) { }
 
 protected:
     const int bandWidth;
 
-    virtual bool splitNode(const MWNode<2> &node) const {
+    bool splitNode(const MWNode<2> &node) const {
         const NodeIndex<2> &idx = node.getNodeIndex();
         int lx = idx.getTranslation(0);
         int ly = idx.getTranslation(1);

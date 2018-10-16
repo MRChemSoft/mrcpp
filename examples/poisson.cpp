@@ -40,9 +40,9 @@ int main(int argc, char **argv) {
     auto ana_energy = f_func.calcCoulombEnergy(f_func);
 
     // Initializing MW functions and operator
-    auto P = mrcpp::PoissonOperator(MRA, prec);
-    auto f_tree = mrcpp::FunctionTree<D>(MRA);
-    auto g_tree = mrcpp::FunctionTree<D>(MRA);
+    mrcpp::PoissonOperator P(MRA, prec);
+    mrcpp::FunctionTree<D> f_tree(MRA);
+    mrcpp::FunctionTree<D> g_tree(MRA);
 
     // Projecting function
     mrcpp::build_grid(f_tree, f_func);

@@ -64,10 +64,10 @@ double GaussFunc<D>::evalf(double r, int d) const {
             return 0.0;
         }
     }
-    double q;
-    double q2, p2;
-    q = (r - this->pos[d]);
-    q2 = q * q;
+    double q = (r - this->pos[d]);
+    double q2 = q * q;
+
+    double p2;
     if (this->power[d] == 0) {
         p2 = 1.0;
     } else if (this->power[d] == 1) {
@@ -76,23 +76,19 @@ double GaussFunc<D>::evalf(double r, int d) const {
         p2 = std::pow(q, this->power[d]);
     }
     double result = p2 * std::exp(-this->alpha * q2);
-    if (d == 0)
-        result *= this->coef;
+    if (d == 0) result *= this->coef;
     return result;
 }
 
 template<int D>
 double GaussFunc<D>::calcSquareNorm() {
-    int p, i;
-    double sq_norm, a;
     double norm = 1.0;
-
-    for (int n = 0; n < D; n++) {
-        a = 2.0 * this->alpha;
-        sq_norm = 1.0;
-        p = this->power[n];
+    for (int d = 0; d < D; d++) {
+        double a = 2.0 * this->alpha;
+        double sq_norm = 1.0;
+        int p = this->power[d];
         if (p > 0) {
-            i = 2 * p - 1;
+            int i = 2 * p - 1;
             while (i > 0) {
                 sq_norm = i * sq_norm / (2.0 * a);
                 i = i - 2;
@@ -217,8 +213,8 @@ double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
  */
 template<int D>
 double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
-        double pos_b, double expo_a, double expo_b) {
-    int i, j, i_l, i_r, n_0j_coeff, n_ij_coeff;
+                                   double pos_b, double expo_a, double expo_b) {
+    int i, j;
     double expo_p, mu, pos_p, x_ab, x_pa, x_pb, s_00;
     /* The highest angular momentum combination is l=20 for a and b
      * simulatnelusly */
@@ -240,8 +236,8 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     x_pb = pos_p - pos_b; /* X_{PB} */
     s_00 = pi / expo_p;
     s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
-    n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
-    n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
+    //int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
+    //int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
 
     /* we add 3 coeffs. to avoid a hell of a lot of if statements */
     /*    n_tot_coeff = n_0j_coeff + n_ij_coeff + 3;	*/
@@ -263,8 +259,8 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     i = 1;
     /* generate the remaining coefficients with i > 0 */
     while (i < power_a) {
-        i_l = j + 2 * i + 1;
-        i_r = j + 2 * i + 2;
+        int i_l = j + 2 * i + 1;
+        int i_r = j + 2 * i + 2;
         s_coeff[i_l] = s_coeff[i_l - 1] - x_ab * s_coeff[i_l - 2];
         s_coeff[i_r] = x_pa * s_coeff[i_r - 2] + (j * s_coeff[i_r - 3] + i
                 * s_coeff[i_r - 4]) / (2.0 * expo_p);

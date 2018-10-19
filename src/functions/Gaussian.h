@@ -21,6 +21,7 @@ class Gaussian: public RepresentableFunction<D> {
 public:
     Gaussian(double a, double c, const double r[D], const int p[D]);
     Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p);
+    Gaussian<D> &operator=(const Gaussian<D> &gp) = delete;
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian();
 

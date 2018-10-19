@@ -81,7 +81,6 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     gNode.zeroCoefs();
 
     int nComp = (1 << D);
-    int depth = gNode.getDepth();
     double tmpCoefs[gNode.getNCoefs()];
     OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);

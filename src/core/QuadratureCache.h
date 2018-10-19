@@ -37,8 +37,8 @@ private:
     QuadratureCache();
     ~QuadratureCache();
 
-    QuadratureCache(QuadratureCache const &qc) : ObjectCache<GaussQuadrature>(qc) { }
-    QuadratureCache &operator=(QuadratureCache const&) { return *this; }
+    QuadratureCache(QuadratureCache const &qc) = delete;
+    QuadratureCache &operator=(QuadratureCache const &qc) = delete;
 };
 
 }

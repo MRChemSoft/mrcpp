@@ -38,9 +38,7 @@ public:
     int getMem(int id) { return this->mem[id]; }
 
 protected:
-    ObjectCache() {
-        this->highWaterMark = 0;
-        this->memLoaded = 0;
+    ObjectCache() : highWaterMark(0), memLoaded(0) {
         this->objs.push_back(0);
         this->mem.push_back(0);
 #ifdef HAVE_OPENMP
@@ -56,8 +54,8 @@ protected:
         omp_destroy_lock(&cache_lock);
 #endif
     }
-    ObjectCache(ObjectCache<T> const &oc) { }
-    ObjectCache<T> &operator=(ObjectCache<T> const &oc) { return *this; }
+    ObjectCache(ObjectCache<T> const &oc) = delete;
+    ObjectCache<T> &operator=(ObjectCache<T> const &oc) = delete;
 #ifdef HAVE_OPENMP
     omp_lock_t cache_lock;
 #endif

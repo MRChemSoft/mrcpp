@@ -11,6 +11,10 @@ public:
         int hIdx = p.getHIndex(cIdx);
         this->path = p.getChildPath(hIdx);
     }
+    HilbertPath &operator=(const HilbertPath<D> &p) {
+        this->path = p.path;
+        return *this;
+    }
 
     short int getPath() const { return this->path; }
     short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }

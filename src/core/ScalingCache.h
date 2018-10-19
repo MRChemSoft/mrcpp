@@ -36,8 +36,8 @@ public:
     }
 private:
     ScalingCache() { }
-    ScalingCache(const ScalingCache<P> &sc);
-    ScalingCache<P> &operator=(const ScalingCache<P> &sc) { return *this;	}
+    ScalingCache(const ScalingCache<P> &sc) = delete;
+    ScalingCache<P> &operator=(const ScalingCache<P> &sc) = delete;
 };
 
 }

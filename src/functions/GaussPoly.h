@@ -25,6 +25,7 @@ public:
     GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr);
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
+    GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
     Gaussian<D> *copy() const;
     ~GaussPoly();
 

@@ -145,8 +145,6 @@ void GaussQuadrature::calcScaledPtsWgts() {
  *
  */
 int GaussQuadrature::calcGaussPtsWgts() {
-    double z, z1, xm, xl;
-
     int K;
     if (this->order % 2 == 0) {
         K = this->order / 2;
@@ -157,19 +155,19 @@ int GaussQuadrature::calcGaussPtsWgts() {
     double a = -1.0;
     double b = 1.0;
 
-    xm = (b + a) * 0.5;
-    xl = (b - a) * 0.5;
+    double xm = (b + a) * 0.5;
+    double xl = (b - a) * 0.5;
 
     LegendrePoly legendrep(this->order, 1.0, 0.0); // Interval [-1,1]
     Vector2d lp;
 
     for (int i = 0; i < K; i++) {
-        z = cos(pi * (i + 0.75) / (this->order + 0.5));
+        double z = cos(pi * (i + 0.75) / (this->order + 0.5));
         int iter;
         for (iter = 0; iter < NewtonMaxIter; iter++) {
             lp = legendrep.firstDerivative(z);
 
-            z1 = z;
+            double z1 = z;
             z = z1 - lp(0) / lp(1);
             if (std::abs(z - z1) <= EPS) {
                 break;
@@ -201,11 +199,10 @@ double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
 
 /** Integrate a 2D-function f(x1, x2) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
-    double jsum;
     Coord<2> r;
     double isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
-        jsum = 0.e0;
+        double jsum = 0.e0;
         r[0] = this->roots(i);
         for (int j = 0; j < this->npts; j++) {
             r[1] = this->roots(j);
@@ -219,15 +216,14 @@ double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
 
 /** Integrate a 3D-function f(x1, x2, x3) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
-    double isum, jsum, ksum;
     Coord<3> r;
 
-    isum = 0.e0;
+    double isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
-        jsum = 0.e0;
+        double jsum = 0.e0;
         r[0] = this->roots(i);
         for (int j = 0; j < this->npts; j++) {
-            ksum = 0.e0;
+            double ksum = 0.e0;
             r[1] = this->roots(j);
             for (int k = 0; k < this->npts; k++) {
                 r[2] = this->roots(k);

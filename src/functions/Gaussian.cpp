@@ -115,11 +115,9 @@ bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
 template<int D>
 bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
     double stdDeviation = std::pow(2.0*this->alpha, -0.5);
-    double gaussBoxMin;
-    double gaussBoxMax;
     for (int i=0; i < D; i++) {
-        gaussBoxMin = this->pos[i] - 5.0*stdDeviation;
-        gaussBoxMax = this->pos[i] + 5.0*stdDeviation;
+        double gaussBoxMin = this->pos[i] - 5.0*stdDeviation;
+        double gaussBoxMax = this->pos[i] + 5.0*stdDeviation;
         if (a[i] > gaussBoxMax or b[i] < gaussBoxMin) {
             return true;
         }

@@ -20,6 +20,7 @@ int NOtrees=0;
 */
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
         : SerialTree<2>(tree, 0),
+          sNodes(nullptr),
           lastNode(0) {
 
     this->maxNodes = 0;
@@ -29,8 +30,6 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
     this->sizeNodeCoeff = 4*this->tree_p->getKp1_d();
 
     this->maxNodesPerChunk = 64;
-    int sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
-   
     this->lastNode = (OperatorNode*) this->sNodes;//position of last allocated node
 
     //make virtual table pointers

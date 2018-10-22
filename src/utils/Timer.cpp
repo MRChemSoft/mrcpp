@@ -3,17 +3,26 @@
 
 namespace mrcpp {
 
-Timer::Timer(bool start_timer) : running(false), time_used(0.0) {
+Timer::Timer(bool start_timer)
+        : running(false),
+          time_used(0.0) {
     if (start_timer) {
         start();
     }
 }
 
+Timer::Timer(const Timer &timer)
+        : running(timer.running),
+          time_used(timer.time_used),
+          clock_start(timer.clock_start) {
+
+}
+
 Timer& Timer::operator=(const Timer &timer) {
     if (this != &timer) {
+        this->running = timer.running;
         this->time_used = timer.time_used;
         this->clock_start = timer.clock_start;
-        this->running = timer.running;
     }
     return *this;
 }

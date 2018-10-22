@@ -10,6 +10,7 @@ typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
 class Timer final {
 public:
     Timer(bool start_timer = true);
+    Timer(const Timer &timer);
     Timer& operator=(const Timer &timer);
 
     void start();

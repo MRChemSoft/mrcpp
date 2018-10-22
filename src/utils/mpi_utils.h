@@ -15,6 +15,8 @@ namespace mrcpp {
 class SharedMemory {
 public:
     SharedMemory(MPI_Comm comm, int sh_size);
+    SharedMemory(const SharedMemory &mem) = delete;
+    SharedMemory &operator=(const SharedMemory &mem) = delete;
     ~SharedMemory();
 
     double *sh_start_ptr;  //start of shared block

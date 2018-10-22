@@ -13,6 +13,7 @@ namespace mrcpp {
 class BandWidth final {
 public:
     BandWidth(int depth = 0) : widths(depth + 1, 5) { this->clear(); }
+    BandWidth(const BandWidth &bw) : widths(bw.widths) { }
     BandWidth &operator=(const BandWidth &bw);
 
     void clear() { this->widths.setConstant(-1); }

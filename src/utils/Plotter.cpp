@@ -514,7 +514,6 @@ void Plotter<3>::writeCubeData() {
     double min = 1.0e10;
     double isoval = 0.e0;
     double step[3];
-    double p = 0.0;
 
     std::ofstream &o = *this->fout;
 
@@ -544,8 +543,8 @@ void Plotter<3>::writeCubeData() {
             min = this->values[n];
         if (this->values[n] > max)
             max = this->values[n];
-        p = abs(this->values[n]);
-        if (p > 1.e-4 || p < 1.e+2) {
+        double p = std::abs(this->values[n]);
+        if (p > 1.e-4 && p < 1.e+2) {
             np += 1;
             isoval += p;
         }
@@ -560,7 +559,7 @@ void Plotter<3>::writeCubeData() {
 template<>
 void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::string &color) {
     double origin[3] = {0, 0, 0};
-    double length = pow(2.0, -node.getScale());
+    double length = std::pow(2.0, -node.getScale());
     std::ostream &o = *this->fout;
 
     for (int d = 0; d < 3; d++) {

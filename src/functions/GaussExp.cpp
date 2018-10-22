@@ -41,7 +41,6 @@ template<int D>
 GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1.0) {
     int pow[D];
     double pos[D];
-    double coef;
     double alpha = gPoly.getExp();
 
     int nTerms = 1;
@@ -56,7 +55,7 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1
     gPoly.fillCoefPowVector(coefs, power, pow, D);
 
     for (int i = 0; i < nTerms; i++) {
-        coef = coefs[i];
+        double coef = coefs[i];
         for (int d = 0; d < D; d++) {
             pow[d] = power[i][d];
         }
@@ -304,10 +303,8 @@ void GaussExp<D>::multInPlace(double d) {
  */
 template<int D>
 double GaussExp<D>::calcSquareNorm() {
-
-    double overlap, norm = 0.0;
-
     /* computing the squares */
+    double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
         double nc = this->funcs[i]->getSquareNorm();
         norm += nc;
@@ -315,10 +312,10 @@ double GaussExp<D>::calcSquareNorm() {
     /* computing the double products */
     for (int i = 0; i < this->size(); i++) {
         for (int j = i + 1; j < this->size(); j++) {
+            double overlap = 0.0;
             if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
-            } else if (GaussPoly<D> *f =
-                    dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
+            } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
             } else {
                 MSG_FATAL("Invald argument");
@@ -333,9 +330,8 @@ double GaussExp<D>::calcSquareNorm() {
 template<int D>
 void GaussExp<D>::normalize() {
     double norm = std::sqrt(this->getSquareNorm());
-    double coef;
     for (int i = 0; i < this->size(); i++) {
-        coef = this->funcs[i]->getCoef();
+        double coef = this->funcs[i]->getCoef();
         this->funcs[i]->setCoef(coef / norm);
     }
     calcSquareNorm();

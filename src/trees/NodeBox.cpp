@@ -12,11 +12,6 @@
 namespace mrcpp {
 
 template<int D>
-NodeBox<D>::NodeBox() {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template<int D>
 NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const int *nb)
         : BoundingBox<D>(idx, nb),
           nOccupied(0),
@@ -38,11 +33,6 @@ NodeBox<D>::NodeBox(const NodeBox<D> &box)
           nOccupied(0),
           nodes(0) {
     allocNodePointers();
-}
-
-template<int D>
-NodeBox<D>& NodeBox<D>::operator=(const NodeBox<D> &box) {
-    NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>

@@ -57,12 +57,10 @@ double math_utils::matrix_norm_inf(const MatrixXd &M) {
 /** Compute the binomial coefficient n!/((n-j)! j!) */
 double math_utils::binomial_coeff(int n, int j) {
     double binomial_n_j = 1.0;
-    int k = 0;
-
     if (n < 0 || j < 0 || j > n) {
         MSG_ERROR("Negative argument or j > n is not defined.");
     } else {
-        k = 0;
+        int k = 0;
         while (k < j) {
             binomial_n_j *= (double) (n - k);
             k += 1;

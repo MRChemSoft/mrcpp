@@ -33,8 +33,8 @@ protected:
     std::string libPath; ///< Base path to filter library
 private:
     CrossCorrelationCache();
-    CrossCorrelationCache(CrossCorrelationCache<T> const &ccc) { }
-    CrossCorrelationCache<T> &operator=(CrossCorrelationCache<T> const &ccc) { return *this; }
+    CrossCorrelationCache(CrossCorrelationCache<T> const &ccc) = delete;
+    CrossCorrelationCache<T> &operator=(CrossCorrelationCache<T> const &ccc) = delete;
 };
 
 }

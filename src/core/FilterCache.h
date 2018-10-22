@@ -58,8 +58,8 @@ protected:
     std::string libPath; ///< Base path to filter library
 private:
     FilterCache();
-    FilterCache(FilterCache<T> const &fc) { }
-    FilterCache &operator=(FilterCache<T> const &fc) { return *this; }
+    FilterCache(FilterCache<T> const &fc) = delete;
+    FilterCache &operator=(FilterCache<T> const &fc) = delete;
 };
 
 }

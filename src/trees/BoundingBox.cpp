@@ -29,6 +29,14 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
 }
 
 template<int D>
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf)
+        : cornerIndex(n, l.data()) {
+    setNBoxes(nb.data());
+    setDerivedParameters();
+    setScalingFactor(sf);
+}
+
+template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
         : cornerIndex(idx) {
     setNBoxes(nb);
@@ -40,6 +48,7 @@ BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
     setNBoxes(box.nBoxes);
     setDerivedParameters();
+    setScalingFactor(box.getScalingFactor());
 }
 
 template<int D>
@@ -78,6 +87,12 @@ void BoundingBox<D>::setDerivedParameters() {
         this->lowerBounds[d] = l[d] * this->unitLength;
         this->upperBounds[d] = this->lowerBounds[d] + this->boxLengths[d];
     }
+}
+
+template<int D>
+void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
+    assert(this->nBoxes[D] > 0);
+    this->scalingFactor = sf;
 }
 
 template<int D>
@@ -186,6 +201,11 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
     o << std::fixed;
     o << " unit length      = " << getUnitLength() << std::endl;
     o << " total boxes      = " << size() << std::endl;
+    o << " scaling factor   = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getScalingFactor(i) << " ";
+    }
+    o << "]" << std::endl;
     o << " boxes            = [ ";
     for (int i = 0; i < D; i++) {
         o << std::setw(11) << size(i) << " ";

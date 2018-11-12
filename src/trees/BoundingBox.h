@@ -18,6 +18,7 @@ class BoundingBox {
 public:
     BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
     BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb);
+    BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf = {});
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
@@ -35,6 +36,7 @@ public:
     int size() const { return this->nBoxes[D]; }
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
+    double getScalingFactor(int d) const { return this->scalingFactor[d]; }
     double getUnitLength() const { return this->unitLength; }
     double getBoxLength(int d) const { return this->boxLengths[d]; }
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
@@ -43,7 +45,7 @@ public:
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
     const Coord<D> &getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
-
+    const std::array<double, D> &getScalingFactor() const {return this->scalingFactor; }
     friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
@@ -56,9 +58,10 @@ protected:
     Coord<D> boxLengths;	    ///< Total length (unitLength times nBoxes)
     Coord<D> lowerBounds;	    ///< Box lower bound (not real)
     Coord<D> upperBounds;	    ///< Box upper bound (not real)
-
+    std::array<double, D> scalingFactor;
     void setNBoxes(const int *nb);
     void setDerivedParameters();
+    void setScalingFactor(const std::array<double, D> &sf);
 
     std::ostream& print(std::ostream &o) const;
 };

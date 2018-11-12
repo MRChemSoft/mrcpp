@@ -159,6 +159,20 @@ double FunctionTree<D>::integrate() const {
 
 template<int D>
 double FunctionTree<D>::evalf(const Coord<D> &r) {
+    auto get_scaling = this->getMRA().getWorldBox().getScalingFactor(0);
+
+    if (get_scaling != 0.0) {
+        auto get_scaling = this->getMRA().getWorldBox().getScalingFactor(0);
+        auto arg = r;
+        for (auto & x : arg) {
+            x = x/get_scaling;
+        }
+        MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
+        FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+        auto result = f_node.evalf(arg);
+        this->deleteGenerated();
+        return result;
+    }
     MWNode<D> &mr_node = this->getNodeOrEndNode(r);
     auto &f_node = static_cast<FunctionNode<D> &>(mr_node);
     double result = f_node.evalf(r);

@@ -17,7 +17,6 @@ template<int D>
 class BoundingBox {
 public:
     BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
-    BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb);
     BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf = {});
     BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     BoundingBox(const BoundingBox<D> &box);
@@ -58,7 +57,7 @@ protected:
     Coord<D> boxLengths;	    ///< Total length (unitLength times nBoxes)
     Coord<D> lowerBounds;	    ///< Box lower bound (not real)
     Coord<D> upperBounds;	    ///< Box upper bound (not real)
-    std::array<double, D> scalingFactor;
+    std::array<double, D> scalingFactor = {};
     void setNBoxes(const int *nb);
     void setDerivedParameters();
     void setScalingFactor(const std::array<double, D> &sf);

@@ -154,18 +154,25 @@ double FunctionTree<D>::integrate() const {
         const FunctionNode<D> &fNode = getRootFuncNode(i);
         result += fNode.integrate();
     }
+    auto sf = this->getMRA().getWorldBox().getScalingFactor();
+    if (sf != std::array<double, D>{}) {
+        auto jacobian = 1.0;
+        for (auto & x : sf) {
+            jacobian *= x;
+        }
+        return jacobian*result;
+    }
     return result;
 }
 
 template<int D>
 double FunctionTree<D>::evalf(const Coord<D> &r) {
-    auto get_scaling = this->getMRA().getWorldBox().getScalingFactor(0);
-
-    if (get_scaling != 0.0) {
-        auto get_scaling = this->getMRA().getWorldBox().getScalingFactor(0);
+    auto get_scaling = this->getMRA().getWorldBox().getScalingFactor();
+    if (get_scaling != std::array<double, D>{}) { // Checking if scaling is non-zero
+        auto get_scaling = this->getMRA().getWorldBox().getScalingFactor();
         auto arg = r;
-        for (auto & x : arg) {
-            x = x/get_scaling;
+        for (auto i = 0; i < D; i++) {
+            arg[i] = arg[i]/get_scaling[i];
         }
         MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
         FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);

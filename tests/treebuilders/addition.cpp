@@ -135,4 +135,4 @@ template<int D> void testAddition() {
     finalize(&mra);
 }
 
-} // namespace
+} // namespace addition

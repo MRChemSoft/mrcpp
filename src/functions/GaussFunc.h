@@ -26,7 +26,7 @@ namespace mrcpp {
 template<int D>
 class GaussFunc final : public Gaussian<D> {
 public:
-    GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr)
+    GaussFunc(double alpha = 0.0, double coef = 1.0, const double *pos = nullptr, const int *pow = nullptr)
         : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
         : Gaussian<D>(alpha, coef, pos, pow) {}

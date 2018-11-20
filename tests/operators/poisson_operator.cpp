@@ -134,4 +134,4 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     finalize(&mra);
 }
 
-} // namespace
+} // namespace poisson_operator

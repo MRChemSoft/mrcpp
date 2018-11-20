@@ -78,11 +78,11 @@ void project(double prec,
     Printer::printSeparator(10, ' ');
 }
 
-template void project(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);
-template void project(double prec, FunctionTree<2> &out, RepresentableFunction<2> &inp, int maxIter);
-template void project(double prec, FunctionTree<3> &out, RepresentableFunction<3> &inp, int maxIter);
-template void project(double prec, FunctionTree<1> &out, std::function<double (const Coord<1> &r)> func, int maxIter);
-template void project(double prec, FunctionTree<2> &out, std::function<double (const Coord<2> &r)> func, int maxIter);
-template void project(double prec, FunctionTree<3> &out, std::function<double (const Coord<3> &r)> func, int maxIter);
+template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);
+template void project<2>(double prec, FunctionTree<2> &out, RepresentableFunction<2> &inp, int maxIter);
+template void project<3>(double prec, FunctionTree<3> &out, RepresentableFunction<3> &inp, int maxIter);
+template void project<1>(double prec, FunctionTree<1> &out, std::function<double (const Coord<1> &r)> func, int maxIter);
+template void project<2>(double prec, FunctionTree<2> &out, std::function<double (const Coord<2> &r)> func, int maxIter);
+template void project<3>(double prec, FunctionTree<3> &out, std::function<double (const Coord<3> &r)> func, int maxIter);
 
 } // namespace mrcpp

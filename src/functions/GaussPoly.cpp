@@ -20,9 +20,22 @@ namespace mrcpp {
 
 template<int D>
 GaussPoly<D>::GaussPoly(double alpha, double coef, const double pos[D],
-    const int pow[D]) : Gaussian<D>(alpha, coef, pos, pow) {
+    const int power[D]) : Gaussian<D>(alpha, coef, pos, power) {
     for (int d = 0; d < D; d++) {
-        if (pow != 0) {
+        if (power != nullptr) {
+            this->poly[d] = new Polynomial(this->power[d]);
+            //this->poly[d]->unsetBounds();
+        } else {
+            this->poly[d] = 0;
+        }
+    }
+}
+
+template<int D>
+GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos,
+    const std::array<int, D> &power) : Gaussian<D>(alpha, coef, pos, power) {
+    for (auto d = 0; d < D; d++) {
+        if (power != std::array<int, D> {}) {
             this->poly[d] = new Polynomial(this->power[d]);
             //this->poly[d]->unsetBounds();
         } else {

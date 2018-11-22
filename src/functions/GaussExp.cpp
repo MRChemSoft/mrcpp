@@ -21,7 +21,7 @@ namespace mrcpp {
 template<int D> double GaussExp<D>::defaultScreening = 10.0;
 
 template<int D>
-GaussExp<D>::GaussExp(int nTerms, double prec) : screening(0.0), squareNorm(-1.0) {
+GaussExp<D>::GaussExp(int nTerms, double prec) {
     for (int i = 0; i < nTerms; i++) {
         this->funcs.push_back(0);
     }

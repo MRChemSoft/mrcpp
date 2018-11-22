@@ -4,8 +4,7 @@
 namespace mrcpp {
 
 Timer::Timer(bool start_timer)
-        : running(false),
-          time_used(0.0) {
+          {
     if (start_timer) {
         start();
     }

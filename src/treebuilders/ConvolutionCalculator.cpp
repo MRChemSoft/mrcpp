@@ -344,7 +344,7 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     for (int i = 0; i < D; i++) {
         Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
         Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
-        if (oData[i] != 0) {
+        if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
                 g += f.transpose() * op;

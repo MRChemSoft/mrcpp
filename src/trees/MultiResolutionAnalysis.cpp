@@ -34,7 +34,7 @@ MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
     int type = basis.getScalingType();
     int kern_order = 2*basis.getScalingOrder() + 1;
 
-    ScalingBasis *kern_basis = 0;
+    ScalingBasis *kern_basis = nullptr;
     if (type == Interpol) {
         kern_basis = new InterpolatingBasis(kern_order);
     } else if (type == Legendre) {

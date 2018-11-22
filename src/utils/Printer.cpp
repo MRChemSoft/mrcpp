@@ -25,7 +25,7 @@ void Printer::init(int level, int rank, int size, const char *file) {
     printLevel = level;
     printRank = rank;
     printSize = size;
-    if (file != 0) {
+    if (file != nullptr) {
         std::stringstream fname;
         if (printSize > 1) {
             fname << file << "-" << printRank << ".out";

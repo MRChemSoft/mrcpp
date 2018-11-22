@@ -12,13 +12,13 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
         : nNodes(0),
           maxNodesPerChunk(0),
           sizeNodeCoeff(0),
-          coeffStack(0),
+          coeffStack(nullptr),
           maxNodes(0),
           tree_p(tree),
 #ifdef HAVE_MPI
           shMem(mem) {
 #else
-          shMem(0) {
+          shMem(nullptr) {
 #endif
 }
 

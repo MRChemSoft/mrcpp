@@ -11,9 +11,9 @@ OperatorStatistics<D>::OperatorStatistics()
           totFCount(0),
           totGCount(0),
           totGenCount(0),
-          fCount(0),
-          gCount(0),
-          genCount(0),
+          fCount(nullptr),
+          gCount(nullptr),
+          genCount(nullptr),
           totCompCount(0),
           compCount(0) {
 

@@ -187,7 +187,7 @@ template<int D> void testSquare() {
 }
 
 TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot]") {
-    MultiResolutionAnalysis<3> *mra = 0;
+    MultiResolutionAnalysis<3> *mra = nullptr;
     initialize(&mra);
 
     double prec = 1.0e-4;

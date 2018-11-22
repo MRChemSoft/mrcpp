@@ -21,7 +21,7 @@ int NOtrees=0;
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
         : SerialTree<2>(tree, 0),
           sNodes(nullptr),
-          lastNode(0) {
+          lastNode(nullptr) {
 
     this->maxNodes = 0;
     this->nNodes = 0;

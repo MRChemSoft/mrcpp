@@ -21,7 +21,7 @@ CopyAdaptor<D>::CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw)
 template<int D>
 void CopyAdaptor<D>::setBandWidth(int *bw) {
     for (int d = 0; d < D; d++) {
-        if (bw != 0) {
+        if (bw != nullptr) {
             this->bandWidth[d] = bw[d];
         } else {
             this->bandWidth[d] = 0;

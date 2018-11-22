@@ -37,7 +37,7 @@ MWFilter::MWFilter(int k, int t, const std::string &lib)
         MSG_ERROR("Unknown filter type: " << this->type);
     }
     char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != 0) {
+    if (ep != nullptr) {
         default_filter_lib = *ep;
     }
     int K = this->order + 1;

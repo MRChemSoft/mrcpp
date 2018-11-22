@@ -16,7 +16,7 @@ public:
 
 protected:
     const double mu; /**< exponent */
-    void initializeKernel();
+    void initializeKernel() override;
     std::ostream& print(std::ostream &o) const;
 };
 

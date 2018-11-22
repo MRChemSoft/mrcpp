@@ -11,7 +11,7 @@ public:
             : MWOperator(mra.getOperatorMRA()) { }
     DerivativeOperator(const DerivativeOperator &oper) = delete;
     DerivativeOperator &operator=(const DerivativeOperator &oper) = delete;
-    virtual ~DerivativeOperator() = default;
+    ~DerivativeOperator() override = default;
 };
 
 }

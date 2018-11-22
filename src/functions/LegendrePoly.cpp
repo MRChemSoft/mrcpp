@@ -15,7 +15,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-typedef ObjectCache<LegendrePoly> LegendreCache;
+using LegendreCache = ObjectCache<LegendrePoly>;
 
 /** Legendre polynomial constructed on [-1,1] and
   * scaled by n and translated by l */

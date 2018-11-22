@@ -3,9 +3,9 @@
 #ifdef HAVE_MPI
 #include <mpi.h>
 #else
-typedef int MPI_Comm;
-typedef int MPI_Win;
-typedef int MPI_Request;
+using MPI_Comm = int;
+using MPI_Win = int;
+using MPI_Request = int;
 #endif
 
 namespace mrcpp {

@@ -59,7 +59,7 @@ GaussPoly<D>::~GaussPoly() {
 
 template<int D>
 Gaussian<D> *GaussPoly<D>::copy() const {
-    GaussPoly<D> *gauss = new GaussPoly<D>(*this);
+    auto *gauss = new GaussPoly<D>(*this);
     return gauss;
 }
 
@@ -70,7 +70,7 @@ double GaussPoly<D>::calcOverlap(GaussPoly<D> &b) {
 
     double overlap = 0.0;
     for (int i = 0; i < fExp.size(); i++) {
-        GaussFunc<D> &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
+        auto &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
         for (int j = 0; j < gExp.size(); j++) {
             overlap += gExp.getFunc(j).calcOverlap(fFunc);
         }

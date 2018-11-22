@@ -47,9 +47,9 @@ public:
         return theFilterCache;
     }
 
-    void load(int order);
-    MWFilter &get(int order);
-    const Eigen::MatrixXd &getFilterMatrix(int order);
+    void load(int order) override;
+    MWFilter &get(int order) override;
+    const Eigen::MatrixXd &getFilterMatrix(int order) override;
 
     const std::string &getLibPath() { return this->libPath; }
     void setLibPath(const std::string &path) { this->libPath = path; }

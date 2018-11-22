@@ -13,9 +13,9 @@ namespace mrcpp {
 OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         : MWTree<2>(mra),
           normPrec(np),
-          bandWidth(0),
-          nodePtrStore(0),
-          nodePtrAccess(0) {
+          bandWidth(nullptr),
+          nodePtrStore(nullptr),
+          nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
 
     this->serialTree_p = new SerialOperatorTree(this);
@@ -36,12 +36,12 @@ OperatorTree::~OperatorTree() {
 }
 
 void OperatorTree::clearBandWidth() {
-    if (this->bandWidth != 0) delete this->bandWidth;
-    this->bandWidth = 0;
+    if (this->bandWidth != nullptr) delete this->bandWidth;
+    this->bandWidth = nullptr;
 }
 
 void OperatorTree::calcBandWidth(double prec) {
-    if (this->bandWidth != 0) MSG_ERROR("Band width not properly cleared");
+    if (this->bandWidth != nullptr) MSG_ERROR("Band width not properly cleared");
     this->bandWidth = new BandWidth(getDepth());
 
     VectorXi max_transl;
@@ -98,7 +98,7 @@ void OperatorTree::setupOperNodeCache() {
         int n_transl = max_transl[n];
         int n_nodes = 2*n_transl + 1;
 
-        OperatorNode **nodes = new OperatorNode *[n_nodes];
+        auto **nodes = new OperatorNode *[n_nodes];
         int j = 0;
         for (int i = n_transl; i >= 0; i--) {
             int l[2] = {0, i};
@@ -131,7 +131,7 @@ void OperatorTree::setupOperNodeCache() {
 }
 
 void OperatorTree::clearOperNodeCache() {
-    if (this->nodePtrStore != 0 ) {
+    if (this->nodePtrStore != nullptr ) {
         for (int i = 0; i < getDepth(); i++) {
             delete[] this->nodePtrStore[i];
         }

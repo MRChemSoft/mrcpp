@@ -160,7 +160,7 @@ double FunctionTree<D>::integrate() const {
 template<int D>
 double FunctionTree<D>::evalf(const Coord<D> &r) {
     MWNode<D> &mr_node = this->getNodeOrEndNode(r);
-    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+    auto &f_node = static_cast<FunctionNode<D> &>(mr_node);
     double result = f_node.evalf(r);
     this->deleteGenerated();
     return result;

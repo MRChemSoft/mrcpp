@@ -5,7 +5,7 @@ namespace mrcpp {
 template<int D>
 class HilbertPath final {
 public:
-    HilbertPath() : path(0) { }
+    HilbertPath() = default;
     HilbertPath(const HilbertPath<D> &p) : path(p.path) { }
     HilbertPath(const HilbertPath<D> &p, int cIdx) {
         int hIdx = p.getHIndex(cIdx);
@@ -23,7 +23,7 @@ public:
     int getHIndex(int zIdx) const { return this->hTable[this->path][zIdx]; }
 
 private:
-    short int path;
+    short int path{0};
     static const short int pTable[][8];
     static const int zTable[][8];
     static const int hTable[][8];

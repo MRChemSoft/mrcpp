@@ -14,7 +14,7 @@ public:
     PoissonKernel &operator=(const PoissonKernel &kern) = delete;
 
 protected:
-    void initializeKernel();
+    void initializeKernel() override;
     std::ostream& print(std::ostream &o) const;
 };
 

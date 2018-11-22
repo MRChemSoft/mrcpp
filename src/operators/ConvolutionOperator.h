@@ -11,7 +11,7 @@ public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr);
     ConvolutionOperator(const ConvolutionOperator &oper) = delete;
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
-    virtual ~ConvolutionOperator();
+    ~ConvolutionOperator() override;
 
 protected:
     MultiResolutionAnalysis<1> kern_mra;

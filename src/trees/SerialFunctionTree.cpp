@@ -44,11 +44,11 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
     this->lastGenNode = this->sGenNodes;//position of last allocated Gen node
 
     //make virtual table pointers
-    ProjectedNode<D>* tmpNode = new ProjectedNode<D>();
+    auto* tmpNode = new ProjectedNode<D>();
     this->cvptr_ProjectedNode =  *(char**)(tmpNode);
     delete tmpNode;
 
-    GenNode<D>* tmpGenNode = new GenNode<D>();
+    auto* tmpGenNode = new GenNode<D>();
     this->cvptr_GenNode =  *(char**)(tmpGenNode);
     delete tmpGenNode;
 
@@ -338,7 +338,7 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
                 this->sGenNodes[i].childSerialIx = -1;
             }
             this->genNodeChunks.push_back(this->sGenNodes);
-            double *sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
+            auto *sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
             this->genNodeCoeffChunks.push_back(sGenNodesCoeff);
             //allocate new chunk in nodeStackStatus
             int oldsize = this->genNodeStackStatus.size();
@@ -476,7 +476,7 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     }
 
     //update other MWTree data
-    FunctionTree<D>* Tree = static_cast<FunctionTree<D>*> (this->tree_p);
+    auto* Tree = static_cast<FunctionTree<D>*> (this->tree_p);
 
     NodeBox<D> &rBox = Tree->getRootBox();
     MWNode<D> **roots = rBox.getNodes();

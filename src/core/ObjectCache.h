@@ -38,7 +38,7 @@ public:
     int getMem(int id) { return this->mem[id]; }
 
 protected:
-    ObjectCache() : highWaterMark(0), memLoaded(0) {
+    ObjectCache() {
         this->objs.push_back(0);
         this->mem.push_back(0);
 #ifdef HAVE_OPENMP
@@ -60,8 +60,8 @@ protected:
     omp_lock_t cache_lock;
 #endif
 private:
-    int highWaterMark;
-    int memLoaded; ///< memory occupied by loaded objects
+    int highWaterMark{0};
+    int memLoaded{0}; ///< memory occupied by loaded objects
     std::vector<T *> objs; ///< objects store
     std::vector<int> mem; ///< mem per object
 };

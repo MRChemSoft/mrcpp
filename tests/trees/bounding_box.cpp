@@ -55,13 +55,13 @@ template<int D> void testConstructors() {
     }
 
     SECTION("Copy constructor") {
-        BoundingBox<D> *box_copy = new BoundingBox<D>(*box);
+        auto *box_copy = new BoundingBox<D>(*box);
         testInitial<D>(box_copy);
         finalize(&box_copy);
     }
 
     SECTION("Default constructor") {
-        BoundingBox<D> *box_copy = new BoundingBox<D>();
+        auto *box_copy = new BoundingBox<D>();
         SECTION("Assignment operator") {
             *box_copy = *box;
             testInitial<D>(box);
@@ -83,7 +83,7 @@ template<int D> void testCompare() {
         finalize(&bBox);
     }
     SECTION("Different boxes") {
-        BoundingBox<D> *aBox = new BoundingBox<D>();
+        auto *aBox = new BoundingBox<D>();
         BoundingBox<D> *bBox = 0;
         initialize<D>(&bBox);
         REQUIRE( *aBox != *bBox );

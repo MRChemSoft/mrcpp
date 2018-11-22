@@ -24,7 +24,7 @@ protected:
     int nRoots;
     int mode;
     int maxDepth;
-    bool returnGenNodes;
+    bool returnGenNodes{true};
     IteratorNode<D> *state;
     IteratorNode<D> *initialState;
 

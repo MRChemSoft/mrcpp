@@ -42,20 +42,20 @@ template<int D> void testConstructors() {
     }
 
     SECTION("Copy constructor") {
-        NodeIndex<D> *cIdx = new NodeIndex<D>(*nIdx);
+        auto *cIdx = new NodeIndex<D>(*nIdx);
         testInitial<D>(cIdx);
         finalize(&cIdx);
     }
 
     SECTION("Child constructor") {
         int i = D;
-        NodeIndex<D> *cIdx = new NodeIndex<D>(*nIdx, i);
+        auto *cIdx = new NodeIndex<D>(*nIdx, i);
         REQUIRE( cIdx->getScale() == (nIdx->getScale() + 1) );
         finalize(&cIdx);
     }
 
     SECTION("Default constructor") {
-        NodeIndex<D> *cIdx = new NodeIndex<D>();
+        auto *cIdx = new NodeIndex<D>();
         SECTION("Assignment operator") {
             *cIdx = *nIdx;
             testInitial<D>(cIdx);

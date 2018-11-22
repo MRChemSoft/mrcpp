@@ -112,8 +112,8 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     double apply_prec = 1.0e-3;
     double build_prec = 1.0e-4;
 
-    MultiResolutionAnalysis<3> *mra = 0;
-    GaussFunc<3> *fFunc = 0;
+    MultiResolutionAnalysis<3> *mra = nullptr;
+    GaussFunc<3> *fFunc = nullptr;
 
     initialize(&fFunc);
     initialize(&mra);

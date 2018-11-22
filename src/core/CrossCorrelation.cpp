@@ -37,7 +37,7 @@ CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
     }
 
     char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != 0) {
+    if (ep != nullptr) {
         default_ccc_lib = *ep;
     }
     int K = this->order + 1;

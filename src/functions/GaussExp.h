@@ -103,8 +103,8 @@ public:
 protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
-    double screening;
-    double squareNorm;
+    double screening{0.0};
+    double squareNorm{-1.0};
 
     std::ostream& print(std::ostream &o) const;
 };

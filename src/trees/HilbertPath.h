@@ -5,7 +5,7 @@ namespace mrcpp {
 template<int D>
 class HilbertPath final {
 public:
-    HilbertPath() { }
+    HilbertPath() = default;
     HilbertPath(const HilbertPath<D> &p) : path(p.path) { }
     HilbertPath(const HilbertPath<D> &p, int cIdx) {
         int hIdx = p.getHIndex(cIdx);

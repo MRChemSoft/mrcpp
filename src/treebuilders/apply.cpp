@@ -134,7 +134,7 @@ template<int D>
 FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
     FunctionTreeVector<D> out;
     for (int d = 0; d < D; d++) {
-        FunctionTree<D> *grad_d = new FunctionTree<D>(inp.getMRA());
+        auto *grad_d = new FunctionTree<D>(inp.getMRA());
         apply(*grad_d, oper, inp, d);
         out.push_back(std::make_tuple(1.0, grad_d));
     }
@@ -163,7 +163,7 @@ void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeV
     for (int d = 0; d < D; d++) {
         double coef_d = get_coef(inp, d);
         FunctionTree<D> &func_d = get_func(inp, d);
-        FunctionTree<D> *out_d = new FunctionTree<D>(func_d.getMRA());
+        auto *out_d = new FunctionTree<D>(func_d.getMRA());
         apply(*out_d, oper, func_d, d);
         tmp_vec.push_back(std::make_tuple(coef_d, out_d));
     }

@@ -216,21 +216,21 @@ GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) {
         for (int j = 0; j < gexp.size(); j++) {
-            if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
                 } else {
                     MSG_FATAL("Invalid Gaussian type!");
                 }
-            } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
                 } else {
@@ -249,10 +249,10 @@ GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
     GaussExp<D> result;
     int nTerms = this->size();
     for (int n = 0; n < nTerms; n++) {
-        if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
-        } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
         } else {
@@ -266,10 +266,10 @@ GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     int nTerms = this->size();
     GaussExp<D> result(nTerms);
     for (int n = 0; n < nTerms; n++) {
-        if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
-        } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
         } else {
@@ -313,9 +313,9 @@ double GaussExp<D>::calcSquareNorm() {
     for (int i = 0; i < this->size(); i++) {
         for (int j = i + 1; j < this->size(); j++) {
             double overlap = 0.0;
-            if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
+            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
-            } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
+            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
             } else {
                 MSG_FATAL("Invald argument");

@@ -41,7 +41,7 @@ template<int D> void testNodeFetchers() {
     FunctionTree<D> tree(*mra);
     tree.setZero();
 
-    const FunctionTree<D> &const_tree = const_cast<const FunctionTree<D> &>(tree);
+    const auto &const_tree = const_cast<const FunctionTree<D> &>(tree);
 
     // Fetch by NodeIndex
     SECTION("Find node by NodeIndex: existing node") {

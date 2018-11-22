@@ -98,7 +98,7 @@ void OperatorTree::setupOperNodeCache() {
         int n_transl = max_transl[n];
         int n_nodes = 2*n_transl + 1;
 
-        OperatorNode **nodes = new OperatorNode *[n_nodes];
+        auto **nodes = new OperatorNode *[n_nodes];
         int j = 0;
         for (int i = n_transl; i >= 0; i--) {
             int l[2] = {0, i};

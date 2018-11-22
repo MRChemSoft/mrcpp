@@ -47,7 +47,7 @@ template<int D> void testConstructors() {
     }
 
     SECTION("Base class copy constructor") {
-        const BoundingBox<D> &b_box = static_cast<const BoundingBox<D> &>(box);
+        const auto &b_box = static_cast<const BoundingBox<D> &>(box);
         NodeBox<D> box_copy(b_box);
         REQUIRE( box_copy == b_box );
     }

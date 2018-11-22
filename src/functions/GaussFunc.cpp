@@ -23,7 +23,7 @@ namespace mrcpp {
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
-    GaussFunc<D> *gauss = new GaussFunc<D>(*this);
+    auto *gauss = new GaussFunc<D>(*this);
     return gauss;
 }
 
@@ -165,7 +165,7 @@ double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
     GaussExp<D> gExp(b);
     double overlap = 0.0;
     for (int i = 0; i < gExp.size(); i++) {
-        GaussFunc<D> &gFunc = static_cast<GaussFunc<D> &>(gExp.getFunc(i));
+        auto &gFunc = static_cast<GaussFunc<D> &>(gExp.getFunc(i));
         overlap += this->calcOverlap(gFunc);
     }
     return overlap;

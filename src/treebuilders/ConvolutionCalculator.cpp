@@ -97,7 +97,7 @@ void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &oTree = this->oper->getComponent(i);
         const BandWidth &bw = oTree.getBandWidth();
-        MatrixXi *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
+        auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
         for (int j = 0; j < this->maxDepth; j++) {
             calcBandSizeFactor(*bsize, j, bw);
@@ -205,7 +205,7 @@ int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth,
 
 template<int D>
 void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
-    FunctionNode<D> &gNode = static_cast<FunctionNode<D> &>(node);
+    auto &gNode = static_cast<FunctionNode<D> &>(node);
     gNode.zeroCoefs();
 
     int depth = gNode.getDepth();
@@ -221,7 +221,7 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
-        double nTerms = (double) this->oper->size();
+        auto nTerms = (double) this->oper->size();
         gThrs = this->prec*std::sqrt(gThrs/nTerms);
     }
     os.gThreshold = gThrs;

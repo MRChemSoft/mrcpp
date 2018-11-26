@@ -32,10 +32,10 @@ SCENARIO("Testing Function Values", "[scaling], [integral]") {
         testScaling<1>();
     }
     GIVEN("2D") {
-     testScaling<2>();
+        testScaling<2>();
     }
     GIVEN("3D") {
-     testScaling<3>();
+        testScaling<3>();
     }
 }
 

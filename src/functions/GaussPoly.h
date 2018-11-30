@@ -22,7 +22,8 @@ namespace mrcpp {
 template<int D>
 class GaussPoly final : public Gaussian<D> {
 public:
-    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr);
+    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int power[D] = nullptr);
+    GaussPoly(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &power);
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
     GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;

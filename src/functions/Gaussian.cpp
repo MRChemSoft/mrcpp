@@ -16,7 +16,7 @@ namespace mrcpp {
 
 template<int D>
 Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
-    this->alpha = a;
+    this->alpha.fill(a);
     this->coef = c;
     this->screen = false;
     for (int d = 0; d < D; d++) {
@@ -37,7 +37,7 @@ Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
 template<int D>
 Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r,
                       const std::array<int, D> &p) {
-    this->alpha = a;
+    this->alpha.fill(a);
     this->coef = c;
     this->screen = false;
     for (int d = 0; d < D; d++) {
@@ -54,11 +54,11 @@ Gaussian<D>::~Gaussian() {
 template<int D>
 void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs,	const Gaussian<D> &rhs) {
     double newPos[D], relPos[D];
-    double newAlpha = lhs.alpha + rhs.alpha;
+    double newAlpha = lhs.alpha[0] + rhs.alpha[0];
     double newCoef = 1.0;
-    double mju = (lhs.alpha * rhs.alpha) / newAlpha;
+    double mju = (lhs.alpha[0] * rhs.alpha[0]) / newAlpha;
     for (int d = 0; d < D; d++) {
-        newPos[d] = (lhs.alpha*lhs.pos[d] + rhs.alpha*rhs.pos[d])/newAlpha;
+        newPos[d] = (lhs.alpha[0]*lhs.pos[d] + rhs.alpha[0]*rhs.pos[d])/newAlpha;
         relPos[d] = lhs.pos[d] - rhs.pos[d];
         newCoef *= std::exp(-mju * std::pow(relPos[d], 2.0));
     }
@@ -71,7 +71,7 @@ void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs,	const Gaussian<D> &rhs) 
 template<int D>
 void Gaussian<D>::calcScreening(double nStdDev) {
     assert(nStdDev > 0);
-    double limit = std::sqrt(nStdDev/this->alpha);
+    double limit = std::sqrt(nStdDev/this->alpha[0]);
     if (not this->isBounded()) {
         this->bounded = true;
         this->A = new double[D];
@@ -104,7 +104,7 @@ bool Gaussian<D>::checkScreen(int n, const int *l) const {
 
 template<int D>
 bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    double stdDeviation = std::pow(2.0*this->alpha, -0.5);
+    double stdDeviation = std::pow(2.0*this->alpha[0], -0.5);
     int visibleScale = int(-std::floor(std::log2(nQuadPts*2.0*stdDeviation)));
     if (scale < visibleScale) {
         return false;
@@ -114,7 +114,7 @@ bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
 
 template<int D>
 bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
-    double stdDeviation = std::pow(2.0*this->alpha, -0.5);
+    double stdDeviation = std::pow(2.0*this->alpha[0], -0.5);
     for (int i=0; i < D; i++) {
         double gaussBoxMin = this->pos[i] - 5.0*stdDeviation;
         double gaussBoxMax = this->pos[i] + 5.0*stdDeviation;

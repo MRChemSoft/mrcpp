@@ -62,13 +62,13 @@ public:
     const int *getPower() const { return power; }
     const double *getPos() const { return pos; }
     double getCoef() const { return coef; }
-    double getExp() const { return alpha; }
+    auto getExp() const { return alpha[0]; }
 
     virtual void setPower(const int power[D]) = 0;
     virtual void setPower(int d, int power) = 0;
     void setScreen(bool _screen) { this->screen = _screen; }
     void setCoef(double cf) { this->coef = cf; this->squareNorm = -1.0; }
-    void setExp(double _alpha) { this->alpha = _alpha; this->squareNorm = -1.0; }
+    void setExp(double _alpha) { this->alpha.fill(_alpha); this->squareNorm = -1.0; }
     void setPos(const double r[D]) {
         for (int d = 0; d < D; d++) {
             this->pos[d] = r[d];
@@ -82,7 +82,8 @@ protected:
     bool screen;
     int power[D];		/**< max power in each dim  */
     double coef;		/**< constant factor */
-    double alpha;		/**< exponent  */
+     // double alpha;		/**< exponent  */
+    std::array<double, D> alpha;		/**< exponent  */
     double pos[D];		/**< center  */
     double squareNorm;
 

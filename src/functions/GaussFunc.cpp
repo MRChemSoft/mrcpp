@@ -48,7 +48,7 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
             p2 *= std::pow(q, this->power[d]);
         }
     }
-    return this->coef * p2 * std::exp(-this->alpha * q2);
+    return this->coef * p2 * std::exp(-this->alpha[0] * q2);
 }
 
 /** NOTE!
@@ -75,7 +75,7 @@ double GaussFunc<D>::evalf(double r, int d) const {
     } else {
         p2 = std::pow(q, this->power[d]);
     }
-    double result = p2 * std::exp(-this->alpha * q2);
+    double result = p2 * std::exp(-this->alpha[0] * q2);
     if (d == 0) result *= this->coef;
     return result;
 }
@@ -84,7 +84,7 @@ template<int D>
 double GaussFunc<D>::calcSquareNorm() {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
-        double a = 2.0 * this->alpha;
+        double a = 2.0 * this->alpha[0];
         double sq_norm = 1.0;
         int p = this->power[d];
         if (p > 0) {
@@ -177,7 +177,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha, b.alpha);
+        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha[0], b.alpha[0]);
     }
     S *= this->coef * b.coef;
     return S;
@@ -187,7 +187,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha, b.alpha);
+        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha[0], b.alpha[0]);
     }
     S *= a.coef * b.coef;
     return S;

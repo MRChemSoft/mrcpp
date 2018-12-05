@@ -30,6 +30,8 @@ public:
         : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
         : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
+        : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf) : Gaussian<D>(gf) {}
     GaussFunc<D> &operator=(const GaussFunc<D> &gp) = delete;
     Gaussian<D> *copy() const;

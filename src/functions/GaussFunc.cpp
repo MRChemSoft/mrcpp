@@ -39,7 +39,7 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
     double q2 = 0.0, p2 = 1.0;
     for (int d = 0; d < D; d++) {
         double q = r[d] - this->pos[d];
-        q2 += q * q;
+        q2 += this->alpha[d] * q * q;
         if (this->power[d] == 0) {
             continue;
         } else if (this->power[d] == 1) {
@@ -48,7 +48,9 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
             p2 *= std::pow(q, this->power[d]);
         }
     }
-    return this->coef * p2 * std::exp(-this->alpha[0] * q2);
+    return this->coef * p2 * std::exp(-q2);
+
+
 }
 
 /** NOTE!

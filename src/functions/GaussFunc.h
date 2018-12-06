@@ -59,6 +59,10 @@ public:
         this->power[d] = power;
         this->squareNorm = -1.0;
     }
+    void setPower(const std::array<int, D> &power) {
+        this->power = power;
+        this->squareNorm = -1.0;
+    }
     void setPower(const int power[D]) {
         for (int i = 0; i < D; i++) {
             this->power[i] = power[i];

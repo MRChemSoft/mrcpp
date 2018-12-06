@@ -67,15 +67,20 @@ Gaussian<D>::~Gaussian() {
 template<int D>
 void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs,	const Gaussian<D> &rhs) {
 
-    // Magnar fix me!
-    double newPos[D], relPos[D];
-    double newAlpha = lhs.alpha[0] + rhs.alpha[0];
+    auto newAlpha = std::array<double, D> {};
+    auto mju = std::array<double, D> {};
+    for (auto d = 0; d < D; d++) {
+        newAlpha[d] = lhs.alpha[d] + rhs.alpha[d];
+        mju[d] = (lhs.alpha[d] * rhs.alpha[d]) / newAlpha[d];
+    }
+    auto newPos = std::array<double, D> {};
+    auto relPos = std::array<double, D> {};
+
     double newCoef = 1.0;
-    double mju = (lhs.alpha[0] * rhs.alpha[0]) / newAlpha;
     for (int d = 0; d < D; d++) {
-        newPos[d] = (lhs.alpha[d]*lhs.pos[d] + rhs.alpha[d]*rhs.pos[d])/newAlpha;
+        newPos[d] = (lhs.alpha[d]*lhs.pos[d] + rhs.alpha[d]*rhs.pos[d])/newAlpha[d];
         relPos[d] = lhs.pos[d] - rhs.pos[d];
-        newCoef *= std::exp(-mju * std::pow(relPos[d], 2.0));
+        newCoef *= std::exp(-mju[d] * std::pow(relPos[d], 2.0));
     }
     setExp(newAlpha);
     setPos(newPos);

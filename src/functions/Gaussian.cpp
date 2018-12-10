@@ -40,10 +40,8 @@ Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r,
     this->alpha.fill(a);
     this->coef = c;
     this->screen = false;
-    for (int d = 0; d < D; d++) {
-        this->pos[d] = r[d];
-        this->power[d] = p[d];
-    }
+    this->pos = r;
+    this->power = p;
     this->squareNorm = -1.0;
 }
 
@@ -124,18 +122,22 @@ bool Gaussian<D>::checkScreen(int n, const int *l) const {
 
 template<int D>
 bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    // Magnar fix me!
-    double stdDeviation = std::pow(2.0*this->alpha[0], -0.5);
-    int visibleScale = int(-std::floor(std::log2(nQuadPts*2.0*stdDeviation)));
-    if (scale < visibleScale) {
-        return false;
+
+    for (auto& alp : this->alpha) {
+        double stdDeviation = std::pow(2.0*alp, -0.5);
+        int visibleScale = int(-std::floor(std::log2(nQuadPts*2.0*stdDeviation)));
+
+        if (scale < visibleScale) {
+            return false;
+        }
     }
+
     return true;
 }
 
 template<int D>
 bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
-    for (int i=0; i < D; i++) {
+    for (int i = 0; i < D; i++) {
         double stdDeviation = std::pow(2.0*this->alpha[i], -0.5);
         double gaussBoxMin = this->pos[i] - 5.0*stdDeviation;
         double gaussBoxMax = this->pos[i] + 5.0*stdDeviation;

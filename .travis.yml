@@ -12,61 +12,52 @@ cache:
 matrix:
   include:
     - os: linux
-      addons:
+      addons: &1
         apt:
           packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
+            - g++
       env:
         - BUILD_TYPE='release'
-        - CXX_COMPILER='g++-4.8'
-        - EIGEN_VER='3.3.4'
+        - CXX_COMPILER='g++'
     - os: linux
-      addons:
+      addons: *1
         apt:
-          packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
       env:
         - BUILD_TYPE='release'
-        - CXX_COMPILER='g++-4.8'
+        - CXX_COMPILER='g++'
         - OPENMP='--omp'
         - EIGEN_VER='3.3.4'
     - os: linux
-      addons:
+      addons: *1
         apt:
           packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
             - lcov
       env:
         - BUILD_TYPE='debug'
-        - CXX_COMPILER='g++-4.8'
+        - CXX_COMPILER='g++'
         - COVERAGE='--coverage'
         - EIGEN_VER='3.3.4'
 
+install:
+  - ./.ci/cmake.sh
+  - export PATH=$HOME/Deps/cmake/$CMAKE_VERSION/bin${PATH:+:$PATH}
+  - ./.ci/eigen.sh
+
 before_script:
-  - |
-    if [[ ! -d "$HOME/Deps/eigen" ]]; then
-      mkdir -p $HOME/Downloads/eigen
-      cd $HOME/Downloads
-      curl -Ls http://bitbucket.org/eigen/eigen/get/${EIGEN_VER}.tar.gz | tar -xz -C eigen --strip-components=1
-      cd eigen
-      cmake -H. -Bbuild_eigen -DCMAKE_INSTALL_PREFIX=$HOME/Deps/eigen &> /dev/null
-      cmake --build build_eigen -- install &> /dev/null
-      cd ${TRAVIS_BUILD_DIR}
-      rm -rf $HOME/Downloads/eigen
-    fi
   - python --version
   - cmake --version
   - ${CXX_COMPILER} --version
+  - test -n $CXX && unset CXX  
 
 script:
   - export OMP_NUM_THREADS=2
-  - ./setup --cmake-options="-DEigen3_DIR=$HOME/Deps/eigen/share/eigen3/cmake/" --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
+  - |
+    python ./setup \  --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
+           --type=${BUILD_TYPE} \
+           --cxx=${CXX_COMPILER} \
+           ${COVERAGE} \
+           ${OPENMP} \
+           --cmake-options="-DEigen3_DIR=$HOME/Deps/eigen/share/eigen3/cmake/"
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
   - ctest --output-on-failure --verbose

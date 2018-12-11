@@ -59,6 +59,7 @@ public:
     void setPoly(int d, Polynomial &poly);
 
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
+    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, std::array<int, D> &pow, int dir) const;
 
 private:
     Polynomial *poly[D];

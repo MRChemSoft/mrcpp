@@ -190,6 +190,27 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int
 }
 
 template<int D>
+void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, std::array<int, D> &pow, int dir) const {
+    dir--;
+    for (int i = 0; i < this->getPower(dir) + 1; i++) {
+        pow[dir] = i;
+        if (dir > 0) {
+            fillCoefPowVector(coefs, power, pow, dir);
+        } else {
+            int *newPow = new int[D];
+            double coef = 1.0;
+            for (int d = 0; d < D; d++) {
+                newPow[d] = pow[d];
+                coef *= this->getPolyCoefs(d)[pow[d]];
+            }
+            coef *= this->getCoef();
+            power.push_back(newPow);
+            coefs.push_back(coef);
+        }
+    }
+}
+
+template<int D>
 GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
     NOT_IMPLEMENTED_ABORT;
     /*
@@ -273,7 +294,17 @@ void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 
 template<int D>
 std::ostream& GaussPoly<D>::print(std::ostream &o) const {
-    o << "Exp: " << this->getExp() << std::endl;
+    auto expTmp = this->getExp();
+    auto is_array = std::all_of(expTmp.begin(), expTmp.end(),
+                                [expTmp](double i) {return i == *expTmp.begin(); });
+    if (is_array) {
+        o << "Exp:   ";
+        for (auto &alpha : expTmp) {
+            o << alpha << " ";
+        }
+    } else {
+        o << "Exp:   " << expTmp[0] << std::endl;
+    }
     o << "Coef: " << this->getCoef() << std::endl;
     o << "Pos:   ";
     for (int i = 0; i < D; i++) {

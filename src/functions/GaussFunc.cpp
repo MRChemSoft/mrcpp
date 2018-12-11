@@ -110,7 +110,7 @@ GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
     int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
-    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp();
+    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
     if (oldPow > 0) {
         newPoly.getCoefs()[oldPow - 1] = oldPow;
     }
@@ -127,8 +127,14 @@ void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
         }
     }
     double newCoef = lhs.getCoef() * rhs.getCoef();
-    double newExp = lhs.getExp() + rhs.getExp();
-    int newPow[D];
+    std::array<double, D> newExp;
+    auto lhsExp = lhs.getExp();
+    auto rhsExp = rhs.getExp();
+    for (int d = 0; d < D; d++) {
+        newExp[d] = lhsExp[d] + rhsExp[d];
+    }
+
+    std::array<int, D> newPow;
     for (int d = 0; d < D; d++) {
         newPow[d] = lhs.getPower(d) + rhs.getPower(d);
     }
@@ -281,7 +287,17 @@ double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
 
 template<int D>
 std::ostream& GaussFunc<D>::print(std::ostream &o) const {
-    o << "Exp:   " << this->getExp() << std::endl;
+    auto expTmp = this->getExp();
+    auto is_array = std::all_of(expTmp.begin(), expTmp.end(),
+                                [expTmp](double i) {return i == *expTmp.begin(); });
+    if (is_array) {
+        o << "Exp:   ";
+        for (auto &alpha : expTmp) {
+            o << alpha << " ";
+        }
+    } else {
+        o << "Exp:   " << expTmp[0] << std::endl;
+    }
     o << "Coef:  "<< this->getCoef() << std::endl;
     o << "Pos:   ";
     for (int i = 0; i < D; i++) {
@@ -302,8 +318,19 @@ template<>
 double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     auto p_tmp = this->getExp();
+    auto is_all_same = std::all_of(p_tmp.begin(), p_tmp.end(),
+                                [p_tmp](double i) {return i == *p_tmp.begin(); });
+    if (!is_all_same)
+        NOT_IMPLEMENTED_ABORT;
+
     auto p = p_tmp[0];
     auto q_tmp = gf.getExp();
+    is_all_same = std::all_of(q_tmp.begin(), q_tmp.end(),
+                                [q_tmp](double i) {return i == *q_tmp.begin(); });
+
+    if (!is_all_same)
+        NOT_IMPLEMENTED_ABORT;
+
     auto q = q_tmp[0];
 
     double alpha = p*q/(p+q);

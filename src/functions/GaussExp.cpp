@@ -39,9 +39,9 @@ GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
 
 template<int D>
 GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1.0) {
-    int pow[D];
-    double pos[D];
-    double alpha = gPoly.getExp();
+    std::array<int, D> pow;
+    std::array<double, D> pos;
+    auto alpha = gPoly.getExp();
 
     int nTerms = 1;
     for (int d = 0; d < D; d++) {

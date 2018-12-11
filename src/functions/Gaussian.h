@@ -63,7 +63,7 @@ public:
     const int *getPower() const { return power.data(); }
     const double *getPos() const { return pos.data(); }
     double getCoef() const { return coef; }
-    auto getExp() const { return alpha[0]; }
+    auto getExp() const { return alpha; }
 
     virtual void setPower(const int power[D]) = 0;
     virtual void setPower(const std::array<int, D> &power) = 0;

@@ -128,10 +128,10 @@ double GaussPoly<D>::evalf(const Coord<D> &r) const {
     for (int d = 0; d < D; d++) {
         //assert(this->poly[d]->getCheckBounds() == false);
         double q = r[d] - this->pos[d];
-        q2 += q * q;
+        q2 += this->alpha[d] *q * q;
         p2 *= poly[d]->evalf(r[d] - this->pos[d]);
     }
-    return this->coef * p2 * std::exp(-this->alpha[0] * q2);
+    return this->coef * p2 * std::exp(-q2);
 }
 
 /** NOTE!
@@ -155,7 +155,7 @@ double GaussPoly<D>::evalf(const double r, int d) const {
     if (d == 0) {
         p2 *= this->coef;
     }
-    return p2 * std::exp(-this->alpha[0] * q2);
+    return p2 * std::exp(-this->alpha[d] * q2);
 }
 
 template<int D>

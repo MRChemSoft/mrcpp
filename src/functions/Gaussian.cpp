@@ -36,27 +36,24 @@ Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
 
 template<int D>
 Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r,
-                      const std::array<int, D> &p) {
+                      const std::array<int, D> &p)
+            : screen(false),
+              power(p),
+              coef(c),
+              pos(r),
+              squareNorm(-1.0) {
     this->alpha.fill(a);
-    this->coef = c;
-    this->screen = false;
-    this->pos = r;
-    this->power = p;
-    this->squareNorm = -1.0;
 }
 
 template<int D>
 Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r,
-                      const std::array<int, D> &p) {
-    this->alpha = a;
-    this->coef = c;
-    this->screen = false;
-    for (int d = 0; d < D; d++) {
-        this->pos[d] = r[d];
-        this->power[d] = p[d];
-    }
-    this->squareNorm = -1.0;
-}
+                      const std::array<int, D> &p)
+            : screen(false),
+              power(p),
+              coef(c),
+              alpha(a),
+              pos(r),
+              squareNorm(-1.0) {}
 
 template<int D>
 Gaussian<D>::~Gaussian() {

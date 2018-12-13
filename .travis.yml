@@ -46,8 +46,6 @@ matrix:
 before_install:
   # Dependencies are downloaded in $HOME/Downloads and installed in $HOME/Deps
   - mkdir -p $HOME/Downloads $HOME/Deps
-  - chmod u+x cmake.sh
-  - chmod u+x eigen.sh
 
 install:
   - ./.ci/cmake.sh

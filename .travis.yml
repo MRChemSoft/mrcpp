@@ -1,6 +1,6 @@
 language: cpp
 sudo: false
-dist: trusty
+dist: xenial
 
 notifications:
   slack:
@@ -46,11 +46,13 @@ matrix:
 before_install:
   # Dependencies are downloaded in $HOME/Downloads and installed in $HOME/Deps
   - mkdir -p $HOME/Downloads $HOME/Deps
-      
+  - chmod u+x cmake.sh
+  - chmod u+x eigen.sh
+
 install:
   - ./.ci/cmake.sh
-  - ./.ci/eigen.sh  
-      
+  - ./.ci/eigen.sh
+
 before_script:
   - python --version
   - cmake --version
@@ -75,4 +77,3 @@ after_success:
       lcov --list coverage.info
       bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
     fi
-

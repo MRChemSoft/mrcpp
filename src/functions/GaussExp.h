@@ -66,7 +66,7 @@ public:
     void operator*=(double d) { this->multInPlace(d); }
 
     double getScreening() const { return screening; }
-    auto getExp(int i) const { return this->funcs[i]->getExp(); }
+    std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
     const int *getPower(int i) const { return this->funcs[i]->getPower(); }
     const double *getPos(int i) const { return this->funcs[i]->getPos(); }

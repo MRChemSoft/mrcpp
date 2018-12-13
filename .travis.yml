@@ -43,6 +43,10 @@ matrix:
         - COVERAGE='--coverage'
         - EIGEN_VER='3.3.4'
 
+env:
+  global:
+    - CMAKE_VERSION="3.11.3"           
+
 before_install:
   # Dependencies are downloaded in $HOME/Downloads and installed in $HOME/Deps
   - mkdir -p $HOME/Downloads $HOME/Deps

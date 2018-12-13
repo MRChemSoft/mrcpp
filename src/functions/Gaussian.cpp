@@ -15,10 +15,11 @@ using namespace Eigen;
 namespace mrcpp {
 
 template<int D>
-Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
+Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D])
+            : screen(false),
+              coef(c),
+              squareNorm(-1.0) {
     this->alpha.fill(a);
-    this->coef = c;
-    this->screen = false;
     for (int d = 0; d < D; d++) {
         if (r == nullptr) {
             this->pos[d] = 0.0;
@@ -31,7 +32,6 @@ Gaussian<D>::Gaussian(double a, double c, const double r[D], const int p[D]) {
             this->power[d] = p[d];
         }
     }
-    this->squareNorm = -1.0;
 }
 
 template<int D>

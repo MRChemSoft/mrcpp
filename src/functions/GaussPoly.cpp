@@ -13,6 +13,7 @@
 #include "GaussFunc.h"
 #include "GaussExp.h"
 #include "utils/Printer.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 
@@ -295,9 +296,11 @@ void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 template<int D>
 std::ostream& GaussPoly<D>::print(std::ostream &o) const {
     auto expTmp = this->getExp();
-    auto is_array = std::all_of(expTmp.begin(), expTmp.end(),
-                                [expTmp](double i) {return i == *expTmp.begin(); });
-    if (is_array) {
+    auto is_array = details::are_all_equal<D>(expTmp);
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed
+    if (!is_array) {
         o << "Exp:   ";
         for (auto &alpha : expTmp) {
             o << alpha << " ";

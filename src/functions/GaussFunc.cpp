@@ -16,10 +16,12 @@
 #include "BoysFunction.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
+
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
@@ -287,16 +289,17 @@ double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
 
 template<int D>
 std::ostream& GaussFunc<D>::print(std::ostream &o) const {
-    auto expTmp = this->getExp();
-    auto is_array = std::all_of(expTmp.begin(), expTmp.end(),
-                                [expTmp](double i) {return i == *expTmp.begin(); });
-    if (is_array) {
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed.
+
+    if (!details::are_all_equal<D>(this->getExp())) {
         o << "Exp:   ";
-        for (auto &alpha : expTmp) {
+        for (auto &alpha : this->getExp()) {
             o << alpha << " ";
         }
     } else {
-        o << "Exp:   " << expTmp[0] << std::endl;
+        o << "Exp:   " << this->getExp()[0] << std::endl;
     }
     o << "Coef:  "<< this->getCoef() << std::endl;
     o << "Pos:   ";
@@ -317,21 +320,15 @@ std::ostream& GaussFunc<D>::print(std::ostream &o) const {
 template<>
 double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
-    auto p_tmp = this->getExp();
-    auto is_all_same = std::all_of(p_tmp.begin(), p_tmp.end(),
-                                [p_tmp](double i) {return i == *p_tmp.begin(); });
-    if (!is_all_same)
+    // Checking if the elements in each exponent are constant
+    if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp()))
         NOT_IMPLEMENTED_ABORT;
 
-    auto p = p_tmp[0];
-    auto q_tmp = gf.getExp();
-    is_all_same = std::all_of(q_tmp.begin(), q_tmp.end(),
-                                [q_tmp](double i) {return i == *q_tmp.begin(); });
 
-    if (!is_all_same)
-        NOT_IMPLEMENTED_ABORT;
-
-    auto q = q_tmp[0];
+    // If they are constant the 0th element are assigned a value
+    // and the Coulomb Energy can be calculated
+    auto p = this->getExp()[0];
+    auto q = gf.getExp()[0];
 
     double alpha = p*q/(p+q);
 
@@ -352,8 +349,8 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     return std::sqrt(4.0*alpha/pi)*boysFac;
 }
 
+
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;
-
 } // namespace mrcpp

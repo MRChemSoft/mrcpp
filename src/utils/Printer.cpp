@@ -1,10 +1,3 @@
-/*
- *  \date Jul 24, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- */
-
 #include <fstream>
 
 #include "config.h"
@@ -154,6 +147,36 @@ int Printer::setPrecision(int i) {
     printPrec = i;
     *out << std::setprecision(i);
     return oldPrec;
+}
+
+//parse a string and returns the nth integer number
+int Printer::getVal(char* line, int n=1){
+    char* p = line;
+    int len = 0;
+    for(int i=0;i<n-1;i++){
+        //jump over n-1 first numbers
+        while (*p <'0' || *p > '9') p++;
+        while (*p >='0' && *p <= '9') p++;
+    }
+    while (*p <'0' || *p > '9') p++;
+    char* s = p;
+    while (*s >='0' && *s <= '9'){ s++; line[len] = p[len]; len++;}
+    p[len] = 0;
+    return atoi(p);
+}
+
+/** Prints (and returns) the current memory usage of this process
+ */
+int Printer::printMem(char* txt){
+    FILE* file = fopen("/proc/self/statm", "r");
+    int val = -1;
+    char line[80];
+    while (fgets(line, 80, file) != NULL){
+        val = getVal(line,6);//sixth number is data+stack in pages (4kB)
+        printf("Mem usage %s %6.3f %s \n",txt,4.0*val2/(1024.0*1024),"GB");
+    }
+    fclose(file);
+    return val;
 }
 
 } // namespace mrcpp

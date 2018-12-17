@@ -6,8 +6,7 @@ namespace mrcpp {
 
 template<int D>
 TreeIterator<D>::TreeIterator(int dir)
-    : mode(dir),
-      returnGenNodes(true),
+  : mode(dir),
       state(0),
       initialState(0) {
 }

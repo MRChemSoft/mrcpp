@@ -23,7 +23,7 @@ void PHOperator<D>::initializeOperator(int order) {
     PHCalculator calculator(basis, order);
     BandWidthAdaptor adaptor(bw, max_scale);
 
-    OperatorTree *o_tree = new OperatorTree(this->oper_mra, MachineZero);
+    auto *o_tree = new OperatorTree(this->oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;

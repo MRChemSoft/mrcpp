@@ -8,13 +8,12 @@
 namespace mrcpp {
 
 template<int D>
-class HilbertIterator: public TreeIterator<D> {
+class HilbertIterator final : public TreeIterator<D> {
 public:
     HilbertIterator(MWTree<D> *tree, int dir = TopDown)
             : TreeIterator<D>(dir) {
         this->init(tree);
     }
-    virtual ~HilbertIterator() { }
 
 protected:
     int getChildIndex(int i) const {

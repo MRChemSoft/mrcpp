@@ -11,12 +11,11 @@
 #include "core/ObjectCache.h"
 #include "utils/Printer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
 
-typedef ObjectCache<LegendrePoly> LegendreCache;
+using LegendreCache = ObjectCache<LegendrePoly>;
 
 /** Legendre polynomial constructed on [-1,1] and
   * scaled by n and translated by l */
@@ -27,7 +26,7 @@ LegendrePoly::LegendrePoly(int k, double n, double l) :
     LegendreCache &Cache = LegendreCache::getInstance();
     if (k >= 1) {
         if (not Cache.hasId(k - 1)) {
-            LegendrePoly *lp = new LegendrePoly(k - 1);
+            auto *lp = new LegendrePoly(k - 1);
             Cache.load(k - 1, lp, 2 * sizeof(double) * (k + 1));
         }
     }
@@ -51,7 +50,7 @@ void LegendrePoly::computeLegendrePolynomial(int k) {
         LegendrePoly &Lm1 = Cache.get(k - 1);
         LegendrePoly &Lm2 = Cache.get(k - 2);
 
-        double K = (double) k;
+        auto K = (double) k;
         double cm2_0 = Lm2.getCoefs()[0];
         this->coefs[0] = -(K - 1.0)*cm2_0/K;
         for (int j = 1; j < k + 1; j++) {
@@ -73,7 +72,7 @@ Vector2d LegendrePoly::firstDerivative(double x) const {
     double c1, c2, c4, ym, yp, y;
     double dy, dyp, dym;
 
-    if (outOfBounds(&x)) {
+    if (outOfBounds({x})) {
         MSG_FATAL("Argument out of bounds: " << x << " [" <<
                   this->A[0] << ", " << this->B[0] << "]");
     }
@@ -124,7 +123,7 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
     double dy, dyp, dym, d2ym, d2yp;
 
     double q = this->N * x + this->L;
-    if (outOfBounds(&x)) {
+    if (outOfBounds({x})) {
         MSG_FATAL("Argument out of bounds: " << x << " [" <<
                   this->A[0] << ", " << this->B[0] << "]");
     }

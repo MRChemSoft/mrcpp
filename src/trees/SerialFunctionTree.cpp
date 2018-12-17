@@ -5,8 +5,6 @@
 #include "utils/Printer.h"
 #include "utils/mpi_utils.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 /** SerialTree class constructor.
@@ -46,11 +44,11 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
     this->lastGenNode = this->sGenNodes;//position of last allocated Gen node
 
     //make virtual table pointers
-    ProjectedNode<D>* tmpNode = new ProjectedNode<D>();
+    auto* tmpNode = new ProjectedNode<D>();
     this->cvptr_ProjectedNode =  *(char**)(tmpNode);
     delete tmpNode;
 
-    GenNode<D>* tmpGenNode = new GenNode<D>();
+    auto* tmpGenNode = new GenNode<D>();
     this->cvptr_GenNode =  *(char**)(tmpGenNode);
     delete tmpGenNode;
 
@@ -266,7 +264,7 @@ ProjectedNode<D>* SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, d
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
             this->maxNodes = newsize;
 
-            if (chunk%100==99 and D==3) println(10,endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes * this->sizeNodeCoeff)/1024/128);
+            if (chunk%100==99 and D==3) println(10, std::endl<<" number of nodes "<<this->nNodes <<",number of Nodechunks now " << this->nodeChunks.size()<<", total size coeff  (MB) "<<(this->nNodes * this->sizeNodeCoeff)/1024/128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -340,7 +338,7 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
                 this->sGenNodes[i].childSerialIx = -1;
             }
             this->genNodeChunks.push_back(this->sGenNodes);
-            double *sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
+            auto *sGenNodesCoeff = new double[this->sizeGenNodeCoeff*this->maxNodesPerChunk];
             this->genNodeCoeffChunks.push_back(sGenNodesCoeff);
             //allocate new chunk in nodeStackStatus
             int oldsize = this->genNodeStackStatus.size();
@@ -348,7 +346,7 @@ GenNode<D>* SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, doub
             for (int i = oldsize; i < newsize; i++) this->genNodeStackStatus.push_back(0);
             this->maxGenNodes = newsize;
 
-            if(chunk%100==99 and D==3)println(10,endl<<" number of GenNodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->genNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
+            if(chunk%100==99 and D==3)println(10, "\n number of GenNodes "<<this->nGenNodes <<",number of GenNodechunks now " << this->genNodeChunks.size()<<", total size coeff  (MB) "<<(this->nGenNodes/1024) * this->sizeGenNodeCoeff/128);
         }
         this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes%(this->maxNodesPerChunk);
         *serialIx = this->nGenNodes;
@@ -478,7 +476,7 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     }
 
     //update other MWTree data
-    FunctionTree<D>* Tree = static_cast<FunctionTree<D>*> (this->tree_p);
+    auto* Tree = static_cast<FunctionTree<D>*> (this->tree_p);
 
     NodeBox<D> &rBox = Tree->getRootBox();
     MWNode<D> **roots = rBox.getNodes();

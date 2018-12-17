@@ -16,19 +16,21 @@
 #include "BoysFunction.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
+
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
-    GaussFunc<D> *gauss = new GaussFunc<D>(*this);
+    auto *gauss = new GaussFunc<D>(*this);
     return gauss;
 }
 
 template<int D>
-double GaussFunc<D>::evalf(const double *r) const {
+double GaussFunc<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) {
@@ -39,16 +41,18 @@ double GaussFunc<D>::evalf(const double *r) const {
     double q2 = 0.0, p2 = 1.0;
     for (int d = 0; d < D; d++) {
         double q = r[d] - this->pos[d];
-        q2 += q * q;
+        q2 += this->alpha[d] * q * q;
         if (this->power[d] == 0) {
             continue;
         } else if (this->power[d] == 1) {
             p2 *= q;
         } else {
-            p2 *= pow(q, this->power[d]);
+            p2 *= std::pow(q, this->power[d]);
         }
     }
-    return this->coef * p2 * exp(-this->alpha * q2);
+    return this->coef * p2 * std::exp(-q2);
+
+
 }
 
 /** NOTE!
@@ -64,42 +68,38 @@ double GaussFunc<D>::evalf(double r, int d) const {
             return 0.0;
         }
     }
-    double q;
-    double q2, p2;
-    q = (r - this->pos[d]);
-    q2 = q * q;
+    double q = (r - this->pos[d]);
+    double q2 = q * q;
+
+    double p2;
     if (this->power[d] == 0) {
         p2 = 1.0;
     } else if (this->power[d] == 1) {
         p2 = q;
     } else {
-        p2 = pow(q, this->power[d]);
+        p2 = std::pow(q, this->power[d]);
     }
-    double result = p2 * exp(-this->alpha * q2);
-    if (d == 0)
-        result *= this->coef;
+    double result = p2 * std::exp(-this->alpha[d] * q2);
+    if (d == 0) result *= this->coef;
     return result;
 }
 
 template<int D>
 double GaussFunc<D>::calcSquareNorm() {
-    int p, i;
-    double sq_norm, a;
     double norm = 1.0;
-
-    for (int n = 0; n < D; n++) {
-        a = 2.0 * this->alpha;
-        sq_norm = 1.0;
-        p = this->power[n];
+    for (int d = 0; d < D; d++) {
+        double a = 2.0 * this->alpha[d];
+        double sq_norm = 1.0;
+        int p = this->power[d];
         if (p > 0) {
-            i = 2 * p - 1;
+            int i = 2 * p - 1;
             while (i > 0) {
                 sq_norm = i * sq_norm / (2.0 * a);
                 i = i - 2;
             }
         }
         a = pi / a;
-        sq_norm *= sqrt(a);
+        sq_norm *= std::sqrt(a);
         norm *= sq_norm;
     }
     this->squareNorm = norm * this->coef * this->coef;
@@ -112,7 +112,7 @@ GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
     int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
-    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp();
+    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
     if (oldPow > 0) {
         newPoly.getCoefs()[oldPow - 1] = oldPow;
     }
@@ -129,8 +129,14 @@ void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
         }
     }
     double newCoef = lhs.getCoef() * rhs.getCoef();
-    double newExp = lhs.getExp() + rhs.getExp();
-    int newPow[D];
+    std::array<double, D> newExp;
+    auto lhsExp = lhs.getExp();
+    auto rhsExp = rhs.getExp();
+    for (int d = 0; d < D; d++) {
+        newExp[d] = lhsExp[d] + rhsExp[d];
+    }
+
+    std::array<int, D> newPow;
     for (int d = 0; d < D; d++) {
         newPow[d] = lhs.getPower(d) + rhs.getPower(d);
     }
@@ -169,7 +175,7 @@ double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
     GaussExp<D> gExp(b);
     double overlap = 0.0;
     for (int i = 0; i < gExp.size(); i++) {
-        GaussFunc<D> &gFunc = static_cast<GaussFunc<D> &>(gExp.getFunc(i));
+        auto &gFunc = static_cast<GaussFunc<D> &>(gExp.getFunc(i));
         overlap += this->calcOverlap(gFunc);
     }
     return overlap;
@@ -181,8 +187,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d],
-                this->alpha, b.alpha);
+        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha[d], b.alpha[d]);
     }
     S *= this->coef * b.coef;
     return S;
@@ -192,8 +197,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha,
-                b.alpha);
+        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha[d], b.alpha[d]);
     }
     S *= a.coef * b.coef;
     return S;
@@ -219,8 +223,8 @@ double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
  */
 template<int D>
 double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
-        double pos_b, double expo_a, double expo_b) {
-    int i, j, i_l, i_r, n_0j_coeff, n_ij_coeff;
+                                   double pos_b, double expo_a, double expo_b) {
+    int i, j;
     double expo_p, mu, pos_p, x_ab, x_pa, x_pb, s_00;
     /* The highest angular momentum combination is l=20 for a and b
      * simulatnelusly */
@@ -241,9 +245,9 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     x_pa = pos_p - pos_a; /* X_{PA} */
     x_pb = pos_p - pos_b; /* X_{PB} */
     s_00 = pi / expo_p;
-    s_00 = sqrt(s_00) * exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
-    n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
-    n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
+    s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
+    //int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
+    //int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
 
     /* we add 3 coeffs. to avoid a hell of a lot of if statements */
     /*    n_tot_coeff = n_0j_coeff + n_ij_coeff + 3;	*/
@@ -265,8 +269,8 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     i = 1;
     /* generate the remaining coefficients with i > 0 */
     while (i < power_a) {
-        i_l = j + 2 * i + 1;
-        i_r = j + 2 * i + 2;
+        int i_l = j + 2 * i + 1;
+        int i_r = j + 2 * i + 2;
         s_coeff[i_l] = s_coeff[i_l - 1] - x_ab * s_coeff[i_l - 2];
         s_coeff[i_r] = x_pa * s_coeff[i_r - 2] + (j * s_coeff[i_r - 3] + i
                 * s_coeff[i_r - 4]) / (2.0 * expo_p);
@@ -285,7 +289,18 @@ double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
 
 template<int D>
 std::ostream& GaussFunc<D>::print(std::ostream &o) const {
-    o << "Exp:   " << this->getExp() << std::endl;
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed.
+
+    if (!details::are_all_equal<D>(this->getExp())) {
+        o << "Exp:   ";
+        for (auto &alpha : this->getExp()) {
+            o << alpha << " ";
+        }
+    } else {
+        o << "Exp:   " << this->getExp()[0] << std::endl;
+    }
     o << "Coef:  "<< this->getCoef() << std::endl;
     o << "Pos:   ";
     for (int i = 0; i < D; i++) {
@@ -304,8 +319,17 @@ std::ostream& GaussFunc<D>::print(std::ostream &o) const {
  */
 template<>
 double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
-    double p = this->getExp();
-    double q = gf.getExp();
+
+    // Checking if the elements in each exponent are constant
+    if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp()))
+        NOT_IMPLEMENTED_ABORT;
+
+
+    // If they are constant the 0th element are assigned a value
+    // and the Coulomb Energy can be calculated
+    auto p = this->getExp()[0];
+    auto q = gf.getExp()[0];
+
     double alpha = p*q/(p+q);
 
     const double *Rp = this->getPos();
@@ -319,14 +343,14 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     BoysFunction boys(0);
 
-    double boysArg = alpha*Rpq_2;
-    double boysFac = boys.evalf(&boysArg);
+    Coord<1> boysArg{alpha*Rpq_2};
+    double boysFac = boys.evalf(boysArg);
 
-    return sqrt(4.0*alpha/pi)*boysFac;
+    return std::sqrt(4.0*alpha/pi)*boysFac;
 }
+
 
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;
-
 } // namespace mrcpp

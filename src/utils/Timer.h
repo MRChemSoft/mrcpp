@@ -5,11 +5,12 @@
 
 namespace mrcpp {
 
-typedef std::chrono::time_point<std::chrono::high_resolution_clock> timeT;
+using timeT = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
-class Timer {
+class Timer final {
 public:
     Timer(bool start_timer = true);
+    Timer(const Timer &timer);
     Timer& operator=(const Timer &timer);
 
     void start();
@@ -20,8 +21,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream &o, const Timer &timer) { return timer.print(o); }
 private:
-    bool running;
-    double time_used;
+    bool running{false};
+    double time_used{0.0};
     timeT clock_start;
 
     timeT now();

@@ -7,12 +7,10 @@
 
 namespace mrcpp {
 
-class CrossCorrelation {
+class CrossCorrelation final {
 public:
     CrossCorrelation(int k, int t, const std::string &lib = "");
-    CrossCorrelation(int t, const Eigen::MatrixXd &ldata,
-                            const Eigen::MatrixXd &rdata);
-    virtual ~CrossCorrelation() { }
+    CrossCorrelation(int t, const Eigen::MatrixXd &ldata, const Eigen::MatrixXd &rdata);
 
     int getType() const { return this->type; }
     int getOrder() const { return this->order; }

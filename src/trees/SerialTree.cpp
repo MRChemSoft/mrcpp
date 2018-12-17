@@ -3,7 +3,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -13,13 +12,13 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
         : nNodes(0),
           maxNodesPerChunk(0),
           sizeNodeCoeff(0),
-          coeffStack(0),
+          coeffStack(nullptr),
           maxNodes(0),
           tree_p(tree),
 #ifdef HAVE_MPI
           shMem(mem) {
 #else
-          shMem(0) {
+          shMem(nullptr) {
 #endif
 }
 
@@ -38,7 +37,6 @@ void SerialTree<D>::S_mwTransform(double* coeff_in, double* coeff_out, bool read
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     const MWFilter &filter = this->getTree()->getMRA().getFilter();
     double overwrite = 0.0;
-    double *tmp;
     double tmpcoeff[kp1_d*tDim];
     double tmpcoeff2[kp1_d*tDim];
     int ftlim=tDim;

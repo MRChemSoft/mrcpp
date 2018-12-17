@@ -9,13 +9,11 @@
 namespace mrcpp {
 
 template<int D>
-class MultiResolutionAnalysis {
+class MultiResolutionAnalysis final {
 public:
+    MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth = MaxDepth);
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra);
-    MultiResolutionAnalysis(const BoundingBox<D> &bb,
-                            const ScalingBasis &sb,
-                            int depth = MaxDepth);
-    virtual ~MultiResolutionAnalysis() { }
+    MultiResolutionAnalysis &operator=(const MultiResolutionAnalysis &mra) = delete;
 
     int getOrder() const { return this->basis.getScalingOrder(); }
     int getMaxDepth() const { return this->maxDepth; }

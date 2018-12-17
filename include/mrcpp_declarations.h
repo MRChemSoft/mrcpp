@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <set>
 
 namespace mrcpp {
@@ -80,8 +81,7 @@ class BandWidth;
 template <int D> class OperatorState;
 
 using OperatorTreeVector = std::vector<OperatorTree *>;
-
-#define MWNodeVector std::vector<MWNode<D> *>
-#define NodeIndexSet std::set<const NodeIndex<D> *, NodeIndexComp<D> >
+template<int D> using Coord = std::array<double, D>;
+template<int D> using MWNodeVector = std::vector<MWNode<D> *>;
 
 }

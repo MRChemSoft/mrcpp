@@ -17,8 +17,9 @@ public:
           rMin(r_min),
           rMax(r_max) {
     }
-
-    virtual ~GreensKernel() { }
+    GreensKernel(const GreensKernel &kern) = delete;
+    GreensKernel &operator=(const GreensKernel &kern) = delete;
+    virtual ~GreensKernel() = default;
 
     double getEpsilon() const { return this->epsilon; }
     double getRMin() const { return this->rMin; }
@@ -27,7 +28,7 @@ public:
     void rescale(int d) {
         for (int i = 0; i < this->size(); i++) {
             Gaussian<1> &gauss = this->getFunc(i);
-            double coef = pow(gauss.getCoef(), 1.0/d);
+            double coef = std::pow(gauss.getCoef(), 1.0/d);
             gauss.setCoef(coef);
         }
     }

@@ -229,7 +229,7 @@ Elements can be appended to the vector using the ``std::make_tuple``, elements
 are obtained with the ``get_func`` and ``get_coef`` functions:
 
 .. code-block:: cpp
-    
+
     FunctionTreeVector<D> tree_vec;
     tree_vec.push_back(std::make_tuple(2.0, &tree_a)); // Push back pointer to FunctionTree
     double coef = get_coef(tree_vec, 0);               // Get coefficient of first entry
@@ -338,7 +338,7 @@ be initialized as above)
     auto func = [alpha, beta] (const double *r) -> double {
         double R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return alpha*std::exp(-beta*R*R);
-    }
+    };
 
     double prec = 1.0e-5;
     FunctionTree<3> tree(MRA);
@@ -498,7 +498,7 @@ its MW expansion coefficients as well as its grid refinement
 
     mrcpp::FunctionTree<D> tree(MRA);                       // tree is an undefined function
     mrcpp::project(prec, tree, f_func);                     // tree represents analytic function f
-    tree.clear();                                           // tree is an undefined function 
+    tree.clear();                                           // tree is an undefined function
     mrcpp::project(prec, tree, f_func);                     // tree represents analytic function g
 
 This action will leave the ``FunctionTree`` in the same state as after
@@ -542,5 +542,3 @@ process)
         n_nodes = mrcpp::refine_grid(tree, prec);           // Refine grid based on prec
         if (n_nodes > 0) mrcpp::clear_grid(tree);           // Clear grid for next iteration
     }
-
-

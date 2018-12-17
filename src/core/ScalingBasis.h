@@ -11,7 +11,7 @@ namespace mrcpp {
 class ScalingBasis {
 public:
     ScalingBasis(int k, int t);
-    virtual ~ScalingBasis() { }
+    virtual ~ScalingBasis() = default;
 
     void evalf(const double *r, Eigen::MatrixXd &vals) const;
 

@@ -4,10 +4,11 @@
 
 namespace mrcpp {
 
-class OperatorTree: public MWTree<2> {
+class OperatorTree final : public MWTree<2> {
 public:
-    OperatorTree(const MultiResolutionAnalysis<2> &mra,
-                 double np);
+    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np);
+    OperatorTree(const OperatorTree &tree) = delete;
+    OperatorTree &operator=(const OperatorTree &tree) = delete;
     virtual ~OperatorTree();
 
     double getNormPrecision() const { return this->normPrec; }
@@ -24,8 +25,8 @@ public:
     OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
-    virtual void mwTransformDown(bool overwrite);
-    virtual void mwTransformUp();
+    void mwTransformDown(bool overwrite);
+    void mwTransformUp();
 
 protected:
     const double normPrec;

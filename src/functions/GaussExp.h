@@ -45,7 +45,7 @@ public:
     bool isVisibleAtScale(int scale, int nPts) const;
     bool isZeroOnInterval(const double *lb, const double *ub) const;
 
-    double evalf(const double *r) const;
+    double evalf(const Coord<D> &r) const;
 
     GaussExp<D> differentiate(int dir);
 
@@ -66,7 +66,7 @@ public:
     void operator*=(double d) { this->multInPlace(d); }
 
     double getScreening() const { return screening; }
-    double getExp(int i) const { return this->funcs[i]->getExp(); }
+    std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
     const int *getPower(int i) const { return this->funcs[i]->getPower(); }
     const double *getPos(int i) const { return this->funcs[i]->getPos(); }
@@ -103,10 +103,10 @@ public:
 protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
-    double screening;
-    double squareNorm;
+    double screening{0.0};
+    double squareNorm{-1.0};
 
     std::ostream& print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

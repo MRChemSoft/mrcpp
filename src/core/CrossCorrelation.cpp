@@ -16,14 +16,13 @@
 #include "CrossCorrelation.h"
 #include "utils/Printer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
 
-string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
+std::string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
 
-CrossCorrelation::CrossCorrelation(int k, int t, const string &lib)
+CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
         : type(t),
           order(k) {
     if (this->order < 1 or this->order > MaxOrder) {
@@ -38,7 +37,7 @@ CrossCorrelation::CrossCorrelation(int k, int t, const string &lib)
     }
 
     char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != 0) {
+    if (ep != nullptr) {
         default_ccc_lib = *ep;
     }
     int K = this->order + 1;
@@ -81,11 +80,11 @@ void CrossCorrelation::setDefaultLibrary(const std::string &dir) {
     default_ccc_lib = dir;
 }
 
-void CrossCorrelation::setCCCPaths(const string &lib) {
-    ostringstream oss;
+void CrossCorrelation::setCCCPaths(const std::string &lib) {
+    std::ostringstream oss;
     oss << this->order;
-    string ordr = oss.str();
-    string cclib;
+    std::string ordr = oss.str();
+    std::string cclib;
     if (lib.empty()) {
         cclib = default_ccc_lib;
     } else {
@@ -106,8 +105,8 @@ void CrossCorrelation::setCCCPaths(const string &lib) {
 }
 
 void CrossCorrelation::readCCCBin() {
-    ifstream L_fis(this->L_path.c_str(), ios::binary);
-    ifstream R_fis(this->R_path.c_str(), ios::binary);
+    std::ifstream L_fis(this->L_path.c_str(), std::ios::binary);
+    std::ifstream R_fis(this->R_path.c_str(), std::ios::binary);
 
     if (not L_fis) {
         MSG_FATAL("Could not open cross correlation: " << this->L_path);
@@ -123,8 +122,8 @@ void CrossCorrelation::readCCCBin() {
         L_fis.read((char *) dL, sizeof(double) * 2*K);
         R_fis.read((char *) dR, sizeof(double) * 2*K);
         for (int j = 0; j < 2*K; j++) {
-            if (fabs(dL[j]) < MachinePrec) dL[j] = 0.0;
-            if (fabs(dR[j]) < MachinePrec) dR[j] = 0.0;
+            if (std::abs(dL[j]) < MachinePrec) dL[j] = 0.0;
+            if (std::abs(dR[j]) < MachinePrec) dR[j] = 0.0;
             this->Left(i, j) = dL[j];
             this->Right(i, j) = dR[j];
         }

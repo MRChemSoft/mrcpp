@@ -10,16 +10,15 @@ namespace mrcpp {
 typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic>
 FilterBlock;
 
-class MWFilter {
+class MWFilter final {
 public:
     MWFilter(int k, int t, const std::string &lib = "");
     MWFilter(int t, const Eigen::MatrixXd &data);
-    virtual ~MWFilter() { }
 
-    virtual void apply(Eigen::MatrixXd &data) const;
-    virtual void apply(Eigen::VectorXd &data) const;
-    virtual void applyInverse(Eigen::MatrixXd &data) const;
-    virtual void applyInverse(Eigen::VectorXd &data) const;
+    void apply(Eigen::MatrixXd &data) const;
+    void apply(Eigen::VectorXd &data) const;
+    void applyInverse(Eigen::MatrixXd &data) const;
+    void applyInverse(Eigen::VectorXd &data) const;
 
     int getOrder() const { return this->order; }
     int getType() const { return this->type; }

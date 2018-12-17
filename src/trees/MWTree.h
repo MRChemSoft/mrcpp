@@ -30,6 +30,8 @@ template<int D>
 class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra);
+    MWTree(const MWTree<D> &tree) = delete;
+    MWTree<D> &operator=(const MWTree<D> &tree) = delete;
     virtual ~MWTree();
 
     void setZero();
@@ -59,7 +61,7 @@ public:
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
-    int getRootIndex(const double *r) const { return this->rootBox.getBoxIndex(r); }
+    int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
     int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
     MWNode<D> *findNode(const NodeIndex<D> &nIdx);
@@ -69,9 +71,9 @@ public:
     MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx);
     const MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx) const;
 
-    MWNode<D> &getNode(const double *r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(const double *r, int depth = -1) const;
+    MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
+    MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1);
+    const MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1) const;
 
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
     MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
@@ -79,11 +81,11 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
-    void makeNodeTable(MWNodeVector &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector > &nodeTable);
+    void makeNodeTable(MWNodeVector<D> &nodeTable);
+    void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
 
-    MWNodeVector* copyEndNodeTable();
-    MWNodeVector* getEndNodeTable() { return &this->endNodeTable; }
+    MWNodeVector<D>* copyEndNodeTable();
+    MWNodeVector<D>* getEndNodeTable() { return &this->endNodeTable; }
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
@@ -136,7 +138,7 @@ protected:
     int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
-    MWNodeVector endNodeTable;	   ///< Final projected nodes
+    MWNodeVector<D> endNodeTable;	   ///< Final projected nodes
     std::vector<int> nodesAtDepth;  ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);

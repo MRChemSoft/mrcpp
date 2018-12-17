@@ -11,13 +11,10 @@
 #include "RepresentableFunction.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 template<int D>
-RepresentableFunction<D>::RepresentableFunction(const double *a,
-                                                const double *b) {
+RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b) {
     if (a == nullptr or b == nullptr) {
         this->bounded = false;
         this->A = 0;
@@ -38,8 +35,7 @@ RepresentableFunction<D>::RepresentableFunction(const double *a,
 
 /** Constructs a new function with same bounds as the input function */
 template<int D>
-RepresentableFunction<D>::RepresentableFunction(
-        const RepresentableFunction<D> &func) {
+RepresentableFunction<D>::RepresentableFunction(const RepresentableFunction<D> &func) {
     if (func.isBounded()) {
         this->bounded = true;
         this->A = new double[D];
@@ -58,8 +54,7 @@ RepresentableFunction<D>::RepresentableFunction(
 /** Copies function, not bounds. Use copy constructor if you want an
   * identical function. */
 template<int D>
-RepresentableFunction<D>& RepresentableFunction<D>::operator=(
-        const RepresentableFunction<D> &func) {
+RepresentableFunction<D>& RepresentableFunction<D>::operator=(const RepresentableFunction<D> &func) {
     return *this;
 }
 
@@ -93,7 +88,7 @@ void RepresentableFunction<D>::setBounds(const double *a, const double *b) {
 }
 
 template<int D>
-bool RepresentableFunction<D>::outOfBounds(const double *r) const {
+bool RepresentableFunction<D>::outOfBounds(const Coord<D> &r) const {
     if (not isBounded()) {
         return false;
     }

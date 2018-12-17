@@ -5,12 +5,11 @@
 
 namespace mrcpp {
 
-class BoysFunction : public RepresentableFunction<1> {
+class BoysFunction final : public RepresentableFunction<1> {
 public:
     BoysFunction(int n, double prec = 1.0e-10);
-    virtual ~BoysFunction() { }
 
-    double evalf(const double *r) const;
+    double evalf(const Coord<1> &r) const;
 
 protected:
     const int order;

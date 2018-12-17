@@ -10,13 +10,10 @@ namespace mrcpp {
 template<int D>
 class ConvolutionCalculator final : public TreeCalculator<D> {
 public:
-    ConvolutionCalculator(double p,
-                          ConvolutionOperator<D> &o,
-                          FunctionTree<D> &f,
-                          int depth = MaxDepth);
-    virtual ~ConvolutionCalculator();
+    ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D> &f, int depth = MaxDepth);
+    ~ConvolutionCalculator();
 
-    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const;
+    MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
 protected:
     int maxDepth;
@@ -33,8 +30,8 @@ protected:
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);
 
-    MWNodeVector* makeOperBand(const MWNode<D> &gNode);
-    void fillOperBand(MWNodeVector *band, NodeIndex<D> &idx, const int *nbox, int dim);
+    MWNodeVector<D>* makeOperBand(const MWNode<D> &gNode);
+    void fillOperBand(MWNodeVector<D> *band, NodeIndex<D> &idx, const int *nbox, int dim);
 
     void initTimers();
     void clearTimers();
@@ -44,8 +41,8 @@ protected:
     int getBandSizeFactor(int i, int depth,const OperatorState<D> &os) const;
     void calcBandSizeFactor(Eigen::MatrixXi &bs, int depth, const BandWidth &bw);
 
-    virtual void calcNode(MWNode<D> &node);
-    virtual void postProcess() {
+    void calcNode(MWNode<D> &node);
+    void postProcess() {
         printTimers();
         clearTimers();
         initTimers();

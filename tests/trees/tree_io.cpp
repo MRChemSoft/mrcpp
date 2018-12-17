@@ -15,9 +15,9 @@ template<int D> void testProjectFunction();
 SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
     const double prec = 1.0e-4;
 
-    GaussFunc<3> *func = 0;
+    GaussFunc<3> *func = nullptr;
     initialize(&func);
-    MultiResolutionAnalysis<3> *mra = 0;
+    MultiResolutionAnalysis<3> *mra = nullptr;
     initialize(&mra);
 
     FunctionTree<3> f_tree(*mra);

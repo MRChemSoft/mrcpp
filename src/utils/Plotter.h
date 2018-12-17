@@ -16,7 +16,7 @@ template<int D>
 class Plotter {
 public:
     Plotter(int npts = 1000, const double *a = 0, const double *b = 0);
-    virtual ~Plotter() { }
+    virtual ~Plotter() = default;
 
     void setRange(const double *a, const double *b);
     void setNPoints(int npts);

@@ -14,7 +14,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -22,7 +21,7 @@ namespace mrcpp {
 template<int D> double GaussExp<D>::defaultScreening = 10.0;
 
 template<int D>
-GaussExp<D>::GaussExp(int nTerms, double prec) : screening(0.0), squareNorm(-1.0) {
+GaussExp<D>::GaussExp(int nTerms, double prec) {
     for (int i = 0; i < nTerms; i++) {
         this->funcs.push_back(0);
     }
@@ -40,10 +39,9 @@ GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
 
 template<int D>
 GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1.0) {
-    int pow[D];
-    double pos[D];
-    double coef;
-    double alpha = gPoly.getExp();
+    std::array<int, D> pow;
+    std::array<double, D> pos;
+    auto alpha = gPoly.getExp();
 
     int nTerms = 1;
     for (int d = 0; d < D; d++) {
@@ -51,13 +49,13 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1
         pos[d] = gPoly.getPos()[d];
     }
 
-    vector<double> coefs;
-    vector<int *> power;
+    std::vector<double> coefs;
+    std::vector<int *> power;
 
     gPoly.fillCoefPowVector(coefs, power, pow, D);
 
     for (int i = 0; i < nTerms; i++) {
-        coef = coefs[i];
+        double coef = coefs[i];
         for (int d = 0; d < D; d++) {
             pow[d] = power[i][d];
         }
@@ -100,7 +98,7 @@ GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
 }
 
 template<int D>
-double GaussExp<D>::evalf(const double *r) const {
+double GaussExp<D>::evalf(const Coord<D> &r) const {
     double val = 0.0;
     for (int i = 0; i < this->size(); i++) {
         val += this->getFunc(i).evalf(r);
@@ -218,27 +216,21 @@ GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) {
         for (int j = 0; j < gexp.size(); j++) {
-            if (GaussFunc<D> *f =
-                                dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g =
-                                dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g =
-                                dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
                 } else {
                     MSG_FATAL("Invalid Gaussian type!");
                 }
-            } else if (GaussPoly<D> *f =
-                                dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
-                if (GaussFunc<D> *g =
-                                dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
-                } else if (GaussPoly<D> *g =
-                                dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
                 } else {
@@ -257,10 +249,10 @@ GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
     GaussExp<D> result;
     int nTerms = this->size();
     for (int n = 0; n < nTerms; n++) {
-        if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
-        } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
         } else {
@@ -274,10 +266,10 @@ GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     int nTerms = this->size();
     GaussExp<D> result(nTerms);
     for (int n = 0; n < nTerms; n++) {
-        if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
-        } else if (GaussPoly<D> *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
             GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
         } else {
@@ -311,10 +303,8 @@ void GaussExp<D>::multInPlace(double d) {
  */
 template<int D>
 double GaussExp<D>::calcSquareNorm() {
-
-    double overlap, norm = 0.0;
-
     /* computing the squares */
+    double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
         double nc = this->funcs[i]->getSquareNorm();
         norm += nc;
@@ -322,10 +312,10 @@ double GaussExp<D>::calcSquareNorm() {
     /* computing the double products */
     for (int i = 0; i < this->size(); i++) {
         for (int j = i + 1; j < this->size(); j++) {
-            if (GaussFunc<D> *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
+            double overlap = 0.0;
+            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
-            } else if (GaussPoly<D> *f =
-                    dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
+            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
             } else {
                 MSG_FATAL("Invald argument");
@@ -339,10 +329,9 @@ double GaussExp<D>::calcSquareNorm() {
 
 template<int D>
 void GaussExp<D>::normalize() {
-    double norm = sqrt(this->getSquareNorm());
-    double coef;
+    double norm = std::sqrt(this->getSquareNorm());
     for (int i = 0; i < this->size(); i++) {
-        coef = this->funcs[i]->getCoef();
+        double coef = this->funcs[i]->getCoef();
         this->funcs[i]->setCoef(coef / norm);
     }
     calcSquareNorm();
@@ -370,9 +359,9 @@ void GaussExp<D>::calcScreening(double nStdDev) {
 template<int D>
 void GaussExp<D>::setScreen(bool screen) {
     if (screen) {
-        this->screening = fabs(this->screening);
+        this->screening = std::abs(this->screening);
     } else {
-        this->screening = -fabs(this->screening);
+        this->screening = -std::abs(this->screening);
     }
     for (int i = 0; i < this->size(); i++) {
         this->funcs[i]->setScreen(screen);

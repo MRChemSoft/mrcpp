@@ -7,7 +7,6 @@
 #include "macros.h"
 #include "constants.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -48,7 +47,7 @@ GaussQuadrature::GaussQuadrature(int k, double a, double b, int inter) {
 }
 
 void GaussQuadrature::setBounds(double a, double b) {
-    if (fabs(this->A - a) < MachineZero and fabs(this->B - b) < MachineZero) {
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
         return;
     }
     if (a >= b) {
@@ -146,8 +145,6 @@ void GaussQuadrature::calcScaledPtsWgts() {
  *
  */
 int GaussQuadrature::calcGaussPtsWgts() {
-    double z, z1, xm, xl;
-
     int K;
     if (this->order % 2 == 0) {
         K = this->order / 2;
@@ -158,21 +155,21 @@ int GaussQuadrature::calcGaussPtsWgts() {
     double a = -1.0;
     double b = 1.0;
 
-    xm = (b + a) * 0.5;
-    xl = (b - a) * 0.5;
+    double xm = (b + a) * 0.5;
+    double xl = (b - a) * 0.5;
 
     LegendrePoly legendrep(this->order, 1.0, 0.0); // Interval [-1,1]
     Vector2d lp;
 
     for (int i = 0; i < K; i++) {
-        z = cos(pi * (i + 0.75) / (this->order + 0.5));
+        double z = cos(pi * (i + 0.75) / (this->order + 0.5));
         int iter;
         for (iter = 0; iter < NewtonMaxIter; iter++) {
             lp = legendrep.firstDerivative(z);
 
-            z1 = z;
+            double z1 = z;
             z = z1 - lp(0) / lp(1);
-            if (fabs(z - z1) <= EPS) {
+            if (std::abs(z - z1) <= EPS) {
                 break;
             }
         }
@@ -192,7 +189,7 @@ int GaussQuadrature::calcGaussPtsWgts() {
 /** Integrate a 1D-function f(x) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
     double isum = 0.e0;
-    double r[1];
+    Coord<1> r;
     for (int i = 0; i < this->npts; i++) {
         r[0] = this->roots(i);
         isum += this->weights(i) * func.evalf(r);
@@ -202,11 +199,10 @@ double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
 
 /** Integrate a 2D-function f(x1, x2) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
-    double jsum;
-    double r[2];
+    Coord<2> r;
     double isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
-        jsum = 0.e0;
+        double jsum = 0.e0;
         r[0] = this->roots(i);
         for (int j = 0; j < this->npts; j++) {
             r[1] = this->roots(j);
@@ -220,15 +216,14 @@ double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
 
 /** Integrate a 3D-function f(x1, x2, x3) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
-    double isum, jsum, ksum;
-    double r[3];
+    Coord<3> r;
 
-    isum = 0.e0;
+    double isum = 0.e0;
     for (int i = 0; i < this->npts; i++) {
-        jsum = 0.e0;
+        double jsum = 0.e0;
         r[0] = this->roots(i);
         for (int j = 0; j < this->npts; j++) {
-            ksum = 0.e0;
+            double ksum = 0.e0;
             r[1] = this->roots(j);
             for (int k = 0; k < this->npts; k++) {
                 r[2] = this->roots(k);
@@ -250,6 +245,7 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
     NOT_IMPLEMENTED_ABORT;
     NEEDS_TESTING
 
+    /*
     double sum;
     static double r[MaxQuadratureDim];
 
@@ -263,6 +259,7 @@ double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) c
         }
     }
     return sum;
+    */
 }
 
 } // namespace mrcpp

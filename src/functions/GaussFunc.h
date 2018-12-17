@@ -24,18 +24,22 @@
 namespace mrcpp {
 
 template<int D>
-class GaussFunc: public Gaussian<D> {
+class GaussFunc final : public Gaussian<D> {
 public:
-    GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = 0,
-            const int pow[D] = 0) : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int pow[D] = nullptr)
+        : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
+        : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
+        : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf) : Gaussian<D>(gf) {}
+    GaussFunc<D> &operator=(const GaussFunc<D> &gp) = delete;
     Gaussian<D> *copy() const;
-    ~GaussFunc() { }
 
     double calcCoulombEnergy(GaussFunc<D> &gf);
     double calcSquareNorm();
 
-    double evalf(const double *r) const;
+    double evalf(const Coord<D> &r) const;
     double evalf(double r, int dim) const;
 
     static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);
@@ -55,6 +59,10 @@ public:
         this->power[d] = power;
         this->squareNorm = -1.0;
     }
+    void setPower(const std::array<int, D> &power) {
+        this->power = power;
+        this->squareNorm = -1.0;
+    }
     void setPower(const int power[D]) {
         for (int i = 0; i < D; i++) {
             this->power[i] = power[i];
@@ -62,8 +70,7 @@ public:
         this->squareNorm = -1.0;
     }
 protected:
-    static double ObaraSaika_ab(int power_a, int power_b, double pos_a,
-            double pos_b, double expo_a, double expo_b);
+    static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
 
     std::ostream& print(std::ostream &o) const;
 };

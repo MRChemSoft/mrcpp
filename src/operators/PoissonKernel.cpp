@@ -25,32 +25,32 @@ void PoissonKernel::initializeKernel() {
     double r1 = this->rMax;
 
     double t1 = 1.0L;
-    while ((2 * t1 * exp(-t1)) > this->epsilon) {
+    while ((2 * t1 * std::exp(-t1)) > this->epsilon) {
         t1 *= 1.1L;
     }
     double t2 = 1.0L;
-    while ((sqrt(t2) * exp(-t2) / r0) > this->epsilon) {
+    while ((std::sqrt(t2) * std::exp(-t2) / r0) > this->epsilon) {
         t2 *= 1.1L;
     }
 
     // Set the truncation limits s1,s2 of the integral (integrate over [s1,s2])
     // for achieving relative error epsilon
-    double s1 = -log(2 * t1);
-    double s2 = log(t2 / (r0 * r0)) / 2;
+    double s1 = -std::log(2 * t1);
+    double s2 = std::log(t2 / (r0 * r0)) / 2;
 
     // Now, set the step size h for use in the trapezoidal rule for given MU
-    double h = 1 / (0.2L - 0.47L * log10(this->epsilon));
-    int n_exp = (int) ceil((s2 - s1) / h) + 1;
+    double h = 1 / (0.2L - 0.47L * std::log10(this->epsilon));
+    int n_exp = (int) std::ceil((s2 - s1) / h) + 1;
 
     if (n_exp > MaxSepRank) MSG_FATAL("Maximum separation rank exceeded.");
 
     for (int i = 0; i < n_exp; i++) {
         double arg = s1 + h * i;
-        double sinharg = sinh(arg);
-        double cosharg = cosh(arg);
-        double onepexp = 1.0 + exp(-sinharg);
+        double sinharg = std::sinh(arg);
+        double cosharg = std::cosh(arg);
+        double onepexp = 1.0 + std::exp(-sinharg);
 
-        double alpha = 4.0L * (sinharg+log(onepexp)) * (sinharg+log(onepexp));
+        double alpha = 4.0L * (sinharg+std::log(onepexp)) * (sinharg+std::log(onepexp));
         double beta = h * (4.0L / root_pi) * cosharg / onepexp;
 
         alpha *= 1.0/(r1*r1);

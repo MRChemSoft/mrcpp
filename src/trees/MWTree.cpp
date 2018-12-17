@@ -10,7 +10,6 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -100,7 +99,7 @@ void MWTree<D>::mwTransform(int type, bool overwrite) {
   * coefficients of BranchNodes (can be used after operator application). */
 template<int D>
 void MWTree<D>::mwTransformUp() {
-    vector<MWNodeVector > nodeTable;
+    std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
 #pragma omp parallel shared(nodeTable)
 {
@@ -123,7 +122,7 @@ void MWTree<D>::mwTransformUp() {
   * existing scaling coefficients (can be used after operator application). */
 template<int D>
 void MWTree<D>::mwTransformDown(bool overwrite) {
-    vector<MWNodeVector > nodeTable;
+    std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
 #pragma omp parallel shared(nodeTable)
 {
@@ -328,7 +327,7 @@ const MWNode<D>& MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) const {
   * that does not exist. Recursion starts at the appropriate rootNode and
   * decends from this. */
 template<int D>
-MWNode<D>& MWTree<D>::getNode(const double *r, int depth) {
+MWNode<D>& MWTree<D>::getNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     if (depth >= 0) {
         return *root.retrieveNode(r, depth);
@@ -343,7 +342,7 @@ MWNode<D>& MWTree<D>::getNode(const double *r, int depth) {
   * the path to the requested node, and will never create or return GenNodes.
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
-MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
+MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }
@@ -354,7 +353,7 @@ MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
   * the path to the requested node, and will never create or return GenNodes.
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
-const MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) const {
+const MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) const {
     const MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }
@@ -362,7 +361,7 @@ const MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) const {
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
   * Returns one nodeVector for the whole tree. GenNodes disregarded. */
 template<int D>
-void MWTree<D>::makeNodeTable(MWNodeVector &nodeTable) {
+void MWTree<D>::makeNodeTable(MWNodeVector<D> &nodeTable) {
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);
     while (it.next()) {
@@ -374,22 +373,22 @@ void MWTree<D>::makeNodeTable(MWNodeVector &nodeTable) {
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
   * Returns one nodeVector per scale. GenNodes disregarded. */
 template<int D>
-void MWTree<D>::makeNodeTable(std::vector<MWNodeVector > &nodeTable) {
+void MWTree<D>::makeNodeTable(std::vector<MWNodeVector<D> > &nodeTable) {
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         int depth = node.getDepth();
         if (depth + 1 > nodeTable.size()) { // Add one more element
-            nodeTable.push_back(MWNodeVector());
+            nodeTable.push_back(MWNodeVector<D>());
         }
         nodeTable[depth].push_back(&node);
     }
 }
 
 template<int D>
-MWNodeVector* MWTree<D>::copyEndNodeTable() {
-    MWNodeVector *nVec = new MWNodeVector;
+MWNodeVector<D>* MWTree<D>::copyEndNodeTable() {
+    MWNodeVector<D> *nVec = new MWNodeVector<D>;
     for (int n = 0; n < getNEndNodes(); n++) {
         MWNode<D> &node = getEndMWNode(n);
         nVec->push_back(&node);
@@ -490,12 +489,12 @@ void MWTree<D>::deleteGenerated() {
 }
 
 template<int D>
-void MWTree<D>::saveTree(const string &file) {
+void MWTree<D>::saveTree(const std::string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>
-void MWTree<D>::loadTree(const string &file) {
+void MWTree<D>::loadTree(const std::string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
 

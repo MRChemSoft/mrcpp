@@ -20,15 +20,15 @@ namespace mrcpp {
 
 class Polynomial: public RepresentableFunction<1> {
 public:
-    Polynomial(int k = 0, const double *a = 0, const double *b = 0);
-    Polynomial(const Eigen::VectorXd &c, const double *a=0, const double *b=0);
-    Polynomial(double c, int k = 0, const double *a=0, const double *b=0);
+    Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
+    Polynomial(const Eigen::VectorXd &c, const double *a = nullptr, const double *b = nullptr);
+    Polynomial(double c, int k = 0, const double *a = nullptr, const double *b = nullptr);
     Polynomial(const Polynomial &poly);
     Polynomial &operator=(const Polynomial &poly);
-    virtual ~Polynomial() { }
+    virtual ~Polynomial() = default;
 
     double evalf(double x) const;
-    double evalf(const double *r) const { return evalf(r[0]); }
+    double evalf(const Coord<1> &r) const { return evalf(r[0]); }
 
     double getScaledLowerBound() const;
     double getScaledUpperBound() const;

@@ -3,49 +3,52 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-const int min_scale = -4;
-const int max_depth = 25;
+#include <memory>
 
-const int order = 5;
-const double prec = 1.0e-3;
+const auto min_scale = -4;
+const auto max_depth = 25;
+
+const auto order = 5;
+const auto prec = 1.0e-3;
+const auto D = 3; // Dimensions
 
 using namespace mrcpp;
 
-void setupNuclearPotential(double Z, FunctionTree<3> &V) {
-    Timer timer;
-    int oldlevel = Printer::setPrintLevel(10);
+void setupNuclearPotential(double Z, FunctionTree<D> &V) {
+    auto timer = Timer();
+    auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting nuclear potential");
 
     // Smoothing parameter
-    double c = 0.00435*prec/pow(Z, 5);
+    auto c = 0.00435*prec/std::pow(Z, 5);
     auto u = [] (double r) -> double {
-        return erf(r)/r + 1.0/(3.0*sqrt(mrcpp::pi))*(exp(-r*r) + 16.0*exp(-4.0*r*r));
+        return std::erf(r)/r + 1.0/(3.0*std::sqrt(mrcpp::pi))*(std::exp(-r*r) + 16.0*std::exp(-4.0*r*r));
     };
-    auto f = [u, c, Z] (const double *r) -> double {
-        double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+    auto f = [u, c, Z] (const Coord<3> &r) -> double {
+        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return -1.0*Z*u(x/c)/c;
     };
 
     // Projecting function
-    project(prec, V, f);
+    project<D>(prec, V, f);
 
     timer.stop();
     Printer::printFooter(0, timer, 2);
     Printer::setPrintLevel(oldlevel);
 }
 
-void setupInitialGuess(FunctionTree<3> &phi) {
-    Timer timer;
-    int oldlevel = Printer::setPrintLevel(10);
+void setupInitialGuess(FunctionTree<D> &phi) {
+    auto timer = Timer();
+    auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
 
-    auto f = [] (const double *r) -> double {
-        double x = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return 1.0*exp(-1.0*x*x);
+    auto f = [] (const Coord<D> &r) -> double {
+        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return 1.0*std::exp(-1.0*x*x);
     };
 
     // Projecting and normalizing function
-    project(prec, phi, f);
+    project<D>(prec, phi, f);
     phi.normalize();
 
     timer.stop();
@@ -54,31 +57,30 @@ void setupInitialGuess(FunctionTree<3> &phi) {
 }
 
 int main(int argc, char **argv) {
-    Timer timer;
+    auto timer = Timer();
 
     // Initialize printing
-    int printlevel = 0;
+    auto printlevel = 0;
     Printer::init(printlevel);
     Printer::printEnvironment();
 
     // Constructing world box
-    int min_scale = -4;
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
-    BoundingBox<3> world(min_scale, corner, boxes);
-
+    auto min_scale = -4;
+    auto corner = std::array<int, D>{-1, -1, -1};
+    auto boxes = std::array<int, D>{2, 2, 2};
+    auto world = BoundingBox<D>(min_scale, corner, boxes);
     // Constructing basis and MRA
-    InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(world, basis, max_depth);
+    auto basis = InterpolatingBasis(order);
+    auto MRA = MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Nuclear potential
-    double Z = 1.0;
-    FunctionTree<3> V(MRA);
+    auto Z = 1.0;
+    FunctionTree<D> V(MRA);
     setupNuclearPotential(Z, V);
 
     // Wave function
-    FunctionTree<3> *phi_n = new FunctionTree<3>(MRA);
-    FunctionTree<3> *phi_np1 = 0;
+    auto phi_n = std::make_shared<FunctionTree<D>>(MRA);
+    auto phi_np1 = std::make_shared<FunctionTree<D>>(MRA);
     setupInitialGuess(*phi_n);
 
     Printer::printHeader(0, "Running SCF");
@@ -88,36 +90,35 @@ int main(int argc, char **argv) {
     Printer::printSeparator(0, '-');
 
     // Orbtial energies
-    double epsilon_n = -0.5;
-    double epsilon_np1 = 0.0;
-    double d_epsilon_n = 0.0;
+    auto epsilon_n = -0.5;
+    auto epsilon_np1 = 0.0;
+    auto d_epsilon_n = 0.0;
 
-    int iter = 1;
-    double error = 1.0;
-    std::vector<Timer> scf_t;
+    auto iter = 1;
+    auto error = 1.0;
+    auto scf_t = std::vector<Timer>();
     while (error > 10*prec) {
         Timer cycle_t;
 
         // Initialize Helmholtz operator
         if (epsilon_n > 0.0) epsilon_n *= -1.0;
-        double mu_n = sqrt(-2.0*epsilon_n);
+        auto mu_n = std::sqrt(-2.0*epsilon_n);
         HelmholtzOperator H(MRA, mu_n, prec);
 
         // Compute Helmholtz argument V*phi
-        FunctionTree<3> Vphi(MRA);
+        FunctionTree<D> Vphi(MRA);
         copy_grid(Vphi, *phi_n); // Copy grid from orbital
         multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
         // Apply Helmholtz operator phi^n+1 = H[V*phi^n]
-        phi_np1 = new FunctionTree<3>(MRA);
         apply(prec, *phi_np1, H, Vphi);
         phi_np1->rescale(-1.0/(2.0*mrcpp::pi));
 
         // Compute orbital residual
-        FunctionTree<3> d_phi_n(MRA);
+        FunctionTree<D> d_phi_n(MRA);
         copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
         add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
-        error = sqrt(d_phi_n.getSquareNorm());
+        error = std::sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||
         d_epsilon_n = dot(Vphi, d_phi_n)/phi_np1->getSquareNorm();
@@ -135,21 +136,21 @@ int main(int argc, char **argv) {
         Printer::setPrecision(15);
         printout(0, std::endl);
 
-        delete phi_n;
-
         // Prepare for next iteration
         epsilon_n = epsilon_np1;
         phi_n = phi_np1;
+        phi_np1 = std::make_shared<FunctionTree<D>>(MRA);
         phi_n->normalize();
 
         cycle_t.stop();
         scf_t.push_back(cycle_t);
         iter++;
     }
+
     Printer::printSeparator(0, '=', 2);
 
     Printer::printHeader(0, "SCF timings");
-    for (int i = 0; i < scf_t.size(); i++) {
+    for (auto i = 0; i < scf_t.size(); i++) {
         Printer::printTree(0, "Time cycle", i+1, scf_t[i].getWallTime());
     }
     Printer::printSeparator(0, '=', 2);
@@ -159,8 +160,5 @@ int main(int argc, char **argv) {
     Printer::printDouble(0, "Eigenvalue", epsilon_n);
     Printer::printSeparator(0, '=', 2);
 
-    delete phi_n;
-
     return 0;
 }
-

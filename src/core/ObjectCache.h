@@ -39,8 +39,6 @@ public:
 
 protected:
     ObjectCache() {
-        this->highWaterMark = 0;
-        this->memLoaded = 0;
         this->objs.push_back(0);
         this->mem.push_back(0);
 #ifdef HAVE_OPENMP
@@ -56,14 +54,14 @@ protected:
         omp_destroy_lock(&cache_lock);
 #endif
     }
-    ObjectCache(ObjectCache<T> const &oc) { }
-    ObjectCache<T> &operator=(ObjectCache<T> const &oc) { return *this; }
+    ObjectCache(ObjectCache<T> const &oc) = delete;
+    ObjectCache<T> &operator=(ObjectCache<T> const &oc) = delete;
 #ifdef HAVE_OPENMP
     omp_lock_t cache_lock;
 #endif
 private:
-    int highWaterMark;
-    int memLoaded; ///< memory occupied by loaded objects
+    int highWaterMark{0};
+    int memLoaded{0}; ///< memory occupied by loaded objects
     std::vector<T *> objs; ///< objects store
     std::vector<int> mem; ///< mem per object
 };

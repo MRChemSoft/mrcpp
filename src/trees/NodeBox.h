@@ -15,24 +15,23 @@
 namespace mrcpp {
 
 template<int D>
-class NodeBox : public BoundingBox<D> {
+class NodeBox final : public BoundingBox<D> {
 public:
-    NodeBox();
     NodeBox(const NodeIndex<D> &idx, const int *nb = nullptr);
     NodeBox(const NodeBox<D> &box);
     NodeBox(const BoundingBox<D> &box);
-    NodeBox<D> &operator=(const NodeBox<D> &box);
-    virtual ~NodeBox();
+    NodeBox<D> &operator=(const NodeBox<D> &box) = delete;
+    ~NodeBox();
 
     void setNode(int idx, MWNode<D> **node);
     void clearNode(int idx) { this->nodes[idx] = 0; }
 
     MWNode<D> &getNode(const NodeIndex<D> &idx);
-    MWNode<D> &getNode(const double *r);
+    MWNode<D> &getNode(const Coord<D> &r);
     MWNode<D> &getNode(int i = 0);
 
     const MWNode<D> &getNode(const NodeIndex<D> &idx) const;
-    const MWNode<D> &getNode(const double *r) const;
+    const MWNode<D> &getNode(const Coord<D> &r) const;
     const MWNode<D> &getNode(int i = 0) const;
 
     int getNOccupied() const { return this->nOccupied; }

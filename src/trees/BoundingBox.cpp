@@ -22,6 +22,13 @@ BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
 }
 
 template<int D>
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb)
+        : cornerIndex(n, l.data()) {
+    setNBoxes(nb.data());
+    setDerivedParameters();
+}
+
+template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
         : cornerIndex(idx) {
     setNBoxes(nb);
@@ -64,7 +71,7 @@ void BoundingBox<D>::setDerivedParameters() {
     assert(this->nBoxes[D] > 0);
     int scale = this->cornerIndex.getScale();
     const int *l = this->cornerIndex.getTranslation();
-    this->unitLength = pow(2.0, -scale);
+    this->unitLength = std::pow(2.0, -scale);
     for (int d = 0; d < D; d++) {
         assert(this->nBoxes[d] > 0);
         this->boxLengths[d] = this->unitLength * this->nBoxes[d];
@@ -74,8 +81,7 @@ void BoundingBox<D>::setDerivedParameters() {
 }
 
 template<int D>
-NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
-    assert(r != nullptr);
+NodeIndex<D> BoundingBox<D>::getNodeIndex(const Coord<D> &r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -83,7 +89,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const double *r) const {
         assert(x < this->upperBounds[d]);
         double div = (x - this->lowerBounds[d]) / this->unitLength;
         double iint;
-        std::modf(div,&iint);
+        std::modf(div, &iint);
         idx[d] = (int) iint;
     }
 
@@ -127,8 +133,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 
 // Specialized for D=1 below
 template<int D>
-int BoundingBox<D>::getBoxIndex(const double *r) const {
-    assert(r != nullptr);
+int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
@@ -206,7 +211,7 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
 }
 
 template<>
-int BoundingBox<1>::getBoxIndex(const double *r) const {
+int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
     double x = r[0];
     if (x < this->lowerBounds[0]) return -1;
     if (x >= this->upperBounds[0]) return -1;

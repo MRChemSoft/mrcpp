@@ -3,69 +3,71 @@
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
-const int min_scale = -4;
-const int max_depth = 25;
+const auto min_scale = -4;
+const auto max_depth = 25;
 
-const int order = 7;
-const double prec = 1.0e-5;
+const auto order = 7;
+const auto prec = 1.0e-5;
+
+const auto D = 1;
 
 int main(int argc, char **argv) {
-    mrcpp::Timer timer;
+    auto timer = mrcpp::Timer();
 
     // Initialize printing
-    int printlevel = 0;
+    auto printlevel = 0;
     mrcpp::Printer::init(printlevel);
     mrcpp::Printer::printEnvironment();
     mrcpp::Printer::printHeader(0, "Applying derivative operator");
 
     // Constructing world box
-    int corner[1] = {-1 };
-    int boxes[1]  = { 2 };
-    mrcpp::BoundingBox<1> world(min_scale, corner, boxes);
+    auto corner = std::array<int, D>{-1};
+    auto boxes = std::array<int, D>{2};
+    auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
-    mrcpp::InterpolatingBasis basis(order);
-    mrcpp::MultiResolutionAnalysis<1> MRA(world, basis, max_depth);
+    auto basis = mrcpp::InterpolatingBasis(order);
+    auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Setting up analytic functions
-    const double alpha = 3.0;
-    const double r_0 = mrcpp::pi - 3.0;
-    auto f = [alpha, r_0] (const double *r) -> double {
-        double R = fabs(r[0] - r_0);
-        return exp(-alpha*R);
+    const auto alpha = 3.0;
+    const auto r_0 = mrcpp::pi - 3.0;
+    auto f = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
+        auto R = std::abs(r[0] - r_0);
+        return std::exp(-alpha*R);
     };
-    auto df = [alpha, r_0] (const double *r) -> double {
-        double R = fabs(r[0] - r_0);
-        double sign = 1.0;
+    auto df = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
+        auto R = std::abs(r[0] - r_0);
+        auto sign = 1.0;
         if (r[0] > r_0) sign = -1.0;
-        return sign*alpha*exp(-alpha*R);
+        return sign*alpha*std::exp(-alpha*R);
     };
 
     // Initializing MW functions and operators
-    mrcpp::ABGVOperator<1> D(MRA, 0.0, 0.0);
-    mrcpp::FunctionTree<1> f_tree(MRA);
-    mrcpp::FunctionTree<1> df_tree(MRA);
-    mrcpp::FunctionTree<1> dg_tree(MRA);
-    mrcpp::FunctionTree<1> err_tree(MRA);
+    mrcpp::ABGVOperator<D> D_00(MRA, 0.0, 0.0);
+    mrcpp::FunctionTree<D> f_tree(MRA);
+    mrcpp::FunctionTree<D> df_tree(MRA);
+    mrcpp::FunctionTree<D> dg_tree(MRA);
+    mrcpp::FunctionTree<D> err_tree(MRA);
 
     // Projecting functions
-    mrcpp::project(prec, f_tree, f);
-    mrcpp::project(prec, df_tree, df);
+    mrcpp::project<D>(prec, f_tree, f);
+    mrcpp::project<D>(prec, df_tree, df);
 
     // Applying derivative operator
-    mrcpp::apply(dg_tree, D, f_tree, 0);
+    mrcpp::apply(dg_tree, D_00, f_tree, 0);
 
     // Computing error
     mrcpp::add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
 
-    double f_int = f_tree.integrate();
-    double f_norm = sqrt(f_tree.getSquareNorm());
-    double df_int = df_tree.integrate();
-    double df_norm = sqrt(df_tree.getSquareNorm());
-    double dg_int = dg_tree.integrate();
-    double dg_norm = sqrt(dg_tree.getSquareNorm());
-    double abs_err = sqrt(err_tree.getSquareNorm());
-    double rel_err = abs_err/df_norm;
+    auto f_int = f_tree.integrate();
+    auto f_norm = std::sqrt(f_tree.getSquareNorm());
+    auto df_int = df_tree.integrate();
+    auto df_norm = std::sqrt(df_tree.getSquareNorm());
+    auto dg_int = dg_tree.integrate();
+    auto dg_norm = std::sqrt(dg_tree.getSquareNorm());
+    auto abs_err = std::sqrt(err_tree.getSquareNorm());
+    auto rel_err = abs_err/df_norm;
 
     mrcpp::Printer::printSeparator(0, ' ');
     mrcpp::Printer::printDouble(0, "f_tree integral", f_int);
@@ -86,4 +88,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-

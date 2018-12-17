@@ -26,10 +26,12 @@ public:
 
 protected:
     FunctionNode() : MWNode<D>() { }
+    FunctionNode(const FunctionNode<D> &node) = delete;
+    FunctionTree<D> &operator=(const FunctionNode<D> &node) = delete;
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
-    double evalf(const double *r);
-    double evalScaling(const double *r) const;
+    double evalf(const Coord<D> &r);
+    double evalScaling(const Coord<D> &r) const;
 
     double integrate() const;
     double integrateLegendre() const;

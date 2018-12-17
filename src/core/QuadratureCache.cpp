@@ -25,7 +25,7 @@ QuadratureCache::~QuadratureCache() {
 void QuadratureCache::load(int k) {
     SET_CACHE_LOCK();
     if (not hasId(k)) {
-        GaussQuadrature *gp = new GaussQuadrature(k, this->A, this->B, this->intervals);
+        auto *gp = new GaussQuadrature(k, this->A, this->B, this->intervals);
         int memo = 2 * k * sizeof(double);
         ObjectCache<GaussQuadrature>::load(k, gp, memo);
     }
@@ -40,7 +40,7 @@ GaussQuadrature &QuadratureCache::get(int k) {
 }
 
 void QuadratureCache::setBounds(double a, double b) {
-    if (fabs(this->A - a) < MachineZero and fabs(this->B - b) < MachineZero) {
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
         return;
     }
     if (a >= b) {

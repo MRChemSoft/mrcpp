@@ -81,14 +81,13 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     gNode.zeroCoefs();
 
     int nComp = (1 << D);
-    int depth = gNode.getDepth();
     double tmpCoefs[gNode.getNCoefs()];
     OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()].resume();
-    MWNodeVector fBand = makeOperBand(gNode);
+    MWNodeVector<D> fBand = makeOperBand(gNode);
     this->band_t[omp_get_thread_num()].stop();
 
     assert(this->oper->size() == 1);
@@ -120,11 +119,11 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
-    MWNodeVector band;
+    MWNodeVector<D> band;
     const NodeIndex<D> &idx_0 = gNode.getNodeIndex();
 
     // Assumes given width only in applyDir, otherwise width = 0
@@ -177,7 +176,7 @@ void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
         } else {
             if (oTransl == 0 and (oIdx == 0 or oIdx == 3)) {
                 // This will activate the identity operator in direction i
-                oData[d] = 0;
+                oData[d] = nullptr;
             } else {
                 // This means that we are in a zero part of the identity operator
                 return;
@@ -223,7 +222,7 @@ void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     for (int i = 0; i < D; i++) {
         Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
         Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
-        if (oData[i] != 0) {
+        if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
                 g += f.transpose() * op;
@@ -243,7 +242,7 @@ void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 }
 
 template<int D>
-MWNodeVector* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+MWNodeVector<D>* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     return tree.copyEndNodeTable();
 }
 

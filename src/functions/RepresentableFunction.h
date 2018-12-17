@@ -9,24 +9,25 @@
 #include <iostream>
 
 #include "constants.h"
+#include "mrcpp_declarations.h"
 
 namespace mrcpp {
 
 template<int D>
 class RepresentableFunction {
 public:
-    RepresentableFunction(const double *a = 0, const double *b = 0);
+    RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
     RepresentableFunction(const RepresentableFunction<D> &func);
     RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
     virtual ~RepresentableFunction();
 
-    virtual double evalf(const double *r) const = 0;
+    virtual double evalf(const Coord<D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);
     void clearBounds();
 
     bool isBounded() const { return this->bounded; }
-    bool outOfBounds(const double *r) const;
+    bool outOfBounds(const Coord<D> &r) const;
 
     double getLowerBound(int d) const { return this->A[d]; }
     double getUpperBound(int d) const { return this->B[d]; }
@@ -47,4 +48,4 @@ protected:
     std::ostream& print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

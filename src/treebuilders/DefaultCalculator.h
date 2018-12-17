@@ -5,20 +5,17 @@
 namespace mrcpp {
 
 template<int D>
-class DefaultCalculator :public TreeCalculator<D> {
+class DefaultCalculator final : public TreeCalculator<D> {
 public:
-    DefaultCalculator() { }
-    virtual ~DefaultCalculator() { }
-
     // Reimplementation without OpenMP, the default is faster this way
-    virtual void calcNodeVector(MWNodeVector &nodeVec) {
+    void calcNodeVector(MWNodeVector<D> &nodeVec) {
         int nNodes = nodeVec.size();
         for (int n = 0; n < nNodes; n++) {
             calcNode(*nodeVec[n]);
         }
     }
 protected:
-    virtual void calcNode(MWNode<D> &node) {
+    void calcNode(MWNode<D> &node) {
         node.clearHasCoefs();
         node.clearNorms();
     }

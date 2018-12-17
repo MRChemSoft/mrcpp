@@ -6,17 +6,14 @@
 namespace mrcpp {
 
 template<int D>
-class AnalyticAdaptor : public TreeAdaptor<D> {
+class AnalyticAdaptor final : public TreeAdaptor<D> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms)
-            : TreeAdaptor<D>(ms),
-              func(&f) { }
-    virtual ~AnalyticAdaptor() { }
+    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms) : TreeAdaptor<D>(ms), func(&f) { }
 
 protected:
     const RepresentableFunction<D> *func;
 
-    virtual bool splitNode(const MWNode<D> &node) const {
+    bool splitNode(const MWNode<D> &node) const {
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
         if (this->func->isVisibleAtScale(scale, nQuadPts)) {

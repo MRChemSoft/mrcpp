@@ -13,7 +13,6 @@
 
 #include "constants.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -37,7 +36,7 @@ template <int T>
 void CrossCorrelationCache<T>::load(int order) {
     SET_CACHE_LOCK();
     if (not hasId(order)) {
-        CrossCorrelation *ccc = new CrossCorrelation(order, type, this->libPath);
+        auto *ccc = new CrossCorrelation(order, type, this->libPath);
         int memo = ccc->getLMatrix().size() * 2 * sizeof(double);
         ObjectCache<CrossCorrelation>::load(order, ccc, memo);
     }

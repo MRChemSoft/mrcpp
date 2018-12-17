@@ -3,8 +3,6 @@
 #include "OperatorNode.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
 
 int NOtrees=0;
@@ -22,7 +20,8 @@ int NOtrees=0;
 */
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
         : SerialTree<2>(tree, 0),
-          lastNode(0) {
+          sNodes(nullptr),
+          lastNode(nullptr) {
 
     this->maxNodes = 0;
     this->nNodes = 0;
@@ -31,12 +30,10 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
     this->sizeNodeCoeff = 4*this->tree_p->getKp1_d();
 
     this->maxNodesPerChunk = 64;
-    int sizePerChunk = this->maxNodesPerChunk*this->sizeNodeCoeff;
-   
     this->lastNode = (OperatorNode*) this->sNodes;//position of last allocated node
 
     //make virtual table pointers
-    OperatorNode* tmpNode = new OperatorNode();
+    auto* tmpNode = new OperatorNode();
     this->cvptr_OperatorNode =  *(char**)(tmpNode);
     delete tmpNode;
 
@@ -177,7 +174,7 @@ OperatorNode* SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double *
 	    //need to allocate new chunk
 	    this->sNodes = (OperatorNode*) new char[this->maxNodesPerChunk*sizeof(OperatorNode)];
 	    this->nodeChunks.push_back(this->sNodes);
-            double *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
+            auto *sNodesCoeff = new double[this->sizeNodeCoeff*this->maxNodesPerChunk];
             this->nodeCoeffChunks.push_back(sNodesCoeff);
 	    //allocate new chunk in nodeStackStatus
 	    int oldsize = this->nodeStackStatus.size();

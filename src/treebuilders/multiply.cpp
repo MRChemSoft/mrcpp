@@ -247,7 +247,7 @@ double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()){
         MSG_FATAL("Trees not compatible");
     }
-    MWNodeVector nodeTable;
+    MWNodeVector<D> nodeTable;
     HilbertIterator<D> it(&bra);
     it.setReturnGenNodes(false);
     while(it.next()) {
@@ -269,7 +269,7 @@ double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
         const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
         if (mwNode == nullptr) continue;
 
-        const FunctionNode<D> &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
+        const auto &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
         if (braNode.isRootNode()) {
             locResult += dotScaling(braNode, ketNode);
         }

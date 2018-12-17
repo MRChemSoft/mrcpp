@@ -9,14 +9,7 @@
 #include "MWNode.h"
 #include "utils/Printer.h"
 
-using namespace std;
-
 namespace mrcpp {
-
-template<int D>
-NodeBox<D>::NodeBox() {
-    NOT_IMPLEMENTED_ABORT;
-}
 
 template<int D>
 NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const int *nb)
@@ -40,11 +33,6 @@ NodeBox<D>::NodeBox(const NodeBox<D> &box)
           nOccupied(0),
           nodes(0) {
     allocNodePointers();
-}
-
-template<int D>
-NodeBox<D>& NodeBox<D>::operator=(const NodeBox<D> &box) {
-    NOT_IMPLEMENTED_ABORT;
 }
 
 template<int D>
@@ -93,7 +81,7 @@ MWNode<D>& NodeBox<D>::getNode(const NodeIndex<D> &nIdx) {
 }
 
 template<int D>
-MWNode<D>& NodeBox<D>::getNode(const double *r) {
+MWNode<D>& NodeBox<D>::getNode(const Coord<D> &r) {
     int bIdx = this->getBoxIndex(r);
     if (bIdx < 0) MSG_ERROR("Coord out of bounds");
     return getNode(bIdx);
@@ -114,7 +102,7 @@ const MWNode<D>& NodeBox<D>::getNode(const NodeIndex<D> &nIdx) const {
 }
 
 template<int D>
-const MWNode<D>& NodeBox<D>::getNode(const double *r) const {
+const MWNode<D>& NodeBox<D>::getNode(const Coord<D> &r) const {
     int bIdx = this->getBoxIndex(r);
     if (bIdx < 0) MSG_ERROR("Coord out of bounds");
     return getNode(bIdx);

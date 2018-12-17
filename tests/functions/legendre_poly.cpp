@@ -10,7 +10,7 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
     int nLeg = 10;
     std::vector<LegendrePoly *> L;
     for (int k = 0; k < nLeg; k++) {
-        LegendrePoly *L_k = new LegendrePoly(k, 2.0, 1.0);
+        auto *L_k = new LegendrePoly(k, 2.0, 1.0);
         L.push_back(L_k);
     }
 
@@ -21,7 +21,8 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
             REQUIRE( L_k.getScaledUpperBound() == Approx(1.0) );
             REQUIRE( L_k.getOrder() == k );
             // Legendre polynomials are normalized so that L_k(1.0) = 1.0
-            REQUIRE( L_k.evalf(1.0) == Approx(1.0) );
+            Coord<1> one{1.0};
+            REQUIRE( L_k.evalf(one) == Approx(1.0) );
         }
     }
 

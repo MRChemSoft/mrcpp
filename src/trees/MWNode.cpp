@@ -12,7 +12,6 @@
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -25,7 +24,7 @@ MWNode<D>::MWNode()
         : tree(0),
           parent(0),
           squareNorm(-1.0),
-          coefs(0),
+          coefs(nullptr),
           n_coefs(0),
           nodeIndex(),
           hilbertPath(),
@@ -46,7 +45,7 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree),
           parent(0),
           squareNorm(-1.0),
-          coefs(0),
+          coefs(nullptr),
           n_coefs(0),
           nodeIndex(node.nodeIndex),
           hilbertPath(node.hilbertPath),
@@ -378,11 +377,11 @@ void MWNode<D>::cvTransform(int operation) {
         out_vec = tmp;
     }
     int np1 = getScale() + 1; // we're working on scaling coefs on next scale
-    double two_fac = pow(2.0, D*np1);
+    double two_fac = std::pow(2.0, D*np1);
     if (operation == Backward) {
-        two_fac = sqrt(1.0/two_fac);
+        two_fac = std::sqrt(1.0/two_fac);
     } else {
-        two_fac = sqrt(two_fac);
+        two_fac = std::sqrt(two_fac);
     }
     if (IS_ODD(D)) {
         for (int i = 0; i < nCoefs; i++) {
@@ -405,7 +404,7 @@ void MWNode<D>::cvTransform(int operation) {
     int quadratureOrder = sf.getQuadratureOrder();
     getQuadratureCache(qc);
 
-    double two_scale = pow(2.0, this->getScale() + 1);
+    double two_scale = std::pow(2.0, this->getScale() + 1);
     VectorXd modWeights = qc.getWeights(quadratureOrder);
     if (operation == Forward) {
         modWeights = modWeights.array().inverse();
@@ -576,7 +575,7 @@ double MWNode<D>::calcComponentNorm(int i) const {
         sq_norm += c[i]*c[i];
     }
 #endif
-    return sqrt(sq_norm);
+    return std::sqrt(sq_norm);
 }
 
 /** Update the coefficients of the node by a mw transform of the scaling
@@ -619,8 +618,8 @@ bool MWNode<D>::splitCheck(double prec, double splitFac, bool absPrec) const {
         return false;
     }
     double scale_fac = getScaleFactor(splitFac, absPrec);
-    double w_thrs = max(2.0*MachinePrec, prec*scale_fac);
-    double w_norm = sqrt(getWaveletNorm());
+    double w_thrs = std::max(2.0*MachinePrec, prec*scale_fac);
+    double w_norm = std::sqrt(getWaveletNorm());
     if (w_norm > w_thrs) {
         return true;
     } else {
@@ -638,12 +637,12 @@ double MWNode<D>::getScaleFactor(double splitFac, bool absPrec) const {
     double t_norm = 1.0;
     double sq_norm = this->tree->getSquareNorm();
     if (sq_norm > 0.0 and not absPrec) {
-        t_norm = sqrt(sq_norm);
+        t_norm = std::sqrt(sq_norm);
     }
     double scale_fac = 1.0;
     if (splitFac > MachineZero) {
         double expo = 0.5 * splitFac * (getScale() + 1);
-        scale_fac = pow(2.0, -expo);
+        scale_fac = std::pow(2.0, -expo);
     }
     return t_norm * scale_fac;
 }
@@ -694,7 +693,7 @@ template<int D>
 void MWNode<D>::getCenter(double *r) const {
     NOT_IMPLEMENTED_ABORT;
     //    assert(r != 0);
-    //    double sFac = pow(2.0, -getScale());
+    //    double sFac = std::pow(2.0, -getScale());
     //    for (int d = 0; d < D; d++) {
     //        double l = (double) getTranslation()[d];
     //        r[d] = sFac*(l + 0.5);
@@ -704,7 +703,7 @@ void MWNode<D>::getCenter(double *r) const {
 template<int D>
 void MWNode<D>::getBounds(double *lb, double *ub) const {
     int n = getScale();
-    double p = pow(2.0, -n);
+    double p = std::pow(2.0, -n);
     const int *l = getTranslation();
     for (int i = 0; i < D; i++) {
         lb[i] = p * l[i];
@@ -738,10 +737,10 @@ int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
   * Given a point in space, determines which child should be followed
   * to get to the corresponding terminal node. */
 template<int D>
-int MWNode<D>::getChildIndex(const double *r) const {
+int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     assert(hasCoord(r));
     int cIdx = 0;
-    double sFac = pow(2.0, -getScale());
+    double sFac = std::pow(2.0, -getScale());
     const int *l = getTranslation();
     for (int d = 0; d < D; d++) {
         if (r[d] > sFac*(l[d] + 0.5)) {
@@ -761,7 +760,7 @@ void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
 
-    double sFac = pow(2.0, -this->getScale());
+    double sFac = std::pow(2.0, -this->getScale());
     const int *l = this->getTranslation();
     for (int d = 0; d < D; d++) {
         pts.col(d) = sFac*(roots.array() + double(l[d]));
@@ -776,7 +775,7 @@ void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
 
-    double sFac = pow(2.0, -(this->getScale() + 1));
+    double sFac = std::pow(2.0, -(this->getScale() + 1));
     const int *l = this->getTranslation();
     for (int d = 0; d < D; d++) {
         pts.row(d).segment(0, kp1) = sFac*(roots.array() + 2.0*double(l[d]));
@@ -867,7 +866,7 @@ MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
 }
 
 template<int D>
-const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) const {
+const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
     if (getDepth() == depth or this->isEndNode()) {
         return this;
     }
@@ -884,7 +883,7 @@ const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) co
   * Recursion starts at at this node and ASSUMES the requested node is in fact
   * decending from this node. */
 template<int D>
-MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const double *r, int depth) {
+MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
     if (getDepth() == depth or this->isEndNode()) {
         return this;
     }
@@ -934,7 +933,7 @@ MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
   * that does not exist. Recursion starts at this node and ASSUMES the
   * requested node is in fact decending from this node. */
 template<int D>
-MWNode<D> *MWNode<D>::retrieveNode(const double *r, int depth) {
+MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
     if (depth < 0) MSG_FATAL("Invalid argument");
 
     if (getDepth() == depth) {
@@ -968,8 +967,8 @@ MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
 
 /** Test if a given coordinate is within the boundaries of the node. */
 template<int D>
-bool MWNode<D>::hasCoord(const double *r) const {
-    double sFac = pow(2.0, -getScale());
+bool MWNode<D>::hasCoord(const Coord<D> &r) const {
+    double sFac = std::pow(2.0, -getScale());
     const int *l = getTranslation();
     //    println(1, "[" << r[0] << "," << r[1] << "," << r[2] << "]");
     //    println(1, "[" << l[0] << "," << l[1] << "," << l[2] << "]");

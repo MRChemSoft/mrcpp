@@ -13,17 +13,43 @@
 #include "GaussFunc.h"
 #include "GaussExp.h"
 #include "utils/Printer.h"
+#include "utils/details.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
 
 template<int D>
 GaussPoly<D>::GaussPoly(double alpha, double coef, const double pos[D],
-    const int pow[D]) : Gaussian<D>(alpha, coef, pos, pow) {
+    const int power[D]) : Gaussian<D>(alpha, coef, pos, power) {
     for (int d = 0; d < D; d++) {
-        if (pow != 0) {
+        if (power != nullptr) {
+            this->poly[d] = new Polynomial(this->power[d]);
+            //this->poly[d]->unsetBounds();
+        } else {
+            this->poly[d] = 0;
+        }
+    }
+}
+
+template<int D>
+GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos,
+    const std::array<int, D> &power) : Gaussian<D>(alpha, coef, pos, power) {
+    for (auto d = 0; d < D; d++) {
+        if (power != std::array<int, D> {}) {
+            this->poly[d] = new Polynomial(this->power[d]);
+            //this->poly[d]->unsetBounds();
+        } else {
+            this->poly[d] = 0;
+        }
+    }
+}
+
+template<int D>
+GaussPoly<D>::GaussPoly(const std::array<double, D> &alpha, double coef, const Coord<D> &pos,
+    const std::array<int, D> &power) : Gaussian<D>(alpha, coef, pos, power) {
+    for (auto d = 0; d < D; d++) {
+        if (power != std::array<int, D> {}) {
             this->poly[d] = new Polynomial(this->power[d]);
             //this->poly[d]->unsetBounds();
         } else {
@@ -60,7 +86,7 @@ GaussPoly<D>::~GaussPoly() {
 
 template<int D>
 Gaussian<D> *GaussPoly<D>::copy() const {
-    GaussPoly<D> *gauss = new GaussPoly<D>(*this);
+    auto *gauss = new GaussPoly<D>(*this);
     return gauss;
 }
 
@@ -71,7 +97,7 @@ double GaussPoly<D>::calcOverlap(GaussPoly<D> &b) {
 
     double overlap = 0.0;
     for (int i = 0; i < fExp.size(); i++) {
-        GaussFunc<D> &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
+        auto &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
         for (int j = 0; j < gExp.size(); j++) {
             overlap += gExp.getFunc(j).calcOverlap(fFunc);
         }
@@ -91,10 +117,10 @@ double GaussPoly<D>::calcSquareNorm() {
 }
 
 template<int D>
-double GaussPoly<D>::evalf(const double *r) const {
+double GaussPoly<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
-            if ((r[d] < this->A[d]) or (r[d] > this->B[d])) {
+            if (r[d] < this->A[d] or r[d] > this->B[d]) {
                 return 0.0;
             }
         }
@@ -103,10 +129,10 @@ double GaussPoly<D>::evalf(const double *r) const {
     for (int d = 0; d < D; d++) {
         //assert(this->poly[d]->getCheckBounds() == false);
         double q = r[d] - this->pos[d];
-        q2 += q * q;
+        q2 += this->alpha[d] *q * q;
         p2 *= poly[d]->evalf(r[d] - this->pos[d]);
     }
-    return this->coef * p2 * exp(-this->alpha * q2);
+    return this->coef * p2 * std::exp(-q2);
 }
 
 /** NOTE!
@@ -130,7 +156,7 @@ double GaussPoly<D>::evalf(const double r, int d) const {
     if (d == 0) {
         p2 *= this->coef;
     }
-    return p2 * exp(-this->alpha * q2);
+    return p2 * std::exp(-this->alpha[d] * q2);
 }
 
 template<int D>
@@ -144,8 +170,28 @@ void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
 }
 
 template<int D>
-void GaussPoly<D>::fillCoefPowVector(vector<double> &coefs, vector<int *> &power,
-        int pow[D], int dir) const {
+void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const {
+    dir--;
+    for (int i = 0; i < this->getPower(dir) + 1; i++) {
+        pow[dir] = i;
+        if (dir > 0) {
+            fillCoefPowVector(coefs, power, pow, dir);
+        } else {
+            int *newPow = new int[D];
+            double coef = 1.0;
+            for (int d = 0; d < D; d++) {
+                newPow[d] = pow[d];
+                coef *= this->getPolyCoefs(d)[pow[d]];
+            }
+            coef *= this->getCoef();
+            power.push_back(newPow);
+            coefs.push_back(coef);
+        }
+    }
+}
+
+template<int D>
+void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, std::array<int, D> &pow, int dir) const {
     dir--;
     for (int i = 0; i < this->getPower(dir) + 1; i++) {
         pow[dir] = i;
@@ -208,7 +254,7 @@ GaussPoly<D> GaussPoly<D>::mult(double c) {
 
 template<int D>
 void GaussPoly<D>::setPower(int d, int pow) {
-    if (poly[d] != 0) {
+    if (poly[d] != nullptr) {
         delete poly[d];
     }
     poly[d] = new Polynomial(pow);
@@ -216,9 +262,20 @@ void GaussPoly<D>::setPower(int d, int pow) {
 }
 
 template<int D>
+void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
+    for (int d = 0; d < D; d++) {
+        if (poly[d] != nullptr) {
+            delete poly[d];
+        }
+        poly[d] = new Polynomial(pow[d]);
+    }
+    this->squareNorm = -1.0;
+}
+
+template<int D>
 void GaussPoly<D>::setPower(const int pow[D]) {
     for (int d = 0; d < D; d++) {
-        if (poly[d] != 0) {
+        if (poly[d] != nullptr) {
             delete poly[d];
         }
         poly[d] = new Polynomial(pow[d]);
@@ -238,7 +295,19 @@ void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 
 template<int D>
 std::ostream& GaussPoly<D>::print(std::ostream &o) const {
-    o << "Exp: " << this->getExp() << std::endl;
+    auto expTmp = this->getExp();
+    auto is_array = details::are_all_equal<D>(expTmp);
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed
+    if (!is_array) {
+        o << "Exp:   ";
+        for (auto &alpha : expTmp) {
+            o << alpha << " ";
+        }
+    } else {
+        o << "Exp:   " << expTmp[0] << std::endl;
+    }
     o << "Coef: " << this->getCoef() << std::endl;
     o << "Pos:   ";
     for (int i = 0; i < D; i++) {

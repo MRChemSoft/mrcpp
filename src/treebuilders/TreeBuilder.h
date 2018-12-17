@@ -5,23 +5,16 @@
 namespace mrcpp {
 
 template<int D>
-class TreeBuilder {
+class TreeBuilder final {
 public:
-    TreeBuilder() { }
-    virtual ~TreeBuilder() { }
-
-    void build(MWTree<D> &tree,
-               TreeCalculator<D> &calculator,
-               TreeAdaptor<D> &adaptor,
-               int maxIter) const;
-
-    int split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const;
-    void calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
+    void build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeAdaptor<D> &adaptor, int maxIter) const;
     void clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
+    void calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
+    int split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const;
 
 protected:
-    double calcScalingNorm(const MWNodeVector &vec) const;
-    double calcWaveletNorm(const MWNodeVector &vec) const;
+    double calcScalingNorm(const MWNodeVector<D> &vec) const;
+    double calcWaveletNorm(const MWNodeVector<D> &vec) const;
 };
 
 }

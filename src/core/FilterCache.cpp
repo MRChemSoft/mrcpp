@@ -13,7 +13,6 @@
 
 #include "constants.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -37,7 +36,7 @@ template <int T>
 void FilterCache<T>::load(int order) {
     SET_CACHE_LOCK();
     if (not hasId(order)) {
-        MWFilter *f = new MWFilter(order, type, this->libPath);
+        auto *f = new MWFilter(order, type, this->libPath);
         int memo = f->getFilter().size() * sizeof(double);
         ObjectCache<MWFilter>::load(order, f, memo);
     }

@@ -6,7 +6,6 @@
 #include "BandWidth.h"
 #include "utils/Printer.h"
 
-using namespace std;
 using namespace Eigen;
 
 namespace mrcpp {
@@ -14,9 +13,9 @@ namespace mrcpp {
 OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         : MWTree<2>(mra),
           normPrec(np),
-          bandWidth(0),
-          nodePtrStore(0),
-          nodePtrAccess(0) {
+          bandWidth(nullptr),
+          nodePtrStore(nullptr),
+          nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
 
     this->serialTree_p = new SerialOperatorTree(this);
@@ -37,12 +36,12 @@ OperatorTree::~OperatorTree() {
 }
 
 void OperatorTree::clearBandWidth() {
-    if (this->bandWidth != 0) delete this->bandWidth;
-    this->bandWidth = 0;
+    if (this->bandWidth != nullptr) delete this->bandWidth;
+    this->bandWidth = nullptr;
 }
 
 void OperatorTree::calcBandWidth(double prec) {
-    if (this->bandWidth != 0) MSG_ERROR("Band width not properly cleared");
+    if (this->bandWidth != nullptr) MSG_ERROR("Band width not properly cleared");
     this->bandWidth = new BandWidth(getDepth());
 
     VectorXi max_transl;
@@ -56,7 +55,7 @@ void OperatorTree::calcBandWidth(double prec) {
         while (not done) {
             done = true;
             MWNode<2> &node = getNode(depth, l);
-            double thrs = max(MachinePrec, prec/(8.0 * (1 << depth)));
+            double thrs = std::max(MachinePrec, prec/(8.0 * (1 << depth)));
             for (int k = 0; k < 4; k++) {
                 if (node.getComponentNorm(k) > thrs) {
                     this->bandWidth->setWidth(depth, k, l);
@@ -76,8 +75,8 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     while(it.next()) {
         int n = it.getNode().getDepth();
         const int *l = it.getNode().getTranslation();
-        maxTransl[n] = max(maxTransl[n], abs(l[0]));
-        maxTransl[n] = max(maxTransl[n], abs(l[1]));
+        maxTransl[n] = std::max(maxTransl[n], abs(l[0]));
+        maxTransl[n] = std::max(maxTransl[n], abs(l[1]));
     }
 }
 
@@ -99,7 +98,7 @@ void OperatorTree::setupOperNodeCache() {
         int n_transl = max_transl[n];
         int n_nodes = 2*n_transl + 1;
 
-        OperatorNode **nodes = new OperatorNode *[n_nodes];
+        auto **nodes = new OperatorNode *[n_nodes];
         int j = 0;
         for (int i = n_transl; i >= 0; i--) {
             int l[2] = {0, i};
@@ -132,7 +131,7 @@ void OperatorTree::setupOperNodeCache() {
 }
 
 void OperatorTree::clearOperNodeCache() {
-    if (this->nodePtrStore != 0 ) {
+    if (this->nodePtrStore != nullptr ) {
         for (int i = 0; i < getDepth(); i++) {
             delete[] this->nodePtrStore[i];
         }
@@ -148,7 +147,7 @@ void OperatorTree::clearOperNodeCache() {
   * of OperatorNorm is done using random vectors, which is non-deterministic
   * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformUp() {
-    vector<vector<MWNode<2> *> > nodeTable;
+    std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
@@ -169,7 +168,7 @@ void OperatorTree::mwTransformUp() {
   * of OperatorNorm is done using random vectors, which is non-deterministic
   * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformDown(bool overwrite) {
-    vector<vector<MWNode<2> *> > nodeTable;
+    std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);
     for (int n = 0; n < nodeTable.size(); n++) {
         int n_nodes = nodeTable[n].size();

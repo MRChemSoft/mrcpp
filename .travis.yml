@@ -1,13 +1,11 @@
 language: cpp
 sudo: false
+dist: xenial
 
 notifications:
   slack:
     secure: 1jnJfgRwfuF8dzfN5daTItQ+jrilhRSjz88gKMhMpqvWrpaAZrytTcejs5FELXadeLIiddoT7c5GKLrCngVzadMi60bc/kfE2Lzer8z31i6mfPXGLvd3zWpVa6Tt8Bur2wL/oB/f6herDQurW2t0HcTp6oc6Mv3iI23PPl/MQG4w6oNKc6SOeBIBDykJOSaf3+SY/z4vXBqqF5lbmWHUIngTUkV7UEzmj+c4MukOUn9IyYjNSgvZd1ql4SKG58gzkafB1tbhxPjyJqLcWjokwlhVYTxHulBqemxRj7DGznWAUL72Pbc6ot27R655wvl/OEoL7X8U0aLIJIlIzLl49WDv5c81wGw/iOVjj5leBpfJl6QlyNMJC0jPEEJYPbEWxzgZGNa1eYbZyroOKvBBalcYVzxq018VgwYjMdZL0zFhdTymgFcDnR1p3Z1Lii6fN3oO2QVAsyBq3sN+IVtlyAWnHIGP+eyEGpggKJ1GsnG/Mb8cjBc6hjG8Q3fRQEfB5C5FeWJSU67hTnuGpTWKcF8rcfbtrw5D1JzBkqYjL6PuG5/VLu8Ro/IihBKf0N+sFa5GvdmbWOEWDEpiIMfWvcOpTIabZyRzcLJX7fqP29b2lUjoLVT3g5+cgSYSZcVyCFj+kunL1LZpgsBf9tr6r+OWzXwNVti+fEvF0KqMHHs=
 
-cache:
-  directories:
-    - $HOME/Deps
 
 matrix:
   include:
@@ -15,51 +13,51 @@ matrix:
       addons:
         apt:
           packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
+            - g++
       env:
         - BUILD_TYPE='release'
-        - CXX_COMPILER='g++-4.8'
+        - CXX_COMPILER='g++'
         - EIGEN_VER='3.3.4'
     - os: linux
       addons:
         apt:
           packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
+            - g++
       env:
         - BUILD_TYPE='release'
-        - CXX_COMPILER='g++-4.8'
+        - CXX_COMPILER='g++'
         - OPENMP='--omp'
         - EIGEN_VER='3.3.4'
     - os: linux
       addons:
         apt:
           packages:
-            - cmake3
-            - cmake3-data
-            - g++-4.8
+            - g++
             - lcov
       env:
         - BUILD_TYPE='debug'
-        - CXX_COMPILER='g++-4.8'
+        - CXX_COMPILER='g++'
         - COVERAGE='--coverage'
         - EIGEN_VER='3.3.4'
 
+env:
+  global:
+    - CMAKE_VERSION="3.12.4"
+
+cache:
+  directories:
+    - $HOME/Deps/cmake/$CMAKE_VERSION
+    - $HOME/Deps/eigen
+
+before_install:
+  # Dependencies are downloaded in $HOME/Downloads and installed in $HOME/Deps
+  - mkdir -p $HOME/Downloads $HOME/Deps
+
+install:
+  - ./.ci/cmake.sh
+  - ./.ci/eigen.sh
+
 before_script:
-  - |
-    if [[ ! -d "$HOME/Deps/eigen" ]]; then
-      mkdir -p $HOME/Downloads/eigen
-      cd $HOME/Downloads
-      curl -Ls http://bitbucket.org/eigen/eigen/get/${EIGEN_VER}.tar.gz | tar -xz -C eigen --strip-components=1
-      cd eigen
-      cmake -H. -Bbuild_eigen -DCMAKE_INSTALL_PREFIX=$HOME/Deps/eigen &> /dev/null
-      cmake --build build_eigen -- install &> /dev/null
-      cd ${TRAVIS_BUILD_DIR}
-      rm -rf $HOME/Downloads/eigen
-    fi
   - python --version
   - cmake --version
   - ${CXX_COMPILER} --version
@@ -83,4 +81,3 @@ after_success:
       lcov --list coverage.info
       bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
     fi
-

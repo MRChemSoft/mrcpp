@@ -20,18 +20,20 @@
 namespace mrcpp {
 
 template<int D>
-class GaussPoly : public Gaussian<D> {
+class GaussPoly final : public Gaussian<D> {
 public:
-    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = 0,
-        const int pow[D] = 0);
+    GaussPoly(double alpha = 0.0, double coef = 1.0, const double pos[D] = nullptr, const int power[D] = nullptr);
+    GaussPoly(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &power);
+    GaussPoly(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &power);
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
+    GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
     Gaussian<D> *copy() const;
     ~GaussPoly();
 
     double calcSquareNorm();
 
-    double evalf(const double *r) const;
+    double evalf(const Coord<D> &r) const;
     double evalf(double r, int dim) const;
 
     double calcOverlap(GaussFunc<D> &b);
@@ -52,11 +54,12 @@ public:
     Polynomial &getPoly(int i) { return *poly[i]; }
 
     void setPower(int d, int pow);
+    void setPower(const std::array<int, D> &pow);
     void setPower(const int pow[D]);
     void setPoly(int d, Polynomial &poly);
 
-    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power,
-        int pow[D], int dir) const;
+    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
+    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, std::array<int, D> &pow, int dir) const;
 
 private:
     Polynomial *poly[D];

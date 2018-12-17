@@ -3,9 +3,9 @@
 #ifdef HAVE_MPI
 #include <mpi.h>
 #else
-typedef int MPI_Comm;
-typedef int MPI_Win;
-typedef int MPI_Request;
+using MPI_Comm = int;
+using MPI_Win = int;
+using MPI_Request = int;
 #endif
 
 namespace mrcpp {
@@ -15,6 +15,8 @@ namespace mrcpp {
 class SharedMemory {
 public:
     SharedMemory(MPI_Comm comm, int sh_size);
+    SharedMemory(const SharedMemory &mem) = delete;
+    SharedMemory &operator=(const SharedMemory &mem) = delete;
     ~SharedMemory();
 
     double *sh_start_ptr;  //start of shared block

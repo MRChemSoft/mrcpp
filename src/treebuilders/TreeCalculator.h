@@ -7,14 +7,14 @@ namespace mrcpp {
 template<int D>
 class TreeCalculator {
 public:
-    TreeCalculator() { }
+    TreeCalculator() = default;
     virtual ~TreeCalculator() = default;
 
-    virtual MWNodeVector* getInitialWorkVector(MWTree<D> &tree) const {
+    virtual MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const {
         return tree.copyEndNodeTable();
     }
 
-    virtual void calcNodeVector(MWNodeVector &nodeVec) {
+    virtual void calcNodeVector(MWNodeVector<D> &nodeVec) {
 #pragma omp parallel shared(nodeVec)
 {
         int nNodes = nodeVec.size();

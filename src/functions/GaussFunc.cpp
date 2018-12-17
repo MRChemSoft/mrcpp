@@ -16,10 +16,12 @@
 #include "BoysFunction.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
+
 
 template<int D>
 Gaussian<D> *GaussFunc<D>::copy() const{
@@ -39,7 +41,7 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
     double q2 = 0.0, p2 = 1.0;
     for (int d = 0; d < D; d++) {
         double q = r[d] - this->pos[d];
-        q2 += q * q;
+        q2 += this->alpha[d] * q * q;
         if (this->power[d] == 0) {
             continue;
         } else if (this->power[d] == 1) {
@@ -48,7 +50,9 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
             p2 *= std::pow(q, this->power[d]);
         }
     }
-    return this->coef * p2 * std::exp(-this->alpha * q2);
+    return this->coef * p2 * std::exp(-q2);
+
+
 }
 
 /** NOTE!
@@ -75,7 +79,7 @@ double GaussFunc<D>::evalf(double r, int d) const {
     } else {
         p2 = std::pow(q, this->power[d]);
     }
-    double result = p2 * std::exp(-this->alpha * q2);
+    double result = p2 * std::exp(-this->alpha[d] * q2);
     if (d == 0) result *= this->coef;
     return result;
 }
@@ -84,7 +88,7 @@ template<int D>
 double GaussFunc<D>::calcSquareNorm() {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
-        double a = 2.0 * this->alpha;
+        double a = 2.0 * this->alpha[d];
         double sq_norm = 1.0;
         int p = this->power[d];
         if (p > 0) {
@@ -108,7 +112,7 @@ GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
     int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
-    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp();
+    newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
     if (oldPow > 0) {
         newPoly.getCoefs()[oldPow - 1] = oldPow;
     }
@@ -125,8 +129,14 @@ void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
         }
     }
     double newCoef = lhs.getCoef() * rhs.getCoef();
-    double newExp = lhs.getExp() + rhs.getExp();
-    int newPow[D];
+    std::array<double, D> newExp;
+    auto lhsExp = lhs.getExp();
+    auto rhsExp = rhs.getExp();
+    for (int d = 0; d < D; d++) {
+        newExp[d] = lhsExp[d] + rhsExp[d];
+    }
+
+    std::array<int, D> newPow;
     for (int d = 0; d < D; d++) {
         newPow[d] = lhs.getPower(d) + rhs.getPower(d);
     }
@@ -177,7 +187,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha, b.alpha);
+        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha[d], b.alpha[d]);
     }
     S *= this->coef * b.coef;
     return S;
@@ -187,7 +197,7 @@ template<int D>
 double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha, b.alpha);
+        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha[d], b.alpha[d]);
     }
     S *= a.coef * b.coef;
     return S;
@@ -279,7 +289,18 @@ double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
 
 template<int D>
 std::ostream& GaussFunc<D>::print(std::ostream &o) const {
-    o << "Exp:   " << this->getExp() << std::endl;
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed.
+
+    if (!details::are_all_equal<D>(this->getExp())) {
+        o << "Exp:   ";
+        for (auto &alpha : this->getExp()) {
+            o << alpha << " ";
+        }
+    } else {
+        o << "Exp:   " << this->getExp()[0] << std::endl;
+    }
     o << "Coef:  "<< this->getCoef() << std::endl;
     o << "Pos:   ";
     for (int i = 0; i < D; i++) {
@@ -298,8 +319,17 @@ std::ostream& GaussFunc<D>::print(std::ostream &o) const {
  */
 template<>
 double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
-    double p = this->getExp();
-    double q = gf.getExp();
+
+    // Checking if the elements in each exponent are constant
+    if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp()))
+        NOT_IMPLEMENTED_ABORT;
+
+
+    // If they are constant the 0th element are assigned a value
+    // and the Coulomb Energy can be calculated
+    auto p = this->getExp()[0];
+    auto q = gf.getExp()[0];
+
     double alpha = p*q/(p+q);
 
     const double *Rp = this->getPos();
@@ -319,8 +349,8 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
     return std::sqrt(4.0*alpha/pi)*boysFac;
 }
 
+
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;
-
 } // namespace mrcpp

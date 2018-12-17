@@ -4,6 +4,7 @@ target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mpi_utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/details.cpp
 )
 
 list(APPEND utils_h
@@ -13,9 +14,10 @@ list(APPEND utils_h
     ${CMAKE_CURRENT_SOURCE_DIR}/mpi_utils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/omp_utils.h
     ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.h
-    )                                                       
-                                                                                 
-# Sets install directory for all the headers in the list                         
+    ${CMAKE_CURRENT_SOURCE_DIR}/details.h
+    )
+
+# Sets install directory for all the headers in the list
 foreach(_header IN LISTS utils_h)
  file(
     COPY ${_header}

@@ -36,6 +36,8 @@ public:
     static int setPrintLevel(int i);
     static int getPrecision() { return printPrec; }
     static int getPrintLevel() { return printLevel; }
+    static int getVal(char* line, int n=1);
+    static int printMem(char* txt);
 
     static std::ostream *out;
 private:

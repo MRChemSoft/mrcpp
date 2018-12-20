@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Non-blocking communication");
 
     // Constructing world box
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
+    const auto corner = std::array<int, 3>{-1, -1, -1};
+    const auto boxes = std::array<int, 3>{2, 2, 2};
     mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA

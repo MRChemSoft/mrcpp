@@ -60,7 +60,7 @@ void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
 
 template<int D>
 void BoundingBox<D>::setDerivedParameters() {
-    assert(this->nBoxes[D] > 0);
+    assert(this->totBoxes > 0);
     int scale = this->cornerIndex.getScale();
     const int *l = this->cornerIndex.getTranslation();
     this->unitLength = std::pow(2.0, -scale);
@@ -74,7 +74,7 @@ void BoundingBox<D>::setDerivedParameters() {
 
 template<int D>
 void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
-    assert(this->nBoxes[D] > 0);
+    assert(this->totBoxes > 0);
     this->scalingFactor = sf;
 }
 
@@ -106,7 +106,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const Coord<D> &r) const {
 // Specialized for D=1 below
 template<int D>
 NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
-    assert(bIdx >= 0 and bIdx <= nBoxes[D]);
+    assert(bIdx >= 0 and bIdx <= this->totBoxes);
     int l[D];
     for (int d = D - 1; d >= 0; d--) {
         int ncells = 1;

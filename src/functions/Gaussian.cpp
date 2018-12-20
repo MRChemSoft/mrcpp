@@ -38,8 +38,8 @@ template<int D>
 Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r,
                       const std::array<int, D> &p)
             : screen(false),
-              power(p),
               coef(c),
+              power(p),
               pos(r),
               squareNorm(-1.0) {
     this->alpha.fill(a);
@@ -49,8 +49,8 @@ template<int D>
 Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r,
                       const std::array<int, D> &p)
             : screen(false),
-              power(p),
               coef(c),
+              power(p),
               alpha(a),
               pos(r),
               squareNorm(-1.0) {}

@@ -66,7 +66,7 @@ void NodeBox<D>::deleteNodes() {
 template<int D>
 void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
     assert(bIdx >= 0);
-    assert(bIdx < this->nBoxes[D]);
+    assert(bIdx < this->totBoxes);
     clearNode(bIdx);
     this->nodes[bIdx] = *node;
     this->nOccupied++;
@@ -90,7 +90,7 @@ MWNode<D>& NodeBox<D>::getNode(const Coord<D> &r) {
 template<int D>
 MWNode<D>& NodeBox<D>::getNode(int bIdx) {
     assert(bIdx >= 0);
-    assert(bIdx < this->nBoxes[D]);
+    assert(bIdx < this->totBoxes);
     assert(this->nodes[bIdx] != 0);
     return *this->nodes[bIdx];
 }
@@ -111,7 +111,7 @@ const MWNode<D>& NodeBox<D>::getNode(const Coord<D> &r) const {
 template<int D>
 const MWNode<D>& NodeBox<D>::getNode(int bIdx) const {
     assert(bIdx >= 0);
-    assert(bIdx < this->nBoxes[D]);
+    assert(bIdx < this->totBoxes);
     assert(this->nodes[bIdx] != 0);
     return *this->nodes[bIdx];
 }

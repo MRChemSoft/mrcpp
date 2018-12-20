@@ -85,8 +85,8 @@ public:
     friend class GaussExp<D>;
 protected:
     bool screen;
-    std::array<int, D> power;		/**< max power in each dim  */
     double coef;		            /**< constant factor */
+    std::array<int, D> power;		/**< max power in each dim  */
     std::array<double, D> alpha;    /**< exponent  */
     std::array<double, D> pos;		/**< center  */
     double squareNorm;

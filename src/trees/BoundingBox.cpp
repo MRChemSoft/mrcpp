@@ -19,6 +19,7 @@ BoundingBox<D>::BoundingBox(int n, const int *l, const int *nb)
         : cornerIndex(n, l) {
     setNBoxes(nb);
     setDerivedParameters();
+    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
 template<int D>
@@ -27,6 +28,7 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
     setNBoxes(nb.data());
     setDerivedParameters();
     setScalingFactor(sf);
+    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
 template<int D>
@@ -34,6 +36,7 @@ BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const int *nb)
         : cornerIndex(idx) {
     setNBoxes(nb);
     setDerivedParameters();
+    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
 template<int D>

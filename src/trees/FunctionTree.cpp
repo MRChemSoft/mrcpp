@@ -158,7 +158,7 @@ double FunctionTree<D>::integrate() const {
     if (sf != std::array<double, D>{}) {
         auto jacobian = 1.0;
         for (auto & x : sf) {
-            jacobian *= x;
+            jacobian *= std::sqrt(x);
         }
         return jacobian*result;
     }

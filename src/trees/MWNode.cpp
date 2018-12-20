@@ -359,9 +359,9 @@ void MWNode<D>::cvTransform(int operation) {
     int kp1_d = this->getKp1_d();
     int nCoefs = this->getTDim()*kp1_d;
 
-    const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
-    const MatrixXd &S = sf.getCVMap(operation);
-
+    const ScalingBasis &sb = this->getMWTree().getMRA().getScalingBasis();
+    const MatrixXd &S = sb.getCVMap(operation);
+    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
     double o_vec[nCoefs];
     double *out_vec = o_vec;
     double *in_vec = this->coefs;
@@ -376,8 +376,13 @@ void MWNode<D>::cvTransform(int operation) {
         in_vec = out_vec;
         out_vec = tmp;
     }
+
+    double sf_prod = 1.0;
+    for (auto &s : sf) sf_prod *=s;
+    if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
+
     int np1 = getScale() + 1; // we're working on scaling coefs on next scale
-    double two_fac = std::pow(2.0, D*np1);
+    double two_fac = std::pow(2.0, D*np1)/sf_prod;
     if (operation == Backward) {
         two_fac = std::sqrt(1.0/two_fac);
     } else {
@@ -678,7 +683,7 @@ void MWNode<D>::deleteChildren() {
 
 template<int D>
 void MWNode<D>::deleteGenerated() {
-    if (this->isBranchNode()) {      
+    if (this->isBranchNode()) {
         if (this->isEndNode()) {
             this->deleteChildren();
         } else {

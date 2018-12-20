@@ -70,7 +70,7 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     double *coefs = node.getCoefs();
     double two_n = std::pow(2.0, -scale/2.0);
     for (int i = 0; i < t_dim*kp1_d; i++) {
-        coefs[i] = two_n*vec_o(i);
+        coefs[i] = std::sqrt(node.getMWTree().getMRA().getWorldBox().getScalingFactor(0))*two_n*vec_o(i);
     }
 }
 

@@ -46,10 +46,9 @@ template<int D> void initialize(mrcpp::BoundingBox<D> **box) {
     if (box == 0) MSG_FATAL("Invalid argument");
     if (*box != 0) MSG_FATAL("Invalid argument");
 
-    int nb[D];
-    for (int d = 0; d < D; d++) {
-        nb[d] = d + 1;
-    }
+    std::array<int, D> nb;
+    for (int d = 0; d < D; d++) nb[d] = d + 1;
+
     mrcpp::NodeIndex<D> *nIdx = 0;
     initialize(&nIdx);
 

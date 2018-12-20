@@ -17,9 +17,11 @@ namespace derivative_operator {
 template<int D> MultiResolutionAnalysis<D>* initializeMRA() {
     // Constructing world box
     int min_scale = -4;
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
-    NodeIndex<D> idx(min_scale, corner);
+    std::array<int, D> corner;
+    std::array<int, D> boxes;
+    corner.fill(-1);
+    boxes.fill(2);
+    NodeIndex<D> idx(min_scale, corner.data());
     BoundingBox<D> world(idx, boxes);
 
     // Constructing scaling basis

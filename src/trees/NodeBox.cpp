@@ -12,7 +12,7 @@
 namespace mrcpp {
 
 template<int D>
-NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const int *nb)
+NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb)
         : BoundingBox<D>(idx, nb),
           nOccupied(0),
           nodes(0) {

@@ -16,9 +16,8 @@ namespace mrcpp {
 template<int D>
 class BoundingBox {
 public:
-    BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
-    BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf);
-    BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
+    BoundingBox(int n = 0, const std::array<int, D> &l = {}, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
+    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() = default;
@@ -32,7 +31,7 @@ public:
     int getBoxIndex(const Coord<D> &r) const;
     int getBoxIndex(const NodeIndex<D> &nIdx) const;
 
-    int size() const { return this->nBoxes[D]; }
+    int size() const { return this->totBoxes; }
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
     double getScalingFactor(int d) const { return this->scalingFactor[d]; }
@@ -49,16 +48,18 @@ public:
 
 protected:
     // Fundamental parameters
-    int nBoxes[D+1];                ///< Number of boxes in each dim, last entry total
-    NodeIndex<D> cornerIndex;       ///< Index defining the lower corner of the box
+    NodeIndex<D> cornerIndex;    ///< Index defining the lower corner of the box
+    std::array<int, D> nBoxes{}; ///< Number of boxes in each dim, last entry total
+    std::array<double, D> scalingFactor{};
 
     // Derived parameters
-    double unitLength;		    ///< 1/2^initialScale
-    Coord<D> boxLengths;	    ///< Total length (unitLength times nBoxes)
-    Coord<D> lowerBounds;	    ///< Box lower bound (not real)
-    Coord<D> upperBounds;	    ///< Box upper bound (not real)
-    std::array<double, D> scalingFactor = {};
-    void setNBoxes(const int *nb);
+    int totBoxes{1};
+    double unitLength{-1.0}; ///< 1/2^initialScale
+    Coord<D> boxLengths;     ///< Total length (unitLength times nBoxes)
+    Coord<D> lowerBounds;    ///< Box lower bound (not real)
+    Coord<D> upperBounds;    ///< Box upper bound (not real)
+
+    void setNBoxes(const std::array<int, D> &nb);
     void setDerivedParameters();
     void setScalingFactor(const std::array<double, D> &sf);
 

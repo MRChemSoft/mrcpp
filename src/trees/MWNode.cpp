@@ -707,12 +707,13 @@ void MWNode<D>::getCenter(double *r) const {
 
 template<int D>
 void MWNode<D>::getBounds(double *lb, double *ub) const {
+    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactor();
     int n = getScale();
     double p = std::pow(2.0, -n);
     const int *l = getTranslation();
     for (int i = 0; i < D; i++) {
-        lb[i] = p * l[i];
-        ub[i] = p * (l[i] + 1);
+        lb[i] = sf[i]*(p * l[i]);
+        ub[i] = sf[i]*(p * (l[i] + 1));
     }
 }
 

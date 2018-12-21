@@ -35,10 +35,11 @@ public:
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
     double getScalingFactor(int d) const { return this->scalingFactor[d]; }
-    double getUnitLength() const { return this->unitLength; }
+    double getUnitLength(int d) const { return this->unitLengths[d]; }
     double getBoxLength(int d) const { return this->boxLengths[d]; }
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
     double getUpperBound(int d) const { return this->upperBounds[d]; }
+    const Coord<D> &getUnitLengths() const { return this->unitLengths; }
     const Coord<D> &getBoxLengths() const { return this->boxLengths; }
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
     const Coord<D> &getUpperBounds() const { return this->upperBounds; }
@@ -54,7 +55,7 @@ protected:
 
     // Derived parameters
     int totBoxes{1};
-    double unitLength{-1.0}; ///< 1/2^initialScale
+    Coord<D> unitLengths;    ///< 1/2^initialScale
     Coord<D> boxLengths;     ///< Total length (unitLength times nBoxes)
     Coord<D> lowerBounds;    ///< Box lower bound (not real)
     Coord<D> upperBounds;    ///< Box upper bound (not real)

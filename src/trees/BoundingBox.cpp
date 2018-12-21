@@ -18,25 +18,24 @@ template<int D>
 BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf)
         : cornerIndex(n, l.data()) {
     setNBoxes(nb);
-    setDerivedParameters();
     setScalingFactor(sf);
-    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
+    setDerivedParameters();
 }
 
 template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb, const std::array<double, D> &sf)
         : cornerIndex(idx) {
     setNBoxes(nb);
+    setScalingFactor(sf);
     setDerivedParameters();
-    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
 template<int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
     setNBoxes(box.nBoxes);
-    setDerivedParameters();
     setScalingFactor(box.getScalingFactor());
+    setDerivedParameters();
 }
 
 template<int D>
@@ -44,6 +43,7 @@ BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> &box) {
     if (&box != this) {
         this->cornerIndex = box.cornerIndex;
         setNBoxes(box.nBoxes);
+        setScalingFactor(box.getScalingFactor());
         setDerivedParameters();
     }
     return *this;
@@ -63,11 +63,11 @@ void BoundingBox<D>::setDerivedParameters() {
     assert(this->totBoxes > 0);
     int scale = this->cornerIndex.getScale();
     const int *l = this->cornerIndex.getTranslation();
-    this->unitLength = std::pow(2.0, -scale);
     for (int d = 0; d < D; d++) {
         assert(this->nBoxes[d] > 0);
-        this->boxLengths[d] = this->unitLength * this->nBoxes[d];
-        this->lowerBounds[d] = l[d] * this->unitLength;
+        this->unitLengths[d] = this->scalingFactor[d]*std::pow(2.0, -scale);
+        this->boxLengths[d] = this->unitLengths[d] * this->nBoxes[d];
+        this->lowerBounds[d] = l[d] * this->unitLengths[d];
         this->upperBounds[d] = this->lowerBounds[d] + this->boxLengths[d];
     }
 }
@@ -76,6 +76,7 @@ template<int D>
 void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
     this->scalingFactor = sf;
+    if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
 template<int D>
@@ -85,7 +86,7 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(const Coord<D> &r) const {
         double x = r[d];
         assert(x >= this->lowerBounds[d]);
         assert(x < this->upperBounds[d]);
-        double div = (x - this->lowerBounds[d]) / this->unitLength;
+        double div = (x - this->lowerBounds[d]) / this->unitLengths[d];
         double iint;
         std::modf(div, &iint);
         idx[d] = (int) iint;
@@ -137,7 +138,7 @@ int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
         double x = r[d];
         if (x < this->lowerBounds[d]) return -1;
         if (x >= this->upperBounds[d]) return -1;
-        double div = (x - this->lowerBounds[d]) / this->unitLength;
+        double div = (x - this->lowerBounds[d]) / this->unitLengths[d];
         double iint;
         std::modf(div,&iint);
         idx[d] = (int) iint;
@@ -181,17 +182,22 @@ int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
 
 template<int D>
 std::ostream& BoundingBox<D>::print(std::ostream &o) const {
+    int oldprec = Printer::setPrecision(5);
     o << std::fixed;
-    o << " unit length      = " << getUnitLength() << std::endl;
     o << " total boxes      = " << size() << std::endl;
-    o << " scaling factor   = [ ";
-    for (int i = 0; i < D; i++) {
-        o << std::setw(11) << getScalingFactor(i) << " ";
-    }
-    o << "]" << std::endl;
     o << " boxes            = [ ";
     for (int i = 0; i < D; i++) {
         o << std::setw(11) << size(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " unit lengths     = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getUnitLength(i) << " ";
+    }
+    o << "]" << std::endl;
+    o << " scaling factor   = [ ";
+    for (int i = 0; i < D; i++) {
+        o << std::setw(11) << getScalingFactor(i) << " ";
     }
     o << "]" << std::endl;
     o << " lower bounds     = [ ";
@@ -210,6 +216,7 @@ std::ostream& BoundingBox<D>::print(std::ostream &o) const {
     }
     o << "]";
     o << std::scientific;
+    Printer::setPrecision(oldprec);
     return o;
 }
 
@@ -218,7 +225,7 @@ int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
     double x = r[0];
     if (x < this->lowerBounds[0]) return -1;
     if (x >= this->upperBounds[0]) return -1;
-    double div = (x - this->lowerBounds[0]) / this->unitLength;
+    double div = (x - this->lowerBounds[0]) / this->unitLengths[0];
     double iint;
     std::modf(div,&iint);
     return (int) iint;

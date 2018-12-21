@@ -62,9 +62,11 @@ template<int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
     const mrcpp::NodeIndex<D> &cIdx = box->getCornerIndex();
     testInitial<D>(&cIdx);
 
-    REQUIRE( (box->getUnitLength() > 0.0) );
 
     for (int d = 0; d < D; d++) {
+        REQUIRE( (box->getUnitLength(d) > 0.0) );
+        REQUIRE( (box->getUnitLengths()[d] > 0.0) );
+
         REQUIRE( (box->getBoxLength(d) > 0.0) );
         REQUIRE( (box->getBoxLengths()[d] > 0.0) );
 

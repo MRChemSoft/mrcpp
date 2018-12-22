@@ -170,7 +170,6 @@ int Printer::printMem(char* txt){
     int val = -1;
     char line[80];
     while (fgets(line, 80, file) != NULL){
-        std::cout<<line<<std::endl;
         val = getVal(line,6);//sixth number is data+stack in pages (4kB)
         printf("Mem usage %s %6.3f %s \n",txt,val*4.0/(1024.0*1024),"GB");
     }

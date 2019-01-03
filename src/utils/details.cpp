@@ -10,10 +10,28 @@ template<int D>
 bool are_all_equal(const std::array<double, D> &exponent) {
         return std::all_of(exponent.begin(), exponent.end(),
                [ex = std::begin(exponent)](double i) {return i == *ex; });
+}
+
+/** @brief converts c_type arrays to std::arrays */
+template<typename T, int D>
+std::array<T, D>  convert_to_std_array(T *arr) {
+    auto ret_arr = std::array<T, D>{};
+    for (auto d = 0; d < D; d++) {
+        ret_arr[d] = arr[d];
     }
+    return ret_arr;
+}
 
 template bool are_all_equal<1>(const std::array<double, 1> &exponent);
 template bool are_all_equal<2>(const std::array<double, 2> &exponent);
 template bool are_all_equal<3>(const std::array<double, 3> &exponent);
+
+template std::array<double, 1> convert_to_std_array<double, 1>(double *arr);
+template std::array<double, 2> convert_to_std_array<double, 2>(double *arr);
+template std::array<double, 3> convert_to_std_array<double, 3>(double *arr);
+
+template std::array<int, 1> convert_to_std_array<int, 1>(int *arr);
+template std::array<int, 2> convert_to_std_array<int, 2>(int *arr);
+template std::array<int, 3> convert_to_std_array<int, 3>(int *arr);
 } // namespace details
 } // namespace mrcpp

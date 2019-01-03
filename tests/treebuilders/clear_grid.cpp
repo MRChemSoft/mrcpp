@@ -90,4 +90,4 @@ template<int D> void testClearGrid() {
     finalize(&func);
 }
 
-} // namespace
+} // namespace clear_grid

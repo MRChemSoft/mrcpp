@@ -12,7 +12,7 @@ public:
                          : func(&inp_func),
                            scaling_factor(sf) { }
 
-protected:
+private:
     const RepresentableFunction<D> *func;
     const std::array<double, D> scaling_factor;
     void calcNode(MWNode<D> &node);

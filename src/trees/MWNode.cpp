@@ -359,7 +359,7 @@ void MWNode<D>::cvTransform(int operation) {
     int kp1_d = this->getKp1_d();
     int nCoefs = this->getTDim()*kp1_d;
 
-    const ScalingBasis &sb = this->getMWTree().getMRA().getScalingBasis();
+    auto sb = this->getMWTree().getMRA().getScalingBasis();
     const MatrixXd &S = sb.getCVMap(operation);
     const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
     double o_vec[nCoefs];

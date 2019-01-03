@@ -112,7 +112,7 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     }
     // Multiply appropriate scaling factor
     const double sf = gNode.getMWTree().getMRA().getWorldBox().getScalingFactor()[this->applyDir];
-    for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] *= 1.0/sf;
+    for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= sf;
     this->calc_t[omp_get_thread_num()].stop();
 
     this->norm_t[omp_get_thread_num()].resume();
@@ -131,7 +131,7 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
 
     // Assumes given width only in applyDir, otherwise width = 0
     int width = this->oper->getMaxBandWidth();
-    for (int w = -width; w <= width; w++) { 
+    for (int w = -width; w <= width; w++) {
         NodeIndex<D> idx_w(idx_0);
         idx_w.getTranslation()[this->applyDir] += w;
 

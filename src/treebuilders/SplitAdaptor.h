@@ -9,7 +9,7 @@ class SplitAdaptor final : public TreeAdaptor<D> {
 public:
     SplitAdaptor(int ms, bool sp) : TreeAdaptor<D>(ms), split(sp) { }
 
-protected:
+private:
     bool split;
 
     bool splitNode(const MWNode<D> &node) const { return this->split; }

@@ -15,7 +15,7 @@ public:
 
     MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
-protected:
+private:
     int maxDepth;
     double prec;
     ConvolutionOperator<D> *oper;

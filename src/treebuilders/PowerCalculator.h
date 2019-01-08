@@ -9,7 +9,7 @@ class PowerCalculator final : public TreeCalculator<D> {
 public:
     PowerCalculator(FunctionTree<D> &inp, double pow) : power(pow), func(&inp) { }
 
-protected:
+private:
     double power;
     FunctionTree<D> *func;
 

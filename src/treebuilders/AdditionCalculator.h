@@ -10,7 +10,7 @@ class AdditionCalculator final : public TreeCalculator<D> {
 public:
     AdditionCalculator(const FunctionTreeVector<D> &inp) : sum_vec(inp) { }
 
-protected:
+private:
     FunctionTreeVector<D> sum_vec;
 
     void calcNode(MWNode<D> &node_o) {

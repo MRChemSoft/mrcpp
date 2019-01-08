@@ -111,7 +111,7 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
         }
     }
     // Multiply appropriate scaling factor
-    const double sf = gNode.getMWTree().getMRA().getWorldBox().getScalingFactor()[this->applyDir];
+    const double sf = gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir);
     for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= sf;
     this->calc_t[omp_get_thread_num()].stop();
 

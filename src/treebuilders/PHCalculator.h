@@ -11,7 +11,7 @@ class PHCalculator final : public TreeCalculator<2> {
 public:
     PHCalculator(const ScalingBasis &basis, int n);
 
-protected:
+private:
     const int diff_order;
     Eigen::MatrixXd S_m1;
     Eigen::MatrixXd S_0;

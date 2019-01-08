@@ -10,7 +10,7 @@ class AnalyticAdaptor final : public TreeAdaptor<D> {
 public:
     AnalyticAdaptor(const RepresentableFunction<D> &f, int ms) : TreeAdaptor<D>(ms), func(&f) { }
 
-protected:
+private:
     const RepresentableFunction<D> *func;
 
     bool splitNode(const MWNode<D> &node) const {

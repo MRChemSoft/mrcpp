@@ -51,7 +51,9 @@ MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
     }
     auto start_l = std::array<int, 1>{-max_l};
     auto tot_l = std::array<int, 1>{2*max_l};
-    auto sf = std::array<double, 1>{box.getScalingFactor()[0]};
+    // Zero in argument since operators are only implemented
+    // for uniform scaling factor
+    auto sf = std::array<double, 1>{box.getScalingFactor(0)};
     BoundingBox<1> kern_box(box.getScale(), start_l, tot_l, sf);
     MultiResolutionAnalysis<1> mra(kern_box, *kern_basis);
     delete kern_basis;
@@ -71,7 +73,9 @@ MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA() const {
     }
     auto l = std::array<int, 2>{};
     auto nbox = std::array<int, 2>{maxn, maxn};
-    auto sf = std::array<double, 2>{box.getScalingFactor()[0], box.getScalingFactor()[0]};
+    // Zero in argument since operators are only implemented
+    // for uniform scaling factor
+    auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};
     NodeIndex<2> idx(box.getScale());
     BoundingBox<2> oper_box(box.getScale(), l, nbox, sf);
     return MultiResolutionAnalysis<2>(oper_box, basis);

@@ -11,7 +11,7 @@ public:
     CopyAdaptor(FunctionTree<D> &t, int ms, int *bw);
     CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw);
 
-protected:
+private:
     int bandWidth[D];
     FunctionTreeVector<D> tree_vec;
 

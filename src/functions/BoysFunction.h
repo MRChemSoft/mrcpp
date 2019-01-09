@@ -11,7 +11,7 @@ public:
 
     double evalf(const Coord<1> &r) const;
 
-protected:
+private:
     const int order;
     const double prec;
     MultiResolutionAnalysis<1> MRA;

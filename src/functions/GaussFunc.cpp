@@ -332,8 +332,8 @@ double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     double alpha = p*q/(p+q);
 
-    const double *Rp = this->getPos();
-    const double *Rq = gf.getPos();
+    const auto &Rp = this->getPos();
+    const auto &Rq = gf.getPos();
 
     double Rx = Rp[0] - Rq[0];
     double Ry = Rp[1] - Rq[1];

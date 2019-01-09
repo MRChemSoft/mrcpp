@@ -19,7 +19,6 @@ namespace mrcpp {
 template<int D>
 class Gaussian: public RepresentableFunction<D> {
 public:
-    Gaussian(double a, double c, const double r[D], const int p[D]);
     Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p);
     Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p);
     Gaussian<D> &operator=(const Gaussian<D> &gp) = delete;
@@ -60,24 +59,17 @@ public:
     bool checkScreen(int n, const int *l) const;
     int getPower(int i) const { return power[i]; }
     bool getScreen() const { return screen; }
-    const int *getPower() const { return power.data(); }
-    const double *getPos() const { return pos.data(); }
+    const std::array<int, D> &getPower() const { return power; }
+    const std::array<double, D> &getPos() const { return pos; }
     double getCoef() const { return coef; }
     auto getExp() const { return alpha; }
 
-    virtual void setPower(const int power[D]) = 0;
     virtual void setPower(const std::array<int, D> &power) = 0;
     virtual void setPower(int d, int power) = 0;
     void setScreen(bool _screen) { this->screen = _screen; }
     void setCoef(double cf) { this->coef = cf; this->squareNorm = -1.0; }
     void setExp(double _alpha) { this->alpha.fill(_alpha); this->squareNorm = -1.0; }
     void setExp(const std::array<double, D> &_alpha) { this->alpha = _alpha; this->squareNorm = -1.0; }
-    void setPos(const double r[D]) {
-        for (int d = 0; d < D; d++) {
-            this->pos[d] = r[d];
-        }
-        this->squareNorm = -1.0;
-    }
     void setPos(const std::array<double, D> &r) { this->pos = r; }
 
     friend std::ostream& operator<<(std::ostream &o, const Gaussian<D> &gauss) { return gauss.print(o);  }

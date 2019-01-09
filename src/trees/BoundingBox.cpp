@@ -143,11 +143,10 @@ NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 // Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
-int BoundingBox<D>::getBoxIndex(const double *r) const {
 
     if (this->isPeriodic()) return 0;
-
     assert(r != 0);
+
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];

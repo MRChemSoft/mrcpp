@@ -430,14 +430,9 @@ MWNode<D>& MWTree<D>::getNode(const Coord<D> &r, int depth) {
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
 MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
-    MWNode<D> &root = getRootBox().getNode(r);
-    return *root.retrieveNodeOrEndNode(r, depth);
-MWNode<D>& MWTree<D>::getNodeOrEndNode(const double *r, int depth) {
 
     bool periodic = getRootBox().isPeriodic();
-
-    double rtmp[3] = {r[0], r[1], r[2]};
-
+    auto rtmp = r;
     if (periodic) {
         for (auto i = 0; i < D; i++) {
             if (r[i] > 1.0)

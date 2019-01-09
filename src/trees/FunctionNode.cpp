@@ -21,9 +21,7 @@ double FunctionNode<D>::evalf(const Coord<D> &r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     bool periodic = this->getMWTree().getRootBox().isPeriodic();
-
-    double rtmp[3] = {r[0], r[1], r[2]};
-
+    auto rtmp = r;
     if (periodic) {
         for (auto i = 0; i < D; i++) {
             if (r[i] > 1.0)

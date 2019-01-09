@@ -179,7 +179,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
         }
     }
 
-    //coeff of child should be have been allocated already here
+    // coeff of child should be have been allocated already here
     int stride = this->getMWChild(0).getNCoefs();
     double* inp  = this->getCoefs();
     double* out = this->getMWChild(0).getCoefs();
@@ -190,7 +190,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 
     for (int i = 0; i < this->getTDim(); i++){
 	this->getMWChild(i).setHasCoefs();
-	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
+	this->getMWChild(i).calcNorms(); // should need to compute only scaling norms
     }
 }
 
@@ -361,7 +361,6 @@ void MWNode<D>::cvTransform(int operation) {
 
     auto sb = this->getMWTree().getMRA().getScalingBasis();
     const MatrixXd &S = sb.getCVMap(operation);
-    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
     double o_vec[nCoefs];
     double *out_vec = o_vec;
     double *in_vec = this->coefs;
@@ -377,8 +376,10 @@ void MWNode<D>::cvTransform(int operation) {
         out_vec = tmp;
     }
 
+
+    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
     double sf_prod = 1.0;
-    for (auto &s : sf) sf_prod *=s;
+    for (const auto &s : sf) sf_prod *=s;
     if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
 
     int np1 = getScale() + 1; // we're working on scaling coefs on next scale

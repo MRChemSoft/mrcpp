@@ -11,7 +11,7 @@ public:
     Eigen::Vector2d firstDerivative(double x) const;
     Eigen::Vector3d secondDerivative(double x) const;
 
-protected:
+private:
     void computeLegendrePolynomial(int k);
 };
 

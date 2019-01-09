@@ -116,11 +116,11 @@ void FunctionTree<D>::loadTree(const std::string &file) {
         } else {
             double *sNodesCoeff;
             if (sTree.isShared()) {
-                //for coefficients, take from the shared memory block
+                // for coefficients, take from the shared memory block
                 SharedMemory* shMem = sTree.getMemory();
                 sNodesCoeff = shMem->sh_end_ptr;
                 shMem->sh_end_ptr += (sTree.sizeNodeCoeff*sTree.maxNodesPerChunk);
-                //may increase size dynamically in the future
+                // may increase size dynamically in the future
                 if (shMem->sh_max_ptr < shMem->sh_end_ptr) {
                     MSG_FATAL("Shared block too small");
                 }
@@ -149,40 +149,35 @@ void FunctionTree<D>::loadTree(const std::string &file) {
 
 template<int D>
 double FunctionTree<D>::integrate() const {
+
     double result = 0.0;
     for (int i = 0; i < this->rootBox.size(); i++) {
         const FunctionNode<D> &fNode = getRootFuncNode(i);
         result += fNode.integrate();
     }
+
+
+    // Hande potential scaling
     auto sf = this->getMRA().getWorldBox().getScalingFactor();
-    if (sf != std::array<double, D>{}) {
-        auto jacobian = 1.0;
-        for (auto & x : sf) {
-            jacobian *= std::sqrt(x);
-        }
-        return jacobian*result;
-    }
-    return result;
+    auto jacobian = 1.0;
+    for (const auto & sf_i : sf) jacobian *= std::sqrt(sf_i);
+    // Square root of scaling factor in each diection. The seemingly missing
+    // multiplication by the square root of sf_i is included in the basis
+
+    return jacobian*result;
 }
 
 template<int D>
 double FunctionTree<D>::evalf(const Coord<D> &r) {
-    auto get_scaling = this->getMRA().getWorldBox().getScalingFactor();
-    if (get_scaling != std::array<double, D>{}) { // Checking if scaling is non-zero
-        auto get_scaling = this->getMRA().getWorldBox().getScalingFactor();
-        auto arg = r;
-        for (auto i = 0; i < D; i++) {
-            arg[i] = arg[i]/get_scaling[i];
-        }
-        MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
-        FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
-        auto result = f_node.evalf(arg);
-        this->deleteGenerated();
-        return result;
-    }
-    MWNode<D> &mr_node = this->getNodeOrEndNode(r);
-    auto &f_node = static_cast<FunctionNode<D> &>(mr_node);
-    double result = f_node.evalf(r);
+
+    // Hande potential scaling
+    const auto sf = this->getMRA().getWorldBox().getScalingFactor();
+    auto arg = r;
+    for (auto i = 0; i < D; i++) arg[i] = arg[i]/sf[i];
+
+    MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
+    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+    auto result = f_node.evalf(arg);
     this->deleteGenerated();
     return result;
 }

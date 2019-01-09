@@ -71,6 +71,8 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     double two_n = std::pow(2.0, -scale/2.0);
     for (int i = 0; i < t_dim*kp1_d; i++) {
         auto sf = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
+        // This is only implemented for unifrom scaling factors
+        // hence the zero TODO: make it work for non-unifrom scaling
         coefs[i] = std::sqrt(sf)*two_n*vec_o(i);
     }
 }

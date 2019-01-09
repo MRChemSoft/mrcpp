@@ -259,17 +259,6 @@ void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
     this->squareNorm = -1.0;
 }
 
-// template<int D>
-// void GaussPoly<D>::setPower(const int pow[D]) {
-//     for (int d = 0; d < D; d++) {
-//         if (poly[d] != nullptr) {
-//             delete poly[d];
-//         }
-//         poly[d] = new Polynomial(pow[d]);
-//     }
-//     this->squareNorm = -1.0;
-// }
-
 template<int D>
 void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
     if (this->poly[d] != 0) {

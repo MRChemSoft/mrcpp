@@ -10,7 +10,7 @@ class MultiplicationCalculator final : public TreeCalculator<D> {
 public:
     MultiplicationCalculator(const FunctionTreeVector<D> &inp) : prod_vec(inp) { }
 
-protected:
+private:
     FunctionTreeVector<D> prod_vec;
 
     void calcNode(MWNode<D> &node_o) {

@@ -20,19 +20,6 @@ using namespace Eigen;
 namespace mrcpp {
 
 template<int D>
-GaussPoly<D>::GaussPoly(double alpha, double coef, const double pos[D],
-    const int power[D]) : Gaussian<D>(alpha, coef, pos, power) {
-    for (int d = 0; d < D; d++) {
-        if (power != nullptr) {
-            this->poly[d] = new Polynomial(this->power[d]);
-            //this->poly[d]->unsetBounds();
-        } else {
-            this->poly[d] = 0;
-        }
-    }
-}
-
-template<int D>
 GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos,
     const std::array<int, D> &power) : Gaussian<D>(alpha, coef, pos, power) {
     for (auto d = 0; d < D; d++) {
@@ -263,17 +250,6 @@ void GaussPoly<D>::setPower(int d, int pow) {
 
 template<int D>
 void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
-    for (int d = 0; d < D; d++) {
-        if (poly[d] != nullptr) {
-            delete poly[d];
-        }
-        poly[d] = new Polynomial(pow[d]);
-    }
-    this->squareNorm = -1.0;
-}
-
-template<int D>
-void GaussPoly<D>::setPower(const int pow[D]) {
     for (int d = 0; d < D; d++) {
         if (poly[d] != nullptr) {
             delete poly[d];

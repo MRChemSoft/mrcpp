@@ -1,6 +1,7 @@
 #ifndef FACTORY_FUNCTIONS_H
 #define FACTORY_FUNCTIONS_H
 
+#include "mrcpp_declarations.h"
 #include "trees/BoundingBox.h"
 #include "trees/NodeIndex.h"
 #include "trees/MultiResolutionAnalysis.h"
@@ -10,6 +11,7 @@
 #include "trees/FunctionTreeVector.h"
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
+#include "utils/details.h"
 
 template<class T> void finalize(T **obj) {
     if (obj == 0) MSG_FATAL("Invalid argument");
@@ -46,10 +48,9 @@ template<int D> void initialize(mrcpp::BoundingBox<D> **box) {
     if (box == 0) MSG_FATAL("Invalid argument");
     if (*box != 0) MSG_FATAL("Invalid argument");
 
-    int nb[D];
-    for (int d = 0; d < D; d++) {
-        nb[d] = d + 1;
-    }
+    std::array<int, D> nb;
+    for (int d = 0; d < D; d++) nb[d] = d + 1;
+
     mrcpp::NodeIndex<D> *nIdx = 0;
     initialize(&nIdx);
 
@@ -63,9 +64,11 @@ template<int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
     const mrcpp::NodeIndex<D> &cIdx = box->getCornerIndex();
     testInitial<D>(&cIdx);
 
-    REQUIRE( (box->getUnitLength() > 0.0) );
 
     for (int d = 0; d < D; d++) {
+        REQUIRE( (box->getUnitLength(d) > 0.0) );
+        REQUIRE( (box->getUnitLengths()[d] > 0.0) );
+
         REQUIRE( (box->getBoxLength(d) > 0.0) );
         REQUIRE( (box->getBoxLengths()[d] > 0.0) );
 
@@ -98,9 +101,13 @@ template<int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra) {
 template<int D> void initialize(mrcpp::GaussFunc<D> **func) {
     double beta = 1.0e4;
     double alpha = std::pow(beta/mrcpp::pi, D/2.0);
-    double pos[3] = {-0.2, 0.5, 1.0};
-    int pow[3] = {0, 0, 0};
-    *func = new mrcpp::GaussFunc<D>(beta, alpha, pos, pow);
+    double pos_data[3] = {-0.2, 0.5, 1.0};
+    const auto pow = std::array<int, D>{};
+
+    auto pos = mrcpp::details::convert_to_std_array<double, D>(pos_data);
+
+    *func = new mrcpp::GaussFunc<D>(beta, alpha, pos);
 }
+
 
 #endif //FACTORY_FUNCTIONS_H

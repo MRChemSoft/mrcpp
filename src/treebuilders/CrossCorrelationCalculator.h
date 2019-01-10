@@ -9,7 +9,7 @@ class CrossCorrelationCalculator final : public TreeCalculator<2> {
 public:
     CrossCorrelationCalculator(FunctionTree<1> &k) : kernel(&k) { }
 
-protected:
+private:
     FunctionTree<1> *kernel;
 
     void calcNode(MWNode<2> &node);

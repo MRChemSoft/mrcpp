@@ -32,10 +32,10 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
         REQUIRE( id_kern.size() == 1 );
 
         SECTION("Project identity kernel") {
-            int l = -1;
-            int nbox = 2;
-            NodeIndex<1> idx(n, &l);
-            BoundingBox<1> box(idx, &nbox);
+            std::array<int, 1> l{-1};
+            std::array<int, 1> nbox{2};
+            NodeIndex<1> idx(n, l.data());
+            BoundingBox<1> box(idx, nbox);
 
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);

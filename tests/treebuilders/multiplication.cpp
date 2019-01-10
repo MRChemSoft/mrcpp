@@ -33,8 +33,11 @@ template<int D> void testMultiplication() {
     double alpha = 1.0;
     double beta_a = 110.0;
     double beta_b = 50.0;
-    double pos_a[3] = {-0.25, 0.35, 1.05};
-    double pos_b[3] = {-0.20, 0.50, 1.05};
+
+    double pos_c_a[3] = {-0.25, 0.35, 1.05};
+    auto pos_a = details::convert_to_std_array<double, D>(pos_c_a);
+    double pos_c_b[3] = {-0.20, 0.50, 1.05};
+    auto pos_b = details::convert_to_std_array<double, D>(pos_c_b);
 
     GaussFunc<D> a_func(beta_a, alpha, pos_a);
     GaussFunc<D> b_func(beta_b, alpha, pos_b);
@@ -110,7 +113,8 @@ template<int D> void testSquare() {
 
     double alpha = 1.0;
     double beta = 50.0;
-    double pos[3] = {-0.25, 0.35, 1.05};
+    double pos_c[3] = {-0.25, 0.35, 1.05};
+    auto pos = details::convert_to_std_array<double, D>(pos_c);
 
     GaussFunc<D> f_func(beta, alpha, pos);
     GaussPoly<D> ref_func = f_func*f_func;

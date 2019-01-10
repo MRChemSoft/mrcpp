@@ -43,10 +43,10 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
             x[0] *= 1.5;
         }
         SECTION("Project Helmholtz' kernel") {
-            int l = -1;
-            int nbox = 2;
-            NodeIndex<1> idx(n, &l);
-            BoundingBox<1> box(idx, &nbox);
+            std::array<int, 1> l{-1};
+            std::array<int, 1> nbox{2};
+            NodeIndex<1> idx(n, l.data());
+            BoundingBox<1> box(idx, nbox);
 
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);
@@ -117,9 +117,11 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
 
     // Computational domain [-32.0, 32.0]
     int scale = -5;
-    int corner[3] = {-1, -1, -1};
-    int nbox[3] = {2, 2, 2};
-    NodeIndex<3> idx(scale, corner);
+    std::array<int, 3> corner;
+    std::array<int, 3> nbox;
+    corner.fill(-1);
+    nbox.fill(2);
+    NodeIndex<3> idx(scale, corner.data());
     BoundingBox<3> box(idx, nbox);
 
     int order = 5;

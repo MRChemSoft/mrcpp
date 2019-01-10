@@ -8,6 +8,8 @@
 #include "treebuilders/grid.h"
 #include "treebuilders/add.h"
 #include "treebuilders/multiply.h"
+#include "utils/details.h"
+
 
 using namespace mrcpp;
 
@@ -36,8 +38,11 @@ template<int D> void testAddition() {
     double alpha = 1.0;
     double beta_a = 110.0;
     double beta_b = 50.0;
-    double pos_a[3] = {-0.25, 0.35, 1.05};
-    double pos_b[3] = {-0.20, 0.50, 1.05};
+
+    double pos_c_a[3] = {-0.25, 0.35, 1.05};
+    auto pos_a = details::convert_to_std_array<double, D>(pos_c_a);
+    double pos_c_b[3] = {-0.20, 0.50, 1.05};
+    auto pos_b = details::convert_to_std_array<double, D>(pos_c_b);
 
     GaussFunc<D> a_func(beta_a, alpha, pos_a);
     GaussFunc<D> b_func(beta_b, alpha, pos_b);
@@ -135,4 +140,4 @@ template<int D> void testAddition() {
     finalize(&mra);
 }
 
-} // namespace
+} // namespace addition

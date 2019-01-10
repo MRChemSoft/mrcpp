@@ -9,7 +9,7 @@ class SquareCalculator final : public TreeCalculator<D> {
 public:
     SquareCalculator(FunctionTree<D> &inp) : func(&inp) { }
 
-protected:
+private:
     FunctionTree<D> *func;
 
     void calcNode(MWNode<D> &node_o) {

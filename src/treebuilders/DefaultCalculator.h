@@ -14,7 +14,7 @@ public:
             calcNode(*nodeVec[n]);
         }
     }
-protected:
+private:
     void calcNode(MWNode<D> &node) {
         node.clearHasCoefs();
         node.clearNorms();

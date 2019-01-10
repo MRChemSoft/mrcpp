@@ -68,8 +68,8 @@ public:
     double getScreening() const { return screening; }
     std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
-    const int *getPower(int i) const { return this->funcs[i]->getPower(); }
-    const double *getPos(int i) const { return this->funcs[i]->getPos(); }
+    const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
+    const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     double getSquareNorm() {
         if (squareNorm < 0) {
@@ -92,8 +92,8 @@ public:
     void setScreen(bool screen);
     void setExp(int i, double a) { this->funcs[i]->setExp(a); }
     void setCoef(int i, double b) { this->funcs[i]->setCoef(b); }
-    void setPower(int i, const int power[D]) { this->funcs[i]->setPower(power); }
-    void setPos(int i, const double pos[D]) { this->funcs[i]->setPos(pos); }
+    void setPower(int i, const std::array<int, D> &power) { this->funcs[i]->setPower(power); }
+    void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);

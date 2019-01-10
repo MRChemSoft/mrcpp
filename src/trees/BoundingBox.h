@@ -16,9 +16,8 @@ namespace mrcpp {
 template<int D>
 class BoundingBox {
 public:
-    BoundingBox(int n = 0, const int *l = nullptr, const int *nb = nullptr);
-    BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb);
-    BoundingBox(const NodeIndex<D> &idx, const int *nb = nullptr);
+    BoundingBox(int n = 0, const std::array<int, D> &l = {}, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
+    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() = default;
@@ -32,33 +31,38 @@ public:
     int getBoxIndex(const Coord<D> &r) const;
     int getBoxIndex(const NodeIndex<D> &nIdx) const;
 
-    int size() const { return this->nBoxes[D]; }
+    int size() const { return this->totBoxes; }
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
-    double getUnitLength() const { return this->unitLength; }
+    double getScalingFactor(int d) const { return this->scalingFactor[d]; }
+    double getUnitLength(int d) const { return this->unitLengths[d]; }
     double getBoxLength(int d) const { return this->boxLengths[d]; }
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
     double getUpperBound(int d) const { return this->upperBounds[d]; }
+    const Coord<D> &getUnitLengths() const { return this->unitLengths; }
     const Coord<D> &getBoxLengths() const { return this->boxLengths; }
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
     const Coord<D> &getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
-
+    const std::array<double, D> &getScalingFactor() const {return this->scalingFactor; }
     friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
     // Fundamental parameters
-    int nBoxes[D+1];                ///< Number of boxes in each dim, last entry total
-    NodeIndex<D> cornerIndex;       ///< Index defining the lower corner of the box
+    NodeIndex<D> cornerIndex;    ///< Index defining the lower corner of the box
+    std::array<int, D> nBoxes{}; ///< Number of boxes in each dim, last entry total
+    std::array<double, D> scalingFactor{};
 
     // Derived parameters
-    double unitLength;		    ///< 1/2^initialScale
-    Coord<D> boxLengths;	    ///< Total length (unitLength times nBoxes)
-    Coord<D> lowerBounds;	    ///< Box lower bound (not real)
-    Coord<D> upperBounds;	    ///< Box upper bound (not real)
+    int totBoxes{1};
+    Coord<D> unitLengths;    ///< 1/2^initialScale
+    Coord<D> boxLengths;     ///< Total length (unitLength times nBoxes)
+    Coord<D> lowerBounds;    ///< Box lower bound (not real)
+    Coord<D> upperBounds;    ///< Box upper bound (not real)
 
-    void setNBoxes(const int *nb);
+    void setNBoxes(const std::array<int, D> &nb);
     void setDerivedParameters();
+    void setScalingFactor(const std::array<double, D> &sf);
 
     std::ostream& print(std::ostream &o) const;
 };

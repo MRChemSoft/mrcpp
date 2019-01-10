@@ -179,7 +179,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
         }
     }
 
-    //coeff of child should be have been allocated already here
+    // coeff of child should be have been allocated already here
     int stride = this->getMWChild(0).getNCoefs();
     double* inp  = this->getCoefs();
     double* out = this->getMWChild(0).getCoefs();
@@ -190,7 +190,7 @@ void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 
     for (int i = 0; i < this->getTDim(); i++){
 	this->getMWChild(i).setHasCoefs();
-	this->getMWChild(i).calcNorms();//should need to compute only scaling norms
+	this->getMWChild(i).calcNorms(); // should need to compute only scaling norms
     }
 }
 
@@ -359,9 +359,8 @@ void MWNode<D>::cvTransform(int operation) {
     int kp1_d = this->getKp1_d();
     int nCoefs = this->getTDim()*kp1_d;
 
-    const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
-    const MatrixXd &S = sf.getCVMap(operation);
-
+    auto sb = this->getMWTree().getMRA().getScalingBasis();
+    const MatrixXd &S = sb.getCVMap(operation);
     double o_vec[nCoefs];
     double *out_vec = o_vec;
     double *in_vec = this->coefs;
@@ -376,8 +375,15 @@ void MWNode<D>::cvTransform(int operation) {
         in_vec = out_vec;
         out_vec = tmp;
     }
+
+
+    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
+    double sf_prod = 1.0;
+    for (const auto &s : sf) sf_prod *=s;
+    if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
+
     int np1 = getScale() + 1; // we're working on scaling coefs on next scale
-    double two_fac = std::pow(2.0, D*np1);
+    double two_fac = std::pow(2.0, D*np1)/sf_prod;
     if (operation == Backward) {
         two_fac = std::sqrt(1.0/two_fac);
     } else {
@@ -678,7 +684,7 @@ void MWNode<D>::deleteChildren() {
 
 template<int D>
 void MWNode<D>::deleteGenerated() {
-    if (this->isBranchNode()) {      
+    if (this->isBranchNode()) {
         if (this->isEndNode()) {
             this->deleteChildren();
         } else {
@@ -702,12 +708,13 @@ void MWNode<D>::getCenter(double *r) const {
 
 template<int D>
 void MWNode<D>::getBounds(double *lb, double *ub) const {
+    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactor();
     int n = getScale();
     double p = std::pow(2.0, -n);
     const int *l = getTranslation();
     for (int i = 0; i < D; i++) {
-        lb[i] = p * l[i];
-        ub[i] = p * (l[i] + 1);
+        lb[i] = sf[i]*(p * l[i]);
+        ub[i] = sf[i]*(p * (l[i] + 1));
     }
 }
 

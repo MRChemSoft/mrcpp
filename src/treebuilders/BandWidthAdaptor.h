@@ -13,7 +13,7 @@ class BandWidthAdaptor final : public TreeAdaptor<2> {
 public:
     BandWidthAdaptor(int bw, int ms) : TreeAdaptor<2>(ms), bandWidth(bw) { }
 
-protected:
+private:
     const int bandWidth;
 
     bool splitNode(const MWNode<2> &node) const {

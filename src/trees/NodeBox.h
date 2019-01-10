@@ -17,7 +17,7 @@ namespace mrcpp {
 template<int D>
 class NodeBox final : public BoundingBox<D> {
 public:
-    NodeBox(const NodeIndex<D> &idx, const int *nb = nullptr);
+    NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {});
     NodeBox(const NodeBox<D> &box);
     NodeBox(const BoundingBox<D> &box);
     NodeBox<D> &operator=(const NodeBox<D> &box) = delete;

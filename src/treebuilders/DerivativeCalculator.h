@@ -13,7 +13,7 @@ public:
 
     MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
 
-protected:
+private:
     int applyDir;
     FunctionTree<D> *fTree;
     DerivativeOperator<D> *oper;

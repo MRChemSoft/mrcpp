@@ -40,10 +40,10 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
             x[0] *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
-            int l = -1;
-            int nbox = 2;
-            NodeIndex<1> idx(n, &l);
-            BoundingBox<1> box(idx, &nbox);
+            std::array<int, 1> l{-1};
+            std::array<int, 1> nbox{2};
+            NodeIndex<1> idx(n, l.data());
+            BoundingBox<1> box(idx, nbox);
 
             InterpolatingBasis basis(2*k+1);
             MultiResolutionAnalysis<1> kern_mra(box, basis);
@@ -134,4 +134,4 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     finalize(&mra);
 }
 
-} // namespace
+} // namespace poisson_operator

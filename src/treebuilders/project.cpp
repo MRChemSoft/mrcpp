@@ -63,9 +63,10 @@ void project(double prec,
              RepresentableFunction<D> &inp,
              int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
+    const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactor();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
-    ProjectionCalculator<D> calculator(inp);
+    ProjectionCalculator<D> calculator(inp, scaling_factor);
 
     builder.build(out, calculator, adaptor, maxIter);
 

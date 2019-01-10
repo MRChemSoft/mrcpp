@@ -12,7 +12,7 @@ public:
     void calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
     int split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const;
 
-protected:
+private:
     double calcScalingNorm(const MWNodeVector<D> &vec) const;
     double calcWaveletNorm(const MWNodeVector<D> &vec) const;
 };

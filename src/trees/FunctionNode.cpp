@@ -20,10 +20,22 @@ template<int D>
 double FunctionNode<D>::evalf(const Coord<D> &r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
+    const auto periodic = this->getMWTree().getRootBox().isPeriodic();
+    const auto sf = this->getMWTree().getRootBox().getScalingFactor();
+    auto r_tmp = r;
+    if (periodic) {
+        for (auto i = 0; i < D; i++) {
+            if (r[i] > sf[i])
+                r_tmp[i] = fmod(r[i], sf[i]);
+            if (r[i] < 0.0)
+                r_tmp[i] = fmod(r[i], sf[i]) + sf[i];
+        }
+    }
+
     this->threadSafeGenChildren();
-    int cIdx = this->getChildIndex(r);
+    int cIdx = this->getChildIndex(r_tmp);
     assert(this->children[cIdx] != 0);
-    return getFuncChild(cIdx).evalScaling(r);
+    return getFuncChild(cIdx).evalScaling(r_tmp);
 }
 
 template<int D>

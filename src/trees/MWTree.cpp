@@ -263,6 +263,29 @@ int MWTree<D>::getNGenNodes() {
   * appropriate rootNode. */
 template<int D>
 const MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) const {
+
+    bool periodic = getRootBox().isPeriodic();
+    int l[D];
+    int two_n = 1 << idx.getScale();
+    if (periodic){
+        // Manupulation of the translation
+        // returing such that the node in the
+        // zeroth box is returned.
+        for (auto i = 0; i < D; i++) {
+            l[i] = idx.getTranslation(i);
+            if (l[i] >= two_n)
+                l[i] = l[i]%two_n;
+            if (l[i] < 0)
+                l[i] = (l[i]+1) % two_n + two_n-1;
+        }
+        NodeIndex<D> newidx(idx.getScale(),l);
+        int rIdx = getRootBox().getBoxIndex(newidx);
+        if (rIdx < 0) return 0;
+        const MWNode<D> &root = this->rootBox.getNode(rIdx);
+        assert(root.isAncestor(newidx));
+        return root.retrieveNodeNoGen(newidx);
+    }
+
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return 0;
     const MWNode<D> &root = getRootBox().getNode(rIdx);
@@ -278,6 +301,29 @@ const MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) const {
   * appropriate rootNode. */
 template<int D>
 MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) {
+
+    bool periodic = getRootBox().isPeriodic();
+    int l[D];
+    int two_n = 1 << idx.getScale();
+    if (periodic){
+        // Manupulation of the translation
+        // returing such that the node in the
+        // zeroth box is returned.
+        for (auto i = 0; i < D; i++) {
+            l[i] = idx.getTranslation(i);
+            if (l[i] >= two_n)
+                l[i] = l[i]%two_n;
+            if (l[i] < 0)
+                l[i] = (l[i]+1) % two_n + two_n-1;
+        }
+        NodeIndex<D> newidx(idx.getScale(),l);
+        int rIdx = getRootBox().getBoxIndex(newidx);
+        if (rIdx < 0) return 0;
+        MWNode<D> &root = this->rootBox.getNode(rIdx);
+        assert(root.isAncestor(newidx));
+        return root.retrieveNodeNoGen(newidx);
+    }
+
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return 0;
     MWNode<D> &root = this->rootBox.getNode(rIdx);
@@ -292,6 +338,23 @@ MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) {
   * decends from this.*/
 template<int D>
 MWNode<D>& MWTree<D>::getNode(const NodeIndex<D> &idx) {
+    bool periodic = getRootBox().isPeriodic();
+    int l[D];
+    int two_n = 1 << idx.getScale();
+    if (periodic){
+        for (auto i = 0; i < D; i++) {
+            l[i] = idx.getTranslation(i);
+            if (l[i] >= two_n)
+                l[i] = l[i]%two_n;
+            if (l[i] < 0)
+                l[i] = (l[i]+1) % two_n + two_n-1;
+        }
+        NodeIndex<D> newidx(idx.getScale(),l);
+        MWNode<D> &root = getRootBox().getNode(newidx);
+        assert(root.isAncestor(newidx));
+        return *root.retrieveNode(newidx);
+    }
+
     MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNode(idx);
@@ -304,6 +367,23 @@ MWNode<D>& MWTree<D>::getNode(const NodeIndex<D> &idx) {
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
 MWNode<D>& MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) {
+    bool periodic = getRootBox().isPeriodic();
+    int l[D];
+    int two_n = 1 << idx.getScale();
+    if (periodic){
+        for (auto i = 0; i < D; i++) {
+            l[i] = idx.getTranslation(i);
+            if (l[i] >= two_n)
+                l[i] = l[i]%two_n;
+            if (l[i] < 0)
+                l[i] = (l[i]+1) % two_n + two_n-1;
+        }
+        NodeIndex<D> newidx(idx.getScale(),l);
+        MWNode<D> &root = getRootBox().getNode(newidx);
+        assert(root.isAncestor(newidx));
+        return *root.retrieveNodeOrEndNode(newidx);
+    }
+
     MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
@@ -316,6 +396,24 @@ MWNode<D>& MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) {
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
 const MWNode<D>& MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) const {
+
+    bool periodic = getRootBox().isPeriodic();
+    int l[D];
+    int two_n = 1 << idx.getScale();
+    if (periodic){
+        for (auto i = 0; i < D; i++) {
+            l[i] = idx.getTranslation(i);
+            if (l[i] >= two_n)
+                l[i] = l[i]%two_n;
+            if (l[i] < 0)
+                l[i] = (l[i]+1) % two_n + two_n-1;
+        }
+        NodeIndex<D> newidx(idx.getScale(),l);
+        const MWNode<D> &root = getRootBox().getNode(newidx);
+        assert(root.isAncestor(newidx));
+        return *root.retrieveNodeOrEndNode(newidx);
+    }
+
     const MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
@@ -343,8 +441,20 @@ MWNode<D>& MWTree<D>::getNode(const Coord<D> &r, int depth) {
   * Recursion starts at the appropriate rootNode and decends from this. */
 template<int D>
 MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
-    MWNode<D> &root = getRootBox().getNode(r);
-    return *root.retrieveNodeOrEndNode(r, depth);
+
+    bool periodic = getRootBox().isPeriodic();
+    auto r_tmp = r;
+    if (periodic) {
+        for (auto i = 0; i < D; i++) {
+            if (r[i] > 1.0)
+                r_tmp[i] = fmod(r[i], 1.0);
+            if (r[i] < 0.0)
+                r_tmp[i] = fmod(r[i], 1.0) + 1.0;
+        }
+    }
+
+    MWNode<D> &root = getRootBox().getNode(r_tmp);
+    return *root.retrieveNodeOrEndNode(r_tmp, depth);
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.

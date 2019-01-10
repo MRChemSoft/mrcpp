@@ -16,7 +16,7 @@ namespace mrcpp {
 
 template<int D>
 BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf)
-        : cornerIndex(n, l.data()) {
+        : cornerIndex(n, l.data()), periodic(false) {
     setNBoxes(nb);
     setScalingFactor(sf);
     setDerivedParameters();
@@ -24,15 +24,23 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
 
 template<int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb, const std::array<double, D> &sf)
-        : cornerIndex(idx) {
+        : cornerIndex(idx), periodic(false) {
     setNBoxes(nb);
     setScalingFactor(sf);
     setDerivedParameters();
 }
 
 template<int D>
+BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
+        : cornerIndex(), periodic(pbc) {
+            setNBoxes();
+            setScalingFactor(sf);
+            setDerivedParameters();
+        }
+
+template<int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
-        : cornerIndex(box.cornerIndex) {
+        : cornerIndex(box.cornerIndex), periodic(box.periodic) {
     setNBoxes(box.nBoxes);
     setScalingFactor(box.getScalingFactor());
     setDerivedParameters();
@@ -42,6 +50,7 @@ template<int D>
 BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> &box) {
     if (&box != this) {
         this->cornerIndex = box.cornerIndex;
+        this->periodic = box.periodic;
         setNBoxes(box.nBoxes);
         setScalingFactor(box.getScalingFactor());
         setDerivedParameters();
@@ -184,6 +193,9 @@ template<int D>
 std::ostream& BoundingBox<D>::print(std::ostream &o) const {
     int oldprec = Printer::setPrecision(5);
     o << std::fixed;
+    if (isPeriodic()) {
+    o << "                   The World is Periodic" << std::endl;
+    }
     o << " total boxes      = " << size() << std::endl;
     o << " boxes            = [ ";
     for (int i = 0; i < D; i++) {

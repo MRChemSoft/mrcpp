@@ -10,17 +10,19 @@ namespace mrcpp {
 template<int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra) {
-    initializeOperator(order);
+    this->order = order;
+    initializeOperator();
+
 }
 
 template<int D>
-void PHOperator<D>::initializeOperator(int order) {
+void PHOperator<D>::initializeOperator() {
     int bw = 1; // Operator bandwidth
     int max_scale = this->oper_mra.getMaxScale();
     const ScalingBasis &basis = this->oper_mra.getScalingBasis();
 
     TreeBuilder<2> builder;
-    PHCalculator calculator(basis, order);
+    PHCalculator calculator(basis, this->order);
     BandWidthAdaptor adaptor(bw, max_scale);
 
     auto *o_tree = new OperatorTree(this->oper_mra, MachineZero);

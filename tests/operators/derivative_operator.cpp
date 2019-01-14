@@ -19,10 +19,11 @@ template<int D> MultiResolutionAnalysis<D>* initializeMRA() {
     int min_scale = -4;
     std::array<int, D> corner;
     std::array<int, D> boxes;
+    std::array<double, D> scaling_factor;
     corner.fill(-1);
     boxes.fill(2);
-    NodeIndex<D> idx(min_scale, corner.data());
-    BoundingBox<D> world(idx, boxes);
+    scaling_factor.fill(2.0);
+    BoundingBox<D> world(min_scale, corner, boxes, scaling_factor);
 
     // Constructing scaling basis
     int order = 5;

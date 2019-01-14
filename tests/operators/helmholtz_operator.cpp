@@ -116,15 +116,16 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     double build_prec = 3.0e-3;
 
     // Computational domain [-32.0, 32.0]
-    int scale = -5;
+    int scale = -4;
     std::array<int, 3> corner;
     std::array<int, 3> nbox;
+    std::array<double, 3> scaling_factor;
     corner.fill(-1);
     nbox.fill(2);
-    NodeIndex<3> idx(scale, corner.data());
-    BoundingBox<3> box(idx, nbox);
-
+    scaling_factor.fill(2.0);
+    BoundingBox<3> box(scale, corner, nbox, scaling_factor);
     int order = 5;
+
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(box, basis);
 

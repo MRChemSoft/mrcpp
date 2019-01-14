@@ -175,11 +175,15 @@ double FunctionTree<D>::evalf(const Coord<D> &r) {
     auto arg = r;
     for (auto i = 0; i < D; i++) arg[i] = arg[i]/sf[i];
 
+    // Adjust for scaling factor included in basis
+    auto coef = 1.0;
+    for (const auto &fac : sf) coef /= std::sqrt(fac);
+
     MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
     FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
     auto result = f_node.evalf(arg);
     this->deleteGenerated();
-    return result;
+    return coef*result;
 }
 /** @brief In-place square of function
  *

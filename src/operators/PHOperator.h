@@ -12,7 +12,7 @@ public:
     PHOperator &operator=(const PHOperator &oper) = delete;
 
 protected:
-    void initializeOperator(int order);
+    void initializeOperator();
 };
 
 }

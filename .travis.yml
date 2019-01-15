@@ -39,6 +39,25 @@ matrix:
         - CXX_COMPILER='g++'
         - COVERAGE='--coverage'
         - EIGEN_VER='3.3.4'
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang
+      env:
+        - BUILD_TYPE='release'
+        - CXX_COMPILER='clang++'
+        - EIGEN_VER='3.3.4'
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang
+      env:
+        - BUILD_TYPE='release'
+        - CXX_COMPILER='clang++'
+        - OPENMP='--omp'
+        - EIGEN_VER='3.3.4'
 
 env:
   global:

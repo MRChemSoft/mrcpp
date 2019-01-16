@@ -30,6 +30,7 @@
 #include "operators/ABGVOperator.h"
 #include "operators/MWOperator.h"
 #include "operators/PHOperator.h"
+#include "operators/BSOperator.h"
 #include "treebuilders/add.h"
 #include "treebuilders/apply.h"
 #include "treebuilders/project.h"
@@ -52,7 +53,7 @@ template <int D> MultiResolutionAnalysis<D> *initializeMRA() {
 
     // Constructing scaling basis
     int order = 5;
-    InterpolatingBasis basis(order);
+    LegendreBasis basis(order);
 
     // Initializing MRA
     int max_depth = 20;
@@ -84,12 +85,12 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     Coord<D> r_0;
     for (auto &x : r_0) x = pi;
 
-    auto f = [r_0](const Coord<D> &r) -> double {
+    auto f = [r_0] (const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return std::exp(-R * R);
     };
 
-    auto df = [r_0](const Coord<D> &r) -> double {
+    auto df = [r_0] (const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return -2.0 * std::exp(-R * R) * (r[0] - r_0[0]);
     };
@@ -128,7 +129,7 @@ template <int D> void testDifferentiationPH(int order) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return std::exp(-R * R);
     };
-    auto df = [r_0, order](const Coord<D> &r) -> double {
+    auto df = [r_0, order](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return -(2 - order) * 2 * std::exp(-R * R) * (r[0] - pi) +
                (order - 1) * (-2 * std::exp(-R * R) + 4 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]));
@@ -208,6 +209,48 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     delete mra;
 }
 
+template<int D> void testDifferentiationBS(int order) {
+    MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
+
+    double prec = 1.0e-3;
+    BSOperator<D> diff(*mra, order);
+
+    Coord<D> r_0;
+    for (auto &x : r_0) x = pi;
+
+    auto f = [r_0] (const Coord<D> &r) {
+        double R = math_utils::calc_distance<D>(r, r_0);
+        return std::exp(-R*R);
+    };
+    auto df = [r_0, order] (const Coord<D> &r) {
+        double R = math_utils::calc_distance<D>(r, r_0);
+
+        if (order == 1) return -2.0*std::exp(-R*R)*(r[0]-pi);
+        if (order == 2) return -2.0*std::exp(-R*R)+4.0*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]);
+        return 12.0*std::exp(-R*R)*(r[0]-r_0[0])-8.0*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0])*(r[0]-r_0[0]);
+    };
+
+    FunctionTree<D> f_tree(*mra);
+    project<D>(prec/10, f_tree, f);
+
+    FunctionTree<D> df_tree(*mra);
+    project<D>(prec/10, df_tree, df);
+
+    FunctionTree<D> dg_tree(*mra);
+    apply(dg_tree, diff, f_tree, 0);
+
+    FunctionTree<D> err_tree(*mra);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+
+    double df_norm = std::sqrt(df_tree.getSquareNorm());
+    double abs_err = std::sqrt(err_tree.getSquareNorm());
+    double rel_err = abs_err/df_norm;
+
+    REQUIRE( rel_err == Approx(0.0).margin(prec*10.0) );
+    // Multiplying prec by 10.0 to make the less accurate 3rd order pass.
+    delete mra;
+}
+
 TEST_CASE("ABGV differentiantion central difference", "[derivative_operator], [central_difference]") {
     // 0.5,0.5 specifies central difference
     SECTION("1D derivative test") { testDifferentiationABGV<1>(0.5, 0.5); }
@@ -246,12 +289,49 @@ TEST_CASE("Periodic PH differentiantion", "[periodic_derivative], [derivative_op
     SECTION("3D first order periodic derivative test") { testDifferentiationPeriodicPH<3>(2); }
 }
 
+TEST_CASE("BS differentiantion first order", "[derivative_operator], [BS_first_order]") {
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(1);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(1);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(1);
+    }
+}
+
+TEST_CASE("BS differentiantion second order", "[derivative_operator], [BS_second_order]") {
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(2);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(2);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(2);
+    }
+}
+
+TEST_CASE("BS differentiantion third order", "[derivative_operator], [BS_third_order]") {
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(3);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(3);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(3);
+    }
+}
+
 TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     MultiResolutionAnalysis<3> *mra = initializeMRA<3>();
 
     double prec = 1.0e-3;
     ABGVOperator<3> diff(*mra, 0.0, 0.0);
 
+<<<<<<< HEAD
     auto f = [](const Coord<3> &r) -> double {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return std::exp(-r2);
@@ -267,6 +347,23 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     auto fz = [](const Coord<3> &r) -> double {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[2] * std::exp(-r2);
+=======
+    auto f = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return std::exp(-r2);
+    };
+    auto fx = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[0]*std::exp(-r2);
+    };
+    auto fy = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[1]*std::exp(-r2);
+    };
+    auto fz = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[2]*std::exp(-r2);
+>>>>>>> Add b-spine derivative operator and tests
     };
 
     FunctionTree<3> f_tree(*mra);
@@ -290,6 +387,7 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     double prec = 1.0e-3;
     ABGVOperator<3> diff(*mra, 0.5, 0.5);
 
+<<<<<<< HEAD
     auto f = [](const Coord<3> &r) -> double {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return std::exp(-r2);
@@ -305,6 +403,23 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     auto fz = [](const Coord<3> &r) -> double {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[2] * std::exp(-r2);
+=======
+    auto f = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return std::exp(-r2);
+    };
+    auto fx = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[0]*std::exp(-r2);
+    };
+    auto fy = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[1]*std::exp(-r2);
+    };
+    auto fz = [] (const Coord<3> &r) {
+        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+        return -2.0*r[2]*std::exp(-r2);
+>>>>>>> Add b-spine derivative operator and tests
     };
 
     FunctionTree<3> f_tree(*mra);

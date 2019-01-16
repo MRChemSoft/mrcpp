@@ -1,6 +1,7 @@
 target_sources(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVCalculator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/BSCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CopyAdaptor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCalculator.cpp
@@ -21,6 +22,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/ABGVCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/AdditionCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/AnalyticAdaptor.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/BSCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/BandWidthAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/CopyAdaptor.h

@@ -10,30 +10,26 @@ notifications:
 matrix:
   include:
     - os: linux
-      addons:
+      addons: &1
         apt:
           packages:
             - g++
+            - lcov
+            - libpython3.5-dev
+            - python3.5-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++'
         - EIGEN_VER='3.3.4'
     - os: linux
-      addons:
-        apt:
-          packages:
-            - g++
+      addons: *1
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++'
         - OPENMP='--omp'
         - EIGEN_VER='3.3.4'
     - os: linux
-      addons:
-        apt:
-          packages:
-            - g++
-            - lcov
+      addons: *1
       env:
         - BUILD_TYPE='debug'
         - CXX_COMPILER='g++'
@@ -44,26 +40,27 @@ matrix:
         apt:
           packages:
             - clang
+            - libpython3.5-dev
+            - python3.5-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='clang++'
-        - EIGEN_VER='3.3.4'
-    - os: linux
-      addons:
-        apt:
-          packages:
-            - clang
-      env:
-        - BUILD_TYPE='release'
-        - CXX_COMPILER='clang++'
-        - OPENMP='--omp'
         - EIGEN_VER='3.3.4'
 
 env:
   global:
+    - LC_ALL="en_US.UTF-8"
+    - LANG="en_US.UTF-8"
+    - LANGUAGE="en_US.UTF-8"
+    - PYTHONIOENCODING=UTF-8
+    - OMP_NUM_THREADS=2
     - CMAKE_VERSION="3.12.4"
+    # Invalidate PYENV_ROOT
+    - PYENV_ROOT=$HOME/fuffa
 
 cache:
+  timeout: 1000
+  pip: true
   directories:
     - $HOME/Deps/cmake/$CMAKE_VERSION
     - $HOME/Deps/eigen
@@ -74,16 +71,28 @@ before_install:
 
 install:
   - ./.ci/cmake.sh
+  - export PATH=$HOME/Deps/cmake/$CMAKE_VERSION/bin${PATH:+:$PATH}
   - ./.ci/eigen.sh
+  - pip install --user pipenv --upgrade
+  - pipenv install --python="/usr/bin/python3.5"
 
 before_script:
-  - python --version
-  - cmake --version
-  - ${CXX_COMPILER} --version
+  - test -n $CC && unset CC
+  - test -n $CXX && unset CXX
+  - test -n $FC && unset FC
+  - source $(pipenv --venv)/bin/activate
 
 script:
-  - export OMP_NUM_THREADS=2
-  - ./setup --cmake-options="-DEigen3_DIR=$HOME/Deps/eigen/share/eigen3/cmake/" --type=${BUILD_TYPE} --cxx=${CXX_COMPILER} ${COVERAGE} ${OPENMP} --enable-examples
+  - ./.ci/report_versions.sh
+  - |
+    python ./setup \
+        --type=${BUILD_TYPE} \
+        --cxx=${CXX_COMPILER} \
+        --enable-examples \
+        --cmake-options="-DEigen3_DIR=${HOME}/Deps/eigen/share/eigen3/cmake/ -DPYTHON_EXECUTABLE=$(type -P python)" \
+        ${COVERAGE} \
+        ${OPENMP} \
+        build
   - cd build
   - cmake --build . -- VERBOSE=1 -j2
   - ctest --output-on-failure --verbose

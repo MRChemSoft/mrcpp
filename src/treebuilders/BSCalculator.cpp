@@ -28,7 +28,7 @@ void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
 
     std::ifstream ifs(file.c_str());
     if (not ifs) MSG_ERROR("Failed to open file: " << file);
-    for (int kp1 = 1; kp1 < 21; kp1++) {
+    for (int kp1 = 2; kp1 < 21; kp1++) {
         std::string line;
         getline(ifs, line);
         std::istringstream iss(line);

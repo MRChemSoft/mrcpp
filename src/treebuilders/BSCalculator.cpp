@@ -21,10 +21,10 @@ BSCalculator::BSCalculator(const ScalingBasis &basis, int n)
 void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string file;
     std::string path = MW_FILTER_DIR;
-    if (basis.getScalingType() == Legendre) file = path + "/b-spline-deriv" + n + ".txt";
-    // if (basis.getScalingType() == Interpol) file = path + "/I_ph_deriv_" + n + ".txt"; // Fix me
+    if (basis.getScalingType() == Legendre) file = path + "/L_b-spline-deriv" + n + ".txt";
+    // if (basis.getScalingType() == Interpol) file = path + "/I_b-spline-deriv" + n + ".txt";
     if (basis.getScalingOrder() <  0) MSG_FATAL("Scaling order not supported");
-    if (basis.getScalingOrder() > 29) MSG_FATAL("Scaling order not supported");
+    if (basis.getScalingOrder() > 20) MSG_FATAL("Scaling order not supported");
 
     std::ifstream ifs(file.c_str());
     if (not ifs) MSG_ERROR("Failed to open file: " << file);

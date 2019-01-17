@@ -19,11 +19,11 @@ constexpr auto generate_array(const T &inp){
 }
 
 template<int D>
-constexpr auto alpha_gen(const double &sigma) {
+auto alpha_gen(double sigma) {
     return std::pow(1.0/std::sqrt(2.0*pi*std::pow(sigma, 2.0)), D);
 }
 
-constexpr auto beta_gen(const double &sigma) {
+auto beta_gen(double sigma) {
     return 1.0/(2.0*std::pow(sigma, 2.0));
 }
 

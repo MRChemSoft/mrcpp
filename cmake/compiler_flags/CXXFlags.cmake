@@ -5,3 +5,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(GNU.CXX)
 include(Intel.CXX)
+include(Clang.CXX)

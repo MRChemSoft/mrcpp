@@ -22,13 +22,16 @@ double FunctionNode<D>::evalf(const Coord<D> &r) {
 
     const auto periodic = this->getMWTree().getRootBox().isPeriodic();
     const auto sf = this->getMWTree().getRootBox().getScalingFactor();
+
+    // The 1.0 appearing in the if tests comes from the period is always 1.0
+    // from the point of view of this function.
     auto r_tmp = r;
     if (periodic) {
         for (auto i = 0; i < D; i++) {
-            if (r[i] > sf[i])
-                r_tmp[i] = fmod(r[i], sf[i]);
+            if (r[i] > 1.0)
+                r_tmp[i] = fmod(r[i], 1.0);
             if (r[i] < 0.0)
-                r_tmp[i] = fmod(r[i], sf[i]) + sf[i];
+                r_tmp[i] = fmod(r[i], 1.0) + 1.0;
         }
     }
 

@@ -135,12 +135,11 @@ void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band) {
     MWNodeVector<D> *band = new MWNodeVector<D>;
-MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, vector<NodeIndex<D> > &idx_band) {
-    MWNodeVector *band = new MWNodeVector();
 
     int depth = gNode.getDepth();
+    bool periodic = gNode.getMWTree().getMRA().getWorldBox().isPeriodic();
     int width = this->oper->getMaxBandWidth(depth);
     if (width >= 0) {
         const NodeBox<D> &fWorld = this->fTree->getRootBox();
@@ -156,10 +155,10 @@ MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, vec
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
             int c_i = cIdx.getTranslation(i) * (1 << depth);
-            if (l_start[i] < c_i) {
+            if (l_start[i] < c_i and !periodic) {
                 l_start[i] = c_i;
             }
-            if (l_end[i] > c_i + nboxes - 1) {
+            if (l_end[i] > c_i + nboxes - 1 and !periodic) {
                 l_end[i] = c_i + nboxes - 1;
             }
             nbox[i] = l_end[i] - l_start[i] + 1;
@@ -176,8 +175,7 @@ MWNodeVector* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, vec
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
 template<int D>
 void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
-void ConvolutionCalculator<D>::fillOperBand(MWNodeVector *band,
-                                            vector<NodeIndex<D> > &idx_band,
+                                            std::vector<NodeIndex<D> > &idx_band,
                                             NodeIndex<D> &idx,
                                             const int *nbox,
                                             int dim) {
@@ -219,9 +217,8 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()]->resume();
-    MWNodeVector<D> *fBand = makeOperBand(gNode);
-    vector<NodeIndex<D> > idx_band;
-    MWNodeVector *fBand = makeOperBand(gNode, idx_band);
+    std::vector<NodeIndex<D> > idx_band;
+    MWNodeVector<D> *fBand = makeOperBand(gNode, idx_band);
     this->band_t[omp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();

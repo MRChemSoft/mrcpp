@@ -34,6 +34,22 @@ template<int D> MultiResolutionAnalysis<D>* initializeMRA() {
     return new MultiResolutionAnalysis<D>(world, basis, max_depth);
 }
 
+template<int D> MultiResolutionAnalysis<D>* initializePeriodicMRA() {
+    // Constructing world box
+    std::array<double, D> scaling_factor;
+    scaling_factor.fill(2.0*pi);
+    auto periodic = true;
+    BoundingBox<D> world(scaling_factor, periodic);
+
+    // Constructing scaling basis
+    int order = 5;
+    InterpolatingBasis basis(order);
+
+    // Initializing MRA
+    int max_depth = 20;
+    return new MultiResolutionAnalysis<D>(world, basis, max_depth);
+}
+
 template<int D> void testDifferentiationABGV(double a, double b) {
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
@@ -116,6 +132,65 @@ template<int D> void testDifferentiationPH(int order) {
     delete mra;
 }
 
+template<int D> void testDifferentiationPeriodicABGV(double a, double b) {
+    MultiResolutionAnalysis<D> *mra = initializePeriodicMRA<D>();
+
+    double prec = 1.0e-3;
+    ABGVOperator<D> diff(*mra, a, b);
+
+    auto g_func = [] (const mrcpp::Coord<D> &r) {
+        return cos(r[0])*cos(r[1])*cos(r[2]);
+    };
+    auto dg_func = [] (const mrcpp::Coord<D> &r) {
+        return -sin(r[0])*cos(r[1])*cos(r[2]);
+    };
+
+    FunctionTree<D> g_tree(*mra);
+    FunctionTree<D> dg_tree(*mra);
+
+    project<D>(prec, g_tree, g_func);
+
+    apply(dg_tree, diff, g_tree, 0);
+
+
+    REQUIRE( dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({20.0, 0.0, 0.0}) == Approx(dg_func({20.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({-5.0, 0.0, 0.0}) == Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec) );
+
+    delete mra;
+}
+
+template<int D> void testDifferentiationPeriodicPH(int order) {
+    MultiResolutionAnalysis<D> *mra = initializePeriodicMRA<D>();
+
+    double prec = 1.0e-3;
+    PHOperator<D> diff(*mra, order);
+
+    auto g_func = [] (const mrcpp::Coord<D> &r) {
+        return cos(r[0])*cos(r[1])*cos(r[2]);
+    };
+    auto dg_func = [order] (const mrcpp::Coord<D> &r) {
+        if (order == 1) return -sin(r[0])*cos(r[1])*cos(r[2]); // First order
+        return -cos(r[0])*cos(r[1])*cos(r[2]); // Second order
+    };
+
+    FunctionTree<D> g_tree(*mra);
+    FunctionTree<D> dg_tree(*mra);
+
+    project<D>(prec, g_tree, g_func);
+
+    apply(dg_tree, diff, g_tree, 0);
+
+
+    REQUIRE( dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({20.0, 0.0, 0.0}) == Approx(dg_func({20.0, 0.0, 0.0})).margin(prec) );
+    REQUIRE( dg_tree.evalf({-5.0, 0.0, 0.0}) == Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec) );
+
+    delete mra;
+}
+
 TEST_CASE("ABGV differentiantion central difference", "[derivative_operator], [central_difference]") {
     // 0.5,0.5 specifies central difference
     SECTION("1D derivative test"){
@@ -163,6 +238,23 @@ TEST_CASE("PH differentiantion second order", "[derivative_operator], [PH_second
     }
     SECTION("3D second order derivative test") {
         testDifferentiationPH<3>(2);
+    }
+}
+
+TEST_CASE("Periodic ABGV differentiantion central difference",  "[periodic_derivative],[derivative_operator], [central_difference], [ABGV_periodic]") {
+    // 0.5,0.5 specifies central difference
+    SECTION("3D periodic derivative test"){
+        testDifferentiationPeriodicABGV<3>(0.5, 0.5);
+    }
+}
+
+TEST_CASE("Periodic PH differentiantion",  "[periodic_derivative], [derivative_operator], [PH_periodic]") {
+    // 0.5,0.5 specifies central difference
+    SECTION("3D first order periodic derivative test"){
+        testDifferentiationPeriodicPH<3>(1);
+    }
+    SECTION("3D first order periodic derivative test"){
+        testDifferentiationPeriodicPH<3>(2);
     }
 }
 

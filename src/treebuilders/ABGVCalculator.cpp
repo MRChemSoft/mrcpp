@@ -138,7 +138,7 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
         }
         break;
     default:
-        MSG_ERROR("This translation should not occour");
+        // This is occurs for periodic systems
         break;
     }
     for (int i = 0; i < node.getNCoefs(); i++) {

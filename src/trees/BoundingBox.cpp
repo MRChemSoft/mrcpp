@@ -170,6 +170,9 @@ int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
 // Specialized for D=1 below
 template<int D>
 int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
+
+    if (this->isPeriodic()) return 0;
+
     int n = nIdx.getScale();
     int cn = this->cornerIndex.getScale();
     const int *l = nIdx.getTranslation();
@@ -239,6 +242,7 @@ template<>
 int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
 
     if (this->isPeriodic()) return 0;
+
     double x = r[0];
     if (x < this->lowerBounds[0]) return -1;
     if (x >= this->upperBounds[0]) return -1;
@@ -259,6 +263,9 @@ NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
 
 template<>
 int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {
+
+    if (this->isPeriodic()) return 0;
+
     int n = nIdx.getScale();
     int l = nIdx.getTranslation(0);
     int cn = this->cornerIndex.getScale();

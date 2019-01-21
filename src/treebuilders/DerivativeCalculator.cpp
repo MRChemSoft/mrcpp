@@ -87,7 +87,8 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()].resume();
-    MWNodeVector<D> fBand = makeOperBand(gNode);
+    std::vector<NodeIndex<D>> idx_band;
+    MWNodeVector<D> fBand = makeOperBand(gNode, idx_band);
     this->band_t[omp_get_thread_num()].stop();
 
     assert(this->oper->size() == 1);
@@ -97,7 +98,9 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     this->calc_t[omp_get_thread_num()].resume();
     for (int n = 0; n < fBand.size(); n++) {
         MWNode<D> &fNode = *fBand[n];
+        NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);
+        os.setFIndex(fIdx);
         for (int ft = 0; ft < nComp; ft++) {
             double fNorm = fNode.getComponentNorm(ft);
             if (fNorm < MachineZero) {
@@ -122,7 +125,7 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
@@ -131,13 +134,17 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
 
     // Assumes given width only in applyDir, otherwise width = 0
     int width = this->oper->getMaxBandWidth();
+    println(0, "width: " << width);
     for (int w = -width; w <= width; w++) {
         NodeIndex<D> idx_w(idx_0);
         idx_w.getTranslation()[this->applyDir] += w;
 
-        // returns -1 if out of bounds
+        // returns -1 if out of bounds and 0 for periodic
         int rIdx_w = this->fTree->getRootIndex(idx_w);
-        if (rIdx_w >= 0) band.push_back(&this->fTree->getNode(idx_w));
+        if (rIdx_w >= 0) {
+            idx_band.push_back(idx_w);
+            band.push_back(&this->fTree->getNode(idx_w));
+        }
     }
     return band;
 }
@@ -149,9 +156,10 @@ void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
+    NodeIndex<D> &fIdx = *os.fIdx;
 
     const int *gTransl = gNode.getTranslation();
-    const int *fTransl = fNode.getTranslation();
+    const int *fTransl = fIdx.getTranslation();
     int depth = gNode.getDepth();
 
     double oNorm = 1.0;

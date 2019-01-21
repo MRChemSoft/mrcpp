@@ -138,7 +138,7 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
         }
         break;
     default:
-        // This is occurs for periodic systems
+        // When periodic do nothing, else it should never end up here.
         break;
     }
     for (int i = 0; i < node.getNCoefs(); i++) {

@@ -17,28 +17,26 @@ namespace mrcpp {
 /** Function evaluation.
   * Evaluate all polynomials defined on the node. */
 template<int D>
-double FunctionNode<D>::evalf(const Coord<D> &r) {
+double FunctionNode<D>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
-    const auto periodic = this->getMWTree().getRootBox().isPeriodic();
     const auto sf = this->getMWTree().getRootBox().getScalingFactor();
 
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
-    auto r_tmp = r;
-    if (periodic) {
+    if (this->getMWTree().getRootBox().isPeriodic()) {
         for (auto i = 0; i < D; i++) {
             if (r[i] > 1.0)
-                r_tmp[i] = std::fmod(r[i], 1.0);
+                r[i] = std::fmod(r[i], 1.0);
             if (r[i] < 0.0)
-                r_tmp[i] = std::fmod(r[i], 1.0) + 1.0;
+                r[i] = std::fmod(r[i], 1.0) + 1.0;
         }
     }
 
     this->threadSafeGenChildren();
-    int cIdx = this->getChildIndex(r_tmp);
+    int cIdx = this->getChildIndex(r);
     assert(this->children[cIdx] != 0);
-    return getFuncChild(cIdx).evalScaling(r_tmp);
+    return getFuncChild(cIdx).evalScaling(r);
 }
 
 template<int D>

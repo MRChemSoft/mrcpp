@@ -284,7 +284,7 @@ void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
     NodeIndex<D> &fIdx = *os.fIdx;
 
     const int *gTransl = gNode.getTranslation();
-    const int *fTransl = fIdx.getTranslation();//fNode.getTranslation();
+    const int *fTransl = fIdx.getTranslation();
     int depth = gNode.getDepth();
 
     double oNorm = 1.0;

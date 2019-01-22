@@ -26,7 +26,6 @@ public:
     inline bool operator==(const BoundingBox<D> &box) const;
     inline bool operator!=(const BoundingBox<D> &box) const;
 
-    NodeIndex<D> getNodeIndex(const Coord<D> &r) const;
     NodeIndex<D> getNodeIndex(int bIdx) const;
 
     int getBoxIndex(const Coord<D> &r) const;

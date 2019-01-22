@@ -88,31 +88,6 @@ void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
-template<int D>
-NodeIndex<D> BoundingBox<D>::getNodeIndex(const Coord<D> &r) const {
-    int idx[D];
-    for (int d = 0; d < D; d++) {
-        double x = r[d];
-        assert(x >= this->lowerBounds[d]);
-        assert(x < this->upperBounds[d]);
-        double div = (x - this->lowerBounds[d]) / this->unitLengths[d];
-        double iint;
-        std::modf(div, &iint);
-        idx[d] = (int) iint;
-    }
-
-    const int *cl = this->cornerIndex.getTranslation();
-
-    int l[D];
-    for (int d = 0; d < D; d++) {
-        l[d] = idx[d] + cl[d];
-    }
-
-    int n = getScale();
-    NodeIndex<D> nIdx(n, l);
-    return nIdx;
-}
-
 // Specialized for D=1 below
 template<int D>
 NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {

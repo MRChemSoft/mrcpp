@@ -62,7 +62,7 @@ protected:
     Coord<D> lowerBounds;    ///< Box lower bound (not real)
     Coord<D> upperBounds;    ///< Box upper bound (not real)
 
-    void setNBoxes(const std::array<int, D> &nb = {});
+    void setNBoxes(const std::array<int, D> &nb={});
     void setDerivedParameters();
     void setScalingFactor(const std::array<double, D> &sf);
 

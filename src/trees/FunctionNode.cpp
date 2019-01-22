@@ -29,9 +29,9 @@ double FunctionNode<D>::evalf(const Coord<D> &r) {
     if (periodic) {
         for (auto i = 0; i < D; i++) {
             if (r[i] > 1.0)
-                r_tmp[i] = fmod(r[i], 1.0);
+                r_tmp[i] = std::fmod(r[i], 1.0);
             if (r[i] < 0.0)
-                r_tmp[i] = fmod(r[i], 1.0) + 1.0;
+                r_tmp[i] = std::fmod(r[i], 1.0) + 1.0;
         }
     }
 

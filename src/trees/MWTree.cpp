@@ -268,9 +268,8 @@ const MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) const {
     int l[D];
     int two_n = 1 << idx.getScale();
     if (periodic){
-        // Manupulation of the translation
-        // returing such that the node in the
-        // zeroth box is returned.
+        // Translating the index such that nodes
+        // within the first period are returned.
         for (auto i = 0; i < D; i++) {
             l[i] = idx.getTranslation(i);
             if (l[i] >= two_n)
@@ -306,9 +305,8 @@ MWNode<D>* MWTree<D>::findNode(const NodeIndex<D> &idx) {
     int l[D];
     int two_n = 1 << idx.getScale();
     if (periodic){
-        // Manupulation of the translation
-        // returing such that the node in the
-        // zeroth box is returned.
+        // Translating the index such that nodes
+        // within the first period are returned.
         for (auto i = 0; i < D; i++) {
             l[i] = idx.getTranslation(i);
             if (l[i] >= two_n)
@@ -447,9 +445,9 @@ MWNode<D>& MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
     if (periodic) {
         for (auto i = 0; i < D; i++) {
             if (r[i] > 1.0)
-                r_tmp[i] = fmod(r[i], 1.0);
+                r_tmp[i] = std::fmod(r[i], 1.0);
             if (r[i] < 0.0)
-                r_tmp[i] = fmod(r[i], 1.0) + 1.0;
+                r_tmp[i] = std::fmod(r[i], 1.0) + 1.0;
         }
     }
 

@@ -53,17 +53,17 @@ public:
     bool operator==(const ScalingBasis &basis) const;
     bool operator!=(const ScalingBasis &basis) const;
 
-    friend std::ostream& operator<<(std::ostream &o, const ScalingBasis &bas) { return bas.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const ScalingBasis &bas) { return bas.print(o); }
 
 protected:
     const int type;
     const int order;
-    Eigen::MatrixXd quadVals;// function values at quadrature pts
-    Eigen::MatrixXd cvMap;  // coef-value transformation matrix
-    Eigen::MatrixXd vcMap;  // value-coef transformation matrix
+    Eigen::MatrixXd quadVals; // function values at quadrature pts
+    Eigen::MatrixXd cvMap;    // coef-value transformation matrix
+    Eigen::MatrixXd vcMap;    // value-coef transformation matrix
     std::vector<Polynomial> funcs;
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

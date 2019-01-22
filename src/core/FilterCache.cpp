@@ -42,23 +42,21 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int T>
-FilterCache<T>::FilterCache() {
+template <int T> FilterCache<T>::FilterCache() {
     switch (T) {
-    case (Interpol):
-        type = Interpol;
-        break;
-    case (Legendre):
-        type = Legendre;
-        break;
-    default:
-        MSG_ERROR("Invalid filter type: " << T);
+        case (Interpol):
+            type = Interpol;
+            break;
+        case (Legendre):
+            type = Legendre;
+            break;
+        default:
+            MSG_ERROR("Invalid filter type: " << T);
     }
     this->libPath = MWFilter::getDefaultLibrary();
 }
 
-template <int T>
-void FilterCache<T>::load(int order) {
+template <int T> void FilterCache<T>::load(int order) {
     SET_CACHE_LOCK();
     if (not hasId(order)) {
         auto *f = new MWFilter(order, type, this->libPath);
@@ -68,19 +66,13 @@ void FilterCache<T>::load(int order) {
     UNSET_CACHE_LOCK();
 }
 
-template <int T>
-MWFilter &FilterCache<T>::get(int order) {
-    if (not hasId(order)) {
-        load(order);
-    }
+template <int T> MWFilter &FilterCache<T>::get(int order) {
+    if (not hasId(order)) { load(order); }
     return ObjectCache<MWFilter>::get(order);
 }
 
-template <int T>
-const MatrixXd &FilterCache<T>::getFilterMatrix(int order) {
-    if (not hasId(order)) {
-        load(order);
-    }
+template <int T> const MatrixXd &FilterCache<T>::getFilterMatrix(int order) {
+    if (not hasId(order)) { load(order); }
     return ObjectCache<MWFilter>::get(order).getFilter();
 }
 

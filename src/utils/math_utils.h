@@ -55,17 +55,19 @@ double matrix_norm_inf(const Eigen::MatrixXd &M);
 double matrix_norm_1(const Eigen::MatrixXd &M);
 double matrix_norm_2(const Eigen::MatrixXd &M);
 
-void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter,
-                  int kp1, int kp1_dm1, double fac);
+void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
-void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d,
+void tensor_expand_coefs(int dim,
+                         int dir,
+                         int kp1,
+                         int kp1_d,
                          const Eigen::MatrixXd &primitive,
                          Eigen::VectorXd &expanded);
 
 void tensor_expand_coords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 
-template<int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
+template <int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
 
 } // namespace math_utils
 } // namespace mrcpp

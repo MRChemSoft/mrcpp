@@ -25,15 +25,15 @@
 
 #pragma once
 
-#include "trees/MWNode.h"
 #include "mrcpp_declarations.h"
+#include "trees/MWNode.h"
 
 namespace mrcpp {
 
-template<int D>
-class TreeAdaptor {
+template <int D> class TreeAdaptor {
 public:
-    TreeAdaptor(int ms) : maxScale(ms) { }
+    TreeAdaptor(int ms)
+            : maxScale(ms) {}
     virtual ~TreeAdaptor() = default;
 
     void setMaxScale(int ms) { this->maxScale = ms; }
@@ -46,9 +46,7 @@ public:
             if (node.getScale() + 2 > this->maxScale) continue;
             if (splitNode(node)) {
                 node.createChildren();
-                for (int i = 0; i < node.getNChildren(); i++) {
-                    out.push_back(&node.getMWChild(i));
-                }
+                for (int i = 0; i < node.getNChildren(); i++) { out.push_back(&node.getMWChild(i)); }
             }
         }
     }
@@ -59,4 +57,4 @@ protected:
     virtual bool splitNode(const MWNode<D> &node) const = 0;
 };
 
-}
+} // namespace mrcpp

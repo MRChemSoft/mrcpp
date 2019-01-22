@@ -25,22 +25,21 @@
 
 #include "ABGVOperator.h"
 #include "treebuilders/ABGVCalculator.h"
-#include "treebuilders/TreeBuilder.h"
 #include "treebuilders/BandWidthAdaptor.h"
+#include "treebuilders/TreeBuilder.h"
 #include "trees/OperatorTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
 namespace mrcpp {
 
-template<int D>
+template <int D>
 ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b)
         : DerivativeOperator<D>(mra) {
     initializeOperator(a, b);
 }
 
-template<int D>
-void ABGVOperator<D>::initializeOperator(double a, double b) {
+template <int D> void ABGVOperator<D>::initializeOperator(double a, double b) {
     int bw = 0; // Operator bandwidth
     if (std::abs(a) > MachineZero) bw = 1;
     if (std::abs(b) > MachineZero) bw = 1;

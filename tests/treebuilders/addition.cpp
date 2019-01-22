@@ -27,34 +27,27 @@
 
 #include "factory_functions.h"
 
-#include "treebuilders/WaveletAdaptor.h"
 #include "functions/GaussExp.h"
-#include "treebuilders/project.h"
-#include "treebuilders/grid.h"
+#include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/add.h"
+#include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
+#include "treebuilders/project.h"
 #include "utils/details.h"
-
 
 using namespace mrcpp;
 
 namespace addition {
 
-template<int D> void testAddition();
+template <int D> void testAddition();
 
 SCENARIO("Adding MW trees", "[addition], [tree_builder]") {
-    GIVEN("Two MW functions in 1D") {
-        testAddition<1>();
-    }
-    GIVEN("Two MW functions in 2D") {
-        testAddition<2>();
-    }
-    GIVEN("Two MW functions in 3D") {
-        testAddition<3>();
-    }
+    GIVEN("Two MW functions in 1D") { testAddition<1>(); }
+    GIVEN("Two MW functions in 2D") { testAddition<2>(); }
+    GIVEN("Two MW functions in 3D") { testAddition<3>(); }
 }
 
-template<int D> void testAddition() {
+template <int D> void testAddition() {
     const double prec = 1.0e-4;
 
     const double a_coef = 1.0;
@@ -112,17 +105,17 @@ template<int D> void testAddition() {
 
         THEN("their integrals add up") {
             double c_int = c_tree.integrate();
-            double int_sum = a_coef*a_int + b_coef*b_int;
-            REQUIRE( c_int == Approx(int_sum) );
+            double int_sum = a_coef * a_int + b_coef * b_int;
+            REQUIRE(c_int == Approx(int_sum));
         }
 
         AND_THEN("the MW sum equals the analytic sum") {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE( c_int == Approx(ref_int) );
-            REQUIRE( c_dot == Approx(ref_norm) );
-            REQUIRE( c_norm == Approx(ref_norm) );
+            REQUIRE(c_int == Approx(ref_int));
+            REQUIRE(c_dot == Approx(ref_norm));
+            REQUIRE(c_norm == Approx(ref_norm));
         }
 
         AND_WHEN("the first function is subtracted") {
@@ -134,8 +127,8 @@ template<int D> void testAddition() {
 
             THEN("the integral is the same as the second function") {
                 double d_int = d_tree.integrate();
-                double ref_int = b_coef*b_int;
-                REQUIRE( d_int == Approx(ref_int) );
+                double ref_int = b_coef * b_int;
+                REQUIRE(d_int == Approx(ref_int));
             }
 
             AND_WHEN("the second function is subtracted") {
@@ -148,7 +141,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double e_int = e_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( e_int == Approx(ref_int).margin(prec*prec) );
+                    REQUIRE(e_int == Approx(ref_int).margin(prec * prec));
                 }
             }
             AND_WHEN("the second function is subtracted in-place") {
@@ -157,7 +150,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double d_int = d_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( d_int == Approx(ref_int).margin(prec*prec) );
+                    REQUIRE(d_int == Approx(ref_int).margin(prec * prec));
                 }
             }
         }

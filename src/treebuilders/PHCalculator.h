@@ -46,4 +46,4 @@ private:
     void readSMatrix(const ScalingBasis &basis, char n);
 };
 
-}
+} // namespace mrcpp

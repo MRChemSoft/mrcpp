@@ -42,18 +42,18 @@ public:
 
 protected:
     void initializeKernel() {
-        double alpha = 1.0/this->epsilon;
-        double coef = std::pow(alpha/mrcpp::pi, 1.0/2.0);
+        double alpha = 1.0 / this->epsilon;
+        double coef = std::pow(alpha / mrcpp::pi, 1.0 / 2.0);
         GaussFunc<1> g(alpha, coef);
         GaussPoly<1> dg = g.differentiate(0);
         this->append(dg);
     }
 
-    std::ostream& print(std::ostream &o) const {
+    std::ostream &print(std::ostream &o) const {
         o << " DerivativeKernel: " << std::endl;
         o << " epsilon:  " << this->epsilon << std::endl;
         return o;
     }
 };
 
-}
+} // namespace mrcpp

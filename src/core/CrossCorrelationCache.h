@@ -33,11 +33,9 @@
 
 namespace mrcpp {
 
-#define getCrossCorrelationCache(T,X)\
-    CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()
+#define getCrossCorrelationCache(T, X) CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()
 
-template <int T>
-class CrossCorrelationCache final : public ObjectCache<CrossCorrelation> {
+template <int T> class CrossCorrelationCache final : public ObjectCache<CrossCorrelation> {
 public:
     static CrossCorrelationCache<T> &getInstance() {
         static CrossCorrelationCache<T> theCrossCorrelationCache;
@@ -49,10 +47,11 @@ public:
     const Eigen::MatrixXd &getLMatrix(int order);
     const Eigen::MatrixXd &getRMatrix(int order);
 
-    int getType() const { return this->type; 	}
+    int getType() const { return this->type; }
 
     const std::string &getLibPath() { return this->libPath; }
     void setLibPath(const std::string &path) { this->libPath = path; }
+
 protected:
     int type;
     std::string libPath; ///< Base path to filter library
@@ -62,4 +61,4 @@ private:
     CrossCorrelationCache<T> &operator=(CrossCorrelationCache<T> const &ccc) = delete;
 };
 
-}
+} // namespace mrcpp

@@ -39,12 +39,12 @@
 
 namespace mrcpp {
 
-#define GET_OP_IDX(FT,GT,ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
+#define GET_OP_IDX(FT, GT, ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
 
-template<int D>
-class OperatorState final {
+template <int D> class OperatorState final {
 public:
-    OperatorState(MWNode<D> &gn, double *scr1) : gNode(&gn) {
+    OperatorState(MWNode<D> &gn, double *scr1)
+            : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
         this->kp1_2 = math_utils::ipow(this->kp1, 2);
@@ -116,12 +116,10 @@ private:
         int max_dl = 0;
         for (int d = 0; d < D; d++) {
             int dl = abs(fl[d] - gl[d]);
-            if (dl > max_dl) {
-                max_dl = dl;
-            }
+            if (dl > max_dl) { max_dl = dl; }
         }
         this->maxDeltaL = max_dl;
     }
 };
 
-}
+} // namespace mrcpp

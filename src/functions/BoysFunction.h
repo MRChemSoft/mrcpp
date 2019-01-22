@@ -42,4 +42,4 @@ private:
     MultiResolutionAnalysis<1> MRA;
 };
 
-}
+} // namespace mrcpp

@@ -46,17 +46,13 @@ namespace mrcpp {
  */
 void PoissonKernel::initializeKernel() {
     //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
-    double r0 = this->rMin/this->rMax;
+    double r0 = this->rMin / this->rMax;
     double r1 = this->rMax;
 
     double t1 = 1.0L;
-    while ((2 * t1 * std::exp(-t1)) > this->epsilon) {
-        t1 *= 1.1L;
-    }
+    while ((2 * t1 * std::exp(-t1)) > this->epsilon) { t1 *= 1.1L; }
     double t2 = 1.0L;
-    while ((std::sqrt(t2) * std::exp(-t2) / r0) > this->epsilon) {
-        t2 *= 1.1L;
-    }
+    while ((std::sqrt(t2) * std::exp(-t2) / r0) > this->epsilon) { t2 *= 1.1L; }
 
     // Set the truncation limits s1,s2 of the integral (integrate over [s1,s2])
     // for achieving relative error epsilon
@@ -65,7 +61,7 @@ void PoissonKernel::initializeKernel() {
 
     // Now, set the step size h for use in the trapezoidal rule for given MU
     double h = 1 / (0.2L - 0.47L * std::log10(this->epsilon));
-    int n_exp = (int) std::ceil((s2 - s1) / h) + 1;
+    int n_exp = (int)std::ceil((s2 - s1) / h) + 1;
 
     if (n_exp > MaxSepRank) MSG_FATAL("Maximum separation rank exceeded.");
 
@@ -75,14 +71,12 @@ void PoissonKernel::initializeKernel() {
         double cosharg = std::cosh(arg);
         double onepexp = 1.0 + std::exp(-sinharg);
 
-        double alpha = 4.0L * (sinharg+std::log(onepexp)) * (sinharg+std::log(onepexp));
+        double alpha = 4.0L * (sinharg + std::log(onepexp)) * (sinharg + std::log(onepexp));
         double beta = h * (4.0L / root_pi) * cosharg / onepexp;
 
-        alpha *= 1.0/(r1*r1);
-        beta *= 1.0/r1;
-        if (i == 0 or i == (n_exp - 1)) {
-            beta *= 1.0/2.0;
-        }
+        alpha *= 1.0 / (r1 * r1);
+        beta *= 1.0 / r1;
+        if (i == 0 or i == (n_exp - 1)) { beta *= 1.0 / 2.0; }
 
         GaussFunc<1> gFunc(alpha, beta);
         this->append(gFunc);
@@ -90,7 +84,7 @@ void PoissonKernel::initializeKernel() {
     this->calcSquareNorm();
 }
 
-std::ostream& PoissonKernel::print(std::ostream &o) const {
+std::ostream &PoissonKernel::print(std::ostream &o) const {
     o << " PoissonKernel: " << std::endl;
     o << " epsilon:  " << this->epsilon << std::endl;
     o << " rMin:     " << this->rMin << std::endl;

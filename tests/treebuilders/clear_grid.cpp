@@ -27,28 +27,22 @@
 
 #include "factory_functions.h"
 
-#include "treebuilders/project.h"
 #include "treebuilders/grid.h"
+#include "treebuilders/project.h"
 
 using namespace mrcpp;
 
 namespace grid_clear {
 
-template<int D> void testClearGrid();
+template <int D> void testClearGrid();
 
 SCENARIO("Projected trees can be cleared and reused", "[clear_grid], [tree_builder], [trees]") {
-    GIVEN("A projected FunctionTree in 1D") {
-        testClearGrid<1>();
-    }
-    GIVEN("A projected FunctionTree in 2D") {
-        testClearGrid<2>();
-    }
-    GIVEN("A projected FunctionTree in 3D") {
-        testClearGrid<3>();
-    }
+    GIVEN("A projected FunctionTree in 1D") { testClearGrid<1>(); }
+    GIVEN("A projected FunctionTree in 2D") { testClearGrid<2>(); }
+    GIVEN("A projected FunctionTree in 3D") { testClearGrid<3>(); }
 }
 
-template<int D> void testClearGrid() {
+template <int D> void testClearGrid() {
     GaussFunc<D> *func = 0;
     initialize(&func);
     MultiResolutionAnalysis<D> *mra = 0;
@@ -67,18 +61,18 @@ template<int D> void testClearGrid() {
     WHEN("the tree is cleared") {
         tree.clear();
         THEN("it represents an undefined function on the root grid") {
-            REQUIRE( tree.getDepth() == 1 );
-            REQUIRE( tree.getNNodes() == tree.getRootBox().size() );
-            REQUIRE( tree.integrate() == Approx(0.0) );
-            REQUIRE( tree.getSquareNorm() == Approx(-1.0) );
+            REQUIRE(tree.getDepth() == 1);
+            REQUIRE(tree.getNNodes() == tree.getRootBox().size());
+            REQUIRE(tree.integrate() == Approx(0.0));
+            REQUIRE(tree.getSquareNorm() == Approx(-1.0));
             AND_WHEN("the function is re-projected") {
                 build_grid(tree, *func);
                 project(prec, tree, *func);
                 THEN("the representation is the same as before it was cleared") {
-                    REQUIRE( tree.getDepth() == refDepth );
-                    REQUIRE( tree.getNNodes() == refNodes );
-                    REQUIRE( tree.integrate() == Approx(refInt) );
-                    REQUIRE( tree.getSquareNorm() == Approx(refNorm) );
+                    REQUIRE(tree.getDepth() == refDepth);
+                    REQUIRE(tree.getNNodes() == refNodes);
+                    REQUIRE(tree.integrate() == Approx(refInt));
+                    REQUIRE(tree.getSquareNorm() == Approx(refNorm));
                 }
             }
         }
@@ -86,17 +80,17 @@ template<int D> void testClearGrid() {
     WHEN("the grid is cleared") {
         clear_grid(tree);
         THEN("it represents an undefined function on the same grid") {
-            REQUIRE( tree.getDepth() == refDepth );
-            REQUIRE( tree.getNNodes() == refNodes );
-            REQUIRE( tree.integrate() == Approx(0.0) );
-            REQUIRE( tree.getSquareNorm() == Approx(-1.0) );
+            REQUIRE(tree.getDepth() == refDepth);
+            REQUIRE(tree.getNNodes() == refNodes);
+            REQUIRE(tree.integrate() == Approx(0.0));
+            REQUIRE(tree.getSquareNorm() == Approx(-1.0));
             AND_WHEN("the function is re-projected on the same grid") {
                 project(-1.0, tree, *func);
                 THEN("the representation is the same as before") {
-                    REQUIRE( tree.getDepth() == refDepth );
-                    REQUIRE( tree.getNNodes() == refNodes );
-                    REQUIRE( tree.integrate() == Approx(refInt) );
-                    REQUIRE( tree.getSquareNorm() == Approx(refNorm) );
+                    REQUIRE(tree.getDepth() == refDepth);
+                    REQUIRE(tree.getNNodes() == refNodes);
+                    REQUIRE(tree.integrate() == Approx(refInt));
+                    REQUIRE(tree.getSquareNorm() == Approx(refNorm));
                 }
             }
         }
@@ -105,14 +99,14 @@ template<int D> void testClearGrid() {
         const double new_prec = 1.0e-5;
         refine_grid(tree, new_prec);
         THEN("it represents the same function on a larger grid") {
-            REQUIRE( tree.getDepth() >= refDepth );
-            REQUIRE( tree.getNNodes() > refNodes );
-            REQUIRE( tree.integrate() == Approx(refInt).epsilon(1.0e-8) );
-            REQUIRE( tree.getSquareNorm() == Approx(refNorm).epsilon(1.0e-8) );
+            REQUIRE(tree.getDepth() >= refDepth);
+            REQUIRE(tree.getNNodes() > refNodes);
+            REQUIRE(tree.integrate() == Approx(refInt).epsilon(1.0e-8));
+            REQUIRE(tree.getSquareNorm() == Approx(refNorm).epsilon(1.0e-8));
         }
     }
     finalize(&mra);
     finalize(&func);
 }
 
-} // namespace clear_grid
+} // namespace grid_clear

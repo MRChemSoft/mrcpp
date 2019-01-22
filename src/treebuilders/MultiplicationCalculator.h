@@ -30,10 +30,10 @@
 
 namespace mrcpp {
 
-template<int D>
-class MultiplicationCalculator final : public TreeCalculator<D> {
+template <int D> class MultiplicationCalculator final : public TreeCalculator<D> {
 public:
-    MultiplicationCalculator(const FunctionTreeVector<D> &inp) : prod_vec(inp) { }
+    MultiplicationCalculator(const FunctionTreeVector<D> &inp)
+            : prod_vec(inp) {}
 
 private:
     FunctionTreeVector<D> prod_vec;
@@ -41,9 +41,7 @@ private:
     void calcNode(MWNode<D> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         double *coefs_o = node_o.getCoefs();
-        for (int j = 0; j < node_o.getNCoefs(); j++) {
-            coefs_o[j] = 1.0;
-        }
+        for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
         for (int i = 0; i < this->prod_vec.size(); i++) {
             double c_i = get_coef(this->prod_vec, i);
             FunctionTree<D> &func_i = get_func(this->prod_vec, i);
@@ -53,9 +51,7 @@ private:
             node_i.cvTransform(Forward);
             const double *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
-            for (int j = 0; j < n_coefs; j++) {
-                coefs_o[j] *= c_i * coefs_i[j];
-            }
+            for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
         }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);
@@ -64,4 +60,4 @@ private:
     }
 };
 
-}
+} // namespace mrcpp

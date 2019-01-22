@@ -31,15 +31,14 @@ namespace mrcpp {
 
 class OperatorAdaptor final : public WaveletAdaptor<2> {
 public:
-    OperatorAdaptor(double pr, int ms, bool ap = false) : WaveletAdaptor<2>(pr, ms, ap) { }
+    OperatorAdaptor(double pr, int ms, bool ap = false)
+            : WaveletAdaptor<2>(pr, ms, ap) {}
 
 protected:
     bool splitNode(const MWNode<2> &node) const {
         int chkCompNorm = 0;
         for (int i = 1; i < 4; i++) {
-            if (node.getComponentNorm(i) > 0.0) {
-                chkCompNorm = 1;
-            }
+            if (node.getComponentNorm(i) > 0.0) { chkCompNorm = 1; }
         }
 
         const int *l = node.getTranslation();
@@ -53,4 +52,4 @@ protected:
     }
 };
 
-}
+} // namespace mrcpp

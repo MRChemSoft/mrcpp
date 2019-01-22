@@ -39,8 +39,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class NodeBox final : public BoundingBox<D> {
+template <int D> class NodeBox final : public BoundingBox<D> {
 public:
     NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {});
     NodeBox(const NodeBox<D> &box);
@@ -63,11 +62,11 @@ public:
     MWNode<D> **getNodes() { return this->nodes; }
 
 protected:
-    int nOccupied;      ///< Number of non-zero pointers in box
-    MWNode<D> **nodes;  ///< Container of nodes
+    int nOccupied;     ///< Number of non-zero pointers in box
+    MWNode<D> **nodes; ///< Container of nodes
 
     void allocNodePointers();
     void deleteNodes();
 };
 
-}
+} // namespace mrcpp

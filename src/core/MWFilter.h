@@ -32,8 +32,7 @@
 
 namespace mrcpp {
 
-typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic>
-FilterBlock;
+typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic> FilterBlock;
 
 class MWFilter final {
 public:
@@ -81,4 +80,4 @@ protected:
     void fillFilterBlocks();
 };
 
-}
+} // namespace mrcpp

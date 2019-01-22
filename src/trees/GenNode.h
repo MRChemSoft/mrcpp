@@ -23,7 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-
 /*
  *
  */
@@ -34,8 +33,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class GenNode final : public FunctionNode<D> {
+template <int D> class GenNode final : public FunctionNode<D> {
 public:
     double getWaveletNorm() const { return 0.0; }
 
@@ -50,7 +48,8 @@ public:
     friend class SerialFunctionTree<D>;
 
 protected:
-    GenNode() : FunctionNode<D>() { }
+    GenNode()
+            : FunctionNode<D>() {}
     GenNode(const GenNode<D> &node) = delete;
     GenNode<D> &operator=(const GenNode<D> &node) = delete;
     ~GenNode() { assert(this->tree == 0); }
@@ -60,4 +59,4 @@ protected:
     void reCompress();
 };
 
-}
+} // namespace mrcpp

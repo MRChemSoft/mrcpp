@@ -42,23 +42,21 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int T>
-CrossCorrelationCache<T>::CrossCorrelationCache() {
+template <int T> CrossCorrelationCache<T>::CrossCorrelationCache() {
     switch (T) {
-    case (Interpol):
-        type = Interpol;
-        break;
-    case (Legendre):
-        type = Legendre;
-        break;
-    default:
-        MSG_ERROR("Invalid CrossCorrelation type: " << T)
+        case (Interpol):
+            type = Interpol;
+            break;
+        case (Legendre):
+            type = Legendre;
+            break;
+        default:
+            MSG_ERROR("Invalid CrossCorrelation type: " << T)
     }
     this->libPath = CrossCorrelation::getDefaultLibrary();
 }
 
-template <int T>
-void CrossCorrelationCache<T>::load(int order) {
+template <int T> void CrossCorrelationCache<T>::load(int order) {
     SET_CACHE_LOCK();
     if (not hasId(order)) {
         auto *ccc = new CrossCorrelation(order, type, this->libPath);
@@ -68,27 +66,18 @@ void CrossCorrelationCache<T>::load(int order) {
     UNSET_CACHE_LOCK();
 }
 
-template <int T>
-CrossCorrelation &CrossCorrelationCache<T>::get(int order) {
-    if (not hasId(order)) {
-        load(order);
-    }
+template <int T> CrossCorrelation &CrossCorrelationCache<T>::get(int order) {
+    if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order);
 }
 
-template <int T>
-const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int order) {
-    if (not hasId(order)) {
-        load(order);
-    }
+template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int order) {
+    if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order).getLMatrix();
 }
 
-template <int T>
-const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
-    if (not hasId(order)) {
-        load(order);
-    }
+template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
+    if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order).getRMatrix();
 }
 

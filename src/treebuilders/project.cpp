@@ -24,12 +24,12 @@
  */
 
 #include "project.h"
+#include "ProjectionCalculator.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
-#include "ProjectionCalculator.h"
 #include "functions/AnalyticFunction.h"
-#include "trees/MultiResolutionAnalysis.h"
 #include "trees/FunctionTree.h"
+#include "trees/MultiResolutionAnalysis.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
@@ -54,11 +54,8 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void project(double prec,
-             FunctionTree<D> &out,
-             std::function<double (const Coord<D> &r)> func,
-             int maxIter) {
+template <int D>
+void project(double prec, FunctionTree<D> &out, std::function<double(const Coord<D> &r)> func, int maxIter) {
     AnalyticFunction<D> inp(func);
     mrcpp::project(prec, out, inp, maxIter);
 }
@@ -82,11 +79,7 @@ void project(double prec,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void project(double prec,
-             FunctionTree<D> &out,
-             RepresentableFunction<D> &inp,
-             int maxIter) {
+template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactor();
     TreeBuilder<D> builder;
@@ -107,8 +100,8 @@ void project(double prec,
 template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);
 template void project<2>(double prec, FunctionTree<2> &out, RepresentableFunction<2> &inp, int maxIter);
 template void project<3>(double prec, FunctionTree<3> &out, RepresentableFunction<3> &inp, int maxIter);
-template void project<1>(double prec, FunctionTree<1> &out, std::function<double (const Coord<1> &r)> func, int maxIter);
-template void project<2>(double prec, FunctionTree<2> &out, std::function<double (const Coord<2> &r)> func, int maxIter);
-template void project<3>(double prec, FunctionTree<3> &out, std::function<double (const Coord<3> &r)> func, int maxIter);
+template void project<1>(double prec, FunctionTree<1> &out, std::function<double(const Coord<1> &r)> func, int maxIter);
+template void project<2>(double prec, FunctionTree<2> &out, std::function<double(const Coord<2> &r)> func, int maxIter);
+template void project<3>(double prec, FunctionTree<3> &out, std::function<double(const Coord<3> &r)> func, int maxIter);
 
 } // namespace mrcpp

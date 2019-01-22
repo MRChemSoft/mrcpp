@@ -29,10 +29,11 @@
 
 namespace mrcpp {
 
-template<int D>
-class PowerCalculator final : public TreeCalculator<D> {
+template <int D> class PowerCalculator final : public TreeCalculator<D> {
 public:
-    PowerCalculator(FunctionTree<D> &inp, double pow) : power(pow), func(&inp) { }
+    PowerCalculator(FunctionTree<D> &inp, double pow)
+            : power(pow)
+            , func(&inp) {}
 
 private:
     double power;
@@ -47,9 +48,7 @@ private:
         node_i.mwTransform(Reconstruction);
         node_i.cvTransform(Forward);
         const double *coefs_i = node_i.getCoefs();
-        for (int j = 0; j < n_coefs; j++) {
-            coefs_o[j] = std::pow(coefs_i[j], this->power);
-        }
+        for (int j = 0; j < n_coefs; j++) { coefs_o[j] = std::pow(coefs_i[j], this->power); }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);
         node_o.setHasCoefs();
@@ -57,4 +56,4 @@ private:
     }
 };
 
-}
+} // namespace mrcpp

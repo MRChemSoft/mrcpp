@@ -37,18 +37,17 @@
 
 namespace mrcpp {
 
-template<int D>
-class NodeIndex final {
+template <int D> class NodeIndex final {
 public:
     NodeIndex(int n = 0, const int *l = nullptr);
     NodeIndex(const NodeIndex<D> &idx);
     NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
 
-    inline NodeIndex<D>& operator=(const NodeIndex<D> &idx);
+    inline NodeIndex<D> &operator=(const NodeIndex<D> &idx);
     inline bool operator==(const NodeIndex<D> &idx) const;
     inline bool operator!=(const NodeIndex<D> &idx) const;
 
-    void setScale(int n) { this->N = (short int) n; }
+    void setScale(int n) { this->N = (short int)n; }
     inline void setTranslation(const int *l);
 
     int getScale() const { return this->N; }
@@ -56,49 +55,40 @@ public:
     int *getTranslation() { return this->L; }
     const int *getTranslation() const { return this->L; }
 
-    friend std::ostream& operator<<(std::ostream &o, const NodeIndex<D> &idx) { return idx.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const NodeIndex<D> &idx) { return idx.print(o); }
     friend class NodeIndexComp<D>;
 
 private:
     short int N;
     int L[D];
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-template<int D>
-NodeIndex<D>::NodeIndex(int n, const int *l) {
-    this->N = (short int) n;
+template <int D> NodeIndex<D>::NodeIndex(int n, const int *l) {
+    this->N = (short int)n;
     setTranslation(l);
 }
 
-template<int D>
-NodeIndex<D>::NodeIndex(const NodeIndex<D> &idx) {
+template <int D> NodeIndex<D>::NodeIndex(const NodeIndex<D> &idx) {
     this->N = idx.N;
     setTranslation(idx.L);
 }
 
-template<int D>
-NodeIndex<D>::NodeIndex(const NodeIndex<D> &pIdx, int cIdx) {
+template <int D> NodeIndex<D>::NodeIndex(const NodeIndex<D> &pIdx, int cIdx) {
     this->N = pIdx.N + 1;
     const int *l = pIdx.getTranslation();
-    for (int d = 0; d < D; d++) {
-        this->L[d] = (2 * l[d]) + ((cIdx >> d) & 1);
-    }
+    for (int d = 0; d < D; d++) { this->L[d] = (2 * l[d]) + ((cIdx >> d) & 1); }
 }
 
-template<int D>
-NodeIndex<D>& NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
-    if (&idx == this) {
-        return *this;
-    }
+template <int D> NodeIndex<D> &NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
+    if (&idx == this) { return *this; }
     this->N = idx.N;
     setTranslation(idx.L);
     return *this;
 }
 
-template<int D>
-void NodeIndex<D>::setTranslation(const int *l) {
+template <int D> void NodeIndex<D>::setTranslation(const int *l) {
     for (int d = 0; d < D; d++) {
         if (l != nullptr) {
             this->L[d] = l[d];
@@ -108,8 +98,7 @@ void NodeIndex<D>::setTranslation(const int *l) {
     }
 }
 
-template<int D>
-bool NodeIndex<D>::operator==(const NodeIndex<D> &idx) const {
+template <int D> bool NodeIndex<D>::operator==(const NodeIndex<D> &idx) const {
     if (this->N != idx.N) return false;
     for (int d = 0; d < D; d++) {
         if (this->L[d] != idx.L[d]) return false;
@@ -117,8 +106,7 @@ bool NodeIndex<D>::operator==(const NodeIndex<D> &idx) const {
     return true;
 }
 
-template<int D>
-bool NodeIndex<D>::operator!=(const NodeIndex<D> &idx) const {
+template <int D> bool NodeIndex<D>::operator!=(const NodeIndex<D> &idx) const {
     if (this->N != idx.N) return true;
     for (int d = 0; d < D; d++) {
         if (this->L[d] != idx.L[d]) return true;
@@ -126,57 +114,36 @@ bool NodeIndex<D>::operator!=(const NodeIndex<D> &idx) const {
     return false;
 }
 
-template<int D>
-std::ostream& NodeIndex<D>::print(std::ostream &o) const {
+template <int D> std::ostream &NodeIndex<D>::print(std::ostream &o) const {
     o << "[ " << this->N << " | ";
-    for (int d = 0; d < D - 1; d++) {
-        o << this->L[d] << ", ";
-    }
+    for (int d = 0; d < D - 1; d++) { o << this->L[d] << ", "; }
     o << this->L[D - 1] << "]";
     return o;
 }
 
-
-template<int D>
-class NodeIndexComp {
+template <int D> class NodeIndexComp {
 public:
     bool operator()(const NodeIndex<D> &a, const NodeIndex<D> &b) const {
-        if (a.N < b.N) {
-            return true;
-        }
-        if (a.N > b.N) {
-            return false;
-        }
+        if (a.N < b.N) { return true; }
+        if (a.N > b.N) { return false; }
         for (int d = 0; d < D; d++) {
-            if (a.L[d] == b.L[d]) {
-                continue;
-            }
-            if (a.L[d] < b.L[d]) {
-                return true;
-            }
+            if (a.L[d] == b.L[d]) { continue; }
+            if (a.L[d] < b.L[d]) { return true; }
             return false;
         }
         return false;
     }
 
     bool operator()(const NodeIndex<D> *a, const NodeIndex<D> *b) const {
-        if (a->N < b->N) {
-            return true;
-        }
-        if (a->N > b->N) {
-            return false;
-        }
+        if (a->N < b->N) { return true; }
+        if (a->N > b->N) { return false; }
         for (int d = 0; d < D; d++) {
-            if (a->L[d] == b->L[d]) {
-                continue;
-            }
-            if (a->L[d] < b->L[d]) {
-                return true;
-            }
+            if (a->L[d] == b->L[d]) { continue; }
+            if (a->L[d] < b->L[d]) { return true; }
             return false;
         }
         return false;
     }
 };
 
-}
+} // namespace mrcpp

@@ -28,21 +28,16 @@
 
 namespace mrcpp {
 
-Timer::Timer(bool start_timer)
-          {
-    if (start_timer) {
-        start();
-    }
+Timer::Timer(bool start_timer) {
+    if (start_timer) { start(); }
 }
 
 Timer::Timer(const Timer &timer)
-        : running(timer.running),
-          time_used(timer.time_used),
-          clock_start(timer.clock_start) {
+        : running(timer.running)
+        , time_used(timer.time_used)
+        , clock_start(timer.clock_start) {}
 
-}
-
-Timer& Timer::operator=(const Timer &timer) {
+Timer &Timer::operator=(const Timer &timer) {
     if (this != &timer) {
         this->running = timer.running;
         this->time_used = timer.time_used;
@@ -74,16 +69,16 @@ double Timer::getWallTime() const {
     return this->time_used;
 }
 
-timeT Timer::now(){
+timeT Timer::now() {
     return std::chrono::high_resolution_clock::now();
 }
 
 double Timer::diffTime(timeT t2, timeT t1) {
-    std::chrono::duration<double> diff = t2-t1;
+    std::chrono::duration<double> diff = t2 - t1;
     return diff.count();
 }
 
-std::ostream& Timer::print(std::ostream &o) const {
+std::ostream &Timer::print(std::ostream &o) const {
     int old_prec = Printer::setPrecision(5);
     o << getWallTime();
     Printer::setPrecision(old_prec);

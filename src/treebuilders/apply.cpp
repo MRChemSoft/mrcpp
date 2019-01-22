@@ -24,17 +24,17 @@
  */
 
 #include "apply.h"
-#include "grid.h"
-#include "add.h"
-#include "TreeBuilder.h"
+#include "ConvolutionCalculator.h"
 #include "CopyAdaptor.h"
-#include "SplitAdaptor.h"
-#include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
-#include "ConvolutionCalculator.h"
-#include "operators/DerivativeOperator.h"
+#include "SplitAdaptor.h"
+#include "TreeBuilder.h"
+#include "WaveletAdaptor.h"
+#include "add.h"
+#include "grid.h"
 #include "operators/ConvolutionOperator.h"
+#include "operators/DerivativeOperator.h"
 #include "trees/FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -61,12 +61,8 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void apply(double prec,
-           FunctionTree<D> &out,
-           ConvolutionOperator<D> &oper,
-           FunctionTree<D> &inp,
-           int maxIter) {
+template <int D>
+void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -106,11 +102,7 @@ void apply(double prec,
  * The input function should contain only empty root nodes.
  *
  */
-template<int D>
-void apply(FunctionTree<D> &out,
-           DerivativeOperator<D> &oper,
-           FunctionTree<D> &inp,
-           int dir) {
+template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
     TreeBuilder<D> builder;
     int maxScale = out.getMRA().getMaxScale();
 
@@ -155,8 +147,7 @@ void apply(FunctionTree<D> &out,
  * The length of the output vector will be the template dimension D.
  *
  */
-template<int D>
-FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
+template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
     FunctionTreeVector<D> out;
     for (int d = 0; d < D; d++) {
         auto *grad_d = new FunctionTree<D>(inp.getMRA());
@@ -180,8 +171,7 @@ FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp
  * The length of the input vector must be the same as the template dimension D.
  *
  */
-template<int D>
-void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
+template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
     if (inp.size() != D) MSG_FATAL("Dimension mismatch");
 
     FunctionTreeVector<D> tmp_vec;

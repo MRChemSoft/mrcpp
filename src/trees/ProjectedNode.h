@@ -29,8 +29,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class ProjectedNode final : public FunctionNode<D> {
+template <int D> class ProjectedNode final : public FunctionNode<D> {
 public:
     void createChildren();
     void genChildren();
@@ -39,7 +38,8 @@ public:
     friend class SerialFunctionTree<D>;
 
 protected:
-    ProjectedNode() : FunctionNode<D>() { }
+    ProjectedNode()
+            : FunctionNode<D>() {}
     ProjectedNode(const ProjectedNode<D> &node) = delete;
     ProjectedNode<D> &operator=(const ProjectedNode<D> &node) = delete;
     ~ProjectedNode() { assert(this->tree == 0); }
@@ -48,4 +48,4 @@ protected:
     void reCompress();
 };
 
-}
+} // namespace mrcpp

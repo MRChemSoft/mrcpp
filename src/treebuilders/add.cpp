@@ -26,10 +26,10 @@
 #include <tuple>
 #include <vector>
 
-#include "add.h"
+#include "AdditionCalculator.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
-#include "AdditionCalculator.h"
+#include "add.h"
 #include "trees/FunctionTree.h"
 #include "trees/FunctionTreeVector.h"
 #include "utils/Printer.h"
@@ -60,10 +60,13 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void add(double prec, FunctionTree<D> &out,
-         double a, FunctionTree<D> &inp_a,
-         double b, FunctionTree<D> &inp_b,
+template <int D>
+void add(double prec,
+         FunctionTree<D> &out,
+         double a,
+         FunctionTree<D> &inp_a,
+         double b,
+         FunctionTree<D> &inp_b,
          int maxIter) {
     FunctionTreeVector<D> tmp_vec;
     tmp_vec.push_back(std::make_tuple(a, &inp_a));
@@ -92,11 +95,7 @@ void add(double prec, FunctionTree<D> &out,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void add(double prec,
-         FunctionTree<D> &out,
-         FunctionTreeVector<D> &inp,
-         int maxIter) {
+template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
@@ -121,9 +120,27 @@ void add(double prec,
     Printer::printSeparator(10, ' ');
 }
 
-template void add(double prec, FunctionTree<1> &out, double a, FunctionTree<1> &tree_a, double b, FunctionTree<1> &tree_b, int maxIter);
-template void add(double prec, FunctionTree<2> &out, double a, FunctionTree<2> &tree_a, double b, FunctionTree<2> &tree_b, int maxIter);
-template void add(double prec, FunctionTree<3> &out, double a, FunctionTree<3> &tree_a, double b, FunctionTree<3> &tree_b, int maxIter);
+template void add(double prec,
+                  FunctionTree<1> &out,
+                  double a,
+                  FunctionTree<1> &tree_a,
+                  double b,
+                  FunctionTree<1> &tree_b,
+                  int maxIter);
+template void add(double prec,
+                  FunctionTree<2> &out,
+                  double a,
+                  FunctionTree<2> &tree_a,
+                  double b,
+                  FunctionTree<2> &tree_b,
+                  int maxIter);
+template void add(double prec,
+                  FunctionTree<3> &out,
+                  double a,
+                  FunctionTree<3> &tree_a,
+                  double b,
+                  FunctionTree<3> &tree_b,
+                  int maxIter);
 template void add(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
 template void add(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void add(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);

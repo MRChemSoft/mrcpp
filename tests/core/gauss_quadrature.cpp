@@ -30,8 +30,7 @@ using namespace mrcpp;
 namespace gauss_quadrature {
 
 TEST_CASE("GaussQuadrature", "[gauss_quadrature]") {
-    REQUIRE( false );
+    REQUIRE(false);
 }
 
-
-} // namespace
+} // namespace gauss_quadrature

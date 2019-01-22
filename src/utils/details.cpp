@@ -29,21 +29,15 @@
 namespace mrcpp {
 namespace details {
 
-
 /** @brief checks if all elements of an array of doubles are equal */
-template<int D>
-bool are_all_equal(const std::array<double, D> &exponent) {
-        return std::all_of(exponent.begin(), exponent.end(),
-               [ex = std::begin(exponent)](double i) {return i == *ex; });
+template <int D> bool are_all_equal(const std::array<double, D> &exponent) {
+    return std::all_of(exponent.begin(), exponent.end(), [ex = std::begin(exponent)](double i) { return i == *ex; });
 }
 
 /** @brief converts c_type arrays to std::arrays */
-template<typename T, int D>
-std::array<T, D>  convert_to_std_array(T *arr) {
+template <typename T, int D> std::array<T, D> convert_to_std_array(T *arr) {
     auto ret_arr = std::array<T, D>{};
-    for (auto d = 0; d < D; d++) {
-        ret_arr[d] = arr[d];
-    }
+    for (auto d = 0; d < D; d++) { ret_arr[d] = arr[d]; }
     return ret_arr;
 }
 

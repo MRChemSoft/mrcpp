@@ -24,24 +24,22 @@
  */
 
 #include "PHOperator.h"
-#include "treebuilders/TreeBuilder.h"
-#include "treebuilders/PHCalculator.h"
 #include "treebuilders/BandWidthAdaptor.h"
+#include "treebuilders/PHCalculator.h"
+#include "treebuilders/TreeBuilder.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
 namespace mrcpp {
 
-template<int D>
+template <int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra) {
     this->order = order;
     initializeOperator();
-
 }
 
-template<int D>
-void PHOperator<D>::initializeOperator() {
+template <int D> void PHOperator<D>::initializeOperator() {
     int bw = 1; // Operator bandwidth
     int max_scale = this->oper_mra.getMaxScale();
     const ScalingBasis &basis = this->oper_mra.getScalingBasis();

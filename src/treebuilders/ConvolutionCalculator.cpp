@@ -24,14 +24,14 @@
  */
 
 #include "ConvolutionCalculator.h"
+#include "eigen_disable_warnings.h"
 #include "operators/ConvolutionOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"
 #include "trees/FunctionNode.h"
 #include "trees/OperatorNode.h"
-#include "utils/Timer.h"
 #include "utils/Printer.h"
-#include "eigen_disable_warnings.h"
+#include "utils/Timer.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -44,32 +44,25 @@ using Eigen::MatrixXi;
 
 namespace mrcpp {
 
-template<int D>
-ConvolutionCalculator<D>::ConvolutionCalculator(double p,
-                                                ConvolutionOperator<D> &o,
-                                                FunctionTree<D> &f,
-                                                int depth)
-        : maxDepth(depth),
-          prec(p),
-          oper(&o),
-          fTree(&f) {
+template <int D>
+ConvolutionCalculator<D>::ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D> &f, int depth)
+        : maxDepth(depth)
+        , prec(p)
+        , oper(&o)
+        , fTree(&f) {
     if (this->maxDepth > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     initBandSizes();
     initTimers();
 }
 
-template<int D>
-ConvolutionCalculator<D>::~ConvolutionCalculator() {
+template <int D> ConvolutionCalculator<D>::~ConvolutionCalculator() {
     clearTimers();
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
-    for (int i = 0; i < this->bandSizes.size(); i++) {
-        delete this->bandSizes[i];
-    }
+    for (int i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
 }
 
-template<int D>
-void ConvolutionCalculator<D>::initTimers() {
+template <int D> void ConvolutionCalculator<D>::initTimers() {
     int nThreads = omp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(new Timer(false));
@@ -78,8 +71,7 @@ void ConvolutionCalculator<D>::initTimers() {
     }
 }
 
-template<int D>
-void ConvolutionCalculator<D>::clearTimers() {
+template <int D> void ConvolutionCalculator<D>::clearTimers() {
     int nThreads = omp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         delete this->band_t[i];
@@ -91,42 +83,30 @@ void ConvolutionCalculator<D>::clearTimers() {
     this->norm_t.clear();
 }
 
-template<int D>
-void ConvolutionCalculator<D>::printTimers() const {
+template <int D> void ConvolutionCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = omp_get_max_threads();
     printout(20, "\n\nthread ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, std::setw(9) << i);
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, std::setw(9) << i); }
     printout(20, "\nband     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->band_t[i]->getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->band_t[i]->getWallTime() << "  "); }
     printout(20, "\ncalc     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->calc_t[i]->getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->calc_t[i]->getWallTime() << "  "); }
     printout(20, "\nnorm     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->norm_t[i]->getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->norm_t[i]->getWallTime() << "  "); }
     printout(20, "\n\n");
     Printer::setPrecision(oldprec);
 }
 
 /** Initialize the number of nodes formally within the bandwidth of an
  operator. The band size is used for thresholding. */
-template<int D>
-void ConvolutionCalculator<D>::initBandSizes() {
+template <int D> void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &oTree = this->oper->getComponent(i);
         const BandWidth &bw = oTree.getBandWidth();
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
-        for (int j = 0; j < this->maxDepth; j++) {
-            calcBandSizeFactor(*bsize, j, bw);
-        }
+        for (int j = 0; j < this->maxDepth; j++) { calcBandSizeFactor(*bsize, j, bw); }
         this->bandSizes.push_back(bsize);
     }
 }
@@ -135,10 +115,7 @@ void ConvolutionCalculator<D>::initBandSizes() {
   * of an operator. Currently this routine ignores the fact that
   * there are edges on the world box, and thus over estimates
   * the number of nodes. This is different from the previous version. */
-template<int D>
-void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
-                                                  int depth,
-                                                  const BandWidth &bw) {
+template <int D> void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs, int depth, const BandWidth &bw) {
     for (int gt = 0; gt < this->nComp; gt++) {
         for (int ft = 0; ft < this->nComp; ft++) {
             int k = gt * this->nComp + ft;
@@ -159,8 +136,8 @@ void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */
-template<int D>
-MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band) {
+template <int D>
+MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     MWNodeVector<D> *band = new MWNodeVector<D>;
 
     int depth = gNode.getDepth();
@@ -180,27 +157,23 @@ MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, 
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
             int c_i = cIdx.getTranslation(i) * (1 << depth);
-            if (l_start[i] < c_i and !periodic) {
-                l_start[i] = c_i;
-            }
-            if (l_end[i] > c_i + nboxes - 1 and !periodic) {
-                l_end[i] = c_i + nboxes - 1;
-            }
+            if (l_start[i] < c_i and !periodic) { l_start[i] = c_i; }
+            if (l_end[i] > c_i + nboxes - 1 and !periodic) { l_end[i] = c_i + nboxes - 1; }
             nbox[i] = l_end[i] - l_start[i] + 1;
         }
 
         int scale = gNode.getScale();
         NodeIndex<D> idx(scale, l_start);
 
-        fillOperBand(band, idx_band, idx, nbox, D-1);
+        fillOperBand(band, idx_band, idx, nbox, D - 1);
     }
     return band;
 }
 
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
-template<int D>
+template <int D>
 void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
-                                            std::vector<NodeIndex<D> > &idx_band,
+                                            std::vector<NodeIndex<D>> &idx_band,
                                             NodeIndex<D> &idx,
                                             const int *nbox,
                                             int dim) {
@@ -221,8 +194,7 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
     l[dim] = l_start;
 }
 
-template<int D>
-int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
+template <int D> int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
     assert(i >= 0 and i < this->bandSizes.size());
     MatrixXi &bs = *this->bandSizes[i];
     assert(depth >= 0 and depth <= bs.rows());
@@ -230,8 +202,7 @@ int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth, const Operator
     return bs(depth, k);
 }
 
-template<int D>
-void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
+template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     auto &gNode = static_cast<FunctionNode<D> &>(node);
     gNode.zeroCoefs();
 
@@ -242,15 +213,15 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()]->resume();
-    std::vector<NodeIndex<D> > idx_band;
+    std::vector<NodeIndex<D>> idx_band;
     MWNodeVector<D> *fBand = makeOperBand(gNode, idx_band);
     this->band_t[omp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
-        auto nTerms = (double) this->oper->size();
-        gThrs = this->prec*std::sqrt(gThrs/nTerms);
+        auto nTerms = (double)this->oper->size();
+        gThrs = this->prec * std::sqrt(gThrs / nTerms);
     }
     os.gThreshold = gThrs;
 
@@ -262,9 +233,7 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
         os.setFIndex(fIdx);
         for (int ft = 0; ft < this->nComp; ft++) {
             double fNorm = fNode.getComponentNorm(ft);
-            if (fNorm < MachineZero) {
-                continue;
-            }
+            if (fNorm < MachineZero) { continue; }
             os.setFComponent(ft);
             for (int gt = 0; gt < this->nComp; gt++) {
                 if (depth == 0 or gt != 0 or ft != 0) {
@@ -283,16 +252,13 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 }
 
 /** Apply each component (term) of the operator expansion to a node in f */
-template<int D>
-void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &os) {
+template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &os) {
     int depth = os.gNode->getDepth();
     double fNorm = os.fNode->getComponentNorm(os.ft);
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &ot = this->oper->getComponent(i);
         const BandWidth &bw = ot.getBandWidth();
-        if (os.getMaxDeltaL() > bw.getMaxWidth(depth)) {
-            continue;
-        }
+        if (os.getMaxDeltaL() > bw.getMaxWidth(depth)) { continue; }
         os.oTree = &ot;
         os.fThreshold = getBandSizeFactor(i, depth, os) * fNorm;
         applyOperator(os);
@@ -301,8 +267,7 @@ void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &os) {
 
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
-template<int D>
-void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
+template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
@@ -318,20 +283,18 @@ void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
     for (int d = 0; d < D; d++) {
         int oTransl = fTransl[d] - gTransl[d];
 
-//  The following will check the actual band width in each direction.
-//  Not needed if the thresholding at the end of this routine is active.
+        //  The following will check the actual band width in each direction.
+        //  Not needed if the thresholding at the end of this routine is active.
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
         int w = oTree.getBandWidth().getWidth(depth, idx);
-        if (abs(oTransl) > w) {
-            return;
-        }
+        if (abs(oTransl) > w) { return; }
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
         int oIdx = os.getOperIndex(d);
         oNorm *= oNode.getComponentNorm(oIdx);
-        oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx*os.kp1_2;
+        oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
     }
     double upperBound = oNorm * os.fThreshold;
     if (upperBound > os.gThreshold) {
@@ -342,8 +305,7 @@ void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
 
 /** Perorm the required linear algebra operations in order to apply an
 operator component to a f-node in a n-dimensional tesor space. */
-template<int D>
-void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
+template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     double **aux = os.getAuxData();
     double **oData = os.getOperData();
 #ifdef HAVE_BLAS
@@ -355,9 +317,20 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
             }
             const double *f = aux[i];
             double *g = const_cast<double *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
-                    os.kp1_dm1, os.kp1, os.kp1, 1.0, f,
-                    os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
+            cblas_dgemm(CblasColMajor,
+                        CblasTrans,
+                        CblasNoTrans,
+                        os.kp1_dm1,
+                        os.kp1,
+                        os.kp1,
+                        1.0,
+                        f,
+                        os.kp1,
+                        oData[i],
+                        os.kp1,
+                        mult,
+                        g,
+                        os.kp1_dm1);
         } else {
             // Identity operator in direction i
             Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
@@ -394,8 +367,7 @@ void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 #endif
 }
 
-template<int D>
-MWNodeVector<D>* ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     MWNodeVector<D> *nodeVec = new MWNodeVector<D>;
     tree.makeNodeTable(*nodeVec);
     return nodeVec;

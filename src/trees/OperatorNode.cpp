@@ -48,14 +48,14 @@ void OperatorNode::dealloc() {
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
-    double thrs = std::max(MachinePrec, prec/(8.0 * (1 << depth)));
+    double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
 
     VectorXd coef_vec;
     this->getCoefs(coef_vec);
 
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    const VectorXd &comp_vec = coef_vec.segment(i*kp1_d, kp1_d);
+    const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
     const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1);
 
     double norm = 0.0;
@@ -63,7 +63,7 @@ double OperatorNode::calcComponentNorm(int i) const {
     if (vecNorm > thrs) {
         double infNorm = math_utils::matrix_norm_inf(comp_mat);
         double oneNorm = math_utils::matrix_norm_1(comp_mat);
-        if (std::sqrt(infNorm*oneNorm) > thrs) {
+        if (std::sqrt(infNorm * oneNorm) > thrs) {
             double twoNorm = math_utils::matrix_norm_2(comp_mat);
             if (twoNorm > thrs) norm = twoNorm;
         }

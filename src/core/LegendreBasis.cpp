@@ -34,8 +34,8 @@
 
 #include "LegendreBasis.h"
 #include "QuadratureCache.h"
-#include "functions/LegendrePoly.h"
 #include "eigen_disable_warnings.h"
+#include "functions/LegendrePoly.h"
 
 using namespace Eigen;
 
@@ -55,10 +55,8 @@ void LegendreBasis::calcQuadratureValues() {
     const VectorXd &pts = qc.getRoots(q_order);
 
     for (int k = 0; k < q_order; k++) {
-	const Polynomial &poly = this->getFunc(k);
-	for (int i = 0; i < q_order; i++) {
-	    this->quadVals(i, k) = poly.evalf(pts(i));
-	}
+        const Polynomial &poly = this->getFunc(k);
+        for (int i = 0; i < q_order; i++) { this->quadVals(i, k) = poly.evalf(pts(i)); }
     }
 }
 
@@ -69,10 +67,8 @@ void LegendreBasis::calcCVMaps() {
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
-	const Polynomial &poly = this->getFunc(k);
-	for (int i = 0; i < q_order; i++) {
-	    this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i);
-	}
+        const Polynomial &poly = this->getFunc(k);
+        for (int i = 0; i < q_order; i++) { this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i); }
     }
     this->cvMap = this->vcMap.inverse();
 }

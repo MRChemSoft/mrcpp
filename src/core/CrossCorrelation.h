@@ -60,4 +60,4 @@ protected:
     void readCCCBin();
 };
 
-}
+} // namespace mrcpp

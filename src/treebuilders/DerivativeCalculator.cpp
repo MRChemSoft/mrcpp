@@ -24,14 +24,14 @@
  */
 
 #include "DerivativeCalculator.h"
+#include "eigen_disable_warnings.h"
 #include "operators/DerivativeOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"
-#include "trees/OperatorNode.h"
 #include "trees/FunctionTree.h"
-#include "utils/Timer.h"
+#include "trees/OperatorNode.h"
 #include "utils/Printer.h"
-#include "eigen_disable_warnings.h"
+#include "utils/Timer.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -43,25 +43,21 @@ using Eigen::MatrixXd;
 
 namespace mrcpp {
 
-template<int D>
-DerivativeCalculator<D>::DerivativeCalculator(int dir,
-                                              DerivativeOperator<D> &o,
-                                              FunctionTree<D> &f)
-        : applyDir(dir),
-          fTree(&f),
-          oper(&o) {
+template <int D>
+DerivativeCalculator<D>::DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f)
+        : applyDir(dir)
+        , fTree(&f)
+        , oper(&o) {
     if (dir < 0 or dir >= D) MSG_FATAL("Invalid apply dir");
     initTimers();
 }
 
-template<int D>
-DerivativeCalculator<D>::~DerivativeCalculator() {
+template <int D> DerivativeCalculator<D>::~DerivativeCalculator() {
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
 }
 
-template<int D>
-void DerivativeCalculator<D>::initTimers() {
+template <int D> void DerivativeCalculator<D>::initTimers() {
     int nThreads = omp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(Timer(false));
@@ -70,39 +66,28 @@ void DerivativeCalculator<D>::initTimers() {
     }
 }
 
-template<int D>
-void DerivativeCalculator<D>::clearTimers() {
+template <int D> void DerivativeCalculator<D>::clearTimers() {
     this->band_t.clear();
     this->calc_t.clear();
     this->norm_t.clear();
 }
 
-template<int D>
-void DerivativeCalculator<D>::printTimers() const {
+template <int D> void DerivativeCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = omp_get_max_threads();
     printout(20, "\n\nthread ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, std::setw(9) << i);
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, std::setw(9) << i); }
     printout(20, "\nband     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->band_t[i].getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->band_t[i].getWallTime() << "  "); }
     printout(20, "\ncalc     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->calc_t[i].getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->calc_t[i].getWallTime() << "  "); }
     printout(20, "\nnorm     ");
-    for (int i = 0; i < nThreads; i++) {
-        printout(20, this->norm_t[i].getWallTime() << "  ");
-    }
+    for (int i = 0; i < nThreads; i++) { printout(20, this->norm_t[i].getWallTime() << "  "); }
     printout(20, "\n\n");
     Printer::setPrecision(oldprec);
 }
 
-template<int D>
-void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
+template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     gNode.zeroCoefs();
 
     int nComp = (1 << D);
@@ -128,9 +113,7 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
         os.setFIndex(fIdx);
         for (int ft = 0; ft < nComp; ft++) {
             double fNorm = fNode.getComponentNorm(ft);
-            if (fNorm < MachineZero) {
-                continue;
-            }
+            if (fNorm < MachineZero) { continue; }
             os.setFComponent(ft);
             for (int gt = 0; gt < nComp; gt++) {
                 os.setGComponent(gt);
@@ -139,7 +122,8 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
         }
     }
     // Multiply appropriate scaling factor
-    const double sf = std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    const double sf =
+        std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
     for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= sf;
     this->calc_t[omp_get_thread_num()].stop();
 
@@ -149,8 +133,8 @@ void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */
-template<int D>
-MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band) {
+template <int D>
+MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
@@ -176,8 +160,7 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
 
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
-template<int D>
-void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
+template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
@@ -193,22 +176,20 @@ void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
     for (int d = 0; d < D; d++) {
         int oTransl = fTransl[d] - gTransl[d];
 
-//  The following will check the actual band width in each direction.
-//  Not needed if the thresholding at the end of this routine is active.
+        //  The following will check the actual band width in each direction.
+        //  Not needed if the thresholding at the end of this routine is active.
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
         int w = oTree.getBandWidth().getWidth(depth, idx);
-        if (abs(oTransl) > w) {
-            return;
-        }
+        if (abs(oTransl) > w) { return; }
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
         int oIdx = os.getOperIndex(d);
         double ocn = oNode.getComponentNorm(oIdx);
         oNorm *= ocn;
         if (this->applyDir == d) {
-            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx*os.kp1_2;
+            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
         } else {
             if (oTransl == 0 and (oIdx == 0 or oIdx == 3)) {
                 // This will activate the identity operator in direction i
@@ -225,8 +206,7 @@ void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
 
 /** Perorm the required linear algebra operations in order to apply an
 operator component to a f-node in a n-dimensional tesor space. */
-template<int D>
-void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
+template <int D> void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     double **aux = os.getAuxData();
     double **oData = os.getOperData();
 #ifdef HAVE_BLAS
@@ -238,9 +218,20 @@ void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
             }
             const double *f = aux[i];
             double *g = const_cast<double *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
-                    os.kp1_dm1, os.kp1, os.kp1, 1.0, f,
-                    os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
+            cblas_dgemm(CblasColMajor,
+                        CblasTrans,
+                        CblasNoTrans,
+                        os.kp1_dm1,
+                        os.kp1,
+                        os.kp1,
+                        1.0,
+                        f,
+                        os.kp1,
+                        oData[i],
+                        os.kp1,
+                        mult,
+                        g,
+                        os.kp1_dm1);
         } else {
             // Identity operator in direction i
             Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
@@ -277,8 +268,7 @@ void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
 #endif
 }
 
-template<int D>
-MWNodeVector<D>* DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+template <int D> MWNodeVector<D> *DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     return tree.copyEndNodeTable();
 }
 

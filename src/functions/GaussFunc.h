@@ -48,14 +48,14 @@
 
 namespace mrcpp {
 
-template<int D>
-class GaussFunc final : public Gaussian<D> {
+template <int D> class GaussFunc final : public Gaussian<D> {
 public:
     GaussFunc(double alpha, double coef, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
-        : Gaussian<D>(alpha, coef, pos, pow) {}
+            : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
-        : Gaussian<D>(alpha, coef, pos, pow) {}
-    GaussFunc(const GaussFunc<D> &gf) : Gaussian<D>(gf) {}
+            : Gaussian<D>(alpha, coef, pos, pow) {}
+    GaussFunc(const GaussFunc<D> &gf)
+            : Gaussian<D>(gf) {}
     GaussFunc<D> &operator=(const GaussFunc<D> &gp) = delete;
     Gaussian<D> *copy() const;
 
@@ -86,10 +86,11 @@ public:
         this->power = power;
         this->squareNorm = -1.0;
     }
+
 private:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

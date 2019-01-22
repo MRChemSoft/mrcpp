@@ -41,11 +41,11 @@
 
 #pragma once
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
-#include "RepresentableFunction.h"
 #include "GaussFunc.h"
+#include "RepresentableFunction.h"
 
 #include "mrcpp_declarations.h"
 
@@ -53,8 +53,7 @@ namespace mrcpp {
 
 #define GAUSS_EXP_PREC 1.e-10
 
-template<int D>
-class GaussExp: public RepresentableFunction<D> {
+template <int D> class GaussExp : public RepresentableFunction<D> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
     GaussExp(const GaussExp<D> &gExp);
@@ -97,9 +96,7 @@ public:
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     double getSquareNorm() {
-        if (squareNorm < 0) {
-            calcSquareNorm();
-        }
+        if (squareNorm < 0) { calcSquareNorm(); }
         return squareNorm;
     }
 
@@ -123,7 +120,7 @@ public:
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);
 
-    friend std::ostream& operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
 
 protected:
     std::vector<Gaussian<D> *> funcs;
@@ -131,7 +128,7 @@ protected:
     double screening{0.0};
     double squareNorm{-1.0};
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
 } // namespace mrcpp

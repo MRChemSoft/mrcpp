@@ -25,15 +25,14 @@
 
 #pragma once
 
-#include "MWTree.h"
-#include "MWNode.h"
-#include "TreeIterator.h"
 #include "HilbertPath.h"
+#include "MWNode.h"
+#include "MWTree.h"
+#include "TreeIterator.h"
 
 namespace mrcpp {
 
-template<int D>
-class HilbertIterator final : public TreeIterator<D> {
+template <int D> class HilbertIterator final : public TreeIterator<D> {
 public:
     HilbertIterator(MWTree<D> *tree, int dir = TopDown)
             : TreeIterator<D>(dir) {
@@ -48,4 +47,4 @@ protected:
     }
 };
 
-}
+} // namespace mrcpp

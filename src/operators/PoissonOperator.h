@@ -36,4 +36,4 @@ public:
     PoissonOperator &operator=(const PoissonOperator &oper) = delete;
 };
 
-}
+} // namespace mrcpp

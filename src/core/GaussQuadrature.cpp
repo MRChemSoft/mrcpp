@@ -27,10 +27,10 @@
  */
 
 #include "GaussQuadrature.h"
-#include "functions/LegendrePoly.h"
-#include "utils/Printer.h"
-#include "macros.h"
 #include "constants.h"
+#include "functions/LegendrePoly.h"
+#include "macros.h"
+#include "utils/Printer.h"
 
 using namespace Eigen;
 
@@ -50,46 +50,31 @@ GaussQuadrature::GaussQuadrature(int k, double a, double b, int inter) {
     this->intervals = inter;
 
     if (this->order < 0 || this->order > MaxGaussOrder) {
-        MSG_ERROR("Gauss quadrature order " << this->order <<
-                " is larger than the maximum of " << MaxGaussOrder);
+        MSG_ERROR("Gauss quadrature order " << this->order << " is larger than the maximum of " << MaxGaussOrder);
     }
-    if (a >= b) {
-        MSG_ERROR("Invalid Gauss interval, a > b.");
-    }
-    if (this->intervals < 1) {
-        MSG_ERROR("Invalid number of intervals, intervals < 1");
-    }
+    if (a >= b) { MSG_ERROR("Invalid Gauss interval, a > b."); }
+    if (this->intervals < 1) { MSG_ERROR("Invalid number of intervals, intervals < 1"); }
     this->npts = this->order * this->intervals;
     this->roots = VectorXd::Zero(this->npts);
     this->weights = VectorXd::Zero(this->npts);
     this->unscaledRoots = VectorXd::Zero(this->order);
     this->unscaledWeights = VectorXd::Zero(this->order);
     // set up unscaled Gauss points and weights ( interval ]-1,1[)
-    if (calcGaussPtsWgts() != 1) {
-        MSG_ERROR("Setup of Gauss-Legendre weights failed.")
-    }
+    if (calcGaussPtsWgts() != 1) { MSG_ERROR("Setup of Gauss-Legendre weights failed.") }
     calcScaledPtsWgts();
 }
 
 void GaussQuadrature::setBounds(double a, double b) {
-    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
-        return;
-    }
-    if (a >= b) {
-        MSG_ERROR("Invalid bounds: a > b");
-    }
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) { return; }
+    if (a >= b) { MSG_ERROR("Invalid bounds: a > b"); }
     this->A = a;
     this->B = b;
     calcScaledPtsWgts();
 }
 
 void GaussQuadrature::setIntervals(int i) {
-    if (i == this->intervals) {
-        return;
-    }
-    if (i < 1) {
-        MSG_ERROR("Invalid number of integration intervals: " << i);
-    }
+    if (i == this->intervals) { return; }
+    if (i < 1) { MSG_ERROR("Invalid number of integration intervals: " << i); }
     this->intervals = i;
     this->npts = this->order * this->intervals;
     this->roots = VectorXd::Zero(this->npts);
@@ -103,7 +88,7 @@ void GaussQuadrature::setIntervals(int i) {
  */
 void GaussQuadrature::rescaleRoots(VectorXd &rts, double a, double b, int inter) const {
     // length of one block
-    double transl = (b - a) / (double) inter;
+    double transl = (b - a) / (double)inter;
 
     int k = 0;
     double pos = a;
@@ -124,7 +109,7 @@ void GaussQuadrature::rescaleRoots(VectorXd &rts, double a, double b, int inter)
  */
 void GaussQuadrature::rescaleWeights(VectorXd &wgts, double a, double b, int inter) const {
     // length of one block
-    double transl = (b - a) / (double) inter;
+    double transl = (b - a) / (double)inter;
 
     int k = 0;
     double pos = a;
@@ -145,7 +130,7 @@ void GaussQuadrature::rescaleWeights(VectorXd &wgts, double a, double b, int int
  */
 void GaussQuadrature::calcScaledPtsWgts() {
     // length of one block
-    double transl = (this->B - this->A) / (double) this->intervals;
+    double transl = (this->B - this->A) / (double)this->intervals;
 
     int k = 0;
     double pos = this->A;
@@ -194,13 +179,9 @@ int GaussQuadrature::calcGaussPtsWgts() {
 
             double z1 = z;
             z = z1 - lp(0) / lp(1);
-            if (std::abs(z - z1) <= EPS) {
-                break;
-            }
+            if (std::abs(z - z1) <= EPS) { break; }
         }
-        if (iter == NewtonMaxIter) {
-            return 0;
-        }
+        if (iter == NewtonMaxIter) { return 0; }
 
         this->unscaledRoots(i) = xm - xl * z;
         this->unscaledRoots(order - 1 - i) = xm + xl * z;
@@ -234,7 +215,6 @@ double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
             jsum += this->weights(j) * func.evalf(r);
         }
         isum += jsum * this->weights(i);
-
     }
     return isum;
 }

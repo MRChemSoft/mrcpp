@@ -26,15 +26,14 @@
 #pragma once
 
 #include "BoundingBox.h"
-#include "core/ScalingBasis.h"
 #include "core/MWFilter.h"
+#include "core/ScalingBasis.h"
 
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {
 
-template<int D>
-class MultiResolutionAnalysis final {
+template <int D> class MultiResolutionAnalysis final {
 public:
     MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth = MaxDepth);
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra);
@@ -65,4 +64,4 @@ protected:
     void setupFilter();
 };
 
-}
+} // namespace mrcpp

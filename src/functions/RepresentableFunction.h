@@ -38,8 +38,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class RepresentableFunction {
+template <int D> class RepresentableFunction {
 public:
     RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
     RepresentableFunction(const RepresentableFunction<D> &func);
@@ -63,14 +62,14 @@ public:
     virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
     virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
 
-    friend std::ostream& operator<<(std::ostream &o, const RepresentableFunction<D> &func) { return func.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const RepresentableFunction<D> &func) { return func.print(o); }
 
 protected:
     bool bounded;
     double *A; ///< Lower bound, NULL if unbounded
     double *B; ///< Upper bound, Null if unbounded
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
 } // namespace mrcpp

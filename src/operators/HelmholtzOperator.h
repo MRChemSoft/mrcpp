@@ -36,8 +36,9 @@ public:
     HelmholtzOperator &operator=(const HelmholtzOperator &oper) = delete;
 
     double getMu() const { return this->mu; }
+
 protected:
     const double mu;
 };
 
-}
+} // namespace mrcpp

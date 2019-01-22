@@ -31,19 +31,21 @@
 
 #pragma once
 
-#include <iomanip>
 #include <array>
+#include <iomanip>
 
 #include "NodeIndex.h"
 
 namespace mrcpp {
 
-template<int D>
-class BoundingBox {
+template <int D> class BoundingBox {
 public:
-    BoundingBox(int n=0, const std::array<int, D> &l={}, const std::array<int, D> &nb={}, const std::array<double, D> &sf={});
-    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb={}, const std::array<double, D> &sf={});
-    BoundingBox(const std::array<double, D> &sf, bool pbc=true);
+    BoundingBox(int n = 0,
+                const std::array<int, D> &l = {},
+                const std::array<int, D> &nb = {},
+                const std::array<double, D> &sf = {});
+    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
+    BoundingBox(const std::array<double, D> &sf, bool pbc = true);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() = default;
@@ -70,8 +72,8 @@ public:
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
     const Coord<D> &getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
-    const std::array<double, D> &getScalingFactor() const {return this->scalingFactor; }
-    friend std::ostream& operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
+    const std::array<double, D> &getScalingFactor() const { return this->scalingFactor; }
+    friend std::ostream &operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
     // Fundamental parameters
@@ -82,20 +84,19 @@ protected:
 
     // Derived parameters
     int totBoxes{1};
-    Coord<D> unitLengths;    ///< 1/2^initialScale
-    Coord<D> boxLengths;     ///< Total length (unitLength times nBoxes)
-    Coord<D> lowerBounds;    ///< Box lower bound (not real)
-    Coord<D> upperBounds;    ///< Box upper bound (not real)
+    Coord<D> unitLengths; ///< 1/2^initialScale
+    Coord<D> boxLengths;  ///< Total length (unitLength times nBoxes)
+    Coord<D> lowerBounds; ///< Box lower bound (not real)
+    Coord<D> upperBounds; ///< Box upper bound (not real)
 
-    void setNBoxes(const std::array<int, D> &nb={});
+    void setNBoxes(const std::array<int, D> &nb = {});
     void setDerivedParameters();
     void setScalingFactor(const std::array<double, D> &sf);
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-template<int D>
-bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
+template <int D> bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return false;
     for (int d = 0; d < D; d++) {
         if (this->size(d) != box.size(d)) return false;
@@ -103,8 +104,7 @@ bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
     return true;
 }
 
-template<int D>
-bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
+template <int D> bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return true;
     for (int d = 0; d < D; d++) {
         if (this->size(d) != box.size(d)) return true;

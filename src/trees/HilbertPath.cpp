@@ -26,7 +26,7 @@
 #include "HilbertPath.h"
 
 namespace mrcpp {
-
+// clang-format off
 template<>
 const short int HilbertPath<1>::pTable[1][8] = {
     {0,0,-1,-1,-1,-1,-1,-1}
@@ -113,6 +113,8 @@ const int HilbertPath<3>::hTable[12][8] = {
     {6,5,1,2,7,4,0,3},
     {4,5,7,6,3,2,0,1}
 };
+
+// clang-format on
 
 template class HilbertPath<1>;
 template class HilbertPath<2>;

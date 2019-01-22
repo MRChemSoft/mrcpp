@@ -28,17 +28,16 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include <iostream>
 #include <fstream>
-#include <string>
+#include <iostream>
 #include <map>
+#include <string>
 
 #include "mrcpp_declarations.h"
 
 namespace mrcpp {
 
-template<int D>
-class Plotter {
+template <int D> class Plotter {
 public:
     Plotter(int npts = 1000, const double *a = 0, const double *b = 0);
     virtual ~Plotter() = default;
@@ -60,9 +59,7 @@ public:
     Eigen::VectorXd &surfPlot(RepresentableFunction<D> &func);
     Eigen::VectorXd &cubePlot(RepresentableFunction<D> &func);
 
-    enum type {
-        Line, Surface, Cube, Grid
-    };
+    enum type { Line, Surface, Cube, Grid };
 
 protected:
     std::ofstream fstrm;
@@ -94,4 +91,4 @@ private:
     void closePlot();
 };
 
-}
+} // namespace mrcpp

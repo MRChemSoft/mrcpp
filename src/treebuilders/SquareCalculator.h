@@ -29,10 +29,10 @@
 
 namespace mrcpp {
 
-template<int D>
-class SquareCalculator final : public TreeCalculator<D> {
+template <int D> class SquareCalculator final : public TreeCalculator<D> {
 public:
-    SquareCalculator(FunctionTree<D> &inp) : func(&inp) { }
+    SquareCalculator(FunctionTree<D> &inp)
+            : func(&inp) {}
 
 private:
     FunctionTree<D> *func;
@@ -46,9 +46,7 @@ private:
         node_i.mwTransform(Reconstruction);
         node_i.cvTransform(Forward);
         const double *coefs_i = node_i.getCoefs();
-        for (int j = 0; j < n_coefs; j++) {
-            coefs_o[j] = coefs_i[j]*coefs_i[j];
-        }
+        for (int j = 0; j < n_coefs; j++) { coefs_o[j] = coefs_i[j] * coefs_i[j]; }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);
         node_o.setHasCoefs();
@@ -56,4 +54,4 @@ private:
     }
 };
 
-}
+} // namespace mrcpp

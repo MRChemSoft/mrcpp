@@ -29,8 +29,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class TreeBuilder final {
+template <int D> class TreeBuilder final {
 public:
     void build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeAdaptor<D> &adaptor, int maxIter) const;
     void clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
@@ -42,4 +41,4 @@ private:
     double calcWaveletNorm(const MWNodeVector<D> &vec) const;
 };
 
-}
+} // namespace mrcpp

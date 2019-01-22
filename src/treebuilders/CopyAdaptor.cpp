@@ -29,22 +29,21 @@
 
 namespace mrcpp {
 
-template<int D>
+template <int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms) {
     setBandWidth(bw);
     tree_vec.push_back(std::make_tuple(1.0, &t));
 }
 
-template<int D>
+template <int D>
 CopyAdaptor<D>::CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw)
-        : TreeAdaptor<D>(ms),
-          tree_vec(t) {
+        : TreeAdaptor<D>(ms)
+        , tree_vec(t) {
     setBandWidth(bw);
 }
 
-template<int D>
-void CopyAdaptor<D>::setBandWidth(int *bw) {
+template <int D> void CopyAdaptor<D>::setBandWidth(int *bw) {
     for (int d = 0; d < D; d++) {
         if (bw != nullptr) {
             this->bandWidth[d] = bw[d];
@@ -54,8 +53,7 @@ void CopyAdaptor<D>::setBandWidth(int *bw) {
     }
 }
 
-template<int D>
-bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
+template <int D> bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
     const NodeIndex<D> &idx = node.getNodeIndex();
     for (int c = 0; c < node.getTDim(); c++) {
         NodeIndex<D> cIdx(idx, c);

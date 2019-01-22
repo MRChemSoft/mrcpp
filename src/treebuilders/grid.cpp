@@ -24,13 +24,13 @@
  */
 
 #include "grid.h"
-#include "add.h"
-#include "TreeBuilder.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
-#include "SplitAdaptor.h"
-#include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
+#include "SplitAdaptor.h"
+#include "TreeBuilder.h"
+#include "WaveletAdaptor.h"
+#include "add.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
@@ -55,10 +55,7 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void build_grid(FunctionTree<D> &out,
-                const RepresentableFunction<D> &inp,
-                int maxIter) {
+template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     AnalyticAdaptor<D> adaptor(inp, maxScale);
@@ -86,10 +83,7 @@ void build_grid(FunctionTree<D> &out,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void build_grid(FunctionTree<D> &out,
-                FunctionTree<D> &inp,
-                int maxIter) {
+template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, 0);
@@ -117,10 +111,7 @@ void build_grid(FunctionTree<D> &out,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void build_grid(FunctionTree<D> &out,
-                FunctionTreeVector<D> &inp,
-                int maxIter) {
+template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, 0);
@@ -140,8 +131,7 @@ void build_grid(FunctionTree<D> &out,
  *  2) Copy MW coefs from the corresponding input node
  *
  */
-template<int D>
-void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
+template <int D> void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
     FunctionTreeVector<D> tmp_vec;
     tmp_vec.push_back(std::make_tuple(1.0, &inp));
     add(-1.0, out, tmp_vec);
@@ -156,8 +146,7 @@ void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
  * function, but without MW coefficients.
  *
  */
-template<int D>
-void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
+template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     out.clear();
     build_grid(out, inp);
 }
@@ -170,8 +159,7 @@ void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
  * grid that can be reused by computing new MW coefs.
  *
  */
-template<int D>
-void clear_grid(FunctionTree<D> &out) {
+template <int D> void clear_grid(FunctionTree<D> &out) {
     TreeBuilder<D> builder;
     DefaultCalculator<D> calculator;
     builder.clear(out, calculator);
@@ -187,8 +175,7 @@ void clear_grid(FunctionTree<D> &out) {
  * unchanged, but on a larger grid.
  *
  */
-template<int D>
-int refine_grid(FunctionTree<D> &out, int scales) {
+template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
     int nSplit = 0;
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
@@ -210,8 +197,7 @@ int refine_grid(FunctionTree<D> &out, int scales) {
  * larger grid.
  *
  */
-template<int D>
-int refine_grid(FunctionTree<D> &out, double prec) {
+template <int D> int refine_grid(FunctionTree<D> &out, double prec) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
@@ -230,7 +216,7 @@ int refine_grid(FunctionTree<D> &out, double prec) {
  * unchanged, but on a larger grid.
  *
  */
-template<int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
+template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, 0);

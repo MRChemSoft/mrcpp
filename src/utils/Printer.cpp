@@ -93,25 +93,18 @@ void Printer::printEnvironment(int level) {
     printSeparator(level, '-', 2);
 }
 
-
 void Printer::printSeparator(int level, const char &sep, int newlines) {
     int N = 60;
-    for (int i = 0; i < N; i++) {
-        printout(level, sep);
-    }
-    for (int i = 0; i <= newlines; i++) {
-        printout(level, std::endl);
-    }
+    for (int i = 0; i < N; i++) { printout(level, sep); }
+    for (int i = 0; i <= newlines; i++) { printout(level, std::endl); }
 }
 
 void Printer::printHeader(int level, const std::string &str, int newlines) {
     int N = 60;
     int len = str.size();
     printSeparator(level, '=', 0);
-    int spaces = (N - len)/2;
-    for (int i = 0; i < spaces; i++) {
-        printout(level, " ");
-    }
+    int spaces = (N - len) / 2;
+    for (int i = 0; i < spaces; i++) { printout(level, " "); }
     println(level, str);
     printSeparator(level, '-', newlines);
 }
@@ -125,9 +118,7 @@ void Printer::printFooter(int level, const Timer &t, int newlines) {
 void Printer::printDouble(int level, const std::string &str, double d, int p) {
     char cStr[31] = "                              ";
     for (int i = 0; i < 31; i++) {
-        if (i < str.size()) {
-            cStr[i+1] = str[i];
-        }
+        if (i < str.size()) { cStr[i + 1] = str[i]; }
     }
     int oldPrec = getPrecision();
     if (p > 0) setPrecision(p);
@@ -138,9 +129,7 @@ void Printer::printDouble(int level, const std::string &str, double d, int p) {
 void Printer::printTree(int level, const std::string &str, int n, double t) {
     char cStr[31] = "                              ";
     for (int i = 0; i < 31; i++) {
-        if (i < str.size()) {
-            cStr[i+1] = str[i];
-        }
+        if (i < str.size()) { cStr[i + 1] = str[i]; }
     }
     int oldPrec = setPrecision(5);
     println(level, cStr << std::setw(12) << n << std::setw(17) << t);
@@ -150,9 +139,7 @@ void Printer::printTree(int level, const std::string &str, int n, double t) {
 void Printer::printTime(int level, const std::string &str, const Timer &t) {
     char cStr[31] = "                              ";
     for (int i = 0; i < 31; i++) {
-        if (i < str.size()) {
-            cStr[i+1] = str[i];
-        }
+        if (i < str.size()) { cStr[i + 1] = str[i]; }
     }
     int oldPrec = setPrecision(5);
     println(level, cStr << std::setw(29) << t);
@@ -173,30 +160,34 @@ int Printer::setPrecision(int i) {
 }
 
 //parse a string and returns the nth integer number
-int Printer::getVal(char* line, int n){
-    char* p = line;
+int Printer::getVal(char *line, int n) {
+    char *p = line;
     int len = 0;
-    for(int i=0;i<n-1;i++){
+    for (int i = 0; i < n - 1; i++) {
         //jump over n-1 first numbers
-        while (*p <'0' || *p > '9') p++;
-        while (*p >='0' && *p <= '9') p++;
+        while (*p < '0' || *p > '9') p++;
+        while (*p >= '0' && *p <= '9') p++;
     }
-    while (*p <'0' || *p > '9') p++;
-    char* s = p;
-    while (*s >='0' && *s <= '9'){ s++; line[len] = p[len]; len++;}
+    while (*p < '0' || *p > '9') p++;
+    char *s = p;
+    while (*s >= '0' && *s <= '9') {
+        s++;
+        line[len] = p[len];
+        len++;
+    }
     p[len] = 0;
     return atoi(p);
 }
 
 /** Prints (and returns) the current memory usage of this process
  */
-int Printer::printMem(char* txt){
-    FILE* file = fopen("/proc/self/statm", "r");
+int Printer::printMem(char *txt) {
+    FILE *file = fopen("/proc/self/statm", "r");
     int val = -1;
     char line[80];
-    while (fgets(line, 80, file) != NULL){
-        val = getVal(line,6);//sixth number is data+stack in pages (4kB)
-        printf("Mem usage %s %6.3f %s \n",txt,val*4.0/(1024.0*1024),"GB");
+    while (fgets(line, 80, file) != NULL) {
+        val = getVal(line, 6); //sixth number is data+stack in pages (4kB)
+        printf("Mem usage %s %6.3f %s \n", txt, val * 4.0 / (1024.0 * 1024), "GB");
     }
     fclose(file);
     return val;

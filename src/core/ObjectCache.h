@@ -27,13 +27,12 @@
 
 #include <vector>
 
-#include "utils/omp_utils.h"
 #include "macros.h"
+#include "utils/omp_utils.h"
 
 namespace mrcpp {
 
-#define getObjectCache(T,X) \
-    ObjectCache<T> &X = ObjectCache<T>::getInstance();
+#define getObjectCache(T, X) ObjectCache<T> &X = ObjectCache<T>::getInstance();
 
 #ifdef HAVE_OPENMP
 #define SET_CACHE_LOCK() omp_set_lock(&this->cache_lock)
@@ -45,8 +44,7 @@ namespace mrcpp {
 #define TEST_CACHE_LOCK()
 #endif
 
-template<class T>
-class ObjectCache {
+template <class T> class ObjectCache {
 public:
     static ObjectCache<T> &getInstance();
     virtual void clear();
@@ -86,9 +84,9 @@ protected:
 #endif
 private:
     int highWaterMark{0};
-    int memLoaded{0}; ///< memory occupied by loaded objects
+    int memLoaded{0};      ///< memory occupied by loaded objects
     std::vector<T *> objs; ///< objects store
-    std::vector<int> mem; ///< mem per object
+    std::vector<int> mem;  ///< mem per object
 };
 
-}
+} // namespace mrcpp

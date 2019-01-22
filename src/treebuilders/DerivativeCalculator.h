@@ -30,13 +30,12 @@
 
 namespace mrcpp {
 
-template<int D>
-class DerivativeCalculator final : public TreeCalculator<D> {
+template <int D> class DerivativeCalculator final : public TreeCalculator<D> {
 public:
     DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
     ~DerivativeCalculator();
 
-    MWNodeVector<D>* getInitialWorkVector(MWTree<D> &tree) const;
+    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const;
 
 private:
     int applyDir;
@@ -48,7 +47,7 @@ private:
     std::vector<Timer> norm_t;
     OperatorStatistics<D> operStat;
 
-    MWNodeVector<D> makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band);
+    MWNodeVector<D> makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band);
 
     void initTimers();
     void clearTimers();
@@ -65,4 +64,4 @@ private:
     void tensorApplyOperComp(OperatorState<D> &os);
 };
 
-}
+} // namespace mrcpp

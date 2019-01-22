@@ -77,4 +77,4 @@ protected:
     double integrate_nd(RepresentableFunction<3> &func, int axis = 0) const;
 };
 
-}
+} // namespace mrcpp

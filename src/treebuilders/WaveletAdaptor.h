@@ -29,14 +29,13 @@
 
 namespace mrcpp {
 
-template<int D>
-class WaveletAdaptor : public TreeAdaptor<D> {
+template <int D> class WaveletAdaptor : public TreeAdaptor<D> {
 public:
     WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
-        : TreeAdaptor<D>(ms),
-          absPrec(ap),
-          prec(pr),
-          splitFac(sf) { }
+            : TreeAdaptor<D>(ms)
+            , absPrec(ap)
+            , prec(pr)
+            , splitFac(sf) {}
     virtual ~WaveletAdaptor() = default;
 
 protected:
@@ -49,4 +48,4 @@ protected:
     }
 };
 
-}
+} // namespace mrcpp

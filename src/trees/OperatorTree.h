@@ -61,7 +61,7 @@ protected:
 
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 
-    std::ostream& print(std::ostream &o);
+    std::ostream &print(std::ostream &o);
 };
 
-}
+} // namespace mrcpp

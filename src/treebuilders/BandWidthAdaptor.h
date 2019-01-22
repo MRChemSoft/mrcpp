@@ -36,7 +36,9 @@ namespace mrcpp {
 
 class BandWidthAdaptor final : public TreeAdaptor<2> {
 public:
-    BandWidthAdaptor(int bw, int ms) : TreeAdaptor<2>(ms), bandWidth(bw) { }
+    BandWidthAdaptor(int bw, int ms)
+            : TreeAdaptor<2>(ms)
+            , bandWidth(bw) {}
 
 private:
     const int bandWidth;
@@ -47,11 +49,9 @@ private:
         int ly = idx.getTranslation(1);
         int dl = abs(lx - ly);
         // Within band width on NEXT scale
-        if ((lx == 0) and (2*dl <= this->bandWidth)) {
-            return true;
-        }
+        if ((lx == 0) and (2 * dl <= this->bandWidth)) { return true; }
         return false;
     }
 };
 
-}
+} // namespace mrcpp

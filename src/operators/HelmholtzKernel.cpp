@@ -45,9 +45,9 @@ namespace mrcpp {
  */
 void HelmholtzKernel::initializeKernel() {
     //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
-    double r0 = this->rMin/this->rMax;
+    double r0 = this->rMin / this->rMax;
     double r1 = this->rMax;
-    double mu_tilde = this->mu*r1;
+    double mu_tilde = this->mu * r1;
 
     // Set the truncation limits s1,s2 of the integral (integrate over [s1,s2])
     // for achieving relative error epsilon
@@ -58,7 +58,7 @@ void HelmholtzKernel::initializeKernel() {
     // Now, set the proper step size h for use in the trapezoidal rule
     // for given MU
     double h = 1.0 / (0.20L - 0.47L * std::log10(this->epsilon));
-    int n_exp = (int) ceil((s2 - s1) / h) + 1;
+    int n_exp = (int)ceil((s2 - s1) / h) + 1;
     if (n_exp > MaxSepRank) MSG_FATAL("Maximum separation rank exceeded.");
 
     for (int i = 0; i < n_exp; i++) {
@@ -69,11 +69,9 @@ void HelmholtzKernel::initializeKernel() {
         double temp3 = 2.0L * arg;
         double alpha = std::exp(temp3);
 
-        alpha *= 1.0/(r1*r1);
-        beta *= 1.0/r1;
-        if (i == 0 or i == (n_exp - 1)) {
-            beta *= 1.0/2.0;
-        }
+        alpha *= 1.0 / (r1 * r1);
+        beta *= 1.0 / r1;
+        if (i == 0 or i == (n_exp - 1)) { beta *= 1.0 / 2.0; }
 
         GaussFunc<1> gFunc(alpha, beta);
         this->append(gFunc);
@@ -81,7 +79,7 @@ void HelmholtzKernel::initializeKernel() {
     this->calcSquareNorm();
 }
 
-std::ostream& HelmholtzKernel::print(std::ostream &o) const {
+std::ostream &HelmholtzKernel::print(std::ostream &o) const {
     o << " HelmholtzKernel: " << std::endl;
     o << " epsilon:  " << this->epsilon << std::endl;
     o << " rMin:     " << this->rMin << std::endl;

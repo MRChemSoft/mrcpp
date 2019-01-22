@@ -30,8 +30,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class ConvolutionOperator : public MWOperator {
+template <int D> class ConvolutionOperator : public MWOperator {
 public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr);
     ConvolutionOperator(const ConvolutionOperator &oper) = delete;

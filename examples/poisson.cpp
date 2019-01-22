@@ -1,6 +1,6 @@
+#include "MRCPP/Gaussians"
 #include "MRCPP/MWFunctions"
 #include "MRCPP/MWOperators"
-#include "MRCPP/Gaussians"
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
@@ -21,8 +21,8 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Applying Poisson operator");
 
     // Constructing world box
-    auto corner = std::array<int, D>{-1,-1,-1};
-    auto boxes  = std::array<int, D>{2, 2, 2};
+    auto corner = std::array<int, D>{-1, -1, -1};
+    auto boxes = std::array<int, D>{2, 2, 2};
     auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
@@ -31,8 +31,8 @@ int main(int argc, char **argv) {
 
     // Setting up analytic Gaussian
     auto beta = 100.0;
-    auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
-    auto pos = mrcpp::Coord<D>{mrcpp::pi/3.0, mrcpp::pi/3.0, mrcpp::pi/3.0};
+    auto alpha = std::pow(beta / mrcpp::pi, 3.0 / 2.0);
+    auto pos = mrcpp::Coord<D>{mrcpp::pi / 3.0, mrcpp::pi / 3.0, mrcpp::pi / 3.0};
     auto power = std::array<int, D>{0, 0, 0};
     auto f_func = mrcpp::GaussFunc<D>(beta, alpha, pos, power);
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     auto g_int = g_tree.integrate();
     auto g_norm = std::sqrt(g_tree.getSquareNorm());
     auto num_energy = mrcpp::dot(g_tree, f_tree);
-    auto error = (num_energy-ana_energy)/num_energy;
+    auto error = (num_energy - ana_energy) / num_energy;
 
     mrcpp::Printer::printSeparator(0, ' ');
     mrcpp::Printer::printDouble(0, "f_tree integral", f_int);

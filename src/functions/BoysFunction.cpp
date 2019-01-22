@@ -24,33 +24,30 @@
  */
 
 #include "BoysFunction.h"
-#include "trees/FunctionTree.h"
 #include "core/InterpolatingBasis.h"
-#include "utils/Printer.h"
 #include "treebuilders/project.h"
+#include "trees/FunctionTree.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 
 BoysFunction::BoysFunction(int n, double p)
-        : RepresentableFunction<1>(),
-          order(n),
-          prec(p),
-          MRA(BoundingBox<1>(), InterpolatingBasis(13)) {
-}
+        : RepresentableFunction<1>()
+        , order(n)
+        , prec(p)
+        , MRA(BoundingBox<1>(), InterpolatingBasis(13)) {}
 
 double BoysFunction::evalf(const Coord<1> &r) const {
     int oldlevel = Printer::setPrintLevel(0);
 
     int n = this->order;
     double x = r[0];
-    auto f = [x, n] (const Coord<1> &t) -> double {
+    auto f = [x, n](const Coord<1> &t) -> double {
         double t_2 = t[0] * t[0];
-        double xt_2 = x*t_2;
+        double xt_2 = x * t_2;
         double t_2n = 1.0;
-        if (n > 0) {
-            t_2n = std::pow(t_2, n);
-        }
-        return std::exp(-xt_2)*t_2n;
+        if (n > 0) { t_2n = std::pow(t_2, n); }
+        return std::exp(-xt_2) * t_2n;
     };
 
     FunctionTree<1> tree(this->MRA);

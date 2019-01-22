@@ -59,7 +59,8 @@ public:
     friend class SerialOperatorTree;
 
 protected:
-    OperatorNode() : MWNode<2>() {};
+    OperatorNode()
+            : MWNode<2>(){};
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
 
@@ -67,4 +68,4 @@ protected:
     double calcComponentNorm(int i) const;
 };
 
-}
+} // namespace mrcpp

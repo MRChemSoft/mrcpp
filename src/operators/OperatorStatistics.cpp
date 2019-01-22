@@ -30,17 +30,17 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template<int D>
+template <int D>
 OperatorStatistics<D>::OperatorStatistics()
-        : nThreads(omp_get_max_threads()),
-          totFCount(0),
-          totGCount(0),
-          totGenCount(0),
-          fCount(nullptr),
-          gCount(nullptr),
-          genCount(nullptr),
-          totCompCount(0),
-          compCount(0) {
+        : nThreads(omp_get_max_threads())
+        , totFCount(0)
+        , totGCount(0)
+        , totGenCount(0)
+        , fCount(nullptr)
+        , gCount(nullptr)
+        , genCount(nullptr)
+        , totCompCount(0)
+        , compCount(0) {
 
     this->totCompCount = new Matrix<int, 8, 8>;
     this->totCompCount->setZero();
@@ -58,11 +58,8 @@ OperatorStatistics<D>::OperatorStatistics()
     }
 }
 
-template<int D>
-OperatorStatistics<D>::~OperatorStatistics() {
-    for (int i = 0; i < this->nThreads; i++) {
-        delete this->compCount[i];
-    }
+template <int D> OperatorStatistics<D>::~OperatorStatistics() {
+    for (int i = 0; i < this->nThreads; i++) { delete this->compCount[i]; }
     delete[] this->compCount;
     delete[] this->fCount;
     delete[] this->gCount;
@@ -71,8 +68,7 @@ OperatorStatistics<D>::~OperatorStatistics() {
 }
 
 /** Sum all node counters from all threads. */
-template<int D>
-void OperatorStatistics<D>::flushNodeCounters() {
+template <int D> void OperatorStatistics<D>::flushNodeCounters() {
     for (int i = 0; i < this->nThreads; i++) {
         this->totFCount += this->fCount[i];
         this->totGCount += this->gCount[i];
@@ -86,26 +82,20 @@ void OperatorStatistics<D>::flushNodeCounters() {
 }
 
 /** Increment g-node usage counter. Needed for load balancing. */
-template<int D>
-void OperatorStatistics<D>::incrementGNodeCounters(const MWNode<D> &gNode) {
+template <int D> void OperatorStatistics<D>::incrementGNodeCounters(const MWNode<D> &gNode) {
     int thread = omp_get_thread_num();
     this->gCount[thread]++;
 }
 
 /** Increment operator application counter. */
-template<int D>
-void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode,
-                                                   int ft, int gt) {
+template <int D> void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt) {
     int thread = omp_get_thread_num();
     this->fCount[thread]++;
     (*this->compCount[thread])(ft, gt) += 1;
-    if (fNode.isGenNode()) {
-        this->genCount[thread]++;
-    }
+    if (fNode.isGenNode()) { this->genCount[thread]++; }
 }
 
-template<int D>
-std::ostream& OperatorStatistics<D>::print(std::ostream &o) const {
+template <int D> std::ostream &OperatorStatistics<D>::print(std::ostream &o) const {
     o << std::setw(8);
     o << "*OperatorFunc statistics: " << std::endl << std::endl;
     o << "  Total calculated gNodes      : " << this->totGCount << std::endl;

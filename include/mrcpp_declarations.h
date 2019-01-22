@@ -1,14 +1,14 @@
 #pragma once
 
-#include <vector>
 #include <array>
 #include <set>
+#include <vector>
 
 namespace mrcpp {
 
 class Timer;
 class Printer;
-template<int D> class Plotter;
+template <int D> class Plotter;
 
 template <int D> class Gaussian;
 template <int D> class GaussFunc;
@@ -46,9 +46,9 @@ template <int D> class DerivativeConvolution;
 template <int D> class ConvolutionOperator;
 class PoissonOperator;
 class HelmholtzOperator;
-template<int D> class DerivativeOperator;
-template<int D> class ABGVOperator;
-template<int D> class PHOperator;
+template <int D> class DerivativeOperator;
+template <int D> class ABGVOperator;
+template <int D> class PHOperator;
 
 class GreensKernel;
 class IdentityKernel;
@@ -81,7 +81,7 @@ class BandWidth;
 template <int D> class OperatorState;
 
 using OperatorTreeVector = std::vector<OperatorTree *>;
-template<int D> using Coord = std::array<double, D>;
-template<int D> using MWNodeVector = std::vector<MWNode<D> *>;
+template <int D> using Coord = std::array<double, D>;
+template <int D> using MWNodeVector = std::vector<MWNode<D> *>;
 
-}
+} // namespace mrcpp

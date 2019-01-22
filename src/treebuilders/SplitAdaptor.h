@@ -29,10 +29,11 @@
 
 namespace mrcpp {
 
-template<int D>
-class SplitAdaptor final : public TreeAdaptor<D> {
+template <int D> class SplitAdaptor final : public TreeAdaptor<D> {
 public:
-    SplitAdaptor(int ms, bool sp) : TreeAdaptor<D>(ms), split(sp) { }
+    SplitAdaptor(int ms, bool sp)
+            : TreeAdaptor<D>(ms)
+            , split(sp) {}
 
 private:
     bool split;
@@ -40,4 +41,4 @@ private:
     bool splitNode(const MWNode<D> &node) const { return this->split; }
 };
 
-}
+} // namespace mrcpp

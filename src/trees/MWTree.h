@@ -32,8 +32,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "utils/omp_utils.h"
 #include "mrcpp_declarations.h"
+#include "utils/omp_utils.h"
 
 #include "MultiResolutionAnalysis.h"
 #include "NodeBox.h"
@@ -50,9 +50,7 @@ namespace mrcpp {
 #define TEST_TREE_LOCK() false
 #endif
 
-
-template<int D>
-class MWTree {
+template <int D> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra);
     MWTree(const MWTree<D> &tree) = delete;
@@ -109,8 +107,8 @@ public:
     void makeNodeTable(MWNodeVector<D> &nodeTable);
     void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
 
-    MWNodeVector<D>* copyEndNodeTable();
-    MWNodeVector<D>* getEndNodeTable() { return &this->endNodeTable; }
+    MWNodeVector<D> *copyEndNodeTable();
+    MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
@@ -128,9 +126,9 @@ public:
     int countNodes(int depth = -1);
     void RecountNodes();
 
-    SerialTree<D>* getSerialTree() { return this->serialTree_p; }
+    SerialTree<D> *getSerialTree() { return this->serialTree_p; }
 
-    friend std::ostream& operator <<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -163,8 +161,8 @@ protected:
     int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
-    MWNodeVector<D> endNodeTable;	   ///< Final projected nodes
-    std::vector<int> nodesAtDepth;  ///< Node counter
+    MWNodeVector<D> endNodeTable;  ///< Final projected nodes
+    std::vector<int> nodesAtDepth; ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
@@ -178,11 +176,11 @@ protected:
     void incrementGenNodeCount();
     void decrementGenNodeCount();
 
-    virtual std::ostream& print(std::ostream &o);
+    virtual std::ostream &print(std::ostream &o);
 
 #ifdef HAVE_OPENMP
     omp_lock_t tree_lock;
 #endif
 };
 
-}
+} // namespace mrcpp

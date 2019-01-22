@@ -34,13 +34,14 @@ namespace mrcpp {
 
 class MWOperator {
 public:
-    MWOperator(const MultiResolutionAnalysis<2> &mra) : oper_mra(mra) { }
+    MWOperator(const MultiResolutionAnalysis<2> &mra)
+            : oper_mra(mra) {}
     MWOperator(const MWOperator &oper) = delete;
     MWOperator &operator=(const MWOperator &oper) = delete;
     virtual ~MWOperator() { this->clear(true); }
 
     int size() const { return this->oper_exp.size(); }
-    void push_back(OperatorTree *oper) { this->oper_exp.push_back(oper); } 
+    void push_back(OperatorTree *oper) { this->oper_exp.push_back(oper); }
     void clear(bool dealloc = false);
 
     int getMaxBandWidth(int depth = -1) const;
@@ -61,4 +62,4 @@ protected:
     Eigen::VectorXi band_max;
 };
 
-}
+} // namespace mrcpp

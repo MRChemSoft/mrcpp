@@ -30,8 +30,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class TreeIterator {
+template <int D> class TreeIterator {
 public:
     TreeIterator(int dir = TopDown);
     virtual ~TreeIterator();
@@ -65,8 +64,7 @@ protected:
     bool checkGenerated(const MWNode<D> &node) const;
 };
 
-template<int D>
-class IteratorNode final {
+template <int D> class IteratorNode final {
 public:
     MWNode<D> *node;
     IteratorNode<D> *next;
@@ -77,4 +75,4 @@ public:
     ~IteratorNode() { delete this->next; }
 };
 
-}
+} // namespace mrcpp

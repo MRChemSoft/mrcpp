@@ -38,4 +38,3 @@
 #define omp_unset_lock(x)
 #define omp_test_lock(x)
 #endif
-

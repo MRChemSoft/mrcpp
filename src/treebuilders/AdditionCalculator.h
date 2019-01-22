@@ -30,10 +30,10 @@
 
 namespace mrcpp {
 
-template<int D>
-class AdditionCalculator final : public TreeCalculator<D> {
+template <int D> class AdditionCalculator final : public TreeCalculator<D> {
 public:
-    AdditionCalculator(const FunctionTreeVector<D> &inp) : sum_vec(inp) { }
+    AdditionCalculator(const FunctionTreeVector<D> &inp)
+            : sum_vec(inp) {}
 
 private:
     FunctionTreeVector<D> sum_vec;
@@ -49,13 +49,11 @@ private:
             const MWNode<D> &node_i = func_i.getNode(idx);
             const double *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
-            for (int j = 0; j < n_coefs; j++) {
-                coefs_o[j] += c_i * coefs_i[j];
-            }
+            for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
         }
         node_o.setHasCoefs();
         node_o.calcNorms();
     }
 };
 
-}
+} // namespace mrcpp

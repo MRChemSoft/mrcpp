@@ -40,4 +40,4 @@ private:
     void computeLegendrePolynomial(int k);
 };
 
-}
+} // namespace mrcpp

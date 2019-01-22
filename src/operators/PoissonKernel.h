@@ -40,7 +40,7 @@ public:
 
 protected:
     void initializeKernel() override;
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

@@ -30,11 +30,11 @@
 
 #include <fstream>
 
-#include "FunctionTree.h"
-#include "SerialFunctionTree.h"
 #include "FunctionNode.h"
-#include "ProjectedNode.h"
+#include "FunctionTree.h"
 #include "HilbertIterator.h"
+#include "ProjectedNode.h"
+#include "SerialFunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/mpi_utils.h"
@@ -45,17 +45,16 @@ namespace mrcpp {
 
 /** FunctionTree constructor for Serial Tree.
   * */
-template<int D>
+template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
-        : MWTree<D> (mra) {
+        : MWTree<D>(mra) {
     this->serialTree_p = new SerialFunctionTree<D>(this, sh_mem);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
 
 //** FunctionTree destructor. */
-template<int D>
-FunctionTree<D>::~FunctionTree() {
+template <int D> FunctionTree<D>::~FunctionTree() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
         root.deleteChildren();
@@ -69,8 +68,7 @@ FunctionTree<D>::~FunctionTree() {
   * undefined function containing only root nodes without coefficients.
   * The assigned memory (nodeChunks in SerialTree) is NOT released,
   * but is immediately available to the new function. */
-template<int D>
-void FunctionTree<D>::clear() {
+template <int D> void FunctionTree<D>::clear() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
         root.deleteChildren();
@@ -83,8 +81,7 @@ void FunctionTree<D>::clear() {
 
 /** Write the tree structure to disk, for later use.
   * Argument file name will get a ".tree" file extension. */
-template<int D>
-void FunctionTree<D>::saveTree(const std::string &file) {
+template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     // This is basically a copy of MPI send_tree
     Timer t1;
     std::stringstream fname;
@@ -99,15 +96,15 @@ void FunctionTree<D>::saveTree(const std::string &file) {
 
     // Write size of tree
     int nChunks = sTree.getNChunksUsed();
-    f.write((char*) &nChunks, sizeof(int));
+    f.write((char *)&nChunks, sizeof(int));
 
     // Write tree data, chunk by chunk
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        f.write((char *) sTree.nodeChunks[iChunk], count);
+        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+        f.write((char *)sTree.nodeChunks[iChunk], count);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        f.write((char *) sTree.nodeCoeffChunks[iChunk], count*sizeof(double));
+        f.write((char *)sTree.nodeCoeffChunks[iChunk], count * sizeof(double));
     }
     f.close();
 
@@ -117,8 +114,7 @@ void FunctionTree<D>::saveTree(const std::string &file) {
 
 /** Read a previously stored tree structure from disk.
   * Argument file name will get a ".tree" file extension. */
-template<int D>
-void FunctionTree<D>::loadTree(const std::string &file) {
+template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // This is basically a copy of MPI recv_tree
     Timer t1;
     std::stringstream fname;
@@ -130,7 +126,7 @@ void FunctionTree<D>::loadTree(const std::string &file) {
 
     // Read size of tree
     int nChunks;
-    f.read((char*) &nChunks, sizeof(int));
+    f.read((char *)&nChunks, sizeof(int));
     SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
 
     // Read tree data, chunk by chunk
@@ -142,24 +138,22 @@ void FunctionTree<D>::loadTree(const std::string &file) {
             double *sNodesCoeff;
             if (sTree.isShared()) {
                 // for coefficients, take from the shared memory block
-                SharedMemory* shMem = sTree.getMemory();
+                SharedMemory *shMem = sTree.getMemory();
                 sNodesCoeff = shMem->sh_end_ptr;
-                shMem->sh_end_ptr += (sTree.sizeNodeCoeff*sTree.maxNodesPerChunk);
+                shMem->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
                 // may increase size dynamically in the future
-                if (shMem->sh_max_ptr < shMem->sh_end_ptr) {
-                    MSG_FATAL("Shared block too small");
-                }
+                if (shMem->sh_max_ptr < shMem->sh_end_ptr) { MSG_FATAL("Shared block too small"); }
             } else {
-                sNodesCoeff = new double[sTree.sizeNodeCoeff*sTree.maxNodesPerChunk];
+                sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
             }
             sTree.nodeCoeffChunks.push_back(sNodesCoeff);
-            sTree.sNodes = (ProjectedNode<D>*) new char[sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>)];
+            sTree.sNodes = (ProjectedNode<D> *)new char[sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
             sTree.nodeChunks.push_back(sTree.sNodes);
         }
-        count = sTree.maxNodesPerChunk*sizeof(ProjectedNode<D>);
-        f.read((char*) sTree.nodeChunks[iChunk], count);
+        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+        f.read((char *)sTree.nodeChunks[iChunk], count);
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        f.read((char*) sTree.nodeCoeffChunks[iChunk], count*sizeof(double));
+        f.read((char *)sTree.nodeCoeffChunks[iChunk], count * sizeof(double));
     }
     f.close();
 
@@ -172,8 +166,7 @@ void FunctionTree<D>::loadTree(const std::string &file) {
     Printer::printTime(10, "Time rewrite pointers", t2);
 }
 
-template<int D>
-double FunctionTree<D>::integrate() const {
+template <int D> double FunctionTree<D>::integrate() const {
 
     double result = 0.0;
     for (int i = 0; i < this->rootBox.size(); i++) {
@@ -181,24 +174,22 @@ double FunctionTree<D>::integrate() const {
         result += fNode.integrate();
     }
 
-
     // Hande potential scaling
     auto sf = this->getMRA().getWorldBox().getScalingFactor();
     auto jacobian = 1.0;
-    for (const auto & sf_i : sf) jacobian *= std::sqrt(sf_i);
+    for (const auto &sf_i : sf) jacobian *= std::sqrt(sf_i);
     // Square root of scaling factor in each diection. The seemingly missing
     // multiplication by the square root of sf_i is included in the basis
 
-    return jacobian*result;
+    return jacobian * result;
 }
 
-template<int D>
-double FunctionTree<D>::evalf(const Coord<D> &r) {
+template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) {
 
     // Hande potential scaling
     const auto sf = this->getMRA().getWorldBox().getScalingFactor();
     auto arg = r;
-    for (auto i = 0; i < D; i++) arg[i] = arg[i]/sf[i];
+    for (auto i = 0; i < D; i++) arg[i] = arg[i] / sf[i];
 
     // Adjust for scaling factor included in basis
     auto coef = 1.0;
@@ -208,7 +199,7 @@ double FunctionTree<D>::evalf(const Coord<D> &r) {
     FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
     auto result = f_node.evalf(arg);
     this->deleteGenerated();
-    return coef*result;
+    return coef * result;
 }
 /** @brief In-place square of function
  *
@@ -216,28 +207,25 @@ double FunctionTree<D>::evalf(const Coord<D> &r) {
  * squared, no grid refinement.
  *
  */
-template<int D>
-void FunctionTree<D>::square() {
+template <int D> void FunctionTree<D>::square() {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 
 #pragma omp parallel
-{
-    int nNodes = this->getNEndNodes();
-    int nCoefs = this->getTDim()*this->getKp1_d();
+    {
+        int nNodes = this->getNEndNodes();
+        int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        MWNode<D> &node = *this->endNodeTable[n];
-        node.mwTransform(Reconstruction);
-        node.cvTransform(Forward);
-        double *coefs = node.getCoefs();
-        for (int i = 0; i < nCoefs; i++) {
-            coefs[i] *= coefs[i];
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &node = *this->endNodeTable[n];
+            node.mwTransform(Reconstruction);
+            node.cvTransform(Forward);
+            double *coefs = node.getCoefs();
+            for (int i = 0; i < nCoefs; i++) { coefs[i] *= coefs[i]; }
+            node.cvTransform(Backward);
+            node.mwTransform(Compression);
+            node.calcNorms();
         }
-        node.cvTransform(Backward);
-        node.mwTransform(Compression);
-        node.calcNorms();
     }
-}
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
 }
@@ -250,28 +238,25 @@ void FunctionTree<D>::square() {
  * raised to the given power, no grid refinement.
  *
  */
-template<int D>
-void FunctionTree<D>::power(double p) {
+template <int D> void FunctionTree<D>::power(double p) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 
 #pragma omp parallel
-{
-    int nNodes = this->getNEndNodes();
-    int nCoefs = this->getTDim()*this->getKp1_d();
+    {
+        int nNodes = this->getNEndNodes();
+        int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        MWNode<D> &node = *this->endNodeTable[n];
-        node.mwTransform(Reconstruction);
-        node.cvTransform(Forward);
-        double *coefs = node.getCoefs();
-        for (int i = 0; i < nCoefs; i++) {
-            coefs[i] = std::pow(coefs[i], p);
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &node = *this->endNodeTable[n];
+            node.mwTransform(Reconstruction);
+            node.cvTransform(Forward);
+            double *coefs = node.getCoefs();
+            for (int i = 0; i < nCoefs; i++) { coefs[i] = std::pow(coefs[i], p); }
+            node.cvTransform(Backward);
+            node.mwTransform(Compression);
+            node.calcNorms();
         }
-        node.cvTransform(Backward);
-        node.mwTransform(Compression);
-        node.calcNorms();
     }
-}
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
 }
@@ -284,34 +269,30 @@ void FunctionTree<D>::power(double p) {
  * multiplied by the given coefficient, no grid refinement.
  *
  */
-template<int D>
-void FunctionTree<D>::rescale(double c) {
+template <int D> void FunctionTree<D>::rescale(double c) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 #pragma omp parallel firstprivate(c)
-{
-    int nNodes = this->getNEndNodes();
-    int nCoefs = this->getTDim()*this->getKp1_d();
+    {
+        int nNodes = this->getNEndNodes();
+        int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
-    for (int i = 0; i < nNodes; i++) {
-        MWNode<D> &node = *this->endNodeTable[i];
-        if (not node.hasCoefs()) MSG_FATAL("No coefs");
-        double *coefs = node.getCoefs();
-        for (int j = 0; j < nCoefs; j++) {
-            coefs[j] *= c;
+        for (int i = 0; i < nNodes; i++) {
+            MWNode<D> &node = *this->endNodeTable[i];
+            if (not node.hasCoefs()) MSG_FATAL("No coefs");
+            double *coefs = node.getCoefs();
+            for (int j = 0; j < nCoefs; j++) { coefs[j] *= c; }
+            node.calcNorms();
         }
-        node.calcNorms();
     }
-}
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
 }
 
-template<int D>
-void FunctionTree<D>::normalize() {
+template <int D> void FunctionTree<D>::normalize() {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
     if (sq_norm < 0.0) MSG_ERROR("Normalizing uninitialized function");
-    this->rescale(1.0/std::sqrt(sq_norm));
+    this->rescale(1.0 / std::sqrt(sq_norm));
 }
 
 /** @brief In-place addition of MW function representations
@@ -323,24 +304,21 @@ void FunctionTree<D>::normalize() {
  * function, i.e. no further grid refinement.
  *
  */
-template<int D>
-void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
+template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 #pragma omp parallel firstprivate(c), shared(inp)
-{
-    int nNodes = this->getNEndNodes();
+    {
+        int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        MWNode<D> &out_node = *this->endNodeTable[n];
-        MWNode<D> &inp_node = inp.getNode(out_node.getNodeIndex());
-        double *out_coefs = out_node.getCoefs();
-        const double *inp_coefs = inp_node.getCoefs();
-        for (int i = 0; i < inp_node.getNCoefs(); i++) {
-            out_coefs[i] += c * inp_coefs[i];
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &out_node = *this->endNodeTable[n];
+            MWNode<D> &inp_node = inp.getNode(out_node.getNodeIndex());
+            double *out_coefs = out_node.getCoefs();
+            const double *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] += c * inp_coefs[i]; }
+            out_node.calcNorms();
         }
-        out_node.calcNorms();
     }
-}
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
     inp.deleteGenerated();
@@ -355,72 +333,63 @@ void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
  * output function, i.e. no further grid refinement.
  *
  */
-template<int D>
-void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
+template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
 #pragma omp parallel firstprivate(c), shared(inp)
-{
-    int nNodes = this->getNEndNodes();
+    {
+        int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        MWNode<D> &out_node = *this->endNodeTable[n];
-        MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); //Full copy
-        out_node.mwTransform(Reconstruction);
-        out_node.cvTransform(Forward);
-        inp_node.mwTransform(Reconstruction);
-        inp_node.cvTransform(Forward);
-        double *out_coefs = out_node.getCoefs();
-        const double *inp_coefs = inp_node.getCoefs();
-        for (int i = 0; i < inp_node.getNCoefs(); i++) {
-            out_coefs[i] *= c * inp_coefs[i];
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &out_node = *this->endNodeTable[n];
+            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); //Full copy
+            out_node.mwTransform(Reconstruction);
+            out_node.cvTransform(Forward);
+            inp_node.mwTransform(Reconstruction);
+            inp_node.cvTransform(Forward);
+            double *out_coefs = out_node.getCoefs();
+            const double *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] *= c * inp_coefs[i]; }
+            out_node.cvTransform(Backward);
+            out_node.mwTransform(Compression);
+            out_node.calcNorms();
         }
-        out_node.cvTransform(Backward);
-        out_node.mwTransform(Compression);
-        out_node.calcNorms();
     }
-}
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
     inp.deleteGenerated();
 }
 
-template<int D>
-int FunctionTree<D>::getNChunks() {
+template <int D> int FunctionTree<D>::getNChunks() {
     return this->getSerialFunctionTree()->getNChunks();
 }
 
-template<int D>
-int FunctionTree<D>::getNChunksUsed() {
+template <int D> int FunctionTree<D>::getNChunksUsed() {
     return this->getSerialFunctionTree()->getNChunksUsed();
 }
 
-template<int D>
-void FunctionTree<D>::getEndValues(VectorXd &data) {
+template <int D> void FunctionTree<D>::getEndValues(VectorXd &data) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
-    int nCoefs = this->getTDim()*this->getKp1_d();
-    data = VectorXd::Zero(nNodes*nCoefs);
+    int nCoefs = this->getTDim() * this->getKp1_d();
+    data = VectorXd::Zero(nNodes * nCoefs);
     for (int n = 0; n < nNodes; n++) {
         MWNode<D> &node = getEndFuncNode(n);
         node.mwTransform(Reconstruction);
         node.cvTransform(Forward);
         const double *c = node.getCoefs();
-        for (int i = 0; i < nCoefs; i++) {
-            data(n*nCoefs + i) = c[i];
-        }
+        for (int i = 0; i < nCoefs; i++) { data(n * nCoefs + i) = c[i]; }
         node.cvTransform(Backward);
         node.mwTransform(Compression);
     }
 }
 
-template<int D>
-void FunctionTree<D>::setEndValues(VectorXd &data) {
+template <int D> void FunctionTree<D>::setEndValues(VectorXd &data) {
     if (this->getNGenNodes() != 0) MSG_FATAL("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
-    int nCoefs = this->getTDim()*this->getKp1_d();
+    int nCoefs = this->getTDim() * this->getKp1_d();
     for (int i = 0; i < nNodes; i++) {
         MWNode<D> &node = getEndFuncNode(i);
-        const double *c = data.segment(i*nCoefs, nCoefs).data();
+        const double *c = data.segment(i * nCoefs, nCoefs).data();
         node.setCoefBlock(0, nCoefs, c);
         node.cvTransform(Backward);
         node.mwTransform(Compression);
@@ -431,20 +400,18 @@ void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
-template<int D>
-std::ostream& FunctionTree<D>::print(std::ostream &o) {
+template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
     o << std::endl << "*FunctionTree: " << this->name << std::endl;
     return MWTree<D>::print(o);
 }
 
-template<int D>
-void FunctionTree<D>::printSerialIndices() {
+template <int D> void FunctionTree<D>::printSerialIndices() {
     SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
     int n = 0;
     for (int iChunk = 0; iChunk < sTree.getNChunks(); iChunk++) {
-        int iShift = iChunk*sTree.maxNodesPerChunk;
+        int iShift = iChunk * sTree.maxNodesPerChunk;
         for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            int status = sTree.nodeStackStatus[iShift+i];
+            int status = sTree.nodeStackStatus[iShift + i];
             int sIdx = sTree.nodeChunks[iChunk][i].serialIx;
             int pIdx = sTree.nodeChunks[iChunk][i].parentSerialIx;
             int cIdx = sTree.nodeChunks[iChunk][i].childSerialIx;

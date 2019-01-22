@@ -29,30 +29,24 @@
 
 #include "functions/GaussPoly.h"
 #include "treebuilders/WaveletAdaptor.h"
-#include "treebuilders/project.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
+#include "treebuilders/project.h"
 
 using namespace mrcpp;
 
 namespace multiplication {
 
-template<int D> void testMultiplication();
-template<int D> void testSquare();
+template <int D> void testMultiplication();
+template <int D> void testSquare();
 
 SCENARIO("Multiplying MW trees", "[multiplication], [tree_builder]") {
-    GIVEN("Two MW functions in 1D") {
-        testMultiplication<1>();
-    }
-    GIVEN("Two MW functions in 2D") {
-        testMultiplication<2>();
-    }
-    GIVEN("Two MW functions in 3D") {
-        testMultiplication<3>();
-    }
+    GIVEN("Two MW functions in 1D") { testMultiplication<1>(); }
+    GIVEN("Two MW functions in 2D") { testMultiplication<2>(); }
+    GIVEN("Two MW functions in 3D") { testMultiplication<3>(); }
 }
 
-template<int D> void testMultiplication() {
+template <int D> void testMultiplication() {
     const double prec = 1.0e-4;
 
     double alpha = 1.0;
@@ -66,7 +60,7 @@ template<int D> void testMultiplication() {
 
     GaussFunc<D> a_func(beta_a, alpha, pos_a);
     GaussFunc<D> b_func(beta_b, alpha, pos_b);
-    GaussPoly<D> ref_func = a_func*b_func;
+    GaussPoly<D> ref_func = a_func * b_func;
 
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);
@@ -101,9 +95,9 @@ template<int D> void testMultiplication() {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE( c_int == Approx(ref_int) );
-            REQUIRE( c_dot == Approx(ref_norm) );
-            REQUIRE( c_norm == Approx(ref_norm) );
+            REQUIRE(c_int == Approx(ref_int));
+            REQUIRE(c_dot == Approx(ref_norm));
+            REQUIRE(c_norm == Approx(ref_norm));
         }
     }
     WHEN("the functions are multiplied in-place") {
@@ -113,27 +107,21 @@ template<int D> void testMultiplication() {
             double a_int = a_tree.integrate();
             double a_dot = dot(a_tree, ref_tree);
             double a_norm = a_tree.getSquareNorm();
-            REQUIRE( a_int == Approx(ref_int) );
-            REQUIRE( a_dot == Approx(ref_norm) );
-            REQUIRE( a_norm == Approx(ref_norm) );
+            REQUIRE(a_int == Approx(ref_int));
+            REQUIRE(a_dot == Approx(ref_norm));
+            REQUIRE(a_norm == Approx(ref_norm));
         }
     }
     finalize(&mra);
 }
 
 SCENARIO("Squaring MW trees", "[square], [tree_builder]") {
-    GIVEN("A MW function in 1D") {
-        testSquare<1>();
-    }
-    GIVEN("A MW function in 2D") {
-        testSquare<2>();
-    }
-    GIVEN("A MW function in 3D") {
-        testSquare<3>();
-    }
+    GIVEN("A MW function in 1D") { testSquare<1>(); }
+    GIVEN("A MW function in 2D") { testSquare<2>(); }
+    GIVEN("A MW function in 3D") { testSquare<3>(); }
 }
 
-template<int D> void testSquare() {
+template <int D> void testSquare() {
     const double prec = 1.0e-4;
 
     double alpha = 1.0;
@@ -142,7 +130,7 @@ template<int D> void testSquare() {
     auto pos = details::convert_to_std_array<double, D>(pos_c);
 
     GaussFunc<D> f_func(beta, alpha, pos);
-    GaussPoly<D> ref_func = f_func*f_func;
+    GaussPoly<D> ref_func = f_func * f_func;
 
     MultiResolutionAnalysis<D> *mra = 0;
     initialize(&mra);
@@ -170,9 +158,9 @@ template<int D> void testSquare() {
             double ff_int = ff_tree.integrate();
             double ff_dot = dot(ff_tree, ref_tree);
             double ff_norm = ff_tree.getSquareNorm();
-            REQUIRE( ff_int == Approx(ref_int) );
-            REQUIRE( ff_dot == Approx(ref_norm) );
-            REQUIRE( ff_norm == Approx(ref_norm) );
+            REQUIRE(ff_int == Approx(ref_int));
+            REQUIRE(ff_dot == Approx(ref_norm));
+            REQUIRE(ff_norm == Approx(ref_norm));
         }
     }
     WHEN("the function is squared in-place") {
@@ -182,9 +170,9 @@ template<int D> void testSquare() {
             double f_int = f_tree.integrate();
             double f_dot = dot(f_tree, ref_tree);
             double f_norm = f_tree.getSquareNorm();
-            REQUIRE( f_int == Approx(ref_int) );
-            REQUIRE( f_dot == Approx(ref_norm) );
-            REQUIRE( f_norm == Approx(ref_norm) );
+            REQUIRE(f_int == Approx(ref_int));
+            REQUIRE(f_dot == Approx(ref_norm));
+            REQUIRE(f_norm == Approx(ref_norm));
         }
     }
     WHEN("the function is raised to the second power out-of-place") {
@@ -195,9 +183,9 @@ template<int D> void testSquare() {
             double ff_int = ff_tree.integrate();
             double ff_dot = dot(ff_tree, ref_tree);
             double ff_norm = ff_tree.getSquareNorm();
-            REQUIRE( ff_int == Approx(ref_int) );
-            REQUIRE( ff_dot == Approx(ref_norm) );
-            REQUIRE( ff_norm == Approx(ref_norm) );
+            REQUIRE(ff_int == Approx(ref_int));
+            REQUIRE(ff_dot == Approx(ref_norm));
+            REQUIRE(ff_norm == Approx(ref_norm));
         }
     }
     WHEN("the function is raised to second power in-place") {
@@ -207,9 +195,9 @@ template<int D> void testSquare() {
             double f_int = f_tree.integrate();
             double f_dot = dot(f_tree, ref_tree);
             double f_norm = f_tree.getSquareNorm();
-            REQUIRE( f_int == Approx(ref_int) );
-            REQUIRE( f_dot == Approx(ref_norm) );
-            REQUIRE( f_norm == Approx(ref_norm) );
+            REQUIRE(f_int == Approx(ref_int));
+            REQUIRE(f_dot == Approx(ref_norm));
+            REQUIRE(f_norm == Approx(ref_norm));
         }
     }
     finalize(&mra);
@@ -221,17 +209,17 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
 
     double prec = 1.0e-4;
 
-    auto fx = [] (const Coord<3> &r) -> double {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return r[1]*r[2]*std::exp(-1.0*r2);
+    auto fx = [](const Coord<3> &r) -> double {
+        double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return r[1] * r[2] * std::exp(-1.0 * r2);
     };
-    auto fy = [] (const Coord<3> &r) -> double {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return r[0]*r[2]*std::exp(-1.5*r2);
+    auto fy = [](const Coord<3> &r) -> double {
+        double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return r[0] * r[2] * std::exp(-1.5 * r2);
     };
-    auto fz = [] (const Coord<3> &r) -> double {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return r[0]*r[1]*std::exp(-2.0*r2);
+    auto fz = [](const Coord<3> &r) -> double {
+        double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return r[0] * r[1] * std::exp(-2.0 * r2);
     };
 
     FunctionTree<3> fx_tree(*mra);
@@ -255,15 +243,15 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     FunctionTree<3> dot_ab(*mra);
     build_grid(dot_ab, vec_a);
     build_grid(dot_ab, vec_b);
-    dot(0.1*prec, dot_ab, vec_a, vec_b);
+    dot(0.1 * prec, dot_ab, vec_a, vec_b);
 
     for (int i = 0; i < 10; i++) {
-        const Coord<3> r = {-0.4 + 0.01*i, 0.9 - 0.05*i, 0.7 + 0.1*i};
-        const double ref = 1.0*fx(r)*fz(r) + 4.0*fy(r)*fy(r) + 9.0*fz(r)*fx(r);
-        REQUIRE( dot_ab.evalf(r) == Approx(ref).epsilon(prec) );
+        const Coord<3> r = {-0.4 + 0.01 * i, 0.9 - 0.05 * i, 0.7 + 0.1 * i};
+        const double ref = 1.0 * fx(r) * fz(r) + 4.0 * fy(r) * fy(r) + 9.0 * fz(r) * fx(r);
+        REQUIRE(dot_ab.evalf(r) == Approx(ref).epsilon(prec));
     }
 
     finalize(&mra);
 }
 
-} // namespace
+} // namespace multiplication

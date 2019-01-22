@@ -49,9 +49,7 @@ void InterpolatingBasis::initScalingBasis() {
     const VectorXd wgts = qc.getWeights(qOrder);
 
     std::vector<LegendrePoly> L_k;
-    for (int k = 0; k < qOrder; k++) {
-        L_k.push_back(LegendrePoly(k, 2.0, 1.0));
-    }
+    for (int k = 0; k < qOrder; k++) { L_k.push_back(LegendrePoly(k, 2.0, 1.0)); }
 
     for (int k = 0; k < qOrder; k++) {
         // Can't add higher-order polynomials to lower-order ones, so I
@@ -70,9 +68,7 @@ void InterpolatingBasis::initScalingBasis() {
 
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
-    for (int k = 0; k < q_order; k++) {
-        this->quadVals(k, k) = 1.0;
-    }
+    for (int k = 0; k < q_order; k++) { this->quadVals(k, k) = 1.0; }
 }
 
 void InterpolatingBasis::calcCVMaps() {
@@ -81,7 +77,7 @@ void InterpolatingBasis::calcCVMaps() {
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
-        this->cvMap(k, k) = std::sqrt(1.0/wgts(k));
+        this->cvMap(k, k) = std::sqrt(1.0 / wgts(k));
         this->vcMap(k, k) = std::sqrt(wgts(k));
     }
 }

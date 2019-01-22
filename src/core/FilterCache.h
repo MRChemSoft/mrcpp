@@ -45,12 +45,9 @@
 
 namespace mrcpp {
 
-#define getFilterCache(T,X)\
-    FilterCache<T> &X = FilterCache<T>::getInstance()
-#define getLegendreFilterCache(X)\
-    FilterCache<Legendre> &X = FilterCache<Legendre>::getInstance()
-#define getInterpolatingFilterCache(X)\
-    FilterCache<Interpol> &X = FilterCache<Interpol>::getInstance()
+#define getFilterCache(T, X) FilterCache<T> &X = FilterCache<T>::getInstance()
+#define getLegendreFilterCache(X) FilterCache<Legendre> &X = FilterCache<Legendre>::getInstance()
+#define getInterpolatingFilterCache(X) FilterCache<Interpol> &X = FilterCache<Interpol>::getInstance()
 
 /** This class is an abstract base class for the various filter caches.
  * It's needed in order to be able to use the actual filter caches
@@ -64,8 +61,7 @@ public:
     virtual void setLibPath(const std::string &path) = 0;
 };
 
-template <int T>
-class FilterCache final : public BaseFilterCache {
+template <int T> class FilterCache final : public BaseFilterCache {
 public:
     static FilterCache &getInstance() {
         static FilterCache theFilterCache;
@@ -78,6 +74,7 @@ public:
 
     const std::string &getLibPath() { return this->libPath; }
     void setLibPath(const std::string &path) { this->libPath = path; }
+
 protected:
     int type;
     std::string libPath; ///< Base path to filter library
@@ -87,4 +84,4 @@ private:
     FilterCache &operator=(FilterCache<T> const &fc) = delete;
 };
 
-}
+} // namespace mrcpp

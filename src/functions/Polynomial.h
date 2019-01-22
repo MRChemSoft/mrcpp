@@ -43,7 +43,7 @@
 
 namespace mrcpp {
 
-class Polynomial: public RepresentableFunction<1> {
+class Polynomial : public RepresentableFunction<1> {
 public:
     Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
     Polynomial(const Eigen::VectorXd &c, const double *a = nullptr, const double *b = nullptr);
@@ -97,10 +97,11 @@ public:
     Polynomial &operator*=(const Polynomial &Q);
     Polynomial &operator+=(const Polynomial &Q);
     Polynomial &operator-=(const Polynomial &Q);
+
 protected:
-    double N; ///< Dilation coeff
-    double L; ///< Translation coeff
+    double N;              ///< Dilation coeff
+    double L;              ///< Translation coeff
     Eigen::VectorXd coefs; ///< Expansion coefficients
 };
 
-}
+} // namespace mrcpp

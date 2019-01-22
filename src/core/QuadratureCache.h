@@ -33,7 +33,7 @@
 
 namespace mrcpp {
 
-#define getQuadratureCache(X) QuadratureCache &X=QuadratureCache::getInstance()
+#define getQuadratureCache(X) QuadratureCache &X = QuadratureCache::getInstance()
 
 class QuadratureCache final : public ObjectCache<GaussQuadrature> {
 public:
@@ -54,6 +54,7 @@ public:
     int getIntervals() const { return this->intervals; }
     double getUpperBound() const { return this->B; }
     double getLowerBound() const { return this->A; }
+
 private:
     double A;
     double B;
@@ -66,4 +67,4 @@ private:
     QuadratureCache &operator=(QuadratureCache const &qc) = delete;
 };
 
-}
+} // namespace mrcpp

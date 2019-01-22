@@ -41,18 +41,20 @@
 
 namespace mrcpp {
 
-template<int D>
-class SerialTree {
+template <int D> class SerialTree {
 public:
     SerialTree(MWTree<D> *tree, SharedMemory *mem);
     SerialTree(const SerialTree<D> &tree) = delete;
     SerialTree<D> &operator=(const SerialTree<D> &tree) = delete;
     virtual ~SerialTree() = default;
 
-    MWTree<D>* getTree() { return this->tree_p; }
-    SharedMemory* getMemory() { return this->shMem; }
+    MWTree<D> *getTree() { return this->tree_p; }
+    SharedMemory *getMemory() { return this->shMem; }
 
-    bool isShared() const { if (this->shMem == 0) return false; return true; }
+    bool isShared() const {
+        if (this->shMem == 0) return false;
+        return true;
+    }
 
     virtual void allocRoots(MWTree<D> &tree) = 0;
     virtual void allocChildren(MWNode<D> &parent) = 0;
@@ -62,19 +64,19 @@ public:
     virtual void deallocGenNodes(int serialIx) = 0;
     virtual void deallocGenNodeChunks() = 0;
 
-    void S_mwTransform(double* coeff_in, double* coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
-    void S_mwTransformBack(double* coeff_in, double* coeff_out, int stride);
+    void S_mwTransform(double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
+    void S_mwTransformBack(double *coeff_in, double *coeff_out, int stride);
 
-    int nNodes;                 //number of Nodes already defined
+    int nNodes; //number of Nodes already defined
     int maxNodesPerChunk;
     std::vector<int> nodeStackStatus;
-    int sizeNodeCoeff;          //size of coeff for one node
+    int sizeNodeCoeff; //size of coeff for one node
     double **coeffStack;
-    int maxNodes;               //max number of nodes that can be defined
+    int maxNodes; //max number of nodes that can be defined
 
 protected:
     MWTree<D> *tree_p;
     SharedMemory *shMem;
 };
 
-}
+} // namespace mrcpp

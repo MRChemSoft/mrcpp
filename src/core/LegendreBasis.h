@@ -34,7 +34,8 @@ namespace mrcpp {
 
 class LegendreBasis final : public ScalingBasis {
 public:
-    LegendreBasis(int k) : ScalingBasis(k, Legendre) {
+    LegendreBasis(int k)
+            : ScalingBasis(k, Legendre) {
         initScalingBasis();
         calcQuadratureValues();
         calcCVMaps();
@@ -45,4 +46,4 @@ public:
     void calcCVMaps();
 };
 
-}
+} // namespace mrcpp

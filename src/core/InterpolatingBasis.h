@@ -31,7 +31,8 @@ namespace mrcpp {
 
 class InterpolatingBasis final : public ScalingBasis {
 public:
-    InterpolatingBasis(int k) : ScalingBasis(k, Interpol) {
+    InterpolatingBasis(int k)
+            : ScalingBasis(k, Interpol) {
         initScalingBasis();
         calcQuadratureValues();
         calcCVMaps();
@@ -42,4 +43,4 @@ public:
     void calcCVMaps();
 };
 
-}
+} // namespace mrcpp

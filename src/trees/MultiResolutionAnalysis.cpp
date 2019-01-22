@@ -24,40 +24,39 @@
  */
 
 #include "MultiResolutionAnalysis.h"
+#include "core/FilterCache.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
-#include "core/FilterCache.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
 
-template<int D>
+template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
-        : maxDepth(mra.maxDepth),
-          basis(mra.basis),
-          world(mra.world) {
+        : maxDepth(mra.maxDepth)
+        , basis(mra.basis)
+        , world(mra.world) {
     if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
     setupFilter();
 }
 
-template<int D>
+template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth)
-        : maxDepth(depth),
-          basis(sb),
-          world(bb) {
+        : maxDepth(depth)
+        , basis(sb)
+        , world(bb) {
     if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
     if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
     setupFilter();
 }
 
-template<int D>
-MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
+template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
     const BoundingBox<D> &box = getWorldBox();
     const ScalingBasis &basis = getScalingBasis();
 
     int type = basis.getScalingType();
-    int kern_order = 2*basis.getScalingOrder() + 1;
+    int kern_order = 2 * basis.getScalingOrder() + 1;
 
     ScalingBasis *kern_basis = nullptr;
     if (type == Interpol) {
@@ -70,12 +69,10 @@ MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
 
     int max_l = (box.isPeriodic()) ? 10 : 0;
     for (int i = 0; i < D; i++) {
-        if (box.size(i) > max_l) {
-            max_l = box.size(i);
-        }
+        if (box.size(i) > max_l) { max_l = box.size(i); }
     }
     auto start_l = std::array<int, 1>{-max_l};
-    auto tot_l = std::array<int, 1>{2*max_l};
+    auto tot_l = std::array<int, 1>{2 * max_l};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
@@ -85,16 +82,13 @@ MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
     return mra;
 }
 
-template<int D>
-MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA() const {
+template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA() const {
     const BoundingBox<D> &box = getWorldBox();
     const ScalingBasis &basis = getScalingBasis();
 
     int maxn = (box.isPeriodic()) ? 10 : 0;
     for (int i = 0; i < D; i++) {
-        if (box.size(i) > maxn) {
-            maxn = box.size(i);
-        }
+        if (box.size(i) > maxn) { maxn = box.size(i); }
     }
     auto l = std::array<int, 2>{};
     auto nbox = std::array<int, 2>{maxn, maxn};
@@ -106,24 +100,21 @@ MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA() const {
     return MultiResolutionAnalysis<2>(oper_box, basis);
 }
 
-template<int D>
-bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {
+template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {
     if (this->basis != mra.basis) return false;
     if (this->world != mra.world) return false;
     if (this->maxDepth != mra.maxDepth) return false;
     return true;
 }
 
-template<int D>
-bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
+template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
     if (this->basis != mra.basis) return true;
     if (this->world != mra.world) return true;
     if (this->maxDepth != mra.maxDepth) return true;
     return false;
 }
 
-template<int D>
-void MultiResolutionAnalysis<D>::print() const {
+template <int D> void MultiResolutionAnalysis<D>::print() const {
     println(0, std::endl);
     println(0, "============================================================");
     println(0, "                  MultiResolution Analysis                  ");
@@ -135,21 +126,20 @@ void MultiResolutionAnalysis<D>::print() const {
     println(0, std::endl);
 }
 
-template<int D>
-void MultiResolutionAnalysis<D>::setupFilter() {
+template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
     getLegendreFilterCache(lfilters);
     getInterpolatingFilterCache(ifilters);
     int k = this->basis.getScalingOrder();
     int type = this->basis.getScalingType();
     switch (type) {
-    case Legendre:
-        this->filter = &lfilters.get(k);
-        break;
-    case Interpol:
-        this->filter = &ifilters.get(k);
-        break;
-    default:
-        MSG_ERROR("Invalid scaling basis selected.")
+        case Legendre:
+            this->filter = &lfilters.get(k);
+            break;
+        case Interpol:
+            this->filter = &ifilters.get(k);
+            break;
+        default:
+            MSG_ERROR("Invalid scaling basis selected.")
     }
 }
 

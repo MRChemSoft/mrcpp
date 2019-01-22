@@ -29,8 +29,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class ABGVOperator final : public DerivativeOperator<D> {
+template <int D> class ABGVOperator final : public DerivativeOperator<D> {
 public:
     ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b);
     ABGVOperator(const ABGVOperator &oper) = delete;

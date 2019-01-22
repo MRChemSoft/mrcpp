@@ -20,13 +20,14 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     Printer::printHeader(0, "Projecting nuclear potential");
 
     // Smoothing parameter
-    auto c = 0.00435*prec/std::pow(Z, 5);
-    auto u = [] (double r) -> double {
-        return std::erf(r)/r + 1.0/(3.0*std::sqrt(mrcpp::pi))*(std::exp(-r*r) + 16.0*std::exp(-4.0*r*r));
+    auto c = 0.00435 * prec / std::pow(Z, 5);
+    auto u = [](double r) -> double {
+        return std::erf(r) / r +
+               1.0 / (3.0 * std::sqrt(mrcpp::pi)) * (std::exp(-r * r) + 16.0 * std::exp(-4.0 * r * r));
     };
-    auto f = [u, c, Z] (const Coord<3> &r) -> double {
-        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -1.0*Z*u(x/c)/c;
+    auto f = [u, c, Z](const Coord<3> &r) -> double {
+        auto x = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return -1.0 * Z * u(x / c) / c;
     };
 
     // Projecting function
@@ -42,9 +43,9 @@ void setupInitialGuess(FunctionTree<D> &phi) {
     auto oldlevel = Printer::setPrintLevel(10);
     Printer::printHeader(0, "Projecting initial guess");
 
-    auto f = [] (const Coord<D> &r) -> double {
-        auto x = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return 1.0*std::exp(-1.0*x*x);
+    auto f = [](const Coord<D> &r) -> double {
+        auto x = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return 1.0 * std::exp(-1.0 * x * x);
     };
 
     // Projecting and normalizing function
@@ -97,31 +98,31 @@ int main(int argc, char **argv) {
     auto iter = 1;
     auto error = 1.0;
     auto scf_t = std::vector<Timer>();
-    while (error > 10*prec) {
+    while (error > 10 * prec) {
         Timer cycle_t;
 
         // Initialize Helmholtz operator
         if (epsilon_n > 0.0) epsilon_n *= -1.0;
-        auto mu_n = std::sqrt(-2.0*epsilon_n);
+        auto mu_n = std::sqrt(-2.0 * epsilon_n);
         HelmholtzOperator H(MRA, mu_n, prec);
 
         // Compute Helmholtz argument V*phi
         FunctionTree<D> Vphi(MRA);
-        copy_grid(Vphi, *phi_n); // Copy grid from orbital
+        copy_grid(Vphi, *phi_n);                 // Copy grid from orbital
         multiply(prec, Vphi, 1.0, V, *phi_n, 1); // Relax grid max one level
 
         // Apply Helmholtz operator phi^n+1 = H[V*phi^n]
         apply(prec, *phi_np1, H, Vphi);
-        phi_np1->rescale(-1.0/(2.0*mrcpp::pi));
+        phi_np1->rescale(-1.0 / (2.0 * mrcpp::pi));
 
         // Compute orbital residual
         FunctionTree<D> d_phi_n(MRA);
-        copy_grid(d_phi_n, *phi_np1); // Copy grid from phi_np1
+        copy_grid(d_phi_n, *phi_np1);                    // Copy grid from phi_np1
         add(-1.0, d_phi_n, 1.0, *phi_np1, -1.0, *phi_n); // No grid relaxation
         error = std::sqrt(d_phi_n.getSquareNorm());
 
         // Compute energy update <Vphi|d_phi>/||phi||
-        d_epsilon_n = dot(Vphi, d_phi_n)/phi_np1->getSquareNorm();
+        d_epsilon_n = dot(Vphi, d_phi_n) / phi_np1->getSquareNorm();
         epsilon_np1 = epsilon_n + d_epsilon_n;
 
         printout(0, std::setw(3) << iter);
@@ -150,9 +151,7 @@ int main(int argc, char **argv) {
     Printer::printSeparator(0, '=', 2);
 
     Printer::printHeader(0, "SCF timings");
-    for (auto i = 0; i < scf_t.size(); i++) {
-        Printer::printTree(0, "Time cycle", i+1, scf_t[i].getWallTime());
-    }
+    for (auto i = 0; i < scf_t.size(); i++) { Printer::printTree(0, "Time cycle", i + 1, scf_t[i].getWallTime()); }
     Printer::printSeparator(0, '=', 2);
 
     Printer::setPrecision(15);

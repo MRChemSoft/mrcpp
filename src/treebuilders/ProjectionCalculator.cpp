@@ -30,8 +30,7 @@ using Eigen::MatrixXd;
 
 namespace mrcpp {
 
-template<int D>
-void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
+template <int D> void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     MatrixXd exp_pts;
     node.getExpandedChildPts(exp_pts);
 
@@ -40,9 +39,7 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     Coord<D> r;
     double *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {
-        for (int d = 0; d < D; d++) {
-            r[d] = scaling_factor[d]*exp_pts(d, i);
-        }
+        for (int d = 0; d < D; d++) { r[d] = scaling_factor[d] * exp_pts(d, i); }
         coefs[i] = this->func->evalf(r);
     }
     node.cvTransform(Backward);

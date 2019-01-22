@@ -44,11 +44,13 @@
 
 namespace mrcpp {
 
-template<int D>
-class GaussPoly final : public Gaussian<D> {
+template <int D> class GaussPoly final : public Gaussian<D> {
 public:
     GaussPoly(double alpha = 0.0, double coef = 1.0, const Coord<D> &pos = {}, const std::array<int, D> &power = {});
-    GaussPoly(const std::array<double, D> &alpha, double coef, const Coord<D> &pos = {}, const std::array<int, D> &power = {});
+    GaussPoly(const std::array<double, D> &alpha,
+              double coef,
+              const Coord<D> &pos = {},
+              const std::array<int, D> &power = {});
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
     GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
@@ -83,12 +85,15 @@ public:
     void setPoly(int d, Polynomial &poly);
 
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
-    void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, std::array<int, D> &pow, int dir) const;
+    void fillCoefPowVector(std::vector<double> &coefs,
+                           std::vector<int *> &power,
+                           std::array<int, D> &pow,
+                           int dir) const;
 
 private:
     Polynomial *poly[D];
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

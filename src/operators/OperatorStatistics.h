@@ -33,8 +33,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class OperatorStatistics final {
+template <int D> class OperatorStatistics final {
 public:
     OperatorStatistics();
     ~OperatorStatistics();
@@ -43,7 +42,7 @@ public:
     void incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt);
     void incrementGNodeCounters(const MWNode<D> &gNode);
 
-    friend std::ostream& operator<<(std::ostream &o, const OperatorStatistics &os) { return os.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const OperatorStatistics &os) { return os.print(o); }
 
 protected:
     int nThreads;
@@ -56,7 +55,7 @@ protected:
     Eigen::Matrix<int, 8, 8> *totCompCount;
     Eigen::Matrix<int, 8, 8> **compCount;
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
-}
+} // namespace mrcpp

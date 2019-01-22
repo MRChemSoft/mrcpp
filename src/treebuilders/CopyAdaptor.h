@@ -30,8 +30,7 @@
 
 namespace mrcpp {
 
-template<int D>
-class CopyAdaptor final : public TreeAdaptor<D> {
+template <int D> class CopyAdaptor final : public TreeAdaptor<D> {
 public:
     CopyAdaptor(FunctionTree<D> &t, int ms, int *bw);
     CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw);
@@ -44,4 +43,4 @@ private:
     bool splitNode(const MWNode<D> &node) const;
 };
 
-}
+} // namespace mrcpp

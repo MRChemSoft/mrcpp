@@ -44,8 +44,7 @@ QuadratureCache::QuadratureCache() {
     this->intervals = 1;
 }
 
-QuadratureCache::~QuadratureCache() {
-}
+QuadratureCache::~QuadratureCache() {}
 
 void QuadratureCache::load(int k) {
     SET_CACHE_LOCK();
@@ -58,39 +57,25 @@ void QuadratureCache::load(int k) {
 }
 
 GaussQuadrature &QuadratureCache::get(int k) {
-    if (not hasId(k)) {
-        load(k);
-    }
+    if (not hasId(k)) { load(k); }
     return ObjectCache<GaussQuadrature>::get(k);
 }
 
 void QuadratureCache::setBounds(double a, double b) {
-    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) {
-        return;
-    }
-    if (a >= b) {
-        MSG_ERROR("Invalid Gauss interval, a > b.");
-    }
+    if (std::abs(this->A - a) < MachineZero and std::abs(this->B - b) < MachineZero) { return; }
+    if (a >= b) { MSG_ERROR("Invalid Gauss interval, a > b."); }
     this->A = a;
     this->B = b;
     for (int i = 0; i < getNObjs(); i++) {
-        if (hasId(i)) {
-            ObjectCache<GaussQuadrature>::get(i).setBounds(a, b);
-        }
+        if (hasId(i)) { ObjectCache<GaussQuadrature>::get(i).setBounds(a, b); }
     }
 }
 
 void QuadratureCache::setIntervals(int ivals) {
-    if (ivals == this->intervals) {
-        return;
-    }
-    if (this->intervals < 1) {
-        MSG_ERROR("Invalid number of intervals, intervals < 1");
-    }
+    if (ivals == this->intervals) { return; }
+    if (this->intervals < 1) { MSG_ERROR("Invalid number of intervals, intervals < 1"); }
     for (int i = 0; i < getNObjs(); i++) {
-        if (hasId(i)) {
-            ObjectCache<GaussQuadrature>::get(i).setIntervals(ivals);
-        }
+        if (hasId(i)) { ObjectCache<GaussQuadrature>::get(i).setIntervals(ivals); }
     }
 }
 

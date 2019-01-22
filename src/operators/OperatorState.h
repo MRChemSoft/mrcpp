@@ -40,7 +40,6 @@ public:
     void setFNode(MWNode<D> &fn) {
         this->fNode = &fn;
         this->fData = this->fNode->getCoefs();
-        //calcMaxDeltaL();
     }
     void setFIndex(NodeIndex<D> &idx) {
         this->fIdx = &idx;
@@ -88,7 +87,7 @@ private:
 
     void calcMaxDeltaL() {
         const int *gl = this->gNode->getNodeIndex().getTranslation();
-        const int *fl = this->fIdx->getTranslation();//this->fNode->getNodeIndex().getTranslation();
+        const int *fl = this->fIdx->getTranslation();
         int max_dl = 0;
         for (int d = 0; d < D; d++) {
             int dl = abs(fl[d] - gl[d]);

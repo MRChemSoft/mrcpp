@@ -16,8 +16,8 @@ namespace mrcpp {
 template<int D>
 class BoundingBox {
 public:
-    BoundingBox(int n = 0, const std::array<int, D> &l = {}, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
-    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
+    BoundingBox(int n=0, const std::array<int, D> &l={}, const std::array<int, D> &nb={}, const std::array<double, D> &sf={});
+    BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb={}, const std::array<double, D> &sf={});
     BoundingBox(const std::array<double, D> &sf, bool pbc=true);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);

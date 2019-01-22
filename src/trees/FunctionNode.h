@@ -30,7 +30,7 @@ protected:
     FunctionTree<D> &operator=(const FunctionNode<D> &node) = delete;
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
-    double evalf(const Coord<D> &r);
+    double evalf(Coord<D> r);
     double evalScaling(const Coord<D> &r) const;
 
     double integrate() const;

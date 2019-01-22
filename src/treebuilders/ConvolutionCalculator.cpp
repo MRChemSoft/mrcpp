@@ -135,10 +135,11 @@ void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 
 /** Return a vector of nodes in F affected by O, given a node in G */
 template<int D>
-MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) {
+MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D> > &idx_band) {
     MWNodeVector<D> *band = new MWNodeVector<D>;
 
     int depth = gNode.getDepth();
+    bool periodic = gNode.getMWTree().getMRA().getWorldBox().isPeriodic();
     int width = this->oper->getMaxBandWidth(depth);
     if (width >= 0) {
         const NodeBox<D> &fWorld = this->fTree->getRootBox();
@@ -154,10 +155,10 @@ MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) 
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
             int c_i = cIdx.getTranslation(i) * (1 << depth);
-            if (l_start[i] < c_i) {
+            if (l_start[i] < c_i and !periodic) {
                 l_start[i] = c_i;
             }
-            if (l_end[i] > c_i + nboxes - 1) {
+            if (l_end[i] > c_i + nboxes - 1 and !periodic) {
                 l_end[i] = c_i + nboxes - 1;
             }
             nbox[i] = l_end[i] - l_start[i] + 1;
@@ -166,7 +167,7 @@ MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) 
         int scale = gNode.getScale();
         NodeIndex<D> idx(scale, l_start);
 
-        fillOperBand(band, idx, nbox, D-1);
+        fillOperBand(band, idx_band, idx, nbox, D-1);
     }
     return band;
 }
@@ -174,6 +175,7 @@ MWNodeVector<D>* ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode) 
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
 template<int D>
 void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
+                                            std::vector<NodeIndex<D> > &idx_band,
                                             NodeIndex<D> &idx,
                                             const int *nbox,
                                             int dim) {
@@ -182,11 +184,12 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
     for (int j = 0; j < nbox[dim]; j++) {
         // Recurse until dim == 0
         if (dim > 0) {
-            fillOperBand(band, idx, nbox, dim - 1);
+            fillOperBand(band, idx_band, idx, nbox, dim - 1);
             l[dim]++;
             continue;
         }
         MWNode<D> &fNode = this->fTree->getNode(idx);
+        idx_band.push_back(idx);
         band->push_back(&fNode);
         l[dim]++;
     }
@@ -194,8 +197,7 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
 }
 
 template<int D>
-int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth,
-                                                    const OperatorState<D> &os) const {
+int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
     assert(i >= 0 and i < this->bandSizes.size());
     MatrixXi &bs = *this->bandSizes[i];
     assert(depth >= 0 and depth <= bs.rows());
@@ -215,7 +217,8 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[omp_get_thread_num()]->resume();
-    MWNodeVector<D> *fBand = makeOperBand(gNode);
+    std::vector<NodeIndex<D> > idx_band;
+    MWNodeVector<D> *fBand = makeOperBand(gNode, idx_band);
     this->band_t[omp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
@@ -229,7 +232,9 @@ void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     this->calc_t[omp_get_thread_num()]->resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D> &fNode = *(*fBand)[n];
+        NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);
+        os.setFIndex(fIdx);
         for (int ft = 0; ft < this->nComp; ft++) {
             double fNorm = fNode.getComponentNorm(ft);
             if (fNorm < MachineZero) {
@@ -276,9 +281,10 @@ void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
+    NodeIndex<D> &fIdx = *os.fIdx;
 
     const int *gTransl = gNode.getTranslation();
-    const int *fTransl = fNode.getTranslation();
+    const int *fTransl = fIdx.getTranslation();
     int depth = gNode.getDepth();
 
     double oNorm = 1.0;

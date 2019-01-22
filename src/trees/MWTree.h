@@ -64,16 +64,16 @@ public:
     int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
     int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
-    MWNode<D> *findNode(const NodeIndex<D> &nIdx);
-    const MWNode<D> *findNode(const NodeIndex<D> &nIdx) const;
+    MWNode<D> *findNode(NodeIndex<D> nIdx);
+    const MWNode<D> *findNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D> &getNode(const NodeIndex<D> &nIdx);
-    MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx);
-    const MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx) const;
+    MWNode<D> &getNode(NodeIndex<D> nIdx);
+    MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx);
+    const MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 
     MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1) const;
+    MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
+    const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
 
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
     MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }

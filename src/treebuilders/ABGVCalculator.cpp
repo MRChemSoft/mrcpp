@@ -138,7 +138,7 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
         }
         break;
     default:
-        MSG_ERROR("This translation should not occour");
+        // When periodic do nothing, else it should never end up here.
         break;
     }
     for (int i = 0; i < node.getNCoefs(); i++) {

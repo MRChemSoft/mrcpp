@@ -142,8 +142,7 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
     const NodeIndex<D> &idx_0 = gNode.getNodeIndex();
 
     // Assumes given width only in applyDir, otherwise width = 0
-    int width = this->oper->getMaxBandWidth();
-    println(0, "width: " << width);
+    int width = this->oper->getMaxBandWidth();F
     for (int w = -width; w <= width; w++) {
         NodeIndex<D> idx_w(idx_0);
         idx_w.getTranslation()[this->applyDir] += w;

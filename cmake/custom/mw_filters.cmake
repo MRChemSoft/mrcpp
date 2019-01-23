@@ -1,5 +1,5 @@
 if(NOT DEFINED ${MW_FILTER_DIR})
-    set(MW_FILTER_DIR "${CMAKE_SOURCE_DIR}/share/mwfilters" CACHE STRING "Path to MW filters and cross-correlation coefs")
+    set(MW_FILTER_DIR "${PROJECT_SOURCE_DIR}/share/mwfilters" CACHE STRING "Path to MW filters and cross-correlation coefs")
 endif()
 
 option(MRCPP_INSTALL_FILTERS "Install MW filters" OFF)

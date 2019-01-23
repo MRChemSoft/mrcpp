@@ -12,7 +12,7 @@ list(APPEND api_list
 foreach(_header IN LISTS api_list)
   file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     )
   install(
     FILES ${_header}

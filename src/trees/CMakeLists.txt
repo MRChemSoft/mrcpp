@@ -46,7 +46,7 @@ list(APPEND trees_h
 foreach(_header IN LISTS trees_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees
     )
  install(
     FILES ${_header}

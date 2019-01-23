@@ -1,6 +1,7 @@
 language: cpp
 sudo: false
 dist: xenial
+ruby: 2.5.3
 
 notifications:
   slack:
@@ -28,6 +29,7 @@ matrix:
         - CXX_COMPILER='g++'
         - OPENMP='--omp'
         - EIGEN_VER='3.3.4'
+        - RUN_DANGER=false
     - os: linux
       addons: *1
       env:
@@ -35,6 +37,7 @@ matrix:
         - CXX_COMPILER='g++'
         - COVERAGE='--coverage'
         - EIGEN_VER='3.3.4'
+        - RUN_DANGER=false
     - os: linux
       addons:
         apt:
@@ -42,10 +45,12 @@ matrix:
             - clang
             - libpython3.5-dev
             - python3.5-dev
+            - clang-format
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='clang++'
         - EIGEN_VER='3.3.4'
+        - RUN_DANGER=true
 
 env:
   global:
@@ -81,6 +86,11 @@ before_script:
   - test -n $CXX && unset CXX
   - test -n $FC && unset FC
   - source $(pipenv --venv)/bin/activate
+  - |
+    if [[ "${RUN_DANGER}" = true ]]; then
+      bundle install --gemfile=.ci/Gemfile
+      BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
+    fi
 
 script:
   - ./.ci/report_versions.sh

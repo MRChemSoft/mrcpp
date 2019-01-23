@@ -26,7 +26,7 @@ code_style_validation.check validator: 'clang-format',
 # ------------------------------------------------------------------------------
 # What changed?
 # ------------------------------------------------------------------------------
-# Was any code modified in the fixme, cmake and external directories?
+# Was any code modified in the cmake, external, include and src directories?
 has_code_changes = !git.modified_files.grep(/^(cmake|external|include|src)/).empty?
 # Was any code modified in the tests directory?
 has_test_changes = !git.modified_files.grep(/^tests/).empty?
@@ -34,7 +34,7 @@ has_test_changes = !git.modified_files.grep(/^tests/).empty?
 has_doc_changes = !git.modified_files.grep(/^doc/).empty?
 
 # ------------------------------------------------------------------------------
-# You've made changes to fixme|cmake|external,
+# You've made changes to cmake|external|include|src,
 # but didn't write any tests?
 # ------------------------------------------------------------------------------
 if has_code_changes && !has_test_changes
@@ -45,14 +45,14 @@ if has_code_changes && !has_test_changes
          :sticky => false)
   else
     markdown <<-MARKDOWN
-Thanks for the PR! This project lacks automated tests, which makes reviewing and approving PRs somewhat difficult. Please make sure that your contribution has not broken backwards compatibility or introduced any risky changes.
+    Thanks for the PR!
 
 MARKDOWN
   end
 end
 
 # ------------------------------------------------------------------------------
-# You've made nontrivial changes to fixme|cmake|external,
+# You've made nontrivial changes to cmake|external|include|src,
 # but didn't write any docs?
 # ------------------------------------------------------------------------------
 doc_changes_recommended = git.insertions > 15

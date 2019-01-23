@@ -25,7 +25,7 @@ list(APPEND functions_h
 foreach(_header IN LISTS functions_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/functions
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/functions
     )
  install(
     FILES ${_header}

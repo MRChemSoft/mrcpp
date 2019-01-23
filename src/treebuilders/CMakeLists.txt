@@ -46,7 +46,7 @@ list(APPEND treebuilders_h
 foreach(_header IN LISTS treebuilders_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/treebuilders
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/treebuilders
     )
  install(
     FILES ${_header}

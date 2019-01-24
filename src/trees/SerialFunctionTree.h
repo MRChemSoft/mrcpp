@@ -34,6 +34,8 @@ public:
     int getNChunks() const { return this->nodeChunks.size(); }
     int getNChunksUsed() const;
 
+    int cropChunks();
+
     std::vector<ProjectedNode<D>*> nodeChunks;
     std::vector<double*> nodeCoeffChunks;
 

@@ -39,6 +39,8 @@ public:
     int getNChunks();
     int getNChunksUsed();
 
+    int crop(double prec, double splitFac = 1.0, bool absPrec = true);
+
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 

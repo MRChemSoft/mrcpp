@@ -309,6 +309,153 @@ void SerialFunctionTree<D>::deallocNodes(int serialIx) {
         this->lastNode = this->nodeChunks[chunk] + this->nNodes%(this->maxNodesPerChunk);
     }
 }
+/*
+void MWTree<D>::crop(double prec, double splitFac, bool absPrec) {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = getRootMWNode(i);
+        root.crop(prec, splitFac, absPrec);
+    }
+    resetEndNodeTable();
+    calcSquareNorm();
+    }*/
+
+/** Reduce the accuracy of the tree by deleting nodes
+  * which have a higher precision than the requested precison.
+  * By default, the relative precision of the tree is used.
+template<int D>
+void SerialFunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
+    MWTree<D>* tree = this->tree_p;
+    for (int i = 0; i < tree->rootBox.size(); i++) {
+        MWNode<D> &root = tree->getRootMWNode(i);
+        root.crop(prec, splitFac, absPrec);
+    }
+    cropChunks();
+    tree->resetEndNodeTable();
+    tree->calcSquareNorm();
+    }*/
+
+/** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
+template<int D>
+int SerialFunctionTree<D>::cropChunks() {
+    if (this->maxNodesPerChunk*this->nodeChunks.size() <= this->getTree()->getNNodes()+this->maxNodesPerChunk) {
+        return 0; //no chunks to remove
+    }
+
+    double *coefs_p;
+    MWTree<D>* tree = this->tree_p;
+    int posavail = tree->getRootBox().size();//start after root nodes
+    int posocc = 0;
+    int nChunksStart = this->nodeChunks.size();
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(rank==1){
+        int Ix=2;
+        int n_ichunk = Ix/this->maxNodesPerChunk;
+        int n_inode = Ix%this->maxNodesPerChunk;
+        ProjectedNode<D>* Node = this->nodeChunks[n_ichunk] + n_inode;
+        //        if(rank==1)std::cout<<rank<<" START "<<Node->serialIx<<" "<<Node->parentSerialIx<<" child "<<Node->childSerialIx<<std::endl;
+
+    }
+    if(true){
+    while (true) {
+        //find first available spot
+        while (this->nodeStackStatus[posavail]!=0 and posavail<this->nNodes) posavail++;
+        if( posavail>=this->nNodes ) break;//treated all nodes
+        //next allocated spot after available
+        posocc = posavail;
+        while (this->nodeStackStatus[posocc]==0 and posavail<this->nNodes) posocc++;
+        if( posocc>=this->nNodes ) break;//treated all nodes
+
+        int nAlloc = (1<<D);
+
+        //move node from posocc to posavail
+        int ichunk = posocc/this->maxNodesPerChunk;
+        int inode = posocc%this->maxNodesPerChunk;
+        ProjectedNode<D>* NodeOcc = this->nodeChunks[ichunk] + inode;
+
+        //check that all siblings are consecutive. Should never be root node.
+        for(int i = 0; i < nAlloc; i++) assert(this->nodeStackStatus[posavail+i]==0);
+        for(int i = 1; i < nAlloc; i++) assert((NodeOcc+i)->parent->serialIx == (NodeOcc)->parent->serialIx);//siblings
+
+        ichunk = posavail/this->maxNodesPerChunk;
+        inode = posavail%this->maxNodesPerChunk;
+        ProjectedNode<D>* NodeAvail = this->nodeChunks[ichunk] + inode;
+        for(int i = 0; i < nAlloc*this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
+
+        //just copy everything "as is"
+        for(int i = 0; i < nAlloc*sizeof(ProjectedNode<D>); i++) ((char*) NodeAvail)[i] = ((char*) NodeOcc)[i];
+
+        //new nodes have another adress
+        for(int i = 0; i < nAlloc; i++)  (NodeAvail + i)->serialIx = posavail + i;
+
+        //new nodes have another adress. Tell parent
+        NodeAvail->parent->childSerialIx = posavail;
+        for(int i = 0; i < nAlloc; i++) NodeAvail->parent->children[i] = NodeAvail + i;
+                                               //        if(rank==1 and NodeAvail->parent->serialIx==2)std::cout<<NodeAvail->serialIx<<" writing parent "<<NodeAvail->parent->serialIx<<" parentchild "<<NodeAvail->parent->childSerialIx<<std::endl;
+        //Tell children too
+        for(int i = 0; i < nAlloc; i++) {
+            for(int j = 0; j < (NodeAvail+i)->getNChildren(); j++) (NodeAvail+i)->children[j]->parentSerialIx = posavail+i;
+            for(int j = 0; j < (NodeAvail+i)->getNChildren(); j++) (NodeAvail+i)->children[j]->parent = NodeAvail+i;
+        }
+
+        //mark moved nodes as occupied
+        for(int i = 0; i < nAlloc; i++) this->nodeStackStatus[posavail+i] = 1;
+        posavail += nAlloc;
+
+        //delete "old" nodes
+        for(int i = 0; i < nAlloc; i++) this->nodeStackStatus[posocc+i] = 0;
+        for(int i = 0; i < nAlloc; i++) (NodeOcc +i)->serialIx = -1;
+
+        //check
+                                               /*        if(NodeAvail->parent->childSerialIx!=NodeAvail->serialIx)std::cout<<NodeAvail->parent->childSerialIx<<" "<<NodeAvail->parent->serialIx<<" EError parent child ix "<<NodeAvail->serialIx<<" "<<NodeAvail->parentSerialIx<<std::endl;
+        if(rank==1 and(NodeAvail->serialIx==56 or NodeAvail->serialIx==21 or NodeAvail->serialIx==29 or NodeAvail->parentSerialIx==21 or  NodeAvail->serialIx==104) )std::cout<<rank<<" "<<NodeAvail->serialIx<<" parent "<<NodeAvail->parent->serialIx<<" child "<<NodeAvail->childSerialIx<<" parentchild "<<NodeAvail->parent->childSerialIx<<" Occ "<<NodeOcc->serialIx<<" Occparentchild"<<NodeOcc->parent->childSerialIx<<std::endl;
+                                               */
+    }
+    }
+    /*    if(rank==1){
+        int Ix=21;
+        int n_ichunk = Ix/this->maxNodesPerChunk;
+        int n_inode = Ix%this->maxNodesPerChunk;
+        ProjectedNode<D>* Node = this->nodeChunks[n_ichunk] + n_inode;
+        if(rank==1)std::cout<<rank<<" "<<Node->serialIx<<" parent "<<Node->parent->serialIx<<" "<<Node->parentSerialIx<<" child "<<Node->childSerialIx<<" parentchild "<<Node->parent->childSerialIx<<std::endl;
+        Ix=56;
+        n_ichunk = Ix/this->maxNodesPerChunk;
+        n_inode = Ix%this->maxNodesPerChunk;
+        Node = this->nodeChunks[n_ichunk] + n_inode;
+        if(rank==1)std::cout<<rank<<" "<<Node->serialIx<<" parent "<<Node->parent->serialIx<<" child "<<Node->childSerialIx<<" parentchild "<<Node->parent->childSerialIx<<std::endl;
+        Ix=2;
+        n_ichunk = Ix/this->maxNodesPerChunk;
+        n_inode = Ix%this->maxNodesPerChunk;
+        Node = this->nodeChunks[n_ichunk] + n_inode;
+        if(rank==1)std::cout<<rank<<" "<<Node->serialIx<<" child "<<Node->childSerialIx<<std::endl;
+
+
+        }*/
+
+    //find the last used node
+    posocc = this->nNodes-1;
+    while (this->nodeStackStatus[posocc]==0 and posocc>0) posocc--;
+    this->nNodes = posocc + 1;
+    int ichunk = posocc/this->maxNodesPerChunk;
+    int inode = posocc%this->maxNodesPerChunk;
+    this->lastNode = this->nodeChunks[ichunk] + inode;
+
+    //assert(posavail >= tree.getRootBox().size());//at least root nodes must be used
+    int nChunks = posocc/this->maxNodesPerChunk + 1;//number of occupied chunks
+    for(int i = nChunks; i < this->nodeChunks.size(); i++) delete[] (char*)(this->nodeChunks[i]);//remove unused chunks
+    if(not this->isShared())//if the data is shared, it must be freed by MPI_Win_free
+        for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    //shrink the stacks
+    this->nodeChunks.resize(nChunks);
+    this->nodeCoeffChunks.resize(nChunks);
+
+    this->maxNodes = this->nodeStackStatus.size();
+
+    this->getTree()->resetEndNodeTable();
+
+    rewritePointers(nChunks);//clean up all valid addresses WHY NEEDED??
+    return nChunksStart - nChunks;
+}
 
 //return pointer to the last active node or NULL if failed
 template<int D>
@@ -434,7 +581,8 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     this->nGenNodes = 0;
     this->maxGenNodes = 0;
     this->nNodes = 0;
-
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     for(int ichunk = 0 ; ichunk < nChunks; ichunk++) {
         for(int inode = 0 ; inode < this->maxNodesPerChunk; inode++) {
             ProjectedNode<D>* node = (this->nodeChunks[ichunk]) + inode;
@@ -459,6 +607,8 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
                     int n_ichunk = node->parentSerialIx/this->maxNodesPerChunk;
                     int n_inode = node->parentSerialIx%this->maxNodesPerChunk;
                     node->parent = this->nodeChunks[n_ichunk] + n_inode;
+                    if(node->parent->serialIx!=node->parentSerialIx)std::cout<<node->parentSerialIx<<" error parent ix "<<node->parent->serialIx<<std::endl;
+                    if(rank==1 and node->parent->childSerialIx!=node->serialIx-node->serialIx%8)std::cout<<" "<<node->parent->childSerialIx<<" "<<node->parent->serialIx<<" Error parent child ix "<<node->serialIx<<std::endl;
                 } else {
                     node->parent = 0;
                 }
@@ -486,7 +636,7 @@ void SerialFunctionTree<D>::rewritePointers(int nChunks){
     }
 
     this->getTree()->resetEndNodeTable();
-}
+ }
 
 template<int D>
 int SerialFunctionTree<D>::getNChunksUsed() const {
@@ -507,5 +657,4 @@ int SerialFunctionTree<D>::getNChunksUsed() const {
 template class SerialFunctionTree<1>;
 template class SerialFunctionTree<2>;
 template class SerialFunctionTree<3>;
-
 } // namespace mrcpp

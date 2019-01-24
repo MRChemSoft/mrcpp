@@ -66,19 +66,6 @@ void MWTree<D>::calcSquareNorm() {
     this->squareNorm = treeNorm;
 }
 
-/** Reduce the accuracy of the tree by deleting nodes
-  * which have a higher precision than the requested precison.
-  * By default, the relative precision of the tree is used. */
-template<int D>
-void MWTree<D>::crop(double prec, double splitFac, bool absPrec) {
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = getRootMWNode(i);
-        root.crop(prec, splitFac, absPrec);
-    }
-    resetEndNodeTable();
-    calcSquareNorm();
-}
-
 template<int D>
 void MWTree<D>::mwTransform(int type, bool overwrite) {
     switch(type) {

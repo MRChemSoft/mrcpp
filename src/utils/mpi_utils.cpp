@@ -13,10 +13,10 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
         : sh_start_ptr(nullptr),
           sh_end_ptr(nullptr),
           sh_max_ptr(nullptr),
-          sh_win(0) {
+          sh_win(0),
+          rank(0){
 #ifdef HAVE_MPI
-    int rank;
-    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_rank(comm, &this->rank);
     // MPI_Aint types are used for adresses (can be larger than int)
     MPI_Aint size = (rank == 0) ? 1024*1024*sh_size : 0; //rank 0 defines length of segment
     int disp_unit = 16; //in order for the compiler to keep aligned

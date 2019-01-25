@@ -424,7 +424,7 @@ int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
-    int nChunks = this->getSerialFunctionTree()->cropChunks();
+    int nChunks = this->getSerialFunctionTree()->shrinkChunks();
     if(nChunks>0)std::cout<<nChunks<<" chunks deleted"<<std::endl;
     this->resetEndNodeTable();
     this->calcSquareNorm();

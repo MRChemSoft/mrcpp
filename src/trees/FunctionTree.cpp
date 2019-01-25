@@ -436,7 +436,6 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
         root.crop(prec, splitFac, absPrec);
     }
     int nChunks = this->getSerialFunctionTree()->shrinkChunks();
-    if (nChunks > 0) std::cout << nChunks << " chunks deleted" << std::endl;
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;

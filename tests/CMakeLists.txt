@@ -1,6 +1,8 @@
-# Prepare "Catch" library for other executables
-set(CATCH_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/catch)
-add_library(Catch INTERFACE)
+# Prepare "Catch" library for other executables, if not already available
+if(NOT TARGET Catch)
+  set(CATCH_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/catch)
+  add_library(Catch INTERFACE)
+endif()
 target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

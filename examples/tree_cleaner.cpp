@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Testing TreeCleaner");
 
     // Constructing world box
-    auto corner = std::array<int, D>{-1,-1,-1};
-    auto boxes  = std::array<int, D>{2, 2, 2};
+    auto corner = std::array<int, D>{-1, -1, -1};
+    auto boxes = std::array<int, D>{2, 2, 2};
     auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
@@ -28,11 +28,12 @@ int main(int argc, char **argv) {
     auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Defining analytic function
-    auto f = [] (const mrcpp::Coord<D> &r) -> double {
+    auto f = [](const mrcpp::Coord<D> &r) -> double {
         const auto beta = 100.0;
-        const auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);;
-        auto R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return alpha*std::exp(-beta*R*R);
+        const auto alpha = std::pow(beta / mrcpp::pi, 3.0 / 2.0);
+        ;
+        auto R = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return alpha * std::exp(-beta * R * R);
     };
 
     // Initializing MW function
@@ -41,9 +42,9 @@ int main(int argc, char **argv) {
     auto iter = 0;
     auto n_nodes = 1;
     while (n_nodes > 0) {
-        mrcpp::project<D>(-1.0, f_tree, f); // Projecting on fixed grid
+        mrcpp::project<D>(-1.0, f_tree, f);         // Projecting on fixed grid
         n_nodes = mrcpp::refine_grid(f_tree, prec); // Refine grid
-        mrcpp::clear_grid(f_tree); // Clear MW coefs
+        mrcpp::clear_grid(f_tree);                  // Clear MW coefs
         printout(0, " iter " << std::setw(3) << iter++ << std::setw(45));
         printout(0, " n_nodes " << std::setw(5) << n_nodes << std::endl);
     }

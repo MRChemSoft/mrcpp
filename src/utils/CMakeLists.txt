@@ -21,7 +21,7 @@ list(APPEND utils_h
 foreach(_header IN LISTS utils_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
     )
  install(
     FILES ${_header}

@@ -1,16 +1,41 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /**
  */
 
 // TODO checks on exponents to discard elements
 // TODO sanity checks
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
 #include "GaussExp.h"
-#include "Gaussian.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
+#include "Gaussian.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 
@@ -18,17 +43,13 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template<int D> double GaussExp<D>::defaultScreening = 10.0;
+template <int D> double GaussExp<D>::defaultScreening = 10.0;
 
-template<int D>
-GaussExp<D>::GaussExp(int nTerms, double prec) {
-    for (int i = 0; i < nTerms; i++) {
-        this->funcs.push_back(0);
-    }
+template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
+    for (int i = 0; i < nTerms; i++) { this->funcs.push_back(0); }
 }
 
-template<int D>
-GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
+template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
     this->squareNorm = gexp.squareNorm;
     screening = gexp.screening;
     for (unsigned int i = 0; i < gexp.size(); i++) {
@@ -37,8 +58,10 @@ GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
     }
 }
 
-template<int D>
-GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1.0) {
+template <int D>
+GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
+        : screening(0.0)
+        , squareNorm(-1.0) {
     std::array<int, D> pow;
     std::array<double, D> pos;
     auto alpha = gPoly.getExp();
@@ -56,21 +79,16 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly) : screening(0.0), squareNorm(-1
 
     for (int i = 0; i < nTerms; i++) {
         double coef = coefs[i];
-        for (int d = 0; d < D; d++) {
-            pow[d] = power[i][d];
-        }
+        for (int d = 0; d < D; d++) { pow[d] = power[i][d]; }
         if (coef != 0.0) {
             GaussFunc<D> gFunc(alpha, coef, pos, pow);
             this->append(gFunc);
         }
     }
-    for (int i = 0; i < power.size(); i++) {
-        delete[] power[i];
-    }
+    for (int i = 0; i < power.size(); i++) { delete[] power[i]; }
 }
 
-template<int D>
-GaussExp<D>::~GaussExp() {
+template <int D> GaussExp<D>::~GaussExp() {
     for (int i = 0; i < size(); i++) {
         if (this->funcs[i] != 0) {
             delete this->funcs[i];
@@ -79,10 +97,8 @@ GaussExp<D>::~GaussExp() {
     }
 }
 
-template<int D>
-GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
-    if (&gexp == this)
-        return *this;
+template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
+    if (&gexp == this) return *this;
     squareNorm = gexp.squareNorm;
     //screening = gexp.screening;
     this->funcs.clear();
@@ -97,72 +113,55 @@ GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     return *this;
 }
 
-template<int D>
-double GaussExp<D>::evalf(const Coord<D> &r) const {
+template <int D> double GaussExp<D>::evalf(const Coord<D> &r) const {
     double val = 0.0;
-    for (int i = 0; i < this->size(); i++) {
-        val += this->getFunc(i).evalf(r);
-    }
+    for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalf(r); }
     return val;
 }
 
-template<int D>
-bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
+template <int D> bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
     for (unsigned int i = 0; i < this->size(); i++) {
-        if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) {
-            return false;
-        }
+        if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) { return false; }
     }
     return true;
 }
 
-template<int D>
-bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
+template <int D> bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
     for (unsigned int i = 0; i < this->size(); i++) {
-        if (not this->getFunc(i).isZeroOnInterval(lb, ub)) {
-            return false;
-        }
+        if (not this->getFunc(i).isZeroOnInterval(lb, ub)) { return false; }
     }
     return true;
 }
 
-template<int D>
-void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double c) {
+template <int D> void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double c) {
     if (i < 0 or i > (this->size() - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
-    if (this->funcs[i] != 0) {
-        delete this->funcs[i];
-    }
-    this->funcs[i] = new GaussPoly<D> (g);
+    if (this->funcs[i] != 0) { delete this->funcs[i]; }
+    this->funcs[i] = new GaussPoly<D>(g);
     double coef = this->funcs[i]->getCoef();
-    this->funcs[i]->setCoef(c*coef);
+    this->funcs[i]->setCoef(c * coef);
 }
 
-template<int D>
-void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double c) {
+template <int D> void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double c) {
     if (i < 0 or i > (this->size() - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
-    if (this->funcs[i] != 0) {
-        delete this->funcs[i];
-    }
-    this->funcs[i] = new GaussFunc<D> (g);
+    if (this->funcs[i] != 0) { delete this->funcs[i]; }
+    this->funcs[i] = new GaussFunc<D>(g);
     double coef = this->funcs[i]->getCoef();
-    this->funcs[i]->setCoef(c*coef);
+    this->funcs[i]->setCoef(c * coef);
 }
 
-template<int D>
-void GaussExp<D>::append(const Gaussian<D> &g) {
+template <int D> void GaussExp<D>::append(const Gaussian<D> &g) {
     Gaussian<D> *gp = g.copy();
     this->funcs.push_back(gp);
     this->squareNorm = -1.0;
 }
 
-template<int D>
-void GaussExp<D>::append(const GaussExp<D> &g) {
+template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
     for (int i = 0; i < g.size(); i++) {
         Gaussian<D> *gp = g.getFunc(i).copy();
         this->funcs.push_back(gp);
@@ -170,20 +169,16 @@ void GaussExp<D>::append(const GaussExp<D> &g) {
     this->squareNorm = -1.0;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::differentiate(int dir) {
+template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) {
     assert(dir >= 0 and dir < D);
     GaussExp<D> result;
-    for (int i = 0; i < this->size(); i++) {
-        result.append(this->getFunc(i).differentiate(dir));
-    }
+    for (int i = 0; i < this->size(); i++) { result.append(this->getFunc(i).differentiate(dir)); }
     return result;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::add(GaussExp<D> & g) {
+template <int D> GaussExp<D> GaussExp<D>::add(GaussExp<D> &g) {
     int nsum = this->size() + g.size();
-    GaussExp<D> sum = GaussExp<D> (nsum);
+    GaussExp<D> sum = GaussExp<D>(nsum);
 
     int n = 0;
     for (int i = 0; i < this->size(); i++) {
@@ -200,19 +195,15 @@ GaussExp<D> GaussExp<D>::add(GaussExp<D> & g) {
     return sum;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::add(Gaussian<D> &g) {
+template <int D> GaussExp<D> GaussExp<D>::add(Gaussian<D> &g) {
     int nsum = this->size() + 1;
-    GaussExp<D> sum = GaussExp<D> (nsum);
-    for (int n = 0; n < this->size(); n++) {
-        sum.funcs[n] = this->getFunc(n).copy();
-    }
+    GaussExp<D> sum = GaussExp<D>(nsum);
+    for (int n = 0; n < this->size(); n++) { sum.funcs[n] = this->getFunc(n).copy(); }
     sum.funcs[this->size()] = g.copy();
     return sum;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) {
         for (int j = 0; j < gexp.size(); j++) {
@@ -244,8 +235,7 @@ GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     return result;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
     GaussExp<D> result;
     int nTerms = this->size();
     for (int n = 0; n < nTerms; n++) {
@@ -261,8 +251,7 @@ GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
     }
     return result;
 }
-template<int D>
-GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     int nTerms = this->size();
     GaussExp<D> result(nTerms);
     for (int n = 0; n < nTerms; n++) {
@@ -279,30 +268,23 @@ GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     return result;
 }
 
-template<int D>
-GaussExp<D> GaussExp<D>::mult(double d) {
+template <int D> GaussExp<D> GaussExp<D>::mult(double d) {
     GaussExp<D> prod = *this;
 
-    for (int i = 0; i < this->size(); i++) {
-        prod.funcs[i]->multConstInPlace(d);
-    }
+    for (int i = 0; i < this->size(); i++) { prod.funcs[i]->multConstInPlace(d); }
     prod.calcSquareNorm();
     return prod;
 }
 
-template<int D>
-void GaussExp<D>::multInPlace(double d) {
-    for (int i = 0; i < this->size(); i++) {
-        this->funcs[i]->multConstInPlace(d);
-    }
-//	this->squareNorm = -1.0;
+template <int D> void GaussExp<D>::multInPlace(double d) {
+    for (int i = 0; i < this->size(); i++) { this->funcs[i]->multConstInPlace(d); }
+    //	this->squareNorm = -1.0;
     this->calcSquareNorm();
 }
 
 /**  compute the norm of a multidimensional gaussian expansion
  */
-template<int D>
-double GaussExp<D>::calcSquareNorm() {
+template <int D> double GaussExp<D>::calcSquareNorm() {
     /* computing the squares */
     double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
@@ -327,8 +309,7 @@ double GaussExp<D>::calcSquareNorm() {
     return norm;
 }
 
-template<int D>
-void GaussExp<D>::normalize() {
+template <int D> void GaussExp<D>::normalize() {
     double norm = std::sqrt(this->getSquareNorm());
     for (int i = 0; i < this->size(); i++) {
         double coef = this->funcs[i]->getCoef();
@@ -348,26 +329,19 @@ void GaussExp<D>::normalize() {
  *	By applying this routine a screening of far away gaussians is enabled, and
  *	the projection becomes more efficient.
  */
-template<int D>
-void GaussExp<D>::calcScreening(double nStdDev) {
+template <int D> void GaussExp<D>::calcScreening(double nStdDev) {
     screening = nStdDev;
-    for (int i = 0; i < this->size(); i++) {
-        this->funcs[i]->calcScreening(nStdDev);
-    }
+    for (int i = 0; i < this->size(); i++) { this->funcs[i]->calcScreening(nStdDev); }
 }
 
-template<int D>
-void GaussExp<D>::setScreen(bool screen) {
+template <int D> void GaussExp<D>::setScreen(bool screen) {
     if (screen) {
         this->screening = std::abs(this->screening);
     } else {
         this->screening = -std::abs(this->screening);
     }
-    for (int i = 0; i < this->size(); i++) {
-        this->funcs[i]->setScreen(screen);
-    }
+    for (int i = 0; i < this->size(); i++) { this->funcs[i]->setScreen(screen); }
 }
-
 
 /** Calculate the scaling and wavelet coefs of all the children, and do the
  * outer product to make the nD-scaling coefs. Since a Gaussian expansion
@@ -404,21 +378,16 @@ void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
 */
 
 // Specialized for D=3 below
-template<int D>
-double GaussExp<D>::calcCoulombEnergy() {
+template <int D> double GaussExp<D>::calcCoulombEnergy() {
     NOT_IMPLEMENTED_ABORT
 }
 
-template<int D>
-void GaussExp<D>::setDefaultScreening(double screen) {
-    if (screen < 0) {
-        MSG_ERROR("Screening constant cannot be negative!");
-    }
+template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
+    if (screen < 0) { MSG_ERROR("Screening constant cannot be negative!"); }
     defaultScreening = screen;
 }
 
-template<int D>
-std::ostream& GaussExp<D>::print(std::ostream &o) const {
+template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
     o << "Gaussian Expansion: " << size() << " terms" << std::endl;
     for (int i = 0; i < size(); i++) {
         o << "Term " << i << ":" << std::endl;
@@ -427,8 +396,7 @@ std::ostream& GaussExp<D>::print(std::ostream &o) const {
     return o;
 }
 
-template<>
-double GaussExp<3>::calcCoulombEnergy() {
+template <> double GaussExp<3>::calcCoulombEnergy() {
     double energy = 0.0;
     for (int i = 0; i < size(); i++) {
         if (GaussFunc<3> *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
@@ -436,7 +404,7 @@ double GaussExp<3>::calcCoulombEnergy() {
                 if (GaussFunc<3> *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
                     double c = 2.0;
                     if (i == j) c = 1.0;
-                    energy += c*gauss_i->calcCoulombEnergy(*gauss_j);
+                    energy += c * gauss_i->calcCoulombEnergy(*gauss_j);
                 } else {
                     MSG_ERROR("Can only calculate energy for GaussFunc");
                 }

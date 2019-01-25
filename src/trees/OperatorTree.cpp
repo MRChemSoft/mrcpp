@@ -1,9 +1,34 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "OperatorTree.h"
-#include "SerialOperatorTree.h"
-#include "OperatorNode.h"
-#include "SerialTree.h"
-#include "LebesgueIterator.h"
 #include "BandWidth.h"
+#include "LebesgueIterator.h"
+#include "OperatorNode.h"
+#include "SerialOperatorTree.h"
+#include "SerialTree.h"
 #include "utils/Printer.h"
 
 using namespace Eigen;
@@ -11,11 +36,11 @@ using namespace Eigen;
 namespace mrcpp {
 
 OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
-        : MWTree<2>(mra),
-          normPrec(np),
-          bandWidth(nullptr),
-          nodePtrStore(nullptr),
-          nodePtrAccess(nullptr) {
+        : MWTree<2>(mra)
+        , normPrec(np)
+        , bandWidth(nullptr)
+        , nodePtrStore(nullptr)
+        , nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
 
     this->serialTree_p = new SerialOperatorTree(this);
@@ -55,7 +80,7 @@ void OperatorTree::calcBandWidth(double prec) {
         while (not done) {
             done = true;
             MWNode<2> &node = getNode(depth, l);
-            double thrs = std::max(MachinePrec, prec/(8.0 * (1 << depth)));
+            double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
             for (int k = 0; k < 4; k++) {
                 if (node.getComponentNorm(k) > thrs) {
                     this->bandWidth->setWidth(depth, k, l);
@@ -72,7 +97,7 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);
     LebesgueIterator<2> it(this);
-    while(it.next()) {
+    while (it.next()) {
         int n = it.getNode().getDepth();
         const int *l = it.getNode().getTranslation();
         maxTransl[n] = std::max(maxTransl[n], abs(l[0]));
@@ -96,7 +121,7 @@ void OperatorTree::setupOperNodeCache() {
     for (int n = 0; n < nScales; n++) {
         int scale = rootScale + n;
         int n_transl = max_transl[n];
-        int n_nodes = 2*n_transl + 1;
+        int n_nodes = 2 * n_transl + 1;
 
         auto **nodes = new OperatorNode *[n_nodes];
         int j = 0;
@@ -104,8 +129,7 @@ void OperatorTree::setupOperNodeCache() {
             int l[2] = {0, i};
             NodeIndex<2> idx(scale, l);
             // Generated OperatorNodes are still OperatorNodes
-            if (OperatorNode *oNode =
-                dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -115,8 +139,7 @@ void OperatorTree::setupOperNodeCache() {
         for (int i = 1; i <= n_transl; i++) {
             int l[2] = {i, 0};
             NodeIndex<2> idx(scale, l);
-            if (OperatorNode *oNode =
-                dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -131,10 +154,8 @@ void OperatorTree::setupOperNodeCache() {
 }
 
 void OperatorTree::clearOperNodeCache() {
-    if (this->nodePtrStore != nullptr ) {
-        for (int i = 0; i < getDepth(); i++) {
-            delete[] this->nodePtrStore[i];
-        }
+    if (this->nodePtrStore != nullptr) {
+        for (int i = 0; i < getDepth(); i++) { delete[] this->nodePtrStore[i]; }
         delete[] this->nodePtrStore;
         delete[] this->nodePtrAccess;
     }
@@ -154,9 +175,7 @@ void OperatorTree::mwTransformUp() {
         int nNodes = nodeTable[n].size();
         for (int i = 0; i < nNodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
-            if (node.isBranchNode()) {
-                node.reCompress();
-            }
+            if (node.isBranchNode()) { node.reCompress(); }
         }
     }
 }
@@ -174,14 +193,12 @@ void OperatorTree::mwTransformDown(bool overwrite) {
         int n_nodes = nodeTable[n].size();
         for (int i = 0; i < n_nodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
-            if (node.isBranchNode()) {
-                node.giveChildrenCoefs(overwrite);
-            }
+            if (node.isBranchNode()) { node.giveChildrenCoefs(overwrite); }
         }
     }
 }
 
-std::ostream& OperatorTree::print(std::ostream &o) {
+std::ostream &OperatorTree::print(std::ostream &o) {
     o << std::endl << "*OperatorTree: " << this->name << std::endl;
     return MWTree<2>::print(o);
 }

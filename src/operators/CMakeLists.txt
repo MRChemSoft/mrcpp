@@ -33,7 +33,7 @@ list(APPEND operators_h
 foreach(_header IN LISTS operators_h)
  file(
     COPY ${_header}
-    DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
+    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
     )
  install(
     FILES ${_header}

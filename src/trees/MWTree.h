@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /**
  *
  */
@@ -7,8 +32,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "utils/omp_utils.h"
 #include "mrcpp_declarations.h"
+#include "utils/omp_utils.h"
 
 #include "MultiResolutionAnalysis.h"
 #include "NodeBox.h"
@@ -25,9 +50,7 @@ namespace mrcpp {
 #define TEST_TREE_LOCK() false
 #endif
 
-
-template<int D>
-class MWTree {
+template <int D> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra);
     MWTree(const MWTree<D> &tree) = delete;
@@ -63,16 +86,16 @@ public:
     int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
     int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
-    MWNode<D> *findNode(const NodeIndex<D> &nIdx);
-    const MWNode<D> *findNode(const NodeIndex<D> &nIdx) const;
+    MWNode<D> *findNode(NodeIndex<D> nIdx);
+    const MWNode<D> *findNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D> &getNode(const NodeIndex<D> &nIdx);
-    MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx);
-    const MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx) const;
+    MWNode<D> &getNode(NodeIndex<D> nIdx);
+    MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx);
+    const MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 
     MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1) const;
+    MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
+    const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
 
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
     MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
@@ -83,8 +106,8 @@ public:
     void makeNodeTable(MWNodeVector<D> &nodeTable);
     void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
 
-    MWNodeVector<D>* copyEndNodeTable();
-    MWNodeVector<D>* getEndNodeTable() { return &this->endNodeTable; }
+    MWNodeVector<D> *copyEndNodeTable();
+    MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
@@ -102,9 +125,9 @@ public:
     int countNodes(int depth = -1);
     void RecountNodes();
 
-    SerialTree<D>* getSerialTree() { return this->serialTree_p; }
+    SerialTree<D> *getSerialTree() { return this->serialTree_p; }
 
-    friend std::ostream& operator <<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
     friend class GenNode<D>;
@@ -137,8 +160,8 @@ protected:
     int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
-    MWNodeVector<D> endNodeTable;	   ///< Final projected nodes
-    std::vector<int> nodesAtDepth;  ///< Node counter
+    MWNodeVector<D> endNodeTable;  ///< Final projected nodes
+    std::vector<int> nodesAtDepth; ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
@@ -152,11 +175,11 @@ protected:
     void incrementGenNodeCount();
     void decrementGenNodeCount();
 
-    virtual std::ostream& print(std::ostream &o);
+    virtual std::ostream &print(std::ostream &o);
 
 #ifdef HAVE_OPENMP
     omp_lock_t tree_lock;
 #endif
 };
 
-}
+} // namespace mrcpp

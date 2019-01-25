@@ -1,7 +1,32 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "HilbertPath.h"
 
 namespace mrcpp {
-
+// clang-format off
 template<>
 const short int HilbertPath<1>::pTable[1][8] = {
     {0,0,-1,-1,-1,-1,-1,-1}
@@ -88,6 +113,8 @@ const int HilbertPath<3>::hTable[12][8] = {
     {6,5,1,2,7,4,0,3},
     {4,5,7,6,3,2,0,1}
 };
+
+// clang-format on
 
 template class HilbertPath<1>;
 template class HilbertPath<2>;

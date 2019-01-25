@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /** OperatorState is a simple helper class for operator application.
  * It keeps track of various state dependent variables and memory
  * regions. We cannot have some of this information directly in OperatorFunc
@@ -14,12 +39,12 @@
 
 namespace mrcpp {
 
-#define GET_OP_IDX(FT,GT,ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
+#define GET_OP_IDX(FT, GT, ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
 
-template<int D>
-class OperatorState final {
+template <int D> class OperatorState final {
 public:
-    OperatorState(MWNode<D> &gn, double *scr1) : gNode(&gn) {
+    OperatorState(MWNode<D> &gn, double *scr1)
+            : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
         this->kp1_2 = math_utils::ipow(this->kp1, 2);
@@ -40,6 +65,9 @@ public:
     void setFNode(MWNode<D> &fn) {
         this->fNode = &fn;
         this->fData = this->fNode->getCoefs();
+    }
+    void setFIndex(NodeIndex<D> &idx) {
+        this->fIdx = &idx;
         calcMaxDeltaL();
     }
     void setGComponent(int gt) {
@@ -75,6 +103,7 @@ private:
     const OperatorTree *oTree;
     MWNode<D> *gNode;
     MWNode<D> *fNode;
+    NodeIndex<D> *fIdx;
 
     double *aux[D + 1];
     double *gData;
@@ -83,16 +112,14 @@ private:
 
     void calcMaxDeltaL() {
         const int *gl = this->gNode->getNodeIndex().getTranslation();
-        const int *fl = this->fNode->getNodeIndex().getTranslation();
+        const int *fl = this->fIdx->getTranslation();
         int max_dl = 0;
         for (int d = 0; d < D; d++) {
             int dl = abs(fl[d] - gl[d]);
-            if (dl > max_dl) {
-                max_dl = dl;
-            }
+            if (dl > max_dl) { max_dl = dl; }
         }
         this->maxDeltaL = max_dl;
     }
 };
 
-}
+} // namespace mrcpp

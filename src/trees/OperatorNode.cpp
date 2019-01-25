@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "OperatorNode.h"
 #include "SerialTree.h"
 #include "utils/math_utils.h"
@@ -23,14 +48,14 @@ void OperatorNode::dealloc() {
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
-    double thrs = std::max(MachinePrec, prec/(8.0 * (1 << depth)));
+    double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
 
     VectorXd coef_vec;
     this->getCoefs(coef_vec);
 
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    const VectorXd &comp_vec = coef_vec.segment(i*kp1_d, kp1_d);
+    const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
     const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1);
 
     double norm = 0.0;
@@ -38,7 +63,7 @@ double OperatorNode::calcComponentNorm(int i) const {
     if (vecNorm > thrs) {
         double infNorm = math_utils::matrix_norm_inf(comp_mat);
         double oneNorm = math_utils::matrix_norm_1(comp_mat);
-        if (std::sqrt(infNorm*oneNorm) > thrs) {
+        if (std::sqrt(infNorm * oneNorm) > thrs) {
             double twoNorm = math_utils::matrix_norm_2(comp_mat);
             if (twoNorm > thrs) norm = twoNorm;
         }

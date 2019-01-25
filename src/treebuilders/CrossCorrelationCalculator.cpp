@@ -1,8 +1,33 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "CrossCorrelationCalculator.h"
+#include "eigen_disable_warnings.h"
 #include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 #include "utils/Printer.h"
-#include "eigen_disable_warnings.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -13,30 +38,26 @@ void CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
-    case Interpol:
-    {
-        getCrossCorrelationCache(Interpol, ccc);
-        applyCcc(node, ccc);
-        break;
-    }
-    case Legendre:
-    {
-        getCrossCorrelationCache(Legendre, ccc);
-        applyCcc(node, ccc);
-        break;
-    }
-    default:
-        MSG_ERROR("Invalid scaling type");
-        break;
+        case Interpol: {
+            getCrossCorrelationCache(Interpol, ccc);
+            applyCcc(node, ccc);
+            break;
+        }
+        case Legendre: {
+            getCrossCorrelationCache(Legendre, ccc);
+            applyCcc(node, ccc);
+            break;
+        }
+        default:
+            MSG_ERROR("Invalid scaling type");
+            break;
     }
     node.mwTransform(Compression);
     node.setHasCoefs();
     node.calcNorms();
 }
 
-template<int T>
-void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
-                                          CrossCorrelationCache<T> &ccc) {
+template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc) {
     const MatrixXd &lMat = ccc.getLMatrix(node.getOrder());
     const MatrixXd &rMat = ccc.getRMatrix(node.getOrder());
 
@@ -44,7 +65,7 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
     int t_dim = node.getMWTree().getTDim();
     int kp1_d = node.getKp1_d();
 
-    VectorXd vec_o = VectorXd::Zero(t_dim*kp1_d);
+    VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
     for (int i = 0; i < t_dim; i++) {
         NodeIndex<2> cIdx(idx, i);
@@ -65,12 +86,15 @@ void CrossCorrelationCalculator::applyCcc(MWNode<2> &node,
 
         const VectorXd &seg_a = vec_a.segment(0, node_a.getKp1_d());
         const VectorXd &seg_b = vec_b.segment(0, node_b.getKp1_d());
-        vec_o.segment(i*kp1_d, kp1_d) = (lMat*seg_a + rMat*seg_b);
+        vec_o.segment(i * kp1_d, kp1_d) = (lMat * seg_a + rMat * seg_b);
     }
     double *coefs = node.getCoefs();
-    double two_n = std::pow(2.0, -scale/2.0);
-    for (int i = 0; i < t_dim*kp1_d; i++) {
-        coefs[i] = two_n*vec_o(i);
+    double two_n = std::pow(2.0, -scale / 2.0);
+    for (int i = 0; i < t_dim * kp1_d; i++) {
+        auto sf = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
+        // This is only implemented for unifrom scaling factors
+        // hence the zero TODO: make it work for non-unifrom scaling
+        coefs[i] = std::sqrt(sf) * two_n * vec_o(i);
     }
 }
 

@@ -1,7 +1,7 @@
 #include <tuple>
 
-#include "MRCPP/MWFunctions"
 #include "MRCPP/Gaussians"
+#include "MRCPP/MWFunctions"
 #include "MRCPP/Printer"
 #include "MRCPP/Timer"
 
@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Adding MW functions");
 
     // Constructing world box
-    auto corner = std::array<int, D>{-1,-1,-1};
-    auto boxes  = std::array<int, D>{2, 2, 2};
+    auto corner = std::array<int, D>{-1, -1, -1};
+    auto boxes = std::array<int, D>{2, 2, 2};
     auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
     // Constructing basis and MRA
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
     // Setting up analytic Gaussians
     auto beta = 20.0;
-    auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
+    auto alpha = std::pow(beta / mrcpp::pi, 3.0 / 2.0);
     auto pos_1 = std::array<double, D>{0.0, 0.0, 0.1};
     auto pos_2 = std::array<double, D>{0.0, 0.0, -0.1};
     auto pos_3 = std::array<double, D>{0.0, 0.0, 0.3};

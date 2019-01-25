@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Blocking communication");
 
     // Constructing world box
-    auto corner = std::array<int, D>{-1,-1,-1};
+    auto corner = std::array<int, D>{-1, -1, -1};
     auto boxes = std::array<int, D>{2, 2, 2};
     auto world = mrcpp::BoundingBox<D>(min_scale, corner, boxes);
 
@@ -47,11 +47,11 @@ int main(int argc, char **argv) {
     auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
 
     // Defining analytic function
-    auto f = [] (const mrcpp::Coord<D> &r) -> double {
+    auto f = [](const mrcpp::Coord<D> &r) -> double {
         const auto beta = 100.0;
-        const auto alpha = std::pow(beta/mrcpp::pi, 3.0/2.0);
-        auto R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return alpha*std::exp(-beta*R*R);
+        const auto alpha = std::pow(beta / mrcpp::pi, 3.0 / 2.0);
+        auto R = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+        return alpha * std::exp(-beta * R * R);
     };
 
     // All ranks define the function
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     // Only rank 0 projects the function
     if (wrank == 0) mrcpp::project<D>(prec, f_tree, f);
 
-    {   // Print data before send
+    { // Print data before send
         auto integral = f_tree.integrate();
         auto sq_norm = f_tree.getSquareNorm();
         mrcpp::Printer::printDouble(0, "Integral", integral);
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     auto src = 0;
     for (auto dst = 0; dst < wsize; dst++) {
         if (dst == src) continue;
-        auto tag = 11111*dst; // Unique tag for each communication
+        auto tag = 11111 * dst; // Unique tag for each communication
         if (wrank == src) mrcpp::send_tree(f_tree, dst, tag, comm);
         if (wrank == dst) mrcpp::recv_tree(f_tree, src, tag, comm);
     }
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printTime(0, "Time sending tree", send_t);
     mrcpp::Printer::printSeparator(0, ' ');
 
-    {   // Print data after send
+    { // Print data after send
         auto integral = f_tree.integrate();
         auto sq_norm = f_tree.getSquareNorm();
         mrcpp::Printer::printDouble(0, "Integral", integral);

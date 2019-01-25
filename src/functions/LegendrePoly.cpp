@@ -1,4 +1,29 @@
 /*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
+/*
  *
  *  \date Jul 5, 2009
  *  \author Jonas Juselius <jonas.juselius@uit.no> \n
@@ -19,8 +44,8 @@ using LegendreCache = ObjectCache<LegendrePoly>;
 
 /** Legendre polynomial constructed on [-1,1] and
   * scaled by n and translated by l */
-LegendrePoly::LegendrePoly(int k, double n, double l) :
-    Polynomial(k) {
+LegendrePoly::LegendrePoly(int k, double n, double l)
+        : Polynomial(k) {
     // Since we create Legendre polynomials recursively on [-1,1]
     // we cache all lower order polynomilas for future use.
     LegendreCache &Cache = LegendreCache::getInstance();
@@ -50,16 +75,16 @@ void LegendrePoly::computeLegendrePolynomial(int k) {
         LegendrePoly &Lm1 = Cache.get(k - 1);
         LegendrePoly &Lm2 = Cache.get(k - 2);
 
-        auto K = (double) k;
+        auto K = (double)k;
         double cm2_0 = Lm2.getCoefs()[0];
-        this->coefs[0] = -(K - 1.0)*cm2_0/K;
+        this->coefs[0] = -(K - 1.0) * cm2_0 / K;
         for (int j = 1; j < k + 1; j++) {
-            double cm1_jm1 = Lm1.getCoefs()[j-1];
+            double cm1_jm1 = Lm1.getCoefs()[j - 1];
             if (j <= k - 2) {
                 double cm2_j = Lm2.getCoefs()[j];
-                this->coefs[j] = (2.0*K - 1.0)*cm1_jm1/K - (K - 1.0)*cm2_j/K;
+                this->coefs[j] = (2.0 * K - 1.0) * cm1_jm1 / K - (K - 1.0) * cm2_j / K;
             } else {
-                this->coefs[j] = (2.0*K - 1.0)*cm1_jm1/K;
+                this->coefs[j] = (2.0 * K - 1.0) * cm1_jm1 / K;
             }
         }
     }
@@ -73,8 +98,7 @@ Vector2d LegendrePoly::firstDerivative(double x) const {
     double dy, dyp, dym;
 
     if (outOfBounds({x})) {
-        MSG_FATAL("Argument out of bounds: " << x << " [" <<
-                  this->A[0] << ", " << this->B[0] << "]");
+        MSG_FATAL("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
     }
 
     double q = this->N * x + this->L;
@@ -98,7 +122,7 @@ Vector2d LegendrePoly::firstDerivative(double x) const {
     yp = 1.0;
     dyp = 0.0;
     for (int i = 2; i < order + 1; i++) {
-        c1 = (double) i;
+        c1 = (double)i;
         c2 = c1 * 2.0 - 1.0;
         c4 = c1 - 1.0;
         ym = y;
@@ -124,8 +148,7 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
 
     double q = this->N * x + this->L;
     if (outOfBounds({x})) {
-        MSG_FATAL("Argument out of bounds: " << x << " [" <<
-                  this->A[0] << ", " << this->B[0] << "]");
+        MSG_FATAL("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
     }
 
     Vector3d val;
@@ -152,7 +175,7 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
     dyp = 0.e0;
     d2yp = 0.e0;
     for (int i = 2; i < order + 1; i++) {
-        c1 = (double) i;
+        c1 = (double)i;
         c2 = c1 * 2.e0 - 1.e0;
         c4 = c1 - 1.e0;
         ym = y;

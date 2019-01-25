@@ -429,15 +429,14 @@ template <int D> void FunctionTree<D>::printSerialIndices() {
 /** Reduce the accuracy of the tree by deleting nodes
  * which have a higher precision than the requested precison.
  * By default, the relative precision of the tree is used. */
-template<int D>
-int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
+template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
 
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
     int nChunks = this->getSerialFunctionTree()->shrinkChunks();
-    if(nChunks>0)std::cout<<nChunks<<" chunks deleted"<<std::endl;
+    if (nChunks > 0) std::cout << nChunks << " chunks deleted" << std::endl;
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;

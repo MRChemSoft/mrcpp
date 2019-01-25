@@ -330,90 +330,94 @@ template <int D> void SerialFunctionTree<D>::deallocNodes(int serialIx) {
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
-template<int D>
-int SerialFunctionTree<D>::shrinkChunks() {
-    if (this->maxNodesPerChunk*this->nodeChunks.size() <= this->getTree()->getNNodes()+this->maxNodesPerChunk) {
+template <int D> int SerialFunctionTree<D>::shrinkChunks() {
+    if (this->maxNodesPerChunk * this->nodeChunks.size() <= this->getTree()->getNNodes() + this->maxNodesPerChunk) {
         return 0; //no chunks to remove
     }
 
     double *coefs_p;
-    MWTree<D>* tree = this->tree_p;
-    int posavail = tree->getRootBox().size();//start after root nodes
+    MWTree<D> *tree = this->tree_p;
+    int posavail = tree->getRootBox().size(); //start after root nodes
     int posocc = 0;
     int nChunksStart = this->nodeChunks.size();
 
     while (true) {
         //find first available spot
-        while (this->nodeStackStatus[posavail]!=0 and posavail<this->nNodes) posavail++;
-        if( posavail>=this->nNodes ) break;//treated all nodes
+        while (this->nodeStackStatus[posavail] != 0 and posavail < this->nNodes) posavail++;
+        if (posavail >= this->nNodes) break; //treated all nodes
         //next allocated spot after available
         posocc = posavail;
-        while (this->nodeStackStatus[posocc]==0 and posavail<this->nNodes) posocc++;
-        if( posocc>=this->nNodes ) break;//treated all nodes
+        while (this->nodeStackStatus[posocc] == 0 and posavail < this->nNodes) posocc++;
+        if (posocc >= this->nNodes) break; //treated all nodes
 
-        int nAlloc = (1<<D);
+        int nAlloc = (1 << D);
 
         //move node from posocc to posavail
-        int ichunk = posocc/this->maxNodesPerChunk;
-        int inode = posocc%this->maxNodesPerChunk;
-        ProjectedNode<D>* NodeOcc = this->nodeChunks[ichunk] + inode;
+        int ichunk = posocc / this->maxNodesPerChunk;
+        int inode = posocc % this->maxNodesPerChunk;
+        ProjectedNode<D> *NodeOcc = this->nodeChunks[ichunk] + inode;
 
         //check that all siblings are consecutive. Should never be root node.
-        for(int i = 0; i < nAlloc; i++) assert(this->nodeStackStatus[posavail+i]==0);
-        for(int i = 1; i < nAlloc; i++) assert((NodeOcc+i)->parent->serialIx == (NodeOcc)->parent->serialIx);//siblings
+        for (int i = 0; i < nAlloc; i++) assert(this->nodeStackStatus[posavail + i] == 0);
+        for (int i = 1; i < nAlloc; i++)
+            assert((NodeOcc + i)->parent->serialIx == (NodeOcc)->parent->serialIx); //siblings
 
-        ichunk = posavail/this->maxNodesPerChunk;
-        inode = posavail%this->maxNodesPerChunk;
-        ProjectedNode<D>* NodeAvail = this->nodeChunks[ichunk] + inode;
+        ichunk = posavail / this->maxNodesPerChunk;
+        inode = posavail % this->maxNodesPerChunk;
+        ProjectedNode<D> *NodeAvail = this->nodeChunks[ichunk] + inode;
 
         //just copy everything "as is"
-        for(int i = 0; i < nAlloc*sizeof(ProjectedNode<D>); i++) ((char*) NodeAvail)[i] = ((char*) NodeOcc)[i];
+        for (int i = 0; i < nAlloc * sizeof(ProjectedNode<D>); i++) ((char *)NodeAvail)[i] = ((char *)NodeOcc)[i];
 
         //coefs have new adresses
-        for(int i = 0; i < nAlloc; i++) (NodeAvail+i)->coefs = this->nodeCoeffChunks[ichunk] + (inode+i)*this->sizeNodeCoeff;
+        for (int i = 0; i < nAlloc; i++)
+            (NodeAvail + i)->coefs = this->nodeCoeffChunks[ichunk] + (inode + i) * this->sizeNodeCoeff;
         //copy coefs to new adress
-        if( not this->isShared() ){
-            for(int i = 0; i < nAlloc*this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
-        } else { if( this->shMem->rank == 0 )//only master copy the data. careful with sync
-            for(int i = 0; i < nAlloc*this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
+        if (not this->isShared()) {
+            for (int i = 0; i < nAlloc * this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
+        } else {
+            if (this->shMem->rank == 0) //only master copy the data. careful with sync
+                for (int i = 0; i < nAlloc * this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
         }
 
         //new nodes have another adress
-        for(int i = 0; i < nAlloc; i++)  (NodeAvail + i)->serialIx = posavail + i;
+        for (int i = 0; i < nAlloc; i++) (NodeAvail + i)->serialIx = posavail + i;
 
         //new nodes have another adress. Update parent
         NodeAvail->parent->childSerialIx = posavail;
-        for(int i = 0; i < nAlloc; i++) NodeAvail->parent->children[i] = NodeAvail + i;
+        for (int i = 0; i < nAlloc; i++) NodeAvail->parent->children[i] = NodeAvail + i;
 
         //Update children too
-        for(int i = 0; i < nAlloc; i++) {
-            for(int j = 0; j < (NodeAvail+i)->getNChildren(); j++) (NodeAvail+i)->children[j]->parentSerialIx = posavail+i;
-            for(int j = 0; j < (NodeAvail+i)->getNChildren(); j++) (NodeAvail+i)->children[j]->parent = NodeAvail+i;
+        for (int i = 0; i < nAlloc; i++) {
+            for (int j = 0; j < (NodeAvail + i)->getNChildren(); j++)
+                (NodeAvail + i)->children[j]->parentSerialIx = posavail + i;
+            for (int j = 0; j < (NodeAvail + i)->getNChildren(); j++)
+                (NodeAvail + i)->children[j]->parent = NodeAvail + i;
         }
 
         //mark moved nodes as occupied
-        for(int i = 0; i < nAlloc; i++) this->nodeStackStatus[posavail+i] = 1;
+        for (int i = 0; i < nAlloc; i++) this->nodeStackStatus[posavail + i] = 1;
         posavail += nAlloc;
 
         //delete "old" nodes
-        for(int i = 0; i < nAlloc; i++) this->nodeStackStatus[posocc+i] = 0;
-        for(int i = 0; i < nAlloc; i++) (NodeOcc+i)->serialIx = -1;
-
+        for (int i = 0; i < nAlloc; i++) this->nodeStackStatus[posocc + i] = 0;
+        for (int i = 0; i < nAlloc; i++) (NodeOcc + i)->serialIx = -1;
     }
 
     //find the last used node
-    posocc = this->nNodes-1;
-    while (this->nodeStackStatus[posocc]==0 and posocc>0) posocc--;
+    posocc = this->nNodes - 1;
+    while (this->nodeStackStatus[posocc] == 0 and posocc > 0) posocc--;
     this->nNodes = posocc + 1;
-    int ichunk = this->nNodes/this->maxNodesPerChunk;
-    int inode = this->nNodes%this->maxNodesPerChunk;
-    this->lastNode = this->nodeChunks[ichunk] + inode ;
+    int ichunk = this->nNodes / this->maxNodesPerChunk;
+    int inode = this->nNodes % this->maxNodesPerChunk;
+    this->lastNode = this->nodeChunks[ichunk] + inode;
 
-    int nChunks = posocc/this->maxNodesPerChunk + 1;//number of occupied chunks
-    for(int i = nChunks; i < this->nodeChunks.size(); i++) delete[] (char*)(this->nodeChunks[i]);//remove unused chunks
+    int nChunks = posocc / this->maxNodesPerChunk + 1; //number of occupied chunks
+    for (int i = nChunks; i < this->nodeChunks.size(); i++)
+        delete[](char *)(this->nodeChunks[i]); //remove unused chunks
 
     //Note that shared coefficients cannot be deallocated, but it is still useful to shrink the holes.
-    if(not this->isShared())//if the data is shared, it must be freed by MPI_Win_free
+    if (not this->isShared()) //if the data is shared, it must be freed by MPI_Win_free
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     //shrink the stacks
     this->nodeChunks.resize(nChunks);
@@ -576,7 +580,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
                     int n_ichunk = node->parentSerialIx / this->maxNodesPerChunk;
                     int n_inode = node->parentSerialIx % this->maxNodesPerChunk;
                     node->parent = this->nodeChunks[n_ichunk] + n_inode;
-                    assert(node->parent->serialIx!=node->parentSerialIx);
+                    assert(node->parent->serialIx != node->parentSerialIx);
                 } else {
                     node->parent = 0;
                 }
@@ -603,7 +607,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
     }
 
     this->getTree()->resetEndNodeTable();
- }
+}
 
 template <int D> int SerialFunctionTree<D>::getNChunksUsed() const {
     int lastUsed = 0;

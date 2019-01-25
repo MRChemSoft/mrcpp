@@ -49,7 +49,6 @@ public:
     double *sh_max_ptr;   //end of shared block
     MPI_Win sh_win;       //MPI window object
     int rank;             //rank among shared group
-
 };
 
 template <int D> class FunctionTree;

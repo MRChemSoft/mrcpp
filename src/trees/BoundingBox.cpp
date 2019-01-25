@@ -30,7 +30,7 @@
  *
  */
 
-#include "constants.h"
+#include "MRCPP/constants.h"
 
 #include "BoundingBox.h"
 #include "utils/Printer.h"

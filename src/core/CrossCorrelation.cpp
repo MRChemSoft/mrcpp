@@ -35,8 +35,8 @@
 
 #include <fstream>
 
-#include "config.h"
-#include "constants.h"
+#include "MRCPP/config.h"
+#include "MRCPP/constants.h"
 
 #include "CrossCorrelation.h"
 #include "utils/Printer.h"

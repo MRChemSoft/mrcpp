@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "constants.h"
-#include "mrcpp_declarations.h"
+#include "MRCPP/constants.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

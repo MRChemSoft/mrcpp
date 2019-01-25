@@ -35,11 +35,10 @@
 
 #include <fstream>
 
-#include "config.h"
-#include "constants.h"
+#include "MRCPP/config.h"
+#include "MRCPP/constants.h"
 
 #include "MWFilter.h"
-#include "eigen_disable_warnings.h"
 #include "utils/Printer.h"
 
 using namespace Eigen;

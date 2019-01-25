@@ -36,7 +36,7 @@
 #include "CrossCorrelationCache.h"
 #include "utils/Printer.h"
 
-#include "constants.h"
+#include "MRCPP/constants.h"
 
 using namespace Eigen;
 

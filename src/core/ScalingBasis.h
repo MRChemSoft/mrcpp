@@ -27,7 +27,7 @@
 
 #include <vector>
 
-#include "constants.h"
+#include "MRCPP/constants.h"
 
 #include "functions/Polynomial.h"
 

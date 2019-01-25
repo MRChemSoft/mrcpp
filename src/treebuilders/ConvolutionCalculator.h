@@ -28,7 +28,7 @@
 #include "TreeCalculator.h"
 #include "operators/OperatorStatistics.h"
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

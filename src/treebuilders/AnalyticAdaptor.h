@@ -26,7 +26,7 @@
 #pragma once
 
 #include "TreeAdaptor.h"
-#include "constants.h"
+#include "MRCPP/constants.h"
 
 namespace mrcpp {
 

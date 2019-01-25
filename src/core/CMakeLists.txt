@@ -1,4 +1,5 @@
-target_sources(mrcpp-objlib PRIVATE
+target_sources(mrcpp
+  PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FilterCache.cpp
@@ -9,30 +10,26 @@ target_sources(mrcpp-objlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ObjectCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/QuadratureCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.cpp
-)
+  )
 
 list(APPEND core_h
-    ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelation.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/FilterCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/GaussQuadrature.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/InterpolatingBasis.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/LegendreBasis.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/MWFilter.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ObjectCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/QuadratureCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ScalingCache.h
-    )
+  ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelation.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCache.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/FilterCache.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/GaussQuadrature.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/InterpolatingBasis.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/LegendreBasis.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/MWFilter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/ObjectCache.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/QuadratureCache.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/ScalingBasis.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/ScalingCache.h
+  )
 
 # Sets install directory for all the headers in the list
 foreach(_header IN LISTS core_h)
- file(
-    COPY ${_header}
-    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
-    )
  install(
-    FILES ${_header}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
-    )
+   FILES ${_header}
+   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
+   )
 endforeach()

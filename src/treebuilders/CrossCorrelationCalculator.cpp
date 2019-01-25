@@ -24,7 +24,6 @@
  */
 
 #include "CrossCorrelationCalculator.h"
-#include "eigen_disable_warnings.h"
 #include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 #include "utils/Printer.h"

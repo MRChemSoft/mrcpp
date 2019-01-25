@@ -32,7 +32,7 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 #include "utils/omp_utils.h"
 
 #include "MultiResolutionAnalysis.h"

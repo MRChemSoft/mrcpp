@@ -33,7 +33,7 @@
 #include <map>
 #include <string>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

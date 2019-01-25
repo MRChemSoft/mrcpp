@@ -44,7 +44,7 @@
 #include <Eigen/Core>
 
 #include "Gaussian.h"
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

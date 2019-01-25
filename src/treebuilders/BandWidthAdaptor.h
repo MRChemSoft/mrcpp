@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "TreeAdaptor.h"
 #include "MRCPP/constants.h"
+#include "TreeAdaptor.h"
 
 /** Builds an OperatorTree with known band width (e.g. derivative and identity).
  * Assumes translational invariant and symmetric (in x - y) operator and keeps

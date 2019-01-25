@@ -36,8 +36,8 @@
 #pragma GCC system_header
 #include <Eigen/Core>
 
-#include "RepresentableFunction.h"
 #include "MRCPP/mrcpp_declarations.h"
+#include "RepresentableFunction.h"
 
 namespace mrcpp {
 

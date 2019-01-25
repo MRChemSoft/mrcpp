@@ -39,8 +39,8 @@
 #include <vector>
 
 #include "Gaussian.h"
-#include "Polynomial.h"
 #include "MRCPP/mrcpp_declarations.h"
+#include "Polynomial.h"
 
 namespace mrcpp {
 

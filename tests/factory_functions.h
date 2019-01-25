@@ -1,10 +1,10 @@
 #ifndef FACTORY_FUNCTIONS_H
 #define FACTORY_FUNCTIONS_H
 
+#include "MRCPP/mrcpp_declarations.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "functions/GaussFunc.h"
-#include "MRCPP/mrcpp_declarations.h"
 #include "trees/BoundingBox.h"
 #include "trees/FunctionTree.h"
 #include "trees/FunctionTreeVector.h"

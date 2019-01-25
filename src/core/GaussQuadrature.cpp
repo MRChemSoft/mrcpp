@@ -28,8 +28,8 @@
 
 #include "GaussQuadrature.h"
 #include "MRCPP/constants.h"
-#include "functions/LegendrePoly.h"
 #include "MRCPP/macros.h"
+#include "functions/LegendrePoly.h"
 #include "utils/Printer.h"
 
 using namespace Eigen;

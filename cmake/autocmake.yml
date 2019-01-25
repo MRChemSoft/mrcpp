@@ -24,7 +24,6 @@ modules:
   - custom:
     - source:
       - 'custom/static_library.cmake'
-      - 'custom/python.cmake'
       - 'custom/git.cmake'
       - 'custom/mw_filters.cmake'
       - 'custom/main.cmake'

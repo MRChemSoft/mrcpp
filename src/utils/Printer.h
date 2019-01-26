@@ -62,7 +62,7 @@ public:
     static int getPrecision() { return printPrec; }
     static int getPrintLevel() { return printLevel; }
     static int getVal(char *line, int n = 1);
-    static int printMem(char *txt);
+    static int printMem(char *txt, bool silent = false);
 
     static std::ostream *out;
 

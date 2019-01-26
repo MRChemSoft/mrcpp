@@ -181,7 +181,7 @@ int Printer::getVal(char *line, int n) {
 
 /** Prints (and returns) the current memory usage of this process
  */
-int Printer::printMem(char *txt) {
+int Printer::printMem(char *txt, bool silent) {
     FILE *file = fopen("/proc/self/statm", "r");
     int val = -1;
     char line[80];

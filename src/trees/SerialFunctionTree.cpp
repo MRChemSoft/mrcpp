@@ -580,7 +580,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
                     int n_ichunk = node->parentSerialIx / this->maxNodesPerChunk;
                     int n_inode = node->parentSerialIx % this->maxNodesPerChunk;
                     node->parent = this->nodeChunks[n_ichunk] + n_inode;
-                    assert(node->parent->serialIx != node->parentSerialIx);
+                    assert(node->parent->serialIx == node->parentSerialIx);
                 } else {
                     node->parent = 0;
                 }

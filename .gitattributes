@@ -5,6 +5,9 @@
 
 config.h.in licensefile=.githooks/LICENSE-C++
 
+api/* licensefile=.githooks/LICENSE-C++
+api/CMakeLists.txt !licensefile
+
 src/*/*.h licensefile=.githooks/LICENSE-C++
 src/*/*.cpp licensefile=.githooks/LICENSE-C++
 

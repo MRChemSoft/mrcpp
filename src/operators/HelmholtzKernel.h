@@ -42,7 +42,7 @@ public:
 protected:
     const double mu; /**< exponent */
     void initializeKernel() override;
-    std::ostream &print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const override;
 };
 
 } // namespace mrcpp

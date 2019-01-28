@@ -58,7 +58,7 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , pos(r)
         , squareNorm(-1.0) {}
 
-template <int D> Gaussian<D>::~Gaussian() {}
+template <int D> Gaussian<D>::~Gaussian() = default;
 
 template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 

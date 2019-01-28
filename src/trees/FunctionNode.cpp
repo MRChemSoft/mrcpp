@@ -44,8 +44,6 @@ namespace mrcpp {
 template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
-    const auto sf = this->getMWTree().getRootBox().getScalingFactor();
-
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
     if (this->getMWTree().getRootBox().isPeriodic()) {

@@ -28,9 +28,10 @@ list(APPEND core_h
 
 # Sets install directory for all the headers in the list
 foreach(_header IN LISTS core_h)
- file(
-    COPY ${_header}
-    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
+ configure_file(
+    ${_header}
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/core
+    COPYONLY
     )
  install(
    FILES ${_header}

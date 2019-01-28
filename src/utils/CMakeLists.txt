@@ -20,9 +20,10 @@ list(APPEND utils_h
 
 # Sets install directory for all the headers in the list
 foreach(_header IN LISTS utils_h)
- file(
-    COPY ${_header}
-    DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
+ configure_file(
+    ${_header}
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/utils
+    COPYONLY
     )
  install(
    FILES ${_header}

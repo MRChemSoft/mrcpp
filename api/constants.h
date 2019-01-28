@@ -1,14 +1,9 @@
-
-/*
- *
- */
-
 #pragma once
 
 namespace mrcpp {
 
-const double MachinePrec = 1.0e-15L;
-const double MachineZero = 1.0e-14L;
+const double MachinePrec = 1.0e-15;
+const double MachineZero = 1.0e-14;
 const int MaxOrder = 41;  ///< Maximum scaling order
 const int MaxDepth = 30;  ///< Maximum depth of trees
 const int MaxScale = 31;  ///< Maximum scale of trees

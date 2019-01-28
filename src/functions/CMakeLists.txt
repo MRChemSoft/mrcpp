@@ -24,11 +24,6 @@ list(APPEND functions_h
 
 # Sets install directory for all the headers in the list
 foreach(_header IN LISTS functions_h)
- configure_file(
-    ${_header}
-    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/functions
-    COPYONLY
-    )
  install(
    FILES ${_header}
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/functions

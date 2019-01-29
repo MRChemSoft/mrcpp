@@ -33,9 +33,9 @@ namespace mrcpp {
 template <int D> class DerivativeCalculator final : public TreeCalculator<D> {
 public:
     DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
-    ~DerivativeCalculator();
+    ~DerivativeCalculator() override;
 
-    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const;
+    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
 private:
     int applyDir;
@@ -53,8 +53,8 @@ private:
     void clearTimers();
     void printTimers() const;
 
-    void calcNode(MWNode<D> &node);
-    void postProcess() {
+    void calcNode(MWNode<D> &node) override;
+    void postProcess() override {
         printTimers();
         clearTimers();
         initTimers();

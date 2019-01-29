@@ -40,7 +40,7 @@ private:
     FunctionTreeVector<D> tree_vec;
 
     void setBandWidth(int *bw);
-    bool splitNode(const MWNode<D> &node) const;
+    bool splitNode(const MWNode<D> &node) const override;
 };
 
 } // namespace mrcpp

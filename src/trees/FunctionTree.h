@@ -39,7 +39,7 @@ public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
     FunctionTree(const FunctionTree<D> &tree) = delete;
     FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
-    ~FunctionTree();
+    ~FunctionTree() override;
 
     void clear();
 
@@ -49,8 +49,8 @@ public:
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 
-    void saveTree(const std::string &file);
-    void loadTree(const std::string &file);
+    void saveTree(const std::string &file) override;
+    void loadTree(const std::string &file) override;
 
     // In place operations
     void square();
@@ -79,7 +79,7 @@ public:
     }
 
 protected:
-    std::ostream &print(std::ostream &o);
+    std::ostream &print(std::ostream &o) override;
 };
 
 } // namespace mrcpp

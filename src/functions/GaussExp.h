@@ -59,17 +59,17 @@ public:
     GaussExp(const GaussExp<D> &gExp);
     GaussExp(const GaussPoly<D> &gPoly);
     GaussExp &operator=(const GaussExp<D> &gExp);
-    virtual ~GaussExp();
+    ~GaussExp() override;
 
     double calcCoulombEnergy();
     double calcSquareNorm();
     void normalize();
 
     void calcScreening(double nStdDev = defaultScreening);
-    bool isVisibleAtScale(int scale, int nPts) const;
-    bool isZeroOnInterval(const double *lb, const double *ub) const;
+    bool isVisibleAtScale(int scale, int nPts) const override;
+    bool isZeroOnInterval(const double *lb, const double *ub) const override;
 
-    double evalf(const Coord<D> &r) const;
+    double evalf(const Coord<D> &r) const override;
 
     GaussExp<D> differentiate(int dir);
 

@@ -54,8 +54,8 @@ namespace mrcpp {
  * without reference to the actual filter types */
 class BaseFilterCache : public ObjectCache<MWFilter> {
 public:
-    virtual void load(int order) = 0;
-    virtual MWFilter &get(int order) = 0;
+    void load(int order) override = 0;
+    MWFilter &get(int order) override = 0;
     virtual const Eigen::MatrixXd &getFilterMatrix(int order) = 0;
     virtual const std::string &getLibPath() = 0;
     virtual void setLibPath(const std::string &path) = 0;

@@ -40,16 +40,16 @@ public:
     const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
     const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
 
-    void createChildren() {
+    void createChildren() override {
         MWNode<2>::createChildren();
         this->clearIsEndNode();
     }
-    void genChildren() {
+    void genChildren() override {
         MWNode<2>::createChildren();
         this->clearIsEndNode();
         this->giveChildrenCoefs();
     }
-    void deleteChildren() {
+    void deleteChildren() override {
         MWNode<2>::deleteChildren();
         this->setIsEndNode();
     }
@@ -64,8 +64,8 @@ protected:
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
 
-    void dealloc();
-    double calcComponentNorm(int i) const;
+    void dealloc() override;
+    double calcComponentNorm(int i) const override;
 };
 
 } // namespace mrcpp

@@ -34,7 +34,7 @@ class BoysFunction final : public RepresentableFunction<1> {
 public:
     BoysFunction(int n, double prec = 1.0e-10);
 
-    double evalf(const Coord<1> &r) const;
+    double evalf(const Coord<1> &r) const override;
 
 private:
     const int order;

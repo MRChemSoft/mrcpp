@@ -43,7 +43,7 @@ public:
             , rMax(r_max) {}
     GreensKernel(const GreensKernel &kern) = delete;
     GreensKernel &operator=(const GreensKernel &kern) = delete;
-    virtual ~GreensKernel() = default;
+    ~GreensKernel() override = default;
 
     double getEpsilon() const { return this->epsilon; }
     double getRMin() const { return this->rMin; }

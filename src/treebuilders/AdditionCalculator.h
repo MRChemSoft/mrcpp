@@ -38,7 +38,7 @@ public:
 private:
     FunctionTreeVector<D> sum_vec;
 
-    void calcNode(MWNode<D> &node_o) {
+    void calcNode(MWNode<D> &node_o) override {
         node_o.zeroCoefs();
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         double *coefs_o = node_o.getCoefs();

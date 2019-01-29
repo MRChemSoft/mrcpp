@@ -39,7 +39,7 @@ public:
     }
 
 protected:
-    int getChildIndex(int i) const { return i; }
+    int getChildIndex(int i) const override { return i; }
 };
 
 } // namespace mrcpp

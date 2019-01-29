@@ -40,7 +40,7 @@ public:
     }
 
 protected:
-    int getChildIndex(int i) const {
+    int getChildIndex(int i) const override {
         const MWNode<D> &node = *this->state->node;
         const HilbertPath<D> &h = node.getHilbertPath();
         return h.getZIndex(i);

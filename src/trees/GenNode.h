@@ -35,15 +35,15 @@ namespace mrcpp {
 
 template <int D> class GenNode final : public FunctionNode<D> {
 public:
-    double getWaveletNorm() const { return 0.0; }
+    double getWaveletNorm() const override { return 0.0; }
 
-    void createChildren();
-    void genChildren();
-    void cvTransform(int kind);
-    void mwTransform(int kind);
+    void createChildren() override;
+    void genChildren() override;
+    void cvTransform(int kind) override;
+    void mwTransform(int kind) override;
 
-    void setValues(const Eigen::VectorXd &vec);
-    void getValues(Eigen::VectorXd &vec);
+    void setValues(const Eigen::VectorXd &vec) override;
+    void getValues(Eigen::VectorXd &vec) override;
 
     friend class SerialFunctionTree<D>;
 
@@ -52,11 +52,11 @@ protected:
             : FunctionNode<D>() {}
     GenNode(const GenNode<D> &node) = delete;
     GenNode<D> &operator=(const GenNode<D> &node) = delete;
-    ~GenNode() { assert(this->tree == nullptr); }
+    ~GenNode() override { assert(this->tree == nullptr); }
 
-    double calcComponentNorm(int i) const;
-    void dealloc();
-    void reCompress();
+    double calcComponentNorm(int i) const override;
+    void dealloc() override;
+    void reCompress() override;
 };
 
 } // namespace mrcpp

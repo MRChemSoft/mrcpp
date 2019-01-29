@@ -38,7 +38,7 @@ public:
 private:
     bool split;
 
-    bool splitNode(const MWNode<D> &node) const { return this->split; }
+    bool splitNode(const MWNode<D> &node) const override { return this->split; }
 };
 
 } // namespace mrcpp

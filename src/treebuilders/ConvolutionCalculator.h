@@ -35,9 +35,9 @@ namespace mrcpp {
 template <int D> class ConvolutionCalculator final : public TreeCalculator<D> {
 public:
     ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D> &f, int depth = MaxDepth);
-    ~ConvolutionCalculator();
+    ~ConvolutionCalculator() override;
 
-    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const;
+    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
 private:
     int maxDepth;
@@ -69,8 +69,8 @@ private:
     int getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const;
     void calcBandSizeFactor(Eigen::MatrixXi &bs, int depth, const BandWidth &bw);
 
-    void calcNode(MWNode<D> &node);
-    void postProcess() {
+    void calcNode(MWNode<D> &node) override;
+    void postProcess() override {
         printTimers();
         clearTimers();
         initTimers();

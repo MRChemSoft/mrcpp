@@ -30,9 +30,9 @@ enum MW_Transform { Compression, Reconstruction };
 enum XC_Type { XC_undefined, XC_lda, XC_gga };
 enum Traverse { TopDown, BottomUp };
 
-//Math constants
+// Math constants
 const double pi = 3.1415926535897932384626433832795;
 const double root_pi = 1.7724538509055160273;
-const double C_x = -0.73855876638202240588; //Dirac exchange constant
+const double C_x = -0.73855876638202240588; // Dirac exchange constant
 
 } // namespace mrcpp

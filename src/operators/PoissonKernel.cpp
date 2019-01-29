@@ -45,7 +45,7 @@ namespace mrcpp {
  * gaussian functions this routine assumes that the expansion be centered
  */
 void PoissonKernel::initializeKernel() {
-    //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
+    // Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
     double r0 = this->rMin / this->rMax;
     double r1 = this->rMax;
 

@@ -106,4 +106,4 @@ template <int D> void initialize(mrcpp::GaussFunc<D> **func) {
     *func = new mrcpp::GaussFunc<D>(beta, alpha, pos);
 }
 
-#endif //FACTORY_FUNCTIONS_H
+#endif // FACTORY_FUNCTIONS_H

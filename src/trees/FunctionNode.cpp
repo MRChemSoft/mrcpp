@@ -40,7 +40,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** Function evaluation.
-  * Evaluate all polynomials defined on the node. */
+ * Evaluate all polynomials defined on the node. */
 template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
@@ -92,10 +92,10 @@ template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
 }
 
 /** Function integration.
-  *
-  * Wrapper for function integration, that requires different methods depending
-  * on scaling type. Integrates the function represented on the node on the
-  * full support of the node. */
+ *
+ * Wrapper for function integration, that requires different methods depending
+ * on scaling type. Integrates the function represented on the node on the
+ * full support of the node. */
 template <int D> double FunctionNode<D>::integrate() const {
     if (not this->hasCoefs()) { return 0.0; }
     switch (this->getScalingType()) {
@@ -111,14 +111,14 @@ template <int D> double FunctionNode<D>::integrate() const {
 }
 
 /** Function integration, Legendre basis.
-  *
-  * Integrates the function represented on the node on the full support of the
-  * node. The Legendre basis is particularly easy to integrate, as the work is
-  * already done when calculating its coefficients. The coefficients of the
-  * node is defined as the projection integral
-  *          s_i = int f(x)phi_i(x)dx
-  * and since the first Legendre function is the constant 1, the first
-  * coefficient is simply the integral of f(x). */
+ *
+ * Integrates the function represented on the node on the full support of the
+ * node. The Legendre basis is particularly easy to integrate, as the work is
+ * already done when calculating its coefficients. The coefficients of the
+ * node is defined as the projection integral
+ *          s_i = int f(x)phi_i(x)dx
+ * and since the first Legendre function is the constant 1, the first
+ * coefficient is simply the integral of f(x). */
 template <int D> double FunctionNode<D>::integrateLegendre() const {
     double n = (D * this->getScale()) / 2.0;
     double two_n = std::pow(2.0, -n);
@@ -126,10 +126,10 @@ template <int D> double FunctionNode<D>::integrateLegendre() const {
 }
 
 /** Function integration, Interpolating basis.
-  *
-  * Integrates the function represented on the node on the full support of the
-  * node. A bit more involved than in the Legendre basis, as is requires some
-  * coupling of quadrature weights. */
+ *
+ * Integrates the function represented on the node on the full support of the
+ * node. A bit more involved than in the Legendre basis, as is requires some
+ * coupling of quadrature weights. */
 template <int D> double FunctionNode<D>::integrateInterpolating() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
@@ -181,11 +181,11 @@ template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
 }
 
 /** Inner product of the functions represented by the scaling basis of the nodes.
-  *
-  * Integrates the product of the functions represented by the scaling basis on
-  * the node on the full support of the nodes. The scaling basis is fully
-  * orthonormal, and the inner product is simply the dot product of the
-  * coefficient vectors. Assumes the nodes have identical support. */
+ *
+ * Integrates the product of the functions represented by the scaling basis on
+ * the node on the full support of the nodes. The scaling basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support. */
 template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -204,11 +204,11 @@ template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNod
 }
 
 /** Inner product of the functions represented by the wavelet basis of the nodes.
-  *
-  * Integrates the product of the functions represented by the wavelet basis on
-  * the node on the full support of the nodes. The wavelet basis is fully
-  * orthonormal, and the inner product is simply the dot product of the
-  * coefficient vectors. Assumes the nodes have identical support. */
+ *
+ * Integrates the product of the functions represented by the wavelet basis on
+ * the node on the full support of the nodes. The wavelet basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support. */
 template <int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) { return 0.0; }
 

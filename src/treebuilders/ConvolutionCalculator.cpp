@@ -112,9 +112,9 @@ template <int D> void ConvolutionCalculator<D>::initBandSizes() {
 }
 
 /** Calculate the number of nodes within the bandwidth
-  * of an operator. Currently this routine ignores the fact that
-  * there are edges on the world box, and thus over estimates
-  * the number of nodes. This is different from the previous version. */
+ * of an operator. Currently this routine ignores the fact that
+ * there are edges on the world box, and thus over estimates
+ * the number of nodes. This is different from the previous version. */
 template <int D> void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs, int depth, const BandWidth &bw) {
     for (int gt = 0; gt < this->nComp; gt++) {
         for (int ft = 0; ft < this->nComp; ft++) {

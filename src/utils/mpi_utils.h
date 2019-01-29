@@ -44,11 +44,11 @@ public:
     SharedMemory &operator=(const SharedMemory &mem) = delete;
     ~SharedMemory();
 
-    double *sh_start_ptr; //start of shared block
-    double *sh_end_ptr;   //end of used part
-    double *sh_max_ptr;   //end of shared block
-    MPI_Win sh_win;       //MPI window object
-    int rank;             //rank among shared group
+    double *sh_start_ptr; // start of shared block
+    double *sh_end_ptr;   // end of used part
+    double *sh_max_ptr;   // end of shared block
+    MPI_Win sh_win;       // MPI window object
+    int rank;             // rank among shared group
 };
 
 template <int D> class FunctionTree;

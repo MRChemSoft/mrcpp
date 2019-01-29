@@ -41,7 +41,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** Construct polynomial of order zero with given size and bounds.
-  * Includes default constructor. */
+ * Includes default constructor. */
 Polynomial::Polynomial(int k, const double *a, const double *b)
         : RepresentableFunction<1>(a, b) {
     assert(k >= 0);
@@ -115,7 +115,7 @@ void Polynomial::normalize() {
 }
 
 /** Compute the squared L2-norm of the (bounded) polynomial.
-  * Unbounded polynomials return -1.0. */
+ * Unbounded polynomials return -1.0. */
 double Polynomial::calcSquareNorm() {
     double sqNorm = -1.0;
     if (isBounded()) { sqNorm = this->innerProduct(*this); }
@@ -123,15 +123,15 @@ double Polynomial::calcSquareNorm() {
 }
 
 /** Dilates and translates the polynomial, keeps the domain [A,B].
-  * Transform: P(2^(-n)*x+l)->P(2^(-n')*(2^(-n)x+l)+l') for given
-  * arguments n,l. */
+ * Transform: P(2^(-n)*x+l)->P(2^(-n')*(2^(-n)x+l)+l') for given
+ * arguments n,l. */
 void Polynomial::rescale(double n, double l) {
     setDilation(this->N * n);
     setTranslation(this->L + l);
 }
 
 /** Returns the order of the highest non-zero coef.
-  * NB: Not the length of the coefs vector. */
+ * NB: Not the length of the coefs vector. */
 int Polynomial::getOrder() const {
     int n = 0;
     for (int i = 0; i < this->coefs.size(); i++) {
@@ -176,7 +176,7 @@ Polynomial Polynomial::operator*(double c) const {
 }
 
 /** Calculate R = P*Q.
-  * Returns unbounded polynomial. */
+ * Returns unbounded polynomial. */
 Polynomial Polynomial::operator*(const Polynomial &Q) const {
     const Polynomial &P = *this;
     Polynomial R;
@@ -220,7 +220,7 @@ void Polynomial::addInPlace(double c, const Polynomial &Q) {
 }
 
 /** Calculate R = P + c*Q, with a default c = 1.0.
-  * Returns unbounded polynomial. */
+ * Returns unbounded polynomial. */
 Polynomial Polynomial::add(double c, const Polynomial &Q) const {
     const Polynomial &P = *this;
     Polynomial R;

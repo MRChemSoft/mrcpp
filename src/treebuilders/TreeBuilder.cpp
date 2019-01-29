@@ -91,7 +91,7 @@ template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &
     Timer clean_t;
     MWNodeVector<D> nodeVec;
     tree.makeNodeTable(nodeVec);
-    calculator.calcNodeVector(nodeVec); //clear all coefficients
+    calculator.calcNodeVector(nodeVec); // clear all coefficients
     clean_t.stop();
 
     tree.clearSquareNorm();

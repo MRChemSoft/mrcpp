@@ -51,7 +51,7 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
 /** Make children scaling coefficients from parent
  * Other node info are not used/set
  * coeff_in are not modified.
- * The output is written directly into the 8 children scaling coefficients. 
+ * The output is written directly into the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
 template <int D>
@@ -76,8 +76,8 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
         ftlim = 1;
         ftlim2 = 2;
         ftlim3 = 4;
-        //NB: Careful: tmpcoeff tmpcoeff2 are not initialized to zero
-        //must not read these unitialized values!
+        // NB: Careful: tmpcoeff tmpcoeff2 are not initialized to zero
+        // must not read these unitialized values!
     }
 
     overwrite = 0.0;
@@ -102,7 +102,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
     }
     if (D > 1) {
         i++;
-        mask = 2; //1 << i;
+        mask = 2; // 1 << i;
         for (int gt = 0; gt < tDim; gt++) {
             double *out = tmpcoeff2 + gt * kp1_d;
             for (int ft = 0; ft < ftlim2; ft++) {
@@ -125,9 +125,9 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
         overwrite = 1.0;
         if (b_overwrite) overwrite = 0.0;
         i++;
-        mask = 4; //1 << i;
+        mask = 4; // 1 << i;
         for (int gt = 0; gt < tDim; gt++) {
-            double *out = coeff_out + gt * stride; //write right into children
+            double *out = coeff_out + gt * stride; // write right into children
             for (int ft = 0; ft < ftlim3; ft++) {
                 // Operate in direction i only if the bits along other
                 // directions are identical. The bit of the direction we
@@ -172,7 +172,7 @@ template <int D> void SerialTree<D>::S_mwTransformBack(double *coeff_in, double 
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
  * coeff_in are not modified.
- * The output is read directly from the 8 children scaling coefficients. 
+ * The output is read directly from the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
 template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coeff_out, int stride) {
@@ -209,7 +209,7 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
         overwrite = 0.0;
     }
     i++;
-    mask = 2; //1 << i;
+    mask = 2; // 1 << i;
     for (int gt = 0; gt < tDim; gt++) {
         double *out = tmpcoeff + gt * kp1_d;
         for (int ft = 0; ft < ftlim2; ft++) {
@@ -228,10 +228,10 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
         overwrite = 0.0;
     }
     i++;
-    mask = 4; //1 << i;
+    mask = 4; // 1 << i;
     for (int gt = 0; gt < tDim; gt++) {
         double *out = coeff_out + gt * kp1_d;
-        //double *out = coeff_out + gt * N_coeff;
+        // double *out = coeff_out + gt * N_coeff;
         for (int ft = 0; ft < ftlim3; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we

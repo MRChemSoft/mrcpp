@@ -106,11 +106,11 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
 }
 
 /** Make 1D lists, adressable from [-l, l] scale by scale, of operator node
-  * pointers for fast operator retrieval. This method is not thread safe,
-  * since it projects missing operator nodes on the fly. Hence, it must NEVER
-  * be called within a parallel region, or all hell will break loose. This is
-  * not really a problem, but you have been warned.
-  */
+ * pointers for fast operator retrieval. This method is not thread safe,
+ * since it projects missing operator nodes on the fly. Hence, it must NEVER
+ * be called within a parallel region, or all hell will break loose. This is
+ * not really a problem, but you have been warned.
+ */
 void OperatorTree::setupOperNodeCache() {
     int nScales = this->nodesAtDepth.size();
     int rootScale = this->getRootScale();
@@ -162,11 +162,11 @@ void OperatorTree::clearOperNodeCache() {
 }
 
 /** Regenerate all s/d-coeffs by backtransformation, starting at the bottom and
-  * thus purifying all coefficients. Option to overwrite or add up existing
-  * coefficients of BranchNodes (can be used after operator application).
-  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
-  * of OperatorNorm is done using random vectors, which is non-deterministic
-  * in parallel. FunctionTrees should be fine. */
+ * thus purifying all coefficients. Option to overwrite or add up existing
+ * coefficients of BranchNodes (can be used after operator application).
+ * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+ * of OperatorNorm is done using random vectors, which is non-deterministic
+ * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformUp() {
     std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);
@@ -181,11 +181,11 @@ void OperatorTree::mwTransformUp() {
 }
 
 /** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
-  * on coarser scales, starting at the rootNodes. Option to overwrite or add up
-  * existing scaling coefficients (can be used after operator application).
-  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
-  * of OperatorNorm is done using random vectors, which is non-deterministic
-  * in parallel. FunctionTrees should be fine. */
+ * on coarser scales, starting at the rootNodes. Option to overwrite or add up
+ * existing scaling coefficients (can be used after operator application).
+ * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+ * of OperatorNorm is done using random vectors, which is non-deterministic
+ * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);

@@ -67,12 +67,12 @@ public:
     void S_mwTransform(double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
     void S_mwTransformBack(double *coeff_in, double *coeff_out, int stride);
 
-    int nNodes; //number of Nodes already defined
+    int nNodes; // number of Nodes already defined
     int maxNodesPerChunk;
     std::vector<int> nodeStackStatus;
-    int sizeNodeCoeff; //size of coeff for one node
+    int sizeNodeCoeff; // size of coeff for one node
     double **coeffStack;
-    int maxNodes; //max number of nodes that can be defined
+    int maxNodes; // max number of nodes that can be defined
 
 protected:
     MWTree<D> *tree_p;

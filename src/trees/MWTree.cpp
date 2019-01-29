@@ -40,8 +40,8 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** MWTree constructor with SerialTree storage for nodes.
-  * Creates an empty tree object. Node construction and assignment of most of
-  * the parameters are done in derived classes. */
+ * Creates an empty tree object. Node construction and assignment of most of
+ * the parameters are done in derived classes. */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         : nThreads(omp_get_max_threads())
@@ -74,10 +74,10 @@ template <int D> MWTree<D>::~MWTree() {
 }
 
 /** Calculate the squared norm of a function represented as a tree.
-  *
-  * Norm is calculated using endNodes only, but if your endNodeTable is
-  * incomplete (e.g. within growTree), the missing nodes must be given in the
-  * input work vector. Involves an MPI reduction operation. */
+ *
+ * Norm is calculated using endNodes only, but if your endNodeTable is
+ * incomplete (e.g. within growTree), the missing nodes must be given in the
+ * input work vector. Involves an MPI reduction operation. */
 template <int D> void MWTree<D>::calcSquareNorm() {
     double treeNorm = 0.0;
     for (int n = 0; n < this->getNEndNodes(); n++) {
@@ -103,8 +103,8 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
 }
 
 /** Regenerate all s/d-coeffs by backtransformation, starting at the bottom and
-  * thus purifying all coefficients. Option to overwrite or add up existing
-  * coefficients of BranchNodes (can be used after operator application). */
+ * thus purifying all coefficients. Option to overwrite or add up existing
+ * coefficients of BranchNodes (can be used after operator application). */
 template <int D> void MWTree<D>::mwTransformUp() {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
@@ -123,8 +123,8 @@ template <int D> void MWTree<D>::mwTransformUp() {
 }
 
 /** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
-  * on coarser scales, starting at the rootNodes. Option to overwrite or add up
-  * existing scaling coefficients (can be used after operator application). */
+ * on coarser scales, starting at the rootNodes. Option to overwrite or add up
+ * existing scaling coefficients (can be used after operator application). */
 template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
@@ -142,9 +142,9 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
 }
 
 /** Traverse tree and set all nodes to zero.
-  *
-  * Keeps the node structure of the tree, even though the zero function is
-  * representable at depth zero. Use cropTree to remove unnecessary nodes.*/
+ *
+ * Keeps the node structure of the tree, even though the zero function is
+ * representable at depth zero. Use cropTree to remove unnecessary nodes.*/
 template <int D> void MWTree<D>::setZero() {
     HilbertIterator<D> it(this);
     while (it.next()) {
@@ -164,9 +164,9 @@ template <int D> void MWTree<D>::deleteNodeCounters() {
 }
 
 /** Increment node counters for non-GenNodes. This routine is not thread
-  * safe, and must NEVER be called outside a critical region in parallel.
-  * It's way. way too expensive to lock the tree, so don't even think
-  * about it. */
+ * safe, and must NEVER be called outside a critical region in parallel.
+ * It's way. way too expensive to lock the tree, so don't even think
+ * about it. */
 template <int D> void MWTree<D>::incrementNodeCount(int scale) {
     int depth = scale - getRootScale();
     assert(depth >= 0);
@@ -179,9 +179,9 @@ template <int D> void MWTree<D>::incrementNodeCount(int scale) {
 }
 
 /** Decrement node counters for non-GenNodes. This routine is not thread
-  * safe, and must NEVER be called outside a critical region in parallel.
-  * It's way. way too expensive to lock the tree, so don't even think
-  * about it. */
+ * safe, and must NEVER be called outside a critical region in parallel.
+ * It's way. way too expensive to lock the tree, so don't even think
+ * about it. */
 template <int D> void MWTree<D>::decrementNodeCount(int scale) {
     int depth = scale - getRootScale();
     assert(depth >= 0);
@@ -194,10 +194,10 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
 }
 
 /** Update GenNode counts in a safe way. Since GenNodes are created on the
-  * fly, we cannot control when to update the node counters without locking
-  * the whole tree. Therefore GenNodes update thread-private counters, which
-  * get merged with the correct global counters in xxxNodes[0]. This method
-  * should be called outside of the parallel region for performance reasons. */
+ * fly, we cannot control when to update the node counters without locking
+ * the whole tree. Therefore GenNodes update thread-private counters, which
+ * get merged with the correct global counters in xxxNodes[0]. This method
+ * should be called outside of the parallel region for performance reasons. */
 template <int D> void MWTree<D>::updateGenNodeCounts() {
     SET_TREE_LOCK();
     for (int i = 1; i < this->nThreads; i++) {
@@ -238,11 +238,11 @@ template <int D> int MWTree<D>::getNGenNodes() {
 }
 
 /** Find and return the node with the given NodeIndex, const version.
-  *
-  * Recursive routine to find and return the node with a given NodeIndex.
-  * This routine returns the appropriate ProjectedNode, or a NULL pointer if
-  * the node does not exist, or if it is a GenNode. Recursion starts at the
-  * appropriate rootNode. */
+ *
+ * Recursive routine to find and return the node with a given NodeIndex.
+ * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * the node does not exist, or if it is a GenNode. Recursion starts at the
+ * appropriate rootNode. */
 template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
 
     if (getRootBox().isPeriodic()) {
@@ -263,11 +263,11 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
 }
 
 /** Find and return the node with the given NodeIndex.
-  *
-  * Recursive routine to find and return the node with a given NodeIndex.
-  * This routine returns the appropriate ProjectedNode, or a NULL pointer if
-  * the node does not exist, or if it is a GenNode. Recursion starts at the
-  * appropriate rootNode. */
+ *
+ * Recursive routine to find and return the node with a given NodeIndex.
+ * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * the node does not exist, or if it is a GenNode. Recursion starts at the
+ * appropriate rootNode. */
 template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) {
         int l[D];
@@ -287,10 +287,10 @@ template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
 }
 
 /** Find and return the node with the given NodeIndex.
-  *
-  * This routine ALWAYS returns the node you ask for, and will generate nodes
-  * that does not exist. Recursion starts at the appropriate rootNode and
-  * decends from this.*/
+ *
+ * This routine ALWAYS returns the node you ask for, and will generate nodes
+ * that does not exist. Recursion starts at the appropriate rootNode and
+ * decends from this.*/
 template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) {
         int l[D];
@@ -308,10 +308,10 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
 }
 
 /** Find and return the node with the given NodeIndex.
-  *
-  * This routine returns the ProjectedNode you ask for, or the EndNode on
-  * the path to the requested node, and will never create or return GenNodes.
-  * Recursion starts at the appropriate rootNode and decends from this. */
+ *
+ * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * the path to the requested node, and will never create or return GenNodes.
+ * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) {
         int l[D];
@@ -329,10 +329,10 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
 }
 
 /** Find and return the node with the given NodeIndex.
-  *
-  * This routine returns the ProjectedNode you ask for, or the EndNode on
-  * the path to the requested node, and will never create or return GenNodes.
-  * Recursion starts at the appropriate rootNode and decends from this. */
+ *
+ * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * the path to the requested node, and will never create or return GenNodes.
+ * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
     if (getRootBox().isPeriodic()) {
         int l[D];
@@ -350,10 +350,10 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) 
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.
-  *
-  * This routine ALWAYS returns the node you ask for, and will generate nodes
-  * that does not exist. Recursion starts at the appropriate rootNode and
-  * decends from this. */
+ *
+ * This routine ALWAYS returns the node you ask for, and will generate nodes
+ * that does not exist. Recursion starts at the appropriate rootNode and
+ * decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     if (depth >= 0) {
@@ -364,10 +364,10 @@ template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.
-  *
-  * This routine returns the ProjectedNode you ask for, or the EndNode on
-  * the path to the requested node, and will never create or return GenNodes.
-  * Recursion starts at the appropriate rootNode and decends from this. */
+ *
+ * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * the path to the requested node, and will never create or return GenNodes.
+ * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 
     if (getRootBox().isPeriodic()) {
@@ -382,10 +382,10 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.
-  *
-  * This routine returns the ProjectedNode you ask for, or the EndNode on
-  * the path to the requested node, and will never create or return GenNodes.
-  * Recursion starts at the appropriate rootNode and decends from this. */
+ *
+ * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * the path to the requested node, and will never create or return GenNodes.
+ * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
 
     if (getRootBox().isPeriodic()) {
@@ -399,7 +399,7 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int de
 }
 
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
-  * Returns one nodeVector for the whole tree. GenNodes disregarded. */
+ * Returns one nodeVector for the whole tree. GenNodes disregarded. */
 template <int D> void MWTree<D>::makeNodeTable(MWNodeVector<D> &nodeTable) {
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);
@@ -410,7 +410,7 @@ template <int D> void MWTree<D>::makeNodeTable(MWNodeVector<D> &nodeTable) {
 }
 
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
-  * Returns one nodeVector per scale. GenNodes disregarded. */
+ * Returns one nodeVector per scale. GenNodes disregarded. */
 template <int D> void MWTree<D>::makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable) {
     HilbertIterator<D> it(this);
     it.setReturnGenNodes(false);

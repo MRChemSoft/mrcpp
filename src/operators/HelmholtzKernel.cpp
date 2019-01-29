@@ -44,7 +44,7 @@ namespace mrcpp {
 /** generate an approximation of the 3d helmholtz kernel expanded in gaussian functions
  */
 void HelmholtzKernel::initializeKernel() {
-    //Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
+    // Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
     double r0 = this->rMin / this->rMax;
     double r1 = this->rMax;
     double mu_tilde = this->mu * r1;

@@ -31,7 +31,6 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "trees/MWNode.h"

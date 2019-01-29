@@ -29,7 +29,6 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "MRCPP/mrcpp_declarations.h"

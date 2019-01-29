@@ -25,7 +25,6 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Dense>
 
 #include "ScalingBasis.h"

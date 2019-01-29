@@ -19,7 +19,9 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.cpp
   )
 
-list(APPEND trees_h
+get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
+
+list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.h
   ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.h
@@ -44,9 +46,15 @@ list(APPEND trees_h
   )
 
 # Sets install directory for all the headers in the list
-foreach(_header IN LISTS trees_h)
- install(
-   FILES ${_header}
-   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees
-   )
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/${_dirname})
+foreach(_header IN LISTS ${_dirname}_h)
+  configure_file(
+    ${_header}
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/${_dirname}
+    COPYONLY
+    )
+  install(
+    FILES ${_header}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees
+    )
 endforeach()

@@ -161,10 +161,10 @@ protected:
     double *coefs;
     int n_coefs;
 
-    int lockX;          //manual lock tag (avoiding omp set/unset)
-    int serialIx;       //index in serial Tree
-    int parentSerialIx; //index of parent in serial Tree, or -1 for roots
-    int childSerialIx;  //index of first child in serial Tree, or -1 for leafnodes/endnodes
+    int lockX;          // manual lock tag (avoiding omp set/unset)
+    int serialIx;       // index in serial Tree
+    int parentSerialIx; // index of parent in serial Tree, or -1 for roots
+    int childSerialIx;  // index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     NodeIndex<D> nodeIndex;
     HilbertPath<D> hilbertPath;

@@ -84,7 +84,7 @@ void MWOperator::calcBandWidths(double prec) {
         const OperatorTree &oTree = *this->oper_exp[i];
         const BandWidth &bw = oTree.getBandWidth();
         for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
-            for (int j = 0; j < 4; j++) {          //component loop
+            for (int j = 0; j < 4; j++) {          // component loop
                 int w = bw.getWidth(n, j);
                 if (w > this->band_max(n)) { this->band_max(n) = w; }
             }

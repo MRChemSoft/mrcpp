@@ -57,8 +57,8 @@ template <int D> void ProjectedNode<D>::dealloc() {
 }
 
 /** Update the coefficients of the node by a mw transform of the scaling
-  * coefficients of the children. Option to overwrite or add up existing
-  * coefficients. Specialized for D=3 below. */
+ * coefficients of the children. Option to overwrite or add up existing
+ * coefficients. Specialized for D=3 below. */
 template <int D> void ProjectedNode<D>::reCompress() {
     MWNode<D>::reCompress();
 }
@@ -66,7 +66,7 @@ template <int D> void ProjectedNode<D>::reCompress() {
 template <> void ProjectedNode<3>::reCompress() {
     if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
-        //can write directly from children coeff into parent coeff
+        // can write directly from children coeff into parent coeff
         int stride = this->getMWChild(0).getNCoefs();
         double *inp = this->getMWChild(0).getCoefs();
         double *out = this->coefs;

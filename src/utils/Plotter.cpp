@@ -448,7 +448,7 @@ template <int D> void Plotter<D>::closePlot() {
 }
 
 /** Checks the validity of the plotting range
-*/
+ */
 template <int D> bool Plotter<D>::verifyRange() {
     for (int d = 0; d < D; d++) {
         if (this->A[d] > this->B[d]) { return false; }
@@ -515,7 +515,7 @@ template <> void Plotter<3>::writeCubeData() {
 
     o << std::endl;
     for (int n = 0; n < nRealPoints; n++) {
-        o << this->values[n] << " "; //12.5E
+        o << this->values[n] << " "; // 12.5E
         if (n % 6 == 5) o << std::endl;
         if (this->values[n] < min) min = this->values[n];
         if (this->values[n] > max) max = this->values[n];

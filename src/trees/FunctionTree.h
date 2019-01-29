@@ -24,9 +24,9 @@
  */
 
 /**
-*  Basic class for representing functions in a multiwavelet
-*  representation.
-*/
+ *  Basic class for representing functions in a multiwavelet
+ *  representation.
+ */
 
 #pragma once
 

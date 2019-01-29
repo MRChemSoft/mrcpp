@@ -100,7 +100,7 @@ template <int D> GaussExp<D>::~GaussExp() {
 template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
     squareNorm = gexp.squareNorm;
-    //screening = gexp.screening;
+    // screening = gexp.screening;
     this->funcs.clear();
     for (unsigned int i = 0; i < gexp.size(); i++) {
         if (gexp.funcs[i] == 0) {

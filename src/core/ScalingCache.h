@@ -43,7 +43,7 @@ public:
         SET_CACHE_LOCK();
         if (not this->hasId(order)) {
             P *f = new P(order);
-            int memo = 2 * SQUARE(order + 1) * sizeof(double); //approx
+            int memo = 2 * SQUARE(order + 1) * sizeof(double); // approx
             ObjectCache<P>::load(order, f, memo);
         }
         UNSET_CACHE_LOCK();

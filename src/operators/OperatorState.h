@@ -27,7 +27,7 @@
  * It keeps track of various state dependent variables and memory
  * regions. We cannot have some of this information directly in OperatorFunc
  * because of multi-threading issues.
-*/
+ */
 
 #pragma once
 

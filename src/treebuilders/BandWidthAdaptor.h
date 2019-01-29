@@ -29,8 +29,8 @@
 #include "constants.h"
 
 /** Builds an OperatorTree with known band width (e.g. derivative and identity).
-  * Assumes translational invariant and symmetric (in x - y) operator and keeps
-  * only lower row of nodes (lx = 0). */
+ * Assumes translational invariant and symmetric (in x - y) operator and keeps
+ * only lower row of nodes (lx = 0). */
 
 namespace mrcpp {
 

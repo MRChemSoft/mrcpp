@@ -44,7 +44,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** FunctionTree constructor for Serial Tree.
-  * */
+ * */
 template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
         : MWTree<D>(mra) {
@@ -65,9 +65,9 @@ template <int D> FunctionTree<D>::~FunctionTree() {
 }
 
 /** Leaves the tree inn the same state as after construction, e.i.
-  * undefined function containing only root nodes without coefficients.
-  * The assigned memory (nodeChunks in SerialTree) is NOT released,
-  * but is immediately available to the new function. */
+ * undefined function containing only root nodes without coefficients.
+ * The assigned memory (nodeChunks in SerialTree) is NOT released,
+ * but is immediately available to the new function. */
 template <int D> void FunctionTree<D>::clear() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
@@ -80,7 +80,7 @@ template <int D> void FunctionTree<D>::clear() {
 }
 
 /** Write the tree structure to disk, for later use.
-  * Argument file name will get a ".tree" file extension. */
+ * Argument file name will get a ".tree" file extension. */
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     // This is basically a copy of MPI send_tree
     Timer t1;
@@ -113,7 +113,7 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
 }
 
 /** Read a previously stored tree structure from disk.
-  * Argument file name will get a ".tree" file extension. */
+ * Argument file name will get a ".tree" file extension. */
 template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // This is basically a copy of MPI recv_tree
     Timer t1;
@@ -341,7 +341,7 @@ template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) 
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
             MWNode<D> &out_node = *this->endNodeTable[n];
-            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); //Full copy
+            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
             out_node.mwTransform(Reconstruction);
             out_node.cvTransform(Forward);
             inp_node.mwTransform(Reconstruction);

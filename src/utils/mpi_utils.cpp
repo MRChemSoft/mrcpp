@@ -44,11 +44,11 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 #ifdef HAVE_MPI
     MPI_Comm_rank(comm, &this->rank);
     // MPI_Aint types are used for adresses (can be larger than int)
-    MPI_Aint size = (rank == 0) ? 1024 * 1024 * sh_size : 0; //rank 0 defines length of segment
-    int disp_unit = 16;                                      //in order for the compiler to keep aligned
-    //size is in bytes
+    MPI_Aint size = (rank == 0) ? 1024 * 1024 * sh_size : 0; // rank 0 defines length of segment
+    int disp_unit = 16;                                      // in order for the compiler to keep aligned
+    // size is in bytes
     MPI_Win_allocate_shared(size, disp_unit, MPI_INFO_NULL, comm, &this->sh_start_ptr, &this->sh_win);
-    MPI_Win_fence(0, this->sh_win); //wait until finished
+    MPI_Win_fence(0, this->sh_win); // wait until finished
     MPI_Aint qsize = 0;
     int qdisp = 0;
     MPI_Win_shared_query(this->sh_win, 0, &qsize, &qdisp, &this->sh_start_ptr);
@@ -60,7 +60,7 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 
 SharedMemory::~SharedMemory() {
 #ifdef HAVE_MPI
-    //deallocates the memory block
+    // deallocates the memory block
     MPI_Win_free(&this->sh_win);
 #endif
 }
@@ -107,11 +107,11 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
         } else {
             double *sNodesCoeff;
             if (sTree.isShared()) {
-                //for coefficients, take from the shared memory block
+                // for coefficients, take from the shared memory block
                 SharedMemory *shMem = sTree.getMemory();
                 sNodesCoeff = shMem->sh_end_ptr;
                 shMem->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
-                //may increase size dynamically in the future
+                // may increase size dynamically in the future
                 if (shMem->sh_max_ptr < shMem->sh_end_ptr) { MSG_FATAL("Shared block too small"); }
             } else {
                 sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];

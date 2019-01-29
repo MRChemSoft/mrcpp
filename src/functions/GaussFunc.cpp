@@ -247,8 +247,8 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a, doubl
     x_pb = pos_p - pos_b;                               /* X_{PB} */
     s_00 = pi / expo_p;
     s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
-    //int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
-    //int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
+    // int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
+    // int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
 
     /* we add 3 coeffs. to avoid a hell of a lot of if statements */
     /*    n_tot_coeff = n_0j_coeff + n_ij_coeff + 3;	*/

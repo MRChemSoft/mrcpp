@@ -43,7 +43,7 @@ namespace mrcpp {
 using LegendreCache = ObjectCache<LegendrePoly>;
 
 /** Legendre polynomial constructed on [-1,1] and
-  * scaled by n and translated by l */
+ * scaled by n and translated by l */
 LegendrePoly::LegendrePoly(int k, double n, double l)
         : Polynomial(k) {
     // Since we create Legendre polynomials recursively on [-1,1]

@@ -50,7 +50,7 @@ GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos, const st
     for (auto d = 0; d < D; d++) {
         if (power != std::array<int, D>{}) {
             this->poly[d] = new Polynomial(this->power[d]);
-            //this->poly[d]->unsetBounds();
+            // this->poly[d]->unsetBounds();
         } else {
             this->poly[d] = 0;
         }
@@ -66,7 +66,7 @@ GaussPoly<D>::GaussPoly(const std::array<double, D> &alpha,
     for (auto d = 0; d < D; d++) {
         if (power != std::array<int, D>{}) {
             this->poly[d] = new Polynomial(this->power[d]);
-            //this->poly[d]->unsetBounds();
+            // this->poly[d]->unsetBounds();
         } else {
             this->poly[d] = 0;
         }
@@ -88,7 +88,7 @@ GaussPoly<D>::GaussPoly(const GaussFunc<D> &gf)
         VectorXd coefs = VectorXd::Zero(order + 1);
         coefs[order] = 1.0;
         poly[d]->setCoefs(coefs);
-        //poly[d]->unsetBounds();
+        // poly[d]->unsetBounds();
     }
 }
 
@@ -130,7 +130,7 @@ template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
     }
     double q2 = 0.0, p2 = 1.0;
     for (int d = 0; d < D; d++) {
-        //assert(this->poly[d]->getCheckBounds() == false);
+        // assert(this->poly[d]->getCheckBounds() == false);
         double q = r[d] - this->pos[d];
         q2 += this->alpha[d] * q * q;
         p2 *= poly[d]->evalf(r[d] - this->pos[d]);
@@ -148,7 +148,7 @@ template <int D> double GaussPoly<D>::evalf(const double r, int d) const {
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
-    //assert(this->poly[d]->getCheckBounds() == false);
+    // assert(this->poly[d]->getCheckBounds() == false);
     double q2 = 0.0, p2 = 1.0;
     double q = (r - this->pos[d]);
     q2 += q * q;
@@ -266,7 +266,7 @@ template <int D> void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
 template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
     if (this->poly[d] != 0) { delete this->poly[d]; }
     this->poly[d] = new Polynomial(poly);
-    //this->poly[d]->unsetBounds();
+    // this->poly[d]->unsetBounds();
     this->power[d] = poly.getOrder();
 }
 

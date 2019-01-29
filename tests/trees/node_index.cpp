@@ -47,7 +47,7 @@ SCENARIO("Node indices can be compared", "[node_index_compare], [node_index]") {
 }
 
 template <int D> void testConstructors() {
-    NodeIndex<D> *nIdx = 0;
+    NodeIndex<D> *nIdx = nullptr;
     initialize<D>(&nIdx);
 
     SECTION("Constructor") { testInitial<D>(nIdx); }
@@ -77,8 +77,8 @@ template <int D> void testConstructors() {
 }
 
 template <int D> void testCompare() {
-    NodeIndex<D> *aIdx = 0;
-    NodeIndex<D> *bIdx = 0;
+    NodeIndex<D> *aIdx = nullptr;
+    NodeIndex<D> *bIdx = nullptr;
     initialize<D>(&aIdx);
     initialize<D>(&bIdx);
     THEN("aIdx == bIdx") {

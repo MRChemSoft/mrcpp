@@ -256,7 +256,7 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
         idx.setTranslation(l);
     }
     int rIdx = getRootBox().getBoxIndex(idx);
-    if (rIdx < 0) return 0;
+    if (rIdx < 0) return nullptr;
     const MWNode<D> &root = this->rootBox.getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);
@@ -280,7 +280,7 @@ template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
         idx.setTranslation(l);
     }
     int rIdx = getRootBox().getBoxIndex(idx);
-    if (rIdx < 0) return 0;
+    if (rIdx < 0) return nullptr;
     MWNode<D> &root = this->rootBox.getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);

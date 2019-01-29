@@ -35,20 +35,20 @@ namespace mrcpp {
 void MWOperator::clear(bool dealloc) {
     if (dealloc) {
         for (int i = 0; i < this->oper_exp.size(); i++) {
-            if (this->oper_exp[i] != 0) delete this->oper_exp[i];
+            if (this->oper_exp[i] != nullptr) delete this->oper_exp[i];
         }
     }
     this->oper_exp.clear();
 }
 
 OperatorTree &MWOperator::getComponent(int i) {
-    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }
 
 const OperatorTree &MWOperator::getComponent(int i) const {
-    if (this->oper_exp[i] == 0) MSG_ERROR("Invalid component");
+    if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }

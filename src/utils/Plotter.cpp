@@ -44,7 +44,7 @@ namespace mrcpp {
 */
 template <int D>
 Plotter<D>::Plotter(int npts, const double *a, const double *b)
-        : fout(0)
+        : fout(nullptr)
         , nPoints(npts) {
     setRange(a, b);
     setSuffix(Plotter<D>::Line, ".line");
@@ -420,7 +420,7 @@ template <int D> void Plotter<D>::writeGrid(const MWTree<D> &tree) {
 */
 template <int D> void Plotter<D>::openPlot(const std::string &fname) {
     if (fname.empty()) {
-        if (this->fout == 0) {
+        if (this->fout == nullptr) {
             MSG_ERROR("Plot file not set!");
             return;
         } else if (this->fout->fail()) {
@@ -428,7 +428,7 @@ template <int D> void Plotter<D>::openPlot(const std::string &fname) {
             return;
         }
     } else {
-        if (this->fout != 0) { this->fout->close(); }
+        if (this->fout != nullptr) { this->fout->close(); }
         this->fout = &this->fstrm;
         this->fout->open(fname.c_str());
         if (this->fout->bad()) {
@@ -443,8 +443,8 @@ template <int D> void Plotter<D>::openPlot(const std::string &fname) {
     Closes the file output stream fout.
 */
 template <int D> void Plotter<D>::closePlot() {
-    if (this->fout != 0) this->fout->close();
-    this->fout = 0;
+    if (this->fout != nullptr) this->fout->close();
+    this->fout = nullptr;
 }
 
 /** Checks the validity of the plotting range

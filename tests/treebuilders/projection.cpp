@@ -44,9 +44,9 @@ SCENARIO("Projecting Gaussian function", "[projection], [tree_builder], [trees]"
 }
 
 template <int D> void testProjectFunction() {
-    GaussFunc<D> *func = 0;
+    GaussFunc<D> *func = nullptr;
     initialize(&func);
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     WHEN("the function is projected on the default grid") {

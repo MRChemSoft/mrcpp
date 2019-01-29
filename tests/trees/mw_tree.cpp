@@ -47,14 +47,14 @@ template <int D> void testNodeFetchers() {
     if (D >= 3) r[2] = 1.9;
 
     const int cIdx = 1 << (D - 1);
-    NodeIndex<D> *root = 0;
+    NodeIndex<D> *root = nullptr;
     initialize(&root);
     const NodeIndex<D> idx_0(*root);
     const NodeIndex<D> idx_1(idx_0, cIdx);
     const NodeIndex<D> idx_2(idx_1, cIdx);
     finalize(&root);
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     FunctionTree<D> tree(*mra);

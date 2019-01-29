@@ -62,7 +62,7 @@ template <int D> void testMultiplication() {
     GaussFunc<D> b_func(beta_b, alpha, pos_b);
     GaussPoly<D> ref_func = a_func * b_func;
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     // Initialize trees
@@ -132,7 +132,7 @@ template <int D> void testSquare() {
     GaussFunc<D> f_func(beta, alpha, pos);
     GaussPoly<D> ref_func = f_func * f_func;
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     // Initialize trees

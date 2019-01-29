@@ -48,7 +48,7 @@ template <int D> void testConstructors() {
         nb[d] = D + d;
         tot_boxes *= nb[d];
     }
-    NodeIndex<D> *nIdx = 0;
+    NodeIndex<D> *nIdx = nullptr;
     initialize(&nIdx);
 
     NodeBox<D> box(*nIdx, nb);
@@ -85,14 +85,14 @@ template <int D> void testNodeFetchers() {
     if (D >= 3) r[2] = 1.9;
 
     int cIdx = 1 << (D - 1);
-    NodeIndex<D> *root = 0;
+    NodeIndex<D> *root = nullptr;
     initialize(&root);
     const NodeIndex<D> idx_0(*root);
     const NodeIndex<D> idx_1(idx_0, cIdx);
     const NodeIndex<D> idx_2(idx_1, cIdx);
     finalize(&root);
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
     FunctionTree<D> tree(*mra);
     finalize(&mra);

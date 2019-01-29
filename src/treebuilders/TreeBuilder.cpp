@@ -38,7 +38,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
     Timer calc_t(false), split_t(false), norm_t(false);
     println(10, " == Building tree");
 
-    MWNodeVector<D> *newVec = 0;
+    MWNodeVector<D> *newVec = nullptr;
     MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
 
     double sNorm = 0.0;

@@ -117,8 +117,8 @@ template <int D> void applyIdentity() {
     double apply_prec = 1.0e-3;
     double build_prec = 1.0e-4;
 
-    MultiResolutionAnalysis<D> *mra = 0;
-    GaussFunc<D> *fFunc = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
+    GaussFunc<D> *fFunc = nullptr;
     initialize(&fFunc);
     initialize(&mra);
 

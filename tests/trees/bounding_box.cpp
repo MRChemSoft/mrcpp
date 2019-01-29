@@ -54,7 +54,7 @@ TEST_CASE("Bounding box fetching", "[bounding_box_fetch], [bounding_box], [boxes
 }
 
 template <int D> void testConstructors() {
-    BoundingBox<D> *box = 0;
+    BoundingBox<D> *box = nullptr;
     initialize<D>(&box);
 
     SECTION("Constructor") { testInitial<D>(box); }
@@ -78,8 +78,8 @@ template <int D> void testConstructors() {
 
 template <int D> void testCompare() {
     SECTION("Identical boxes") {
-        BoundingBox<D> *aBox = 0;
-        BoundingBox<D> *bBox = 0;
+        BoundingBox<D> *aBox = nullptr;
+        BoundingBox<D> *bBox = nullptr;
         initialize<D>(&aBox);
         initialize<D>(&bBox);
         REQUIRE(*aBox == *bBox);
@@ -89,7 +89,7 @@ template <int D> void testCompare() {
     }
     SECTION("Different boxes") {
         auto *aBox = new BoundingBox<D>();
-        BoundingBox<D> *bBox = 0;
+        BoundingBox<D> *bBox = nullptr;
         initialize<D>(&bBox);
         REQUIRE(*aBox != *bBox);
         REQUIRE_FALSE(*aBox == *bBox);
@@ -99,7 +99,7 @@ template <int D> void testCompare() {
 }
 
 template <int D> void testFetch() {
-    BoundingBox<D> *box = 0;
+    BoundingBox<D> *box = nullptr;
     initialize(&box);
     SECTION("Fetch by coord") {
         Coord<D> r;
@@ -115,7 +115,7 @@ template <int D> void testFetch() {
     }
     SECTION("Fetch by index") {
         SECTION("Within bounds") {
-            NodeIndex<D> *idx = 0;
+            NodeIndex<D> *idx = nullptr;
             initialize(&idx);
             REQUIRE(box->getBoxIndex(*idx) == 0);
             finalize(&idx);

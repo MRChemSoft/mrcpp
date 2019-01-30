@@ -237,7 +237,7 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
         FunctionTree<D> &tree_b = get_func(inp_b, d);
         if (out.getMRA() != tree_a.getMRA()) MSG_FATAL("Trees not compatible");
         if (out.getMRA() != tree_b.getMRA()) MSG_FATAL("Trees not compatible");
-        FunctionTree<D> *out_d = new FunctionTree<D>(out.getMRA());
+        auto *out_d = new FunctionTree<D>(out.getMRA());
         build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter);
         tmp_vec.push_back(std::make_tuple(coef_a * coef_b, out_d));
@@ -280,7 +280,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     //    {
     //#pragma omp for schedule(guided)
     for (int n = 0; n < nNodes; n++) {
-        const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
+        const auto &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
         const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
         if (mwNode == nullptr) continue;
 

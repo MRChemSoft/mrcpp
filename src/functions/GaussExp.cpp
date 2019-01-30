@@ -399,9 +399,9 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
 template <> double GaussExp<3>::calcCoulombEnergy() {
     double energy = 0.0;
     for (int i = 0; i < size(); i++) {
-        if (GaussFunc<3> *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
+        if (auto *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
             for (int j = i; j < size(); j++) {
-                if (GaussFunc<3> *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
+                if (auto *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
                     double c = 2.0;
                     if (i == j) c = 1.0;
                     energy += c * gauss_i->calcCoulombEnergy(*gauss_j);

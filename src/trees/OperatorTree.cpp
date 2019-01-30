@@ -129,7 +129,7 @@ void OperatorTree::setupOperNodeCache() {
             int l[2] = {0, i};
             NodeIndex<2> idx(scale, l);
             // Generated OperatorNodes are still OperatorNodes
-            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -139,7 +139,7 @@ void OperatorTree::setupOperNodeCache() {
         for (int i = 1; i <= n_transl; i++) {
             int l[2] = {i, 0};
             NodeIndex<2> idx(scale, l);
-            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {

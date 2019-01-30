@@ -425,7 +425,7 @@ template <int D> void MWTree<D>::makeNodeTable(std::vector<MWNodeVector<D>> &nod
 }
 
 template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
-    MWNodeVector<D> *nVec = new MWNodeVector<D>;
+    auto *nVec = new MWNodeVector<D>;
     for (int n = 0; n < getNEndNodes(); n++) {
         MWNode<D> &node = getEndMWNode(n);
         nVec->push_back(&node);

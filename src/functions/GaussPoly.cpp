@@ -173,7 +173,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
         } else {
-            int *newPow = new int[D];
+            auto *newPow = new int[D];
             double coef = 1.0;
             for (int d = 0; d < D; d++) {
                 newPow[d] = pow[d];
@@ -197,7 +197,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
         } else {
-            int *newPow = new int[D];
+            auto *newPow = new int[D];
             double coef = 1.0;
             for (int d = 0; d < D; d++) {
                 newPow[d] = pow[d];

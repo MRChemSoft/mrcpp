@@ -189,10 +189,10 @@ void OperatorTree::mwTransformUp() {
 void OperatorTree::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);
-    for (int n = 0; n < nodeTable.size(); n++) {
-        int n_nodes = nodeTable[n].size();
+    for (auto &n : nodeTable) {
+        int n_nodes = n.size();
         for (int i = 0; i < n_nodes; i++) {
-            MWNode<2> &node = *nodeTable[n][i];
+            MWNode<2> &node = *n[i];
             if (node.isBranchNode()) { node.giveChildrenCoefs(overwrite); }
         }
     }

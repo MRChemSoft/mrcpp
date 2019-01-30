@@ -69,8 +69,8 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
 
 /** SerialTree destructor. */
 SerialOperatorTree::~SerialOperatorTree() {
-    for (int i = 0; i < this->nodeChunks.size(); i++) delete[](char *)(this->nodeChunks[i]);
-    for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    for (auto &nodeChunk : this->nodeChunks) delete[](char *) nodeChunk;
+    for (auto &nodeCoeffChunk : this->nodeCoeffChunks) delete[] nodeCoeffChunk;
 
     //    delete[] this->nodeStackStatus;
     this->nodeStackStatus.clear();

@@ -34,8 +34,8 @@ namespace mrcpp {
 
 void MWOperator::clear(bool dealloc) {
     if (dealloc) {
-        for (int i = 0; i < this->oper_exp.size(); i++) {
-            if (this->oper_exp[i] != nullptr) delete this->oper_exp[i];
+        for (auto &i : this->oper_exp) {
+            if (i != nullptr) delete i;
         }
     }
     this->oper_exp.clear();
@@ -64,14 +64,14 @@ int MWOperator::getMaxBandWidth(int depth) const {
 }
 
 void MWOperator::clearBandWidths() {
-    for (unsigned int i = 0; i < this->oper_exp.size(); i++) { this->oper_exp[i]->clearBandWidth(); }
+    for (auto &i : this->oper_exp) { i->clearBandWidth(); }
 }
 
 void MWOperator::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component
-    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
-        OperatorTree &oTree = *this->oper_exp[i];
+    for (auto &i : this->oper_exp) {
+        OperatorTree &oTree = *i;
         oTree.calcBandWidth(prec);
         const BandWidth &bw = oTree.getBandWidth();
         int depth = bw.getDepth();
@@ -80,8 +80,8 @@ void MWOperator::calcBandWidths(double prec) {
     this->band_max = VectorXi(maxDepth + 1);
     this->band_max.setConstant(-1);
     // Find the largest effective bandwidth at each scale
-    for (unsigned int i = 0; i < this->oper_exp.size(); i++) {
-        const OperatorTree &oTree = *this->oper_exp[i];
+    for (auto &i : this->oper_exp) {
+        const OperatorTree &oTree = *i;
         const BandWidth &bw = oTree.getBandWidth();
         for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
             for (int j = 0; j < 4; j++) {          // component loop

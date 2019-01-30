@@ -85,7 +85,7 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
             this->append(gFunc);
         }
     }
-    for (int i = 0; i < power.size(); i++) { delete[] power[i]; }
+    for (auto &i : power) { delete[] i; }
 }
 
 template <int D> GaussExp<D>::~GaussExp() {

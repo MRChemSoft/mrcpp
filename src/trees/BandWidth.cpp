@@ -28,10 +28,7 @@
 
 namespace mrcpp {
 
-BandWidth &BandWidth::operator=(const BandWidth &bw) {
-    this->widths = bw.widths;
-    return *this;
-}
+BandWidth &BandWidth::operator=(const BandWidth &bw) = default;
 
 bool BandWidth::isEmpty(int depth) const {
     if (depth > getDepth()) { return true; }

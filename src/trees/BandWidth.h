@@ -52,7 +52,7 @@ public:
     int getWidth(int depth, int index) const;
     void setWidth(int depth, int index, int wd);
 
-    friend std::ostream &operator<<(std::ostream &o, const BandWidth &bw) { bw.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const BandWidth &bw) { return bw.print(o); }
 
 private:
     Eigen::MatrixXi widths; /// column 5 stores max width at depth

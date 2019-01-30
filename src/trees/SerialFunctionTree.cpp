@@ -332,7 +332,8 @@ template <int D> void SerialFunctionTree<D>::deallocNodes(int serialIx) {
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D> int SerialFunctionTree<D>::shrinkChunks() {
     int nAlloc = (1 << D);
-    if (this->maxNodesPerChunk * this->nodeChunks.size() <= this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
+    if (this->maxNodesPerChunk * this->nodeChunks.size() <=
+        this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
         return 0; // no chunks to remove
     }
 
@@ -345,7 +346,10 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
     while (true) {
         // find first available spot
         // Note that last positions on a chunk cannot be used if there is no place for 8 siblings on the same chunk
-        while ((this->nodeStackStatus[posavail] != 0 or (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and posavail < this->nNodes) posavail++;
+        while ((this->nodeStackStatus[posavail] != 0 or
+                (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and
+               posavail < this->nNodes)
+            posavail++;
         if (posavail >= this->nNodes) break; // treated all nodes
 
         // find next allocated spot after available
@@ -424,7 +428,7 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
     // shrink the stacks
     this->nodeChunks.resize(nChunks);
     this->nodeCoeffChunks.resize(nChunks);
-    this->nodeStackStatus.resize(nChunks*this->maxNodesPerChunk);
+    this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
 
     this->maxNodes = this->nodeStackStatus.size();
 

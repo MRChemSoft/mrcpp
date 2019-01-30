@@ -331,7 +331,8 @@ template <int D> void SerialFunctionTree<D>::deallocNodes(int serialIx) {
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D> int SerialFunctionTree<D>::shrinkChunks() {
-    if (this->maxNodesPerChunk * this->nodeChunks.size() <= this->getTree()->getNNodes() + this->maxNodesPerChunk) {
+    int nAlloc = (1 << D);
+    if (this->maxNodesPerChunk * this->nodeChunks.size() <= this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
         return 0; // no chunks to remove
     }
 
@@ -343,14 +344,14 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
 
     while (true) {
         // find first available spot
-        while (this->nodeStackStatus[posavail] != 0 and posavail < this->nNodes) posavail++;
+        // Note that last positions on a chunk cannot be used if there is no place for 8 siblings on the same chunk
+        while ((this->nodeStackStatus[posavail] != 0 or (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and posavail < this->nNodes) posavail++;
         if (posavail >= this->nNodes) break; // treated all nodes
-        // next allocated spot after available
+
+        // find next allocated spot after available
         posocc = posavail;
         while (this->nodeStackStatus[posocc] == 0 and posavail < this->nNodes) posocc++;
         if (posocc >= this->nNodes) break; // treated all nodes
-
-        int nAlloc = (1 << D);
 
         // move node from posocc to posavail
         int ichunk = posocc / this->maxNodesPerChunk;
@@ -419,9 +420,11 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
     // Note that shared coefficients cannot be deallocated, but it is still useful to shrink the holes.
     if (not this->isShared()) // if the data is shared, it must be freed by MPI_Win_free
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+
     // shrink the stacks
     this->nodeChunks.resize(nChunks);
     this->nodeCoeffChunks.resize(nChunks);
+    this->nodeStackStatus.resize(nChunks*this->maxNodesPerChunk);
 
     this->maxNodes = this->nodeStackStatus.size();
 

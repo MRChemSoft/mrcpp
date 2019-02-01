@@ -7,8 +7,7 @@ notifications:
   slack:
     secure: 1jnJfgRwfuF8dzfN5daTItQ+jrilhRSjz88gKMhMpqvWrpaAZrytTcejs5FELXadeLIiddoT7c5GKLrCngVzadMi60bc/kfE2Lzer8z31i6mfPXGLvd3zWpVa6Tt8Bur2wL/oB/f6herDQurW2t0HcTp6oc6Mv3iI23PPl/MQG4w6oNKc6SOeBIBDykJOSaf3+SY/z4vXBqqF5lbmWHUIngTUkV7UEzmj+c4MukOUn9IyYjNSgvZd1ql4SKG58gzkafB1tbhxPjyJqLcWjokwlhVYTxHulBqemxRj7DGznWAUL72Pbc6ot27R655wvl/OEoL7X8U0aLIJIlIzLl49WDv5c81wGw/iOVjj5leBpfJl6QlyNMJC0jPEEJYPbEWxzgZGNa1eYbZyroOKvBBalcYVzxq018VgwYjMdZL0zFhdTymgFcDnR1p3Z1Lii6fN3oO2QVAsyBq3sN+IVtlyAWnHIGP+eyEGpggKJ1GsnG/Mb8cjBc6hjG8Q3fRQEfB5C5FeWJSU67hTnuGpTWKcF8rcfbtrw5D1JzBkqYjL6PuG5/VLu8Ro/IihBKf0N+sFa5GvdmbWOEWDEpiIMfWvcOpTIabZyRzcLJX7fqP29b2lUjoLVT3g5+cgSYSZcVyCFj+kunL1LZpgsBf9tr6r+OWzXwNVti+fEvF0KqMHHs=
 
-
-matrix:
+jobs:
   include:
     - os: linux
       addons: &1

@@ -1,24 +1,9 @@
 add_library(mrcpp "")
 
-# Generate header with preprocessor macros for visibility of symbols
-include(GenerateExportHeader)
-generate_export_header(mrcpp
-  BASE_NAME "MRCPP"
-  EXPORT_MACRO_NAME "MRCPP_EXPORT"
-  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/MRCPP/MRCPPExport.h"
-  DEPRECATED_MACRO_NAME "MRCPP_DEPRECATED"
-  NO_EXPORT_MACRO_NAME "MRCPP_NO_EXPORT"
-  STATIC_DEFINE "MRCPP_STATIC_DEFINE"
-  NO_DEPRECATED_MACRO_NAME "MRCPP_NO_DEPRECATED"
-  DEFINE_NO_DEPRECATED
-  )
-
 # TODO Set compiler options at this level, rather than globally
 #target_compile_options(mrcpp )
 
 target_compile_definitions(mrcpp
-  PUBLIC
-    "$<$<BOOL:${BUILD_STATIC_LIBS}>:MRCPP_STATIC_DEFINE>"
   INTERFACE
     $<INSTALL_INTERFACE:USING_MRCPP>
   )

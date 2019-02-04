@@ -24,8 +24,8 @@
  */
 
 #include "OperatorNode.h"
+#include "MRCPP/utils/math_utils.h"
 #include "SerialTree.h"
-#include "utils/math_utils.h"
 
 using namespace Eigen;
 

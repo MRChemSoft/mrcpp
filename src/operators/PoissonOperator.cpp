@@ -24,8 +24,8 @@
  */
 
 #include "PoissonOperator.h"
+#include "MRCPP/utils/Printer.h"
 #include "PoissonKernel.h"
-#include "utils/Printer.h"
 
 namespace mrcpp {
 

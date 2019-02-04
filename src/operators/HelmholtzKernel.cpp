@@ -36,8 +36,8 @@
 #include <cmath>
 
 #include "HelmholtzKernel.h"
-#include "functions/GaussFunc.h"
-#include "utils/Printer.h"
+#include "MRCPP/functions/GaussFunc.h"
+#include "MRCPP/utils/Printer.h"
 
 namespace mrcpp {
 

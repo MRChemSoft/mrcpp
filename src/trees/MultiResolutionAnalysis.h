@@ -26,8 +26,8 @@
 #pragma once
 
 #include "BoundingBox.h"
-#include "core/MWFilter.h"
-#include "core/ScalingBasis.h"
+#include "MRCPP/core/MWFilter.h"
+#include "MRCPP/core/ScalingBasis.h"
 
 #include "MRCPP/mrcpp_declarations.h"
 

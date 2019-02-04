@@ -27,13 +27,13 @@
 
 #include "factory_functions.h"
 
-#include "operators/ABGVOperator.h"
-#include "operators/MWOperator.h"
-#include "operators/PHOperator.h"
-#include "treebuilders/add.h"
-#include "treebuilders/apply.h"
-#include "treebuilders/project.h"
-#include "utils/math_utils.h"
+#include "MRCPP/operators/ABGVOperator.h"
+#include "MRCPP/operators/MWOperator.h"
+#include "MRCPP/operators/PHOperator.h"
+#include "MRCPP/treebuilders/add.h"
+#include "MRCPP/treebuilders/apply.h"
+#include "MRCPP/treebuilders/project.h"
+#include "MRCPP/utils/math_utils.h"
 
 using namespace mrcpp;
 

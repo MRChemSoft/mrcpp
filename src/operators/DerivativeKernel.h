@@ -26,8 +26,8 @@
 #pragma once
 
 #include "GreensKernel.h"
-#include "functions/GaussFunc.h"
-#include "functions/GaussPoly.h"
+#include "MRCPP/functions/GaussFunc.h"
+#include "MRCPP/functions/GaussPoly.h"
 
 namespace mrcpp {
 

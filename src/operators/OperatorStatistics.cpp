@@ -24,7 +24,7 @@
  */
 
 #include "OperatorStatistics.h"
-#include "trees/MWNode.h"
+#include "MRCPP/trees/MWNode.h"
 
 using namespace Eigen;
 

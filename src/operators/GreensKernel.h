@@ -29,8 +29,8 @@
 
 #pragma once
 
-#include "functions/GaussExp.h"
-#include "functions/Gaussian.h"
+#include "MRCPP/functions/GaussExp.h"
+#include "MRCPP/functions/Gaussian.h"
 
 namespace mrcpp {
 

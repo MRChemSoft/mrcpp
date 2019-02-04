@@ -29,7 +29,7 @@
 
 #include "MRCPP/constants.h"
 
-#include "functions/Polynomial.h"
+#include "MRCPP/functions/Polynomial.h"
 
 namespace mrcpp {
 

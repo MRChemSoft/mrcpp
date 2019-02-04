@@ -24,7 +24,7 @@
  */
 
 #include "ProjectionCalculator.h"
-#include "trees/MWNode.h"
+#include "MRCPP/trees/MWNode.h"
 
 using Eigen::MatrixXd;
 

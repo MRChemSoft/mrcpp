@@ -24,14 +24,14 @@
  */
 
 #include "project.h"
+#include "MRCPP/functions/AnalyticFunction.h"
+#include "MRCPP/trees/FunctionTree.h"
+#include "MRCPP/trees/MultiResolutionAnalysis.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 #include "ProjectionCalculator.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
-#include "functions/AnalyticFunction.h"
-#include "trees/FunctionTree.h"
-#include "trees/MultiResolutionAnalysis.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
 
 namespace mrcpp {
 

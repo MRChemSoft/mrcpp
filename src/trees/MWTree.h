@@ -32,7 +32,7 @@
 #include <Eigen/Core>
 
 #include "MRCPP/mrcpp_declarations.h"
-#include "utils/omp_utils.h"
+#include "MRCPP/utils/omp_utils.h"
 
 #include "MultiResolutionAnalysis.h"
 #include "NodeBox.h"

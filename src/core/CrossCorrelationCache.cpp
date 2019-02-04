@@ -34,7 +34,7 @@
  */
 
 #include "CrossCorrelationCache.h"
-#include "utils/Printer.h"
+#include "MRCPP/utils/Printer.h"
 
 #include "MRCPP/constants.h"
 

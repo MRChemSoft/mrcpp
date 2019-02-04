@@ -24,12 +24,12 @@
  */
 
 #include "ABGVOperator.h"
-#include "treebuilders/ABGVCalculator.h"
-#include "treebuilders/BandWidthAdaptor.h"
-#include "treebuilders/TreeBuilder.h"
-#include "trees/OperatorTree.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "MRCPP/treebuilders/ABGVCalculator.h"
+#include "MRCPP/treebuilders/BandWidthAdaptor.h"
+#include "MRCPP/treebuilders/TreeBuilder.h"
+#include "MRCPP/trees/OperatorTree.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 
 namespace mrcpp {
 

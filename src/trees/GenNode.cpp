@@ -24,8 +24,8 @@
  */
 
 #include "GenNode.h"
+#include "MRCPP/utils/Printer.h"
 #include "SerialTree.h"
-#include "utils/Printer.h"
 
 namespace mrcpp {
 

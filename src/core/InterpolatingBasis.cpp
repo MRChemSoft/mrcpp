@@ -33,8 +33,8 @@
  */
 
 #include "InterpolatingBasis.h"
+#include "MRCPP/functions/LegendrePoly.h"
 #include "QuadratureCache.h"
-#include "functions/LegendrePoly.h"
 
 using namespace Eigen;
 

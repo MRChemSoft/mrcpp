@@ -28,16 +28,16 @@
 #include "CopyAdaptor.h"
 #include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
+#include "MRCPP/operators/ConvolutionOperator.h"
+#include "MRCPP/operators/DerivativeOperator.h"
+#include "MRCPP/trees/FunctionTree.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 #include "SplitAdaptor.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "add.h"
 #include "grid.h"
-#include "operators/ConvolutionOperator.h"
-#include "operators/DerivativeOperator.h"
-#include "trees/FunctionTree.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
 
 namespace mrcpp {
 

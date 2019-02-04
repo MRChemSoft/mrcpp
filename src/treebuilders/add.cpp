@@ -27,13 +27,13 @@
 #include <vector>
 
 #include "AdditionCalculator.h"
+#include "MRCPP/trees/FunctionTree.h"
+#include "MRCPP/trees/FunctionTreeVector.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "add.h"
-#include "trees/FunctionTree.h"
-#include "trees/FunctionTreeVector.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
 
 namespace mrcpp {
 

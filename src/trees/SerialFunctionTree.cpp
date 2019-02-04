@@ -26,9 +26,9 @@
 #include "SerialFunctionTree.h"
 #include "FunctionTree.h"
 #include "GenNode.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/mpi_utils.h"
 #include "ProjectedNode.h"
-#include "utils/Printer.h"
-#include "utils/mpi_utils.h"
 
 namespace mrcpp {
 

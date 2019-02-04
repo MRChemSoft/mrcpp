@@ -38,10 +38,10 @@
 #include "GaussExp.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/details.h"
+#include "MRCPP/utils/math_utils.h"
 #include "Polynomial.h"
-#include "utils/Printer.h"
-#include "utils/details.h"
-#include "utils/math_utils.h"
 
 using namespace Eigen;
 

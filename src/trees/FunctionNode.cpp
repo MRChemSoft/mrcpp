@@ -25,9 +25,9 @@
 
 #include "FunctionNode.h"
 #include "FunctionTree.h"
-#include "core/QuadratureCache.h"
-#include "utils/Printer.h"
-#include "utils/math_utils.h"
+#include "MRCPP/core/QuadratureCache.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/math_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {

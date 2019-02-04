@@ -27,7 +27,7 @@
 
 #include "factory_functions.h"
 
-#include "treebuilders/multiply.h"
+#include "MRCPP/treebuilders/multiply.h"
 
 using namespace mrcpp;
 

@@ -24,9 +24,9 @@
  */
 
 #include "SerialOperatorTree.h"
+#include "MRCPP/utils/Printer.h"
 #include "OperatorNode.h"
 #include "OperatorTree.h"
-#include "utils/Printer.h"
 
 namespace mrcpp {
 

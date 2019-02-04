@@ -24,8 +24,8 @@
  */
 
 #include "ProjectedNode.h"
+#include "MRCPP/utils/Printer.h"
 #include "SerialTree.h"
-#include "utils/Printer.h"
 
 using namespace Eigen;
 

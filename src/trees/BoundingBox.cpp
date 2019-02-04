@@ -33,8 +33,8 @@
 #include "MRCPP/constants.h"
 
 #include "BoundingBox.h"
-#include "utils/Printer.h"
-#include "utils/math_utils.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/math_utils.h"
 
 namespace mrcpp {
 

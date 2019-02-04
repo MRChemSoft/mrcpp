@@ -24,13 +24,13 @@
  */
 
 #include "ConvolutionCalculator.h"
-#include "operators/ConvolutionOperator.h"
-#include "operators/OperatorState.h"
-#include "trees/BandWidth.h"
-#include "trees/FunctionNode.h"
-#include "trees/OperatorNode.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "MRCPP/operators/ConvolutionOperator.h"
+#include "MRCPP/operators/OperatorState.h"
+#include "MRCPP/trees/BandWidth.h"
+#include "MRCPP/trees/FunctionNode.h"
+#include "MRCPP/trees/OperatorNode.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 
 #ifdef HAVE_BLAS
 extern "C" {

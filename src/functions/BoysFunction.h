@@ -25,8 +25,7 @@
 
 #pragma once
 
-#include "RepresentableFunction.h"
-#include "trees/MultiResolutionAnalysis.h"
+#include "MRCPP/trees/MultiResolutionAnalysis.h"
 
 namespace mrcpp {
 

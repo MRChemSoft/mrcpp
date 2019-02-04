@@ -35,9 +35,9 @@
 
 #include <cmath>
 
+#include "MRCPP/functions/GaussFunc.h"
+#include "MRCPP/utils/Printer.h"
 #include "PoissonKernel.h"
-#include "functions/GaussFunc.h"
-#include "utils/Printer.h"
 
 namespace mrcpp {
 

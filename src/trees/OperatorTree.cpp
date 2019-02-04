@@ -26,10 +26,10 @@
 #include "OperatorTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
+#include "MRCPP/utils/Printer.h"
 #include "OperatorNode.h"
 #include "SerialOperatorTree.h"
 #include "SerialTree.h"
-#include "utils/Printer.h"
 
 using namespace Eigen;
 

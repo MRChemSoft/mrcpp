@@ -38,8 +38,8 @@
 #include "MRCPP/config.h"
 #include "MRCPP/constants.h"
 
+#include "MRCPP/utils/Printer.h"
 #include "MWFilter.h"
-#include "utils/Printer.h"
 
 using namespace Eigen;
 

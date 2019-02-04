@@ -27,19 +27,19 @@
 
 #include "factory_functions.h"
 
-#include "operators/HelmholtzKernel.h"
-#include "operators/HelmholtzOperator.h"
-#include "operators/MWOperator.h"
-#include "treebuilders//OperatorAdaptor.h"
-#include "treebuilders/CrossCorrelationCalculator.h"
-#include "treebuilders/TreeBuilder.h"
-#include "treebuilders/add.h"
-#include "treebuilders/apply.h"
-#include "treebuilders/grid.h"
-#include "treebuilders/multiply.h"
-#include "treebuilders/project.h"
-#include "trees/BandWidth.h"
-#include "utils/math_utils.h"
+#include "MRCPP/operators/HelmholtzKernel.h"
+#include "MRCPP/operators/HelmholtzOperator.h"
+#include "MRCPP/operators/MWOperator.h"
+#include "MRCPP/treebuilders//OperatorAdaptor.h"
+#include "MRCPP/treebuilders/CrossCorrelationCalculator.h"
+#include "MRCPP/treebuilders/TreeBuilder.h"
+#include "MRCPP/treebuilders/add.h"
+#include "MRCPP/treebuilders/apply.h"
+#include "MRCPP/treebuilders/grid.h"
+#include "MRCPP/treebuilders/multiply.h"
+#include "MRCPP/treebuilders/project.h"
+#include "MRCPP/trees/BandWidth.h"
+#include "MRCPP/utils/math_utils.h"
 
 using namespace mrcpp;
 

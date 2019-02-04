@@ -27,11 +27,11 @@
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
 #include "DefaultCalculator.h"
+#include "MRCPP/utils/Printer.h"
 #include "SplitAdaptor.h"
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "add.h"
-#include "utils/Printer.h"
 
 namespace mrcpp {
 

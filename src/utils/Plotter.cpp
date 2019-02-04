@@ -24,11 +24,11 @@
  */
 
 #include "Plotter.h"
+#include "MRCPP/functions/RepresentableFunction.h"
+#include "MRCPP/trees/FunctionTree.h"
+#include "MRCPP/trees/MWNode.h"
 #include "Printer.h"
-#include "functions/RepresentableFunction.h"
 #include "math_utils.h"
-#include "trees/FunctionTree.h"
-#include "trees/MWNode.h"
 
 using namespace Eigen;
 

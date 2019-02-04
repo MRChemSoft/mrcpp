@@ -33,11 +33,11 @@
 #include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "HilbertIterator.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
+#include "MRCPP/utils/mpi_utils.h"
 #include "ProjectedNode.h"
 #include "SerialFunctionTree.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
-#include "utils/mpi_utils.h"
 
 using namespace Eigen;
 

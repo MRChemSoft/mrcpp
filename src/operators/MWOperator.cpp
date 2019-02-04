@@ -24,9 +24,9 @@
  */
 
 #include "MWOperator.h"
-#include "trees/BandWidth.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "MRCPP/trees/BandWidth.h"
+#include "MRCPP/utils/Printer.h"
+#include "MRCPP/utils/Timer.h"
 
 using namespace Eigen;
 

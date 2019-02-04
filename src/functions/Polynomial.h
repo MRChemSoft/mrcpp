@@ -34,7 +34,8 @@
  * 4Polynomials.
  */
 
-#pragma once
+#ifndef POLYNOMIAL_H_
+#define POLYNOMIAL_H_
 
 #include <Eigen/Core>
 
@@ -104,3 +105,5 @@ protected:
 };
 
 } // namespace mrcpp
+
+#endif // POLYNOMIAL_H_

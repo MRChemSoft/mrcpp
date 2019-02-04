@@ -25,29 +25,29 @@
 
 #include "catch.hpp"
 
-#include "MRCPP/Gaussians"
-#include "MRCPP/MWFunctions"
-#include "MRCPP/MWOperators"
+#include "factory_functions.h"
 
-using namespace Eigen;
+#include "functions/GaussPoly.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/project.h"
+
 using namespace mrcpp;
 
 namespace gaussians {
 
-template <int D> constexpr auto alpha_gen(const std::array<double, D> &sigma) {
+template <int D> auto alpha_gen(const std::array<double, D> &sigma) {
     auto alpha = std::array<double, D>{};
     for (auto i = 0; i < D; i++) { alpha[i] = 0.5 / (sigma[i] * sigma[i]); }
     return alpha;
 }
 
-template <int D> constexpr auto coef_gen(const std::array<double, D> &sigma) {
+template <int D> auto coef_gen(const std::array<double, D> &sigma) {
     auto coef = 1.0;
     for (auto &s : sigma) coef *= 1.0 / (s * std::sqrt(2.0 * pi));
     return coef;
 }
 
 SCENARIO("Gaussians", "[gaussians]") {
-
     const auto D = 3;
     const auto prec = 1.0e-3;
     // Making normalized gaussian centered at the origin

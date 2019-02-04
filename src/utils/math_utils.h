@@ -32,7 +32,7 @@
 
 #include <Eigen/Core>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 namespace math_utils {

@@ -25,7 +25,7 @@
 
 #include <fstream>
 
-#include "config.h"
+#include "MRCPP/config.h"
 
 #include "PHCalculator.h"
 #include "utils/Printer.h"

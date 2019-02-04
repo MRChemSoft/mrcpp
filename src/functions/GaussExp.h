@@ -47,7 +47,7 @@
 #include "GaussFunc.h"
 #include "RepresentableFunction.h"
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

@@ -25,11 +25,10 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 #include <iomanip>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

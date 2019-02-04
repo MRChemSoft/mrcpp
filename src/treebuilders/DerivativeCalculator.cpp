@@ -24,7 +24,6 @@
  */
 
 #include "DerivativeCalculator.h"
-#include "eigen_disable_warnings.h"
 #include "operators/DerivativeOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"

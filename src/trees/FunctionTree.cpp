@@ -196,7 +196,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) {
     for (const auto &fac : sf) coef /= std::sqrt(fac);
 
     MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
-    FunctionNode<D> &f_node = static_cast<FunctionNode<D> &>(mr_node);
+    auto &f_node = static_cast<FunctionNode<D> &>(mr_node);
     auto result = f_node.evalf(arg);
     this->deleteGenerated();
     return coef * result;

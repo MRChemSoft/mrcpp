@@ -72,8 +72,8 @@ public:
     MWFilter &get(int order) override;
     const Eigen::MatrixXd &getFilterMatrix(int order) override;
 
-    const std::string &getLibPath() { return this->libPath; }
-    void setLibPath(const std::string &path) { this->libPath = path; }
+    const std::string &getLibPath() override { return this->libPath; }
+    void setLibPath(const std::string &path) override { this->libPath = path; }
 
 protected:
     int type;

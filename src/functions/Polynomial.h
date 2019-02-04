@@ -36,7 +36,6 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"

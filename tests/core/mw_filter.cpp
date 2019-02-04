@@ -25,7 +25,7 @@
 
 #include "catch.hpp"
 
-#include "constants.h"
+#include "MRCPP/constants.h"
 #include "core/FilterCache.h"
 
 using namespace Eigen;

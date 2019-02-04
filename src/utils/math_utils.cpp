@@ -27,8 +27,8 @@
 #include <cstdio>
 #include <fstream>
 
+#include "MRCPP/constants.h"
 #include "Printer.h"
-#include "constants.h"
 #include "math_utils.h"
 
 #ifdef HAVE_BLAS

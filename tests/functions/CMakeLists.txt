@@ -6,4 +6,4 @@ target_sources(mrcpp-tests PRIVATE
 
 add_Catch_test(NAME legendre_poly           LABELS legendre_poly)
 add_Catch_test(NAME polynomials             LABELS polynomials)
-add_Catch_test(NAME gaussians             LABELS gaussians)
+add_Catch_test(NAME gaussians               LABELS gaussians)

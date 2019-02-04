@@ -44,7 +44,7 @@ QuadratureCache::QuadratureCache() {
     this->intervals = 1;
 }
 
-QuadratureCache::~QuadratureCache() {}
+QuadratureCache::~QuadratureCache() = default;
 
 void QuadratureCache::load(int k) {
     SET_CACHE_LOCK();

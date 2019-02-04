@@ -34,7 +34,6 @@
 
 #include "LegendreBasis.h"
 #include "QuadratureCache.h"
-#include "eigen_disable_warnings.h"
 #include "functions/LegendrePoly.h"
 
 using namespace Eigen;

@@ -16,8 +16,6 @@ matrix:
           packages:
             - g++
             - lcov
-            - libpython3.5-dev
-            - python3.5-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++'
@@ -43,8 +41,6 @@ matrix:
         apt:
           packages:
             - clang
-            - libpython3.5-dev
-            - python3.5-dev
             - clang-format
       env:
         - BUILD_TYPE='release'
@@ -99,7 +95,7 @@ script:
         --type=${BUILD_TYPE} \
         --cxx=${CXX_COMPILER} \
         --enable-examples \
-        --cmake-options="-DEigen3_DIR=${HOME}/Deps/eigen/share/eigen3/cmake/ -DPYTHON_EXECUTABLE=$(type -P python)" \
+        --cmake-options="-DEigen3_DIR=${HOME}/Deps/eigen/share/eigen3/cmake/" \
         ${COVERAGE} \
         ${OPENMP} \
         build

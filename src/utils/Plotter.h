@@ -25,7 +25,6 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
 #include <fstream>
@@ -33,7 +32,7 @@
 #include <map>
 #include <string>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 

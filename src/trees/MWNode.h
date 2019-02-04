@@ -29,10 +29,9 @@
 
 #pragma once
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
-#include "macros.h"
+#include "MRCPP/macros.h"
 #include "utils/omp_utils.h"
 
 #include "HilbertPath.h"

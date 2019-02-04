@@ -33,11 +33,10 @@
 #include <cmath>
 #include <iostream>
 
-#pragma GCC system_header
 #include <Eigen/Core>
 
+#include "MRCPP/mrcpp_declarations.h"
 #include "RepresentableFunction.h"
-#include "mrcpp_declarations.h"
 
 namespace mrcpp {
 
@@ -47,7 +46,7 @@ public:
     Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p);
     Gaussian<D> &operator=(const Gaussian<D> &gp) = delete;
     virtual Gaussian<D> *copy() const = 0;
-    virtual ~Gaussian();
+    virtual ~Gaussian() = default;
 
     virtual double evalf(const Coord<D> &r) const = 0;
     virtual double evalf(double r, int dim) const = 0;

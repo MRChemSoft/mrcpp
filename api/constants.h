@@ -25,20 +25,34 @@
 
 #pragma once
 
-#include "MRCPP/mrcpp_declarations.h"
-
 namespace mrcpp {
 
-template <int D> class TreeBuilder final {
-public:
-    void build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeAdaptor<D> &adaptor, int maxIter) const;
-    void clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
-    void calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const;
-    int split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const;
+const double MachinePrec = 1.0e-15;
+const double MachineZero = 1.0e-14;
+const int MaxOrder = 41;  ///< Maximum scaling order
+const int MaxDepth = 30;  ///< Maximum depth of trees
+const int MaxScale = 31;  ///< Maximum scale of trees
+const int MinScale = -31; ///< Minimum scale of trees
+const int MaxSepRank = 1000;
 
-private:
-    double calcScalingNorm(const MWNodeVector<D> &vec) const;
-    double calcWaveletNorm(const MWNodeVector<D> &vec) const;
-};
+namespace Axis {
+const int None = -1;
+const int X = 0;
+const int Y = 1;
+const int Z = 2;
+} // namespace Axis
+
+enum Spin { Paired, Alpha, Beta };
+enum FuncType { Legendre, Interpol };
+enum SplitType { ExactSplit, NormalSplit, FastSplit };
+enum CV_Transform { Forward, Backward };
+enum MW_Transform { Compression, Reconstruction };
+enum XC_Type { XC_undefined, XC_lda, XC_gga };
+enum Traverse { TopDown, BottomUp };
+
+// Math constants
+const double pi = 3.1415926535897932384626433832795;
+const double root_pi = 1.7724538509055160273;
+const double C_x = -0.73855876638202240588; // Dirac exchange constant
 
 } // namespace mrcpp

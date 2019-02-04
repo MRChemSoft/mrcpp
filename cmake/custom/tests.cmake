@@ -17,11 +17,15 @@ macro(add_Catch_test)
     ${ARGN}
     )
 
+  # FIXME The location of mrcpp-tests should be relative to PROJECT_BINARY_DIR.
+  # However, the default build paths inherited from Autocmake tuck it under
+  # CMAKE_BINARY_DIR. This is irrelevant for a standalone build of MRCPP, but
+  # becomes relevant in the superbuild of MRChem.
   add_test(
     NAME
       ${add_Catch_test_NAME}
     COMMAND
-      ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/mrcpp-tests
+      ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/mrcpp-tests
       [${add_Catch_test_NAME}] --success --out
       ${PROJECT_BINARY_DIR}/tests/${add_Catch_test_NAME}.log --durations yes
     WORKING_DIRECTORY

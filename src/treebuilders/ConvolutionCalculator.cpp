@@ -24,7 +24,6 @@
  */
 
 #include "ConvolutionCalculator.h"
-#include "eigen_disable_warnings.h"
 #include "operators/ConvolutionOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"

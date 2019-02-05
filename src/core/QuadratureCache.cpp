@@ -34,6 +34,9 @@
  */
 
 #include "QuadratureCache.h"
+
+#include "MRCPP/constants.h"
+
 #include "utils/Printer.h"
 
 namespace mrcpp {

@@ -24,6 +24,7 @@
  */
 
 #include "HelmholtzOperator.h"
+
 #include "HelmholtzKernel.h"
 #include "utils/Printer.h"
 

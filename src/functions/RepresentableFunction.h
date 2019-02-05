@@ -33,7 +33,6 @@
 
 #include <iostream>
 
-#include "MRCPP/constants.h"
 #include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {

@@ -33,9 +33,12 @@
  * \breif
  */
 
+#include "PoissonKernel.h"
+
 #include <cmath>
 
-#include "PoissonKernel.h"
+#include "MRCPP/constants.h"
+
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 

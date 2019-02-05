@@ -33,9 +33,12 @@
  * \breif
  */
 
+#include "HelmholtzKernel.h"
+
 #include <cmath>
 
-#include "HelmholtzKernel.h"
+#include "MRCPP/constants.h"
+
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 

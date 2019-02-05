@@ -11,7 +11,7 @@ list(APPEND api_h
   ${CMAKE_CURRENT_LIST_DIR}/mrcpp_declarations.h
   )
 
-# Sets install directory for all the headers in the list
+# Copy files to ${PROJECT_BINARY_DIR}/MRCPP
 foreach(_header IN LISTS api_h)
   configure_file(
     ${_header}

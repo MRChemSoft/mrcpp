@@ -25,6 +25,8 @@
 
 #include "catch.hpp"
 
+#include "MRCPP/constants.h"
+
 #include "functions/LegendrePoly.h"
 
 using namespace mrcpp;

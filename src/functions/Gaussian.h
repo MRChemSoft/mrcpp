@@ -35,7 +35,6 @@
 
 #include <Eigen/Core>
 
-#include "MRCPP/mrcpp_declarations.h"
 #include "RepresentableFunction.h"
 
 namespace mrcpp {

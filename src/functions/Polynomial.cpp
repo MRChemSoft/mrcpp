@@ -33,6 +33,9 @@
  */
 
 #include "Polynomial.h"
+
+#include "MRCPP/constants.h"
+
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 

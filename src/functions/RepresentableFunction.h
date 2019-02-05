@@ -29,8 +29,7 @@
  * This includes gaussians, expansions, polynomials and even function trees.
  */
 
-#ifndef REPRESENTABLE_FUNCTION_H_
-#define REPRESENTABLE_FUNCTION_H_
+#pragma once
 
 #include <iostream>
 
@@ -74,5 +73,3 @@ protected:
 };
 
 } // namespace mrcpp
-
-#endif // REPRESENTABLEFUNCTION_H_

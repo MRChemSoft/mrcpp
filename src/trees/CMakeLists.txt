@@ -46,13 +46,7 @@ list(APPEND ${_dirname}_h
   )
 
 # Sets install directory for all the headers in the list
-#file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/${_dirname})
 foreach(_header IN LISTS ${_dirname}_h)
-  #configure_file(
-  #  ${_header}
-  #  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/${_dirname}
-  #  COPYONLY
-  #  )
   install(
     FILES ${_header}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/trees

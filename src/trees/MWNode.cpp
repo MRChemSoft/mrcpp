@@ -29,13 +29,13 @@
 
 #include "MWNode.h"
 #include "GenNode.h"
-#include "MRCPP/core/QuadratureCache.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/Timer.h"
-#include "MRCPP/utils/math_utils.h"
 #include "MWTree.h"
 #include "ProjectedNode.h"
 #include "SerialTree.h"
+#include "core/QuadratureCache.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
+#include "utils/math_utils.h"
 
 using namespace Eigen;
 

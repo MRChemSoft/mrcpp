@@ -26,9 +26,9 @@
 #include "ObjectCache.h"
 #include "CrossCorrelation.h"
 #include "GaussQuadrature.h"
-#include "MRCPP/functions/LegendrePoly.h"
-#include "MRCPP/utils/Printer.h"
 #include "MWFilter.h"
+#include "functions/LegendrePoly.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

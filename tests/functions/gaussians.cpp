@@ -27,9 +27,9 @@
 
 #include "factory_functions.h"
 
-#include "MRCPP/functions/GaussPoly.h"
-#include "MRCPP/treebuilders/grid.h"
-#include "MRCPP/treebuilders/project.h"
+#include "functions/GaussPoly.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/project.h"
 
 using namespace mrcpp;
 

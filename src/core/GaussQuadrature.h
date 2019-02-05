@@ -27,7 +27,7 @@
 
 #include <Eigen/Core>
 
-#include "MRCPP/functions/RepresentableFunction.h"
+#include "functions/RepresentableFunction.h"
 
 namespace mrcpp {
 

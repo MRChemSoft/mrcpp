@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "MRCPP/core/CrossCorrelationCache.h"
 #include "TreeCalculator.h"
+#include "core/CrossCorrelationCache.h"
 
 namespace mrcpp {
 

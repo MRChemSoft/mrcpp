@@ -24,9 +24,9 @@
  */
 
 #include "CrossCorrelationCalculator.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/trees/MWNode.h"
-#include "MRCPP/utils/Printer.h"
+#include "trees/FunctionTree.h"
+#include "trees/MWNode.h"
+#include "utils/Printer.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;

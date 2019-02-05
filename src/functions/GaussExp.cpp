@@ -36,8 +36,8 @@
 #include "GaussFunc.h"
 #include "GaussPoly.h"
 #include "Gaussian.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/math_utils.h"
+#include "utils/Printer.h"
+#include "utils/math_utils.h"
 
 using namespace Eigen;
 

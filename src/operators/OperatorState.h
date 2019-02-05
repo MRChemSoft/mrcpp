@@ -33,8 +33,8 @@
 
 #include <Eigen/Core>
 
-#include "MRCPP/trees/MWNode.h"
-#include "MRCPP/utils/math_utils.h"
+#include "trees/MWNode.h"
+#include "utils/math_utils.h"
 
 namespace mrcpp {
 

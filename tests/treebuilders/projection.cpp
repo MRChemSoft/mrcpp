@@ -27,9 +27,9 @@
 
 #include "factory_functions.h"
 
-#include "MRCPP/treebuilders/grid.h"
-#include "MRCPP/treebuilders/multiply.h"
-#include "MRCPP/treebuilders/project.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/multiply.h"
+#include "treebuilders/project.h"
 
 using namespace mrcpp;
 

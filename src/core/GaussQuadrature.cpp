@@ -28,9 +28,9 @@
 
 #include "GaussQuadrature.h"
 #include "MRCPP/constants.h"
-#include "MRCPP/functions/LegendrePoly.h"
 #include "MRCPP/macros.h"
-#include "MRCPP/utils/Printer.h"
+#include "functions/LegendrePoly.h"
+#include "utils/Printer.h"
 
 using namespace Eigen;
 

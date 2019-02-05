@@ -25,7 +25,7 @@
 
 #include "catch.hpp"
 
-#include "MRCPP/functions/LegendrePoly.h"
+#include "functions/LegendrePoly.h"
 
 using namespace mrcpp;
 

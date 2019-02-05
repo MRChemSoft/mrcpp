@@ -33,8 +33,8 @@
  */
 
 #include "LegendrePoly.h"
-#include "MRCPP/core/ObjectCache.h"
-#include "MRCPP/utils/Printer.h"
+#include "core/ObjectCache.h"
+#include "utils/Printer.h"
 
 using namespace Eigen;
 

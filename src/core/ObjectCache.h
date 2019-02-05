@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "MRCPP/macros.h"
-#include "MRCPP/utils/omp_utils.h"
+#include "utils/omp_utils.h"
 
 namespace mrcpp {
 

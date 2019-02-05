@@ -24,12 +24,12 @@
  */
 
 #include "TreeBuilder.h"
-#include "MRCPP/trees/MWNode.h"
-#include "MRCPP/trees/MWTree.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/Timer.h"
 #include "TreeAdaptor.h"
 #include "TreeCalculator.h"
+#include "trees/MWNode.h"
+#include "trees/MWTree.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 namespace mrcpp {
 

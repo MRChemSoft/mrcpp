@@ -24,11 +24,6 @@
  */
 
 #include "multiply.h"
-#include "MRCPP/trees/FunctionNode.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/trees/HilbertIterator.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/Timer.h"
 #include "MultiplicationCalculator.h"
 #include "PowerCalculator.h"
 #include "SquareCalculator.h"
@@ -36,6 +31,11 @@
 #include "WaveletAdaptor.h"
 #include "add.h"
 #include "grid.h"
+#include "trees/FunctionNode.h"
+#include "trees/FunctionTree.h"
+#include "trees/HilbertIterator.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 namespace mrcpp {
 

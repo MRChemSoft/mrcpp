@@ -25,7 +25,7 @@
 
 #include "catch.hpp"
 
-#include "MRCPP/trees/BandWidth.h"
+#include "trees/BandWidth.h"
 
 using namespace Eigen;
 using namespace mrcpp;

@@ -27,16 +27,16 @@
 
 #include "factory_functions.h"
 
-#include "MRCPP/operators/IdentityConvolution.h"
-#include "MRCPP/operators/IdentityKernel.h"
-#include "MRCPP/treebuilders/CrossCorrelationCalculator.h"
-#include "MRCPP/treebuilders/OperatorAdaptor.h"
-#include "MRCPP/treebuilders/TreeBuilder.h"
-#include "MRCPP/treebuilders/apply.h"
-#include "MRCPP/treebuilders/grid.h"
-#include "MRCPP/treebuilders/project.h"
-#include "MRCPP/trees/BandWidth.h"
-#include "MRCPP/trees/OperatorTree.h"
+#include "operators/IdentityConvolution.h"
+#include "operators/IdentityKernel.h"
+#include "treebuilders/CrossCorrelationCalculator.h"
+#include "treebuilders/OperatorAdaptor.h"
+#include "treebuilders/TreeBuilder.h"
+#include "treebuilders/apply.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/project.h"
+#include "trees/BandWidth.h"
+#include "trees/OperatorTree.h"
 
 using namespace mrcpp;
 

@@ -25,8 +25,8 @@
 
 #include "catch.hpp"
 
-#include "MRCPP/trees/MWNode.h"
 #include "factory_functions.h"
+#include "trees/MWNode.h"
 
 using namespace mrcpp;
 

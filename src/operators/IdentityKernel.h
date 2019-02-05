@@ -26,7 +26,7 @@
 #pragma once
 
 #include "GreensKernel.h"
-#include "MRCPP/functions/GaussFunc.h"
+#include "functions/GaussFunc.h"
 
 namespace mrcpp {
 

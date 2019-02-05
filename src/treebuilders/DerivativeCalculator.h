@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "MRCPP/operators/OperatorStatistics.h"
 #include "TreeCalculator.h"
+#include "operators/OperatorStatistics.h"
 
 namespace mrcpp {
 

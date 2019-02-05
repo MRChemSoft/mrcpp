@@ -25,7 +25,7 @@
 
 #include "HelmholtzOperator.h"
 #include "HelmholtzKernel.h"
-#include "MRCPP/utils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

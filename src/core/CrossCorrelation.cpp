@@ -39,7 +39,7 @@
 #include "MRCPP/constants.h"
 
 #include "CrossCorrelation.h"
-#include "MRCPP/utils/Printer.h"
+#include "utils/Printer.h"
 
 using namespace Eigen;
 

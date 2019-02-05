@@ -24,11 +24,11 @@
  */
 
 #include "ABGVCalculator.h"
-#include "MRCPP/core/InterpolatingBasis.h"
-#include "MRCPP/core/LegendreBasis.h"
-#include "MRCPP/core/QuadratureCache.h"
-#include "MRCPP/trees/MWNode.h"
-#include "MRCPP/utils/Printer.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
+#include "core/QuadratureCache.h"
+#include "trees/MWNode.h"
+#include "utils/Printer.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;

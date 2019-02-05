@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "MRCPP/trees/MWNode.h"
+#include "trees/MWNode.h"
 
 namespace mrcpp {
 

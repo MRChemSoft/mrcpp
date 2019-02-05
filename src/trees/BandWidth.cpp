@@ -24,7 +24,7 @@
  */
 
 #include "BandWidth.h"
-#include "MRCPP/utils/Printer.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

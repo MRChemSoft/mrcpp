@@ -27,13 +27,13 @@
 
 #include "factory_functions.h"
 
-#include "MRCPP/functions/GaussExp.h"
-#include "MRCPP/treebuilders/WaveletAdaptor.h"
-#include "MRCPP/treebuilders/add.h"
-#include "MRCPP/treebuilders/grid.h"
-#include "MRCPP/treebuilders/multiply.h"
-#include "MRCPP/treebuilders/project.h"
-#include "MRCPP/utils/details.h"
+#include "functions/GaussExp.h"
+#include "treebuilders/WaveletAdaptor.h"
+#include "treebuilders/add.h"
+#include "treebuilders/grid.h"
+#include "treebuilders/multiply.h"
+#include "treebuilders/project.h"
+#include "utils/details.h"
 
 using namespace mrcpp;
 

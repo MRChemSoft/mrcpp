@@ -25,8 +25,8 @@
 
 #include "catch.hpp"
 
-#include "MRCPP/core/InterpolatingBasis.h"
-#include "MRCPP/core/LegendreBasis.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
 
 using namespace mrcpp;
 

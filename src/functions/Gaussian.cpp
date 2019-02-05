@@ -33,7 +33,7 @@
  */
 
 #include "Gaussian.h"
-#include "MRCPP/trees/NodeIndex.h"
+#include "trees/NodeIndex.h"
 
 using namespace Eigen;
 

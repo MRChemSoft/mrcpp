@@ -24,11 +24,11 @@
  */
 
 #include "PHOperator.h"
-#include "MRCPP/treebuilders/BandWidthAdaptor.h"
-#include "MRCPP/treebuilders/PHCalculator.h"
-#include "MRCPP/treebuilders/TreeBuilder.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/Timer.h"
+#include "treebuilders/BandWidthAdaptor.h"
+#include "treebuilders/PHCalculator.h"
+#include "treebuilders/TreeBuilder.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 namespace mrcpp {
 

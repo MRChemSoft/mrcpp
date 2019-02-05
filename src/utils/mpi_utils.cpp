@@ -24,11 +24,11 @@
  */
 
 #include "mpi_utils.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/trees/ProjectedNode.h"
-#include "MRCPP/trees/SerialFunctionTree.h"
 #include "Printer.h"
 #include "Timer.h"
+#include "trees/FunctionTree.h"
+#include "trees/ProjectedNode.h"
+#include "trees/SerialFunctionTree.h"
 
 namespace mrcpp {
 

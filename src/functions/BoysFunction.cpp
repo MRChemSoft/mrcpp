@@ -24,10 +24,10 @@
  */
 
 #include "BoysFunction.h"
-#include "MRCPP/core/InterpolatingBasis.h"
-#include "MRCPP/treebuilders/project.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/utils/Printer.h"
+#include "core/InterpolatingBasis.h"
+#include "treebuilders/project.h"
+#include "trees/FunctionTree.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 

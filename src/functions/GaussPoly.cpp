@@ -37,8 +37,8 @@
 #include "GaussExp.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/details.h"
+#include "utils/Printer.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 

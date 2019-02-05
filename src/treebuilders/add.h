@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "MRCPP/trees/FunctionTreeVector.h"
+#include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
 template <int D>

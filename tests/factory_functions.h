@@ -1,17 +1,17 @@
 #ifndef FACTORY_FUNCTIONS_H
 #define FACTORY_FUNCTIONS_H
 
-#include "MRCPP/core/InterpolatingBasis.h"
-#include "MRCPP/core/LegendreBasis.h"
-#include "MRCPP/functions/GaussFunc.h"
 #include "MRCPP/mrcpp_declarations.h"
-#include "MRCPP/trees/BoundingBox.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/trees/FunctionTreeVector.h"
-#include "MRCPP/trees/MultiResolutionAnalysis.h"
-#include "MRCPP/trees/NodeIndex.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/details.h"
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
+#include "functions/GaussFunc.h"
+#include "trees/BoundingBox.h"
+#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include "trees/NodeIndex.h"
+#include "utils/Printer.h"
+#include "utils/details.h"
 
 template <class T> void finalize(T **obj) {
     if (obj == 0) MSG_FATAL("Invalid argument");

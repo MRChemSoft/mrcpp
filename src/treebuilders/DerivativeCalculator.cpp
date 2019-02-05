@@ -24,13 +24,13 @@
  */
 
 #include "DerivativeCalculator.h"
-#include "MRCPP/operators/DerivativeOperator.h"
-#include "MRCPP/operators/OperatorState.h"
-#include "MRCPP/trees/BandWidth.h"
-#include "MRCPP/trees/FunctionTree.h"
-#include "MRCPP/trees/OperatorNode.h"
-#include "MRCPP/utils/Printer.h"
-#include "MRCPP/utils/Timer.h"
+#include "operators/DerivativeOperator.h"
+#include "operators/OperatorState.h"
+#include "trees/BandWidth.h"
+#include "trees/FunctionTree.h"
+#include "trees/OperatorNode.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
 
 #ifdef HAVE_BLAS
 extern "C" {

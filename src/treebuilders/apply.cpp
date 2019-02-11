@@ -1,15 +1,40 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "apply.h"
-#include "grid.h"
-#include "add.h"
-#include "TreeBuilder.h"
+#include "ConvolutionCalculator.h"
 #include "CopyAdaptor.h"
-#include "SplitAdaptor.h"
-#include "WaveletAdaptor.h"
 #include "DefaultCalculator.h"
 #include "DerivativeCalculator.h"
-#include "ConvolutionCalculator.h"
-#include "operators/DerivativeOperator.h"
+#include "SplitAdaptor.h"
+#include "TreeBuilder.h"
+#include "WaveletAdaptor.h"
+#include "add.h"
+#include "grid.h"
 #include "operators/ConvolutionOperator.h"
+#include "operators/DerivativeOperator.h"
 #include "trees/FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -36,12 +61,8 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void apply(double prec,
-           FunctionTree<D> &out,
-           ConvolutionOperator<D> &oper,
-           FunctionTree<D> &inp,
-           int maxIter) {
+template <int D>
+void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -81,11 +102,7 @@ void apply(double prec,
  * The input function should contain only empty root nodes.
  *
  */
-template<int D>
-void apply(FunctionTree<D> &out,
-           DerivativeOperator<D> &oper,
-           FunctionTree<D> &inp,
-           int dir) {
+template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
     TreeBuilder<D> builder;
     int maxScale = out.getMRA().getMaxScale();
 
@@ -130,8 +147,7 @@ void apply(FunctionTree<D> &out,
  * The length of the output vector will be the template dimension D.
  *
  */
-template<int D>
-FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
+template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
     FunctionTreeVector<D> out;
     for (int d = 0; d < D; d++) {
         auto *grad_d = new FunctionTree<D>(inp.getMRA());
@@ -155,8 +171,7 @@ FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp
  * The length of the input vector must be the same as the template dimension D.
  *
  */
-template<int D>
-void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
+template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
     if (inp.size() != D) MSG_FATAL("Dimension mismatch");
 
     FunctionTreeVector<D> tmp_vec;

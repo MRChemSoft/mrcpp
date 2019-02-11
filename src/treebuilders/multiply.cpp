@@ -1,14 +1,39 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "multiply.h"
-#include "add.h"
-#include "grid.h"
-#include "TreeBuilder.h"
-#include "WaveletAdaptor.h"
+#include "MultiplicationCalculator.h"
 #include "PowerCalculator.h"
 #include "SquareCalculator.h"
-#include "MultiplicationCalculator.h"
-#include "trees/HilbertIterator.h"
-#include "trees/FunctionTree.h"
+#include "TreeBuilder.h"
+#include "WaveletAdaptor.h"
+#include "add.h"
+#include "grid.h"
 #include "trees/FunctionNode.h"
+#include "trees/FunctionTree.h"
+#include "trees/HilbertIterator.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
@@ -36,7 +61,7 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
-template<int D>
+template <int D>
 void multiply(double prec,
               FunctionTree<D> &out,
               double c,
@@ -70,11 +95,7 @@ void multiply(double prec,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void multiply(double prec,
-              FunctionTree<D> &out,
-              FunctionTreeVector<D> &inp,
-              int maxIter) {
+template <int D> void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
@@ -119,8 +140,7 @@ void multiply(double prec,
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
+template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
@@ -163,8 +183,7 @@ void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter
  * A negative maxIter means no bound.
  *
  */
-template<int D>
-void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter) {
+template <int D> void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale);
@@ -186,8 +205,7 @@ void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, 
     Printer::printSeparator(10, ' ');
 }
 
-template<int D>
-void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableFunction<D> &func) {
+template <int D> void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableFunction<D> &func) {
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -207,7 +225,7 @@ void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableF
  * The length of the input vectors must be the same.
  *
  */
-template<int D>
+template <int D>
 void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, FunctionTreeVector<D> &inp_b, int maxIter) {
     if (inp_a.size() != inp_b.size()) MSG_FATAL("Input length mismatch");
 
@@ -222,7 +240,7 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
         FunctionTree<D> *out_d = new FunctionTree<D>(out.getMRA());
         build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter);
-        tmp_vec.push_back(std::make_tuple(coef_a*coef_b, out_d));
+        tmp_vec.push_back(std::make_tuple(coef_a * coef_b, out_d));
     }
     build_grid(out, tmp_vec);
     add(-1.0, out, tmp_vec, 0);
@@ -242,48 +260,58 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
  * grids overlaps.
  *
  */
-template<int D>
-double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
-    if (bra.getMRA() != ket.getMRA()){
-        MSG_FATAL("Trees not compatible");
-    }
+template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
+    if (bra.getMRA() != ket.getMRA()) { MSG_FATAL("Trees not compatible"); }
     MWNodeVector<D> nodeTable;
     HilbertIterator<D> it(&bra);
     it.setReturnGenNodes(false);
-    while(it.next()) {
+    while (it.next()) {
         MWNode<D> &node = it.getNode();
         nodeTable.push_back(&node);
     }
     int nNodes = nodeTable.size();
     double result = 0.0;
     double locResult = 0.0;
-//OMP is disabled in order to get EXACT results (to the very last digit), the
-//order of summation makes the result different beyond the 14th digit or so.
-//OMP does improve the performace, but its not worth it for the time being.
-//#pragma omp parallel firstprivate(n_nodes, locResult)
-//		shared(nodeTable,rhs,result)
-//    {
-//#pragma omp for schedule(guided)
+    // OMP is disabled in order to get EXACT results (to the very last digit), the
+    // order of summation makes the result different beyond the 14th digit or so.
+    // OMP does improve the performace, but its not worth it for the time being.
+    //#pragma omp parallel firstprivate(n_nodes, locResult)
+    //		shared(nodeTable,rhs,result)
+    //    {
+    //#pragma omp for schedule(guided)
     for (int n = 0; n < nNodes; n++) {
         const FunctionNode<D> &braNode = static_cast<const FunctionNode<D> &>(*nodeTable[n]);
         const MWNode<D> *mwNode = ket.findNode(braNode.getNodeIndex());
         if (mwNode == nullptr) continue;
 
         const auto &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
-        if (braNode.isRootNode()) {
-            locResult += dotScaling(braNode, ketNode);
-        }
+        if (braNode.isRootNode()) { locResult += dotScaling(braNode, ketNode); }
         locResult += dotWavelet(braNode, ketNode);
     }
-//#pragma omp critical
+    //#pragma omp critical
     result += locResult;
-//    }
+    //    }
     return result;
 }
 
-template void multiply(double prec, FunctionTree<1> &out, double c, FunctionTree<1> &tree_a, FunctionTree<1> &tree_b, int maxIter);
-template void multiply(double prec, FunctionTree<2> &out, double c, FunctionTree<2> &tree_a, FunctionTree<2> &tree_b, int maxIter);
-template void multiply(double prec, FunctionTree<3> &out, double c, FunctionTree<3> &tree_a, FunctionTree<3> &tree_b, int maxIter);
+template void multiply(double prec,
+                       FunctionTree<1> &out,
+                       double c,
+                       FunctionTree<1> &tree_a,
+                       FunctionTree<1> &tree_b,
+                       int maxIter);
+template void multiply(double prec,
+                       FunctionTree<2> &out,
+                       double c,
+                       FunctionTree<2> &tree_a,
+                       FunctionTree<2> &tree_b,
+                       int maxIter);
+template void multiply(double prec,
+                       FunctionTree<3> &out,
+                       double c,
+                       FunctionTree<3> &tree_a,
+                       FunctionTree<3> &tree_b,
+                       int maxIter);
 template void multiply(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
 template void multiply(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void multiply(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
@@ -296,9 +324,21 @@ template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, i
 template void map(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, RepresentableFunction<1> &func);
 template void map(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, RepresentableFunction<2> &func);
 template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, RepresentableFunction<3> &func);
-template void dot(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp_a, FunctionTreeVector<1> &inp_b, int maxIter);
-template void dot(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp_a, FunctionTreeVector<2> &inp_b, int maxIter);
-template void dot(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp_a, FunctionTreeVector<3> &inp_b, int maxIter);
+template void dot(double prec,
+                  FunctionTree<1> &out,
+                  FunctionTreeVector<1> &inp_a,
+                  FunctionTreeVector<1> &inp_b,
+                  int maxIter);
+template void dot(double prec,
+                  FunctionTree<2> &out,
+                  FunctionTreeVector<2> &inp_a,
+                  FunctionTreeVector<2> &inp_b,
+                  int maxIter);
+template void dot(double prec,
+                  FunctionTree<3> &out,
+                  FunctionTreeVector<3> &inp_a,
+                  FunctionTreeVector<3> &inp_b,
+                  int maxIter);
 template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
 template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
 template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);

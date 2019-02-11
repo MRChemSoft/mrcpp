@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /**
  *
  *
@@ -13,8 +38,7 @@
 
 namespace mrcpp {
 
-template<int D>
-RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b) {
+template <int D> RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b) {
     if (a == nullptr or b == nullptr) {
         this->bounded = false;
         this->A = 0;
@@ -24,9 +48,7 @@ RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b
         this->A = new double[D];
         this->B = new double[D];
         for (int d = 0; d < D; d++) {
-            if (a[d] > b[d]) {
-                MSG_ERROR("Lower bound > Upper bound.");
-            }
+            if (a[d] > b[d]) { MSG_ERROR("Lower bound > Upper bound."); }
             this->A[d] = a[d];
             this->B[d] = b[d];
         }
@@ -34,8 +56,7 @@ RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b
 }
 
 /** Constructs a new function with same bounds as the input function */
-template<int D>
-RepresentableFunction<D>::RepresentableFunction(const RepresentableFunction<D> &func) {
+template <int D> RepresentableFunction<D>::RepresentableFunction(const RepresentableFunction<D> &func) {
     if (func.isBounded()) {
         this->bounded = true;
         this->A = new double[D];
@@ -52,14 +73,12 @@ RepresentableFunction<D>::RepresentableFunction(const RepresentableFunction<D> &
 }
 
 /** Copies function, not bounds. Use copy constructor if you want an
-  * identical function. */
-template<int D>
-RepresentableFunction<D>& RepresentableFunction<D>::operator=(const RepresentableFunction<D> &func) {
+ * identical function. */
+template <int D> RepresentableFunction<D> &RepresentableFunction<D>::operator=(const RepresentableFunction<D> &func) {
     return *this;
 }
 
-template<int D>
-RepresentableFunction<D>::~RepresentableFunction() {
+template <int D> RepresentableFunction<D>::~RepresentableFunction() {
     if (this->isBounded()) {
         delete[] this->A;
         delete[] this->B;
@@ -68,53 +87,36 @@ RepresentableFunction<D>::~RepresentableFunction() {
     this->B = 0;
 }
 
-template<int D>
-void RepresentableFunction<D>::setBounds(const double *a, const double *b) {
-    if (a == nullptr or b == nullptr) {
-        MSG_ERROR("Invalid arguments");
-    }
+template <int D> void RepresentableFunction<D>::setBounds(const double *a, const double *b) {
+    if (a == nullptr or b == nullptr) { MSG_ERROR("Invalid arguments"); }
     if (not isBounded()) {
         this->bounded = true;
         this->A = new double[D];
         this->B = new double[D];
     }
     for (int d = 0; d < D; d++) {
-        if (a[d] > b[d]) {
-            MSG_ERROR("Lower bound > Upper bound.");
-        }
+        if (a[d] > b[d]) { MSG_ERROR("Lower bound > Upper bound."); }
         this->A[d] = a[d];
         this->B[d] = b[d];
     }
 }
 
-template<int D>
-bool RepresentableFunction<D>::outOfBounds(const Coord<D> &r) const {
-    if (not isBounded()) {
-        return false;
-    }
+template <int D> bool RepresentableFunction<D>::outOfBounds(const Coord<D> &r) const {
+    if (not isBounded()) { return false; }
     for (int d = 0; d < D; d++) {
-        if (r[d] < getLowerBound(d)) {
-            return true;
-        }
-        if (r[d] > getUpperBound(d)) {
-            return true;
-        }
+        if (r[d] < getLowerBound(d)) { return true; }
+        if (r[d] > getUpperBound(d)) { return true; }
     }
     return false;
 }
 
-template<int D>
-std::ostream& RepresentableFunction<D>::print(std::ostream &o) const {
+template <int D> std::ostream &RepresentableFunction<D>::print(std::ostream &o) const {
     o << "RepresentableFunction: " << std::endl;
     o << "  A=[ ";
-    for (int i = 0; i < D; i++) {
-        o << this->A[i] << " ";
-    }
+    for (int i = 0; i < D; i++) { o << this->A[i] << " "; }
     o << "]" << std::endl;
     o << "  B=[ ";
-    for (int i = 0; i < D; i++) {
-        o << this->B[i] << " ";
-    }
+    for (int i = 0; i < D; i++) { o << this->B[i] << " "; }
     o << "]" << std::endl;
     return o;
 }

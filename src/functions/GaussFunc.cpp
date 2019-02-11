@@ -1,4 +1,29 @@
 /*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
+/*
  *
  *
  *  \date Jul 5, 2009
@@ -9,33 +34,28 @@
  */
 #include <cmath>
 
+#include "BoysFunction.h"
 #include "GaussExp.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
 #include "Polynomial.h"
-#include "BoysFunction.h"
 #include "utils/Printer.h"
-#include "utils/math_utils.h"
 #include "utils/details.h"
+#include "utils/math_utils.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
-
-template<int D>
-Gaussian<D> *GaussFunc<D>::copy() const{
+template <int D> Gaussian<D> *GaussFunc<D>::copy() const {
     auto *gauss = new GaussFunc<D>(*this);
     return gauss;
 }
 
-template<int D>
-double GaussFunc<D>::evalf(const Coord<D> &r) const {
+template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
-            if (r[d] < this->A[d] or r[d] > this->B[d]) {
-                return 0.0;
-            }
+            if (r[d] < this->A[d] or r[d] > this->B[d]) { return 0.0; }
         }
     }
     double q2 = 0.0, p2 = 1.0;
@@ -51,8 +71,6 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
         }
     }
     return this->coef * p2 * std::exp(-q2);
-
-
 }
 
 /** NOTE!
@@ -61,12 +79,9 @@ double GaussFunc<D>::evalf(const Coord<D> &r) const {
  *	avoid expensive d-root evaluation when distributing the amplitude
  *	equally to all dimensions.
  */
-template<int D>
-double GaussFunc<D>::evalf(double r, int d) const {
+template <int D> double GaussFunc<D>::evalf(double r, int d) const {
     if (this->getScreen()) {
-        if ((r < this->A[d]) or (r > this->B[d])) {
-            return 0.0;
-        }
+        if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
     double q = (r - this->pos[d]);
     double q2 = q * q;
@@ -84,8 +99,7 @@ double GaussFunc<D>::evalf(double r, int d) const {
     return result;
 }
 
-template<int D>
-double GaussFunc<D>::calcSquareNorm() {
+template <int D> double GaussFunc<D>::calcSquareNorm() {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
         double a = 2.0 * this->alpha[d];
@@ -106,22 +120,19 @@ double GaussFunc<D>::calcSquareNorm() {
     return this->squareNorm;
 }
 
-template<int D>
-GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
+template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
     GaussPoly<D> result(*this);
     int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
     newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
-    if (oldPow > 0) {
-        newPoly.getCoefs()[oldPow - 1] = oldPow;
-    }
-    result.setPoly(dir, newPoly);;
+    if (oldPow > 0) { newPoly.getCoefs()[oldPow - 1] = oldPow; }
+    result.setPoly(dir, newPoly);
+    ;
     return result;
 }
 
-template<int D>
-void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
+template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     for (int d = 0; d < D; d++) {
         if (lhs.getPos()[d] != rhs.getPos()[d]) {
@@ -132,23 +143,18 @@ void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     std::array<double, D> newExp;
     auto lhsExp = lhs.getExp();
     auto rhsExp = rhs.getExp();
-    for (int d = 0; d < D; d++) {
-        newExp[d] = lhsExp[d] + rhsExp[d];
-    }
+    for (int d = 0; d < D; d++) { newExp[d] = lhsExp[d] + rhsExp[d]; }
 
     std::array<int, D> newPow;
-    for (int d = 0; d < D; d++) {
-        newPow[d] = lhs.getPower(d) + rhs.getPower(d);
-    }
+    for (int d = 0; d < D; d++) { newPow[d] = lhs.getPower(d) + rhs.getPower(d); }
     this->setCoef(newCoef);
     this->setExp(newExp);
     this->setPower(newPow);
-//	this->squareNorm = -1.0;
+    //	this->squareNorm = -1.0;
     this->calcSquareNorm();
 }
 
-template<int D>
-GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
+template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     GaussPoly<D> result;
     result.multPureGauss(lhs, rhs);
@@ -163,15 +169,13 @@ GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     return result;
 }
 
-template<int D>
-GaussFunc<D> GaussFunc<D>::mult(double c) {
+template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
     GaussFunc<D> g = *this;
     g.coef *= c;
     return g;
 }
 
-template<int D>
-double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
+template <int D> double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
     GaussExp<D> gExp(b);
     double overlap = 0.0;
     for (int i = 0; i < gExp.size(); i++) {
@@ -183,8 +187,7 @@ double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
 
 /**  Compute the D-dimensional overlap integral between two
  * gaussian distributions */
-template<int D>
-double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
+template <int D> double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
         S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha[d], b.alpha[d]);
@@ -193,8 +196,7 @@ double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     return S;
 }
 
-template<int D>
-double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
+template <int D> double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
         S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha[d], b.alpha[d]);
@@ -221,9 +223,8 @@ double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
  @param expo_b  \f$ c_b \f$
 
  */
-template<int D>
-double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
-                                   double pos_b, double expo_a, double expo_b) {
+template <int D>
+double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b) {
     int i, j;
     double expo_p, mu, pos_p, x_ab, x_pa, x_pb, s_00;
     /* The highest angular momentum combination is l=20 for a and b
@@ -238,16 +239,16 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     //	}
 
     /* initialization of a hell of a lot of coefficients.... */
-    expo_p = expo_a + expo_b; /* total exponent */
-    mu = expo_a * expo_b / (expo_a + expo_b); /* reduced exponent */
+    expo_p = expo_a + expo_b;                           /* total exponent */
+    mu = expo_a * expo_b / (expo_a + expo_b);           /* reduced exponent */
     pos_p = (expo_a * pos_a + expo_b * pos_b) / expo_p; /* center of charge */
-    x_ab = pos_a - pos_b; /* X_{AB} */
-    x_pa = pos_p - pos_a; /* X_{PA} */
-    x_pb = pos_p - pos_b; /* X_{PB} */
+    x_ab = pos_a - pos_b;                               /* X_{AB} */
+    x_pa = pos_p - pos_a;                               /* X_{PA} */
+    x_pb = pos_p - pos_b;                               /* X_{PB} */
     s_00 = pi / expo_p;
     s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
-    //int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
-    //int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
+    // int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
+    // int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
 
     /* we add 3 coeffs. to avoid a hell of a lot of if statements */
     /*    n_tot_coeff = n_0j_coeff + n_ij_coeff + 3;	*/
@@ -259,8 +260,7 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
     j = 1;
     /* generate the rest of the first row */
     while (j < power_b) {
-        s_coeff[j + 1] = x_pb * s_coeff[j] + j * s_coeff[j - 1]
-                / (2.0 * expo_p);
+        s_coeff[j + 1] = x_pb * s_coeff[j] + j * s_coeff[j - 1] / (2.0 * expo_p);
         j++;
     }
     /* generate the first two coefficients with i > 0 */
@@ -272,8 +272,7 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
         int i_l = j + 2 * i + 1;
         int i_r = j + 2 * i + 2;
         s_coeff[i_l] = s_coeff[i_l - 1] - x_ab * s_coeff[i_l - 2];
-        s_coeff[i_r] = x_pa * s_coeff[i_r - 2] + (j * s_coeff[i_r - 3] + i
-                * s_coeff[i_r - 4]) / (2.0 * expo_p);
+        s_coeff[i_r] = x_pa * s_coeff[i_r - 2] + (j * s_coeff[i_r - 3] + i * s_coeff[i_r - 4]) / (2.0 * expo_p);
         i++;
     }
 
@@ -282,73 +281,61 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a,
 }
 
 // Specialized for D=3 below
-template<int D>
-double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
+template <int D> double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template<int D>
-std::ostream& GaussFunc<D>::print(std::ostream &o) const {
+template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
 
     // If all of the values in the exponential are the same only
     // one is printed, else, all of them are printed.
 
     if (!details::are_all_equal<D>(this->getExp())) {
         o << "Exp:   ";
-        for (auto &alpha : this->getExp()) {
-            o << alpha << " ";
-        }
+        for (auto &alpha : this->getExp()) { o << alpha << " "; }
     } else {
         o << "Exp:   " << this->getExp()[0] << std::endl;
     }
-    o << "Coef:  "<< this->getCoef() << std::endl;
+    o << "Coef:  " << this->getCoef() << std::endl;
     o << "Pos:   ";
-    for (int i = 0; i < D; i++) {
-        o << this->getPos()[i] << " ";
-    }
+    for (int i = 0; i < D; i++) { o << this->getPos()[i] << " "; }
     o << std::endl;
     o << "Power: ";
-    for (int i = 0; i < D; i++) {
-        o << this->getPower(i) << " ";
-    }
+    for (int i = 0; i < D; i++) { o << this->getPower(i) << " "; }
     return o;
 }
 
 /** NOTE: Gaussians must be normalized to unit charge coef = (alpha/pi)^(3/2)
  * for this to be correct!
  */
-template<>
-double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
+template <> double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     // Checking if the elements in each exponent are constant
-    if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp()))
-        NOT_IMPLEMENTED_ABORT;
-
+    if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp())) NOT_IMPLEMENTED_ABORT;
 
     // If they are constant the 0th element are assigned a value
     // and the Coulomb Energy can be calculated
     auto p = this->getExp()[0];
     auto q = gf.getExp()[0];
 
-    double alpha = p*q/(p+q);
+    double alpha = p * q / (p + q);
 
-    const double *Rp = this->getPos();
-    const double *Rq = gf.getPos();
+    const auto &Rp = this->getPos();
+    const auto &Rq = gf.getPos();
 
     double Rx = Rp[0] - Rq[0];
     double Ry = Rp[1] - Rq[1];
     double Rz = Rp[2] - Rq[2];
 
-    double Rpq_2 = Rx*Rx + Ry*Ry + Rz*Rz;
+    double Rpq_2 = Rx * Rx + Ry * Ry + Rz * Rz;
 
     BoysFunction boys(0);
 
-    Coord<1> boysArg{alpha*Rpq_2};
+    Coord<1> boysArg{alpha * Rpq_2};
     double boysFac = boys.evalf(boysArg);
 
-    return std::sqrt(4.0*alpha/pi)*boysFac;
+    return std::sqrt(4.0 * alpha / pi) * boysFac;
 }
-
 
 template class GaussFunc<1>;
 template class GaussFunc<2>;

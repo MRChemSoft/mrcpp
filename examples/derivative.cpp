@@ -32,15 +32,15 @@ int main(int argc, char **argv) {
     // Setting up analytic functions
     const auto alpha = 3.0;
     const auto r_0 = mrcpp::pi - 3.0;
-    auto f = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
+    auto f = [alpha, r_0](const mrcpp::Coord<D> &r) -> double {
         auto R = std::abs(r[0] - r_0);
-        return std::exp(-alpha*R);
+        return std::exp(-alpha * R);
     };
-    auto df = [alpha, r_0] (const mrcpp::Coord<D> &r) -> double {
+    auto df = [alpha, r_0](const mrcpp::Coord<D> &r) -> double {
         auto R = std::abs(r[0] - r_0);
         auto sign = 1.0;
         if (r[0] > r_0) sign = -1.0;
-        return sign*alpha*std::exp(-alpha*R);
+        return sign * alpha * std::exp(-alpha * R);
     };
 
     // Initializing MW functions and operators
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     auto dg_int = dg_tree.integrate();
     auto dg_norm = std::sqrt(dg_tree.getSquareNorm());
     auto abs_err = std::sqrt(err_tree.getSquareNorm());
-    auto rel_err = abs_err/df_norm;
+    auto rel_err = abs_err / df_norm;
 
     mrcpp::Printer::printSeparator(0, ' ');
     mrcpp::Printer::printDouble(0, "f_tree integral", f_int);

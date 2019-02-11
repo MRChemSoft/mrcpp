@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
     mrcpp::Printer::printHeader(0, "Non-blocking communication");
 
     // Constructing world box
-    int corner[3] = {-1,-1,-1};
-    int boxes[3]  = { 2, 2, 2};
+    const auto corner = std::array<int, 3>{-1, -1, -1};
+    const auto boxes = std::array<int, 3>{2, 2, 2};
     mrcpp::BoundingBox<3> world(min_scale, corner, boxes);
 
     // Constructing basis and MRA
@@ -51,13 +51,13 @@ int main(int argc, char **argv) {
     int nFuncs = 5;
     mrcpp::FunctionTreeVector<3> f_vec;
     for (int i = 0; i < nFuncs; i++) {
-        auto f = [i] (const mrcpp::Coord<3> &r) -> double {
-            const double beta = 1.0*i*i;
-            double R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-            return std::exp(-beta*R*R);
+        auto f = [i](const mrcpp::Coord<3> &r) -> double {
+            const double beta = 1.0 * i * i;
+            double R = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+            return std::exp(-beta * R * R);
         };
         mrcpp::FunctionTree<3> *tree = new mrcpp::FunctionTree<3>(MRA);
-        if (i%wsize == wrank) {
+        if (i % wsize == wrank) {
             mrcpp::project<3>(prec, *tree, f);
             tree->normalize();
         }
@@ -67,27 +67,25 @@ int main(int argc, char **argv) {
     std::vector<MPI_Request> requests;
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(nFuncs, nFuncs);
     for (int j = 0; j < f_vec.size(); j++) {
-        int dst = j%wsize;
+        int dst = j % wsize;
         mrcpp::FunctionTree<3> &f_j = get_func(f_vec, j);
         for (int i = 0; i < f_vec.size(); i++) {
-            int src = i%wsize;
+            int src = i % wsize;
             mrcpp::FunctionTree<3> &f_i = get_func(f_vec, i);
             if (src != dst) {
-                int tag = 1000000*dst;
+                int tag = 1000000 * dst;
                 MPI_Request req = req_null;
                 if (wrank == src) mrcpp::isend_tree(f_i, dst, tag, comm, &req);
                 if (wrank == dst) mrcpp::recv_tree(f_i, src, tag, comm);
                 requests.push_back(req);
             }
             // Compute my column(s) of the overlap matrix
-            if (wrank == dst) S(i,j) = mrcpp::dot(f_i, f_j);
+            if (wrank == dst) S(i, j) = mrcpp::dot(f_i, f_j);
         }
     }
 
 #ifdef HAVE_MPI
-    for (int i = 0; i < requests.size(); i++) {
-        MPI_Wait(&requests[i], MPI_STATUS_IGNORE);
-    }
+    for (int i = 0; i < requests.size(); i++) { MPI_Wait(&requests[i], MPI_STATUS_IGNORE); }
 #endif
 
     // Delete all trees
@@ -107,4 +105,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-

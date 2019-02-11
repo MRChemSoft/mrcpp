@@ -13,5 +13,12 @@ as rigorous error control in numerical computations.
 The code is being developed at the Hylleraas Centre for Quantum Molecular
 Sciences at UiT - The Arctic University of Norway.
 
-## Documentation: http://mrcpp.readthedocs.io
+### User support: [mrchem.slack.com](https://join.slack.com/t/mrchem/shared_invite/enQtNTI3MjMzNjM0NTk0LWNkODZjNTMwYmM4NmRmODExMjQzMDc3NThlMzNmNmIyNWQwM2YwOGY0OWY4NmNmNzE4ZmM2NzgxYzUzNDg3NDM)
+### Documentation: [mrcpp.readthedocs.io](http://mrcpp.readthedocs.io)
  
+You can install Git hooks to keep in check formatting and licensing headers:
+
+```
+cd .git/hooks
+cp --symbolic-link ../../.githooks/* .
+```

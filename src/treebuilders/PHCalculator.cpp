@@ -1,6 +1,31 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include <fstream>
 
-#include "config.h"
+#include "MRCPP/config.h"
 
 #include "PHCalculator.h"
 #include "utils/Printer.h"
@@ -22,7 +47,7 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string path = MW_FILTER_DIR;
     if (basis.getScalingType() == Legendre) file = path + "/L_ph_deriv_" + n + ".txt";
     if (basis.getScalingType() == Interpol) file = path + "/I_ph_deriv_" + n + ".txt";
-    if (basis.getScalingOrder() <  0) MSG_FATAL("Scaling order not supported");
+    if (basis.getScalingOrder() < 0) MSG_FATAL("Scaling order not supported");
     if (basis.getScalingOrder() > 29) MSG_FATAL("Scaling order not supported");
 
     std::ifstream ifs(file.c_str());
@@ -36,18 +61,16 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
         iss >> order;
         if (order != kp1) MSG_FATAL("Orders no not match");
 
-        MatrixXd data = MatrixXd::Zero(3*kp1, kp1);
-        for (int i = 0; i < 3*kp1; i++) {
+        MatrixXd data = MatrixXd::Zero(3 * kp1, kp1);
+        for (int i = 0; i < 3 * kp1; i++) {
             getline(ifs, line);
             std::istringstream iss(line);
-            for (int j = 0; j < kp1; j++) {
-                iss >> data(i,j);
-            }
+            for (int j = 0; j < kp1; j++) { iss >> data(i, j); }
         }
         if (kp1 == (basis.getScalingOrder() + 1)) {
-            this->S_p1 = data.block(0*kp1, 0, kp1, kp1);
-            this->S_0  = data.block(1*kp1, 0, kp1, kp1);
-            this->S_m1 = data.block(2*kp1, 0, kp1, kp1);
+            this->S_p1 = data.block(0 * kp1, 0, kp1, kp1);
+            this->S_0 = data.block(1 * kp1, 0, kp1, kp1);
+            this->S_m1 = data.block(2 * kp1, 0, kp1, kp1);
             break;
         }
     }
@@ -59,40 +82,40 @@ void PHCalculator::calcNode(MWNode<2> &node) {
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();
     int l = node.getTranslation()[1] - node.getTranslation()[0];
-    double two_np1 = std::pow(2.0, this->diff_order*np1);
+    double two_np1 = std::pow(2.0, this->diff_order * np1);
     double *coefs = node.getCoefs();
 
     switch (l) {
-    case 1:
-        for (int i = 0; i < kp1; i++) {
-            for (int j = 0; j < kp1; j++) {
-                int idx = i*kp1 + j;
-                coefs[1*kp1_d+idx] = two_np1*this->S_p1(i,j);
+        case 1:
+            for (int i = 0; i < kp1; i++) {
+                for (int j = 0; j < kp1; j++) {
+                    int idx = i * kp1 + j;
+                    coefs[1 * kp1_d + idx] = two_np1 * this->S_p1(i, j);
+                }
             }
-        }
-        break;
-    case 0:
-        for (int i = 0; i < kp1; i++) {
-            for (int j = 0; j < kp1; j++) {
-                int idx = i*kp1 + j;
-                coefs[0*kp1_d+idx] = two_np1*this->S_0(i,j);
-                coefs[1*kp1_d+idx] = two_np1*this->S_m1(i,j);
-                coefs[2*kp1_d+idx] = two_np1*this->S_p1(i,j);
-                coefs[3*kp1_d+idx] = two_np1*this->S_0(i,j);
+            break;
+        case 0:
+            for (int i = 0; i < kp1; i++) {
+                for (int j = 0; j < kp1; j++) {
+                    int idx = i * kp1 + j;
+                    coefs[0 * kp1_d + idx] = two_np1 * this->S_0(i, j);
+                    coefs[1 * kp1_d + idx] = two_np1 * this->S_m1(i, j);
+                    coefs[2 * kp1_d + idx] = two_np1 * this->S_p1(i, j);
+                    coefs[3 * kp1_d + idx] = two_np1 * this->S_0(i, j);
+                }
             }
-        }
-        break;
-    case -1:
-        for (int i = 0; i < kp1; i++) {
-            for (int j = 0; j < kp1; j++) {
-                int idx = i*kp1 + j;
-                coefs[2*kp1_d+idx] = two_np1*this->S_m1(i,j);
+            break;
+        case -1:
+            for (int i = 0; i < kp1; i++) {
+                for (int j = 0; j < kp1; j++) {
+                    int idx = i * kp1 + j;
+                    coefs[2 * kp1_d + idx] = two_np1 * this->S_m1(i, j);
+                }
             }
-        }
-        break;
-    default:
-        MSG_ERROR("This translation should not occour");
-        break;
+            break;
+        default:
+            // When periodic do nothing, else it should never end up here.
+            break;
     }
     node.mwTransform(Compression);
     node.setHasCoefs();

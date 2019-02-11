@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /**
  *
  * - Monodimensional gaussian expansion:
@@ -16,20 +41,19 @@
 
 #pragma once
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
-#include "RepresentableFunction.h"
 #include "GaussFunc.h"
+#include "RepresentableFunction.h"
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 
 #define GAUSS_EXP_PREC 1.e-10
 
-template<int D>
-class GaussExp: public RepresentableFunction<D> {
+template <int D> class GaussExp : public RepresentableFunction<D> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
     GaussExp(const GaussExp<D> &gExp);
@@ -68,13 +92,11 @@ public:
     double getScreening() const { return screening; }
     std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
-    const int *getPower(int i) const { return this->funcs[i]->getPower(); }
-    const double *getPos(int i) const { return this->funcs[i]->getPos(); }
+    const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
+    const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     double getSquareNorm() {
-        if (squareNorm < 0) {
-            calcSquareNorm();
-        }
+        if (squareNorm < 0) { calcSquareNorm(); }
         return squareNorm;
     }
 
@@ -92,13 +114,13 @@ public:
     void setScreen(bool screen);
     void setExp(int i, double a) { this->funcs[i]->setExp(a); }
     void setCoef(int i, double b) { this->funcs[i]->setCoef(b); }
-    void setPower(int i, const int power[D]) { this->funcs[i]->setPower(power); }
-    void setPos(int i, const double pos[D]) { this->funcs[i]->setPos(pos); }
+    void setPower(int i, const std::array<int, D> &power) { this->funcs[i]->setPower(power); }
+    void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);
 
-    friend std::ostream& operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
 
 protected:
     std::vector<Gaussian<D> *> funcs;
@@ -106,7 +128,7 @@ protected:
     double screening{0.0};
     double squareNorm{-1.0};
 
-    std::ostream& print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const;
 };
 
 } // namespace mrcpp

@@ -7,15 +7,13 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
 
 configure_file (
   ${PROJECT_SOURCE_DIR}/config.h.in
-  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/config.h
+  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
   )
 
-install(
-  FILES ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/config.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-  )
+list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h)
 
-add_subdirectory(src)
-add_subdirectory(include)
-add_subdirectory(pilot)
+include(${PROJECT_SOURCE_DIR}/external/upstream/fetch_eigen3.cmake)
+
 add_subdirectory(api)
+add_subdirectory(src)
+add_subdirectory(pilot)

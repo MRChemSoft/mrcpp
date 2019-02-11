@@ -1,33 +1,53 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "catch.hpp"
 
 #include "factory_functions.h"
 
-#include "treebuilders/WaveletAdaptor.h"
 #include "functions/GaussExp.h"
-#include "treebuilders/project.h"
-#include "treebuilders/grid.h"
+#include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/add.h"
+#include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
+#include "treebuilders/project.h"
+#include "utils/details.h"
 
 using namespace mrcpp;
 
 namespace addition {
 
-template<int D> void testAddition();
+template <int D> void testAddition();
 
 SCENARIO("Adding MW trees", "[addition], [tree_builder]") {
-    GIVEN("Two MW functions in 1D") {
-        testAddition<1>();
-    }
-    GIVEN("Two MW functions in 2D") {
-        testAddition<2>();
-    }
-    GIVEN("Two MW functions in 3D") {
-        testAddition<3>();
-    }
+    GIVEN("Two MW functions in 1D") { testAddition<1>(); }
+    GIVEN("Two MW functions in 2D") { testAddition<2>(); }
+    GIVEN("Two MW functions in 3D") { testAddition<3>(); }
 }
 
-template<int D> void testAddition() {
+template <int D> void testAddition() {
     const double prec = 1.0e-4;
 
     const double a_coef = 1.0;
@@ -36,8 +56,11 @@ template<int D> void testAddition() {
     double alpha = 1.0;
     double beta_a = 110.0;
     double beta_b = 50.0;
-    double pos_a[3] = {-0.25, 0.35, 1.05};
-    double pos_b[3] = {-0.20, 0.50, 1.05};
+
+    double pos_c_a[3] = {-0.25, 0.35, 1.05};
+    auto pos_a = details::convert_to_std_array<double, D>(pos_c_a);
+    double pos_c_b[3] = {-0.20, 0.50, 1.05};
+    auto pos_b = details::convert_to_std_array<double, D>(pos_c_b);
 
     GaussFunc<D> a_func(beta_a, alpha, pos_a);
     GaussFunc<D> b_func(beta_b, alpha, pos_b);
@@ -82,17 +105,17 @@ template<int D> void testAddition() {
 
         THEN("their integrals add up") {
             double c_int = c_tree.integrate();
-            double int_sum = a_coef*a_int + b_coef*b_int;
-            REQUIRE( c_int == Approx(int_sum) );
+            double int_sum = a_coef * a_int + b_coef * b_int;
+            REQUIRE(c_int == Approx(int_sum));
         }
 
         AND_THEN("the MW sum equals the analytic sum") {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE( c_int == Approx(ref_int) );
-            REQUIRE( c_dot == Approx(ref_norm) );
-            REQUIRE( c_norm == Approx(ref_norm) );
+            REQUIRE(c_int == Approx(ref_int));
+            REQUIRE(c_dot == Approx(ref_norm));
+            REQUIRE(c_norm == Approx(ref_norm));
         }
 
         AND_WHEN("the first function is subtracted") {
@@ -104,8 +127,8 @@ template<int D> void testAddition() {
 
             THEN("the integral is the same as the second function") {
                 double d_int = d_tree.integrate();
-                double ref_int = b_coef*b_int;
-                REQUIRE( d_int == Approx(ref_int) );
+                double ref_int = b_coef * b_int;
+                REQUIRE(d_int == Approx(ref_int));
             }
 
             AND_WHEN("the second function is subtracted") {
@@ -118,7 +141,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double e_int = e_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( e_int == Approx(ref_int).margin(prec*prec) );
+                    REQUIRE(e_int == Approx(ref_int).margin(prec * prec));
                 }
             }
             AND_WHEN("the second function is subtracted in-place") {
@@ -127,7 +150,7 @@ template<int D> void testAddition() {
                 THEN("the integral is zero") {
                     double d_int = d_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE( d_int == Approx(ref_int).margin(prec*prec) );
+                    REQUIRE(d_int == Approx(ref_int).margin(prec * prec));
                 }
             }
         }
@@ -135,4 +158,4 @@ template<int D> void testAddition() {
     finalize(&mra);
 }
 
-} // namespace
+} // namespace addition

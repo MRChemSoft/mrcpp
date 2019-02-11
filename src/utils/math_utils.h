@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 /* \file math_utils.h
  *
  * \breif Collection of misc math funcs.
@@ -7,7 +32,7 @@
 
 #include <Eigen/Core>
 
-#include "mrcpp_declarations.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
 namespace math_utils {
@@ -30,17 +55,19 @@ double matrix_norm_inf(const Eigen::MatrixXd &M);
 double matrix_norm_1(const Eigen::MatrixXd &M);
 double matrix_norm_2(const Eigen::MatrixXd &M);
 
-void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter,
-                  int kp1, int kp1_dm1, double fac);
+void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
-void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d,
+void tensor_expand_coefs(int dim,
+                         int dir,
+                         int kp1,
+                         int kp1_d,
                          const Eigen::MatrixXd &primitive,
                          Eigen::VectorXd &expanded);
 
 void tensor_expand_coords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 
-template<int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
+template <int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
 
 } // namespace math_utils
 } // namespace mrcpp

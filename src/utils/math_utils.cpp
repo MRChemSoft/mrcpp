@@ -1,10 +1,35 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include <cmath>
 #include <cstdio>
 #include <fstream>
 
-#include "math_utils.h"
+#include "MRCPP/constants.h"
 #include "Printer.h"
-#include "constants.h"
+#include "math_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -20,9 +45,7 @@ namespace mrcpp {
 int math_utils::ipow(int m, int e) {
     if (e < 0) MSG_FATAL("Exponent cannot be negative: " << e)
     int result = 1;
-    for (int i = 0; i < e; i++) {
-        result *= m;
-    }
+    for (int i = 0; i < e; i++) { result *= m; }
     return result;
 }
 
@@ -62,7 +85,7 @@ double math_utils::binomial_coeff(int n, int j) {
     } else {
         int k = 0;
         while (k < j) {
-            binomial_n_j *= (double) (n - k);
+            binomial_n_j *= (double)(n - k);
             k += 1;
         }
         binomial_n_j /= factorial(j);
@@ -72,9 +95,7 @@ double math_utils::binomial_coeff(int n, int j) {
 
 VectorXd math_utils::get_binomial_coefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
-    for (int k = 0; k <= order; k++) {
-        coefs[k] = math_utils::binomial_coeff(order, k);
-    }
+    for (int k = 0; k <= order; k++) { coefs[k] = math_utils::binomial_coeff(order, k); }
     return coefs;
 }
 
@@ -89,7 +110,7 @@ double math_utils::factorial(int n) {
         return 1.0;
     else if (n > 1) {
         while (k <= n) {
-            fac_n *= (double) k;
+            fac_n *= (double)k;
             k += 1;
         }
     }
@@ -104,9 +125,7 @@ MatrixXd math_utils::tensor_product(const MatrixXd &A, const MatrixXd &B) {
     int Bc = B.cols();
     MatrixXd tprod(Ar * Br, Ac * Bc);
     for (int i = 0; i < Ar; i++) {
-        for (int j = 0; j < Ac; j++) {
-            tprod.block(i * Br, j * Bc, Br, Bc) = A(i, j) * B;
-        }
+        for (int j = 0; j < Ac; j++) { tprod.block(i * Br, j * Bc, Br, Bc) = A(i, j) * B; }
     }
     return tprod;
 }
@@ -117,9 +136,7 @@ MatrixXd math_utils::tensor_product(const MatrixXd &A, const VectorXd &B) {
     int Ac = A.cols();
     int Br = B.rows();
     MatrixXd tprod(Ar * Br, Ac);
-    for (int i = 0; i < Br; i++) {
-        tprod.block(i * Br, 0, Ar, Ac) = A * B(i);
-    }
+    for (int i = 0; i < Br; i++) { tprod.block(i * Br, 0, Ar, Ac) = A * B(i); }
     return tprod;
 }
 
@@ -129,9 +146,7 @@ MatrixXd math_utils::tensor_product(const VectorXd &A, const MatrixXd &B) {
     int Br = B.rows();
     int Bc = B.cols();
     MatrixXd tprod(Ar * Br, Ar);
-    for (int i = 0; i < Ar; i++) {
-        tprod.block(i * Br, 0, Br, Bc) = A(i) * B;
-    }
+    for (int i = 0; i < Ar; i++) { tprod.block(i * Br, 0, Br, Bc) = A(i) * B; }
     return tprod;
 }
 
@@ -140,35 +155,38 @@ MatrixXd math_utils::tensor_product(const VectorXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
     MatrixXd tprod(Ar, Br);
-    for (int i = 0; i < Ar; i++) {
-        tprod.block(i, 0, 1, Br) = A(i) * B.transpose();
-    }
+    for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Br) = A(i) * B.transpose(); }
     return tprod;
 }
 
 /** Compute the tensor product of a vector and itself */
 void math_utils::tensor_self_product(const VectorXd &A, VectorXd &tprod) {
     int Ar = A.rows();
-    for (int i = 0; i < Ar; i++) {
-        tprod.segment(i*Ar, Ar) = A(i) * A;
-    }
+    for (int i = 0; i < Ar; i++) { tprod.segment(i * Ar, Ar) = A(i) * A; }
 }
 
 /** Compute the tensor product of a vector and itself */
 void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     int Ar = A.rows();
-    for (int i = 0; i < Ar; i++) {
-        tprod.block(i, 0, 1, Ar) = A(i) * A;
-    }
+    for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Ar) = A(i) * A; }
 }
 
-void math_utils::apply_filter(double *out, double *in,
-                          const MatrixXd &filter,
-                          int kp1, int kp1_dm1, double fac) {
+void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
 #ifdef HAVE_BLAS
-    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans,
-                kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(),
-                kp1, fac, out, kp1_dm1);
+    cblas_dgemm(CblasColMajor,
+                CblasTrans,
+                CblasNoTrans,
+                kp1_dm1,
+                kp1,
+                kp1,
+                1.0,
+                in,
+                kp1,
+                filter.data(),
+                kp1,
+                fac,
+                out,
+                kp1_dm1);
 #else
     Map<MatrixXd> f(in, kp1, kp1_dm1);
     Map<MatrixXd> g(out, kp1_dm1, kp1);
@@ -185,16 +203,19 @@ void math_utils::apply_filter(double *out, double *in,
  * This method uses the "output" vector as initial input, in order to
  * avoid the use of temporaries.
  */
-void math_utils::tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d,
-                                 const MatrixXd &primitive, VectorXd &expanded) {
+void math_utils::tensor_expand_coefs(int dim,
+                                     int dir,
+                                     int kp1,
+                                     int kp1_d,
+                                     const MatrixXd &primitive,
+                                     VectorXd &expanded) {
     if (dir < dim - 1) {
         int idx = math_utils::ipow(kp1, dir + 1);
         int nelem = idx * kp1;
         int pos = kp1_d - nelem;
         int inpos = kp1_d - idx;
         for (int i = 0; i < kp1; i++) {
-            expanded.segment(pos + i * idx, idx) =
-                    expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
+            expanded.segment(pos + i * idx, idx) = expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
         }
         tensor_expand_coefs(dim, dir + 1, kp1, kp1_d, primitive, expanded);
     }
@@ -204,8 +225,8 @@ void math_utils::tensor_expand_coords_2D(int kp1, const MatrixXd &primitive, Mat
     int n = 0;
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
-            expanded(0,n) = primitive(0,j);
-            expanded(1,n) = primitive(1,i);
+            expanded(0, n) = primitive(0, j);
+            expanded(1, n) = primitive(1, i);
             n++;
         }
     }
@@ -216,9 +237,9 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
     for (int i = 0; i < kp1; i++) {
         for (int j = 0; j < kp1; j++) {
             for (int k = 0; k < kp1; k++) {
-                expanded(0,n) = primitive(0,k);
-                expanded(1,n) = primitive(1,j);
-                expanded(2,n) = primitive(2,i);
+                expanded(0, n) = primitive(0, k);
+                expanded(1, n) = primitive(1, j);
+                expanded(2, n) = primitive(2, i);
                 n++;
             }
         }
@@ -226,12 +247,9 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
 }
 
 /** Calculate the distance between two points in n-dimensions */
-template<int D>
-double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
+template <int D> double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
     double r = 0.0;
-    for (int i = 0; i < D; i++) {
-        r += std::pow(a[i] - b[i], 2.0);
-    }
+    for (int i = 0; i < D; i++) { r += std::pow(a[i] - b[i], 2.0); }
     return std::sqrt(r);
 }
 

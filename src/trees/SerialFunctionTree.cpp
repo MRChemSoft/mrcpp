@@ -570,7 +570,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
             if (node->serialIx >= 0) {
                 this->nNodes = ichunk * this->maxNodesPerChunk + (inode + 1);
                 // Node is part of tree, should be processed
-                assert(node->serialIx == this->nNodes-1);
+                assert(node->serialIx == this->nNodes - 1);
                 this->getTree()->incrementNodeCount(node->getScale());
                 if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
 

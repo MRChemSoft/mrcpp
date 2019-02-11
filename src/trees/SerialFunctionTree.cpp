@@ -602,7 +602,6 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
             } else {
                 this->nodeStackStatus[node->serialIx] = 0; // available
             }
-
         }
         this->lastNode = this->nodeChunks[ichunk] + this->nNodes % (this->maxNodesPerChunk);
     }

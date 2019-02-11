@@ -185,15 +185,9 @@ int Printer::printMem(char *txt, bool silent) {
     FILE *file = fopen("/proc/self/statm", "r");
     int val = -1;
     char line[80];
-<<<<<<< HEAD
-    while (fgets(line, 80, file) != NULL){
-        val = getVal(line,6);//sixth number is data+stack in pages (4kB)
-        printf("Mem usage %s %6.3f %s \n",txt,val*4.0/(1024.0*1024),"GB");
-=======
     while (fgets(line, 80, file) != nullptr) {
         val = getVal(line, 6); // sixth number is data+stack in pages (4kB)
         if (not silent) std::cout << &txt << val * 4.0 / (1024.0 * 1024) << "GB" << std::endl;
->>>>>>> 16da6e17742b3d6a2e0b1517f91ee086c0bd828a
     }
     fclose(file);
     return val;

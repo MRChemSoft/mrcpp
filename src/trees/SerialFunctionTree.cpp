@@ -569,8 +569,8 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
             ProjectedNode<D> *node = (this->nodeChunks[ichunk]) + inode;
             if (node->serialIx >= 0) {
                 this->nNodes = ichunk * this->maxNodesPerChunk + (inode + 1);
-
                 // Node is part of tree, should be processed
+                assert(node->serialIx == this->nNodes - 1);
                 this->getTree()->incrementNodeCount(node->getScale());
                 if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
 
@@ -599,6 +599,8 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
                     node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
                 }
                 this->nodeStackStatus[node->serialIx] = 1; // occupied
+            } else {
+                this->nodeStackStatus[node->serialIx] = 0; // available
             }
         }
         this->lastNode = this->nodeChunks[ichunk] + this->nNodes % (this->maxNodesPerChunk);
@@ -618,16 +620,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
 }
 
 template <int D> int SerialFunctionTree<D>::getNChunksUsed() const {
-    int lastUsed = 0;
-    for (int iChunk = 0; iChunk < getNChunks(); iChunk++) {
-        int iShift = iChunk * this->maxNodesPerChunk;
-        bool chunkUsed = false;
-        for (int i = 0; i < this->maxNodesPerChunk; i++) {
-            if (this->nodeStackStatus[iShift + i] == 1) { chunkUsed = true; }
-        }
-        if (chunkUsed) lastUsed = iChunk + 1;
-    }
-    return lastUsed;
+    return (this->nNodes + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk;
 }
 
 template class SerialFunctionTree<1>;

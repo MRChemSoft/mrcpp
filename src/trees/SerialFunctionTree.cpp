@@ -619,7 +619,6 @@ template <int D> void SerialFunctionTree<D>::rewritePointers() {
     int ichunk = (this->nNodes - 1) / this->maxNodesPerChunk;
     int inode = (this->nNodes - 1) % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
-
 }
 
 template <int D> int SerialFunctionTree<D>::getNChunksUsed() const {

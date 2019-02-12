@@ -129,7 +129,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
     println(10, " Time recieve                " << std::setw(30) << t1);
 
     Timer t2;
-    sTree.rewritePointers(nChunks);
+    sTree.rewritePointers();
     t2.stop();
     println(10, " Time rewrite pointers       " << std::setw(30) << t2);
 #endif
@@ -204,7 +204,7 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Co
                 println(10, " Receiving chunk " << iChunk);
                 MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag + iChunk + 1, comm, &status);
             }
-            sTree.rewritePointers(nChunks);
+            sTree.rewritePointers();
         }
     }
 

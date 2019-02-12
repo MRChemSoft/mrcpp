@@ -540,19 +540,20 @@ template <int D> void SerialFunctionTree<D>::deallocGenNodeChunks() {
     this->genNodeStackStatus.clear();
 }
 
-/** Overwrite all pointers defined in the tree.
- * Necessary after sending the tree
- * could be optimized. Should reset other counters? (GenNodes...) */
-template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
+/** Traverse tree and redefine pointer, counter and tables. */
+template <int D> void SerialFunctionTree<D>::rewritePointers() {
 
     this->getTree()->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
+    this->getTree()->clearEndNodeTable();
 
     // reinitialize stacks
-    int nodecount = nChunks * this->maxNodesPerChunk;
+    for (int i = 0; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
+    // nodeChunks have been adapted to receiving tree and maybe larger than nodeStackStatus
+    int nodecount = this->nodeChunks.size() * this->maxNodesPerChunk;
     while (nodecount > this->nodeStackStatus.size()) this->nodeStackStatus.push_back(0);
-    this->maxNodes = nodecount;
+    this->maxNodes = this->nodeStackStatus.size();
 
     // clear all gennodes and their chunks:
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
@@ -562,61 +563,62 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(int nChunks) {
     this->genNodeChunks.clear();
     this->nGenNodes = 0;
     this->maxGenNodes = 0;
-    this->nNodes = 0;
 
-    for (int ichunk = 0; ichunk < nChunks; ichunk++) {
-        for (int inode = 0; inode < this->maxNodesPerChunk; inode++) {
-            ProjectedNode<D> *node = (this->nodeChunks[ichunk]) + inode;
-            if (node->serialIx >= 0) {
-                this->nNodes = ichunk * this->maxNodesPerChunk + (inode + 1);
-                // Node is part of tree, should be processed
-                assert(node->serialIx == this->nNodes - 1);
-                this->getTree()->incrementNodeCount(node->getScale());
-                if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
-
-                // normally (intel) the virtual table does not change, but we overwrite anyway
-                *(char **)(node) = this->cvptr_ProjectedNode;
-
-                node->tree = this->getTree();
-
-                //"adress" of coefs is the same as node, but in another array
-                node->coefs = this->nodeCoeffChunks[ichunk] + inode * this->sizeNodeCoeff;
-
-                // adress of parent and children must be corrected
-                // can be on a different chunks
-                if (node->parentSerialIx >= 0) {
-                    int n_ichunk = node->parentSerialIx / this->maxNodesPerChunk;
-                    int n_inode = node->parentSerialIx % this->maxNodesPerChunk;
-                    node->parent = this->nodeChunks[n_ichunk] + n_inode;
-                    assert(node->parent->serialIx == node->parentSerialIx);
-                } else {
-                    node->parent = 0;
-                }
-
-                for (int i = 0; i < node->getNChildren(); i++) {
-                    int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
-                    int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
-                    node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
-                }
-                this->nodeStackStatus[node->serialIx] = 1; // occupied
-            } else {
-                this->nodeStackStatus[node->serialIx] = 0; // available
-            }
-        }
-        this->lastNode = this->nodeChunks[ichunk] + this->nNodes % (this->maxNodesPerChunk);
-    }
-
-    // update other MWTree data
-    auto *Tree = static_cast<FunctionTree<D> *>(this->tree_p);
-
-    NodeBox<D> &rBox = Tree->getRootBox();
+    NodeBox<D> &rBox = this->getTree()->getRootBox();
     MWNode<D> **roots = rBox.getNodes();
 
+    int DepthMax = 100, slen = 0;
+    ProjectedNode<D> *stack[DepthMax * 8];
     for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
         roots[rIdx] = (this->nodeChunks[0]) + rIdx; // adress of roots are at start of NodeChunks[0] array
+        stack[slen++] = (this->nodeChunks[0]) + rIdx;
     }
+    this->nNodes = 0;
+    while (slen) {
+        this->nNodes++;
+        ProjectedNode<D> *node = stack[--slen];
+        for (int i = 0; i < node->getNChildren(); i++) {
+            int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
+            int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
+            stack[slen++] = this->nodeChunks[n_ichunk] + n_inode;
+        }
+        int ichunk = node->serialIx / this->maxNodesPerChunk;
+        int inode = node->serialIx % this->maxNodesPerChunk;
 
-    this->getTree()->resetEndNodeTable();
+        this->nNodes = std::max(this->nNodes, ichunk * this->maxNodesPerChunk + inode + 1);
+        this->getTree()->incrementNodeCount(node->getScale());
+        if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
+        if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);
+
+        // normally (intel) the virtual table does not change, but we overwrite anyway
+        *(char **)(node) = this->cvptr_ProjectedNode;
+
+        node->tree = this->getTree();
+
+        //"adress" of coefs is the same as node, but in another array
+        node->coefs = this->nodeCoeffChunks[ichunk] + inode * this->sizeNodeCoeff;
+
+        // adress of parent and children must be corrected
+        // can be on a different chunks
+        if (node->parentSerialIx >= 0) {
+            int n_ichunk = node->parentSerialIx / this->maxNodesPerChunk;
+            int n_inode = node->parentSerialIx % this->maxNodesPerChunk;
+            node->parent = this->nodeChunks[n_ichunk] + n_inode;
+            assert(node->parent->serialIx == node->parentSerialIx);
+        } else {
+            node->parent = 0;
+        }
+
+        for (int i = 0; i < node->getNChildren(); i++) {
+            int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
+            int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
+            node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
+        }
+        this->nodeStackStatus[node->serialIx] = 1; // occupied
+    }
+    int ichunk = (this->nNodes - 1) / this->maxNodesPerChunk;
+    int inode = (this->nNodes - 1) % this->maxNodesPerChunk;
+    this->lastNode = this->nodeChunks[ichunk] + inode;
 }
 
 template <int D> int SerialFunctionTree<D>::getNChunksUsed() const {

@@ -100,6 +100,12 @@ template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
 #endif
 }
 
+/** reset the start node counter */
+template <int D> void SerialFunctionTree<D>::clear(int n) {
+    for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
+    this->nNodes = n;
+}
+
 template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
     int sIx;
     double *coefs_p;
@@ -575,7 +581,6 @@ template <int D> void SerialFunctionTree<D>::rewritePointers() {
     }
     this->nNodes = 0;
     while (slen) {
-        this->nNodes++;
         ProjectedNode<D> *node = stack[--slen];
         for (int i = 0; i < node->getNChildren(); i++) {
             int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;

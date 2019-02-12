@@ -78,6 +78,8 @@ public:
 
     void rewritePointers();
 
+    void clear(int n);
+
 protected:
     int maxGenNodes;      // max number of Gen nodes that can be defined
     int sizeGenNodeCoeff; // size of coeff for one Gen node

@@ -77,6 +77,7 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
+    this->getSerialFunctionTree()->clear(this->rootBox.size());
 }
 
 /** Write the tree structure to disk, for later use.

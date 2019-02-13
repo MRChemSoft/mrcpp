@@ -76,7 +76,9 @@ public:
     //    int *genNodeStackStatus;
     std::vector<int> genNodeStackStatus;
 
-    void rewritePointers(int nChunks);
+    void rewritePointers();
+
+    void clear(int n);
 
 protected:
     int maxGenNodes;      // max number of Gen nodes that can be defined

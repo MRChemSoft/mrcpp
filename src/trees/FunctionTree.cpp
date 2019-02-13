@@ -77,6 +77,7 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
+    this->getSerialFunctionTree()->clear(this->rootBox.size());
 }
 
 /** Write the tree structure to disk, for later use.
@@ -161,7 +162,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     Printer::printTime(10, "Time read tree", t1);
 
     Timer t2;
-    sTree.rewritePointers(nChunks);
+    sTree.rewritePointers();
     t2.stop();
     Printer::printTime(10, "Time rewrite pointers", t2);
 }

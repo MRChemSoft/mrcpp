@@ -52,7 +52,7 @@ protected:
             : FunctionNode<D>() {}
     GenNode(const GenNode<D> &node) = delete;
     GenNode<D> &operator=(const GenNode<D> &node) = delete;
-    ~GenNode() { assert(this->tree == 0); }
+    ~GenNode() { assert(this->tree == nullptr); }
 
     double calcComponentNorm(int i) const;
     void dealloc();

@@ -48,7 +48,7 @@ public:
     ~NodeBox();
 
     void setNode(int idx, MWNode<D> **node);
-    void clearNode(int idx) { this->nodes[idx] = 0; }
+    void clearNode(int idx) { this->nodes[idx] = nullptr; }
 
     MWNode<D> &getNode(const NodeIndex<D> &idx);
     MWNode<D> &getNode(const Coord<D> &r);

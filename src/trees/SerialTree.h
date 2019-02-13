@@ -51,7 +51,7 @@ public:
     SharedMemory *getMemory() { return this->shMem; }
 
     bool isShared() const {
-        if (this->shMem == 0) return false;
+        if (this->shMem == nullptr) return false;
         return true;
     }
 

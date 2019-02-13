@@ -44,7 +44,7 @@ int NOtrees = 0;
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
 SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
-        : SerialTree<2>(tree, 0)
+        : SerialTree<2>(tree, nullptr)
         , sNodes(nullptr)
         , lastNode(nullptr) {
 
@@ -96,8 +96,8 @@ void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
         *(char **)(root_p) = this->cvptr_OperatorNode;
 
         root_p->tree = &tree;
-        root_p->parent = 0;
-        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = 0; }
+        root_p->parent = nullptr;
+        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
 
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<2>();
@@ -144,7 +144,7 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
 
         child_p->tree = parent.tree;
         child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = 0; }
+        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
 
         child_p->nodeIndex = NodeIndex<2>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);

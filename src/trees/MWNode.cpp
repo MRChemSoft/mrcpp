@@ -46,8 +46,8 @@ namespace mrcpp {
  *  virtual table pointers for the derived classes. */
 template <int D>
 MWNode<D>::MWNode()
-        : tree(0)
-        , parent(0)
+        : tree(nullptr)
+        , parent(nullptr)
         , squareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
@@ -58,7 +58,7 @@ MWNode<D>::MWNode()
     setIsLooseNode();
 
     clearNorms();
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = 0; }
+    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
 }
 
 /** MWNode copy constructor.
@@ -66,7 +66,7 @@ MWNode<D>::MWNode()
 template <int D>
 MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree)
-        , parent(0)
+        , parent(nullptr)
         , squareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
@@ -89,7 +89,7 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         this->clearHasCoefs();
         this->clearNorms();
     }
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = 0; }
+    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
 }
 
 /** MWNode destructor.
@@ -119,9 +119,9 @@ template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 template <int D> void MWNode<D>::freeCoefs() {
     if (not this->isLooseNode()) MSG_FATAL("Only loose nodes here!");
 
-    if (this->coefs != 0) delete[] this->coefs;
+    if (this->coefs != nullptr) delete[] this->coefs;
 
-    this->coefs = 0;
+    this->coefs = nullptr;
     this->n_coefs = 0;
 
     this->clearHasCoefs();
@@ -635,12 +635,12 @@ template <int D> void MWNode<D>::genChildren() {
 template <int D> void MWNode<D>::deleteChildren() {
     if (this->isLeafNode()) return;
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
-        if (this->children[cIdx] != 0) {
+        if (this->children[cIdx] != nullptr) {
             MWNode<D> &child = getMWChild(cIdx);
             child.deleteChildren();
             child.dealloc();
         }
-        this->children[cIdx] = 0;
+        this->children[cIdx] = nullptr;
     }
     this->childSerialIx = -1;
     this->setIsLeafNode();
@@ -795,7 +795,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
         return 0;
     }
     int cIdx = getChildIndex(idx);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
@@ -812,17 +812,17 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx
     }
     assert(this->isAncestor(idx));
     if (this->isEndNode()) { // don't return GenNodes
-        return 0;
+        return nullptr;
     }
     int cIdx = getChildIndex(idx);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
     if (getDepth() == depth or this->isEndNode()) { return this; }
     int cIdx = getChildIndex(r);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
@@ -836,7 +836,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
     if (getDepth() == depth or this->isEndNode()) { return this; }
     int cIdx = getChildIndex(r);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
@@ -850,7 +850,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeInd
     // and the EndNode status does not change (normally ;)
     if (isEndNode()) { return this; }
     int cIdx = getChildIndex(idx);
-    assert(children[cIdx] != 0);
+    assert(children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
@@ -864,7 +864,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
     // and the EndNode status does not change (normally ;)
     if (isEndNode()) { return this; }
     int cIdx = getChildIndex(idx);
-    assert(children[cIdx] != 0);
+    assert(children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
@@ -881,7 +881,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
     assert(hasCoord(r));
     threadSafeGenChildren();
     int cIdx = getChildIndex(r);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNode(r, depth);
 }
 
@@ -899,7 +899,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     assert(isAncestor(idx));
     threadSafeGenChildren();
     int cIdx = getChildIndex(idx);
-    assert(this->children[cIdx] != 0);
+    assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNode(idx);
 }
 

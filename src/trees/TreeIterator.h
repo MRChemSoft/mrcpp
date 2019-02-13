@@ -71,7 +71,7 @@ public:
     bool doneNode;
     bool doneChild[1 << D];
 
-    IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx = 0);
+    IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx = nullptr);
     ~IteratorNode() { delete this->next; }
 };
 

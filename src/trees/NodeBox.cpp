@@ -40,7 +40,7 @@ template <int D>
 NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb)
         : BoundingBox<D>(idx, nb)
         , nOccupied(0)
-        , nodes(0) {
+        , nodes(nullptr) {
     allocNodePointers();
 }
 
@@ -48,7 +48,7 @@ template <int D>
 NodeBox<D>::NodeBox(const BoundingBox<D> &box)
         : BoundingBox<D>(box)
         , nOccupied(0)
-        , nodes(0) {
+        , nodes(nullptr) {
     allocNodePointers();
 }
 
@@ -56,15 +56,15 @@ template <int D>
 NodeBox<D>::NodeBox(const NodeBox<D> &box)
         : BoundingBox<D>(box)
         , nOccupied(0)
-        , nodes(0) {
+        , nodes(nullptr) {
     allocNodePointers();
 }
 
 template <int D> void NodeBox<D>::allocNodePointers() {
-    assert(this->nodes == 0);
+    assert(this->nodes == nullptr);
     int nNodes = this->size();
     this->nodes = new MWNode<D> *[nNodes];
-    for (int n = 0; n < nNodes; n++) { this->nodes[n] = 0; }
+    for (int n = 0; n < nNodes; n++) { this->nodes[n] = nullptr; }
     this->nOccupied = 0;
 }
 
@@ -73,10 +73,10 @@ template <int D> NodeBox<D>::~NodeBox() {
 }
 
 template <int D> void NodeBox<D>::deleteNodes() {
-    if (this->nodes == 0) { return; }
+    if (this->nodes == nullptr) { return; }
     for (int n = 0; n < this->size(); n++) { clearNode(n); }
     delete[] this->nodes;
-    this->nodes = 0;
+    this->nodes = nullptr;
 }
 
 template <int D> void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
@@ -86,7 +86,7 @@ template <int D> void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
     this->nodes[bIdx] = *node;
     this->nOccupied++;
     assert(this->nOccupied > 0);
-    *node = 0;
+    *node = nullptr;
 }
 
 template <int D> MWNode<D> &NodeBox<D>::getNode(const NodeIndex<D> &nIdx) {
@@ -103,7 +103,7 @@ template <int D> MWNode<D> &NodeBox<D>::getNode(const Coord<D> &r) {
 template <int D> MWNode<D> &NodeBox<D>::getNode(int bIdx) {
     assert(bIdx >= 0);
     assert(bIdx < this->totBoxes);
-    assert(this->nodes[bIdx] != 0);
+    assert(this->nodes[bIdx] != nullptr);
     return *this->nodes[bIdx];
 }
 
@@ -121,7 +121,7 @@ template <int D> const MWNode<D> &NodeBox<D>::getNode(const Coord<D> &r) const {
 template <int D> const MWNode<D> &NodeBox<D>::getNode(int bIdx) const {
     assert(bIdx >= 0);
     assert(bIdx < this->totBoxes);
-    assert(this->nodes[bIdx] != 0);
+    assert(this->nodes[bIdx] != nullptr);
     return *this->nodes[bIdx];
 }
 

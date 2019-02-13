@@ -32,11 +32,11 @@ namespace mrcpp {
 template <int D>
 TreeIterator<D>::TreeIterator(int dir)
         : mode(dir)
-        , state(0)
-        , initialState(0) {}
+        , state(nullptr)
+        , initialState(nullptr) {}
 
 template <int D> TreeIterator<D>::~TreeIterator() {
-    if (this->initialState != 0) { delete this->initialState; }
+    if (this->initialState != nullptr) { delete this->initialState; }
 }
 
 template <int D> bool TreeIterator<D>::next() {
@@ -98,11 +98,11 @@ template <int D> bool TreeIterator<D>::tryNextRoot() {
 }
 
 template <int D> void TreeIterator<D>::removeState() {
-    if (this->state == this->initialState) { this->initialState = 0; }
-    if (this->state != 0) {
+    if (this->state == this->initialState) { this->initialState = nullptr; }
+    if (this->state != nullptr) {
         IteratorNode<D> *spare = this->state;
         this->state = spare->next;
-        spare->next = 0;
+        spare->next = nullptr;
         delete spare;
     }
 }

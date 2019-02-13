@@ -47,8 +47,8 @@ template <int D>
 SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *mem)
         : SerialTree<D>(tree, mem)
         , nGenNodes(0)
-        , lastNode(0)
-        , lastGenNode(0) {
+        , lastNode(nullptr)
+        , lastGenNode(nullptr) {
 
     // Size for GenNodes chunks. ProjectedNodes will be 8 times larger
     this->sizeGenNodeCoeff = this->tree_p->getKp1_d();       // One block
@@ -120,8 +120,8 @@ template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
         *(char **)(root_p) = this->cvptr_ProjectedNode;
 
         root_p->tree = &tree;
-        root_p->parent = 0;
-        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = 0; }
+        root_p->parent = nullptr;
+        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
 
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<D>();
@@ -168,7 +168,7 @@ template <int D> void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
 
         child_p->tree = parent.tree;
         child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = 0; }
+        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
 
         child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
@@ -214,7 +214,7 @@ template <int D> void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent)
 
         child_p->tree = parent.tree;
         child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = 0; }
+        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
 
         child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
@@ -611,7 +611,7 @@ template <int D> void SerialFunctionTree<D>::rewritePointers() {
             node->parent = this->nodeChunks[n_ichunk] + n_inode;
             assert(node->parent->serialIx == node->parentSerialIx);
         } else {
-            node->parent = 0;
+            node->parent = nullptr;
         }
 
         for (int i = 0; i < node->getNChildren(); i++) {

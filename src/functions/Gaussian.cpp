@@ -113,7 +113,7 @@ template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) con
 
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
-        int visibleScale = int(-std::floor(std::log2(nQuadPts * 2.0 * stdDeviation)));
+        auto visibleScale = int(-std::floor(std::log2(nQuadPts * 2.0 * stdDeviation)));
 
         if (scale < visibleScale) { return false; }
     }

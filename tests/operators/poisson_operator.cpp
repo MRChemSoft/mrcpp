@@ -76,7 +76,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
             FunctionTreeVector<1> kern_vec;
             for (int i = 0; i < poisson.size(); i++) {
                 Gaussian<1> &kern_gauss = *poisson[i];
-                FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
+                auto *kern_tree = new FunctionTree<1>(kern_mra);
                 build_grid(*kern_tree, kern_gauss);
                 project(proj_prec, *kern_tree, kern_gauss);
                 kern_vec.push_back(std::make_tuple(1.0, kern_tree));
@@ -97,7 +97,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
-                    OperatorTree *oper_tree = new OperatorTree(oper_mra, ccc_prec);
+                    auto *oper_tree = new OperatorTree(oper_mra, ccc_prec);
                     builder.build(*oper_tree, calculator, adaptor, -1);
                     oper_tree->setupOperNodeCache();
                     O.push_back(oper_tree);

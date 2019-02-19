@@ -38,7 +38,7 @@ public:
 private:
     FunctionTreeVector<D> prod_vec;
 
-    void calcNode(MWNode<D> &node_o) {
+    void calcNode(MWNode<D> &node_o) override {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         double *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }

@@ -41,8 +41,8 @@ public:
         static CrossCorrelationCache<T> theCrossCorrelationCache;
         return theCrossCorrelationCache;
     }
-    void load(int order);
-    CrossCorrelation &get(int order);
+    void load(int order) override;
+    CrossCorrelation &get(int order) override;
 
     const Eigen::MatrixXd &getLMatrix(int order);
     const Eigen::MatrixXd &getRMatrix(int order);

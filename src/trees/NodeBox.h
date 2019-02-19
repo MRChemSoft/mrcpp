@@ -45,7 +45,7 @@ public:
     NodeBox(const NodeBox<D> &box);
     NodeBox(const BoundingBox<D> &box);
     NodeBox<D> &operator=(const NodeBox<D> &box) = delete;
-    ~NodeBox();
+    ~NodeBox() override;
 
     void setNode(int idx, MWNode<D> **node);
     void clearNode(int idx) { this->nodes[idx] = nullptr; }

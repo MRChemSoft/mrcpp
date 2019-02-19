@@ -79,7 +79,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
             FunctionTreeVector<1> K;
             for (int i = 0; i < helmholtz.size(); i++) {
                 Gaussian<1> &kern_gauss = *helmholtz[i];
-                FunctionTree<1> *kern_tree = new FunctionTree<1>(kern_mra);
+                auto *kern_tree = new FunctionTree<1>(kern_mra);
                 build_grid(*kern_tree, kern_gauss);
                 project(proj_prec, *kern_tree, kern_gauss);
                 K.push_back(std::make_tuple(1.0, kern_tree));
@@ -100,7 +100,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
                     FunctionTree<1> &kern_tree = get_func(K, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
-                    OperatorTree *oper_tree = new OperatorTree(oper_mra, ccc_prec);
+                    auto *oper_tree = new OperatorTree(oper_mra, ccc_prec);
                     builder.build(*oper_tree, calculator, adaptor, -1);
                     oper_tree->setupOperNodeCache();
                     O.push_back(oper_tree);

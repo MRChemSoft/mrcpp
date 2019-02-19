@@ -39,7 +39,7 @@ public:
 private:
     const RepresentableFunction<D> *func;
 
-    bool splitNode(const MWNode<D> &node) const {
+    bool splitNode(const MWNode<D> &node) const override {
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
         if (this->func->isVisibleAtScale(scale, nQuadPts)) { return false; }

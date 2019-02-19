@@ -45,15 +45,15 @@ public:
     SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *sh_mem);
     SerialFunctionTree(const SerialFunctionTree<D> &tree) = delete;
     SerialFunctionTree<D> &operator=(const SerialFunctionTree<D> &tree) = delete;
-    ~SerialFunctionTree();
+    ~SerialFunctionTree() override;
 
-    void allocRoots(MWTree<D> &tree);
-    void allocChildren(MWNode<D> &parent);
-    void allocGenChildren(MWNode<D> &parent);
+    void allocRoots(MWTree<D> &tree) override;
+    void allocChildren(MWNode<D> &parent) override;
+    void allocGenChildren(MWNode<D> &parent) override;
 
-    void deallocNodes(int serialIx);
-    void deallocGenNodes(int serialIx);
-    void deallocGenNodeChunks();
+    void deallocNodes(int serialIx) override;
+    void deallocGenNodes(int serialIx) override;
+    void deallocGenNodeChunks() override;
 
     int getNChunks() const { return this->nodeChunks.size(); }
     int getNChunksUsed() const;

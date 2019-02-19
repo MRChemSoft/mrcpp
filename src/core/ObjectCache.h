@@ -62,7 +62,7 @@ public:
 
 protected:
     ObjectCache() {
-        this->objs.push_back(0);
+        this->objs.push_back(nullptr);
         this->mem.push_back(0);
 #ifdef HAVE_OPENMP
         omp_init_lock(&cache_lock);

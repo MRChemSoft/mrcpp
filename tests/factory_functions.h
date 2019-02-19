@@ -14,15 +14,15 @@
 #include "utils/details.h"
 
 template <class T> void finalize(T **obj) {
-    if (obj == 0) MSG_FATAL("Invalid argument");
-    if (*obj == 0) MSG_FATAL("Invalid argument");
+    if (obj == nullptr) MSG_FATAL("Invalid argument");
+    if (*obj == nullptr) MSG_FATAL("Invalid argument");
     delete *obj;
-    *obj = 0;
+    *obj = nullptr;
 }
 
 template <int D> void initialize(mrcpp::NodeIndex<D> **idx) {
-    if (idx == 0) MSG_FATAL("Invalid argument");
-    if (*idx != 0) MSG_FATAL("Invalid argument");
+    if (idx == nullptr) MSG_FATAL("Invalid argument");
+    if (*idx != nullptr) MSG_FATAL("Invalid argument");
     int scale = 1;
     int l[D];
     for (int d = 0; d < D; d++) { l[d] = d - 1; }
@@ -30,7 +30,7 @@ template <int D> void initialize(mrcpp::NodeIndex<D> **idx) {
 }
 
 template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
-    if (idx == 0) MSG_FATAL("Invalid argument");
+    if (idx == nullptr) MSG_FATAL("Invalid argument");
 
     const int scale = 1;
     REQUIRE((scale == idx->getScale()));
@@ -43,13 +43,13 @@ template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
 }
 
 template <int D> void initialize(mrcpp::BoundingBox<D> **box) {
-    if (box == 0) MSG_FATAL("Invalid argument");
-    if (*box != 0) MSG_FATAL("Invalid argument");
+    if (box == nullptr) MSG_FATAL("Invalid argument");
+    if (*box != nullptr) MSG_FATAL("Invalid argument");
 
     std::array<int, D> nb;
     for (int d = 0; d < D; d++) nb[d] = d + 1;
 
-    mrcpp::NodeIndex<D> *nIdx = 0;
+    mrcpp::NodeIndex<D> *nIdx = nullptr;
     initialize(&nIdx);
 
     *box = new mrcpp::BoundingBox<D>(*nIdx, nb);
@@ -57,7 +57,7 @@ template <int D> void initialize(mrcpp::BoundingBox<D> **box) {
 }
 
 template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
-    if (box == 0) MSG_FATAL("Invalid argument");
+    if (box == nullptr) MSG_FATAL("Invalid argument");
 
     const mrcpp::NodeIndex<D> &cIdx = box->getCornerIndex();
     testInitial<D>(&cIdx);
@@ -83,12 +83,12 @@ template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
 }
 
 template <int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra) {
-    if (mra == 0) MSG_FATAL("Invalid argument");
-    if (*mra != 0) MSG_FATAL("Invalid argument");
+    if (mra == nullptr) MSG_FATAL("Invalid argument");
+    if (*mra != nullptr) MSG_FATAL("Invalid argument");
 
     int k = 5;
     mrcpp::InterpolatingBasis basis(k);
-    mrcpp::BoundingBox<D> *world = 0;
+    mrcpp::BoundingBox<D> *world = nullptr;
     initialize(&world);
     *mra = new mrcpp::MultiResolutionAnalysis<D>(*world, basis);
     finalize(&world);

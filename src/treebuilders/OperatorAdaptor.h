@@ -35,7 +35,7 @@ public:
             : WaveletAdaptor<2>(pr, ms, ap) {}
 
 protected:
-    bool splitNode(const MWNode<2> &node) const {
+    bool splitNode(const MWNode<2> &node) const override {
         int chkCompNorm = 0;
         for (int i = 1; i < 4; i++) {
             if (node.getComponentNorm(i) > 0.0) { chkCompNorm = 1; }

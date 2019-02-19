@@ -36,14 +36,14 @@ public:
             , absPrec(ap)
             , prec(pr)
             , splitFac(sf) {}
-    virtual ~WaveletAdaptor() = default;
+    ~WaveletAdaptor() override = default;
 
 protected:
     bool absPrec;
     double prec;
     double splitFac;
 
-    virtual bool splitNode(const MWNode<D> &node) const {
+    bool splitNode(const MWNode<D> &node) const override {
         return node.splitCheck(this->prec, this->splitFac, this->absPrec);
     }
 };

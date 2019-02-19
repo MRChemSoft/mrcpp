@@ -40,7 +40,7 @@ private:
     Eigen::VectorXd valueZero;
     Eigen::VectorXd valueOne;
 
-    void calcNode(MWNode<2> &node);
+    void calcNode(MWNode<2> &node) override;
 
     void calcKMatrix(const ScalingBasis &basis);
     void calcValueVectors(const ScalingBasis &basis);

@@ -52,7 +52,7 @@ GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos, const st
             this->poly[d] = new Polynomial(this->power[d]);
             // this->poly[d]->unsetBounds();
         } else {
-            this->poly[d] = 0;
+            this->poly[d] = nullptr;
         }
     }
 }
@@ -68,7 +68,7 @@ GaussPoly<D>::GaussPoly(const std::array<double, D> &alpha,
             this->poly[d] = new Polynomial(this->power[d]);
             // this->poly[d]->unsetBounds();
         } else {
-            this->poly[d] = 0;
+            this->poly[d] = nullptr;
         }
     }
 }
@@ -173,7 +173,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
         } else {
-            int *newPow = new int[D];
+            auto *newPow = new int[D];
             double coef = 1.0;
             for (int d = 0; d < D; d++) {
                 newPow[d] = pow[d];
@@ -197,7 +197,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
         } else {
-            int *newPow = new int[D];
+            auto *newPow = new int[D];
             double coef = 1.0;
             for (int d = 0; d < D; d++) {
                 newPow[d] = pow[d];
@@ -264,7 +264,7 @@ template <int D> void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
 }
 
 template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
-    if (this->poly[d] != 0) { delete this->poly[d]; }
+    if (this->poly[d] != nullptr) { delete this->poly[d]; }
     this->poly[d] = new Polynomial(poly);
     // this->poly[d]->unsetBounds();
     this->power[d] = poly.getOrder();

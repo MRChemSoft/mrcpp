@@ -70,7 +70,7 @@ template <int D> void testAddition() {
     ref_func.setCoef(0, a_coef);
     ref_func.setCoef(1, b_coef);
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     // Initialize trees

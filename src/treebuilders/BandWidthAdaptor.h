@@ -43,7 +43,7 @@ public:
 private:
     const int bandWidth;
 
-    bool splitNode(const MWNode<2> &node) const {
+    bool splitNode(const MWNode<2> &node) const override {
         const NodeIndex<2> &idx = node.getNodeIndex();
         int lx = idx.getTranslation(0);
         int ly = idx.getTranslation(1);

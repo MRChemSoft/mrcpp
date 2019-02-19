@@ -45,15 +45,15 @@ public:
     SerialOperatorTree(OperatorTree *tree);
     SerialOperatorTree(const SerialOperatorTree &tree) = delete;
     SerialOperatorTree &operator=(const SerialOperatorTree &tree) = delete;
-    ~SerialOperatorTree();
+    ~SerialOperatorTree() override;
 
-    void allocRoots(MWTree<2> &tree);
-    void allocChildren(MWNode<2> &parent);
-    void allocGenChildren(MWNode<2> &parent);
+    void allocRoots(MWTree<2> &tree) override;
+    void allocChildren(MWNode<2> &parent) override;
+    void allocGenChildren(MWNode<2> &parent) override;
 
-    void deallocNodes(int serialIx);
-    void deallocGenNodes(int serialIx);
-    void deallocGenNodeChunks();
+    void deallocNodes(int serialIx) override;
+    void deallocGenNodes(int serialIx) override;
+    void deallocGenNodeChunks() override;
 
 protected:
     OperatorNode *sNodes; // serial OperatorNodes

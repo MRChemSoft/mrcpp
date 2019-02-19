@@ -129,7 +129,7 @@ void OperatorTree::setupOperNodeCache() {
             int l[2] = {0, i};
             NodeIndex<2> idx(scale, l);
             // Generated OperatorNodes are still OperatorNodes
-            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -139,7 +139,7 @@ void OperatorTree::setupOperNodeCache() {
         for (int i = 1; i <= n_transl; i++) {
             int l[2] = {i, 0};
             NodeIndex<2> idx(scale, l);
-            if (OperatorNode *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -189,10 +189,10 @@ void OperatorTree::mwTransformUp() {
 void OperatorTree::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<2>> nodeTable;
     makeNodeTable(nodeTable);
-    for (int n = 0; n < nodeTable.size(); n++) {
-        int n_nodes = nodeTable[n].size();
+    for (auto &n : nodeTable) {
+        int n_nodes = n.size();
         for (int i = 0; i < n_nodes; i++) {
-            MWNode<2> &node = *nodeTable[n][i];
+            MWNode<2> &node = *n[i];
             if (node.isBranchNode()) { node.giveChildrenCoefs(overwrite); }
         }
     }

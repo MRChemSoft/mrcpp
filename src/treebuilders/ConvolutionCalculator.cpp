@@ -137,7 +137,7 @@ template <int D> void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 /** Return a vector of nodes in F affected by O, given a node in G */
 template <int D>
 MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
-    MWNodeVector<D> *band = new MWNodeVector<D>;
+    auto *band = new MWNodeVector<D>;
 
     int depth = gNode.getDepth();
     bool periodic = gNode.getMWTree().getMRA().getWorldBox().isPeriodic();
@@ -367,7 +367,7 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
 }
 
 template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
-    MWNodeVector<D> *nodeVec = new MWNodeVector<D>;
+    auto *nodeVec = new MWNodeVector<D>;
     tree.makeNodeTable(*nodeVec);
     return nodeVec;
 }

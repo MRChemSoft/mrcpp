@@ -86,7 +86,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    CopyAdaptor<D> adaptor(inp, maxScale, 0);
+    CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     Printer::printSeparator(10, ' ');
@@ -114,7 +114,7 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    CopyAdaptor<D> adaptor(inp, maxScale, 0);
+    CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     Printer::printSeparator(10, ' ');
@@ -219,7 +219,7 @@ template <int D> int refine_grid(FunctionTree<D> &out, double prec) {
 template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    CopyAdaptor<D> adaptor(inp, maxScale, 0);
+    CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     int nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }

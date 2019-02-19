@@ -792,7 +792,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
     }
     assert(this->isAncestor(idx));
     if (this->isEndNode()) { // don't return GenNodes
-        return 0;
+        return nullptr;
     }
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);

@@ -46,7 +46,7 @@ namespace mrcpp {
 template <int D> double GaussExp<D>::defaultScreening = 10.0;
 
 template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
-    for (int i = 0; i < nTerms; i++) { this->funcs.push_back(0); }
+    for (int i = 0; i < nTerms; i++) { this->funcs.push_back(nullptr); }
 }
 
 template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
@@ -85,14 +85,14 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
             this->append(gFunc);
         }
     }
-    for (int i = 0; i < power.size(); i++) { delete[] power[i]; }
+    for (auto &i : power) { delete[] i; }
 }
 
 template <int D> GaussExp<D>::~GaussExp() {
     for (int i = 0; i < size(); i++) {
-        if (this->funcs[i] != 0) {
+        if (this->funcs[i] != nullptr) {
             delete this->funcs[i];
-            this->funcs[i] = 0;
+            this->funcs[i] = nullptr;
         }
     }
 }
@@ -103,8 +103,8 @@ template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     // screening = gexp.screening;
     this->funcs.clear();
     for (unsigned int i = 0; i < gexp.size(); i++) {
-        if (gexp.funcs[i] == 0) {
-            this->funcs.push_back(0);
+        if (gexp.funcs[i] == nullptr) {
+            this->funcs.push_back(nullptr);
         } else {
             Gaussian<D> *gauss = gexp.getFunc(i).copy();
             this->funcs.push_back(gauss);
@@ -138,7 +138,7 @@ template <int D> void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double 
         MSG_ERROR("Index out of bounds!");
         return;
     }
-    if (this->funcs[i] != 0) { delete this->funcs[i]; }
+    if (this->funcs[i] != nullptr) { delete this->funcs[i]; }
     this->funcs[i] = new GaussPoly<D>(g);
     double coef = this->funcs[i]->getCoef();
     this->funcs[i]->setCoef(c * coef);
@@ -149,7 +149,7 @@ template <int D> void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double 
         MSG_ERROR("Index out of bounds!");
         return;
     }
-    if (this->funcs[i] != 0) { delete this->funcs[i]; }
+    if (this->funcs[i] != nullptr) { delete this->funcs[i]; }
     this->funcs[i] = new GaussFunc<D>(g);
     double coef = this->funcs[i]->getCoef();
     this->funcs[i]->setCoef(c * coef);
@@ -399,9 +399,9 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
 template <> double GaussExp<3>::calcCoulombEnergy() {
     double energy = 0.0;
     for (int i = 0; i < size(); i++) {
-        if (GaussFunc<3> *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
+        if (auto *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
             for (int j = i; j < size(); j++) {
-                if (GaussFunc<3> *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
+                if (auto *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
                     double c = 2.0;
                     if (i == j) c = 1.0;
                     energy += c * gauss_i->calcCoulombEnergy(*gauss_j);

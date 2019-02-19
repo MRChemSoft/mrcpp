@@ -39,7 +39,7 @@ template <class T> ObjectCache<T> &ObjectCache<T>::getInstance() {
 
 template <class T> void ObjectCache<T>::clear() {
     for (unsigned int i = 0; i < this->objs.size(); i++) {
-        if (this->objs[i] != 0) { unload(i); }
+        if (this->objs[i] != nullptr) { unload(i); }
     }
 }
 
@@ -50,12 +50,12 @@ template <class T> void ObjectCache<T>::load(int id) {
 template <class T> void ObjectCache<T>::load(int id, T *new_o, int memory) {
     if (id >= this->highWaterMark) {
         for (int i = 0; i < id - this->highWaterMark + 1; i++) {
-            this->objs.push_back(0);
+            this->objs.push_back(nullptr);
             this->mem.push_back(0);
         }
         this->highWaterMark = id;
     }
-    if (this->objs[id] != 0) { return; }
+    if (this->objs[id] != nullptr) { return; }
     this->mem[id] = memory;
     this->memLoaded += memory;
     this->objs[id] = new_o;
@@ -63,25 +63,25 @@ template <class T> void ObjectCache<T>::load(int id, T *new_o, int memory) {
 
 template <class T> void ObjectCache<T>::unload(int id) {
     if (id < 0 or id > this->highWaterMark) { MSG_ERROR("Id out of bounds:" << id); }
-    if (this->objs[id] == 0) {
+    if (this->objs[id] == nullptr) {
         MSG_WARN("Object not loaded.");
         return;
     }
     this->memLoaded -= this->mem[id];
     this->mem[id] = 0;
     delete this->objs[id];
-    this->objs[id] = 0;
+    this->objs[id] = nullptr;
 }
 
 template <class T> T &ObjectCache<T>::get(int id) {
     if (id < 0) { MSG_ERROR("Id out of bounds:" << id); }
-    if (this->objs[id] == 0) { MSG_ERROR("Object not loaded!"); }
+    if (this->objs[id] == nullptr) { MSG_ERROR("Object not loaded!"); }
     return *(this->objs[id]);
 }
 
 template <class T> bool ObjectCache<T>::hasId(int id) {
     if (id > this->highWaterMark) return false;
-    if (this->objs[id] == 0) return false;
+    if (this->objs[id] == nullptr) return false;
     return true;
 }
 

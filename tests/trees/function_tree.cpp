@@ -43,7 +43,7 @@ SCENARIO("Zero FunctionTree", "[function_tree_zero], [function_tree], [trees]") 
 }
 
 template <int D> void testZeroFunction() {
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
     FunctionTree<D> tree(*mra);
     WHEN("the function is set to zero") {
@@ -76,7 +76,7 @@ template <int D> void testGeneratedNodes() {
     if (r.size() >= 2) r[1] = 0.6;
     if (r.size() >= 3) r[2] = 1.9;
 
-    MultiResolutionAnalysis<D> *mra = 0;
+    MultiResolutionAnalysis<D> *mra = nullptr;
     initialize(&mra);
 
     FunctionTree<D> tree(*mra);

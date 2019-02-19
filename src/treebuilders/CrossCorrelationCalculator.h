@@ -38,7 +38,7 @@ public:
 private:
     FunctionTree<1> *kernel;
 
-    void calcNode(MWNode<2> &node);
+    void calcNode(MWNode<2> &node) override;
 
     template <int T> void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);
 };

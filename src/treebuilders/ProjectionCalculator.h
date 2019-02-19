@@ -38,7 +38,7 @@ public:
 private:
     const RepresentableFunction<D> *func;
     const std::array<double, D> scaling_factor;
-    void calcNode(MWNode<D> &node);
+    void calcNode(MWNode<D> &node) override;
 };
 
 } // namespace mrcpp

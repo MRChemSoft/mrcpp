@@ -39,8 +39,8 @@ OperatorStatistics<D>::OperatorStatistics()
         , fCount(nullptr)
         , gCount(nullptr)
         , genCount(nullptr)
-        , totCompCount(0)
-        , compCount(0) {
+        , totCompCount(nullptr)
+        , compCount(nullptr) {
 
     this->totCompCount = new Matrix<int, 8, 8>;
     this->totCompCount->setZero();

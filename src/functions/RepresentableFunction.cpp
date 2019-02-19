@@ -41,8 +41,8 @@ namespace mrcpp {
 template <int D> RepresentableFunction<D>::RepresentableFunction(const double *a, const double *b) {
     if (a == nullptr or b == nullptr) {
         this->bounded = false;
-        this->A = 0;
-        this->B = 0;
+        this->A = nullptr;
+        this->B = nullptr;
     } else {
         this->bounded = true;
         this->A = new double[D];
@@ -67,8 +67,8 @@ template <int D> RepresentableFunction<D>::RepresentableFunction(const Represent
         }
     } else {
         this->bounded = false;
-        this->A = 0;
-        this->B = 0;
+        this->A = nullptr;
+        this->B = nullptr;
     }
 }
 
@@ -83,8 +83,8 @@ template <int D> RepresentableFunction<D>::~RepresentableFunction() {
         delete[] this->A;
         delete[] this->B;
     }
-    this->A = 0;
-    this->B = 0;
+    this->A = nullptr;
+    this->B = nullptr;
 }
 
 template <int D> void RepresentableFunction<D>::setBounds(const double *a, const double *b) {

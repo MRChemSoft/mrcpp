@@ -40,3 +40,8 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    mrcpp_api/plotter
    mrcpp_api/timer
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Programmers Manual
+
+   programmers_manual/clang_tidy

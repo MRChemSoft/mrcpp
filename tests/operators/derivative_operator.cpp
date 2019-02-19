@@ -28,9 +28,9 @@
 #include "factory_functions.h"
 
 #include "operators/ABGVOperator.h"
+#include "operators/BSOperator.h"
 #include "operators/MWOperator.h"
 #include "operators/PHOperator.h"
-#include "operators/BSOperator.h"
 #include "treebuilders/add.h"
 #include "treebuilders/apply.h"
 #include "treebuilders/project.h"
@@ -85,12 +85,12 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     Coord<D> r_0;
     for (auto &x : r_0) x = pi;
 
-    auto f = [r_0] (const Coord<D> &r) {
+    auto f = [r_0](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return std::exp(-R * R);
     };
 
-    auto df = [r_0] (const Coord<D> &r) {
+    auto df = [r_0](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return -2.0 * std::exp(-R * R) * (r[0] - r_0[0]);
     };
@@ -209,7 +209,7 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     delete mra;
 }
 
-template<int D> void testDifferentiationBS(int order) {
+template <int D> void testDifferentiationBS(int order) {
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
     double prec = 1.0e-3;
@@ -218,23 +218,24 @@ template<int D> void testDifferentiationBS(int order) {
     Coord<D> r_0;
     for (auto &x : r_0) x = pi;
 
-    auto f = [r_0] (const Coord<D> &r) {
+    auto f = [r_0](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
-        return std::exp(-R*R);
+        return std::exp(-R * R);
     };
-    auto df = [r_0, order] (const Coord<D> &r) {
+    auto df = [r_0, order](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
 
-        if (order == 1) return -2.0*std::exp(-R*R)*(r[0]-pi);
-        if (order == 2) return -2.0*std::exp(-R*R)+4.0*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0]);
-        return 12.0*std::exp(-R*R)*(r[0]-r_0[0])-8.0*std::exp(-R*R)*(r[0]-r_0[0])*(r[0]-r_0[0])*(r[0]-r_0[0]);
+        if (order == 1) return -2.0 * std::exp(-R * R) * (r[0] - pi);
+        if (order == 2) return -2.0 * std::exp(-R * R) + 4.0 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]);
+        return 12.0 * std::exp(-R * R) * (r[0] - r_0[0]) -
+               8.0 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]) * (r[0] - r_0[0]);
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec/10, f_tree, f);
+    project<D>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec/10, df_tree, df);
+    project<D>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -244,9 +245,9 @@ template<int D> void testDifferentiationBS(int order) {
 
     double df_norm = std::sqrt(df_tree.getSquareNorm());
     double abs_err = std::sqrt(err_tree.getSquareNorm());
-    double rel_err = abs_err/df_norm;
+    double rel_err = abs_err / df_norm;
 
-    REQUIRE( rel_err == Approx(0.0).margin(prec*10.0) );
+    REQUIRE(rel_err == Approx(0.0).margin(prec * 10.0));
     // Multiplying prec by 10.0 to make the less accurate 3rd order pass.
     delete mra;
 }
@@ -290,39 +291,21 @@ TEST_CASE("Periodic PH differentiantion", "[periodic_derivative], [derivative_op
 }
 
 TEST_CASE("BS differentiantion first order", "[derivative_operator], [BS_first_order]") {
-    SECTION("1D derivative test") {
-        testDifferentiationBS<1>(1);
-    }
-    SECTION("2D derivative test") {
-        testDifferentiationBS<2>(1);
-    }
-    SECTION("3D derivative test") {
-        testDifferentiationBS<3>(1);
-    }
+    SECTION("1D derivative test") { testDifferentiationBS<1>(1); }
+    SECTION("2D derivative test") { testDifferentiationBS<2>(1); }
+    SECTION("3D derivative test") { testDifferentiationBS<3>(1); }
 }
 
 TEST_CASE("BS differentiantion second order", "[derivative_operator], [BS_second_order]") {
-    SECTION("1D derivative test") {
-        testDifferentiationBS<1>(2);
-    }
-    SECTION("2D derivative test") {
-        testDifferentiationBS<2>(2);
-    }
-    SECTION("3D derivative test") {
-        testDifferentiationBS<3>(2);
-    }
+    SECTION("1D derivative test") { testDifferentiationBS<1>(2); }
+    SECTION("2D derivative test") { testDifferentiationBS<2>(2); }
+    SECTION("3D derivative test") { testDifferentiationBS<3>(2); }
 }
 
 TEST_CASE("BS differentiantion third order", "[derivative_operator], [BS_third_order]") {
-    SECTION("1D derivative test") {
-        testDifferentiationBS<1>(3);
-    }
-    SECTION("2D derivative test") {
-        testDifferentiationBS<2>(3);
-    }
-    SECTION("3D derivative test") {
-        testDifferentiationBS<3>(3);
-    }
+    SECTION("1D derivative test") { testDifferentiationBS<1>(3); }
+    SECTION("2D derivative test") { testDifferentiationBS<2>(3); }
+    SECTION("3D derivative test") { testDifferentiationBS<3>(3); }
 }
 
 TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {

@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include "config.h"
+#include "MRCPP/config.h"
 
 #include "BSCalculator.h"
 #include "utils/Printer.h"

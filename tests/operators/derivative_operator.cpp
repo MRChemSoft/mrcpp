@@ -331,39 +331,21 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     double prec = 1.0e-3;
     ABGVOperator<3> diff(*mra, 0.0, 0.0);
 
-<<<<<<< HEAD
-    auto f = [](const Coord<3> &r) -> double {
+    auto f = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return std::exp(-r2);
     };
-    auto fx = [](const Coord<3> &r) -> double {
+    auto fx = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[0] * std::exp(-r2);
     };
-    auto fy = [](const Coord<3> &r) -> double {
+    auto fy = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[1] * std::exp(-r2);
     };
-    auto fz = [](const Coord<3> &r) -> double {
+    auto fz = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[2] * std::exp(-r2);
-=======
-    auto f = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return std::exp(-r2);
-    };
-    auto fx = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[0]*std::exp(-r2);
-    };
-    auto fy = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[1]*std::exp(-r2);
-    };
-    auto fz = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[2]*std::exp(-r2);
->>>>>>> Add b-spine derivative operator and tests
     };
 
     FunctionTree<3> f_tree(*mra);
@@ -387,39 +369,21 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     double prec = 1.0e-3;
     ABGVOperator<3> diff(*mra, 0.5, 0.5);
 
-<<<<<<< HEAD
-    auto f = [](const Coord<3> &r) -> double {
+    auto f = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return std::exp(-r2);
     };
-    auto fx = [](const Coord<3> &r) -> double {
+    auto fx = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[0] * std::exp(-r2);
     };
-    auto fy = [](const Coord<3> &r) -> double {
+    auto fy = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[1] * std::exp(-r2);
     };
-    auto fz = [](const Coord<3> &r) -> double {
+    auto fz = [](const Coord<3> &r) {
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -2.0 * r[2] * std::exp(-r2);
-=======
-    auto f = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return std::exp(-r2);
-    };
-    auto fx = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[0]*std::exp(-r2);
-    };
-    auto fy = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[1]*std::exp(-r2);
-    };
-    auto fz = [] (const Coord<3> &r) {
-        double r2 = (r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
-        return -2.0*r[2]*std::exp(-r2);
->>>>>>> Add b-spine derivative operator and tests
     };
 
     FunctionTree<3> f_tree(*mra);

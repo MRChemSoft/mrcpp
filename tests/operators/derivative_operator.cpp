@@ -53,7 +53,7 @@ template <int D> MultiResolutionAnalysis<D> *initializeMRA() {
 
     // Constructing scaling basis
     int order = 5;
-    LegendreBasis basis(order);
+    InterpolatingBasis basis(order);
 
     // Initializing MRA
     int max_depth = 20;

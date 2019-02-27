@@ -1,6 +1,7 @@
 target_sources(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/BSOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.cpp
@@ -16,6 +17,7 @@ get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
 list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/ABGVOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/BSOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeOperator.h
@@ -45,4 +47,3 @@ foreach(_header IN LISTS ${_dirname}_h)
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/operators
     )
 endforeach()
-

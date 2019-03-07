@@ -31,6 +31,7 @@
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "add.h"
+#include "functions/GaussExp.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
@@ -61,6 +62,17 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
     AnalyticAdaptor<D> adaptor(inp, maxScale);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
+    Printer::printSeparator(10, ' ');
+}
+
+template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
+    int maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    DefaultCalculator<D> calculator;
+    for (int i = 0; i < inp.size(); i++) {
+        AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
+        builder.build(out, calculator, adaptor, maxIter);
+    }
     Printer::printSeparator(10, ' ');
 }
 
@@ -224,6 +236,9 @@ template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     return nSplit;
 }
 
+template void build_grid(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter);
+template void build_grid(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter);
+template void build_grid(FunctionTree<3> &out, const GaussExp<3> &inp, int maxIter);
 template void build_grid(FunctionTree<1> &out, const RepresentableFunction<1> &inp, int maxIter);
 template void build_grid(FunctionTree<2> &out, const RepresentableFunction<2> &inp, int maxIter);
 template void build_grid(FunctionTree<3> &out, const RepresentableFunction<3> &inp, int maxIter);

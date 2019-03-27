@@ -103,6 +103,7 @@ public:
     int size() const { return this->funcs.size(); }
     Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
     const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
+    std::vector<Gaussian<D> *> &getFuncs() { return this->funcs; }
 
     Gaussian<D> *operator[](int i) { return this->funcs[i]; }
     const Gaussian<D> *operator[](int i) const { return this->funcs[i]; }
@@ -119,7 +120,7 @@ public:
 
     void append(const Gaussian<D> &g);
     void append(const GaussExp<D> &g);
-
+    void erase(int i) { this->funcs.erase(this->funcs.cbegin() + i); }
     friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
 
 protected:

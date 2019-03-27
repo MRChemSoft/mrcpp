@@ -42,18 +42,24 @@ template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
     }
 }
 
-template <int D> void initialize(mrcpp::BoundingBox<D> **box) {
+template <int D> void initialize(mrcpp::BoundingBox<D> **box, bool periodic = false) {
     if (box == nullptr) MSG_FATAL("Invalid argument");
     if (*box != nullptr) MSG_FATAL("Invalid argument");
 
-    std::array<int, D> nb;
-    for (int d = 0; d < D; d++) nb[d] = d + 1;
+    if (not periodic) {
+        std::array<int, D> nb;
+        for (int d = 0; d < D; d++) nb[d] = d + 1;
+        mrcpp::NodeIndex<D> *nIdx = nullptr;
+        initialize(&nIdx);
 
-    mrcpp::NodeIndex<D> *nIdx = nullptr;
-    initialize(&nIdx);
-
-    *box = new mrcpp::BoundingBox<D>(*nIdx, nb);
-    finalize(&nIdx);
+        *box = new mrcpp::BoundingBox<D>(*nIdx, nb);
+        finalize(&nIdx);
+    }
+    if (periodic) {
+        std::array<double, D> period;
+        period.fill(2.0); // Period of 2.0 in all directions
+        *box = new mrcpp::BoundingBox<D>(period);
+    }
 }
 
 template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
@@ -82,27 +88,26 @@ template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
     REQUIRE((box->size() == tot_boxes));
 }
 
-template <int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra) {
+template <int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra, bool periodic = false) {
     if (mra == nullptr) MSG_FATAL("Invalid argument");
     if (*mra != nullptr) MSG_FATAL("Invalid argument");
 
     int k = 5;
     mrcpp::InterpolatingBasis basis(k);
     mrcpp::BoundingBox<D> *world = nullptr;
-    initialize(&world);
+    initialize(&world, periodic);
     *mra = new mrcpp::MultiResolutionAnalysis<D>(*world, basis);
     finalize(&world);
 }
 
 /* Initializing a D-dimensional Gaussian of unit charge */
-template <int D> void initialize(mrcpp::GaussFunc<D> **func) {
+template <int D> void initialize(mrcpp::GaussFunc<D> **func, bool periodic = false) {
     double beta = 1.0e4;
     double alpha = std::pow(beta / mrcpp::pi, D / 2.0);
+
     double pos_data[3] = {-0.2, 0.5, 1.0};
-    const auto pow = std::array<int, D>{};
-
     auto pos = mrcpp::details::convert_to_std_array<double, D>(pos_data);
-
+    if (periodic) pos.fill(0.0);
     *func = new mrcpp::GaussFunc<D>(beta, alpha, pos);
 }
 

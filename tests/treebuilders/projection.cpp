@@ -36,11 +36,15 @@ using namespace mrcpp;
 namespace projection {
 
 template <int D> void testProjectFunction();
+template <int D> void testProjectPeriodicFunction();
 
 SCENARIO("Projecting Gaussian function", "[projection], [tree_builder], [trees]") {
     GIVEN("a Gaussian of unit charge in 1D") { testProjectFunction<1>(); }
     GIVEN("a Gaussian of unit charge in 2D") { testProjectFunction<2>(); }
     GIVEN("a Gaussian of unit charge in 3D") { testProjectFunction<3>(); }
+    GIVEN("a Gaussian of unit projected onto the Origin of a 1D periodic world") { testProjectPeriodicFunction<1>(); }
+    GIVEN("a Gaussian of unit projected onto the Origin of a 2D periodic world") { testProjectPeriodicFunction<2>(); }
+    GIVEN("a Gaussian of unit projected onto the Origin of a 3D periodic world") { testProjectPeriodicFunction<3>(); }
 }
 
 template <int D> void testProjectFunction() {
@@ -94,6 +98,18 @@ template <int D> void testProjectFunction() {
     }
     finalize(&mra);
     finalize(&func);
+}
+
+template <int D> void testProjectPeriodicFunction() {
+    GaussFunc<D> *func = nullptr;
+    initialize(&func, true);
+    MultiResolutionAnalysis<D> *mra = nullptr;
+    initialize(&mra, true);
+    const auto prec = 1.0e-4;
+
+    FunctionTree<D> f_tree(*mra);
+    project_onto_periodic_origin<D>(prec, f_tree, *func);
+    REQUIRE(f_tree.integrate() == Approx(1.0));
 }
 
 } // namespace projection

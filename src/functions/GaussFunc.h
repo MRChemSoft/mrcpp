@@ -51,7 +51,10 @@ template <int D> class GaussFunc final : public Gaussian<D> {
 public:
     GaussFunc(double alpha, double coef, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
             : Gaussian<D>(alpha, coef, pos, pow) {}
-    GaussFunc(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
+    GaussFunc(const std::array<double, D> &alpha,
+              double coef,
+              const Coord<D> &pos = {},
+              const std::array<int, D> &pow = {})
             : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf)
             : Gaussian<D>(gf) {}

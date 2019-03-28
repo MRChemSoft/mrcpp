@@ -30,6 +30,7 @@
 #include "functions/AnalyticFunction.h"
 #include "functions/GaussExp.h"
 #include "functions/GaussFunc.h"
+#include "functions/function_utils.h"
 #include "grid.h"
 #include "trees/FunctionTree.h"
 #include "trees/MultiResolutionAnalysis.h"
@@ -108,14 +109,9 @@ template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFu
  * @param[in] inp Input function
  * @param[in] maxIter Maximum number of refinement iterations in output tree
  *
- * With a regular project only an 8th of a Gaussian projected onto the
- * Origin of the periodic unit will be conserved. Here the gaussian
- * contributions from all corner of the unit cell are added into a
- * single GaussExp then projected onto the MW representation following
- * the regular projection algorithm
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * This function takes a GaussFunc then converts it to a GaussExp using
+ * function_utils::make_gaussian_periodic, it refines the grid of the
+ * using the GaussExp generated and projects it onto the FunctionTree.
  *
  */
 template <int D> void project_onto_periodic_origin(double prec, FunctionTree<D> &out, GaussFunc<D> &inp, int maxIter) {
@@ -124,34 +120,15 @@ template <int D> void project_onto_periodic_origin(double prec, FunctionTree<D> 
     auto beta = inp.getCoef();
     auto alpha = inp.getExp()[0];
     auto pos = inp.getPos();
+    auto periodic = out.getMRA().getWorldBox().isPeriodic();
     // Sanity checks
     if (pos != Coord<D>{}) MSG_FATAL("Gaussian must be placed at the origin");
-    if (not out.getMRA().getWorldBox().isPeriodic()) MSG_FATAL("The world has to be periodic")
+    if (not periodic) MSG_FATAL("The world has to be periodic")
 
-    auto gauss = GaussExp<D>();
-    auto gauss_start = GaussFunc<D>(alpha, beta, pos);
-    gauss.append(gauss_start);
-    if (D == 3 or D == 2) {
-        for (auto i = 0; i < D; i++) {
-            auto pos_0 = pos;
-            pos_0[i] = sf[i];
-            auto gauss_0 = GaussFunc<D>(alpha, beta, pos_0);
-            gauss.append(gauss_0);
-
-            if (D == 3) {
-                auto pos_sf = sf;
-                pos_sf[i] = 0.0;
-                auto gauss_sf = GaussFunc<D>(alpha, beta, pos_sf);
-                gauss.append(gauss_sf);
-            }
-        }
-    }
-
-    auto gauss_end = GaussFunc<D>(alpha, beta, sf);
-    gauss.append(gauss_end);
-
-    mrcpp::build_grid<D>(out, gauss);
-    mrcpp::project<D>(prec, out, gauss);
+    auto gauss_exp = GaussExp<D>();
+    function_utils::make_gaussian_periodic<D>(gauss_exp, inp, sf, periodic);
+    mrcpp::build_grid<D>(out, gauss_exp);
+    mrcpp::project<D>(prec, out, gauss_exp);
 }
 
 template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);

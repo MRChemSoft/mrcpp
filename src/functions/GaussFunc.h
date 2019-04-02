@@ -51,7 +51,10 @@ template <int D> class GaussFunc final : public Gaussian<D> {
 public:
     GaussFunc(double alpha, double coef, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
             : Gaussian<D>(alpha, coef, pos, pow) {}
-    GaussFunc(const std::array<double, D> &alpha, double coef, const Coord<D> &pos, const std::array<int, D> &pow)
+    GaussFunc(const std::array<double, D> &alpha,
+              double coef,
+              const Coord<D> &pos = {},
+              const std::array<int, D> &pow = {})
             : Gaussian<D>(alpha, coef, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf)
             : Gaussian<D>(gf) {}
@@ -61,8 +64,9 @@ public:
     double calcCoulombEnergy(GaussFunc<D> &gf);
     double calcSquareNorm() override;
 
-    double evalf(const Coord<D> &r) const override;
-    double evalf(double r, int dim) const override;
+    double evalfCore(const Coord<D> &r) const;
+
+    double evalf(double r, int dim) const;
 
     static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);
     double calcOverlap(GaussFunc<D> &b) override;
@@ -85,6 +89,8 @@ public:
         this->power = power;
         this->squareNorm = -1.0;
     }
+
+    using Gaussian<D>::evalf;
 
 private:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);

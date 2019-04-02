@@ -61,6 +61,11 @@ public:
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
 
+    void makePeriodic(const std::array<double, D> &period);
+
+    auto begin() { return funcs.begin(); }
+    auto end() { return funcs.end(); }
+
     double calcCoulombEnergy();
     double calcSquareNorm();
     void normalize();

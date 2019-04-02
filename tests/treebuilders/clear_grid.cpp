@@ -44,9 +44,9 @@ SCENARIO("Projected trees can be cleared and reused", "[clear_grid], [tree_build
 
 template <int D> void testClearGrid() {
     GaussFunc<D> *func = nullptr;
-    initialize(&func);
+    initialize<D>(&func);
     MultiResolutionAnalysis<D> *mra = nullptr;
-    initialize(&mra);
+    initialize<D>(&mra);
 
     const double prec = 1.0e-4;
     FunctionTree<D> tree(*mra);

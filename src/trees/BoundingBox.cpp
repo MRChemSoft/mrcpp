@@ -112,6 +112,9 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
 
 template <int D> void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
+    for (auto &x : sf)
+        if (x == 0.0 and sf != std::array<double, D>{})
+            MSG_ERROR("The scaling factor cannot be zero in any of the directions");
     this->scalingFactor = sf;
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }

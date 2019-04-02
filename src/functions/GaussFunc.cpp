@@ -52,7 +52,7 @@ template <int D> Gaussian<D> *GaussFunc<D>::copy() const {
     return gauss;
 }
 
-template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
+template <int D> double GaussFunc<D>::evalfCore(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) { return 0.0; }

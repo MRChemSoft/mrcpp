@@ -33,8 +33,11 @@
  */
 
 #include "Gaussian.h"
+#include "GaussExp.h"
+#include "function_utils.h"
 #include "trees/NodeIndex.h"
-
+#include "utils/Printer.h"
+#include "utils/details.h"
 using namespace Eigen;
 
 namespace mrcpp {
@@ -57,6 +60,13 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , alpha(a)
         , pos(r)
         , squareNorm(-1.0) {}
+
+template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period) {
+    for (auto &x : period)
+        if (x <= 0.0) MSG_ERROR("The period has to be greater that zero in all directions");
+    this->period = period;
+    this->gauss_exp = function_utils::make_gaussian_periodic<D>(*this, this->period);
+}
 
 template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 
@@ -113,7 +123,7 @@ template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) con
 
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
-        auto visibleScale = int(-std::floor(std::log2(nQuadPts * 2.0 * stdDeviation)));
+        auto visibleScale = static_cast<int>(-std::floor(std::log2(nQuadPts * 2.0 * stdDeviation)));
 
         if (scale < visibleScale) { return false; }
     }
@@ -137,6 +147,24 @@ template <int D> void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &value
     assert(points.rows() == values.rows());
     for (int d = 0; d < D; d++) {
         for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf(points(i, d), d); }
+    }
+}
+
+template <int D> double Gaussian<D>::evalf(const Coord<D> &r) const {
+    if (this->period == std::array<double, D>{}) return this->evalfCore(r);
+    return this->gauss_exp->evalf(r);
+}
+
+template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {
+
+    if (details::are_all_equal<D>(this->getExp())) {
+        auto exponent = this->getExp()[0];
+        return 1.0 / std::sqrt(2.0 * exponent);
+    } else {
+        auto exponents = this->getExp();
+        auto standard_deviations = std::array<double, D>{};
+        for (auto i = 0; i < D; i++) { standard_deviations[i] = 1.0 / std::sqrt(2.0 * exponents[i]); }
+        return *std::max_element(standard_deviations.begin(), standard_deviations.end());
     }
 }
 

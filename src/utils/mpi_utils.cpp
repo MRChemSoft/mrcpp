@@ -68,7 +68,7 @@ SharedMemory::~SharedMemory() {
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks) {
 #ifdef HAVE_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
-    if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
+    if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     if (nChunks < 0) {
         nChunks = sTree.getNChunksUsed();
@@ -112,7 +112,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
                 sNodesCoeff = shMem->sh_end_ptr;
                 shMem->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
                 // may increase size dynamically in the future
-                if (shMem->sh_max_ptr < shMem->sh_end_ptr) { MSG_FATAL("Shared block too small"); }
+                if (shMem->sh_max_ptr < shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
                 sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
             }
@@ -139,9 +139,9 @@ template <int D>
 void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req, int nChunks) {
 #ifdef HAVE_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
-    if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
+    if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
-    if (nChunks < 0) MSG_FATAL("Number of chunks must be communicated before isend");
+    if (nChunks < 0) MSG_ABORT("Number of chunks must be communicated before isend");
 
     Timer t1;
     int count = 1;
@@ -160,7 +160,7 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Co
 #ifdef HAVE_MPI
     Timer t1;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
-    if (sTree.nGenNodes != 0) MSG_FATAL("Sending of GenNodes not implemented");
+    if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     int size, rank;
     MPI_Comm_size(comm, &size);

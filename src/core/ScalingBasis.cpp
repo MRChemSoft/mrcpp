@@ -31,7 +31,7 @@ namespace mrcpp {
 ScalingBasis::ScalingBasis(int k, int t)
         : type(t)
         , order(k) {
-    if (this->order < 1) MSG_FATAL("Invalid scaling order");
+    if (this->order < 1) MSG_ABORT("Invalid scaling order");
     int q_order = getQuadratureOrder();
     this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
     this->cvMap = Eigen::MatrixXd::Zero(q_order, q_order);

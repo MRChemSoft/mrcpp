@@ -104,9 +104,9 @@ template <int D> void MWNode<D>::dealloc() {
 
 /** Allocate the coefs vector. Only used by loose nodes. */
 template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
-    if (this->n_coefs != 0) MSG_FATAL("n_coefs should be zero");
-    if (this->isAllocated()) MSG_FATAL("Coefs already allocated");
-    if (not this->isLooseNode()) MSG_FATAL("Only loose nodes here!");
+    if (this->n_coefs != 0) MSG_ABORT("n_coefs should be zero");
+    if (this->isAllocated()) MSG_ABORT("Coefs already allocated");
+    if (not this->isLooseNode()) MSG_ABORT("Only loose nodes here!");
 
     this->n_coefs = n_blocks * block_size;
     this->coefs = new double[this->n_coefs];
@@ -117,7 +117,7 @@ template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
 
 /** Deallocation of coefficients. Only used by loose nodes. */
 template <int D> void MWNode<D>::freeCoefs() {
-    if (not this->isLooseNode()) MSG_FATAL("Only loose nodes here!");
+    if (not this->isLooseNode()) MSG_ABORT("Only loose nodes here!");
 
     if (this->coefs != nullptr) delete[] this->coefs;
 
@@ -129,7 +129,7 @@ template <int D> void MWNode<D>::freeCoefs() {
 }
 
 template <int D> void MWNode<D>::printCoefs() const {
-    if (not this->isAllocated()) MSG_FATAL("Node is not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
     println(0, "\nMW coefs");
     int kp1_d = this->getKp1_d();
     for (int i = 0; i < this->n_coefs; i++) {
@@ -139,15 +139,15 @@ template <int D> void MWNode<D>::printCoefs() const {
 }
 
 template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
-    if (not this->isAllocated()) MSG_FATAL("Node is not allocated");
-    if (not this->hasCoefs()) MSG_FATAL("Node has no coefs");
-    if (this->n_coefs == 0) MSG_FATAL("ncoefs == 0");
+    if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
+    if (not this->hasCoefs()) MSG_ABORT("Node has no coefs");
+    if (this->n_coefs == 0) MSG_ABORT("ncoefs == 0");
 
     c = VectorXd::Map(this->coefs, this->n_coefs);
 }
 
 template <int D> void MWNode<D>::zeroCoefs() {
-    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
 
     for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
     this->zeroNorms();
@@ -155,23 +155,23 @@ template <int D> void MWNode<D>::zeroCoefs() {
 }
 
 template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
-    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = c[i]; }
 }
 
 template <int D> void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
-    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] += c[i]; }
 }
 
 template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
-    if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = 0.0; }
 }
 
 template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
-    if (not this->hasCoefs()) MSG_FATAL("No coefficients!");
+    if (not this->hasCoefs()) MSG_ABORT("No coefficients!");
 
     if (overwrite) {
         for (int i = 0; i < this->getTDim(); i++) { this->getMWChild(i).zeroCoefs(); }
@@ -199,7 +199,7 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
     int nChildren = this->getTDim();
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         MWNode<D> &child = getMWChild(cIdx);
-        if (not child.hasCoefs()) MSG_FATAL("Child has no coefs");
+        if (not child.hasCoefs()) MSG_ABORT("Child has no coefs");
         setCoefBlock(cIdx, kp1_d, child.getCoefs());
     }
 }
@@ -410,7 +410,7 @@ void MWNode<D>::cvTransform(int operation) {
         modWeights *= 1.0/two_scale;
         modWeights = modWeights.array().sqrt();
     } else {
-        MSG_FATAL("Invalid operation");
+        MSG_ABORT("Invalid operation");
     }
 
     int kp1 = this->getKp1();
@@ -564,7 +564,7 @@ template <int D> double MWNode<D>::calcComponentNorm(int i) const {
  * coefficients. */
 template <int D> void MWNode<D>::reCompress() {
     if (this->isBranchNode()) {
-        if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+        if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         copyCoefsFromChildren();
         mwTransform(Compression);
         this->setHasCoefs();
@@ -621,7 +621,7 @@ template <int D> double MWNode<D>::getScaleFactor(double splitFac, bool absPrec)
 }
 
 template <int D> void MWNode<D>::createChildren() {
-    if (this->isBranchNode()) MSG_FATAL("Node already has children");
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
     this->getMWTree().getSerialTree()->allocChildren(*this);
     this->setIsBranchNode();
 }
@@ -875,7 +875,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
  * that does not exist. Recursion starts at this node and ASSUMES the
  * requested node is in fact decending from this node. */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
-    if (depth < 0) MSG_FATAL("Invalid argument");
+    if (depth < 0) MSG_ABORT("Invalid argument");
 
     if (getDepth() == depth) { return this; }
     assert(hasCoord(r));

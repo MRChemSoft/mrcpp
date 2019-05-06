@@ -37,7 +37,7 @@ template <int D> void ProjectedNode<D>::createChildren() {
 }
 
 template <int D> void ProjectedNode<D>::genChildren() {
-    if (this->isBranchNode()) MSG_FATAL("Node already has children");
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
     this->tree->getSerialTree()->allocGenChildren(*this);
     this->setIsBranchNode();
 }
@@ -65,7 +65,7 @@ template <int D> void ProjectedNode<D>::reCompress() {
 
 template <> void ProjectedNode<3>::reCompress() {
     if (this->isBranchNode()) {
-        if (not this->isAllocated()) MSG_FATAL("Coefs not allocated");
+        if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         // can write directly from children coeff into parent coeff
         int stride = this->getMWChild(0).getNCoefs();
         double *inp = this->getMWChild(0).getCoefs();

@@ -36,8 +36,8 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysi
         : maxDepth(mra.maxDepth)
         , basis(mra.basis)
         , world(mra.world) {
-    if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
-    if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
+    if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
+    if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
     setupFilter();
 }
 
@@ -46,8 +46,8 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
         : maxDepth(depth)
         , basis(sb)
         , world(bb) {
-    if (getMaxDepth() > MaxDepth) MSG_FATAL("Beyond MaxDepth");
-    if (getMaxScale() > MaxScale) MSG_FATAL("Beyond MaxScale");
+    if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
+    if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
     setupFilter();
 }
 
@@ -64,7 +64,7 @@ template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKerne
     } else if (type == Legendre) {
         kern_basis = new LegendreBasis(kern_order);
     } else {
-        MSG_FATAL("Invalid scaling type");
+        MSG_ABORT("Invalid scaling type");
     }
 
     int max_l = (box.isPeriodic()) ? 10 : 0;

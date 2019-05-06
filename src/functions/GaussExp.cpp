@@ -215,7 +215,7 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
                     GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
                 } else {
-                    MSG_FATAL("Invalid Gaussian type!");
+                    MSG_ABORT("Invalid Gaussian type!");
                 }
             } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
                 if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
@@ -225,10 +225,10 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
                     GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
                 } else {
-                    MSG_FATAL("Invalid Gaussian type!");
+                    MSG_ABORT("Invalid Gaussian type!");
                 }
             } else {
-                MSG_FATAL("Invalid Gaussian type!");
+                MSG_ABORT("Invalid Gaussian type!");
             }
         }
     }
@@ -246,7 +246,7 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
             GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
         } else {
-            MSG_FATAL("Invalid Gaussian type!");
+            MSG_ABORT("Invalid Gaussian type!");
         }
     }
     return result;
@@ -262,7 +262,7 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
             GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
         } else {
-            MSG_FATAL("Invalid Gaussian type!");
+            MSG_ABORT("Invalid Gaussian type!");
         }
     }
     return result;
@@ -300,7 +300,7 @@ template <int D> double GaussExp<D>::calcSquareNorm() {
             } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
                 overlap = this->funcs[i]->calcOverlap(*f);
             } else {
-                MSG_FATAL("Invald argument");
+                MSG_ABORT("Invald argument");
             }
             norm += 2.0 * overlap;
         }

@@ -30,9 +30,14 @@
 #include "Printer.h"
 #include "Timer.h"
 
+#include "trees/MWTree.h"
+
+#include "utils/details.h"
+
 namespace mrcpp {
 
 static std::ofstream tp_outfile;
+int Printer::printWidth = 60;
 int Printer::printLevel = -1;
 int Printer::printPrec = 12;
 int Printer::printRank = 0;
@@ -60,12 +65,32 @@ void Printer::init(int level, int rank, int size, const char *file) {
         }
     }
     setScientific();
-    setPrecision(printPrec);
 }
 
-void Printer::printEnvironment(int level) {
+int Printer::setWidth(int i) {
+    int oldWidth = printWidth;
+    printWidth = i;
+    return oldWidth;
+}
+
+int Printer::setPrecision(int i) {
+    int oldPrec = printPrec;
+    printPrec = i;
+    *out << std::setprecision(i);
+    return oldPrec;
+}
+
+int Printer::setPrintLevel(int i) {
+    int oldLevel = printLevel;
+    printLevel = i;
+    return oldLevel;
+}
+
+void print::environment(int level) {
+    if (level > Printer::getPrintLevel()) return;
+
     printout(level, std::endl);
-    printSeparator(level, '-', 1);
+    print::separator(level, '-', 1);
     println(level, " MRCPP version   : " << PROGRAM_VERSION);
     println(level, " Git revision    : " << GIT_REVISION << std::endl);
 
@@ -90,107 +115,165 @@ void Printer::printEnvironment(int level) {
 #endif
 
     printout(level, std::endl);
-    printSeparator(level, '-', 2);
+    print::separator(level, '-', 2);
 }
 
-void Printer::printSeparator(int level, const char &sep, int newlines) {
-    int N = 60;
-    for (int i = 0; i < N; i++) { printout(level, sep); }
-    for (int i = 0; i <= newlines; i++) { printout(level, std::endl); }
+void print::separator(int level, const char &sep, int newlines) {
+    if (level > Printer::getPrintLevel()) return;
+
+    for (int i = 0; i < Printer::getWidth(); i++) printout(level, sep);
+    for (int i = 0; i <= newlines; i++) printout(level, std::endl);
 }
 
-void Printer::printHeader(int level, const std::string &str, int newlines) {
-    int N = 60;
+void mrcpp::print::header(int level, const std::string &str, int newlines) {
+    if (level > Printer::getPrintLevel()) return;
+
     int len = str.size();
-    printSeparator(level, '=', 0);
-    int spaces = (N - len) / 2;
+    print::separator(level, '=', 0);
+    int spaces = (Printer::getWidth() - len) / 2;
     for (int i = 0; i < spaces; i++) { printout(level, " "); }
     println(level, str);
-    printSeparator(level, '-', newlines);
+    print::separator(level, '-', newlines);
 }
 
-void Printer::printFooter(int level, const Timer &t, int newlines) {
-    printSeparator(level, '-');
-    println(level, "                 Wall time: " << std::setw(11) << t << " sec ");
-    printSeparator(level, '=', newlines);
+void print::footer(int level, const Timer &t, int newlines) {
+    if (level > Printer::getPrintLevel()) return;
+
+    int line_width = Printer::getWidth() - 2;
+    int txt_width = line_width / 2;
+    int val_width = 11;
+    int val_prec = 5;
+
+    std::stringstream o;
+    o << std::setw(val_width) << std::setprecision(val_prec) << std::scientific << t.elapsed() << " sec";
+
+    print::separator(level, '-');
+    printout(level, std::setw(txt_width) << "Wall time: ");
+    printout(level, o.str() << std::endl);
+    print::separator(level, '=', newlines);
 }
 
-void Printer::printDouble(int level, const std::string &str, double d, int p) {
-    char cStr[31] = "                              ";
-    for (int i = 0; i < 31; i++) {
-        if (i < str.size()) { cStr[i + 1] = str[i]; }
+void print::value(int level, const std::string &txt, double v, const std::string &unit, int p, bool sci) {
+    if (level > Printer::getPrintLevel()) return;
+
+    if (p < 0) p = Printer::getPrecision();
+    int line_width = Printer::getWidth() - 2;
+    int txt_width = line_width / 2;
+    int unit_width = txt_width / 3;
+    int val_width = line_width - (txt_width + unit_width);
+
+    std::stringstream o;
+    o << " ";
+    for (int i = 0; i < txt.size(); i++) o << txt[i];
+    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << std::setw(unit_width) << unit;
+    if (sci) {
+        o << std::setw(val_width) << std::setprecision(p) << std::scientific << v;
+    } else {
+        o << std::setw(val_width) << std::setprecision(p) << std::fixed << v;
     }
-    int oldPrec = getPrecision();
-    if (p > 0) setPrecision(p);
-    println(level, cStr << std::setw(29) << d);
-    setPrecision(oldPrec);
+    println(level, o.str());
 }
 
-void Printer::printTree(int level, const std::string &str, int n, double t) {
-    char cStr[31] = "                              ";
-    for (int i = 0; i < 31; i++) {
-        if (i < str.size()) { cStr[i + 1] = str[i]; }
+void print::tree(int level, const std::string &txt, int n, int m, double t) {
+    if (level > Printer::getPrintLevel()) return;
+
+    int line_width = Printer::getWidth() - 2;
+    int val_width = 2 * line_width / 9;
+    int txt_width = line_width - 3 * val_width;
+
+    std::string node_unit = " nds";
+
+    double mem_val = 1.0 * m;
+    std::string mem_unit = " kB";
+    if (mem_val > 512.0) {
+        mem_val = mem_val/1024.0;
+        mem_unit = " MB";
     }
-    int oldPrec = setPrecision(5);
-    println(level, cStr << std::setw(12) << n << std::setw(17) << t);
-    setPrecision(oldPrec);
-}
-
-void Printer::printTime(int level, const std::string &str, const Timer &t) {
-    char cStr[31] = "                              ";
-    for (int i = 0; i < 31; i++) {
-        if (i < str.size()) { cStr[i + 1] = str[i]; }
+    if (mem_val > 512.0) {
+        mem_val = mem_val/1024.0;
+        mem_unit = " GB";
     }
-    int oldPrec = setPrecision(5);
-    println(level, cStr << std::setw(29) << t);
-    setPrecision(oldPrec);
-}
 
-int Printer::setPrintLevel(int i) {
-    int oldLevel = printLevel;
-    printLevel = i;
-    return oldLevel;
-}
-
-int Printer::setPrecision(int i) {
-    int oldPrec = printPrec;
-    printPrec = i;
-    *out << std::setprecision(i);
-    return oldPrec;
-}
-
-// parse a string and returns the nth integer number
-int Printer::getVal(char *line, int n) {
-    char *p = line;
-    int len = 0;
-    for (int i = 0; i < n - 1; i++) {
-        // jump over n-1 first numbers
-        while (*p < '0' || *p > '9') p++;
-        while (*p >= '0' && *p <= '9') p++;
+    double time_val = 1.0 * t;
+    std::string time_unit = " sec";
+    if (time_val < 0.01) {
+        time_val = time_val*1000.0;
+        time_unit = "  ms";
+    } else if (time_val > 60.0) {
+        time_val = time_val/60.0;
+        time_unit = " min";
     }
-    while (*p < '0' || *p > '9') p++;
-    char *s = p;
-    while (*s >= '0' && *s <= '9') {
-        s++;
-        line[len] = p[len];
-        len++;
-    }
-    p[len] = 0;
-    return atoi(p);
+
+    std::stringstream o;
+    o << " ";
+    for (int i = 0; i < txt.size(); i++) o << txt[i];
+    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << std::setw(val_width - 4) << n << node_unit;
+    o << std::setw(val_width - 3) << std::setprecision(2) << std::fixed << mem_val << mem_unit;
+    o << std::setw(val_width - 4) << std::setprecision(2) << std::fixed << time_val << time_unit;
+    println(level, o.str());
 }
 
-/** Prints (and returns) the current memory usage of this process
+template<int D>
+void print::tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer) {
+    if (level > Printer::getPrintLevel()) return;
+
+    auto n = tree.getNNodes();
+    auto m = tree.getSizeNodes();
+    auto t = timer.elapsed();
+    print::tree(level, txt, n, m, t);
+}
+
+void print::time(int level, const std::string &txt, const Timer &timer) {
+    if (level > Printer::getPrintLevel()) return;
+
+    int line_width = Printer::getWidth() - 2;
+    int txt_width = line_width / 2;
+    int unit_width = txt_width / 3;
+    int val_width = line_width - (txt_width + unit_width);
+
+    std::stringstream o;
+    o << " ";
+    for (int i = 0; i < txt.size(); i++) o << txt[i];
+    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << std::setw(unit_width) << "(sec)";
+    o << std::setw(val_width) << std::setprecision(5) << std::scientific << timer.elapsed();
+    println(level, o.str());
+}
+
+/** Prints the current memory usage of this process
  */
-int Printer::printMem(char *txt, bool silent) {
-    FILE *file = fopen("/proc/self/statm", "r");
-    int val = -1;
-    char line[80];
-    while (fgets(line, 80, file) != nullptr) {
-        val = getVal(line, 6); // sixth number is data+stack in pages (4kB)
-        if (not silent) std::cout << &txt << val * 4.0 / (1024.0 * 1024) << "GB" << std::endl;
+void print::memory(int level, const std::string &txt) {
+    if (level > Printer::getPrintLevel()) return;
+
+    auto mem_val = static_cast<double>(details::get_memory_usage());
+    std::string mem_unit = "(kB)";
+    if (mem_val > 512.0) {
+        mem_val /= 1024.0;
+        mem_unit = "(MB)";
     }
-    fclose(file);
-    return val;
+    if (mem_val > 512.0) {
+        mem_val /= 1024.0;
+        mem_unit = "(GB)";
+    }
+
+    int line_width = Printer::getWidth() - 2;
+    int txt_width = line_width / 2;
+    int unit_width = txt_width / 3;
+    int val_width = line_width - (txt_width + unit_width);
+
+    std::stringstream o;
+    o << " ";
+    for (int i = 0; i < txt.size(); i++) o << txt[i];
+    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << std::setw(unit_width) << mem_unit;
+    o << std::setw(val_width) << std::setprecision(2) << std::fixed << mem_val;
+    println(level, o.str());
 }
+
+template void print::tree<1>(int level, const std::string &txt, const MWTree<1> &tree, const Timer &timer);
+template void print::tree<2>(int level, const std::string &txt, const MWTree<2> &tree, const Timer &timer);
+template void print::tree<3>(int level, const std::string &txt, const MWTree<3> &tree, const Timer &timer);
 
 } // namespace mrcpp

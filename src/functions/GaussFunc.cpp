@@ -136,7 +136,7 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     for (int d = 0; d < D; d++) {
         if (lhs.getPos()[d] != rhs.getPos()[d]) {
-            MSG_FATAL("Cannot multiply GaussFuncs of different center in-place");
+            MSG_ABORT("Cannot multiply GaussFuncs of different center in-place");
         }
     }
     double newCoef = lhs.getCoef() * rhs.getCoef();

@@ -81,9 +81,9 @@ void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, Func
     inp.deleteGenerated();
     post_t.stop();
 
-    Printer::printTime(10, "Time pre operator", pre_t);
-    Printer::printTime(10, "Time post operator", post_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time pre operator", pre_t);
+    print::time(10, "Time post operator", post_t);
+    print::separator(10, ' ');
 }
 
 /** @brief Application of MW derivative operator
@@ -130,9 +130,9 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     inp.deleteGenerated();
     post_t.stop();
 
-    Printer::printTime(10, "Time pre operator", pre_t);
-    Printer::printTime(10, "Time post operator", post_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time pre operator", pre_t);
+    print::time(10, "Time post operator", post_t);
+    print::separator(10, ' ');
 }
 
 /** @brief Calculation of gradient vector of a function
@@ -172,7 +172,7 @@ template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, Fun
  *
  */
 template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
-    if (inp.size() != D) MSG_FATAL("Dimension mismatch");
+    if (inp.size() != D) MSG_ABORT("Dimension mismatch");
 
     FunctionTreeVector<D> tmp_vec;
     for (int d = 0; d < D; d++) {

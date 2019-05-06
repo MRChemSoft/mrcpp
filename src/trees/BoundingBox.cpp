@@ -94,7 +94,7 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
         this->nBoxes[d] = (nb[d] > 0) ? nb[d] : 1;
         this->totBoxes *= this->nBoxes[d];
     }
-    if (this->totBoxes > 1 and isPeriodic()) MSG_FATAL("Total number of boxes must be one for periodic worlds");
+    if (this->totBoxes > 1 and isPeriodic()) MSG_ABORT("Total number of boxes must be one for periodic worlds");
 }
 
 template <int D> void BoundingBox<D>::setDerivedParameters() {

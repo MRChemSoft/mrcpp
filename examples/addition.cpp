@@ -18,8 +18,8 @@ int main(int argc, char **argv) {
     // Initialize printing
     auto printlevel = 0;
     mrcpp::Printer::init(printlevel);
-    mrcpp::Printer::printEnvironment();
-    mrcpp::Printer::printHeader(0, "Adding MW functions");
+    mrcpp::print::environment(0);
+    mrcpp::print::header(0, "Adding MW functions");
 
     // Constructing world box
     auto corner = std::array<int, D>{-1, -1, -1};
@@ -61,11 +61,9 @@ int main(int argc, char **argv) {
 
     auto integral = g_tree.integrate();
     auto sq_norm = g_tree.getSquareNorm();
-    mrcpp::Printer::printDouble(0, "Integral", integral);
-    mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
-
-    timer.stop();
-    mrcpp::Printer::printFooter(0, timer, 2);
+    mrcpp::print::value(0, "Integral", integral);
+    mrcpp::print::value(0, "Square norm", sq_norm);
+    mrcpp::print::footer(0, timer, 2);
 
     return 0;
 }

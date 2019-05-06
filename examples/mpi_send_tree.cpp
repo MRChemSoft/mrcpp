@@ -34,8 +34,8 @@ int main(int argc, char **argv) {
     // Initialize printing
     auto printlevel = 0;
     mrcpp::Printer::init(printlevel, wrank, wsize);
-    mrcpp::Printer::printEnvironment();
-    mrcpp::Printer::printHeader(0, "Blocking communication");
+    mrcpp::print::environment(0);
+    mrcpp::print::header(0, "Blocking communication");
 
     // Constructing world box
     auto corner = std::array<int, D>{-1, -1, -1};
@@ -63,8 +63,8 @@ int main(int argc, char **argv) {
     { // Print data before send
         auto integral = f_tree.integrate();
         auto sq_norm = f_tree.getSquareNorm();
-        mrcpp::Printer::printDouble(0, "Integral", integral);
-        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::print::value(0, "Integral", integral);
+        mrcpp::print::value(0, "Square norm", sq_norm);
     }
 
     auto send_t = mrcpp::Timer();
@@ -77,15 +77,15 @@ int main(int argc, char **argv) {
         if (wrank == dst) mrcpp::recv_tree(f_tree, src, tag, comm);
     }
     send_t.stop();
-    mrcpp::Printer::printSeparator(0, ' ');
-    mrcpp::Printer::printTime(0, "Time sending tree", send_t);
-    mrcpp::Printer::printSeparator(0, ' ');
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::time(0, "Time sending tree", send_t);
+    mrcpp::print::separator(0, ' ');
 
     { // Print data after send
         auto integral = f_tree.integrate();
         auto sq_norm = f_tree.getSquareNorm();
-        mrcpp::Printer::printDouble(0, "Integral", integral);
-        mrcpp::Printer::printDouble(0, "Square norm", sq_norm);
+        mrcpp::print::value(0, "Integral", integral);
+        mrcpp::print::value(0, "Square norm", sq_norm);
     }
 
     // Finalize MPI
@@ -93,8 +93,7 @@ int main(int argc, char **argv) {
     MPI_Finalize();
 #endif
 
-    tot_t.stop();
-    mrcpp::Printer::printFooter(0, tot_t, 2);
+    mrcpp::print::footer(0, tot_t, 2);
 
     return 0;
 }

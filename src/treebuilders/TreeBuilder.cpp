@@ -79,10 +79,10 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
     tree.resetEndNodeTable();
     delete workVec;
 
-    Printer::printSeparator(10, ' ');
-    Printer::printTime(10, "Time calc", calc_t);
-    Printer::printTime(10, "Time norm", norm_t);
-    Printer::printTime(10, "Time split", split_t);
+    print::separator(10, ' ');
+    print::time(10, "Time calc", calc_t);
+    print::time(10, "Time norm", norm_t);
+    print::time(10, "Time split", split_t);
 }
 
 template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const {
@@ -97,9 +97,9 @@ template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &
     tree.clearSquareNorm();
 
     println(10, "  -- #  1: Cleared      " << std::setw(6) << nodeVec.size() << " nodes");
-    Printer::printSeparator(10, ' ');
-    Printer::printTime(10, "Time clean", clean_t);
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
+    print::time(10, "Time clean", clean_t);
+    print::separator(10, ' ');
 }
 
 template <int D> int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const {
@@ -122,9 +122,9 @@ template <int D> int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adap
     printout(10, "  -- #  0: Split        ");
     printout(10, std::setw(6) << newVec.size() << " nodes\n");
 
-    Printer::printSeparator(10, ' ');
-    Printer::printTime(10, "Time split", split_t);
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
+    print::time(10, "Time split", split_t);
+    print::separator(10, ' ');
 
     return newVec.size();
 }
@@ -142,8 +142,8 @@ template <int D> void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &c
 
     tree.calcSquareNorm();
 
-    Printer::printSeparator(10, ' ');
-    Printer::printTime(10, "Time calc", calc_t);
+    print::separator(10, ' ');
+    print::time(10, "Time calc", calc_t);
 }
 
 template <int D> double TreeBuilder<D>::calcScalingNorm(const MWNodeVector<D> &vec) const {

@@ -50,7 +50,7 @@ std::string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
 CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
         : type(t)
         , order(k) {
-    if (this->order < 1 or this->order > MaxOrder) { MSG_FATAL("Invalid cross correlation order: " << this->order); }
+    if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order: " << this->order);
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -73,8 +73,8 @@ CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
 CrossCorrelation::CrossCorrelation(int t, const MatrixXd &L, const MatrixXd &R)
         : type(t)
         , order(L.cols() / 2 - 1) {
-    if (this->order < 1 or this->order > MaxOrder) { MSG_FATAL("Invalid cross correlation order, " << this->order); }
-    if (R.cols() != L.cols()) { MSG_FATAL("Right and Left cross correlation have different order!"); }
+    if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order, " << this->order);
+    if (R.cols() != L.cols()) MSG_ABORT("Right and Left cross correlation have different order!");
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -123,8 +123,8 @@ void CrossCorrelation::readCCCBin() {
     std::ifstream L_fis(this->L_path.c_str(), std::ios::binary);
     std::ifstream R_fis(this->R_path.c_str(), std::ios::binary);
 
-    if (not L_fis) { MSG_FATAL("Could not open cross correlation: " << this->L_path); }
-    if (not R_fis) { MSG_FATAL("Could not open cross correlation: " << this->R_path); }
+    if (not L_fis) MSG_ABORT("Could not open cross correlation: " << this->L_path);
+    if (not R_fis) MSG_ABORT("Could not open cross correlation: " << this->R_path);
 
     int K = this->order + 1;
     double dL[2 * K];

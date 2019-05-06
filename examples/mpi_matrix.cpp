@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
     // Initialize printing
     int printlevel = 0;
     mrcpp::Printer::init(printlevel, wrank, wsize);
-    mrcpp::Printer::printEnvironment();
-    mrcpp::Printer::printHeader(0, "Non-blocking communication");
+    mrcpp::print::environment(0);
+    mrcpp::print::header(0, "Non-blocking communication");
 
     // Constructing world box
     const auto corner = std::array<int, 3>{-1, -1, -1};
@@ -100,8 +100,7 @@ int main(int argc, char **argv) {
     MPI_Finalize();
 #endif
 
-    tot_t.stop();
-    mrcpp::Printer::printFooter(0, tot_t, 2);
+    mrcpp::print::footer(0, tot_t, 2);
 
     return 0;
 }

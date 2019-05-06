@@ -39,195 +39,100 @@
 namespace mrcpp {
 
 class Timer;
+template <int D> class MWTree;
 
 class Printer final {
 public:
     static void init(int level = 0, int rank = 0, int size = 1, const char *file = nullptr);
-    static void printEnvironment(int level = 0);
-
-    static void printSeparator(int level, const char &sep, int newlines = 0);
-    static void printHeader(int level, const std::string &str, int newlines = 0);
-    static void printFooter(int level, const Timer &t, int newlines = 0);
-
-    static void printDouble(int level, const std::string &str, double d, int p = -1);
-    static void printTree(int level, const std::string &str, int n, double t);
-    static void printTime(int level, const std::string &str, const Timer &t);
 
     static void setOutputStream(std::ostream &o) { out = &o; }
     static void setScientific() { *out << std::scientific; }
     static void setFixed() { *out << std::fixed; }
 
+    static int setWidth(int i);
     static int setPrecision(int i);
     static int setPrintLevel(int i);
+
+    static int getWidth() { return printWidth; }
     static int getPrecision() { return printPrec; }
     static int getPrintLevel() { return printLevel; }
-    static int getVal(char *line, int n = 1);
-    static int printMem(char *txt, bool silent = false);
 
     static std::ostream *out;
 
 private:
+    static int printWidth;
     static int printLevel;
     static int printPrec;
     static int printRank;
     static int printSize;
 };
 
-#define STR_DEBUG(S, X)                                                                                                \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Debug: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;      \
-        S = _str.str();                                                                                                \
-    }
-#define STR_INFO(S, X)                                                                                                 \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Info: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;       \
-        S = _str.str();                                                                                                \
-    }
-#define STR_WARN(S, X)                                                                                                 \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Warning: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;    \
-        S = _str.str();                                                                                                \
-    }
-#define STR_ERROR(S, X)                                                                                                \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Error: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;      \
-        S = _str.str();                                                                                                \
-    }
+namespace print {
+void environment(int level);
+void separator(int level, const char &sep, int newlines = 0);
+void header(int level, const std::string &txt, int newlines = 0);
+void footer(int level, const Timer &timer, int newlines = 0);
+void memory(int level, const std::string &txt);
+void value(int level, const std::string &txt, double v, const std::string &unit = "", int p = -1, bool sci = true);
+void time(int level, const std::string &txt, const Timer &timer);
+void tree(int level, const std::string &txt, int n, int m, double t);
+template <int D> void tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer);
+} // namespace print
 
-#define println(level, STR)                                                                                            \
-    if (level <= mrcpp::Printer::getPrintLevel()) *mrcpp::Printer::out << STR << std::endl;
-#define printout(level, STR)                                                                                           \
-    if (level <= mrcpp::Printer::getPrintLevel()) *mrcpp::Printer::out << STR;
+// clang-format off
+#define println(level, STR)                                                                                                             \
+    { if (level <= mrcpp::Printer::getPrintLevel()) *mrcpp::Printer::out << STR << std::endl; }
+#define printout(level, STR)                                                                                                            \
+    { if (level <= mrcpp::Printer::getPrintLevel()) *mrcpp::Printer::out << STR; }
 
-#define MSG_DEBUG(X)                                                                                                   \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Debug: " << __func__ << "(), line " << __LINE__ << "in " << __FILE__ << ": " << X     \
-                             << std::endl;                                                                             \
+#define MSG_INFO(X)                                                                                                                     \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Info: " << __FILE__ << ": " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl;          \
     }
-#define MSG_INFO(X)                                                                                                    \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Info: " << __FILE__ << ": " << __func__ << "(), line " << __LINE__ << ": " << X       \
-                             << std::endl;                                                                             \
+#define MSG_WARN(X)                                                                                                                     \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Warning: " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl;                           \
     }
-#define MSG_NOTE(X)                                                                                                    \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Note: " << __FILE__ << ": " << __func__ << "(), line " << __LINE__ << ": " << X       \
-                             << std::endl;                                                                             \
+#define MSG_ERROR(X)                                                                                                                    \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Error: " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl;                             \
     }
-#define MSG_WARN(X)                                                                                                    \
-    { *mrcpp::Printer::out << "Warning: " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl; }
-#define MSG_ERROR(X)                                                                                                   \
-    { *mrcpp::Printer::out << "Error: " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl; }
-#define MSG_FATAL(X)                                                                                                   \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Error: " << __FILE__ << ": " << __func__ << "(), line " << __LINE__ << ": " << X      \
-                             << std::endl;                                                                             \
-        abort();                                                                                                       \
+#define MSG_ABORT(X)                                                                                                                    \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Error: " << __FILE__ << ": " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl;         \
+        abort();                                                                                                                        \
     }
-
-#define MSG_INVALID_ARG(X)                                                                                             \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Error, invalid argument passed: " << __func__ << "(), line " << __LINE__ << ": " << X \
-                             << std::endl;                                                                             \
+#define INVALID_ARG_ABORT                                                                                                               \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Error, invalid argument passed: " << __func__ << "(), line " << __LINE__ << std::endl;                 \
+        abort();                                                                                                                        \
     }
-#define INVALID_ARG_ABORT                                                                                              \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Error, invalid argument passed: " << __func__ << "(), line " << __LINE__              \
-                             << std::endl;                                                                             \
-        abort();                                                                                                       \
+#define NOT_IMPLEMENTED_ABORT                                                                                                           \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Error: Not implemented, " << __FILE__ ", " << __func__ << "(), line " << __LINE__ << std::endl;        \
+        abort();                                                                                                                        \
     }
-#define NOT_REACHED_ABORT                                                                                              \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Error, should not be reached: " << __func__ << "(), line " << __LINE__ << std::endl;  \
-        abort();                                                                                                       \
+#define NOT_REACHED_ABORT                                                                                                               \
+    {                                                                                                                                   \
+        *mrcpp::Printer::out << "Error, should not be reached: " << __func__ << "(), line " << __LINE__ << std::endl;                   \
+        abort();                                                                                                                        \
     }
-#define INTERNAL_INCONSISTENCY                                                                                         \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Internal inconsistency! You have found a bug: " << __func__ << "(), line "            \
-                             << __LINE__ << std::endl;                                                                 \
-        abort();                                                                                                       \
+#define NEEDS_TESTING                                                                                                                   \
+    {                                                                                                                                   \
+        static bool __once = true;                                                                                                      \
+        if (__once) {                                                                                                                   \
+            __once = false;                                                                                                             \
+            *mrcpp::Printer::out << "NEEDS TESTING: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__ << std::endl;          \
+        }                                                                                                                               \
     }
-
-#define NEEDS_TESTING                                                                                                  \
-    {                                                                                                                  \
-        static bool __once = true;                                                                                     \
-        if (__once) {                                                                                                  \
-            __once = false;                                                                                            \
-            *mrcpp::Printer::out << "NEEDS TESTING: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__       \
-                                 << std::endl;                                                                         \
-        }                                                                                                              \
+#define NEEDS_FIX(X)                                                                                                                    \
+    {                                                                                                                                   \
+        static bool __once = true;                                                                                                      \
+        if (__once) {                                                                                                                   \
+            __once = false;                                                                                                             \
+            *mrcpp::Printer::out << "NEEDS FIX: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__ << ": " << X << std::endl; \                                                                        \
+        }                                                                                                                               \
     }
-
-#define ASSERT_FILE(A, B)                                                                                              \
-    {                                                                                                                  \
-        if (A == NULL) {                                                                                               \
-            *mrcpp::Printer::out << "Error: " << __func__ << "(), line " << __LINE__ << ": No such file, " << B        \
-                                 << std::endl;                                                                         \
-            abort();                                                                                                   \
-        }                                                                                                              \
-    }
-
-#define NOT_IMPLEMENTED_ABORT                                                                                          \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "Error: Not implemented, " << __FILE__ ", " << __func__ << "(), line " << __LINE__     \
-                             << std::endl;                                                                             \
-        abort();                                                                                                       \
-    }
-
-#define NOTE(X)                                                                                                        \
-    {                                                                                                                  \
-        static bool __once = true;                                                                                     \
-        if (__once) {                                                                                                  \
-            __once = false;                                                                                            \
-            *mrcpp::Printer::out << "NOTE: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__ << ": " << X   \
-                                 << std::endl;                                                                         \
-        }                                                                                                              \
-    }
-
-#define NEEDS_FIX(X)                                                                                                   \
-    {                                                                                                                  \
-        static bool __once = true;                                                                                     \
-        if (__once) {                                                                                                  \
-            __once = false;                                                                                            \
-            *mrcpp::Printer::out << "NEEDS FIX: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__ << ": "   \
-                                 << X << std::endl;                                                                    \
-        }                                                                                                              \
-    }
-
-#define WRONG(X)                                                                                                       \
-    {                                                                                                                  \
-        *mrcpp::Printer::out << "WRONG: " << __FILE__ << ", " << __func__ << "(), line " << __LINE__ << ": " << X      \
-                             << std::endl;                                                                             \
-        abort();                                                                                                       \
-    }
-
-#define STR_DEBUG(S, X)                                                                                                \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Debug: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;      \
-        S = _str.str();                                                                                                \
-    }
-#define STR_INFO(S, X)                                                                                                 \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Info: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;       \
-        S = _str.str();                                                                                                \
-    }
-#define STR_WARN(S, X)                                                                                                 \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Warning: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;    \
-        S = _str.str();                                                                                                \
-    }
-#define STR_ERROR(S, X)                                                                                                \
-    {                                                                                                                  \
-        std::ostringstream _str;                                                                                       \
-        _str << "Error: " << __func__ << ",  line " << __LINE__ << " in  " << __FILE__ << ": " << X << std::endl;      \
-        S = _str.str();                                                                                                \
-    }
+// clang-format on
 
 } // namespace mrcpp

@@ -62,7 +62,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
     AnalyticAdaptor<D> adaptor(inp, maxScale);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
@@ -73,7 +73,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
         AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
         builder.build(out, calculator, adaptor, maxIter);
     }
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
 }
 
 /** @brief Build grid based on another MW function representation
@@ -101,7 +101,7 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
 }
 
 /** @brief Build grid based on several MW function representation
@@ -129,7 +129,7 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &in
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
 }
 
 /** @brief Copy function from one tree onto the grid of another tree

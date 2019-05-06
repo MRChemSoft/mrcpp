@@ -14,15 +14,15 @@
 #include "utils/details.h"
 
 template <class T> void finalize(T **obj) {
-    if (obj == nullptr) MSG_FATAL("Invalid argument");
-    if (*obj == nullptr) MSG_FATAL("Invalid argument");
+    if (obj == nullptr) INVALID_ARG_ABORT;
+    if (*obj == nullptr) INVALID_ARG_ABORT;
     delete *obj;
     *obj = nullptr;
 }
 
 template <int D> void initialize(mrcpp::NodeIndex<D> **idx) {
-    if (idx == nullptr) MSG_FATAL("Invalid argument");
-    if (*idx != nullptr) MSG_FATAL("Invalid argument");
+    if (idx == nullptr) INVALID_ARG_ABORT;
+    if (*idx != nullptr) INVALID_ARG_ABORT;
     int scale = 1;
     int l[D];
     for (int d = 0; d < D; d++) { l[d] = d - 1; }
@@ -30,7 +30,7 @@ template <int D> void initialize(mrcpp::NodeIndex<D> **idx) {
 }
 
 template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
-    if (idx == nullptr) MSG_FATAL("Invalid argument");
+    if (idx == nullptr) INVALID_ARG_ABORT;
 
     const int scale = 1;
     REQUIRE((scale == idx->getScale()));
@@ -43,8 +43,8 @@ template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
 }
 
 template <int D> void initialize(mrcpp::BoundingBox<D> **box) {
-    if (box == nullptr) MSG_FATAL("Invalid argument");
-    if (*box != nullptr) MSG_FATAL("Invalid argument");
+    if (box == nullptr) INVALID_ARG_ABORT;
+    if (*box != nullptr) INVALID_ARG_ABORT;
 
     std::array<int, D> nb;
     for (int d = 0; d < D; d++) nb[d] = d + 1;
@@ -57,7 +57,7 @@ template <int D> void initialize(mrcpp::BoundingBox<D> **box) {
 }
 
 template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
-    if (box == nullptr) MSG_FATAL("Invalid argument");
+    if (box == nullptr) INVALID_ARG_ABORT;
 
     const mrcpp::NodeIndex<D> &cIdx = box->getCornerIndex();
     testInitial<D>(&cIdx);
@@ -83,8 +83,8 @@ template <int D> void testInitial(const mrcpp::BoundingBox<D> *box) {
 }
 
 template <int D> void initialize(mrcpp::MultiResolutionAnalysis<D> **mra) {
-    if (mra == nullptr) MSG_FATAL("Invalid argument");
-    if (*mra != nullptr) MSG_FATAL("Invalid argument");
+    if (mra == nullptr) INVALID_ARG_ABORT;
+    if (*mra != nullptr) INVALID_ARG_ABORT;
 
     int k = 5;
     mrcpp::InterpolatingBasis basis(k);

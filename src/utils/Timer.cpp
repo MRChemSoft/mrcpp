@@ -29,7 +29,7 @@
 namespace mrcpp {
 
 Timer::Timer(bool start_timer) {
-    if (start_timer) { start(); }
+    if (start_timer) start();
 }
 
 Timer::Timer(const Timer &timer)
@@ -64,25 +64,17 @@ void Timer::stop() {
     this->running = false;
 }
 
-double Timer::getWallTime() const {
-    if (this->running) MSG_WARN("Timer still running");
-    return this->time_used;
+double Timer::elapsed() const {
+    return (this->running) ? diffTime(now(), this->clock_start) : this->time_used;
 }
 
-timeT Timer::now() {
+timeT Timer::now() const {
     return std::chrono::high_resolution_clock::now();
 }
 
-double Timer::diffTime(timeT t2, timeT t1) {
+double Timer::diffTime(timeT t2, timeT t1) const {
     std::chrono::duration<double> diff = t2 - t1;
     return diff.count();
-}
-
-std::ostream &Timer::print(std::ostream &o) const {
-    int old_prec = Printer::setPrecision(5);
-    o << getWallTime();
-    Printer::setPrecision(old_prec);
-    return o;
 }
 
 } // namespace mrcpp

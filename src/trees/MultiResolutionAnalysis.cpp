@@ -115,15 +115,12 @@ template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResoluti
 }
 
 template <int D> void MultiResolutionAnalysis<D>::print() const {
-    println(0, std::endl);
-    println(0, "============================================================");
-    println(0, "                  MultiResolution Analysis                  ");
-    println(0, "------------------------------------------------------------");
+    print::separator(0, ' ');
+    print::header(0, "MultiResolution Analysis");
     println(0, this->basis);
-    println(0, "------------------------------------------------------------");
+    print::separator(0, '-');
     println(0, this->world);
-    println(0, "============================================================");
-    println(0, std::endl);
+    print::separator(0, '=', 2);
 }
 
 template <int D> void MultiResolutionAnalysis<D>::setupFilter() {

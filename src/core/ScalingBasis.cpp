@@ -67,13 +67,13 @@ bool ScalingBasis::operator!=(const ScalingBasis &basis) const {
 }
 
 std::ostream &ScalingBasis::print(std::ostream &o) const {
-    o << " polynomial order = " << getScalingOrder() << std::endl;
+    o << " polynomial order  : " << getScalingOrder() << std::endl;
     if (getScalingType() == Legendre) {
-        o << " polynomial type  = Legendre";
+        o << " polynomial type   : Legendre";
     } else if (getScalingType() == Interpol) {
-        o << " polynomial type  = Interpolating";
+        o << " polynomial type   : Interpolating";
     } else {
-        o << " polynomial type  = Unknown";
+        o << " polynomial type   : Unknown";
     }
     return o;
 }

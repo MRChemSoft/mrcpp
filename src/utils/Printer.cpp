@@ -91,26 +91,26 @@ void print::environment(int level) {
 
     printout(level, std::endl);
     print::separator(level, '-', 1);
-    println(level, " MRCPP version   : " << PROGRAM_VERSION);
-    println(level, " Git revision    : " << GIT_REVISION << std::endl);
+    println(level, " MRCPP version     : " << PROGRAM_VERSION);
+    println(level, " Git revision      : " << GIT_REVISION << std::endl);
 
 #ifdef HAVE_BLAS
-    println(level, " Linear algebra  : BLAS");
+    println(level, " Linear algebra    : BLAS");
 #else
-    println(level, " Linear algebra  : EIGEN");
+    println(level, " Linear algebra    : EIGEN");
 #endif
 
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP
-    println(level, " Parallelization : MPI/OpenMP");
+    println(level, " Parallelization   : MPI/OpenMP");
 #else
-    println(level, " Parallelization : MPI");
+    println(level, " Parallelization   : MPI");
 #endif
 #else
 #ifdef HAVE_OPENMP
-    println(level, " Parallelization : OpenMP");
+    println(level, " Parallelization   : OpenMP");
 #else
-    println(level, " Parallelization : NONE");
+    println(level, " Parallelization   : NONE");
 #endif
 #endif
 
@@ -187,21 +187,21 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
     double mem_val = 1.0 * m;
     std::string mem_unit = " kB";
     if (mem_val > 512.0) {
-        mem_val = mem_val/1024.0;
+        mem_val = mem_val / 1024.0;
         mem_unit = " MB";
     }
     if (mem_val > 512.0) {
-        mem_val = mem_val/1024.0;
+        mem_val = mem_val / 1024.0;
         mem_unit = " GB";
     }
 
     double time_val = 1.0 * t;
     std::string time_unit = " sec";
     if (time_val < 0.01) {
-        time_val = time_val*1000.0;
+        time_val = time_val * 1000.0;
         time_unit = "  ms";
     } else if (time_val > 60.0) {
-        time_val = time_val/60.0;
+        time_val = time_val / 60.0;
         time_unit = " min";
     }
 
@@ -215,8 +215,7 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
     println(level, o.str());
 }
 
-template<int D>
-void print::tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer) {
+template <int D> void print::tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer) {
     if (level > Printer::getPrintLevel()) return;
 
     auto n = tree.getNNodes();

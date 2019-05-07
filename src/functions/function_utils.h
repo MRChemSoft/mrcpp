@@ -29,6 +29,8 @@
 namespace mrcpp {
 namespace function_utils {
 template <int D>
-std::shared_ptr<GaussExp<D>> make_gaussian_periodic(Gaussian<D> &gauss, const std::array<double, D> &period);
+std::shared_ptr<GaussExp<D>> make_gaussian_periodic(Gaussian<D> &gauss,
+                                                    const std::array<double, D> &period,
+                                                    double nStdDev = 4.0);
 } // namespace function_utils
 } // namespace mrcpp

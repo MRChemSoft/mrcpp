@@ -39,28 +39,29 @@ namespace mrcpp {
  * @param[out] shared_ptr<GaussExp<D>> semi-periodic version of a Gaussian around a unit-cell
  * @param[in] A Gaussian function that is to be made semi-periodic
  * @param[in] The period of the unit cell
+ * @param[in] Number of standard diviations covered in each direction. Default 4.0
  *
- * The Gaussian function replicated in neighbooring cells, such that atleast
- * 99.99367% if the integral can be captured within the unit-cell.
+ * nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
+ * integral is conserved with respect to the integration limits.
+ *
  */
 template <int D>
 std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(Gaussian<D> &inp,
-                                                                    const std::array<double, D> &period) {
+                                                                    const std::array<double, D> &period,
+                                                                    double nStdDev) {
     auto gauss_exp = std::make_shared<GaussExp<D>>();
     auto pos_vec = std::vector<Coord<D>>();
 
-    // Four standard deviation upp and down from the expectation value of the
-    // gaussian holds approximately 99.99367% of the integral.
-    auto four_std = 4.0 * inp.getMaximumStandardDiviation();
+    auto x_std = nStdDev * inp.getMaximumStandardDiviation();
 
     // This lambda function  calculates the number of neighbooring cells
-    // requred to keep atleast 99.99367% of the integral conserved in the
+    // requred to keep atleast x_stds of the integral conserved in the
     // unit-cell.
-    auto neighbooring_cells = [period, four_std](auto pos) {
+    auto neighbooring_cells = [period, x_std](auto pos) {
         auto needed_cells_vec = std::vector<int>();
         for (auto i = 0; i < D; i++) {
-            auto upper_bound = pos[i] + four_std;
-            auto lower_bound = pos[i] - four_std;
+            auto upper_bound = pos[i] + x_std;
+            auto lower_bound = pos[i] - x_std;
             // number of cells upp and down relative to the center of the Gaussian
             needed_cells_vec.push_back(std::ceil(upper_bound / period[i]));
         }
@@ -113,9 +114,12 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(Gaussian<D> 
 }
 
 template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(Gaussian<1> &inp,
-                                                                                const std::array<double, 1> &period);
+                                                                                const std::array<double, 1> &period,
+                                                                                double nStdDev);
 template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(Gaussian<2> &inp,
-                                                                                const std::array<double, 2> &period);
+                                                                                const std::array<double, 2> &period,
+                                                                                double nStdDev);
 template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(Gaussian<3> &inp,
-                                                                                const std::array<double, 3> &period);
+                                                                                const std::array<double, 3> &period,
+                                                                                double nStdDev);
 } // namespace mrcpp

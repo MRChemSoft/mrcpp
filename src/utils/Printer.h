@@ -70,8 +70,8 @@ private:
 namespace print {
 void environment(int level);
 void separator(int level, const char &sep, int newlines = 0);
-void header(int level, const std::string &txt, int newlines = 0);
-void footer(int level, const Timer &timer, int newlines = 0);
+void header(int level, const std::string &txt, int newlines = 0, const char &c = '=');
+void footer(int level, const Timer &timer, int newlines = 0, const char &c = '=');
 void memory(int level, const std::string &txt);
 void value(int level, const std::string &txt, double v, const std::string &unit = "", int p = -1, bool sci = true);
 void time(int level, const std::string &txt, const Timer &timer);

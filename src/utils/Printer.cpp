@@ -122,31 +122,31 @@ void print::environment(int level) {
     print::separator(level, '-', 2);
 }
 
-void print::separator(int level, const char &sep, int newlines) {
+void print::separator(int level, const char &c, int newlines) {
     if (level > Printer::getPrintLevel()) return;
-
-    for (int i = 0; i < Printer::getWidth(); i++) printout(level, sep);
+    printout(level, std::string(Printer::getWidth(), c));
     for (int i = 0; i <= newlines; i++) printout(level, std::endl);
 }
 
-void mrcpp::print::header(int level, const std::string &str, int newlines) {
+void mrcpp::print::header(int level, const std::string &str, int newlines, const char &c) {
     if (level > Printer::getPrintLevel()) return;
 
-    int len = str.size();
-    print::separator(level, '=', 0);
-    int spaces = (Printer::getWidth() - len) / 2;
-    for (int i = 0; i < spaces; i++) { printout(level, " "); }
+    auto len = str.size();
+    auto spaces = (Printer::getWidth() - len) / 2;
+
+    print::separator(level, c);
+    printout(level, std::string(spaces, ' '));
     println(level, str);
     print::separator(level, '-', newlines);
 }
 
-void print::footer(int level, const Timer &t, int newlines) {
+void print::footer(int level, const Timer &t, int newlines, const char &c) {
     if (level > Printer::getPrintLevel()) return;
 
-    int line_width = Printer::getWidth() - 2;
-    int txt_width = line_width / 2;
-    int val_width = 11;
-    int val_prec = 5;
+    auto line_width = Printer::getWidth() - 2;
+    auto txt_width = line_width / 2;
+    auto val_width = 11;
+    auto val_prec = 5;
 
     std::stringstream o;
     o << std::setw(val_width) << std::setprecision(val_prec) << std::scientific << t.elapsed() << " sec";
@@ -154,7 +154,7 @@ void print::footer(int level, const Timer &t, int newlines) {
     print::separator(level, '-');
     printout(level, std::setw(txt_width) << "Wall time: ");
     printout(level, o.str() << std::endl);
-    print::separator(level, '=', newlines);
+    print::separator(level, c, newlines);
 }
 
 void print::value(int level, const std::string &txt, double v, const std::string &unit, int p, bool sci) {
@@ -167,9 +167,8 @@ void print::value(int level, const std::string &txt, double v, const std::string
     int val_width = line_width - (txt_width + unit_width);
 
     std::stringstream o;
-    o << " ";
-    for (int i = 0; i < txt.size(); i++) o << txt[i];
-    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << " " << txt;
+    o << std::string(txt_width - txt.size(), ' ');
     o << std::setw(unit_width) << unit;
     if (sci) {
         o << std::setw(val_width) << std::setprecision(p) << std::scientific << v;
@@ -210,9 +209,8 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
     }
 
     std::stringstream o;
-    o << " ";
-    for (int i = 0; i < txt.size(); i++) o << txt[i];
-    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << " " << txt;
+    o << std::string(txt_width - txt.size(), ' ');
     o << std::setw(val_width - 4) << n << node_unit;
     o << std::setw(val_width - 3) << std::setprecision(2) << std::fixed << mem_val << mem_unit;
     o << std::setw(val_width - 4) << std::setprecision(2) << std::fixed << time_val << time_unit;
@@ -237,9 +235,8 @@ void print::time(int level, const std::string &txt, const Timer &timer) {
     int val_width = line_width - (txt_width + unit_width);
 
     std::stringstream o;
-    o << " ";
-    for (int i = 0; i < txt.size(); i++) o << txt[i];
-    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << " " << txt;
+    o << std::string(txt_width - txt.size(), ' ');
     o << std::setw(unit_width) << "(sec)";
     o << std::setw(val_width) << std::setprecision(5) << std::scientific << timer.elapsed();
     println(level, o.str());
@@ -267,9 +264,8 @@ void print::memory(int level, const std::string &txt) {
     int val_width = line_width - (txt_width + unit_width);
 
     std::stringstream o;
-    o << " ";
-    for (int i = 0; i < txt.size(); i++) o << txt[i];
-    for (int i = txt.size(); i < txt_width; i++) o << " ";
+    o << " " << txt;
+    o << std::string(txt_width - txt.size(), ' ');
     o << std::setw(unit_width) << mem_unit;
     o << std::setw(val_width) << std::setprecision(2) << std::fixed << mem_val;
     println(level, o.str());

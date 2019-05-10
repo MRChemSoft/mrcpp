@@ -91,26 +91,30 @@ void print::environment(int level) {
 
     printout(level, std::endl);
     print::separator(level, '-', 1);
-    println(level, " MRCPP version     : " << PROGRAM_VERSION);
-    println(level, " Git revision      : " << GIT_REVISION << std::endl);
+    println(level, " MRCPP version         : " << PROGRAM_VERSION);
+    println(level, " Git revision          : " << GIT_REVISION << std::endl);
 
 #ifdef HAVE_BLAS
-    println(level, " Linear algebra    : BLAS");
+    println(level, " Linear algebra        : EIGEN v" << EIGEN_WORLD_VERSION << "."
+                                                      << EIGEN_MAJOR_VERSION << "."
+                                                      << EIGEN_MINOR_VERSION << " w/BLAS");
 #else
-    println(level, " Linear algebra    : EIGEN");
+    println(level, " Linear algebra        : EIGEN v" << EIGEN_WORLD_VERSION << "."
+                                                      << EIGEN_MAJOR_VERSION << "."
+                                                      << EIGEN_MINOR_VERSION);
 #endif
 
 #ifdef HAVE_MPI
 #ifdef HAVE_OPENMP
-    println(level, " Parallelization   : MPI/OpenMP");
+    println(level, " Parallelization       : MPI/OpenMP");
 #else
-    println(level, " Parallelization   : MPI");
+    println(level, " Parallelization       : MPI");
 #endif
 #else
 #ifdef HAVE_OPENMP
-    println(level, " Parallelization   : OpenMP");
+    println(level, " Parallelization       : OpenMP");
 #else
-    println(level, " Parallelization   : NONE");
+    println(level, " Parallelization       : NONE");
 #endif
 #endif
 

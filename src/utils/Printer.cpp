@@ -128,15 +128,13 @@ void print::separator(int level, const char &c, int newlines) {
     for (int i = 0; i <= newlines; i++) printout(level, std::endl);
 }
 
-void mrcpp::print::header(int level, const std::string &str, int newlines, const char &c) {
+void mrcpp::print::header(int level, const std::string &txt, int newlines, const char &c) {
     if (level > Printer::getPrintLevel()) return;
 
-    auto len = str.size();
-    auto spaces = (Printer::getWidth() - len) / 2;
+    auto n_spaces = (Printer::getWidth() - txt.size()) / 2;
 
     print::separator(level, c);
-    printout(level, std::string(spaces, ' '));
-    println(level, str);
+    println(level, std::string(n_spaces, ' ') << txt);
     print::separator(level, '-', newlines);
 }
 
@@ -161,14 +159,15 @@ void print::value(int level, const std::string &txt, double v, const std::string
     if (level > Printer::getPrintLevel()) return;
 
     if (p < 0) p = Printer::getPrecision();
-    int line_width = Printer::getWidth() - 2;
-    int txt_width = line_width / 2;
-    int unit_width = txt_width / 3;
-    int val_width = line_width - (txt_width + unit_width);
+    auto line_width = Printer::getWidth() - 2;
+    auto txt_width = line_width / 2;
+    auto unit_width = txt_width / 3;
+    auto val_width = line_width - (txt_width + unit_width);
+    auto n_spaces = std::max(0, txt_width - static_cast<int>(txt.size()));
 
     std::stringstream o;
     o << " " << txt;
-    o << std::string(txt_width - txt.size(), ' ');
+    o << std::string(n_spaces, ' ');
     o << std::setw(unit_width) << unit;
     if (sci) {
         o << std::setw(val_width) << std::setprecision(p) << std::scientific << v;
@@ -181,9 +180,10 @@ void print::value(int level, const std::string &txt, double v, const std::string
 void print::tree(int level, const std::string &txt, int n, int m, double t) {
     if (level > Printer::getPrintLevel()) return;
 
-    int line_width = Printer::getWidth() - 2;
-    int val_width = 2 * line_width / 9;
-    int txt_width = line_width - 3 * val_width;
+    auto line_width = Printer::getWidth() - 2;
+    auto val_width = 2 * line_width / 9;
+    auto txt_width = line_width - 3 * val_width;
+    auto n_spaces = std::max(0, txt_width - static_cast<int>(txt.size()));
 
     std::string node_unit = " nds";
 
@@ -210,7 +210,7 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
 
     std::stringstream o;
     o << " " << txt;
-    o << std::string(txt_width - txt.size(), ' ');
+    o << std::string(n_spaces, ' ');
     o << std::setw(val_width - 4) << n << node_unit;
     o << std::setw(val_width - 3) << std::setprecision(2) << std::fixed << mem_val << mem_unit;
     o << std::setw(val_width - 4) << std::setprecision(2) << std::fixed << time_val << time_unit;
@@ -229,14 +229,15 @@ template <int D> void print::tree(int level, const std::string &txt, const MWTre
 void print::time(int level, const std::string &txt, const Timer &timer) {
     if (level > Printer::getPrintLevel()) return;
 
-    int line_width = Printer::getWidth() - 2;
-    int txt_width = line_width / 2;
-    int unit_width = txt_width / 3;
-    int val_width = line_width - (txt_width + unit_width);
+    auto line_width = Printer::getWidth() - 2;
+    auto txt_width = line_width / 2;
+    auto unit_width = txt_width / 3;
+    auto val_width = line_width - (txt_width + unit_width);
+    auto n_spaces = std::max(0, txt_width - static_cast<int>(txt.size()));
 
     std::stringstream o;
     o << " " << txt;
-    o << std::string(txt_width - txt.size(), ' ');
+    o << std::string(n_spaces, ' ');
     o << std::setw(unit_width) << "(sec)";
     o << std::setw(val_width) << std::setprecision(5) << std::scientific << timer.elapsed();
     println(level, o.str());
@@ -258,14 +259,15 @@ void print::memory(int level, const std::string &txt) {
         mem_unit = "(GB)";
     }
 
-    int line_width = Printer::getWidth() - 2;
-    int txt_width = line_width / 2;
-    int unit_width = txt_width / 3;
-    int val_width = line_width - (txt_width + unit_width);
+    auto line_width = Printer::getWidth() - 2;
+    auto txt_width = line_width / 2;
+    auto unit_width = txt_width / 3;
+    auto val_width = line_width - (txt_width + unit_width);
+    auto n_spaces = std::max(0, txt_width - static_cast<int>(txt.size()));
 
     std::stringstream o;
     o << " " << txt;
-    o << std::string(txt_width - txt.size(), ' ');
+    o << std::string(n_spaces, ' ');
     o << std::setw(unit_width) << mem_unit;
     o << std::setw(val_width) << std::setprecision(2) << std::fixed << mem_val;
     println(level, o.str());

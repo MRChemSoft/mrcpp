@@ -84,8 +84,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Com
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm);
     }
-    t1.stop();
-    println(10, " Time send                   " << std::setw(30) << t1);
+    println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
 }
 
@@ -125,13 +124,11 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag + iChunk + 1001, comm, &status);
     }
-    t1.stop();
-    println(10, " Time recieve                " << std::setw(30) << t1);
+    println(10, " Time recieve                " << std::setw(30) << t1.elapsed());
 
     Timer t2;
     sTree.rewritePointers();
-    t2.stop();
-    println(10, " Time rewrite pointers       " << std::setw(30) << t2);
+    println(10, " Time rewrite pointers       " << std::setw(30) << t2.elapsed());
 #endif
 }
 
@@ -151,8 +148,7 @@ void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Requ
         count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
         MPI_Isend(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm, req);
     }
-    t1.stop();
-    println(10, " Time send                   " << std::setw(30) << t1);
+    println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
 }
 
@@ -207,9 +203,7 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Co
             sTree.rewritePointers();
         }
     }
-
-    t1.stop();
-    println(10, " Time share                  " << std::setw(30) << t1);
+    println(10, " Time share                  " << std::setw(30) << t1.elapsed());
 #endif
 }
 

@@ -32,6 +32,7 @@
 #include "WaveletAdaptor.h"
 #include "add.h"
 #include "functions/GaussExp.h"
+#include "functions/function_utils.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
@@ -63,6 +64,25 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
+}
+
+template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, int maxIter) {
+    int maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    DefaultCalculator<D> calculator;
+
+    if (!out.getMRA().getWorldBox().isPeriodic()) {
+        AnalyticAdaptor<D> adaptor(inp, maxScale);
+        builder.build(out, calculator, adaptor, maxIter);
+    } else {
+        auto period = out.getMRA().getWorldBox().getScalingFactor();
+        auto g_exp = function_utils::make_gaussian_periodic(inp, period);
+        for (auto i = 0; i < g_exp.size(); i++) {
+            AnalyticAdaptor<D> adaptor(g_exp.getFunc(i), maxScale);
+            builder.build(out, calculator, adaptor, maxIter);
+        }
+    }
+    Printer::printSeparator(10, ' ');
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
@@ -236,6 +256,10 @@ template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     int nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }
+
+template void build_grid(FunctionTree<1> &out, const Gaussian<1> &inp, int maxIter);
+template void build_grid(FunctionTree<2> &out, const Gaussian<2> &inp, int maxIter);
+template void build_grid(FunctionTree<3> &out, const Gaussian<3> &inp, int maxIter);
 
 template void build_grid(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter);
 template void build_grid(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter);

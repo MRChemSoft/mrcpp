@@ -82,7 +82,7 @@ template <int D> void testIsNarrowGaussiansMadePeriodic() {
         THEN("The Gaussian should be close to zero at the bondary of the unit cell") {
             REQUIRE(gauss.evalf(new_pos) == Approx(0.0));
         }
-        AND_WHEN("The gaussian is made periodc, it is periodic") {
+        AND_WHEN("The gaussian is made periodic, it is periodic") {
             gauss.makePeriodic(period);
             REQUIRE(isPeriodic<D>(gauss));
             THEN("The gaussian should have the same value at -0.2 and 1.8") {

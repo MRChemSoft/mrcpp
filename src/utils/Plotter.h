@@ -34,58 +34,84 @@
 
 #include "MRCPP/mrcpp_declarations.h"
 
+/** @class Plotter
+ *
+ * @brief Class for plotting multivariate functions
+ *
+ * This class will generate an equidistant grid in one (line), two (surf)
+ * or three (cube) dimensions, and subsequently evaluate the function on
+ * this grid.
+ *
+ * The grid is generated from the vectors A, B and C in relation to the origin O:
+ *  - a linePlot will plot the line spanned by A, starting from O
+ *  - a surfPlot will plot the area spanned by A and B, starting from O
+ *  - a cubePlot will plot the volume spanned by A, B and C, starting from O
+ *
+ * The parameter D refers to the dimension of the _function_, not the
+ * dimension of the plot.
+ *
+ */
+
 namespace mrcpp {
 
 template <int D> class Plotter {
 public:
-    Plotter(int npts = 1000, const double *a = 0, const double *b = 0);
+    explicit Plotter(const Coord<D> &o = {});
     virtual ~Plotter() = default;
 
-    void setRange(const double *a, const double *b);
-    void setNPoints(int npts);
     void setSuffix(int t, const std::string &s);
+    void setOrigin(const Coord<D> &o) { this->O = o; }
+    void setRange(const Coord<D> &a, const Coord<D> &b = {}, const Coord<D> &c = {}) {
+        this->A = a;
+        this->B = b;
+        this->C = c;
+    }
 
-    void linePlot(const RepresentableFunction<D> &func, const std::string &fname);
-    void surfPlot(const RepresentableFunction<D> &func, const std::string &fname);
-    void cubePlot(const RepresentableFunction<D> &func, const std::string &fname);
-
-    void linePlot(FunctionTree<D> &func, const std::string &fname);
-    void surfPlot(FunctionTree<D> &func, const std::string &fname);
-    void cubePlot(FunctionTree<D> &func, const std::string &fname);
     void gridPlot(const MWTree<D> &tree, const std::string &fname);
 
-    Eigen::VectorXd &linePlot(RepresentableFunction<D> &func);
-    Eigen::VectorXd &surfPlot(RepresentableFunction<D> &func);
-    Eigen::VectorXd &cubePlot(RepresentableFunction<D> &func);
+    void linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func, const std::string &fname);
+    void surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func, const std::string &fname);
+    void cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func, const std::string &fname);
+
+    void linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func, const std::string &fname);
+    void surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func, const std::string &fname);
+    void cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func, const std::string &fname);
+
+    Eigen::VectorXd linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func) const;
+    Eigen::VectorXd surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func) const;
+    Eigen::VectorXd cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func) const;
+
+    Eigen::VectorXd linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func) const;
+    Eigen::VectorXd surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func) const;
+    Eigen::VectorXd cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func) const;
 
     enum type { Line, Surface, Cube, Grid };
 
 protected:
-    std::ofstream fstrm;
-    std::ofstream *fout;
-    int nPoints;
-    double A[D]; ///< lower left corner
-    double B[D]; ///< upper right corner
-    std::map<int, std::string> suffix;
-    Eigen::MatrixXd coords;
-    Eigen::VectorXd values;
+    Coord<D> O{}; // Plot origin
+    Coord<D> A{}; // Vector for line plot
+    Coord<D> B{}; // Vector for surf plot
+    Coord<D> C{}; // Vector for cube plot
+    std::ofstream fstrm{};
+    std::ofstream *fout{nullptr};
+    std::map<int, std::string> suffix{};
 
-    void calcLineCoordinates();
-    void calcSurfCoordinates();
-    void calcCubeCoordinates();
+    Coord<D> calcStep(const Coord<D> &vec, int pts) const;
+    Eigen::MatrixXd calcLineCoordinates(int pts_a) const;
+    Eigen::MatrixXd calcSurfCoordinates(int pts_a, int pts_b) const;
+    Eigen::MatrixXd calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const;
 
-    void evaluateFunction(const RepresentableFunction<D> &func);
-    void evaluateFunction(FunctionTree<D> &tree);
-    bool verifyRange();
+    Eigen::VectorXd evaluateFunction(const RepresentableFunction<D> &func, const Eigen::MatrixXd &coords) const;
+    Eigen::VectorXd evaluateFunction(FunctionTree<D> &tree, const Eigen::MatrixXd &coords) const;
 
-    void writeLineData();
-    void writeSurfData();
-    virtual void writeCubeData();
+    void writeData(const Eigen::MatrixXd &coords, const Eigen::VectorXd &values);
+    virtual void writeCube(const std::array<int, 3> &npts, const Eigen::VectorXd &values);
 
     void writeGrid(const MWTree<D> &tree);
     void writeNodeGrid(const MWNode<D> &node, const std::string &color);
 
 private:
+    bool verifyRange(int dim) const;
     void openPlot(const std::string &fname);
     void closePlot();
 };

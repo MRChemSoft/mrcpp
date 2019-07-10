@@ -68,22 +68,9 @@ public:
     }
 
     void gridPlot(const MWTree<D> &tree, const std::string &fname);
-
-    void linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func, const std::string &fname);
-    void surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func, const std::string &fname);
-    void cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func, const std::string &fname);
-
     void linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func, const std::string &fname);
     void surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func, const std::string &fname);
     void cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func, const std::string &fname);
-
-    Eigen::VectorXd linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func) const;
-    Eigen::VectorXd surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func) const;
-    Eigen::VectorXd cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func) const;
-
-    Eigen::VectorXd linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func) const;
-    Eigen::VectorXd surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func) const;
-    Eigen::VectorXd cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func) const;
 
     enum type { Line, Surface, Cube, Grid };
 
@@ -102,7 +89,6 @@ protected:
     Eigen::MatrixXd calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const;
 
     Eigen::VectorXd evaluateFunction(const RepresentableFunction<D> &func, const Eigen::MatrixXd &coords) const;
-    Eigen::VectorXd evaluateFunction(FunctionTree<D> &tree, const Eigen::MatrixXd &coords) const;
 
     void writeData(const Eigen::MatrixXd &coords, const Eigen::VectorXd &values);
     virtual void writeCube(const std::array<int, 3> &npts, const Eigen::VectorXd &values);

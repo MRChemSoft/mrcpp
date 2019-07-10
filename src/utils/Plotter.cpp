@@ -27,7 +27,6 @@
 #include "Printer.h"
 #include "functions/RepresentableFunction.h"
 #include "math_utils.h"
-#include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 
 using namespace Eigen;
@@ -93,7 +92,7 @@ void Plotter<D>::linePlot(const std::array<int, 1> &npts,
     println(20, "----------Line Plot-----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Line];
-    if (verifyRange(1)) {
+    if (verifyRange(1)) { // Verifies only A vector
         Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
         Eigen::VectorXd values = evaluateFunction(func, coords);
         openPlot(file.str());
@@ -103,58 +102,6 @@ void Plotter<D>::linePlot(const std::array<int, 1> &npts,
         MSG_ERROR("Zero range");
     }
     printout(20, std::endl);
-}
-
-/** Parametric plot of a FunctionTree
-
-    Plots the function func parametrically along the vector A starting
-    from the origin O to a file named fname + file extension (".line"
-    as default).
-*/
-template <int D>
-void Plotter<D>::linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func, const std::string &fname) {
-    println(20, "----------Line Plot-----------");
-    std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Line];
-    if (verifyRange(1)) {
-        Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
-        openPlot(file.str());
-        writeData(coords, values);
-        closePlot();
-    } else {
-        MSG_ERROR("Zero range");
-    }
-    printout(20, std::endl);
-}
-
-/** Parametric plot of a function
-
-    Plots the function func parametrically along the vector A starting
-    from the origin O and returns a vector of function values.
-*/
-template <int D>
-Eigen::VectorXd Plotter<D>::linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(1)) {
-        Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
-}
-
-/** Parametric plot of a FunctionTree
-
-    Plots the function func parametrically along the vector A starting
-    from the origin O and returns a vector of function values.
-*/
-template <int D> Eigen::VectorXd Plotter<D>::linePlot(const std::array<int, 1> &npts, FunctionTree<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(1)) {
-        Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
 }
 
 /** Surface plot of a function
@@ -170,7 +117,7 @@ void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
     println(20, "--------Surface Plot----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Surface];
-    if (verifyRange(2)) {
+    if (verifyRange(2)) { // Verifies A and B vectors
         Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
         Eigen::VectorXd values = evaluateFunction(func, coords);
         openPlot(file.str());
@@ -180,60 +127,6 @@ void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
         MSG_ERROR("Zero range");
     }
     printout(20, std::endl);
-}
-
-/** Surface plot of a FunctionTree
-
-    Plots the function func in 2D on the area spanned by the two vectors
-    A and B, starting from the origin O, to a file named fname + file
-    extension (".surf" as default).
-*/
-template <int D>
-void Plotter<D>::surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func, const std::string &fname) {
-    println(20, "--------Surface Plot----------");
-    std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Surface];
-    if (verifyRange(2)) {
-        Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
-        openPlot(file.str());
-        writeData(coords, values);
-        closePlot();
-    } else {
-        MSG_ERROR("Zero range");
-    }
-    printout(20, std::endl);
-}
-
-/** Surface plot of a function
-
-    Plots the function func in 2D on the area spanned by the two vectors
-    A and B, starting from the origin O and returns a vector of function
-    values.
-*/
-template <int D>
-Eigen::VectorXd Plotter<D>::surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(2)) {
-        Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
-}
-
-/** Surface plot of a FunctionTree
-
-    Plots the function func in 2D on the area spanned by the two vectors
-    A and B, starting from the origin O and returns a vector of function
-    values.
-*/
-template <int D> Eigen::VectorXd Plotter<D>::surfPlot(const std::array<int, 2> &npts, FunctionTree<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(2)) {
-        Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
 }
 
 /** Cubic plot of a function
@@ -249,7 +142,7 @@ void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
     println(20, "----------Cube Plot-----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D>::Cube];
-    if (verifyRange(3)) {
+    if (verifyRange(3)) { // Verifies A, B and C vectors
         Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
         Eigen::VectorXd values = evaluateFunction(func, coords);
         openPlot(file.str());
@@ -259,60 +152,6 @@ void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
         MSG_ERROR("Zero range");
     }
     printout(20, std::endl);
-}
-
-/** Cubic plot of a FunctionTree
-
-    Plots the function func in 3D in the volume spanned by the three vectors
-    A, B and C, starting from the origin O, to a file named fname + file
-    extension (".cube" as default).
-*/
-template <int D>
-void Plotter<D>::cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func, const std::string &fname) {
-    println(20, "----------Cube Plot-----------");
-    std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Cube];
-    if (verifyRange(3)) {
-        Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
-        openPlot(file.str());
-        writeCube(npts, values);
-        closePlot();
-    } else {
-        MSG_ERROR("Zero range");
-    }
-    printout(20, std::endl);
-}
-
-/** Cube plot of a function
-
-    Plots the function func in 3D in the volume spanned by the three vectors
-    A, B and C, starting from the origin O and returns a vector of function
-    values.
-*/
-template <int D>
-Eigen::VectorXd Plotter<D>::cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(3)) {
-        Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
-}
-
-/** Cube plot of a FunctionTree
-
-    Plots the function func in 3D in the volume spanned by the three vectors
-    A, B and C, starting from the origin O and returns a vector of function
-    values.
-*/
-template <int D> Eigen::VectorXd Plotter<D>::cubePlot(const std::array<int, 3> &npts, FunctionTree<D> &func) const {
-    Eigen::VectorXd values;
-    if (verifyRange(3)) {
-        Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
-        values = evaluateFunction(func, coords);
-    }
-    return values;
 }
 
 /** Calculating coordinates to be evaluated
@@ -404,40 +243,14 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int 
 template <int D>
 Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &func,
                                              const Eigen::MatrixXd &coords) const {
-    Eigen::VectorXd values;
     auto npts = coords.rows();
-    if (npts > 0) {
-        Coord<D> r;
-        values = VectorXd::Zero(npts);
-        for (auto i = 0; i < npts; i++) {
-            for (auto d = 0; d < D; d++) r[d] = coords(i, d);
-            values[i] = func.evalf(r);
-        }
-    } else {
-        MSG_ERROR("Empty coordinates");
-    }
-    return values;
-}
-
-/** Evaluating a FunctionTree in a set of predfined coordinates
-
-    Given that the set of coordinates ("coords") has been calculated, this
-    routine evaluates the function in these points and stores the results
-    in the vector "values".
-*/
-template <int D>
-Eigen::VectorXd Plotter<D>::evaluateFunction(FunctionTree<D> &tree, const Eigen::MatrixXd &coords) const {
-    Eigen::VectorXd values;
-    auto npts = coords.rows();
-    if (npts > 0) {
-        Coord<D> r;
-        values = VectorXd::Zero(npts);
-        for (auto i = 0; i < npts; i++) {
-            for (auto d = 0; d < D; d++) r[d] = coords(i, d);
-            values[i] = tree.evalf(r);
-        }
-    } else {
-        MSG_ERROR("Empty coordinates");
+    if (npts == 0) MSG_ERROR("Empty coordinates");
+    Eigen::VectorXd values = VectorXd::Zero(npts);
+#pragma omp parallel for schedule(static)
+    for (auto i = 0; i < npts; i++) {
+        Coord<D> r{};
+        for (auto d = 0; d < D; d++) r[d] = coords(i, d);
+        values[i] = func.evalf(r);
     }
     return values;
 }

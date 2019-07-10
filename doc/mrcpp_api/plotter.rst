@@ -19,11 +19,22 @@ or three (cube) dimensions, and subsequently evaluate the function on
 this grid.
 
 The grid is generated from the vectors A, B and C in relation to the origin O:
- - a linePlot will plot the line spanned by A, starting from O
- - a surfPlot will plot the area spanned by A and B, starting from O
- - a cubePlot will plot the volume spanned by A, B and C, starting from O
+ - a ``linePlot`` will plot the line spanned by A, starting from O
+ - a ``surfPlot`` will plot the area spanned by A and B, starting from O
+ - a ``cubePlot`` will plot the volume spanned by A, B and C, starting from O
 
-The vectors A, B and C does not necessarily have to be orthogonal.
+The vectors A, B and C do not necessarily have to be orthogonal.
+
+.. NOTE::
+
+    When plotting FunctionTrees, only the *scaling* part of the
+    leaf nodes will be evaluated, which means that the function
+    values will not be fully accurate. This is done to allow a
+    fast and ``const`` function evaluation that can be done in
+    OMP parallel. If you want to include also the *final* wavelet
+    corrections to your function values, you'll have to manually
+    extend the MW grid by one level before plotting using
+    ``mrcpp::refine_grid(tree, 1)``.
 
 
 Available functions
@@ -80,7 +91,7 @@ A surface plot of a three-dimensional function in the x=[-2,2], y=[-1,1], z=0 pl
 
     mrcpp::Plotter<3> plot(o);                           // Plotter of 3D functions
     plot.setRange(a, b);                                 // Set plot range
-    plot.surfPlot({aPts, bPts}, f_tree, "f_tree");       // Write to file f_tree.line
+    plot.surfPlot({aPts, bPts}, f_tree, "f_tree");       // Write to file f_tree.surf
 
 A cube plot of a three-dimensional function in the volume x=[-2,2], y=[-1,1], z=[0,2]:
 
@@ -96,11 +107,11 @@ A cube plot of a three-dimensional function in the volume x=[-2,2], y=[-1,1], z=
 
     mrcpp::Plotter<3> plot(o);                           // Plotter of 3D functions
     plot.setRange(a, b, c);                              // Set plot range
-    plot.surfPlot({aPts, bPts, cPts}, f_tree, "f_tree"); // Write to file f_tree.line
+    plot.cubePlot({aPts, bPts, cPts}, f_tree, "f_tree"); // Write to file f_tree.cube
 
 A grid plot of a three-dimensional FunctionTree:
 
 .. code-block:: cpp
 
     mrcpp::Plotter<3> plot;                              // Plotter of 3D functions
-    plot.gridPlot(f_tree, "f_tree");                     // Write to file f_tree.line
+    plot.gridPlot(f_tree, "f_tree");                     // Write to file f_tree.grid

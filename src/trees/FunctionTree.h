@@ -34,7 +34,7 @@
 
 namespace mrcpp {
 
-template <int D> class FunctionTree final : public MWTree<D> {
+template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
 public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
     FunctionTree(const FunctionTree<D> &tree) = delete;
@@ -44,7 +44,7 @@ public:
     void clear();
 
     double integrate() const;
-    double evalf(const Coord<D> &r);
+    double evalf(const Coord<D> &r) const;
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);

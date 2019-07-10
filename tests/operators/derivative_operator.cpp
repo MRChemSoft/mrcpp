@@ -33,6 +33,7 @@
 #include "operators/PHOperator.h"
 #include "treebuilders/add.h"
 #include "treebuilders/apply.h"
+#include "treebuilders/grid.h"
 #include "treebuilders/project.h"
 #include "utils/math_utils.h"
 
@@ -173,6 +174,7 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     project<D>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
+    refine_grid(dg_tree, 1); // for accurate evalf
 
     REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
     REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
@@ -200,6 +202,7 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     project<D>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
+    refine_grid(dg_tree, 1); // for accurate evalf
 
     REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
     REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));

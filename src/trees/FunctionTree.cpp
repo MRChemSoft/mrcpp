@@ -47,7 +47,8 @@ namespace mrcpp {
  * */
 template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
-        : MWTree<D>(mra) {
+        : MWTree<D>(mra)
+        , RepresentableFunction<D>(nullptr, nullptr) {
     this->serialTree_p = new SerialFunctionTree<D>(this, sh_mem);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
@@ -185,9 +186,19 @@ template <int D> double FunctionTree<D>::integrate() const {
     return jacobian * result;
 }
 
-template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) {
-
-    // Hande potential scaling
+/** @brief Evaluate function in a given coordinate
+ *
+ * NOTICE: This will only evaluate the _scaling_ part of the
+ *         leaf nodes in the tree. If you want to include also
+ *         the wavelet part you'll have to manually do a
+ *
+ *         mrcpp::refine_grid(tree, 1)
+ *
+ *         on the tree first. This is done to allow a fast and const
+ *         function evaluation that can be done in OMP parallel.
+ */
+template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
+    // Handle potential scaling
     const auto sf = this->getMRA().getWorldBox().getScalingFactor();
     auto arg = r;
     for (auto i = 0; i < D; i++) arg[i] = arg[i] / sf[i];
@@ -196,12 +207,21 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) {
     auto coef = 1.0;
     for (const auto &fac : sf) coef /= std::sqrt(fac);
 
-    MWNode<D> &mr_node = this->getNodeOrEndNode(arg);
-    auto &f_node = static_cast<FunctionNode<D> &>(mr_node);
-    auto result = f_node.evalf(arg);
-    this->deleteGenerated();
+    // The 1.0 appearing in the if tests comes from the period is
+    // always 1.0 from the point of view of this function.
+    if (this->getRootBox().isPeriodic()) {
+        for (auto i = 0; i < D; i++) {
+            if (arg[i] > 1.0) arg[i] = std::fmod(arg[i], 1.0);
+            if (arg[i] < 0.0) arg[i] = std::fmod(arg[i], 1.0) + 1.0;
+        }
+    }
+
+    const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
+    auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);
+    auto result = f_node.evalScaling(arg);
     return coef * result;
 }
+
 /** @brief In-place square of function
  *
  * The leaf node point values of the output function will be in-place

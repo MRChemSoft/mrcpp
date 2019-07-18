@@ -248,7 +248,7 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     for (int i = 0; i < 10; i++) {
         const Coord<3> r = {-0.4 + 0.01 * i, 0.9 - 0.05 * i, 0.7 + 0.1 * i};
         const double ref = 1.0 * fx(r) * fz(r) + 4.0 * fy(r) * fy(r) + 9.0 * fz(r) * fx(r);
-        REQUIRE(dot_ab.evalf(r) == Approx(ref).epsilon(prec));
+        REQUIRE(dot_ab.evalf(r) == Approx(ref).margin(prec));
     }
 
     finalize(&mra);

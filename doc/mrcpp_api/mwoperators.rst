@@ -61,6 +61,10 @@ ABGVOperator
 PHOperator
   Based on Pavel Holoborodko's smoothing derivative.
 
+BSOperator
+  Derivative based on projectrion onto B-splines. This is a `smoothing`
+  derivative operator.
+
 The derivatives operator have clearly defined requirements on the output grid
 structure, based on the grid of the input function. This means that there is no
 real grid adaptivity, and thus no precision parameter is needed for the
@@ -183,4 +187,26 @@ This operator is also available as a direct second derivative.
 
 Special thanks to Prof. Robert J. Harrison (Stony Brook University) for sharing the
 operator coefficients.
+
+BSOperator
+++++++++++
+
+The BS derivative operator is based on a pre-projection onto B-splines in order
+to remove the discontinuities in the MW basis. This operator is also available
+as a direct second and third derivative.
+
+
+.. code-block:: cpp
+
+    mrcpp::BSOperator<3> D1(MRA, 1);                // MW 1st derivative operator
+    mrcpp::BSOperator<3> D2(MRA, 2);                // MW 2nd derivative operator
+    mrcpp::BSOperator<3> D3(MRA, 3);                // MW 3nd derivative operator
+    mrcpp::FunctionTree<3> f(MRA);                  // Input function
+    mrcpp::FunctionTree<3> f_x(MRA);                // Output function
+    mrcpp::FunctionTree<3> f_yy(MRA);               // Output function
+    mrcpp::FunctionTree<3> f_zzz(MRA);              // Output function
+
+    mrcpp::apply(f_x, D1, f, 0);                    // Operator application in x direction
+    mrcpp::apply(f_yy, D2, f, 1);                   // Operator application in x direction
+    mrcpp::apply(f_zzz, D3, f, 2);                  // Operator application in x direction
 

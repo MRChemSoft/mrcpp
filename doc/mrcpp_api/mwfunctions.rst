@@ -49,8 +49,8 @@ computational domain is given by a ``BoundingBox`` (D is the dimension)
 .. code-block:: cpp
 
     int n;                                          // Root scale defines box size 2^{-n}
-    int l[D];                                       // Translation of first box
-    int nb[D];                                      // Number of boxes
+    std::array<int, D> l;                           // Translation of first box
+    std::array<int, D> nb;                          // Number of boxes
     BoundingBox<D> world(n, l, nb);
 
 which is combined with a ``ScalingBasis`` to give an MRA
@@ -96,7 +96,7 @@ Creating defined FunctionTrees
 
 The following functions will *define* MW coefficients where there are none, and
 thus *require* that the output ``FunctionTree`` is in an *undefined* state.
-All functions marked with adaptive grid will use the same building algorithm:
+All functions marked with 'adaptive grid' will use the same building algorithm:
 
 1. Start with an initial guess for the grid
 2. Compute the MW coefficients for the output function on the current grid
@@ -130,9 +130,6 @@ square
 power
   Raise an existing function to a given power, adaptive grid.
 
-map
-  Map an existing function through an analytic function, adaptive grid.
-
 
 
 Creating undefined FunctionTrees
@@ -149,7 +146,7 @@ copy_grid
   Build an empty grid that is identical to that of an existing function.
 
 clear_grid
-  Clear MW coefficients of an existing function.
+  Clear MW coefficients of an existing function. Keeps grid refinement.
 
 clear
   Clear MW coefficients and remove all grid refinement.
@@ -183,9 +180,10 @@ crop
   Truncate the wavelet expansion accoring to a new precision threshold.
 
 refine_grid
-  Refine grid at most one level based on precision and the local wavelet norm,
-  or on the structure of another grid. The grid changes, but the `represented`
-  function remains the same.
+  Refine grid and `interpolate` the existing function to the new (larger) grid.
+  Three versions: (1) refine `globally` a given number of levels, (2) refine
+  `locally` based on precision and wavelet norm, (3) refine `locally` based on
+  the structure of another grid.
 
 All changing operations *require* that the ``FunctionTree`` is in a
 *defined* state.
@@ -198,7 +196,8 @@ saveTree
   Write function to file.
 
 loadTree
-  Read function from file.
+  Read function from file. Requires the MRA of the target tree is identical to
+  the MRA of the saved tree.
 
 
 Extracting data
@@ -214,11 +213,21 @@ integrate
   Returns the integral of the function over the entire computational domain.
 
 evalf
-  Returns the function value in a given point.
+  Returns the function value in a given point. Possibly inaccurate, see below.
 
 dot
   Returns the dot product of two functions over the entire computational domain.
 
+.. NOTE::
+
+    When evaluating FunctionTrees, only the *scaling* part of the
+    leaf nodes will be evaluated, which means that the function
+    values will not be fully accurate. This is done to allow a
+    fast and ``const`` function evaluation that can be done in
+    OMP parallel. If you want to include also the *final* wavelet
+    corrections to your function values, you'll have to manually
+    extend the MW grid by one level before evaluating using
+    ``mrcpp::refine_grid(tree, 1)``.
 
 FunctionTreeVector
 ------------------
@@ -335,13 +344,13 @@ be initialized as above)
     // Defining an analytic function
     double beta = 10.0;
     double alpha = std::pow(beta/pi, 3.0/2.0);
-    auto func = [alpha, beta] (const double *r) -> double {
+    auto func = [alpha, beta] (const mrcpp::Coord<3> &r) -> double {
         double R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return alpha*std::exp(-beta*R*R);
     };
 
     double prec = 1.0e-5;
-    FunctionTree<3> tree(MRA);
+    mrcpp::FunctionTree<3> tree(MRA);
     mrcpp::project(prec, tree, func);
 
 This projection will start at the default initial grid (only the root nodes of

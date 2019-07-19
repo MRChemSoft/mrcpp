@@ -56,10 +56,8 @@ template <int D> void ABGVOperator<D>::initializeOperator(double a, double b) {
     Timer trans_t;
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-    trans_t.stop();
-
-    println(10, "Time transform      " << trans_t);
-    println(10, std::endl);
+    print::time(10, "Time transform", trans_t);
+    print::separator(10, ' ');
 
     this->oper_exp.push_back(o_tree);
 }

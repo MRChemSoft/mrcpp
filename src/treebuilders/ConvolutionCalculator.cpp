@@ -49,7 +49,7 @@ ConvolutionCalculator<D>::ConvolutionCalculator(double p, ConvolutionOperator<D>
         , prec(p)
         , oper(&o)
         , fTree(&f) {
-    if (this->maxDepth > MaxDepth) MSG_FATAL("Beyond MaxDepth");
+    if (this->maxDepth > MaxDepth) MSG_ABORT("Beyond MaxDepth");
     initBandSizes();
     initTimers();
 }
@@ -86,13 +86,13 @@ template <int D> void ConvolutionCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = omp_get_max_threads();
     printout(20, "\n\nthread ");
-    for (int i = 0; i < nThreads; i++) { printout(20, std::setw(9) << i); }
+    for (int i = 0; i < nThreads; i++) printout(20, std::setw(9) << i);
     printout(20, "\nband     ");
-    for (int i = 0; i < nThreads; i++) { printout(20, this->band_t[i]->getWallTime() << "  "); }
+    for (int i = 0; i < nThreads; i++) printout(20, this->band_t[i]->elapsed() << "  ");
     printout(20, "\ncalc     ");
-    for (int i = 0; i < nThreads; i++) { printout(20, this->calc_t[i]->getWallTime() << "  "); }
+    for (int i = 0; i < nThreads; i++) printout(20, this->calc_t[i]->elapsed() << "  ");
     printout(20, "\nnorm     ");
-    for (int i = 0; i < nThreads; i++) { printout(20, this->norm_t[i]->getWallTime() << "  "); }
+    for (int i = 0; i < nThreads; i++) printout(20, this->norm_t[i]->elapsed() << "  ");
     printout(20, "\n\n");
     Printer::setPrecision(oldprec);
 }

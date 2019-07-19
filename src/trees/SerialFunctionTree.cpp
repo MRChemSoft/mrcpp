@@ -265,7 +265,7 @@ template <int D> ProjectedNode<D> *SerialFunctionTree<D>::allocNodes(int nAlloc,
                 sNodesCoeff = this->shMem->sh_end_ptr;
                 this->shMem->sh_end_ptr += (this->sizeNodeCoeff * this->maxNodesPerChunk);
                 // may increase size dynamically in the future
-                if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) { MSG_FATAL("Shared block too small"); }
+                if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
                 sNodesCoeff = new double[this->sizeNodeCoeff * this->maxNodesPerChunk];
             }

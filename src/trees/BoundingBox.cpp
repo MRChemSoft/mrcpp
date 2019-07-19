@@ -94,7 +94,7 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
         this->nBoxes[d] = (nb[d] > 0) ? nb[d] : 1;
         this->totBoxes *= this->nBoxes[d];
     }
-    if (this->totBoxes > 1 and isPeriodic()) MSG_FATAL("Total number of boxes must be one for periodic worlds");
+    if (this->totBoxes > 1 and isPeriodic()) MSG_ABORT("Total number of boxes must be one for periodic worlds");
 }
 
 template <int D> void BoundingBox<D>::setDerivedParameters() {
@@ -191,23 +191,23 @@ template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     int oldprec = Printer::setPrecision(5);
     o << std::fixed;
     if (isPeriodic()) { o << "                   The World is Periodic" << std::endl; }
-    o << " total boxes      = " << size() << std::endl;
-    o << " boxes            = [ ";
+    o << " total boxes           : " << size() << std::endl;
+    o << " boxes                 : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << size(i) << " "; }
     o << "]" << std::endl;
-    o << " unit lengths     = [ ";
+    o << " unit lengths          : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << getUnitLength(i) << " "; }
     o << "]" << std::endl;
-    o << " scaling factor   = [ ";
+    o << " scaling factor        : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << getScalingFactor(i) << " "; }
     o << "]" << std::endl;
-    o << " lower bounds     = [ ";
+    o << " lower bounds          : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << getLowerBound(i) << " "; }
     o << "]" << std::endl;
-    o << " upper bounds     = [ ";
+    o << " upper bounds          : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << getUpperBound(i) << " "; }
     o << "]" << std::endl;
-    o << " total length     = [ ";
+    o << " total length          : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << getBoxLength(i) << " "; }
     o << "]";
     o << std::scientific;

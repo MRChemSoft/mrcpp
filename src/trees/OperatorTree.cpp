@@ -41,7 +41,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         , bandWidth(nullptr)
         , nodePtrStore(nullptr)
         , nodePtrAccess(nullptr) {
-    if (this->normPrec < 0.0) MSG_FATAL("Negative prec");
+    if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
 
     this->serialTree_p = new SerialOperatorTree(this);
     this->serialTree_p->allocRoots(*this);

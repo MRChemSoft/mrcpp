@@ -98,7 +98,7 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
             mwTransformUp();
             break;
         default:
-            MSG_FATAL("Invalid wavelet transform");
+            MSG_ABORT("Invalid wavelet transform");
     }
 }
 
@@ -237,6 +237,12 @@ template <int D> int MWTree<D>::getNGenNodes() {
     return this->nGenNodes[0];
 }
 
+/** Returns the size of all MW coefs in the tree, in kB. */
+template <int D> int MWTree<D>::getSizeNodes() const {
+    auto nCoefs = getNNodes() * getTDim() * getKp1_d();
+    return sizeof(double) * nCoefs / 1024;
+}
+
 /** Find and return the node with the given NodeIndex, const version.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
@@ -244,7 +250,6 @@ template <int D> int MWTree<D>::getNGenNodes() {
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
-
     if (getRootBox().isPeriodic()) {
         int l[D];
         int two_n = 1 << idx.getScale();

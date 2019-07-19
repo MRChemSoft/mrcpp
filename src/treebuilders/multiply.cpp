@@ -115,9 +115,9 @@ template <int D> void multiply(double prec, FunctionTree<D> &out, FunctionTreeVe
     }
     clean_t.stop();
 
-    Printer::printTime(10, "Time transform", trans_t);
-    Printer::printTime(10, "Time cleaning", clean_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time transform", trans_t);
+    print::time(10, "Time cleaning", clean_t);
+    print::separator(10, ' ');
 }
 
 /** @brief Out-of-place square of MW function representations
@@ -157,9 +157,9 @@ template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> 
     inp.deleteGenerated();
     clean_t.stop();
 
-    Printer::printTime(10, "Time transform", trans_t);
-    Printer::printTime(10, "Time cleaning", clean_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time transform", trans_t);
+    print::time(10, "Time cleaning", clean_t);
+    print::separator(10, ' ');
 }
 
 /** @brief Out-of-place power of MW function representations
@@ -200,13 +200,9 @@ template <int D> void power(double prec, FunctionTree<D> &out, FunctionTree<D> &
     inp.deleteGenerated();
     clean_t.stop();
 
-    Printer::printTime(10, "Time transform", trans_t);
-    Printer::printTime(10, "Time cleaning", clean_t);
-    Printer::printSeparator(10, ' ');
-}
-
-template <int D> void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableFunction<D> &func) {
-    NOT_IMPLEMENTED_ABORT;
+    print::time(10, "Time transform", trans_t);
+    print::time(10, "Time cleaning", clean_t);
+    print::separator(10, ' ');
 }
 
 /** @brief Dot product of two MW function vectors
@@ -227,7 +223,7 @@ template <int D> void map(double prec, FunctionTree<D> &out, FunctionTree<D> &in
  */
 template <int D>
 void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, FunctionTreeVector<D> &inp_b, int maxIter) {
-    if (inp_a.size() != inp_b.size()) MSG_FATAL("Input length mismatch");
+    if (inp_a.size() != inp_b.size()) MSG_ABORT("Input length mismatch");
 
     FunctionTreeVector<D> tmp_vec;
     for (int d = 0; d < inp_a.size(); d++) {
@@ -235,8 +231,8 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
         double coef_b = get_coef(inp_b, d);
         FunctionTree<D> &tree_a = get_func(inp_a, d);
         FunctionTree<D> &tree_b = get_func(inp_b, d);
-        if (out.getMRA() != tree_a.getMRA()) MSG_FATAL("Trees not compatible");
-        if (out.getMRA() != tree_b.getMRA()) MSG_FATAL("Trees not compatible");
+        if (out.getMRA() != tree_a.getMRA()) MSG_ABORT("Trees not compatible");
+        if (out.getMRA() != tree_b.getMRA()) MSG_ABORT("Trees not compatible");
         auto *out_d = new FunctionTree<D>(out.getMRA());
         build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter);
@@ -261,7 +257,7 @@ void dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, Functi
  *
  */
 template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
-    if (bra.getMRA() != ket.getMRA()) { MSG_FATAL("Trees not compatible"); }
+    if (bra.getMRA() != ket.getMRA()) { MSG_ABORT("Trees not compatible"); }
     MWNodeVector<D> nodeTable;
     HilbertIterator<D> it(&bra);
     it.setReturnGenNodes(false);
@@ -321,9 +317,6 @@ template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, do
 template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter);
 template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter);
 template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter);
-template void map(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, RepresentableFunction<1> &func);
-template void map(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, RepresentableFunction<2> &func);
-template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, RepresentableFunction<3> &func);
 template void dot(double prec,
                   FunctionTree<1> &out,
                   FunctionTreeVector<1> &inp_a,

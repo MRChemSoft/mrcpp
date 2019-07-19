@@ -43,7 +43,7 @@ namespace mrcpp {
 
 /** @brief Calculate \f$ m^e\f$ for integers (for convenience, not speed!) */
 int math_utils::ipow(int m, int e) {
-    if (e < 0) MSG_FATAL("Exponent cannot be negative: " << e)
+    if (e < 0) MSG_ABORT("Exponent cannot be negative: " << e)
     int result = 1;
     for (int i = 0; i < e; i++) { result *= m; }
     return result;
@@ -105,7 +105,7 @@ double math_utils::factorial(int n) {
     double fac_n = 1.0;
 
     if (n < 0) {
-        MSG_FATAL("Negative argument is not defined.");
+        MSG_ABORT("Negative argument is not defined.");
     } else if (n == 0 || n == 1)
         return 1.0;
     else if (n > 1) {

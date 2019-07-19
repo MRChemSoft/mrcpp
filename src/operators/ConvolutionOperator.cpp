@@ -72,10 +72,8 @@ template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &g
         o_tree->mwTransform(BottomUp);
         o_tree->calcSquareNorm();
         o_tree->setupOperNodeCache();
-        trans_t.stop();
-
-        println(10, "Time transform      " << trans_t);
-        println(10, std::endl);
+        print::time(10, "Time transform", trans_t);
+        print::separator(10, ' ');
 
         this->kern_exp.push_back(std::make_tuple(1.0, k_tree));
         this->oper_exp.push_back(o_tree);

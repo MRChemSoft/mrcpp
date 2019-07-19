@@ -17,7 +17,7 @@ using namespace mrcpp;
 void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     auto timer = Timer();
     auto oldlevel = Printer::setPrintLevel(10);
-    Printer::printHeader(0, "Projecting nuclear potential");
+    print::header(0, "Projecting nuclear potential");
 
     // Smoothing parameter
     auto c = 0.00435 * prec / std::pow(Z, 5);
@@ -33,15 +33,14 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     // Projecting function
     project<D>(prec, V, f);
 
-    timer.stop();
-    Printer::printFooter(0, timer, 2);
+    print::footer(0, timer, 2);
     Printer::setPrintLevel(oldlevel);
 }
 
 void setupInitialGuess(FunctionTree<D> &phi) {
     auto timer = Timer();
     auto oldlevel = Printer::setPrintLevel(10);
-    Printer::printHeader(0, "Projecting initial guess");
+    print::header(0, "Projecting initial guess");
 
     auto f = [](const Coord<D> &r) -> double {
         auto x = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
@@ -52,8 +51,7 @@ void setupInitialGuess(FunctionTree<D> &phi) {
     project<D>(prec, phi, f);
     phi.normalize();
 
-    timer.stop();
-    Printer::printFooter(0, timer, 2);
+    print::footer(0, timer, 2);
     Printer::setPrintLevel(oldlevel);
 }
 
@@ -63,7 +61,7 @@ int main(int argc, char **argv) {
     // Initialize printing
     auto printlevel = 0;
     Printer::init(printlevel);
-    Printer::printEnvironment();
+    print::environment(0);
 
     // Constructing world box
     auto min_scale = -4;
@@ -84,11 +82,11 @@ int main(int argc, char **argv) {
     auto phi_np1 = std::make_shared<FunctionTree<D>>(MRA);
     setupInitialGuess(*phi_n);
 
-    Printer::printHeader(0, "Running SCF");
+    print::header(0, "Running SCF");
     printout(0, " Iter");
     printout(0, "      E_np1          dE_n   ");
     printout(0, "   ||phi_np1||   ||dPhi_n||" << std::endl);
-    Printer::printSeparator(0, '-');
+    print::separator(0, '-');
 
     // Orbtial energies
     auto epsilon_n = -0.5;
@@ -125,6 +123,7 @@ int main(int argc, char **argv) {
         d_epsilon_n = dot(Vphi, d_phi_n) / phi_np1->getSquareNorm();
         epsilon_np1 = epsilon_n + d_epsilon_n;
 
+        int oldprec = Printer::getPrecision();
         printout(0, std::setw(3) << iter);
         Printer::setPrecision(10);
         printout(0, std::setw(19) << epsilon_np1);
@@ -134,7 +133,7 @@ int main(int argc, char **argv) {
         printout(0, std::setw(19) << phi_np1->getSquareNorm());
         Printer::setPrecision(1);
         printout(0, std::setw(9) << error);
-        Printer::setPrecision(15);
+        Printer::setPrecision(oldprec);
         printout(0, std::endl);
 
         // Prepare for next iteration
@@ -148,16 +147,18 @@ int main(int argc, char **argv) {
         iter++;
     }
 
-    Printer::printSeparator(0, '=', 2);
+    print::separator(0, '=', 2);
 
-    Printer::printHeader(0, "SCF timings");
-    for (auto i = 0; i < scf_t.size(); i++) { Printer::printTree(0, "Time cycle", i + 1, scf_t[i].getWallTime()); }
-    Printer::printSeparator(0, '=', 2);
-
-    Printer::setPrecision(15);
-    Printer::printHeader(0, "Final energy");
-    Printer::printDouble(0, "Eigenvalue", epsilon_n);
-    Printer::printSeparator(0, '=', 2);
+    print::header(0, "SCF timings");
+    for (auto i = 0; i < scf_t.size(); i++) {
+        std::stringstream o_cycle;
+        o_cycle << "Time cycle " << std::setw(3) << i + 1;
+        print::time(0, o_cycle.str(), scf_t[i]);
+    }
+    print::separator(0, '=', 2);
+    print::header(0, "Final energy");
+    print::value(0, "Eigenvalue", epsilon_n, "(au)");
+    print::separator(0, '=', 2);
 
     return 0;
 }

@@ -51,8 +51,8 @@ monomial in front, e.g. in 3D:
 .. code-block:: cpp
 
     double alpha, beta;
-    double pos[3] = {x_0, y_0, z_0};
-    int pow[3] = {a, b, c};
+    std::array<int, 3> pow = {a, b, c};
+    std::array<double, 3> pos = {x_0, y_0, z_0};
     mrcpp::GaussFunc<3> gauss(beta, alpha, pos, pow);
 
     double E = gauss.calcCoulombEnergy(gauss);              // Analytical energy
@@ -116,8 +116,9 @@ a single function:
 
     mrcpp::GaussExp<3> g_exp;                               // Empty Gaussian expansion
     for (int i = 0; i < N; i++) {
-        int pow_i[3];                                       // Individual parameters
-        double alpha_i, beta_i, pos_i[3];                   // Individual parameters
+        double alpha_i, beta_i;                             // Individual parameters
+        std::array<int, 3> pow_i;                           // Individual parameters
+        std::array<double, 3> pos_i;                        // Individual parameters
         mrcpp::GaussFunc<3> gauss_i(beta_i, alpha_i, pos_i, pow_i);
         g_exp.append(gauss_i);                              // Append Gaussian to expansion
     }

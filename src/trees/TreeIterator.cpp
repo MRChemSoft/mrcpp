@@ -116,7 +116,7 @@ template <int D> void TreeIterator<D>::setDirection(int dir) {
             this->mode = BottomUp;
             break;
         default:
-            MSG_FATAL("Invalid recursive direction!");
+            MSG_ABORT("Invalid recursive direction!");
             break;
     }
 }

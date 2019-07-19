@@ -98,7 +98,7 @@ Vector2d LegendrePoly::firstDerivative(double x) const {
     double dy, dyp, dym;
 
     if (outOfBounds({x})) {
-        MSG_FATAL("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
+        MSG_ABORT("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
     }
 
     double q = this->N * x + this->L;
@@ -148,7 +148,7 @@ Vector3d LegendrePoly::secondDerivative(double x) const {
 
     double q = this->N * x + this->L;
     if (outOfBounds({x})) {
-        MSG_FATAL("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
+        MSG_ABORT("Argument out of bounds: " << x << " [" << this->A[0] << ", " << this->B[0] << "]");
     }
 
     Vector3d val;

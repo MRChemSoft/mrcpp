@@ -26,7 +26,6 @@
 #pragma once
 
 #include <chrono>
-#include <iostream>
 
 namespace mrcpp {
 
@@ -42,19 +41,15 @@ public:
     void resume();
     void stop();
 
-    double getWallTime() const;
-
-    friend std::ostream &operator<<(std::ostream &o, const Timer &timer) { return timer.print(o); }
+    double elapsed() const;
 
 private:
     bool running{false};
     double time_used{0.0};
     timeT clock_start;
 
-    timeT now();
-    double diffTime(timeT t2, timeT t1);
-
-    std::ostream &print(std::ostream &o) const;
+    timeT now() const;
+    double diffTime(timeT t2, timeT t1) const;
 };
 
 } // namespace mrcpp

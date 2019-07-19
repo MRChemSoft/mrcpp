@@ -93,8 +93,8 @@ template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFu
     out.calcSquareNorm();
     trans_t.stop();
 
-    Printer::printTime(10, "Time transform", trans_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time transform", trans_t);
+    print::separator(10, ' ');
 }
 
 template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);

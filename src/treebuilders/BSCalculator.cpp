@@ -48,8 +48,8 @@ void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string path = MW_FILTER_DIR;
     if (basis.getScalingType() == Legendre) file = path + "/L_b-spline-deriv" + n + ".txt";
     if (basis.getScalingType() == Interpol) file = path + "/I_b-spline-deriv" + n + ".txt";
-    if (basis.getScalingOrder() < 0) MSG_FATAL("Scaling order not supported");
-    if (basis.getScalingOrder() > 20) MSG_FATAL("Scaling order not supported");
+    if (basis.getScalingOrder() < 0) MSG_ABORT("Scaling order not supported");
+    if (basis.getScalingOrder() > 20) MSG_ABORT("Scaling order not supported");
 
     std::ifstream ifs(file.c_str());
     if (not ifs) MSG_ERROR("Failed to open file: " << file);
@@ -60,7 +60,7 @@ void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
 
         int order;
         iss >> order;
-        if (order != kp1) MSG_FATAL("Orders no not match");
+        if (order != kp1) MSG_ABORT("Orders no not match");
 
         MatrixXd data = MatrixXd::Zero(3 * kp1, kp1);
         for (int i = 0; i < 3 * kp1; i++) {

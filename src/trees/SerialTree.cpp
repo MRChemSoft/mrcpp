@@ -146,7 +146,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
         }
     }
 
-    if (D > 3) MSG_FATAL("D>3 NOT IMPLEMENTED for S_mwtransform");
+    if (D > 3) MSG_ABORT("D>3 NOT IMPLEMENTED for S_mwtransform");
 
     if (D < 3) {
         double *out;

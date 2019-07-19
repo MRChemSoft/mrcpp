@@ -31,7 +31,7 @@ namespace mrcpp {
 ScalingBasis::ScalingBasis(int k, int t)
         : type(t)
         , order(k) {
-    if (this->order < 1) MSG_FATAL("Invalid scaling order");
+    if (this->order < 1) MSG_ABORT("Invalid scaling order");
     int q_order = getQuadratureOrder();
     this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
     this->cvMap = Eigen::MatrixXd::Zero(q_order, q_order);
@@ -67,13 +67,13 @@ bool ScalingBasis::operator!=(const ScalingBasis &basis) const {
 }
 
 std::ostream &ScalingBasis::print(std::ostream &o) const {
-    o << " polynomial order = " << getScalingOrder() << std::endl;
+    o << " polynomial order      : " << getScalingOrder() << std::endl;
     if (getScalingType() == Legendre) {
-        o << " polynomial type  = Legendre";
+        o << " polynomial type       : Legendre";
     } else if (getScalingType() == Interpol) {
-        o << " polynomial type  = Interpolating";
+        o << " polynomial type       : Interpolating";
     } else {
-        o << " polynomial type  = Unknown";
+        o << " polynomial type       : Unknown";
     }
     return o;
 }

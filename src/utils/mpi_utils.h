@@ -53,8 +53,6 @@ public:
 
 template <int D> class FunctionTree;
 
-template <int D>
-void isend_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, MPI_Request *req, int nChunks = -1);
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks = -1);
 template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChunks = -1);
 template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm);

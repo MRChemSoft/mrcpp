@@ -59,7 +59,7 @@ void HelmholtzKernel::initializeKernel() {
     // for given MU
     double h = 1.0 / (0.20L - 0.47L * std::log10(this->epsilon));
     int n_exp = (int)ceil((s2 - s1) / h) + 1;
-    if (n_exp > MaxSepRank) MSG_FATAL("Maximum separation rank exceeded.");
+    if (n_exp > MaxSepRank) MSG_ABORT("Maximum separation rank exceeded.");
 
     for (int i = 0; i < n_exp; i++) {
         double arg = s1 + h * i;

@@ -104,7 +104,7 @@ template <int D> double FunctionNode<D>::integrate() const {
             return integrateInterpolating();
             break;
         default:
-            MSG_FATAL("Invalid scalingType");
+            MSG_ABORT("Invalid scalingType");
     }
 }
 

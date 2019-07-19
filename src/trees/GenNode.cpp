@@ -34,7 +34,7 @@ template <int D> void GenNode<D>::createChildren() {
 }
 
 template <int D> void GenNode<D>::genChildren() {
-    if (this->isBranchNode()) MSG_FATAL("Node already has children");
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
     this->tree->getSerialTree()->allocGenChildren(*this);
     this->setIsBranchNode();
 }

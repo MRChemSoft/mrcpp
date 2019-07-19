@@ -72,6 +72,7 @@ public:
     int getNGenNodes();
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
+    int getSizeNodes() const;
 
     NodeBox<D> &getRootBox() { return this->rootBox; }
     const NodeBox<D> &getRootBox() const { return this->rootBox; }

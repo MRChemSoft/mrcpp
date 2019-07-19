@@ -115,9 +115,9 @@ template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<
     }
     clean_t.stop();
 
-    Printer::printTime(10, "Time transform", trans_t);
-    Printer::printTime(10, "Time cleaning", clean_t);
-    Printer::printSeparator(10, ' ');
+    print::time(10, "Time transform", trans_t);
+    print::time(10, "Time cleaning", clean_t);
+    print::separator(10, ' ');
 }
 
 template void add(double prec,

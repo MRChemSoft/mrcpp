@@ -16,9 +16,9 @@ Building the code
 Prerequisites
 -------------
 
-* g++-4.8 (or equivalent)
-* `CMake <http://cmake.org>`_ version 3.3 or higher.
-* `Eigen <http://eigen.tuxfamily.org>`_ version 3.1 or higher.
+* g++-5.4 or later (``std=c++14``)
+* `CMake <http://cmake.org>`_ version 3.11 or higher.
+* `Eigen <http://eigen.tuxfamily.org>`_ version 3.3 or higher.
 * BLAS (optional)
 
 
@@ -27,7 +27,9 @@ Configuration
 
 The configuration and build process is managed through CMake, and a ``setup``
 script is provided for the configuration step. MRCPP's only dependency is
-Eigen3, and the path to this library must be specified::
+Eigen3, which will be downloaded at configure time unless it is already
+available on the system. If you have a local version *not* under the system
+path, you can point to it before running ``setup``::
 
     $ export EIGEN3_ROOT=/path/to/eigen3
     $ ./setup [options] [<builddir>]
@@ -44,6 +46,8 @@ important are:
   Enable MPI parallelization [default: False]
 ``--enable-tests``
   Enable tests [default: True]
+``--enable-examples``
+  Enable tests [default: False]
 ``--type=<TYPE>``
   Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release]
 ``--prefix=<PATH>``
@@ -68,12 +72,12 @@ Running tests
 
 A set of tests is provided with the code to verify that the code compiled
 properly. To compile the test suite, add the ``--enable-tests`` option to
-setup, then run the tests with ``make test``::
+setup, then run the tests with ``ctest``::
 
     $ ./setup --enable-tests build
     $ cd build
     $ make
-    $ make test
+    $ ctest
 
 
 ----------------
@@ -83,15 +87,13 @@ Running examples
 In addition to the test suite, the code comes with a number of small code
 snippets that demonstrate the features and the API of the library. These are
 located in the ``examples`` directory. To compile the example codes, add the
-``enable-examples`` option to setup. This will add a ``examples`` directory in
-your *<builddir>* where the executables will be located. E.g. to compile and run
-the MW projection example::
+``enable-examples`` option to setup, and the example executables can be found
+under ``<build-dir>/bin/``. E.g. to compile and run the MW projection example::
 
     $ ./setup --enable-examples build-serial
     $ cd build-serial
     $ make
-    $ cd examples
-    $ ./projection
+    $ bin/projection
 
 The shared memory parallelization (OpenMP) is controlled by the environment
 variable ``OMP_NUM_THREADS`` (make sure you have compiled with the ``--omp``
@@ -101,8 +103,7 @@ CPU cores::
     $ ./setup --enable-examples --omp build-omp
     $ cd build-omp
     $ make
-    $ cd examples
-    $ OMP_NUM_THREADS=10 ./poisson
+    $ OMP_NUM_THREADS=10 bin/poisson
 
 To run in MPI parallel, use the ``mpirun`` (or equivalent) command (make sure
 you have compiled with the ``--mpi`` option to setup, and used MPI compatible
@@ -112,17 +113,15 @@ affected by running in MPI::
     $ ./setup --cxx=mpicxx --enable-examples --mpi build-mpi
     $ cd build-mpi
     $ make
-    $ cd examples
-    $ mpirun -np 4 ./mpi_send_tree
+    $ mpirun -np 4 bin/mpi_send_tree
 
 To run in hybrid OpenMP/MPI parallel, simply combine the two above::
 
     $ ./setup --cxx=mpicxx --enable-examples --omp --mpi build-hybrid
     $ cd build-hybrid
     $ make
-    $ cd examples
     $ export OMP_NUM_THREADS=5
-    $ mpirun -np 4 ./mpi_send_tree
+    $ mpirun -np 4 bin/mpi_send_tree
 
 Note that the core of MRCPP is *only* OpenMP parallelized. All MPI data or work
 distribution must be done manually in the application program, using the tools
@@ -140,9 +139,9 @@ a build, re-name (copy) this file to ``mrcpp.cpp``::
     $ cd pilot
     $ cp mrcpp.cpp.sample mrcpp.cpp
 
-Now a corresponding executable will be build in ``<builddir>/pilot/``. Feel
-free to do whatever you like in your own pilot code, but please don't add this
-file to git. Also, please don't commit any changes to the existing examples
+Now a corresponding executable will be build in ``<builddir>/bin/mrcpp-pilot/``.
+Feel free to do whatever you like in your own pilot code, but please don't add
+this file to git. Also, please don't commit any changes to the existing examples
 (unless you know what you're doing).
 
 ---------------------

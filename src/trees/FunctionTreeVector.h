@@ -46,13 +46,22 @@ template <int D> void clear(FunctionTreeVector<D> &fs, bool dealloc = false) {
     fs.clear();
 }
 
-template <int D> int sum_nodes(const FunctionTreeVector<D> &fs) {
+template <int D> int get_n_nodes(const FunctionTreeVector<D> &fs) {
     int nNodes = 0;
     for (const auto &t : fs) {
         auto f = std::get<1>(t);
-        if (f != nullptr) { nNodes += f->getNNodes(); }
+        if (f != nullptr) nNodes += f->getNNodes();
     }
     return nNodes;
+}
+
+template <int D> int get_size_nodes(const FunctionTreeVector<D> &fs) {
+    int sNodes = 0;
+    for (const auto &t : fs) {
+        auto f = std::get<1>(t);
+        if (f != nullptr) sNodes += f->getSizeNodes();
+    }
+    return sNodes;
 }
 
 template <int D> double get_coef(const FunctionTreeVector<D> &fs, int i) {

@@ -17,8 +17,8 @@ int main(int argc, char **argv) {
     // Initialize printing
     auto printlevel = 0;
     mrcpp::Printer::init(printlevel);
-    mrcpp::Printer::printEnvironment();
-    mrcpp::Printer::printHeader(0, "Applying derivative operator");
+    mrcpp::print::environment(0);
+    mrcpp::print::header(0, "Applying derivative operator");
 
     // Constructing world box
     auto corner = std::array<int, D>{-1};
@@ -69,22 +69,20 @@ int main(int argc, char **argv) {
     auto abs_err = std::sqrt(err_tree.getSquareNorm());
     auto rel_err = abs_err / df_norm;
 
-    mrcpp::Printer::printSeparator(0, ' ');
-    mrcpp::Printer::printDouble(0, "f_tree integral", f_int);
-    mrcpp::Printer::printDouble(0, "f_tree norm", f_norm);
-    mrcpp::Printer::printSeparator(0, ' ');
-    mrcpp::Printer::printDouble(0, "df_tree integral", df_int);
-    mrcpp::Printer::printDouble(0, "df_tree norm", df_norm);
-    mrcpp::Printer::printSeparator(0, ' ');
-    mrcpp::Printer::printDouble(0, "dg_tree integral", dg_int);
-    mrcpp::Printer::printDouble(0, "dg_tree norm", dg_norm);
-    mrcpp::Printer::printSeparator(0, ' ');
-    mrcpp::Printer::printDouble(0, "absolute error", abs_err, 1);
-    mrcpp::Printer::printDouble(0, "relative error", rel_err, 1);
-    mrcpp::Printer::printSeparator(0, ' ');
-
-    timer.stop();
-    mrcpp::Printer::printFooter(0, timer, 2);
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::value(0, "f_tree integral", f_int);
+    mrcpp::print::value(0, "f_tree norm", f_norm);
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::value(0, "df_tree integral", df_int);
+    mrcpp::print::value(0, "df_tree norm", df_norm);
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::value(0, "dg_tree integral", dg_int);
+    mrcpp::print::value(0, "dg_tree norm", dg_norm);
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::value(0, "error", abs_err, "(abs)", 1);
+    mrcpp::print::value(0, "error", rel_err, "(rel)", 1);
+    mrcpp::print::separator(0, ' ');
+    mrcpp::print::footer(0, timer, 2);
 
     return 0;
 }

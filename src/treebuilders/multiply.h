@@ -41,7 +41,6 @@ void multiply(double prec,
 template <int D> void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1);
 template <int D> void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter = -1);
 template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter = -1);
-template <int D> void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableFunction<D> &func);
 template <int D>
 void dot(double prec,
          FunctionTree<D> &out,

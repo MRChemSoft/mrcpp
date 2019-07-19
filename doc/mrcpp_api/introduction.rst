@@ -61,11 +61,12 @@ lambda must have the following signature:
 
 .. code-block:: cpp
 
-    auto f = [] (const double *r) -> double;
+    auto f = [] (const mrcpp::Coord<D> &r) -> double;
 
-e.i. it must take a ``double`` pointer defining a set of Cartesian coordinates,
-and return a ``double``. For instance, the electrostatic potential from a point
-nuclear charge :math:`Z` (in atomic units) is
+e.i. it must take a D-dimensional Cartesian coordinate (``mrcpp::Coord<D>`` is
+simply an alias for ``std::array<double, D>``), and return a ``double``.
+For instance, the electrostatic potential from a point nuclear charge
+:math:`Z` (in atomic units) is
 
 .. math:: f(r) = \frac{Z}{r}
 
@@ -73,9 +74,9 @@ which can be written as the lambda function
 
 .. code-block:: cpp
 
-    double Z = 1.0;                                 // Hydrogen nuclear charge
-    auto f = [Z] (const double *r) -> double {
-        double R = sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
+    auto Z = 1.0;                                 // Hydrogen nuclear charge
+    auto f = [Z] (const mrcpp::Coord<3> &r) -> double {
+        auto R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return Z/R;
     };
 

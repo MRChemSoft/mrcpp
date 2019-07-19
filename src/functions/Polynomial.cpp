@@ -110,7 +110,7 @@ double Polynomial::getScaledUpperBound() const {
 /** Divide by norm of (bounded) polynomial. */
 void Polynomial::normalize() {
     double sqNorm = calcSquareNorm();
-    if (sqNorm < 0.0) MSG_FATAL("Cannot normalize polynomial");
+    if (sqNorm < 0.0) MSG_ABORT("Cannot normalize polynomial");
     (*this) *= 1.0 / std::sqrt(sqNorm);
 }
 

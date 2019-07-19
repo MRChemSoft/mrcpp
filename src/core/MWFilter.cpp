@@ -50,7 +50,7 @@ std::string MWFilter::default_filter_lib = MW_FILTER_DIR;
 MWFilter::MWFilter(int k, int t, const std::string &lib)
         : type(t)
         , order(k) {
-    if (this->order < 1 or this->order > MaxOrder) { MSG_FATAL("Invalid filter order: " << this->order); }
+    if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -73,7 +73,7 @@ MWFilter::MWFilter(int k, int t, const std::string &lib)
 MWFilter::MWFilter(int t, const MatrixXd &data) {
     this->type = t;
     this->order = data.cols() / 2 - 1;
-    if (this->order < 0 or this->order > MaxOrder) { MSG_FATAL("Invalid filter order " << this->order); }
+    if (this->order < 0 or this->order > MaxOrder) MSG_ABORT("Invalid filter order " << this->order);
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -116,7 +116,7 @@ const MatrixXd &MWFilter::getSubFilter(int i, int oper) const {
                 case (3):
                     return this->G1t;
                 default:
-                    MSG_FATAL("Filter index out of bounds");
+                    MSG_ABORT("Filter index out of bounds");
             }
             break;
         case (Reconstruction):
@@ -130,11 +130,11 @@ const MatrixXd &MWFilter::getSubFilter(int i, int oper) const {
                 case (3):
                     return this->G1;
                 default:
-                    MSG_FATAL("Filter index out of bounds");
+                    MSG_ABORT("Filter index out of bounds");
             }
             break;
         default:
-            MSG_FATAL("Invalid wavelet transformation");
+            MSG_ABORT("Invalid wavelet transformation");
     }
 }
 
@@ -149,7 +149,7 @@ const MatrixXd &MWFilter::getCompressionSubFilter(int i) const {
         case (3):
             return this->G1t;
         default:
-            MSG_FATAL("Filter index out of bounds");
+            MSG_ABORT("Filter index out of bounds");
     }
 }
 
@@ -164,7 +164,7 @@ const MatrixXd &MWFilter::getReconstructionSubFilter(int i) const {
         case (3):
             return this->G1;
         default:
-            MSG_FATAL("Filter index out of bounds");
+            MSG_ABORT("Filter index out of bounds");
     }
 }
 
@@ -209,7 +209,7 @@ void MWFilter::setFilterPaths(const std::string &lib) {
             this->G_path = flib + "/L_G0_" + ordr;
             break;
         default:
-            MSG_FATAL("Invalid filter type " << this->type);
+            MSG_ABORT("Invalid filter type " << this->type);
     }
 }
 
@@ -217,8 +217,8 @@ void MWFilter::readFilterBin() {
     std::ifstream H_fis(this->H_path.c_str(), std::ios::binary);
     std::ifstream G_fis(this->G_path.c_str(), std::ios::binary);
 
-    if (H_fis.fail()) MSG_FATAL("Could not open filter: " << this->H_path);
-    if (G_fis.fail()) MSG_FATAL("Could not open filter: " << this->G_path);
+    if (H_fis.fail()) MSG_ABORT("Could not open filter: " << this->H_path);
+    if (G_fis.fail()) MSG_ABORT("Could not open filter: " << this->G_path);
 
     int K = this->order + 1;
     double dH[K];

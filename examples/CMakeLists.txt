@@ -12,8 +12,8 @@ list(APPEND _examples
     )
 
 foreach(_example IN LISTS _examples)
-    add_executable(${_example}.x ${_example}.cpp)
-    target_link_libraries(${_example}.x
+    add_executable(${_example} ${_example}.cpp)
+    target_link_libraries(${_example}
         mrcpp
         ${BLAS_LIBRARIES}
         )

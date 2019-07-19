@@ -86,6 +86,7 @@ int Printer::setPrintLevel(int i) {
     return oldLevel;
 }
 
+// clang-format off
 void print::environment(int level) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -121,6 +122,7 @@ void print::environment(int level) {
     printout(level, std::endl);
     print::separator(level, '-', 2);
 }
+// clang-format on
 
 void print::separator(int level, const char &c, int newlines) {
     if (level > Printer::getPrintLevel()) return;

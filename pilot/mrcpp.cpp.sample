@@ -13,12 +13,12 @@ int main(int argc, char **argv) {
     // Initialize printing
     int printlevel = 0;
     Printer::init(printlevel);
-    Printer::printEnvironment();
-    Printer::printHeader(0, "MRCPP pilot code");
+    print::environment(0);
+    print::header(0, "MRCPP pilot code");
 
-    timer.stop();
-    Printer::printFooter(0, timer, 2);
+    // Do some work
 
+    print::footer(0, timer, 2);
     return 0;
 }
 

@@ -205,10 +205,6 @@ template <int D> void power(double prec, FunctionTree<D> &out, FunctionTree<D> &
     print::separator(10, ' ');
 }
 
-template <int D> void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, RepresentableFunction<D> &func) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
 /** @brief Dot product of two MW function vectors
  *
  * @param[in] prec Build precision of output function
@@ -321,9 +317,6 @@ template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, do
 template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter);
 template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter);
 template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter);
-template void map(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, RepresentableFunction<1> &func);
-template void map(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, RepresentableFunction<2> &func);
-template void map(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, RepresentableFunction<3> &func);
 template void dot(double prec,
                   FunctionTree<1> &out,
                   FunctionTreeVector<1> &inp_a,

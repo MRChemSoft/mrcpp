@@ -51,13 +51,15 @@ int get_val(char *line, int n) {
 
 /** @brief returns the current memory usage of this process, in kB */
 int get_memory_usage() {
-    FILE *file = fopen("/proc/self/statm", "r");
     int mem_val = -1;
-    char line[80];
-    while (fgets(line, 80, file) != nullptr) {
-        mem_val = 4 * get_val(line, 6); // sixth number is data+stack in pages (4kB)
+    FILE *file = fopen("/proc/self/statm", "r");
+    if (file != nullptr) {
+        char line[80];
+        while (fgets(line, 80, file) != nullptr) {
+            mem_val = 4 * get_val(line, 6); // sixth number is data+stack in pages (4kB)
+        }
+        fclose(file);
     }
-    fclose(file);
     return mem_val;
 }
 

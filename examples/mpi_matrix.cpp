@@ -16,18 +16,15 @@ int main(int argc, char **argv) {
 
     // Initialize MPI
     MPI_Comm comm;
-    MPI_Request req_null;
     int wrank, wsize;
 #ifdef HAVE_MPI
     MPI_Init(&argc, &argv);
 
     comm = MPI_COMM_WORLD;
-    req_null = MPI_REQUEST_NULL;
     MPI_Comm_rank(comm, &wrank);
     MPI_Comm_size(comm, &wsize);
 #else
     comm = 0;
-    req_null = 0;
     wrank = 0;
     wsize = 1;
 #endif
@@ -64,7 +61,6 @@ int main(int argc, char **argv) {
         f_vec.push_back(std::make_tuple(1.0, tree));
     }
 
-    std::vector<MPI_Request> requests;
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(nFuncs, nFuncs);
     for (int j = 0; j < f_vec.size(); j++) {
         int dst = j % wsize;
@@ -74,19 +70,13 @@ int main(int argc, char **argv) {
             mrcpp::FunctionTree<3> &f_i = get_func(f_vec, i);
             if (src != dst) {
                 int tag = 1000000 * dst;
-                MPI_Request req = req_null;
-                if (wrank == src) mrcpp::isend_tree(f_i, dst, tag, comm, &req);
+                if (wrank == src) mrcpp::send_tree(f_i, dst, tag, comm);
                 if (wrank == dst) mrcpp::recv_tree(f_i, src, tag, comm);
-                requests.push_back(req);
             }
             // Compute my column(s) of the overlap matrix
             if (wrank == dst) S(i, j) = mrcpp::dot(f_i, f_j);
         }
     }
-
-#ifdef HAVE_MPI
-    for (int i = 0; i < requests.size(); i++) { MPI_Wait(&requests[i], MPI_STATUS_IGNORE); }
-#endif
 
     // Delete all trees
     clear(f_vec, true);

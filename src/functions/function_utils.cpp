@@ -46,7 +46,7 @@ namespace mrcpp {
  *
  */
 template <int D>
-std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(Gaussian<D> &inp,
+std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussian<D> &inp,
                                                                     const std::array<double, D> &period,
                                                                     double nStdDev) {
     auto gauss_exp = std::make_shared<GaussExp<D>>();
@@ -77,8 +77,8 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(Gaussian<D> 
         if (startpos[d] < 0) startpos[d] += period[d];
     }
 
-    inp.setPos(startpos); // The starting position is set to complement build_grid
-                          // ensuring the projection of Gaussians with high exponents
+    // inp.setPos(startpos); // The starting position is set to complement build_grid
+    // ensuring the projection of Gaussians with high exponents
     auto nr_cells_upp_and_down = neighbooring_cells(startpos);
     for (auto d = 0; d < D; d++) { startpos[d] -= nr_cells_upp_and_down * period[d]; }
 
@@ -113,13 +113,13 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(Gaussian<D> 
     return gauss_exp;
 }
 
-template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(Gaussian<1> &inp,
+template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(const Gaussian<1> &inp,
                                                                                 const std::array<double, 1> &period,
                                                                                 double nStdDev);
-template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(Gaussian<2> &inp,
+template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(const Gaussian<2> &inp,
                                                                                 const std::array<double, 2> &period,
                                                                                 double nStdDev);
-template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(Gaussian<3> &inp,
+template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(const Gaussian<3> &inp,
                                                                                 const std::array<double, 3> &period,
                                                                                 double nStdDev);
 } // namespace mrcpp

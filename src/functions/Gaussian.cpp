@@ -63,7 +63,7 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
 
 template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period) {
     for (auto &x : period)
-        if (x <= 0.0) MSG_ERROR("The period has to be greater that zero in all directions");
+        if (x <= 0.0) MSG_ERROR("The period has to be greater than zero in all directions");
     this->period = period;
     this->gauss_exp = function_utils::make_gaussian_periodic<D>(*this, this->period);
 }

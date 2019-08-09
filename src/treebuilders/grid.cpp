@@ -58,7 +58,7 @@ namespace mrcpp {
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     AnalyticAdaptor<D> adaptor(inp, maxScale);
     DefaultCalculator<D> calculator;
@@ -67,7 +67,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, int maxIter) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     DefaultCalculator<D> calculator;
 
@@ -76,9 +76,9 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
         builder.build(out, calculator, adaptor, maxIter);
     } else {
         auto period = out.getMRA().getWorldBox().getScalingFactor();
-        auto g_exp = function_utils::make_gaussian_periodic(inp, period);
-        for (auto i = 0; i < g_exp.size(); i++) {
-            AnalyticAdaptor<D> adaptor(g_exp.getFunc(i), maxScale);
+        auto g_exp = function_utils::make_gaussian_periodic<D>(inp, period);
+        for (auto i = 0; i < g_exp->size(); i++) {
+            AnalyticAdaptor<D> adaptor(g_exp->getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     }
@@ -86,12 +86,18 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     DefaultCalculator<D> calculator;
-    for (int i = 0; i < inp.size(); i++) {
-        AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
-        builder.build(out, calculator, adaptor, maxIter);
+    if (!out.getMRA().getWorldBox().isPeriodic()) {
+        for (auto i = 0; i < inp.size(); i++) {
+            AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
+            builder.build(out, calculator, adaptor, maxIter);
+        }
+    } else {
+        auto period = out.getMRA().getWorldBox().getScalingFactor();
+        auto *gauss = inp.getFunc(0).copy();
+        delete gauss;
     }
     print::separator(10, ' ');
 }
@@ -116,7 +122,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
@@ -144,7 +150,7 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
@@ -208,11 +214,11 @@ template <int D> void clear_grid(FunctionTree<D> &out) {
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
-    int nSplit = 0;
-    int maxScale = out.getMRA().getMaxScale();
+    auto nSplit = 0;
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     SplitAdaptor<D> adaptor(maxScale, true); // Splits all nodes
-    for (int n = 0; n < scales; n++) {
+    for (auto n = 0; n < scales; n++) {
         nSplit += builder.split(out, adaptor, true); // Transfers coefs to children
     }
     return nSplit;
@@ -250,10 +256,10 @@ template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
-    int maxScale = out.getMRA().getMaxScale();
+    auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
-    int nSplit = builder.split(out, adaptor, true);
+    auto nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }
 

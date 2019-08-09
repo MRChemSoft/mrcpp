@@ -114,12 +114,17 @@ template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
 }
 
 template <int D> void GaussExp<D>::makePeriodic(const std::array<double, D> &period) {
+    this->periodic = true;
     for (auto &func : this->funcs) { func->makePeriodic(period); }
 }
 
 template <int D> double GaussExp<D>::evalf(const Coord<D> &r) const {
     double val = 0.0;
-    for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalfCore(r); }
+    if (!this->periodic) {
+        for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalfCore(r); }
+    } else {
+        for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalf(r); }
+    }
     return val;
 }
 

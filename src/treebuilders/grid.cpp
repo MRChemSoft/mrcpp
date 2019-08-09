@@ -86,18 +86,21 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
-    auto maxScale = out.getMRA().getMaxScale();
-    TreeBuilder<D> builder;
-    DefaultCalculator<D> calculator;
     if (!out.getMRA().getWorldBox().isPeriodic()) {
+        auto maxScale = out.getMRA().getMaxScale();
+        TreeBuilder<D> builder;
+        DefaultCalculator<D> calculator;
         for (auto i = 0; i < inp.size(); i++) {
             AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
         auto period = out.getMRA().getWorldBox().getScalingFactor();
-        auto *gauss = inp.getFunc(0).copy();
-        delete gauss;
+        for (auto i = 0; i < inp.size(); i++) {
+            auto *gauss = inp.getFunc(i).copy();
+            build_grid(out, *gauss, maxIter);
+            delete gauss;
+        }
     }
     print::separator(10, ' ');
 }

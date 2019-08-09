@@ -132,6 +132,7 @@ protected:
     static double defaultScreening;
     double screening{0.0};
     double squareNorm{-1.0};
+    bool periodic{false};
 
     std::ostream &print(std::ostream &o) const;
 };

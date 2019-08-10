@@ -1,10 +1,10 @@
-include(FetchContent)
-
-find_package(Eigen3 3.3 CONFIG QUIET)
+find_package(Eigen3 3.3 CONFIG QUIET NO_CMAKE_PACKAGE_REGISTRY)
 if(TARGET Eigen3::Eigen)
   message(STATUS "Using Eigen3: ${EIGEN3_ROOT_DIR} (version ${Eigen3_VERSION})")
 else()
   message(STATUS "Suitable Eigen3 could not be located. Fetching and building!")
+  include(FetchContent)
+
   FetchContent_Declare(eigen3_sources
     GIT_REPOSITORY
       https://github.com/eigenteam/eigen-git-mirror

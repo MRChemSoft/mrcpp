@@ -77,8 +77,6 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussi
         if (startpos[d] < 0) startpos[d] += period[d];
     }
 
-    // inp.setPos(startpos); // The starting position is set to complement build_grid
-    // ensuring the projection of Gaussians with high exponents
     auto nr_cells_upp_and_down = neighbooring_cells(startpos);
     for (auto d = 0; d < D; d++) { startpos[d] -= nr_cells_upp_and_down * period[d]; }
 

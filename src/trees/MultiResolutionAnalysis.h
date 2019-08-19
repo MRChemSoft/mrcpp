@@ -47,6 +47,8 @@ public:
     const ScalingBasis &getScalingBasis() const { return this->basis; }
     const BoundingBox<D> &getWorldBox() const { return this->world; }
 
+    void setPeriodicOperatorReach(int reach) { this->periodic_operator_reach = reach; }
+
     MultiResolutionAnalysis<1> getKernelMRA() const;
     MultiResolutionAnalysis<2> getOperatorMRA() const;
 
@@ -59,6 +61,7 @@ protected:
     const int maxDepth;
     const ScalingBasis basis;
     const BoundingBox<D> world;
+    int periodic_operator_reach{10};
     MWFilter *filter;
 
     void setupFilter();

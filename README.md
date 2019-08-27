@@ -20,5 +20,6 @@ You can install Git hooks to keep in check formatting and licensing headers:
 
 ```
 cd .git/hooks
-cp --symbolic-link ../../.githooks/* .
+ln -s ../../.githooks/* .
 ```
+

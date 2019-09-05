@@ -23,6 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#include <Eigen/Core>
 #include "multiply.h"
 #include "MultiplicationCalculator.h"
 #include "PowerCalculator.h"
@@ -32,6 +33,7 @@
 #include "add.h"
 #include "grid.h"
 #include "trees/FunctionNode.h"
+#include "trees/SerialFunctionTree.h"
 #include "trees/FunctionTree.h"
 #include "trees/HilbertIterator.h"
 #include "utils/Printer.h"
@@ -290,6 +292,47 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     return result;
 }
 
+/** @brief abs-dot product of two MW function representations
+ *
+ * @param[in] bra Bra side input function
+ * @param[in] ket Ket side input function
+ *
+ * If exact=false: does not at any time read the coefficients individually.
+ * The product is done for the end nodes of the bra multiplied by the nodes from the
+ * ket with either the same idx, or using a lower scale and assuming uniform
+ * distribution within the node. If the product is zero, the functions are disjoints.
+ */
+template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket, bool exact) {
+
+    double result = 0.0;
+    int ncoef=bra.getKp1_d()*bra.getTDim();
+    double valA[ncoef];
+    double valB[ncoef];
+    int nNodes = bra.getNEndNodes();
+
+    if (exact and nNodes != ket.getNEndNodes()) { MSG_ABORT("Trees must have same grid"); }
+    for (int n = 0; n < nNodes; n++) {
+        FunctionNode<D> &node = bra.getEndFuncNode(n);
+        const NodeIndex<D> idx = node.getNodeIndex();
+        FunctionNode<D> *mwNode = (FunctionNode<D> *)ket.findNode(idx);
+        if(exact){
+            //convert to interpolating coef, take abs, convert back
+            node.getAbsCoefs(valA);
+            mwNode->getAbsCoefs(valB);
+            for (int i = 0; i < ncoef; i++)  result += valA[i] * valB[i];
+        } else {
+            //approximate by product of node norms
+            int rIdx = ket.getRootBox().getBoxIndex(idx);
+            assert(rIdx >= 0);
+            const MWNode<D> &root = ket.getRootBox().getNode(rIdx);
+            result+=sqrt(node.getSquareNorm())* root.getNodeNorm(idx);
+        }
+    }
+
+    return result;
+
+}
+
 template void multiply(double prec,
                        FunctionTree<1> &out,
                        double c,
@@ -335,5 +378,9 @@ template void dot(double prec,
 template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
 template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
 template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
+
+template double node_norm_dot(FunctionTree<1> &bra, FunctionTree<1> &ket, bool exact);
+template double node_norm_dot(FunctionTree<2> &bra, FunctionTree<2> &ket, bool exact);
+template double node_norm_dot(FunctionTree<3> &bra, FunctionTree<3> &ket, bool exact);
 
 } // namespace mrcpp

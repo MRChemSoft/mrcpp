@@ -125,6 +125,8 @@ public:
 
     bool splitCheck(double prec, double splitFac, bool absPrec) const;
 
+    double getNodeNorm(const NodeIndex<D> &idx) const;
+
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
     void setIsEndNode() { SET_BITS(status, FlagEndNode); }
     void setIsGenNode() { SET_BITS(status, FlagGenNode); }

@@ -46,6 +46,7 @@ public:
 
     virtual void setValues(const Eigen::VectorXd &vec);
     virtual void getValues(Eigen::VectorXd &vec);
+    virtual void getAbsCoefs(double* absCoefs);
 
     friend class FunctionTree<D>;
 

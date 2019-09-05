@@ -178,6 +178,21 @@ template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
     this->mwTransform(Compression);
 }
 
+/** get coefficients corresponding to absolute value of function
+ *
+ * Leaves the original coefficients unchanged. */
+template <int D> void FunctionNode<D>::getAbsCoefs(double* absCoefs) {
+    double *coefsTmp = this->coefs;
+    for (int i = 0; i < this->n_coefs; i++) { absCoefs[i]=coefsTmp[i];}//copy
+    this->coefs = absCoefs;//swap coefs
+    this->mwTransform(Reconstruction);
+    this->cvTransform(Forward);
+    for (int i = 0; i < this->n_coefs; i++) {  this->coefs[i] = abs(this->coefs[i]); }
+    this->cvTransform(Backward);
+    this->mwTransform(Compression);
+    this->coefs = coefsTmp;//restore original array (same address)
+}
+
 /** Inner product of the functions represented by the scaling basis of the nodes.
  *
  * Integrates the product of the functions represented by the scaling basis on

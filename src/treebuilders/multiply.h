@@ -48,5 +48,6 @@ void dot(double prec,
          FunctionTreeVector<D> &inp_b,
          int maxIter = -1);
 template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket);
+template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket, bool exact = false);
 
 } // namespace mrcpp

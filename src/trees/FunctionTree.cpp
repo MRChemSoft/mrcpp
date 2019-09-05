@@ -426,6 +426,7 @@ template <int D> void FunctionTree<D>::printSerialIndices() {
     int n = 0;
     for (int iChunk = 0; iChunk < sTree.getNChunks(); iChunk++) {
         int iShift = iChunk * sTree.maxNodesPerChunk;
+        printout(0, "new chunk \n");
         for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
             int status = sTree.nodeStackStatus[iShift + i];
             int sIdx = sTree.nodeChunks[iChunk][i].serialIx;

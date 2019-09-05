@@ -903,6 +903,25 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     return this->children[cIdx]->retrieveNode(idx);
 }
 
+/** Gives the norm (absolute value) of the node at the given NodeIndex.
+ *
+ * Recursive routine to find the node with a given NodeIndex. When an EndNode is
+ * found, do not generate any new node, but rather give the value of the norm
+ * assuming the function is uniformly distributed within the node. */
+template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
+    if (this->getScale() == idx.getScale()) { // we're done
+        assert(getNodeIndex() == idx);
+        return std::sqrt(this->squareNorm);
+    }
+    assert(isAncestor(idx));
+    if (this->isEndNode()) { // we infer norm at lower scales
+        return std::sqrt(this->squareNorm * std::pow(2.0, -D * (idx.getScale() - getScale())));
+    }
+    int cIdx = getChildIndex(idx);
+    assert(this->children[cIdx] != nullptr);
+    return this->children[cIdx]->getNodeNorm(idx);
+}
+
 /** Test if a given coordinate is within the boundaries of the node. */
 template <int D> bool MWNode<D>::hasCoord(const Coord<D> &r) const {
     double sFac = std::pow(2.0, -getScale());

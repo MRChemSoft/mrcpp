@@ -297,7 +297,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
  * @param[in] bra Bra side input function
  * @param[in] ket Ket side input function
  *
- * If exact=true: the grid of bra and ket MUST be equal.
+ * If exact=true: the grid of ket MUST include the grid of bra.
  * If exact=false: does not at any time read the coefficients individually.
  * The product is done for the end nodes of the bra multiplied by the nodes from the
  * ket with either the same idx, or using a lower scale and assuming uniform
@@ -312,13 +312,13 @@ template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket
     double valB[ncoef];
     int nNodes = bra.getNEndNodes();
 
-    if (exact and nNodes != ket.getNEndNodes()) { MSG_ABORT("Trees must have same grid"); }
     for (int n = 0; n < nNodes; n++) {
         FunctionNode<D> &node = bra.getEndFuncNode(n);
         const NodeIndex<D> idx = node.getNodeIndex();
-        FunctionNode<D> *mwNode = static_cast<FunctionNode<D> *>(ket.findNode(idx));
         if (exact) {
             // convert to interpolating coef, take abs, convert back
+            FunctionNode<D> *mwNode = static_cast<FunctionNode<D> *>(ket.findNode(idx));
+            if (mwNode == nullptr) { MSG_ABORT("Trees must have same grid"); }
             node.getAbsCoefs(valA);
             mwNode->getAbsCoefs(valB);
             for (int i = 0; i < ncoef; i++) result += valA[i] * valB[i];

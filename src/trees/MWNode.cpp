@@ -911,11 +911,11 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
 template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
     if (this->getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
-        return sqrt(this->squareNorm);
+        return std::sqrt(this->squareNorm);
     }
     assert(isAncestor(idx));
     if (this->isEndNode()) { // we infer norm at lower scales
-        return sqrt(this->squareNorm * std::pow(2.0,-D*(idx.getScale() - getScale())));
+        return std::sqrt(this->squareNorm * std::pow(2.0, -D * (idx.getScale() - getScale())));
     }
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);

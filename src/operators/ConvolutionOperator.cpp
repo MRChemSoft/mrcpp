@@ -46,7 +46,9 @@ template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
         : MWOperator(mra.getOperatorMRA())
         , kern_mra(mra.getKernelMRA())
-        , prec(pr) {}
+        , prec(pr) {
+    if (this->prec < 0.0) MSG_ERROR("Negative build prec");
+}
 
 template <int D> ConvolutionOperator<D>::~ConvolutionOperator() {
     this->clearKernel();

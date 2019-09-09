@@ -67,8 +67,9 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
         this->maxNodesPerChunk = (sizePerChunk / this->sizeNodeCoeff / sizeof(double) / 8) * 8;
     }
 
-    this->lastNode = (ProjectedNode<D> *)this->sNodes; // position of last allocated node
-    this->lastGenNode = this->sGenNodes;               // position of last allocated Gen node
+    // position just after last allocated node, i.e. where to put next node
+    this->lastNode = (ProjectedNode<D> *)this->sNodes;
+    this->lastGenNode = this->sGenNodes;
 
     // make virtual table pointers
     auto *tmpNode = new ProjectedNode<D>();
@@ -621,8 +622,8 @@ template <int D> void SerialFunctionTree<D>::rewritePointers() {
         }
         this->nodeStackStatus[node->serialIx] = 1; // occupied
     }
-    int ichunk = (this->nNodes - 1) / this->maxNodesPerChunk;
-    int inode = (this->nNodes - 1) % this->maxNodesPerChunk;
+    int ichunk = this->nNodes / this->maxNodesPerChunk;
+    int inode = this->nNodes % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
 }
 

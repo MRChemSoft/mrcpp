@@ -87,8 +87,8 @@ protected:
     char *cvptr_ProjectedNode; // virtual table pointer for ProjectedNode
     char *cvptr_GenNode;       // virtual table pointer for GenNode
 
-    ProjectedNode<D> *lastNode; // pointer to the last active node
-    GenNode<D> *lastGenNode;    // pointer to the last active Gen node
+    ProjectedNode<D> *lastNode; // pointer just after the last active node, i.e. where to put next node
+    GenNode<D> *lastGenNode;    // pointer just after the last active Gen node, i.e. where to put next node
 
     ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
     GenNode<D> *allocGenNodes(int nAlloc, int *serialIx, double **coefs_p);

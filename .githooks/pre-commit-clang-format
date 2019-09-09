@@ -68,10 +68,13 @@ fi
 
 # create a random filename to store our generated patch
 prefix="pre-commit-clang-format"
-patch=`mktemp -p /tmp ${prefix}.XXXXXX.patch 2>/dev/null || mktemp -d -t $prefix`
+TMPDIR="/tmp"
+patch=`mktemp $TMPDIR/$prefix.patch.XXXXXX`
 
 # clean up any older clang-format patches
-$DELETE_OLD_PATCHES && rm -f /tmp/$prefix*.patch
+if $DELETE_OLD_PATCHES; then
+    rm -f $TMPDIR/$prefix.patch.*
+fi
 
 # create one patch containing all changes to the files
 # exclude files under external

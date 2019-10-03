@@ -82,7 +82,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
             builder.build(out, calculator, adaptor, maxIter);
         }
     }
-    Printer::printSeparator(10, ' ');
+    print::separator(10, ' ');
 }
 
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {

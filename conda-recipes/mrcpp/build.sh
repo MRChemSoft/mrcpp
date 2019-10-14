@@ -16,7 +16,8 @@ ${BUILD_PREFIX}/bin/cmake \
         -DCMAKE_PREFIX_PATH="${PREFIX}" \
         -DBUILD_STATIC_LIBS=False \
         -DENABLE_TESTS=True \
-        -G"Ninja"
+        -G"Ninja" 
+        # -DENABLE_OPENMP=ON
 
 # build
 cd build

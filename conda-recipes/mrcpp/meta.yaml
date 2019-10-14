@@ -1,0 +1,57 @@
+{% set version = "1.0.2" %}
+
+package:
+    name: mrcpp
+    version: {{ version }}
+
+source:
+    git_url: https://github.com/MRChemSoft/mrcpp.git
+    git_tag: v{{ version }}
+
+build:
+    number: 1                                            # [linux]
+    number: 0                                            # [osx]
+    binary_relocation: true
+    skip: true                                           # [win]
+
+requirements:
+    build:
+        - cmake >=3.11
+        - {{ compiler('cxx') }}
+        - eigen >=3.3
+        - ninja
+
+outputs:
+    - name: mrcpp
+      build:
+          run_exports:
+              - {{ pin_subpackage('mrcpp', max_pin='x.x') }}
+      requirements:
+          build:
+              - {{ compiler('cxx') }}
+              - cmake >=3.12
+              - eigen >=3.3
+              - ninja
+      files:
+          - include/MRCPP
+          - lib/libmrcpp*
+          - share/cmake/MRCPP
+      test:
+          commands:
+              # Verify library
+              - test -f $PREFIX/lib/libmrcpp$SHLIB_EXT
+              # Inspect linkage
+              - ldd -r -u $PREFIX/lib/libmrcpp$SHLIB_EXT              # [linux]
+              - ldd -v $PREFIX/lib/libmrcpp$SHLIB_EXT                 # [linux]
+              - otool -L $PREFIX/lib/libmrcpp$SHLIB_EXT               # [osx]
+              - conda inspect linkages --show-files --groupby=dependency mrcpp
+              - conda inspect objects -p $PREFIX $PKG_NAME           # [osx]
+      about:
+          home: https://github.com/MRChemSoft/mrcpp
+          dev_url: https://github.com/MRChemSoft/mrcpp
+          doc_url: http://MRChemSoft.org/mrcpp/
+          doc_source_url: https://github.com/MRChemSoft/mrcpp/blob/master/doc/index.rst
+          license: LGPL-3.0
+          license_url: https://opensource.org/licenses/LGPL-3.0
+          license_family: LGPL
+          summary: "MultiResolution Computational Program Package"

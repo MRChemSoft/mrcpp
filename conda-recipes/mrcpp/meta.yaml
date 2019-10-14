@@ -1,30 +1,29 @@
 {% set version = "1.0.2" %}
 
 package:
-    name: mrcpp
-    version: {{ version }}
+  name: mrcpp
+  version: {{ version }}
 
 source:
-    git_url: https://github.com/MRChemSoft/mrcpp.git
-    git_tag: v{{ version }}
+  git_url: https://github.com/MRChemSoft/mrcpp.git
+  git_tag: v{{ version }}
 
 build:
-    number: 0                                            # [linux]
-    number: 0                                            # [osx]
-    binary_relocation: true
-    skip: true                                           # [win]
+  number: 0                                            # [linux]
+  number: 0                                            # [osx]
+  binary_relocation: true
+  skip: true                                           # [win]
 
 requirements:
-    build:
-        - cmake >=3.11
-        - {{ compiler('cxx') }}
-        - ninja
-    # host:
-    #     - eigen >=3.3
-    #     - pandas
-    run:
-        - eigen >=3.3
-    #     - pandas
+  build:
+    - cmake >=3.11
+    - {{ compiler('cxx') }}
+    - ninja
+  host:
+    - {{ pin_compatible('eigen', max_pin='x.x') }}
+  run:
+    - {{ pin_compatible('eigen', max_pin='x.x') }}
+
 files:
   - include/MRCPP
   - lib/libmrcpp*
@@ -32,21 +31,21 @@ files:
 
 test:
   commands:
-      # Verify library
-      - test -f $PREFIX/lib/libmrcpp$SHLIB_EXT
-      # Inspect linkage
-      - ldd -r -u $PREFIX/lib/libmrcpp$SHLIB_EXT              # [linux]
-      - ldd -v $PREFIX/lib/libmrcpp$SHLIB_EXT                 # [linux]
-      - otool -L $PREFIX/lib/libmrcpp$SHLIB_EXT               # [osx]
-      - conda inspect linkages --show-files --groupby=dependency mrcpp
-      - conda inspect objects -p $PREFIX $PKG_NAME           # [osx]
+    # Verify library
+    - test -f $PREFIX/lib/libmrcpp$SHLIB_EXT
+    # Inspect linkage
+    - ldd -r -u $PREFIX/lib/libmrcpp$SHLIB_EXT              # [linux]
+    - ldd -v $PREFIX/lib/libmrcpp$SHLIB_EXT                 # [linux]
+    - otool -L $PREFIX/lib/libmrcpp$SHLIB_EXT               # [osx]
+    - conda inspect linkages --show-files --groupby=dependency mrcpp
+    - conda inspect objects -p $PREFIX $PKG_NAME           # [osx]
 
-  about:
-      home: https://github.com/MRChemSoft/mrcpp
-      dev_url: https://github.com/MRChemSoft/mrcpp
-      doc_url: http://MRChemSoft.org/mrcpp/
-      doc_source_url: https://github.com/MRChemSoft/mrcpp/blob/master/doc/index.rst
-      license: LGPL-3.0
-      license_url: https://opensource.org/licenses/LGPL-3.0
-      license_family: LGPL
-      summary: "MultiResolution Computational Program Package"
+about:
+  home: https://github.com/MRChemSoft/mrcpp
+  dev_url: https://github.com/MRChemSoft/mrcpp
+  doc_url: http://MRChemSoft.org/mrcpp/
+  doc_source_url: https://github.com/MRChemSoft/mrcpp/blob/master/doc/index.rst
+  license: LGPL-3.0
+  license_url: https://opensource.org/licenses/LGPL-3.0
+  license_family: LGPL
+  summary: "MultiResolution Computational Program Package"

@@ -61,7 +61,7 @@ public:
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
 
-    void makePeriodic(const std::array<double, D> &period);
+    void makePeriodic(const std::array<double, D> &period, double &nStdDev = 4.0);
 
     auto begin() { return funcs.begin(); }
     auto end() { return funcs.end(); }

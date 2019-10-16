@@ -48,6 +48,7 @@ public:
     const BoundingBox<D> &getWorldBox() const { return this->world; }
 
     void setPeriodicOperatorReach(int reach) { this->periodic_operator_reach = reach; }
+    int getPeriodicOperatorReach() { return this->periodic_operator_reach; }
 
     MultiResolutionAnalysis<1> getKernelMRA() const;
     MultiResolutionAnalysis<2> getOperatorMRA() const;

@@ -61,7 +61,7 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , pos(r)
         , squareNorm(-1.0) {}
 
-template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period, double &nStdDev) {
+template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period, double nStdDev) {
     for (auto &x : period)
         if (x <= 0.0) MSG_ERROR("The period has to be greater than zero in all directions");
     this->period = period;

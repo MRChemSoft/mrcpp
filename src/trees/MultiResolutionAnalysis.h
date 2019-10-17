@@ -50,6 +50,9 @@ public:
     void setPeriodicOperatorReach(int reach) { this->periodic_operator_reach = reach; }
     int getPeriodicOperatorReach() { return this->periodic_operator_reach; }
 
+    void setStds(double stds) { this->n_gauss_stds = stds; }
+    double getStds() { return this->n_gauss_stds; }
+
     MultiResolutionAnalysis<1> getKernelMRA() const;
     MultiResolutionAnalysis<2> getOperatorMRA() const;
 
@@ -63,6 +66,7 @@ protected:
     const ScalingBasis basis;
     const BoundingBox<D> world;
     int periodic_operator_reach{10};
+    double n_gauss_stds{4};
     MWFilter *filter;
 
     void setupFilter();

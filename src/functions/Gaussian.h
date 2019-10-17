@@ -48,7 +48,7 @@ public:
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian() = default;
 
-    void makePeriodic(const std::array<double, D> &period, double &nStdDev = 4.0);
+    void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
 
     virtual double evalfCore(const Coord<D> &r) const = 0;
 

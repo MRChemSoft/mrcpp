@@ -58,8 +58,6 @@ MWFilter::MWFilter(int k, int t, const std::string &lib)
         default:
             MSG_ERROR("Unknown filter type: " << this->type);
     }
-    char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != nullptr) { default_filter_lib = *ep; }
     int K = this->order + 1;
     setFilterPaths(lib);
 
@@ -192,21 +190,15 @@ void MWFilter::setFilterPaths(const std::string &lib) {
     std::ostringstream oss;
     oss << this->order;
     std::string ordr = oss.str();
-    std::string flib;
 
-    if (lib.empty()) {
-        flib = default_filter_lib;
-    } else {
-        flib = lib;
-    }
     switch (this->type) {
         case (Interpol):
-            this->H_path = flib + "/I_H0_" + ordr;
-            this->G_path = flib + "/I_G0_" + ordr;
+            this->H_path = lib + "/I_H0_" + ordr;
+            this->G_path = lib + "/I_G0_" + ordr;
             break;
         case (Legendre):
-            this->H_path = flib + "/L_H0_" + ordr;
-            this->G_path = flib + "/L_G0_" + ordr;
+            this->H_path = lib + "/L_H0_" + ordr;
+            this->G_path = lib + "/L_G0_" + ordr;
             break;
         default:
             MSG_ABORT("Invalid filter type " << this->type);

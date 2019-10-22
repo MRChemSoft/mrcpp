@@ -53,7 +53,13 @@ template <int T> FilterCache<T>::FilterCache() {
         default:
             MSG_ERROR("Invalid filter type: " << T);
     }
-    this->libPath = MWFilter::getDefaultLibrary();
+    auto ep = getenv("MRCPP_FILTER_DIR");
+    auto ep_lib = ep != nullptr ? std::string(ep) : "";
+    if (ep_lib.empty()) {
+        this->libPath = MWFilter::getDefaultLibrary();
+    } else {
+        this->libPath = ep_lib;
+    }
 }
 
 template <int T> void FilterCache<T>::load(int order) {

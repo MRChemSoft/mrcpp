@@ -26,12 +26,8 @@
 #include <cstdlib>
 #include <string>
 
-#ifdef __cpp_lib_filesystem
+#if __has_include(<filesystem>)
 #include <filesystem>
-using fs = std::filesystem;
-#elif __cpp_lib_experimental_filesystem
-#include <experimental/filesystem>
-using fs = std::experimental::filesystem;
 #else
 #include <libgen.h>
 #include <limits.h>
@@ -50,9 +46,8 @@ inline std::string get_mw_filter_dir() {
     } else { // Otherwise, build it up from where the library lives plus the build-tree/install-tree location
         auto mw_filter_dir = std::string("/@CMAKE_INSTALL_DATADIR@/@PROJECT_NAME@/mwfilters");
         std::string path = "";
-#if defined __cpp_lib_filesystem || defined __cpp_lib_experimental_filesystem
-        auto p = fs::curren_path();
-        std::cout << "p is " << p << std::endl;
+#ifdef __cpp_lib_filesystem
+        path = (std::filesystem::current_path().parent_path() / mw_filter_dir).string();
 #else // NOTE Pre-C++17 this is UNIX-only!
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);

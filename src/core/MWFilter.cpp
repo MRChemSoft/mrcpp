@@ -45,7 +45,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-std::string MWFilter::default_filter_lib = MW_FILTER_DIR;
+std::string MWFilter::default_filter_lib = get_mw_filter_dir();
 
 MWFilter::MWFilter(int k, int t, const std::string &lib)
         : type(t)
@@ -58,6 +58,7 @@ MWFilter::MWFilter(int k, int t, const std::string &lib)
         default:
             MSG_ERROR("Unknown filter type: " << this->type);
     }
+
     int K = this->order + 1;
     setFilterPaths(lib);
 

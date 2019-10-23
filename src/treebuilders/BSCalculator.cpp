@@ -45,7 +45,7 @@ BSCalculator::BSCalculator(const ScalingBasis &basis, int n)
 
 void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string file;
-    std::string path = MW_FILTER_DIR;
+    std::string path = get_mw_filter_dir();
     if (basis.getScalingType() == Legendre) file = path + "/L_b-spline-deriv" + n + ".txt";
     if (basis.getScalingType() == Interpol) file = path + "/I_b-spline-deriv" + n + ".txt";
     if (basis.getScalingOrder() < 0) MSG_ABORT("Scaling order not supported");

@@ -45,7 +45,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-std::string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
+std::string CrossCorrelation::default_ccc_lib = get_mw_filter_dir();
 
 CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
         : type(t)
@@ -59,8 +59,6 @@ CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != nullptr) { default_ccc_lib = *ep; }
     int K = this->order + 1;
     setCCCPaths(lib);
 
@@ -99,20 +97,15 @@ void CrossCorrelation::setCCCPaths(const std::string &lib) {
     std::ostringstream oss;
     oss << this->order;
     std::string ordr = oss.str();
-    std::string cclib;
-    if (lib.empty()) {
-        cclib = default_ccc_lib;
-    } else {
-        cclib = lib;
-    }
+
     switch (this->type) {
         case (Interpol):
-            this->L_path = cclib + "/I_c_left_" + ordr;
-            this->R_path = cclib + "/I_c_right_" + ordr;
+            this->L_path = lib + "/I_c_left_" + ordr;
+            this->R_path = lib + "/I_c_right_" + ordr;
             break;
         case (Legendre):
-            this->L_path = cclib + "/L_c_left_" + ordr;
-            this->R_path = cclib + "/L_c_right_" + ordr;
+            this->L_path = lib + "/L_c_left_" + ordr;
+            this->R_path = lib + "/L_c_right_" + ordr;
             break;
         default:
             MSG_ERROR("Invalid CrossCorrelation type");

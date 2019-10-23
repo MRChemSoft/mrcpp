@@ -44,7 +44,7 @@ PHCalculator::PHCalculator(const ScalingBasis &basis, int n)
 
 void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string file;
-    std::string path = MW_FILTER_DIR;
+    std::string path = get_mw_filter_dir();
     if (basis.getScalingType() == Legendre) file = path + "/L_ph_deriv_" + n + ".txt";
     if (basis.getScalingType() == Interpol) file = path + "/I_ph_deriv_" + n + ".txt";
     if (basis.getScalingOrder() < 0) MSG_ABORT("Scaling order not supported");

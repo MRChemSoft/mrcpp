@@ -1,0 +1,13 @@
+target_sources(mrcpp
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/I_BS_filters_1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/I_BS_filters_2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/I_BS_filters_3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/L_BS_filters_1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/L_BS_filters_2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/L_BS_filters_3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/I_PH_filters_1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/I_PH_filters_2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/L_PH_filters_1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/L_PH_filters_2.cpp
+  )

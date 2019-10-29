@@ -30,6 +30,7 @@ add_subdirectory(operators)
 add_subdirectory(treebuilders)
 add_subdirectory(trees)
 add_subdirectory(utils)
+add_subdirectory(coefficients)
 
 # FIXME Fix versioning of DSO
 set_target_properties(mrcpp

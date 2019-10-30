@@ -29,5 +29,6 @@
 #include "operators/IdentityConvolution.h"
 #include "operators/ABGVOperator.h"
 #include "operators/PHOperator.h"
+#include "operators/BSOperator.h"
 
 #include "treebuilders/apply.h"

@@ -20,7 +20,7 @@ end
 # Check code style with clang-format
 code_style_validation.check validator: 'clang-format',
                             file_extensions: ['.h','.cpp'],
-                            ignore_file_patterns: [/^external\//]
+                            ignore_file_patterns: [/^external\//, /^src\/coefficients\//]
 
 
 # ------------------------------------------------------------------------------

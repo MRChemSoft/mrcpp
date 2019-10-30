@@ -33,21 +33,19 @@
  * \breif
  */
 
-#include <fstream>
+#include "MWFilter.h"
 
 #include "MRCPP/config.h"
 #include "MRCPP/constants.h"
 
-#include "MWFilter.h"
+#include "coefficients/FilterData.h"
 #include "utils/Printer.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
-std::string MWFilter::default_filter_lib = get_mw_filter_dir();
-
-MWFilter::MWFilter(int k, int t, const std::string &lib)
+MWFilter::MWFilter(int k, int t)
         : type(t)
         , order(k) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
@@ -59,14 +57,11 @@ MWFilter::MWFilter(int k, int t, const std::string &lib)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
+    generateBlocks();
+
     int K = this->order + 1;
-    setFilterPaths(lib);
-
-    this->filter = MatrixXd(2 * K, 2 * K);
-    this->filter.setZero();
-
-    readFilterBin();
-    fillFilterBlocks();
+    this->filter = MatrixXd::Zero(2 * K, 2 * K);
+    this->filter << this->G0, this->G1, this->H0, this->H1;
 }
 
 MWFilter::MWFilter(int t, const MatrixXd &data) {
@@ -85,12 +80,7 @@ MWFilter::MWFilter(int t, const MatrixXd &data) {
     fillFilterBlocks();
 }
 
-void MWFilter::setDefaultLibrary(const std::string &dir) {
-    if (dir.empty()) { MSG_ERROR("No directory specified!"); }
-    default_filter_lib = dir;
-}
-
-void MWFilter::fillFilterBlocks() {
+void MWFilter::fillFilterBlocks() noexcept {
     int K = this->order + 1;
     this->G0 = this->filter.block(0, 0, K, K);
     this->G1 = this->filter.block(0, K, K, K);
@@ -187,73 +177,37 @@ void MWFilter::applyInverse(VectorXd &data) const {
     data = this->filter.transpose() * data;
 }
 
-void MWFilter::setFilterPaths(const std::string &lib) {
-    std::ostringstream oss;
-    oss << this->order;
-    std::string ordr = oss.str();
-
-    switch (this->type) {
-        case (Interpol):
-            this->H_path = lib + "/I_H0_" + ordr;
-            this->G_path = lib + "/I_G0_" + ordr;
-            break;
-        case (Legendre):
-            this->H_path = lib + "/L_H0_" + ordr;
-            this->G_path = lib + "/L_G0_" + ordr;
-            break;
-        default:
-            MSG_ABORT("Invalid filter type " << this->type);
-    }
-}
-
-void MWFilter::readFilterBin() {
-    std::ifstream H_fis(this->H_path.c_str(), std::ios::binary);
-    std::ifstream G_fis(this->G_path.c_str(), std::ios::binary);
-
-    if (H_fis.fail()) MSG_ABORT("Could not open filter: " << this->H_path);
-    if (G_fis.fail()) MSG_ABORT("Could not open filter: " << this->G_path);
+void MWFilter::generateBlocks() noexcept {
+    this->G0 = get_G0(this->type, this->order);
+    this->H0 = get_H0(this->type, this->order);
 
     int K = this->order + 1;
-    double dH[K];
-    double dG[K];
-    int i, j;
-
-    FilterBlock g0 = this->filter.block(0, 0, K, K);
-    FilterBlock g1 = this->filter.block(0, K, K, K);
-    FilterBlock h0 = this->filter.block(K, 0, K, K);
-    FilterBlock h1 = this->filter.block(K, K, K, K);
-
-    /* read H0 and G0 from disk */
-    for (i = 0; i < K; i++) {
-        H_fis.read((char *)dH, sizeof(double) * K);
-        G_fis.read((char *)dG, sizeof(double) * K);
-        for (j = 0; j < K; j++) {
-            g0(i, j) = dG[j]; // G0
-            h0(i, j) = dH[j]; // H0
-        }
-    }
+    this->G1 = Eigen::MatrixXd::Zero(K, K);
+    this->H1 = Eigen::MatrixXd::Zero(K, K);
 
     /* fill H1 and G1 according to symmetry */
     switch (this->type) {
         case Interpol:
-            for (i = 0; i < K; i++) {
-                for (j = 0; j < K; j++) {
-                    g1(i, j) = std::pow(-1.0, i + K) * g0(i, K - j - 1);
-                    h1(i, j) = h0(K - i - 1, K - j - 1);
+            for (int i = 0; i < K; i++) {
+                for (int j = 0; j < K; j++) {
+                    this->G1(i, j) = std::pow(-1.0, i + K) * this->G0(i, K - j - 1);
+                    this->H1(i, j) = this->H0(K - i - 1, K - j - 1);
                 }
             }
             break;
         case Legendre:
-            for (i = 0; i < K; i++) {
-                for (j = 0; j < K; j++) {
-                    g1(i, j) = std::pow(-1.0, i + j + K) * g0(i, j);
-                    h1(i, j) = std::pow(-1.0, i + j) * h0(i, j);
+            for (int i = 0; i < K; i++) {
+                for (int j = 0; j < K; j++) {
+                    this->G1(i, j) = std::pow(-1.0, i + j + K) * this->G0(i, j);
+                    this->H1(i, j) = std::pow(-1.0, i + j) * this->H0(i, j);
                 }
             }
             break;
     }
-    G_fis.close();
-    H_fis.close();
-}
 
+    this->G0t = this->G0.transpose();
+    this->G1t = this->G1.transpose();
+    this->H0t = this->H0.transpose();
+    this->H1t = this->H1.transpose();
+}
 } // namespace mrcpp

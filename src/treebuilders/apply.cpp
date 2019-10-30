@@ -48,6 +48,7 @@ namespace mrcpp {
  * @param[in] oper Convolution operator to apply
  * @param[in] inp Input function
  * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[in] absPrec Build output tree based on absolute precision
  *
  * The output function will be computed using the general algorithm:
  *  1) Compute MW coefs on current grid
@@ -62,11 +63,16 @@ namespace mrcpp {
  *
  */
 template <int D>
-void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter) {
+void apply(double prec,
+           FunctionTree<D> &out,
+           ConvolutionOperator<D> &oper,
+           FunctionTree<D> &inp,
+           int maxIter,
+           bool absPrec) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale);
+    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     ConvolutionCalculator<D> calculator(prec, oper, inp);
     pre_t.stop();
 
@@ -187,9 +193,24 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
-template void apply(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter);
-template void apply(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter);
-template void apply(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter);
+template void apply(double prec,
+                    FunctionTree<1> &out,
+                    ConvolutionOperator<1> &oper,
+                    FunctionTree<1> &inp,
+                    int maxIter,
+                    bool absPrec);
+template void apply(double prec,
+                    FunctionTree<2> &out,
+                    ConvolutionOperator<2> &oper,
+                    FunctionTree<2> &inp,
+                    int maxIter,
+                    bool absPrec);
+template void apply(double prec,
+                    FunctionTree<3> &out,
+                    ConvolutionOperator<3> &oper,
+                    FunctionTree<3> &inp,
+                    int maxIter,
+                    bool absPrec);
 template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
 template void apply(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
 template void apply(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);

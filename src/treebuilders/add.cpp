@@ -46,6 +46,7 @@ namespace mrcpp {
  * @param[in] b Numerical coefficient of function b
  * @param[in] inp_b Input function b
  * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[in] absPrec Build output tree based on absolute precision
  *
  * The output function will be computed as the sum of the two input functions
  * (including the numerical coefficient), using the general algorithm:
@@ -67,11 +68,12 @@ void add(double prec,
          FunctionTree<D> &inp_a,
          double b,
          FunctionTree<D> &inp_b,
-         int maxIter) {
+         int maxIter,
+         bool absPrec) {
     FunctionTreeVector<D> tmp_vec;
     tmp_vec.push_back(std::make_tuple(a, &inp_a));
     tmp_vec.push_back(std::make_tuple(b, &inp_b));
-    add(prec, out, tmp_vec, maxIter);
+    add(prec, out, tmp_vec, maxIter, absPrec);
 }
 
 /** @brief Addition of several MW function representations
@@ -80,6 +82,7 @@ void add(double prec,
  * @param[in,out] out Output function to be built
  * @param[in] inp Vector of input function
  * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[in] absPrec Build output tree based on absolute precision
  *
  * The output function will be computed as the sum of all the functions
  * in the input vector (including their numerical coefficients), using the
@@ -95,10 +98,10 @@ void add(double prec,
  * A negative maxIter means no bound.
  *
  */
-template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
+template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale);
+    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     AdditionCalculator<D> calculator(inp);
 
     builder.build(out, calculator, adaptor, maxIter);
@@ -126,23 +129,27 @@ template void add(double prec,
                   FunctionTree<1> &tree_a,
                   double b,
                   FunctionTree<1> &tree_b,
-                  int maxIter);
+                  int maxIter,
+                  bool absPrec);
 template void add(double prec,
                   FunctionTree<2> &out,
                   double a,
                   FunctionTree<2> &tree_a,
                   double b,
                   FunctionTree<2> &tree_b,
-                  int maxIter);
+                  int maxIter,
+                  bool absPrec);
 template void add(double prec,
                   FunctionTree<3> &out,
                   double a,
                   FunctionTree<3> &tree_a,
                   double b,
                   FunctionTree<3> &tree_b,
-                  int maxIter);
-template void add(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
-template void add(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
-template void add(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
+                  int maxIter,
+                  bool absPrec);
+
+template void add(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
+template void add(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
+template void add(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
 
 } // namespace mrcpp

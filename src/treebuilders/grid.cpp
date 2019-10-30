@@ -202,6 +202,7 @@ template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
  *
  * @param[in,out] out Output tree to be refined
  * @param[in] prec Precision for initial split check
+ * @param[in] absPrec Build output tree based on absolute precision
  *
  * This will first perform a split check on the existing end nodes in the tree
  * based on the provided precision parameter, then it will compute scaling coefs
@@ -209,10 +210,10 @@ template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
  * larger grid.
  *
  */
-template <int D> int refine_grid(FunctionTree<D> &out, double prec) {
+template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale);
+    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     int nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }
@@ -260,9 +261,9 @@ template void clear_grid(FunctionTree<3> &out);
 template int refine_grid(FunctionTree<1> &out, int scales);
 template int refine_grid(FunctionTree<2> &out, int scales);
 template int refine_grid(FunctionTree<3> &out, int scales);
-template int refine_grid(FunctionTree<1> &out, double prec);
-template int refine_grid(FunctionTree<2> &out, double prec);
-template int refine_grid(FunctionTree<3> &out, double prec);
+template int refine_grid(FunctionTree<1> &out, double prec, bool absPrec);
+template int refine_grid(FunctionTree<2> &out, double prec, bool absPrec);
+template int refine_grid(FunctionTree<3> &out, double prec, bool absPrec);
 template int refine_grid(FunctionTree<1> &out, FunctionTree<1> &inp);
 template int refine_grid(FunctionTree<2> &out, FunctionTree<2> &inp);
 template int refine_grid(FunctionTree<3> &out, FunctionTree<3> &inp);

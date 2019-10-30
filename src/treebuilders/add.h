@@ -28,6 +28,7 @@
 #include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
+
 template <int D>
 void add(double prec,
          FunctionTree<D> &out,
@@ -35,6 +36,9 @@ void add(double prec,
          FunctionTree<D> &tree_a,
          double b,
          FunctionTree<D> &tree_b,
-         int maxIter = -1);
-template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1);
+         int maxIter = -1,
+         bool absPrec = false);
+template <int D>
+void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1, bool absPrec = false);
+
 } // namespace mrcpp

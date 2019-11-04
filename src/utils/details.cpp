@@ -27,9 +27,26 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include "utils/Printer.h"
 
 namespace mrcpp {
 namespace details {
+bool directory_exists(std::string path) {
+    struct stat info;
+
+    int statRC = stat(path.c_str(), &info);
+    if (statRC != 0) {
+        if (errno == ENOENT) { return 0; }  // something along the path does not exist
+        if (errno == ENOTDIR) { return 0; } // something in path prefix is not a dir
+        MSG_ABORT("Non-existent directory " + path);
+    }
+
+    return (info.st_mode & S_IFDIR) ? true : false;
+}
 
 // helper function: parse a string and returns the nth integer number
 int get_val(char *line, int n) {

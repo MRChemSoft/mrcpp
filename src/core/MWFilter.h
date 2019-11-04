@@ -25,17 +25,18 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <Eigen/Core>
 
-#include <string>
+#include "MRCPP/config.h"
 
 namespace mrcpp {
 
-typedef Eigen::Block<Eigen::MatrixXd, Eigen::Dynamic, Eigen::Dynamic> FilterBlock;
-
 class MWFilter final {
 public:
-    MWFilter(int k, int t, const std::string &lib = "");
+    MWFilter(int k, int t);
     MWFilter(int t, const Eigen::MatrixXd &data);
 
     void apply(Eigen::MatrixXd &data) const;
@@ -50,9 +51,6 @@ public:
     const Eigen::MatrixXd &getSubFilter(int i, int oper = 0) const;
     const Eigen::MatrixXd &getCompressionSubFilter(int i) const;
     const Eigen::MatrixXd &getReconstructionSubFilter(int i) const;
-
-    static void setDefaultLibrary(const std::string &dir);
-    static const std::string &getDefaultLibrary() { return default_filter_lib; }
 
 protected:
     int type;
@@ -70,13 +68,14 @@ protected:
     Eigen::MatrixXd H0t;
     Eigen::MatrixXd H1t;
 
+private:
+    void setFilterPaths(const std::string &lib);
+    void fillFilterBlocks();
+    void generateBlocks();
+
     std::string H_path;
     std::string G_path;
-    static std::string default_filter_lib;
-
-    void setFilterPaths(const std::string &lib);
-    void readFilterBin();
-    void fillFilterBlocks();
+    std::vector<std::string> filter_lib_locations = {MW_FILTER_SOURCE_DIR, MW_FILTER_INSTALL_DIR};
 };
 
 } // namespace mrcpp

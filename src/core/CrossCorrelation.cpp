@@ -33,21 +33,21 @@
  * \breif
  */
 
+#include "CrossCorrelation.h"
+
 #include <fstream>
 
 #include "MRCPP/config.h"
 #include "MRCPP/constants.h"
 
-#include "CrossCorrelation.h"
 #include "utils/Printer.h"
+#include "utils/details.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
-std::string CrossCorrelation::default_ccc_lib = MW_FILTER_DIR;
-
-CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
+CrossCorrelation::CrossCorrelation(int k, int t)
         : type(t)
         , order(k) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order: " << this->order);
@@ -59,13 +59,10 @@ CrossCorrelation::CrossCorrelation(int k, int t, const std::string &lib)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    char *ep = getenv("MRCPP_FILTER_DIR");
-    if (ep != nullptr) { default_ccc_lib = *ep; }
-    int K = this->order + 1;
-    setCCCPaths(lib);
-
-    this->Left = MatrixXd(K * K, 2 * K);
-    this->Right = MatrixXd(K * K, 2 * K);
+    for (auto n : filter_lib_locations) {
+        if (details::directory_exists(n)) setCCCPaths(n);
+        break;
+    }
 
     readCCCBin();
 }
@@ -83,36 +80,19 @@ CrossCorrelation::CrossCorrelation(int t, const MatrixXd &L, const MatrixXd &R)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    int K = this->order + 1;
-    this->Left = MatrixXd(K * K, 2 * K);
-    this->Right = MatrixXd(K * K, 2 * K);
     this->Left = L;
     this->Right = R;
 }
 
-void CrossCorrelation::setDefaultLibrary(const std::string &dir) {
-    if (dir.empty()) { MSG_ERROR("No directory specified!"); }
-    default_ccc_lib = dir;
-}
-
 void CrossCorrelation::setCCCPaths(const std::string &lib) {
-    std::ostringstream oss;
-    oss << this->order;
-    std::string ordr = oss.str();
-    std::string cclib;
-    if (lib.empty()) {
-        cclib = default_ccc_lib;
-    } else {
-        cclib = lib;
-    }
     switch (this->type) {
         case (Interpol):
-            this->L_path = cclib + "/I_c_left_" + ordr;
-            this->R_path = cclib + "/I_c_right_" + ordr;
+            this->L_path = lib + "/I_c_left_" + std::to_string(this->order);
+            this->R_path = lib + "/I_c_right_" + std::to_string(this->order);
             break;
         case (Legendre):
-            this->L_path = cclib + "/L_c_left_" + ordr;
-            this->R_path = cclib + "/L_c_right_" + ordr;
+            this->L_path = lib + "/L_c_left_" + std::to_string(this->order);
+            this->R_path = lib + "/L_c_right_" + std::to_string(this->order);
             break;
         default:
             MSG_ERROR("Invalid CrossCorrelation type");
@@ -127,6 +107,8 @@ void CrossCorrelation::readCCCBin() {
     if (not R_fis) MSG_ABORT("Could not open cross correlation: " << this->R_path);
 
     int K = this->order + 1;
+    this->Left = MatrixXd::Zero(K * K, 2 * K);
+    this->Right = MatrixXd::Zero(K * K, 2 * K);
     double dL[2 * K];
     double dR[2 * K];
     for (int i = 0; i < K * K; i++) {

@@ -8,6 +8,7 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
 configure_file (
   ${PROJECT_SOURCE_DIR}/config.h.in
   ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+  @ONLY
   )
 
 list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h)

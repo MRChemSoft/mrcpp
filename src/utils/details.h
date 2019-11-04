@@ -46,15 +46,7 @@ template <typename T> auto stream_collection(const T &coll) -> std::string {
 }
 } // namespace details
 
-template <typename T> auto operator<<(std::ostream &os, const std::array<T, 1> &coll) -> std::ostream & {
-    return (os << details::stream_collection(coll));
-}
-
-template <typename T> auto operator<<(std::ostream &os, const std::array<T, 2> &coll) -> std::ostream & {
-    return (os << details::stream_collection(coll));
-}
-
-template <typename T> auto operator<<(std::ostream &os, const std::array<T, 3> &coll) -> std::ostream & {
+template <typename T, size_t D> auto operator<<(std::ostream &os, const std::array<T, D> &coll) -> std::ostream & {
     return (os << details::stream_collection(coll));
 }
 } // namespace mrcpp

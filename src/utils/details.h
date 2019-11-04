@@ -23,12 +23,30 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#pragma once
+
+#include <array>
+#include <iostream>
+#include <sstream>
+
 namespace mrcpp {
 namespace details {
-
 int get_memory_usage();
 template <int D> bool are_all_equal(const std::array<double, D> &exponent);
 template <typename T, int D> std::array<T, D> convert_to_std_array(T *arr);
-
+template <typename T> auto stream_collection(const T &coll) -> std::string {
+    std::ostringstream os;
+    os << "[";
+    for (auto elem : coll) {
+        os << elem;
+        if (elem != coll.back()) os << ", ";
+    }
+    os << "]";
+    return os.str();
+}
 } // namespace details
+
+template <typename T, size_t D> auto operator<<(std::ostream &os, const std::array<T, D> &coll) -> std::ostream & {
+    return (os << details::stream_collection(coll));
+}
 } // namespace mrcpp

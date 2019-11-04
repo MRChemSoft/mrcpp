@@ -23,6 +23,8 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#include "details.h"
+
 #include <algorithm>
 #include <array>
 

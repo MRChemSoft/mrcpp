@@ -23,7 +23,18 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#include <array>
+#include <iostream>
+
 namespace mrcpp {
+ 
+template <typename T, int D> inline auto operator<<(std::ostream &os, const std::array<T, D> &coord) -> std::ostream & {
+    os << "[";
+    for (auto elem : coord) { os << elem << ", "; }
+    os << "]";
+    return os;
+}
+  
 namespace details {
 
 int get_memory_usage();

@@ -36,10 +36,12 @@ template <int D> bool are_all_equal(const std::array<double, D> &exponent);
 template <typename T, int D> std::array<T, D> convert_to_std_array(T *arr);
 template <typename T> auto stream_collection(const T &coll) -> std::string {
     std::ostringstream os;
+    bool first = true;
     os << "[";
     for (auto elem : coll) {
+        if (!first) os << ", ";
         os << elem;
-        if (elem != coll.back()) os << ", ";
+        first = false;
     }
     os << "]";
     return os.str();

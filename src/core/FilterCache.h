@@ -57,8 +57,6 @@ public:
     void load(int order) override = 0;
     MWFilter &get(int order) override = 0;
     virtual const Eigen::MatrixXd &getFilterMatrix(int order) = 0;
-    virtual const std::string &getLibPath() = 0;
-    virtual void setLibPath(const std::string &path) = 0;
 };
 
 template <int T> class FilterCache final : public BaseFilterCache {
@@ -72,12 +70,9 @@ public:
     MWFilter &get(int order) override;
     const Eigen::MatrixXd &getFilterMatrix(int order) override;
 
-    const std::string &getLibPath() override { return this->libPath; }
-    void setLibPath(const std::string &path) override { this->libPath = path; }
-
 protected:
     int type;
-    std::string libPath; ///< Base path to filter library
+
 private:
     FilterCache();
     FilterCache(FilterCache<T> const &fc) = delete;

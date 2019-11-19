@@ -49,9 +49,6 @@ public:
 
     int getType() const { return this->type; }
 
-    const std::string &getLibPath() { return this->libPath; }
-    void setLibPath(const std::string &path) { this->libPath = path; }
-
 protected:
     int type;
     std::string libPath; ///< Base path to filter library

@@ -34,6 +34,13 @@
 #include "utils/Timer.h"
 
 namespace mrcpp {
+/*
+template <size_t D>
+void project(double prec, std::array<FunctionTree<D>, D> &out, std::array<std::function<double(const Coord<D> &r)>, D> func, int maxIter) {
+  for (auto j = 0; j < D; j++) {
+    mrcpp::project<D>(prec, out[j], func[j], maxIter);
+  }
+}*/
 
 /** @brief Projection of analytic function into MW representation
  *
@@ -41,7 +48,6 @@ namespace mrcpp {
  * @param[in,out] out Output function to be built
  * @param[in] inp Input function
  * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
  *
  * The output function will be computed using the general algorithm:
  *  1) Compute MW coefs on current grid
@@ -55,14 +61,11 @@ namespace mrcpp {
  * A negative maxIter means no bound.
  *
  */
+
 template <int D>
-void project(double prec,
-             FunctionTree<D> &out,
-             std::function<double(const Coord<D> &r)> func,
-             int maxIter,
-             bool absPrec) {
+void project(double prec, FunctionTree<D> &out, std::function<double(const Coord<D> &r)> func, int maxIter) {
     AnalyticFunction<D> inp(func);
-    mrcpp::project(prec, out, inp, maxIter, absPrec);
+    mrcpp::project(prec, out, inp, maxIter);
 }
 
 /** @brief Projection of analytic function into MW representation
@@ -71,7 +74,6 @@ void project(double prec,
  * @param[in,out] out Output function to be built
  * @param[in] inp Input function
  * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
  *
  * The output function will be computed using the general algorithm:
  *  1) Compute MW coefs on current grid
@@ -85,12 +87,11 @@ void project(double prec,
  * A negative maxIter means no bound.
  *
  */
-template <int D>
-void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter, bool absPrec) {
+template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter) {
     int maxScale = out.getMRA().getMaxScale();
     const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactor();
     TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+    WaveletAdaptor<D> adaptor(prec, maxScale);
     ProjectionCalculator<D> calculator(inp, scaling_factor);
 
     builder.build(out, calculator, adaptor, maxIter);
@@ -103,24 +104,23 @@ void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, i
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 }
+template <int D>
+void project(double prec, FunctionTreeVector<D> &out, std::vector<std::function<double(const Coord<D> &r)>> func, int maxIter) {
+  for (auto j = 0; j < D; j++) {
+    mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter);
+  }
+}
 
-template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter, bool absPrec);
-template void project<2>(double prec, FunctionTree<2> &out, RepresentableFunction<2> &inp, int maxIter, bool absPrec);
-template void project<3>(double prec, FunctionTree<3> &out, RepresentableFunction<3> &inp, int maxIter, bool absPrec);
-template void project<1>(double prec,
-                         FunctionTree<1> &out,
-                         std::function<double(const Coord<1> &r)> func,
-                         int maxIter,
-                         bool absPrec);
-template void project<2>(double prec,
-                         FunctionTree<2> &out,
-                         std::function<double(const Coord<2> &r)> func,
-                         int maxIter,
-                         bool absPrec);
-template void project<3>(double prec,
-                         FunctionTree<3> &out,
-                         std::function<double(const Coord<3> &r)> func,
-                         int maxIter,
-                         bool absPrec);
-
+template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter);
+template void project<2>(double prec, FunctionTree<2> &out, RepresentableFunction<2> &inp, int maxIter);
+template void project<3>(double prec, FunctionTree<3> &out, RepresentableFunction<3> &inp, int maxIter);
+template void project<1>(double prec, FunctionTree<1> &out, std::function<double(const Coord<1> &r)> func, int maxIter);
+template void project<2>(double prec, FunctionTree<2> &out, std::function<double(const Coord<2> &r)> func, int maxIter);
+template void project<3>(double prec, FunctionTree<3> &out, std::function<double(const Coord<3> &r)> func, int maxIter);
+//template void project<1>(double prec, std::array<FunctionTree<1>, 1> &out, std::array<std::function<double(const Coord<1> &r)>, 1> inp, int maxIter);
+//template void project<2>(double prec, std::array<FunctionTree<2>, 2> &out, std::array<std::function<double(const Coord<2> &r)>, 2> inp, int maxIter);
+//template void project<3>(double prec, std::array<FunctionTree<3>, 3> &out, std::array<std::function<double(const Coord<3> &r)>, 3> inp, int maxIter);
+template void project<1>(double prec, FunctionTreeVector<1> &out, std::vector<std::function<double(const Coord<1> &r)>> inp, int maxIter);
+template void project<2>(double prec, FunctionTreeVector<2> &out, std::vector<std::function<double(const Coord<2> &r)>> inp, int maxIter);
+template void project<3>(double prec, FunctionTreeVector<3> &out, std::vector<std::function<double(const Coord<3> &r)>> inp, int maxIter);
 } // namespace mrcpp

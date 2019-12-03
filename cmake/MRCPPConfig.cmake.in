@@ -93,7 +93,7 @@ check_required_components(${PN})
 if(NOT TARGET ${PN}::mrcpp)
   get_filename_component(_fext ${${PN}_LIBRARY} EXT)
   include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
-  
+
   find_package(Eigen3 3.3 CONFIG REQUIRED)
   if(TARGET Eigen3::Eigen)
     message(STATUS "Using Eigen3: ${EIGEN3_ROOT_DIR} (version ${Eigen3_VERSION})")

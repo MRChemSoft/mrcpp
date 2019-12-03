@@ -59,9 +59,11 @@ CrossCorrelation::CrossCorrelation(int k, int t)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    for (auto n : filter_lib_locations) {
-        if (details::directory_exists(n)) setCCCPaths(n);
-        break;
+    for (auto n : {MW_FILTER_SOURCE_DIR, MW_FILTER_INSTALL_DIR}) {
+        if (details::directory_exists(n)) {
+            setCCCPaths(n);
+            break;
+        }
     }
 
     readCCCBin();

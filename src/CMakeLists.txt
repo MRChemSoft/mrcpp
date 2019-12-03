@@ -22,6 +22,8 @@ target_include_directories(mrcpp
 target_link_libraries(mrcpp
   PUBLIC
     Eigen3::Eigen
+    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:OpenMP::OpenMP_CXX>
+    $<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>
   )
 
 add_subdirectory(core)

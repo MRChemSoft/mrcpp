@@ -6,6 +6,9 @@ add_library(mrcpp "")
 target_compile_definitions(mrcpp
   INTERFACE
     $<INSTALL_INTERFACE:USING_MRCPP>
+  PUBLIC
+    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:HAVE_OPENMP>
+    $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 
 target_include_directories(mrcpp
@@ -22,6 +25,8 @@ target_include_directories(mrcpp
 target_link_libraries(mrcpp
   PUBLIC
     Eigen3::Eigen
+    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:OpenMP::OpenMP_CXX>
+    $<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>
   )
 
 add_subdirectory(core)

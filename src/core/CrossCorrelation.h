@@ -57,7 +57,6 @@ private:
 
     std::string L_path;
     std::string R_path;
-    std::vector<std::string> filter_lib_locations = {MW_FILTER_SOURCE_DIR, MW_FILTER_INSTALL_DIR};
 };
 
 } // namespace mrcpp

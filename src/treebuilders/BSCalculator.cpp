@@ -48,7 +48,7 @@ BSCalculator::BSCalculator(const ScalingBasis &basis, int n)
 void BSCalculator::readSMatrix(const ScalingBasis &basis, char n) {
     std::string file;
     std::string path;
-    for (auto l : {MW_FILTER_SOURCE_DIR, MW_FILTER_INSTALL_DIR}) {
+    for (auto l : {mwfilters_source_dir(), mwfilters_install_dir()}) {
         if (details::directory_exists(l)) {
             path = l;
             break;

@@ -92,8 +92,8 @@ void print::environment(int level) {
 
     printout(level, std::endl);
     print::separator(level, '-', 1);
-    println(level, " MRCPP version         : " << PROGRAM_VERSION);
-    println(level, " Git revision          : " << GIT_REVISION << std::endl);
+    println(level, " MRCPP version         : " << program_version());
+    println(level, " Git revision          : " << git_revision() << std::endl);
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra        : EIGEN v" << EIGEN_WORLD_VERSION << "."

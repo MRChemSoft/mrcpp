@@ -67,7 +67,7 @@ protected:
     OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
 
 private:
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_lock_t Soper_tree_lock;
 #endif
 };

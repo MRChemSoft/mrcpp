@@ -7,7 +7,6 @@ target_compile_definitions(mrcpp
   INTERFACE
     $<INSTALL_INTERFACE:USING_MRCPP>
   PUBLIC
-    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:HAVE_OPENMP>
     $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 

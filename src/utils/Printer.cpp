@@ -106,13 +106,13 @@ void print::environment(int level) {
 #endif
 
 #ifdef HAVE_MPI
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     println(level, " Parallelization       : MPI/OpenMP");
 #else
     println(level, " Parallelization       : MPI");
 #endif
 #else
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     println(level, " Parallelization       : OpenMP");
 #else
     println(level, " Parallelization       : NONE");

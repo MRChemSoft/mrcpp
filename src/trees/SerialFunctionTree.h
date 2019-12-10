@@ -94,7 +94,7 @@ protected:
     GenNode<D> *allocGenNodes(int nAlloc, int *serialIx, double **coefs_p);
 
 private:
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_lock_t Sfunc_tree_lock;
 #endif
 };

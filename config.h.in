@@ -34,6 +34,4 @@
 
 #cmakedefine HAVE_MPI
 
-#cmakedefine HAVE_OPENMP
-
 #cmakedefine HAVE_BLAS

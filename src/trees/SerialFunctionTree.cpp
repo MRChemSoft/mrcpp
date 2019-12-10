@@ -80,7 +80,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
     this->cvptr_GenNode = *(char **)(tmpGenNode);
     delete tmpGenNode;
 
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_init_lock(&Sfunc_tree_lock);
 #endif
 }
@@ -96,7 +96,7 @@ template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
     this->nodeStackStatus.clear();
     this->genNodeStackStatus.clear();
 
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_destroy_lock(&Sfunc_tree_lock);
 #endif
 }

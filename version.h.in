@@ -26,17 +26,27 @@
 #pragma once
 
 namespace mrcpp {
-inline constexpr auto mwfilters_source_dir() noexcept {
-  return "@MW_FILTER_SOURCE_DIR@";
+inline constexpr auto program_version() noexcept {
+  return "@PROGRAM_VERSION@";
 }
 
-inline constexpr auto mwfilters_install_dir() noexcept {
-  return "@MW_FILTER_INSTALL_DIR@";
+inline constexpr auto git_describe() noexcept {
+  return "@_git_describe@";
+}
+
+inline constexpr auto git_commit_hash() noexcept {
+  return "@_git_last_commit_hash@";
+}
+
+inline constexpr auto git_commit_author() noexcept {
+  return "@_git_last_commit_author@";
+}
+
+inline constexpr auto git_commit_date() noexcept {
+  return "@_git_last_commit_date@";
+}
+
+inline constexpr auto git_branch() noexcept {
+  return "@_git_branch@";
 }
 } // namespace mrcpp
-
-#define BLAS_H "@BLAS_H@"
-
-#cmakedefine HAVE_MPI
-
-#cmakedefine HAVE_BLAS

@@ -48,11 +48,10 @@ if(GIT_FOUND)
     )
 endif()
 
-message(STATUS "Git last commit hash: ${_git_last_commit_hash}")
+message(STATUS "Git branch: ${_git_branch}")
+message(STATUS "Git last commit hash: ${_git_describe}")
 message(STATUS "Git last commit author: ${_git_last_commit_author}")
 message(STATUS "Git last commit date: ${_git_last_commit_date}")
-message(STATUS "Git branch: ${_git_branch}")
-message(STATUS "Git description of commit: ${_git_describe}")
 
 cmake_host_system_information(RESULT _hostname QUERY HOSTNAME)
 
@@ -76,7 +75,7 @@ string(STRIP "${PROGRAM_VERSION}" PROGRAM_VERSION)
 
 # generate file
 configure_file(
-  ${INPUT_DIR}/config.h.in
-  ${TARGET_DIR}/config.h
+  ${INPUT_DIR}/version.h.in
+  ${TARGET_DIR}/version.h
   @ONLY
   )

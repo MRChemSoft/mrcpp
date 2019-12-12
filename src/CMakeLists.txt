@@ -1,5 +1,7 @@
 add_library(mrcpp "")
 
+add_dependencies(mrcpp binary-info)
+
 # TODO Set compiler options at this level, rather than globally
 #target_compile_options(mrcpp )
 

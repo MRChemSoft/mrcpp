@@ -30,8 +30,20 @@ inline constexpr auto program_version() noexcept {
   return "@PROGRAM_VERSION@";
 }
 
-inline constexpr auto git_revision() noexcept {
-  return "@GIT_REVISION@";
+inline constexpr auto git_commit_hash() noexcept {
+  return "@_git_last_commit_hash@";
+}
+
+inline constexpr auto git_commit_author() noexcept {
+  return "@_git_last_commit_author@";
+}
+
+inline constexpr auto git_commit_date() noexcept {
+  return "@_git_last_commit_date@";
+}
+
+inline constexpr auto git_branch() noexcept {
+  return "@_git_branch@";
 }
 
 inline constexpr auto mwfilters_source_dir() noexcept {

@@ -41,7 +41,7 @@ if(GIT_FOUND)
     )
   # Get commit description
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --abbrev=7 --long --always --dirty --tags
+    COMMAND ${GIT_EXECUTABLE} describe --abbrev=20 --long --always --dirty --match "NOT A TAG"
     OUTPUT_VARIABLE _git_describe
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET

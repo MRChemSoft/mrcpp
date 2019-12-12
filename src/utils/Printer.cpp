@@ -93,11 +93,10 @@ void print::environment(int level) {
     printout(level, std::endl);
     print::separator(level, '-', 1);
     println(level, " MRCPP version         : " << program_version());
-    println(level, " Git describe          : " << git_describe());
-    println(level, " Git commit hash       : " << git_commit_hash());
+    println(level, " Git branch            : " << git_branch());
+    println(level, " Git commit hash       : " << git_describe());
     println(level, " Git commit author     : " << git_commit_author());
-    println(level, " Git commit date       : " << git_commit_date());
-    println(level, " Git branch            : " << git_branch() << std::endl);
+    println(level, " Git commit date       : " << git_commit_date() << std::endl);
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra        : EIGEN v" << EIGEN_WORLD_VERSION << "."

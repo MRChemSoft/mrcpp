@@ -30,6 +30,10 @@ inline constexpr auto program_version() noexcept {
   return "@PROGRAM_VERSION@";
 }
 
+inline constexpr auto git_describe() noexcept {
+  return "@_git_describe@";
+}
+
 inline constexpr auto git_commit_hash() noexcept {
   return "@_git_last_commit_hash@";
 }

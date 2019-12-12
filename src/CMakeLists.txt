@@ -1,5 +1,7 @@
 add_library(mrcpp "")
 
+add_dependencies(mrcpp binary-info)
+
 # TODO Set compiler options at this level, rather than globally
 #target_compile_options(mrcpp )
 
@@ -7,7 +9,6 @@ target_compile_definitions(mrcpp
   INTERFACE
     $<INSTALL_INTERFACE:USING_MRCPP>
   PUBLIC
-    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:HAVE_OPENMP>
     $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 

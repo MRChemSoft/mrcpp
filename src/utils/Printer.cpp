@@ -92,8 +92,11 @@ void print::environment(int level) {
 
     printout(level, std::endl);
     print::separator(level, '-', 1);
-    println(level, " MRCPP version         : " << PROGRAM_VERSION);
-    println(level, " Git revision          : " << GIT_REVISION << std::endl);
+    println(level, " MRCPP version         : " << program_version());
+    println(level, " Git branch            : " << git_branch());
+    println(level, " Git commit hash       : " << git_describe());
+    println(level, " Git commit author     : " << git_commit_author());
+    println(level, " Git commit date       : " << git_commit_date() << std::endl);
 
 #ifdef HAVE_BLAS
     println(level, " Linear algebra        : EIGEN v" << EIGEN_WORLD_VERSION << "."
@@ -106,13 +109,13 @@ void print::environment(int level) {
 #endif
 
 #ifdef HAVE_MPI
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     println(level, " Parallelization       : MPI/OpenMP");
 #else
     println(level, " Parallelization       : MPI");
 #endif
 #else
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     println(level, " Parallelization       : OpenMP");
 #else
     println(level, " Parallelization       : NONE");

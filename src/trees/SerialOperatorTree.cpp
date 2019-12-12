@@ -62,7 +62,7 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
     this->cvptr_OperatorNode = *(char **)(tmpNode);
     delete tmpNode;
 
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_init_lock(&Soper_tree_lock);
 #endif
 }
@@ -77,7 +77,7 @@ SerialOperatorTree::~SerialOperatorTree() {
 
     NOtrees--;
 
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
     omp_destroy_lock(&Soper_tree_lock);
 #endif
 }

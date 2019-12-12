@@ -33,6 +33,9 @@
  */
 
 #include "InterpolatingBasis.h"
+
+#include <cmath>
+
 #include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
 

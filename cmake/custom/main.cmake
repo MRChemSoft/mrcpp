@@ -7,9 +7,15 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/config.h.in
+  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+  @ONLY
+  )
+
 add_custom_command(
   OUTPUT
-    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   COMMAND
     ${CMAKE_COMMAND} -DINPUT_DIR=${PROJECT_SOURCE_DIR}
                      -DTARGET_DIR=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
@@ -24,9 +30,9 @@ add_custom_command(
                      -DMW_FILTER_INSTALL_DIR=${MW_FILTER_INSTALL_DIR}
                      -P ${CMAKE_CURRENT_LIST_DIR}/binary-info.cmake
   DEPENDS
-    ${PROJECT_SOURCE_DIR}/config.h.in
+    ${PROJECT_SOURCE_DIR}/version.h.in
   BYPRODUCTS
-    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   WORKING_DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}
   )
@@ -35,16 +41,20 @@ add_custom_command(
 add_custom_target(
   binary-info
   ALL
+  COMMAND
+    touch ${PROJECT_SOURCE_DIR}/version.h.in
   DEPENDS
-    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   )
+
 # See here for the reason why: https://gitlab.kitware.com/cmake/cmake/issues/18399
-set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   PROPERTIES
     GENERATED 1
   )
 
 list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h)
+list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h)
 
 include(${PROJECT_SOURCE_DIR}/external/upstream/fetch_eigen3.cmake)
 

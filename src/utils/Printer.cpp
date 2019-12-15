@@ -26,6 +26,7 @@
 #include <fstream>
 
 #include "MRCPP/config.h"
+#include "MRCPP/version.h"
 
 #include "Printer.h"
 #include "Timer.h"

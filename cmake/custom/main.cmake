@@ -48,10 +48,6 @@ add_custom_target(
   )
 
 # See here for the reason why: https://gitlab.kitware.com/cmake/cmake/issues/18399
-set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
-  PROPERTIES
-    GENERATED 1
-  )
 set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   PROPERTIES
     GENERATED 1

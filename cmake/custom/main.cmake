@@ -29,10 +29,8 @@ add_custom_command(
                      -DMW_FILTER_SOURCE_DIR=${MW_FILTER_SOURCE_DIR}
                      -DMW_FILTER_INSTALL_DIR=${MW_FILTER_INSTALL_DIR}
                      -P ${CMAKE_CURRENT_LIST_DIR}/binary-info.cmake
-  DEPENDS
+  MAIN_DEPENDENCY
     ${PROJECT_SOURCE_DIR}/version.h.in
-  BYPRODUCTS
-    ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   WORKING_DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}
   )
@@ -42,7 +40,7 @@ add_custom_target(
   binary-info
   ALL
   COMMAND
-    touch ${PROJECT_SOURCE_DIR}/version.h.in
+    ${CMAKE_COMMAND} -E touch_nocreate ${PROJECT_SOURCE_DIR}/version.h.in
   DEPENDS
     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
   )
@@ -53,8 +51,10 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${
     GENERATED 1
   )
 
-list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h)
-list(APPEND mrcpp_headers ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h)
+list(APPEND mrcpp_headers
+  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
+  ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h
+  )
 
 include(${PROJECT_SOURCE_DIR}/external/upstream/fetch_eigen3.cmake)
 

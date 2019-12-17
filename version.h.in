@@ -27,7 +27,7 @@
 
 namespace mrcpp {
 inline constexpr auto program_version() noexcept {
-  return "@PROGRAM_VERSION@";
+  return "@MRCPP_VERSION@";
 }
 
 inline constexpr auto git_describe() noexcept {

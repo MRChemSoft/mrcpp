@@ -48,6 +48,7 @@ if(GIT_FOUND)
     )
 endif()
 
+message(STATUS "MRCPP version: ${MRCPP_VERSION}")
 message(STATUS "Git branch: ${_git_branch}")
 message(STATUS "Git last commit hash: ${_git_describe}")
 message(STATUS "Git last commit author: ${_git_last_commit_author}")
@@ -69,9 +70,6 @@ execute_process(
   ERROR_QUIET
   )
 string(REGEX REPLACE "\"" "" _configuration_time ${_configuration_time})
-
-file(READ "${VERSION_FILE}" PROGRAM_VERSION)
-string(STRIP "${PROGRAM_VERSION}" PROGRAM_VERSION)
 
 # generate file
 configure_file(

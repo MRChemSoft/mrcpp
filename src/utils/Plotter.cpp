@@ -157,12 +157,12 @@ void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
 /** Calculating coordinates to be evaluated
 
     Generating a vector of pts_a equidistant coordinates that makes up the
-    vector A in D dimensions, starting from the origin O, edges included.
+    vector A in D dimensions, starting from the origin O.
 */
 template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) const {
     MatrixXd coords;
     if (pts_a > 0) {
-        Coord<D> a = calcStep(this->A, pts_a - 2);
+        Coord<D> a = calcStep(this->A, pts_a);
         coords = MatrixXd::Zero(pts_a, D);
         for (auto i = 0; i < pts_a; i++) {
             for (auto d = 0; d < D; d++) coords(i, d) = this->O[d] + i * a[d];
@@ -177,7 +177,7 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) cons
 
     Generating a vector of equidistant coordinates that makes up the
     area spanned by vectors A and B in D dimensions, starting from the
-    origin O, edges included.
+    origin O.
 */
 template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int pts_b) const {
     if (D < 2) MSG_ERROR("Cannot surfPlot less than 2D");
@@ -185,8 +185,8 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int 
     MatrixXd coords;
     int npts = pts_a * pts_b;
     if (npts > 0) {
-        Coord<D> a = calcStep(this->A, pts_a - 2);
-        Coord<D> b = calcStep(this->B, pts_b - 2);
+        Coord<D> a = calcStep(this->A, pts_a);
+        Coord<D> b = calcStep(this->B, pts_b);
 
         auto n = 0;
         coords = MatrixXd::Zero(npts, D);
@@ -206,7 +206,7 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int 
 
     Generating a vector of equidistant coordinates that makes up the
     volume spanned by vectors A, B and C in D dimensions, starting from
-    the origin O, edges NOT included.
+    the origin O.
 */
 template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const {
     if (D < 3) MSG_ERROR("Cannot cubePlot less than 3D function");
@@ -220,9 +220,9 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int 
 
         auto n = 0;
         coords = MatrixXd::Zero(npts, D);
-        for (auto i = 1; i <= pts_a; i++) {
-            for (auto j = 1; j <= pts_b; j++) {
-                for (auto k = 1; k <= pts_b; k++) {
+        for (auto i = 0; i < pts_a; i++) {
+            for (auto j = 0; j < pts_b; j++) {
+                for (auto k = 0; k < pts_b; k++) {
                     for (auto d = 0; d < D; d++) coords(n, d) = this->O[d] + i * a[d] + j * b[d] + k * c[d];
                     n++;
                 }
@@ -452,7 +452,7 @@ template <int D> bool Plotter<D>::verifyRange(int dim) const {
 
 template <int D> Coord<D> Plotter<D>::calcStep(const Coord<D> &vec, int pts) const {
     Coord<D> step;
-    for (auto d = 0; d < D; d++) step[d] = vec[d] / (pts + 1.0);
+    for (auto d = 0; d < D; d++) step[d] = vec[d] / (pts - 1.0);
     return step;
 }
 

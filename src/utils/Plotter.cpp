@@ -222,7 +222,7 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int 
         coords = MatrixXd::Zero(npts, D);
         for (auto i = 0; i < pts_a; i++) {
             for (auto j = 0; j < pts_b; j++) {
-                for (auto k = 0; k < pts_b; k++) {
+                for (auto k = 0; k < pts_c; k++) {
                     for (auto d = 0; d < D; d++) coords(n, d) = this->O[d] + i * a[d] + j * b[d] + k * c[d];
                     n++;
                 }

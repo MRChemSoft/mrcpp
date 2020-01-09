@@ -2,7 +2,7 @@
  * MRCPP, a numerical library based on multiresolution analysis and
  * the multiwavelet basis which provide low-scaling algorithms as well as
  * rigorous error control in numerical computations.
- * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ * Copyright (C) 2020 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
  *
  * This file is part of MRCPP.
  *
@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include <Eigen/Core>
 
 #include "RepresentableFunction.h"
@@ -45,8 +47,14 @@ namespace mrcpp {
 class Polynomial : public RepresentableFunction<1> {
 public:
     Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
+    Polynomial(int k, const std::vector<double> &a, const std::vector<double> &b)
+            : Polynomial(k, a.data(), b.data()) {}
     Polynomial(const Eigen::VectorXd &c, const double *a = nullptr, const double *b = nullptr);
+    Polynomial(const Eigen::VectorXd &c, const std::vector<double> &a, const std::vector<double> &b)
+            : Polynomial(c, a.data(), b.data()) {}
     Polynomial(double c, int k = 0, const double *a = nullptr, const double *b = nullptr);
+    Polynomial(double c, int k, const std::vector<double> &a, const std::vector<double> &b)
+            : Polynomial(c, k, a.data(), b.data()) {}
     Polynomial(const Polynomial &poly);
     Polynomial &operator=(const Polynomial &poly);
     virtual ~Polynomial() = default;

@@ -2,7 +2,7 @@
  * MRCPP, a numerical library based on multiresolution analysis and
  * the multiwavelet basis which provide low-scaling algorithms as well as
  * rigorous error control in numerical computations.
- * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ * Copyright (C) 2020 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
  *
  * This file is part of MRCPP.
  *
@@ -26,6 +26,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 
 #include "RepresentableFunction.h"
 
@@ -39,6 +40,10 @@ public:
     AnalyticFunction(std::function<double(const Coord<D> &r)> f, const double *a = nullptr, const double *b = nullptr)
             : RepresentableFunction<D>(a, b)
             , func(f) {}
+    AnalyticFunction(std::function<double(const Coord<D> &r)> f,
+                     const std::vector<double> &a,
+                     const std::vector<double> &b)
+            : AnalyticFunction(f, a.data(), b.data()) {}
 
     void set(std::function<double(const Coord<D> &r)> f) { this->func = f; }
 

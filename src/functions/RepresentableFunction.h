@@ -2,7 +2,7 @@
  * MRCPP, a numerical library based on multiresolution analysis and
  * the multiwavelet basis which provide low-scaling algorithms as well as
  * rigorous error control in numerical computations.
- * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ * Copyright (C) 2020 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
  *
  * This file is part of MRCPP.
  *
@@ -32,6 +32,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 #include "MRCPP/constants.h"
 #include "MRCPP/mrcpp_declarations.h"
@@ -40,7 +41,12 @@ namespace mrcpp {
 
 template <int D> class RepresentableFunction {
 public:
+    /*! Access rank of function as RepresentableFunction<D>::dim */
+    static constexpr int dim = D;
+
     RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
+    RepresentableFunction(const std::vector<double> &a, const std::vector<double> &b)
+            : RepresentableFunction(a.data(), b.data()) {}
     RepresentableFunction(const RepresentableFunction<D> &func);
     RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
     virtual ~RepresentableFunction();

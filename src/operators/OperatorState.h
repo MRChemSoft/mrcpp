@@ -2,7 +2,7 @@
  * MRCPP, a numerical library based on multiresolution analysis and
  * the multiwavelet basis which provide low-scaling algorithms as well as
  * rigorous error control in numerical computations.
- * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ * Copyright (C) 2020 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
  *
  * This file is part of MRCPP.
  *
@@ -30,6 +30,8 @@
  */
 
 #pragma once
+
+#include <vector>
 
 #include <Eigen/Core>
 
@@ -61,6 +63,9 @@ public:
             }
         }
     }
+
+    OperatorState(MWNode<D> &gn, std::vector<double> scr1)
+            : OperatorState(gn, scr1.data()) {}
     void setFNode(MWNode<D> &fn) {
         this->fNode = &fn;
         this->fData = this->fNode->getCoefs();

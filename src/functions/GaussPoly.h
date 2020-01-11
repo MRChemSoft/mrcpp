@@ -53,18 +53,18 @@ public:
     GaussPoly(const GaussPoly<D> &gp);
     GaussPoly(const GaussFunc<D> &gf);
     GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
-    Gaussian<D> *copy() const;
+    Gaussian<D> *copy() const override;
     ~GaussPoly();
 
-    double calcSquareNorm();
+    double calcSquareNorm() override;
 
-    double evalf(const Coord<D> &r) const;
-    double evalf(double r, int dim) const;
+    double evalf(const Coord<D> &r) const override;
+    double evalf(double r, int dim) const override;
 
-    double calcOverlap(GaussFunc<D> &b);
-    double calcOverlap(GaussPoly<D> &b);
+    double calcOverlap(GaussFunc<D> &b) override;
+    double calcOverlap(GaussPoly<D> &b) override;
 
-    GaussPoly differentiate(int dir);
+    GaussPoly differentiate(int dir) override;
 
     void multInPlace(const GaussPoly<D> &rhs);
     void operator*=(const GaussPoly<D> &rhs) { multInPlace(rhs); }
@@ -78,8 +78,8 @@ public:
     const Polynomial &getPoly(int i) const { return *poly[i]; }
     Polynomial &getPoly(int i) { return *poly[i]; }
 
-    void setPower(int d, int pow);
-    void setPower(const std::array<int, D> &pow);
+    void setPower(int d, int pow) override;
+    void setPower(const std::array<int, D> &pow) override;
     // void setPower(const int pow[D]);
     void setPoly(int d, Polynomial &poly);
 
@@ -92,7 +92,7 @@ public:
 private:
     Polynomial *poly[D];
 
-    std::ostream &print(std::ostream &o) const;
+    std::ostream &print(std::ostream &o) const override;
 };
 
 } // namespace mrcpp

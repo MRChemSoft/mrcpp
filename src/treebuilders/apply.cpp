@@ -94,6 +94,40 @@ void apply(double prec,
     print::separator(10, ' ');
 }
 
+template <int D>
+void apply(double prec,
+           FunctionTree<D> &out,
+           ConvolutionOperator<D> &oper,
+           FunctionTree<D> &inp,
+           FunctionTree<D> &precTree,
+           int maxIter,
+           bool absPrec) {
+    Timer pre_t;
+    oper.calcBandWidths(prec);
+    int maxScale = out.getMRA().getMaxScale();
+    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+    adaptor.setPrecTree(precTree);
+    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    calculator.setPrecTree(precTree);
+    pre_t.stop();
+
+    TreeBuilder<D> builder;
+    builder.build(out, calculator, adaptor, maxIter);
+    precTree.deleteGenerated();
+
+    Timer post_t;
+    oper.clearBandWidths();
+    out.mwTransform(TopDown, false); // add coarse scale contributions
+    out.mwTransform(BottomUp);
+    out.calcSquareNorm();
+    inp.deleteGenerated();
+    post_t.stop();
+
+    print::time(10, "Time pre operator", pre_t);
+    print::time(10, "Time post operator", post_t);
+    print::separator(10, ' ');
+}
+
 /** @brief Application of MW derivative operator
  *
  * @param[out] out: Output function to be built
@@ -217,6 +251,27 @@ template void apply(double prec,
                     FunctionTree<3> &out,
                     ConvolutionOperator<3> &oper,
                     FunctionTree<3> &inp,
+                    int maxIter,
+                    bool absPrec);
+template void apply(double prec,
+                    FunctionTree<1> &out,
+                    ConvolutionOperator<1> &oper,
+                    FunctionTree<1> &inp,
+                    FunctionTree<1> &precTree,
+                    int maxIter,
+                    bool absPrec);
+template void apply(double prec,
+                    FunctionTree<2> &out,
+                    ConvolutionOperator<2> &oper,
+                    FunctionTree<2> &inp,
+                    FunctionTree<2> &precTree,
+                    int maxIter,
+                    bool absPrec);
+template void apply(double prec,
+                    FunctionTree<3> &out,
+                    ConvolutionOperator<3> &oper,
+                    FunctionTree<3> &inp,
+                    FunctionTree<3> &precTree,
                     int maxIter,
                     bool absPrec);
 template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);

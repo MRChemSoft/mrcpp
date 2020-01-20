@@ -38,13 +38,22 @@ public:
             , splitFac(sf) {}
     ~WaveletAdaptor() override = default;
 
+    void setPrecTree(FunctionTree<D> &tree) { this->precTree = &tree; }
+
 protected:
     bool absPrec;
     double prec;
     double splitFac;
+    FunctionTree<D> *precTree{nullptr};
 
     bool splitNode(const MWNode<D> &node) const override {
-        return node.splitCheck(this->prec, this->splitFac, this->absPrec);
+        auto precNorm = 1.0;
+        if (this->precTree != nullptr) {
+            auto &pNode = precTree->getNode(node.getNodeIndex());
+            auto n = node.getScale();
+            precNorm = std::pow(2.0, D * n) * std::sqrt(pNode.getSquareNorm());
+        }
+        return node.splitCheck(this->prec / precNorm, this->splitFac, this->absPrec);
     }
 };
 

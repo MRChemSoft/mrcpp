@@ -55,12 +55,20 @@ int main(int argc, char **argv) {
     mrcpp::print::memory(0, "used memory post project");
     t1.stop();
 
+    auto p_func = [](const mrcpp::Coord<D> &r) -> double {
+        return 1.0e+2;
+    };
+
+    mrcpp::FunctionTree<D> p_tree(MRA);
+    mrcpp::project<D>(prec, p_tree, p_func);
+
     // Applying Poisson operator
     auto t2 = mrcpp::Timer();
     mrcpp::print::separator(0, ' ');
     mrcpp::print::memory(0, "used memory pre apply");
     mrcpp::FunctionTree<D> g_tree(MRA);
-    mrcpp::apply(prec, g_tree, P, f_tree);
+    //mrcpp::apply(prec, g_tree, P, f_tree);
+    mrcpp::apply(1.0*prec, g_tree, P, f_tree, p_tree);
     mrcpp::print::memory(0, "used memory post apply");
     t2.stop();
 

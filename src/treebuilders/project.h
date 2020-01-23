@@ -33,8 +33,6 @@ namespace mrcpp {
 template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter = -1);
 template <int D>
 void project(double prec, FunctionTree<D> &out, std::function<double(const Coord<D> &r)> func, int maxIter = -1);
-//template <size_t D>
-//void project(double prec, std::array<FunctionTree<D>, D> &out, std::array<std::function<double(const Coord<D> &r)>, D> func, int maxIter = -1);
 template <int D>
 void project(double prec, FunctionTreeVector<D> &out, std::vector<std::function<double(const Coord<D> &r)>> func, int maxIter = -1);
 } // namespace mrcpp

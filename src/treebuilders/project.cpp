@@ -34,13 +34,6 @@
 #include "utils/Timer.h"
 
 namespace mrcpp {
-/*
-template <size_t D>
-void project(double prec, std::array<FunctionTree<D>, D> &out, std::array<std::function<double(const Coord<D> &r)>, D> func, int maxIter) {
-  for (auto j = 0; j < D; j++) {
-    mrcpp::project<D>(prec, out[j], func[j], maxIter);
-  }
-}*/
 
 /** @brief Projection of analytic function into MW representation
  *
@@ -117,9 +110,6 @@ template void project<3>(double prec, FunctionTree<3> &out, RepresentableFunctio
 template void project<1>(double prec, FunctionTree<1> &out, std::function<double(const Coord<1> &r)> func, int maxIter);
 template void project<2>(double prec, FunctionTree<2> &out, std::function<double(const Coord<2> &r)> func, int maxIter);
 template void project<3>(double prec, FunctionTree<3> &out, std::function<double(const Coord<3> &r)> func, int maxIter);
-//template void project<1>(double prec, std::array<FunctionTree<1>, 1> &out, std::array<std::function<double(const Coord<1> &r)>, 1> inp, int maxIter);
-//template void project<2>(double prec, std::array<FunctionTree<2>, 2> &out, std::array<std::function<double(const Coord<2> &r)>, 2> inp, int maxIter);
-//template void project<3>(double prec, std::array<FunctionTree<3>, 3> &out, std::array<std::function<double(const Coord<3> &r)>, 3> inp, int maxIter);
 template void project<1>(double prec, FunctionTreeVector<1> &out, std::vector<std::function<double(const Coord<1> &r)>> inp, int maxIter);
 template void project<2>(double prec, FunctionTreeVector<2> &out, std::vector<std::function<double(const Coord<2> &r)>> inp, int maxIter);
 template void project<3>(double prec, FunctionTreeVector<3> &out, std::vector<std::function<double(const Coord<3> &r)>> inp, int maxIter);

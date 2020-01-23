@@ -26,19 +26,13 @@
 #pragma once
 
 #include <functional>
-
+#include "trees/FunctionTreeVector.h"
 #include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
-
+template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter = -1, bool absPrec = false);
 template <int D>
-void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter = -1, bool absPrec = false);
-
+void project(double prec, FunctionTree<D> &out, std::function<double(const Coord<D> &r)> func, int maxIter = -1, bool absPrec = false);
 template <int D>
-void project(double prec,
-             FunctionTree<D> &out,
-             std::function<double(const Coord<D> &r)> func,
-             int maxIter = -1,
-             bool absPrec = false);
-
+void project(double prec, FunctionTreeVector<D> &out, std::vector<std::function<double(const Coord<D> &r)>> func, int maxIter = -1, bool absPrec = false);
 } // namespace mrcpp

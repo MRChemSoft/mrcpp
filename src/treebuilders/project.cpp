@@ -30,6 +30,7 @@
 #include "functions/AnalyticFunction.h"
 #include "trees/FunctionTree.h"
 #include "trees/MultiResolutionAnalysis.h"
+
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 
@@ -105,10 +106,12 @@ void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, i
     print::separator(10, ' ');
 }
 template <int D>
-void project(double prec, FunctionTreeVector<D> &out, std::vector<std::function<double(const Coord<D> &r)>> func, int maxIter, bool absPrec) {
-  for (auto j = 0; j < D; j++) {
-    mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter, absPrec);
-  }
+void project(double prec,
+             FunctionTreeVector<D> &out,
+             std::vector<std::function<double(const Coord<D> &r)>> func,
+             int maxIter,
+             bool absPrec) {
+    for (auto j = 0; j < D; j++) { mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter, absPrec); }
 }
 
 template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter, bool absPrec);
@@ -129,7 +132,19 @@ template void project<3>(double prec,
                          std::function<double(const Coord<3> &r)> func,
                          int maxIter,
                          bool absPrec);
-template void project<1>(double prec, FunctionTreeVector<1> &out, std::vector<std::function<double(const Coord<1> &r)>> inp, int maxIter, bool absPrec);
-template void project<2>(double prec, FunctionTreeVector<2> &out, std::vector<std::function<double(const Coord<2> &r)>> inp, int maxIter, bool absPrec);
-template void project<3>(double prec, FunctionTreeVector<3> &out, std::vector<std::function<double(const Coord<3> &r)>> inp, int maxIter, bool absPrec);
+template void project<1>(double prec,
+                         FunctionTreeVector<1> &out,
+                         std::vector<std::function<double(const Coord<1> &r)>> inp,
+                         int maxIter,
+                         bool absPrec);
+template void project<2>(double prec,
+                         FunctionTreeVector<2> &out,
+                         std::vector<std::function<double(const Coord<2> &r)>> inp,
+                         int maxIter,
+                         bool absPrec);
+template void project<3>(double prec,
+                         FunctionTreeVector<3> &out,
+                         std::vector<std::function<double(const Coord<3> &r)>> inp,
+                         int maxIter,
+                         bool absPrec);
 } // namespace mrcpp

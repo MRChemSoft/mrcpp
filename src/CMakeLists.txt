@@ -1,6 +1,6 @@
 add_library(mrcpp "")
 
-add_dependencies(mrcpp binary-info)
+add_dependencies(mrcpp mrcpp-info)
 
 # TODO Set compiler options at this level, rather than globally
 #target_compile_options(mrcpp )
@@ -40,8 +40,8 @@ add_subdirectory(utils)
 # FIXME Fix versioning of DSO
 set_target_properties(mrcpp
   PROPERTIES
-    VERSION 1 #${PROJECT_VERSION_MAJOR}
-    SOVERSION 1 #${PROJECT_VERSION_MAJOR}
+    VERSION ${MRCPP_VERSION_MAJOR}
+    SOVERSION ${MRCPP_VERSION_MAJOR}
     MACOSX_RPATH ON
     OUTPUT_NAME "mrcpp"
     EXPORT_NAME "mrcpp"
@@ -68,7 +68,7 @@ include(CMakePackageConfigHelpers)
 # FIXME Fix versioning
 write_basic_package_version_file(
   ${PROJECT_BINARY_DIR}/${CMAKECONFIG_INSTALL_DIR}/MRCPPConfigVersion.cmake
-  VERSION 1.0.0 #${PROJECT_VERSION}
+  VERSION ${MRCPP_VERSION}
   COMPATIBILITY SameMajorVersion
   )
 

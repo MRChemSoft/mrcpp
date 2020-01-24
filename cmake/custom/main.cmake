@@ -5,6 +5,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # might resolve to a place not recognized by CMake
 set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
 
+file(READ "${CMAKE_SOURCE_DIR}/VERSION" MRCPP_VERSION)
+string(STRIP "${MRCPP_VERSION}" MRCPP_VERSION)
+
+string(REPLACE "." ";" VERSION_LIST ${MRCPP_VERSION})
+list(GET VERSION_LIST 0 MRCPP_VERSION_MAJOR)
+list(GET VERSION_LIST 1 MRCPP_VERSION_MINOR)
+
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
 configure_file(
@@ -25,7 +32,7 @@ add_custom_command(
                      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                      -DCMAKE_CXX_COMPILER_VERSION=${CMAKE_CXX_COMPILER_VERSION}
-                     -DVERSION_FILE=${PROJECT_SOURCE_DIR}/VERSION
+                     -DMRCPP_VERSION=${MRCPP_VERSION}
                      -DMW_FILTER_SOURCE_DIR=${MW_FILTER_SOURCE_DIR}
                      -DMW_FILTER_INSTALL_DIR=${MW_FILTER_INSTALL_DIR}
                      -P ${CMAKE_CURRENT_LIST_DIR}/binary-info.cmake
@@ -37,7 +44,7 @@ add_custom_command(
 
 # rebuild version_info.h every time
 add_custom_target(
-  binary-info
+  mrcpp-info
   ALL
   COMMAND
     ${CMAKE_COMMAND} -E touch_nocreate ${PROJECT_SOURCE_DIR}/version.h.in

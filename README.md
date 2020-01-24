@@ -59,7 +59,7 @@ releases are applied linearly on the `MINOR` release branches.
 - The VERSION file should point to the next *expected* release,
   and *always* carry the pre-release label `-alpha`
 - When a new `release/X.Y` branch is created, the VERSION file on `master`
-  is bumped to the next expected `MAJOR`/`MINOR`, e.i. `X.(Y+1).0-alpha` or
+  is bumped to the next expected `MAJOR`/`MINOR`, i.e. `X.(Y+1).0-alpha` or
   `(X+1).0.0-alpha`
 
 #### The `release/X.Y` branches:
@@ -79,12 +79,13 @@ releases are applied linearly on the `MINOR` release branches.
 All code changes are incorporated through the `fork -> pull request (PR) ->
 code review` work flow, with the following principles:
 
-- New features should *always* branch off `master` and PR back to `master`
-- Bugfixes may branch off either `master` or `release/X.Y`, but should *always*
-  PR back to its origin
+- New features should *always* branch off `master`
+- Bugfixes may branch off either `master` or `release/X.Y`
+- PRs should *always* be directed back at its original base branch, `master` or
+  `release/X.Y`
 - Bugfixes should be small and specific (cherry-pickable)
 - Cherry-picks between `master` and `release` branches will be handled by code
-  adminitrators
+  administrators
 - All version tagging and changes to the VERSION file will be handled by code
   administrators, and should *not* be part of any PR
 
@@ -104,6 +105,8 @@ code review` work flow, with the following principles:
 - Implement bugfix
 - Regularly incorporate the latest changes from original branch by *rebasing*
 - File PR from the local bugfix branch back to original branch
+- Evaluate whether the bugfix should be cherry-picked to other branches
+  and communicate it to the administrators
 
 
 ### Automatic formatting

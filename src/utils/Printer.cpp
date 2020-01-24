@@ -95,7 +95,7 @@ void print::environment(int level) {
     print::separator(level, '-', 1);
     println(level, " MRCPP version         : " << program_version());
     println(level, " Git branch            : " << git_branch());
-    println(level, " Git commit hash       : " << git_describe());
+    println(level, " Git commit hash       : " << git_commit_hash());
     println(level, " Git commit author     : " << git_commit_author());
     println(level, " Git commit date       : " << git_commit_date() << std::endl);
 

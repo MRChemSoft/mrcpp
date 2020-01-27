@@ -23,14 +23,12 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "GaussExp.h"
-#include "Gaussian.h"
+#pragma once
 
+#include "MRCPP/mrcpp_declarations.h"
 namespace mrcpp {
-namespace function_utils {
-template <int D>
-std::shared_ptr<GaussExp<D>> make_gaussian_periodic(const Gaussian<D> &gauss,
-                                                    const std::array<double, D> &period,
-                                                    double nStdDev = 4.0);
-} // namespace function_utils
+namespace periodic {
+template <int D> void indx_manipulation(NodeIndex<D> &idx);
+template <int D> void coord_mainpulation(Coord<D> &r);
+} // namespace periodic
 } // namespace mrcpp

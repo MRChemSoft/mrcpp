@@ -38,6 +38,7 @@
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/mpi_utils.h"
+#include "utils/periodic_utils.h"
 
 using namespace Eigen;
 
@@ -204,12 +205,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
-    if (this->getRootBox().isPeriodic()) {
-        for (auto i = 0; i < D; i++) {
-            if (arg[i] > 1.0) arg[i] = std::fmod(arg[i], 1.0);
-            if (arg[i] < 0.0) arg[i] = std::fmod(arg[i], 1.0) + 1.0;
-        }
-    }
+    if (this->getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(arg); }
 
     const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);

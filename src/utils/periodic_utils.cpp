@@ -31,31 +31,35 @@
 namespace mrcpp {
 namespace periodic {
 
-template <int D> void indx_manipulation(NodeIndex<D> &idx) {
-    int l[D];
+template <int D> void indx_manipulation(NodeIndex<D> &idx, std::array<bool, D> periodic) {
+    int translation[D];
     int two_n = 1 << idx.getScale();
     for (auto i = 0; i < D; i++) {
-        l[i] = idx.getTranslation(i);
-        if (l[i] >= two_n) l[i] = l[i] % two_n;
-        if (l[i] < 0) l[i] = (l[i] + 1) % two_n + two_n - 1;
+        if (periodic[i]) {
+            translation[i] = idx.getTranslation(i);
+            if (translation[i] >= two_n) translation[i] = translation[i] % two_n;
+            if (translation[i] < 0) translation[i] = (translation[i] + 1) % two_n + two_n - 1;
+        }
     }
-    idx.setTranslation(l);
+    idx.setTranslation(translation);
 }
 
-template <int D> void coord_mainpulation(Coord<D> &r) {
+template <int D> void coord_mainpulation(Coord<D> &r, std::array<bool, D> periodic) {
     for (auto i = 0; i < D; i++) {
-        if (r[i] > 1.0) r[i] = std::fmod(r[i], 1.0);
-        if (r[i] < 0.0) r[i] = std::fmod(r[i], 1.0) + 1.0;
+        if (periodic[i]) {
+            if (r[i] > 1.0) r[i] = std::fmod(r[i], 1.0);
+            if (r[i] < 0.0) r[i] = std::fmod(r[i], 1.0) + 1.0;
+        }
     }
 }
 
-template void indx_manipulation<1>(NodeIndex<1> &idx);
-template void indx_manipulation<2>(NodeIndex<2> &idx);
-template void indx_manipulation<3>(NodeIndex<3> &idx);
+template void indx_manipulation<1>(NodeIndex<1> &idx, std::array<bool, 1> periodic);
+template void indx_manipulation<2>(NodeIndex<2> &idx, std::array<bool, 2> periodic);
+template void indx_manipulation<3>(NodeIndex<3> &idx, std::array<bool, 3> periodic);
 
-template void coord_mainpulation<1>(Coord<1> &r);
-template void coord_mainpulation<2>(Coord<2> &r);
-template void coord_mainpulation<3>(Coord<3> &r);
+template void coord_mainpulation<1>(Coord<1> &r, std::array<bool, 1> periodic);
+template void coord_mainpulation<2>(Coord<2> &r, std::array<bool, 2> periodic);
+template void coord_mainpulation<3>(Coord<3> &r, std::array<bool, 3> periodic);
 
 } // namespace periodic
 } // namespace mrcpp

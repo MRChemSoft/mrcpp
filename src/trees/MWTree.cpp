@@ -251,7 +251,7 @@ template <int D> int MWTree<D>::getSizeNodes() const {
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
-    if (getRootBox().isPeriodic()) { periodic::indx_manipulation(idx); }
+    if (getRootBox().isPeriodic()) { periodic::indx_manipulation<D>(idx, getRootBox().getPeriodic()); }
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return nullptr;
     const MWNode<D> &root = this->rootBox.getNode(rIdx);
@@ -266,7 +266,7 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) { periodic::indx_manipulation(idx); }
+    if (getRootBox().isPeriodic()) { periodic::indx_manipulation<D>(idx, getRootBox().getPeriodic()); }
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return nullptr;
     MWNode<D> &root = this->rootBox.getNode(rIdx);
@@ -280,7 +280,7 @@ template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
  * that does not exist. Recursion starts at the appropriate rootNode and
  * decends from this.*/
 template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) { periodic::indx_manipulation(idx); }
+    if (getRootBox().isPeriodic()) { periodic::indx_manipulation<D>(idx, getRootBox().getPeriodic()); }
     MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNode(idx);
@@ -292,7 +292,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) { periodic::indx_manipulation(idx); }
+    if (getRootBox().isPeriodic()) { periodic::indx_manipulation<D>(idx, getRootBox().getPeriodic()); }
     MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
@@ -304,7 +304,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
-    if (getRootBox().isPeriodic()) { periodic::indx_manipulation(idx); }
+    if (getRootBox().isPeriodic()) { periodic::indx_manipulation<D>(idx, getRootBox().getPeriodic()); }
     const MWNode<D> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
@@ -331,7 +331,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 
-    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r); }
+    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r, getRootBox().getPeriodic()); }
 
     MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
@@ -344,7 +344,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
 
-    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r); }
+    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r, getRootBox().getPeriodic()); }
     const MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }

@@ -69,6 +69,15 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
 }
 
 template <int D>
+BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc)
+        : cornerIndex() {
+    setPeriodic(pbc);
+    setNBoxes();
+    setScalingFactor(sf);
+    setDerivedParameters();
+}
+
+template <int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
     setPeriodic(box.periodic);

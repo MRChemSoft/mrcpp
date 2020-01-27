@@ -47,6 +47,7 @@ public:
                 const std::array<double, D> &sf = {});
     BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
     BoundingBox(const std::array<double, D> &sf, bool pbc = true);
+    BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc);
     BoundingBox(const BoundingBox<D> &box);
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
     virtual ~BoundingBox() = default;
@@ -68,6 +69,7 @@ public:
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
     double getUpperBound(int d) const { return this->upperBounds[d]; }
     bool isPeriodic() const { return details::are_any(this->periodic, true); }
+    const std::array<bool, D> &getPeriodic() const { return this->periodic; }
     const Coord<D> &getUnitLengths() const { return this->unitLengths; }
     const Coord<D> &getBoxLengths() const { return this->boxLengths; }
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }

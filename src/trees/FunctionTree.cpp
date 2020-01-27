@@ -205,7 +205,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
-    if (this->getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(arg); }
+    if (this->getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(arg, this->getRootBox().getPeriodic()); }
 
     const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);

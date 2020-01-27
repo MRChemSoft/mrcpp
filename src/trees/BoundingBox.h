@@ -35,6 +35,7 @@
 #include <iomanip>
 
 #include "NodeIndex.h"
+#include "utils/details.h"
 
 namespace mrcpp {
 
@@ -66,7 +67,7 @@ public:
     double getBoxLength(int d) const { return this->boxLengths[d]; }
     double getLowerBound(int d) const { return this->lowerBounds[d]; }
     double getUpperBound(int d) const { return this->upperBounds[d]; }
-    bool isPeriodic() const { return this->periodic; }
+    bool isPeriodic() const { return details::are_any(this->periodic, true); }
     const Coord<D> &getUnitLengths() const { return this->unitLengths; }
     const Coord<D> &getBoxLengths() const { return this->boxLengths; }
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
@@ -80,7 +81,7 @@ protected:
     NodeIndex<D> cornerIndex;    ///< Index defining the lower corner of the box
     std::array<int, D> nBoxes{}; ///< Number of boxes in each dim, last entry total
     std::array<double, D> scalingFactor{};
-    bool periodic;
+    std::array<bool, D> periodic{};
 
     // Derived parameters
     int totBoxes{1};
@@ -92,6 +93,8 @@ protected:
     void setNBoxes(const std::array<int, D> &nb = {});
     void setDerivedParameters();
     void setScalingFactor(const std::array<double, D> &sf);
+    void setPeriodic(std::array<bool, D> periodic);
+    void setPeriodic(bool periodic);
 
     std::ostream &print(std::ostream &o) const;
 };

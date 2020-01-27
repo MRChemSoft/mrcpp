@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <sstream>
@@ -34,6 +35,9 @@ namespace details {
 bool directory_exists(std::string path);
 int get_memory_usage();
 template <int D> bool are_all_equal(const std::array<double, D> &exponent);
+template <typename T, size_t D> bool are_any(const std::array<T, D> &col, const T eq) {
+    return std::any_of(col.cbegin(), col.cend(), [eq](const T &el) { return el == eq; });
+};
 template <typename T, int D> std::array<T, D> convert_to_std_array(T *arr);
 template <typename T> auto stream_collection(const T &coll) -> std::string {
     std::ostringstream os;

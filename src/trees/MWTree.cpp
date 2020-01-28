@@ -331,7 +331,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 
-    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r, getRootBox().getPeriodic()); }
+    if (getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, getRootBox().getPeriodic()); }
 
     MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
@@ -344,7 +344,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
 
-    if (getRootBox().isPeriodic()) { periodic::coord_mainpulation<D>(r, getRootBox().getPeriodic()); }
+    if (getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, getRootBox().getPeriodic()); }
     const MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }

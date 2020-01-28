@@ -48,7 +48,7 @@ template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
     if (this->getMWTree().getRootBox().isPeriodic()) {
-        periodic::coord_mainpulation<D>(r, this->getMWTree().getRootBox().getPeriodic());
+        periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic());
     }
 
     this->threadSafeGenChildren();

@@ -1,4 +1,2 @@
-sphinx-rtd-theme
-sphinx
-recommonmark
-sphinxcontrib-bibtex
+breathe
+sphinx_rtd_theme

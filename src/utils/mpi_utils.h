@@ -35,7 +35,13 @@ using MPI_Request = int;
 
 namespace mrcpp {
 
-/** Share memory within a compute node
+/** @class SharedMemory
+ *
+ *  @brief Shared memory block within a compute node
+ *
+ *  @details This class defines a shared memory window in a shared MPI
+ *  communicator. In order to allocate a FunctionTree in shared memory,
+ *  simply pass a SharedMemory object to the FunctionTree constructor.
  */
 class SharedMemory {
 public:

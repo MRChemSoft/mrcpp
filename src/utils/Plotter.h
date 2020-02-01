@@ -34,6 +34,8 @@
 
 #include "MRCPP/mrcpp_declarations.h"
 
+namespace mrcpp {
+
 /** @class Plotter
  *
  * @brief Class for plotting multivariate functions
@@ -42,17 +44,17 @@
  * or three (cube) dimensions, and subsequently evaluate the function on
  * this grid.
  *
- * The grid is generated from the vectors A, B and C in relation to the origin O:
+ * The grid is generated from the vectors A, B and C, relative to the origin O:
  *  - a linePlot will plot the line spanned by A, starting from O
  *  - a surfPlot will plot the area spanned by A and B, starting from O
  *  - a cubePlot will plot the volume spanned by A, B and C, starting from O
  *
- * The parameter D refers to the dimension of the _function_, not the
+ * The vectors A, B and C do not necessarily have to be orthogonal.
+ *
+ * The parameter `D` refers to the dimension of the _function_, not the
  * dimension of the plot.
  *
  */
-
-namespace mrcpp {
 
 template <int D> class Plotter {
 public:
@@ -60,12 +62,8 @@ public:
     virtual ~Plotter() = default;
 
     void setSuffix(int t, const std::string &s);
-    void setOrigin(const Coord<D> &o) { this->O = o; }
-    void setRange(const Coord<D> &a, const Coord<D> &b = {}, const Coord<D> &c = {}) {
-        this->A = a;
-        this->B = b;
-        this->C = c;
-    }
+    void setOrigin(const Coord<D> &o);
+    void setRange(const Coord<D> &a, const Coord<D> &b = {}, const Coord<D> &c = {});
 
     void gridPlot(const MWTree<D> &tree, const std::string &fname);
     void linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func, const std::string &fname);

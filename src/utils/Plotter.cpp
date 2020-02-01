@@ -33,11 +33,10 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** Plotter constructor
-
-    Arguments:
-    o:                 origin, default (0, 0, ... , 0)
-*/
+/** @returns New Plotter object
+ *
+ *  @param[in] o: Plot origin, default `(0, 0, ... , 0)`
+ */
 template <int D>
 Plotter<D>::Plotter(const Coord<D> &o)
         : O(o) {
@@ -47,28 +46,49 @@ Plotter<D>::Plotter(const Coord<D> &o)
     setSuffix(Plotter<D>::Grid, ".grid");
 }
 
-/** Set file extension for output file
-
-    The file name you decide for the output will get a predefined suffix
-    that differentiates between different types of plot.
-
-    Default values:
-    line:    ".line"
-    surface: ".surf"
-    cube:    ".cube"
-    grid:    ".grid"
-*/
+/** @brief Set file extension for output file
+ *
+ *  @param[in] t: Plot type (`Plotter<D>::Line`, `::Surface`, `::Cube`, `::Grid`)
+ *  @param[in] s: Extension string, default `.line`, `.surf`, `.cube`, `.grid`
+ *
+ *  @details The file name you decide for the output will get a predefined
+ *  suffix that differentiates between different types of plot.
+ */
 template <int D> void Plotter<D>::setSuffix(int t, const std::string &s) {
     this->suffix.insert(std::pair<int, std::string>(t, s));
 }
 
-/** Grid plot of a MWTree
+/** @brief Set the point of origin for the plot
+ *
+ *  @param[in] o: Plot origin, default `(0, 0, ... , 0)`
+ */
+template <int D> void Plotter<D>::setOrigin(const Coord<D> &o) {
+    this->O = o;
+}
 
-    Writes a file named fname + file extension (".grid" as default) to be read
-    by geomview to visualize the grid (of endNodes)	where the multiresolution
-    function is defined. In MPI, each process will write a separate file, and
-    will print only	nodes owned by itself (pluss the rootNodes).
-*/
+/** @brief Set boundary vectors A, B and C for the plot
+ *
+ *  @param[in] a: A vector
+ *  @param[in] b: B vector
+ *  @param[in] c: C vector
+ */
+template <int D> void Plotter<D>::setRange(const Coord<D> &a, const Coord<D> &b, const Coord<D> &c) {
+    this->A = a;
+    this->B = b;
+    this->C = c;
+}
+
+/** @brief Grid plot of a MWTree
+ *
+ *  @param[in] tree: MWTree to plot
+ *  @param[in] fname: File name for output, without extension
+ *
+ *  @details Writes a file named fname + file extension (".grid" as default)
+ *  to be read by geomview to visualize the grid (of endNodes) where the
+ *  multiresolution function is defined. In MPI, each process will write a
+ *  separate file, and will print only nodes owned by itself (pluss the
+ *  rootNodes).
+ */
 template <int D> void Plotter<D>::gridPlot(const MWTree<D> &tree, const std::string &fname) {
     println(20, "----------Grid Plot-----------");
     std::stringstream file;
@@ -79,12 +99,16 @@ template <int D> void Plotter<D>::gridPlot(const MWTree<D> &tree, const std::str
     printout(20, std::endl);
 }
 
-/** Parametric plot of a function
-
-    Plots the function func parametrically along the vector A starting
-    from the origin O to a file named fname + file extension (".line"
-    as default).
-*/
+/** @brief Parametric plot of a function
+ *
+ *  @param[in] npts: Number of points along A
+ *  @param[in] func: Function to plot
+ *  @param[in] fname: File name for output, without extension
+ *
+ *  @details Plots the function func parametrically with npts[0] along the
+ *  vector A starting from the origin O to a file named fname + file extension
+ *  (".line" as default).
+ */
 template <int D>
 void Plotter<D>::linePlot(const std::array<int, 1> &npts,
                           const RepresentableFunction<D> &func,
@@ -104,12 +128,16 @@ void Plotter<D>::linePlot(const std::array<int, 1> &npts,
     printout(20, std::endl);
 }
 
-/** Surface plot of a function
-
-    Plots the function func in 2D on the area spanned by the two vectors
-    A and B, starting from the origin O, to a file named fname + file
-    extension (".surf" as default).
-*/
+/** @brief Surface plot of a function
+ *
+ *  @param[in] npts: Number of points along A and B
+ *  @param[in] func: Function to plot
+ *  @param[in] fname: File name for output, without extension
+ *
+ *  @details Plots the function func in 2D on the area spanned by the two
+ *  vectors A (npts[0] points) and B (npts[1] points), starting from the
+ *  origin O, to a file named fname + file extension (".surf" as default).
+ */
 template <int D>
 void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
                           const RepresentableFunction<D> &func,
@@ -129,12 +157,17 @@ void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
     printout(20, std::endl);
 }
 
-/** Cubic plot of a function
-
-    Plots the function func in 3D in the volume spanned by the three vectors
-    A, B and C, starting from the origin O, to a file named fname + file
-    extension (".cube" as default).
-*/
+/** @brief Cubic plot of a function
+ *
+ *  @param[in] npts: Number of points along A, B and C
+ *  @param[in] func: Function to plot
+ *  @param[in] fname: File name for output, without extension
+ *
+ *  @details Plots the function func in 3D in the volume spanned by the three
+ *  vectors A (npts[0] points), B (npts[1] points) and C (npts[2] points),
+ *  starting from the origin O, to a file named fname + file extension
+ *  (".cube" as default).
+ */
 template <int D>
 void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
                           const RepresentableFunction<D> &func,
@@ -154,11 +187,11 @@ void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
     printout(20, std::endl);
 }
 
-/** Calculating coordinates to be evaluated
-
-    Generating a vector of pts_a equidistant coordinates that makes up the
-    vector A in D dimensions, starting from the origin O.
-*/
+/** @brief Calculating coordinates to be evaluated
+ *
+ *  @details Generating a vector of pts_a equidistant coordinates that makes
+ *  up the vector A in D dimensions, starting from the origin O.
+ */
 template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) const {
     MatrixXd coords;
     if (pts_a > 0) {
@@ -173,12 +206,11 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) cons
     return coords;
 }
 
-/** Calculating coordinates to be evaluated
-
-    Generating a vector of equidistant coordinates that makes up the
-    area spanned by vectors A and B in D dimensions, starting from the
-    origin O.
-*/
+/** @brief Calculating coordinates to be evaluated
+ *
+ *  @details Generating a vector of equidistant coordinates that makes up the
+ *  area spanned by vectors A and B in D dimensions, starting from the origin O.
+ */
 template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int pts_b) const {
     if (D < 2) MSG_ERROR("Cannot surfPlot less than 2D");
 
@@ -202,12 +234,12 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int 
     return coords;
 }
 
-/** Calculating coordinates to be evaluated
-
-    Generating a vector of equidistant coordinates that makes up the
-    volume spanned by vectors A, B and C in D dimensions, starting from
-    the origin O.
-*/
+/** @brief Calculating coordinates to be evaluated
+ *
+ *  @details Generating a vector of equidistant coordinates that makes up the
+ *  volume spanned by vectors A, B and C in D dimensions, starting from
+ *  the origin O.
+ */
 template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const {
     if (D < 3) MSG_ERROR("Cannot cubePlot less than 3D function");
 
@@ -234,12 +266,12 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int 
     return coords;
 }
 
-/** Evaluating a function in a set of predfined coordinates
-
-    Given that the set of coordinates ("coords") has been calculated, this
-    routine evaluates the function in these points and stores the results
-    in the vector "values".
-*/
+/** @brief Evaluating a function in a set of predfined coordinates
+ *
+ *  @details Given that the set of coordinates ("coords") has been calculated,
+ *  this routine evaluates the function in these points and stores the results
+ *  in the vector "values".
+ */
 template <int D>
 Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &func,
                                              const Eigen::MatrixXd &coords) const {
@@ -255,13 +287,13 @@ Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &fun
     return values;
 }
 
-/** Writing plot data to file
-
-    This will write the contents of the "coords" matrix along with the function
-    values to the file stream fout.	File will contain on each line the point
-    number (between 0 and nPoints),	coordinates 1 through D and the function
-    value.
-*/
+/** @brief Writing plot data to file
+ *
+ *  @details This will write the contents of the "coords" matrix along with the
+ *  function values to the file stream fout. File will contain on each line the
+ *  point number (between 0 and nPoints), coordinates 1 through D and the
+ *  function value.
+ */
 template <int D> void Plotter<D>::writeData(const Eigen::MatrixXd &coords, const Eigen::VectorXd &values) {
     if (coords.rows() != values.size()) INVALID_ARG_ABORT;
     std::ofstream &o = *this->fout;
@@ -290,10 +322,10 @@ template <int D> void Plotter<D>::writeGrid(const MWTree<D> &tree) {
     NOT_IMPLEMENTED_ABORT
 }
 
-/** Opening file for output
-
-    Opens a file output stream fout for file named fname.
-*/
+/** @brief Opening file for output
+ *
+ *  @details Opens a file output stream fout for file named fname.
+ */
 template <int D> void Plotter<D>::openPlot(const std::string &fname) {
     if (fname.empty()) {
         if (this->fout == nullptr) {
@@ -314,20 +346,20 @@ template <int D> void Plotter<D>::openPlot(const std::string &fname) {
     }
 }
 
-/** Closing file
-
-    Closes the file output stream fout.
-*/
+/** @brief Closing file
+ *
+ *  @details Closes the file output stream fout.
+ */
 template <int D> void Plotter<D>::closePlot() {
     if (this->fout != nullptr) this->fout->close();
     this->fout = nullptr;
 }
 
-/** Writing plot data to file
-
-    This will write a cube file (readable by blob) of the function values
-    previously calculated (the "values" vector).
-*/
+/** @brief Writing plot data to file
+ *
+ *  @details This will write a cube file (readable by blob) of the function
+ *  values previously calculated (the "values" vector).
+ */
 template <> void Plotter<3>::writeCube(const std::array<int, 3> &npts, const Eigen::VectorXd &values) {
     std::ofstream &o = *this->fout;
 
@@ -407,12 +439,12 @@ template <> void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::str
       << origin[2] + length << color << std::endl;
 }
 
-/** Writing grid data to file
-
-    This will write a grid file (readable by geomview) of the grid (of endNodes)
-    where the multiresolution function is defined.
-    Currently only working in 3D.
-*/
+/** @brief Writing grid data to file
+ *
+ *  @details This will write a grid file (readable by geomview) of the grid
+ *  (of endNodes) where the multiresolution function is defined. Currently
+ *  only working in 3D.
+ */
 template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     std::ostream &o = *this->fout;
     o << "CQUAD" << std::endl;
@@ -429,8 +461,7 @@ template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     }
 }
 
-/** Checks the validity of the plotting range
- */
+/** @brief Checks the validity of the plotting range */
 template <int D> bool Plotter<D>::verifyRange(int dim) const {
     if (dim == 1) {
         double len_a = std::sqrt(this->A[0] * this->A[0]);
@@ -450,6 +481,7 @@ template <int D> bool Plotter<D>::verifyRange(int dim) const {
     return true;
 }
 
+/** @brief Compute step length to cover vector with `pts` points, including edges */
 template <int D> Coord<D> Plotter<D>::calcStep(const Coord<D> &vec, int pts) const {
     Coord<D> step;
     for (auto d = 0; d < D; d++) step[d] = vec[d] / (pts - 1.0);

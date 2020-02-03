@@ -23,22 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- * - Monodimensional gaussian expansion:
- *
- * \f$ g(x) = \sum_{i=1}^M g_i(x_i)
- * = \sum_{i=1}^M \alpha_i e^{-c_i (x-x^0)^2} \f$
- *
- * - Multidimensional gaussian expansion:
- *
- * \f$ G(x) = \sum_{j=1}^M G_j(x)
- * = \sum_{j=1}^M \prod_{i=1}^d g_ij(x_i)
- * = \sum_{j=1}^M \prod_{i=1}^d \alpha_{ij} e^{-c_{ij} (x_i-x_i^0)^2} \f$
- *
- *
- */
-
 #pragma once
 
 #include <iostream>
@@ -52,6 +36,20 @@
 namespace mrcpp {
 
 #define GAUSS_EXP_PREC 1.e-10
+
+/** @class GaussExp
+ *
+ * @brief Gaussian expansion in D dimensions
+ *
+ * - Monodimensional Gaussian expansion:
+ *
+ * \f$ g(x) = \sum_{m=1}^M g_m(x) = \sum_{m=1}^M \alpha_m e^{-\beta (x-x^0)^2} \f$
+ *
+ * - Multidimensional Gaussian expansion:
+ *
+ * \f$ G(x) = \sum_{m=1}^M G_m(x) = \sum_{m=1}^M \prod_{d=1}^D g_m^d(x^d) \f$
+ *
+ */
 
 template <int D> class GaussExp : public RepresentableFunction<D> {
 public:
@@ -101,7 +99,7 @@ public:
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     double getSquareNorm() {
-        if (squareNorm < 0) { calcSquareNorm(); }
+        if (squareNorm < 0.0) calcSquareNorm();
         return squareNorm;
     }
 
@@ -122,7 +120,9 @@ public:
     void setPower(int i, const std::array<int, D> &power) { this->funcs[i]->setPower(power); }
     void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
+    /** @brief Append Gaussian to expansion */
     void append(const Gaussian<D> &g);
+    /** @brief Append GaussExp to expansion */
     void append(const GaussExp<D> &g);
 
     friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }

@@ -23,21 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- * \breif Tools to handle gaussian functions and/or expansions in gaussian functions.
- * Implemented as a template class in the dimensionality:
- *
- *- Monodimensional gaussian (Gaussian<1>):
- *
- * \f$ g(x) = c e^{-\alpha (x-x^0)^2} \f$
- *
- * - Multidimensional gaussian (Gaussian<d>):
- *
- * \f$ G(x) = \prod_{i=1}^d g_i(x_i)
- * = \prod_{i=1}^d \c_i e^{-\alpha_i (x_i-x_i^0)^2} \f$
- */
-
 #pragma once
 
 #include <Eigen/Core>
@@ -47,39 +32,57 @@
 
 namespace mrcpp {
 
+/** @class GaussFunc
+ *
+ * @brief Gaussian function in D dimensions with a simple monomial in front
+ *
+ * - Monodimensional Gaussian (GaussFunc<1>):
+ *
+ * \f$ g(x) = \alpha (x-x_0)^a e^{-\beta (x-x_0)^2} \f$
+ *
+ * - Multidimensional Gaussian (GaussFunc<D>):
+ *
+ * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
+ */
+
 template <int D> class GaussFunc final : public Gaussian<D> {
 public:
-    GaussFunc(double alpha, double coef, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
-            : Gaussian<D>(alpha, coef, pos, pow) {}
-    GaussFunc(const std::array<double, D> &alpha,
-              double coef,
+    /** @returns New GaussFunc object
+     *  @param[in] beta: Exponent, \f$ e^{-\beta r^2} \f$
+     *  @param[in] alpha: Coefficient, \f$ \alpha e^{-r^2} \f$
+     *  @param[in] pos: Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+     *  @param[in] pow: Monomial power, \f$ x^{pow[0]}, y^{pow[1]}, ... \f$
+     */
+    GaussFunc(double beta, double alpha, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
+            : Gaussian<D>(beta, alpha, pos, pow) {}
+    GaussFunc(const std::array<double, D> &beta,
+              double alpha,
               const Coord<D> &pos = {},
               const std::array<int, D> &pow = {})
-            : Gaussian<D>(alpha, coef, pos, pow) {}
+            : Gaussian<D>(beta, alpha, pos, pow) {}
     GaussFunc(const GaussFunc<D> &gf)
             : Gaussian<D>(gf) {}
-    GaussFunc<D> &operator=(const GaussFunc<D> &gp) = delete;
+    GaussFunc<D> &operator=(const GaussFunc<D> &rhs) = delete;
     Gaussian<D> *copy() const override;
 
-    double calcCoulombEnergy(GaussFunc<D> &gf);
+    double calcCoulombEnergy(GaussFunc<D> &rhs);
     double calcSquareNorm() override;
 
-    double evalfCore(const Coord<D> &r) const;
+    double evalfCore(const Coord<D> &r) const override;
+    double evalf(double r, int dir) const override;
 
-    double evalf(double r, int dim) const;
-
-    static double calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b);
-    double calcOverlap(GaussFunc<D> &b) override;
-    double calcOverlap(GaussPoly<D> &b) override;
+    static double calcOverlap(GaussFunc<D> &lhs, GaussFunc<D> &rhs);
+    double calcOverlap(GaussFunc<D> &rhs) override;
+    double calcOverlap(GaussPoly<D> &rhs) override;
 
     GaussPoly<D> differentiate(int dir) override;
 
-    void multInPlace(const GaussFunc<D> &g);
-    void operator*=(const GaussFunc<D> &gf) { multInPlace(gf); }
-    GaussPoly<D> mult(const GaussFunc<D> &g);
-    GaussFunc<D> mult(double d);
-    GaussPoly<D> operator*(const GaussFunc<D> &g) { return this->mult(g); }
-    GaussFunc<D> operator*(double d) { return this->mult(d); }
+    void multInPlace(const GaussFunc<D> &rhs);
+    void operator*=(const GaussFunc<D> &rhs) { multInPlace(rhs); }
+    GaussPoly<D> mult(const GaussFunc<D> &rhs);
+    GaussFunc<D> mult(double c);
+    GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
+    GaussFunc<D> operator*(double c) { return this->mult(c); }
 
     void setPower(int d, int power) override {
         this->power[d] = power;

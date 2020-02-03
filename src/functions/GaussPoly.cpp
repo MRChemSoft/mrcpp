@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- *
- * \date May 26, 2010
- * \author Stig Rune Jensen
- *		   CTCC, University of Tromsø
- *
- */
-
 #include "vector"
 
 #include "GaussExp.h"
@@ -44,13 +35,18 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/** @returns New GaussPoly object
+ *  @param[in] beta: Exponent, \f$ e^{-\beta r^2} \f$
+ *  @param[in] alpha: Coefficient, \f$ \alpha e^{-r^2} \f$
+ *  @param[in] pos: Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+ *  @param[in] pow: Max polynomial degree, \f$ P_0(x), P_1(y), ... \f$
+ */
 template <int D>
-GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos, const std::array<int, D> &power)
-        : Gaussian<D>(alpha, coef, pos, power) {
+GaussPoly<D>::GaussPoly(double beta, double alpha, const Coord<D> &pos, const std::array<int, D> &power)
+        : Gaussian<D>(beta, alpha, pos, power) {
     for (auto d = 0; d < D; d++) {
         if (power != std::array<int, D>{}) {
             this->poly[d] = new Polynomial(this->power[d]);
-            // this->poly[d]->unsetBounds();
         } else {
             this->poly[d] = nullptr;
         }
@@ -58,15 +54,14 @@ GaussPoly<D>::GaussPoly(double alpha, double coef, const Coord<D> &pos, const st
 }
 
 template <int D>
-GaussPoly<D>::GaussPoly(const std::array<double, D> &alpha,
-                        double coef,
+GaussPoly<D>::GaussPoly(const std::array<double, D> &beta,
+                        double alpha,
                         const Coord<D> &pos,
-                        const std::array<int, D> &power)
-        : Gaussian<D>(alpha, coef, pos, power) {
+                        const std::array<int, D> &pow)
+        : Gaussian<D>(beta, alpha, pos, pow) {
     for (auto d = 0; d < D; d++) {
-        if (power != std::array<int, D>{}) {
+        if (pow != std::array<int, D>{}) {
             this->poly[d] = new Polynomial(this->power[d]);
-            // this->poly[d]->unsetBounds();
         } else {
             this->poly[d] = nullptr;
         }
@@ -138,13 +133,13 @@ template <int D> double GaussPoly<D>::evalfCore(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-/** NOTE!
- *	This function evaluation will give the first dimension the full coef
- *	amplitude, leaving all other directions with amplitude 1.0. This is to
- *	avoid expensive d-root evaluation when distributing the amplitude
- *	equally to all dimensions.
- */
 template <int D> double GaussPoly<D>::evalf(const double r, int d) const {
+    // NOTE!
+    //     This function evaluation will give the first dimension the full coef
+    //     amplitude, leaving all other directions with amplitude 1.0. This is to
+    //     avoid expensive d-root evaluation when distributing the amplitude
+    //     equally to all dimensions.
+
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
@@ -243,6 +238,10 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
     */
 }
 
+/** @brief Multiply GaussPoly by scalar
+ *  @param[in] c: Scalar to multiply
+ *  @returns New GaussPoly
+ */
 template <int D> GaussPoly<D> GaussPoly<D>::mult(double c) {
     GaussPoly<D> g = *this;
     g.coef *= c;
@@ -263,10 +262,14 @@ template <int D> void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
     this->squareNorm = -1.0;
 }
 
+/** @brief Set polynomial in given dimension
+ *
+ *  @param[in] d: Cartesian direction
+ *  @param[in] poly: Polynomial to set
+ */
 template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
     if (this->poly[d] != nullptr) { delete this->poly[d]; }
     this->poly[d] = new Polynomial(poly);
-    // this->poly[d]->unsetBounds();
     this->power[d] = poly.getOrder();
 }
 

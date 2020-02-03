@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- *
- *  \date Jul 5, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- * \breif
- */
 #include <cmath>
 
 #include "BoysFunction.h"
@@ -73,12 +64,6 @@ template <int D> double GaussFunc<D>::evalfCore(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-/** NOTE!
- *	This function evaluation will give the first dimension the full coef
- *	amplitude, leaving all other directions with amplitude 1.0. This is to
- *	avoid expensive d-root evaluation when distributing the amplitude
- *	equally to all dimensions.
- */
 template <int D> double GaussFunc<D>::evalf(double r, int d) const {
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
@@ -154,6 +139,11 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     this->calcSquareNorm();
 }
 
+/** @brief Multiply two GaussFuncs
+ *  @param[in] this: Left hand side of multiply
+ *  @param[in] rhs: Right hand side of multiply
+ *  @returns New GaussPoly
+ */
 template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     GaussPoly<D> result;
@@ -169,6 +159,10 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     return result;
 }
 
+/** @brief Multiply GaussFunc by scalar
+ *  @param[in] c: Scalar to multiply
+ *  @returns New GaussFunc
+ */
 template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
     GaussFunc<D> g = *this;
     g.coef *= c;
@@ -185,8 +179,6 @@ template <int D> double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
     return overlap;
 }
 
-/**  Compute the D-dimensional overlap integral between two
- * gaussian distributions */
 template <int D> double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
@@ -280,11 +272,6 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a, doubl
     return s_coeff[power_b + 2 * power_a];
 }
 
-// Specialized for D=3 below
-template <int D> double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
 template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
 
     // If all of the values in the exponential are the same only
@@ -305,9 +292,18 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     return o;
 }
 
-/** NOTE: Gaussians must be normalized to unit charge coef = (alpha/pi)^(3/2)
- * for this to be correct!
+/** @brief Compute Coulomb repulsion energy between two GaussFuncs
+ *  @param[in] this: Left hand GaussFunc
+ *  @param[in] rhs: Right hand GaussFunc
+ *  @returns Coulomb energy
+ *
+ *  @note Both Gaussians must be normalized to unit charge
+ *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
  */
+template <int D> double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
 template <> double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
 
     // Checking if the elements in each exponent are constant

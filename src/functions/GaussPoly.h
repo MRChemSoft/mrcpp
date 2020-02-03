@@ -23,14 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- *
- * \date May 25, 2010
- * \author Stig Rune Jensen
- *		   CTCC, University of Tromsø
- */
-
 #pragma once
 
 #include <Eigen/Core>
@@ -42,6 +34,19 @@
 #include "Polynomial.h"
 
 namespace mrcpp {
+
+/** @class GaussPoly
+ *
+ * @brief Gaussian function in D dimensions with a general polynomial in front
+ *
+ * - Monodimensional Gaussian (GaussPoly<1>):
+ *
+ * \f$ g(x) = \alpha P(x-x_0) e^{-\beta (x-x_0)^2} \f$
+ *
+ * - Multidimensional Gaussian (GaussFunc<D>):
+ *
+ * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
+ */
 
 template <int D> class GaussPoly final : public Gaussian<D> {
 public:
@@ -80,7 +85,6 @@ public:
 
     void setPower(int d, int pow) override;
     void setPower(const std::array<int, D> &pow) override;
-    // void setPower(const int pow[D]);
     void setPoly(int d, Polynomial &poly);
 
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;

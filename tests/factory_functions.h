@@ -44,7 +44,7 @@ template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
 
 template <int D>
 void initialize(mrcpp::BoundingBox<D> **box, bool periodic = false, const std::array<double, D> &period = {}) {
-    if (box == nullptr)  INVALID_ARG_ABORT;
+    if (box == nullptr) INVALID_ARG_ABORT;
     if (*box != nullptr) INVALID_ARG_ABORT;
 
     if (not periodic) {

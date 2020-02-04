@@ -23,6 +23,8 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#include "MRCPP/Printer"
+
 #include "periodic_utils.h"
 #include "trees/NodeIndex.h"
 
@@ -33,10 +35,11 @@ namespace periodic {
 
 template <int D> void indx_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic) {
     int translation[D];
+    if (idx.getScale() < 0) MSG_ABORT("Negative value in bit-shift");
     int two_n = 1 << idx.getScale();
     for (auto i = 0; i < D; i++) {
+        translation[i] = idx.getTranslation(i);
         if (periodic[i]) {
-            translation[i] = idx.getTranslation(i);
             if (translation[i] >= two_n) translation[i] = translation[i] % two_n;
             if (translation[i] < 0) translation[i] = (translation[i] + 1) % two_n + two_n - 1;
         }

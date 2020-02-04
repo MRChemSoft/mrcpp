@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <Eigen/Core>
 #include <cmath>
 #include <iostream>
-
-#include <Eigen/Core>
+#include <memory>
 
 #include "MRCPP/mrcpp_declarations.h"
 #include "RepresentableFunction.h"
@@ -48,7 +48,11 @@ public:
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian() = default;
 
-    virtual double evalf(const Coord<D> &r) const = 0;
+    void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
+
+    virtual double evalfCore(const Coord<D> &r) const = 0;
+
+    double evalf(const Coord<D> &r) const;
     virtual double evalf(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
@@ -81,7 +85,10 @@ public:
     const std::array<int, D> &getPower() const { return power; }
     const std::array<double, D> &getPos() const { return pos; }
     double getCoef() const { return coef; }
-    auto getExp() const { return alpha; }
+    std::array<double, D> getExp() const { return alpha; }
+    std::array<double, D> getPeriod() const { return period; }
+
+    double getMaximumStandardDiviation() const;
 
     virtual void setPower(const std::array<int, D> &power) = 0;
     virtual void setPower(int d, int power) = 0;
@@ -109,8 +116,11 @@ protected:
     double coef;                 /**< constant factor */
     std::array<int, D> power;    /**< max power in each dim  */
     std::array<double, D> alpha; /**< exponent  */
-    std::array<double, D> pos;   /**< center  */
+    Coord<D> pos;                /**< center  */
+    std::array<double, D> period{};
     double squareNorm;
+
+    std::shared_ptr<GaussExp<D>> gauss_exp{nullptr};
 
     bool isVisibleAtScale(int scale, int nQuadPts) const;
     bool isZeroOnInterval(const double *a, const double *b) const;

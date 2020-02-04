@@ -67,7 +67,7 @@ template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKerne
         MSG_ABORT("Invalid scaling type");
     }
 
-    int max_l = (box.isPeriodic()) ? 10 : 0;
+    int max_l = (box.isPeriodic()) ? this->periodic_operator_reach : 0;
     for (int i = 0; i < D; i++) {
         if (box.size(i) > max_l) { max_l = box.size(i); }
     }
@@ -86,7 +86,7 @@ template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOpera
     const BoundingBox<D> &box = getWorldBox();
     const ScalingBasis &basis = getScalingBasis();
 
-    int maxn = (box.isPeriodic()) ? 10 : 0;
+    int maxn = (box.isPeriodic()) ? this->periodic_operator_reach : 0;
     for (int i = 0; i < D; i++) {
         if (box.size(i) > maxn) { maxn = box.size(i); }
     }

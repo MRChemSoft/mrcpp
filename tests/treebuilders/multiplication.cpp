@@ -63,7 +63,7 @@ template <int D> void testMultiplication() {
     GaussPoly<D> ref_func = a_func * b_func;
 
     MultiResolutionAnalysis<D> *mra = nullptr;
-    initialize(&mra);
+    initialize<D>(&mra);
 
     // Initialize trees
     FunctionTree<D> a_tree(*mra);
@@ -133,7 +133,7 @@ template <int D> void testSquare() {
     GaussPoly<D> ref_func = f_func * f_func;
 
     MultiResolutionAnalysis<D> *mra = nullptr;
-    initialize(&mra);
+    initialize<D>(&mra);
 
     // Initialize trees
     FunctionTree<D> f_tree(*mra);
@@ -205,7 +205,7 @@ template <int D> void testSquare() {
 
 TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot]") {
     MultiResolutionAnalysis<3> *mra = nullptr;
-    initialize(&mra);
+    initialize<3>(&mra);
 
     double prec = 1.0e-4;
 

@@ -122,7 +122,7 @@ template <int D> double GaussPoly<D>::calcSquareNorm() {
     return this->squareNorm;
 }
 
-template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
+template <int D> double GaussPoly<D>::evalfCore(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) { return 0.0; }

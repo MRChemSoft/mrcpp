@@ -28,6 +28,7 @@
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
+#include "utils/periodic_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -47,10 +48,7 @@ template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
     if (this->getMWTree().getRootBox().isPeriodic()) {
-        for (auto i = 0; i < D; i++) {
-            if (r[i] > 1.0) r[i] = std::fmod(r[i], 1.0);
-            if (r[i] < 0.0) r[i] = std::fmod(r[i], 1.0) + 1.0;
-        }
+        periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic());
     }
 
     this->threadSafeGenChildren();

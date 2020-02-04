@@ -36,11 +36,19 @@ using namespace mrcpp;
 namespace projection {
 
 template <int D> void testProjectFunction();
+template <int D> void testProjectNarrowPeriodicGaussian();
+template <int D> void testProjectWidePeriodicGaussian();
 
 SCENARIO("Projecting Gaussian function", "[projection], [tree_builder], [trees]") {
     GIVEN("a Gaussian of unit charge in 1D") { testProjectFunction<1>(); }
     GIVEN("a Gaussian of unit charge in 2D") { testProjectFunction<2>(); }
     GIVEN("a Gaussian of unit charge in 3D") { testProjectFunction<3>(); }
+    GIVEN("A periodic narrow Gaussian of unit charge in 1D") { testProjectNarrowPeriodicGaussian<1>(); }
+    GIVEN("A periodic narrow Gaussian of unit charge in 2D") { testProjectNarrowPeriodicGaussian<2>(); }
+    GIVEN("A periodic narrow Gaussian of unit charge in 3D") { testProjectNarrowPeriodicGaussian<3>(); }
+    GIVEN("A periodic wide Gaussian of unit charge in 1D") { testProjectWidePeriodicGaussian<1>(); }
+    GIVEN("A periodic wide Gaussian of unit charge in 2D") { testProjectWidePeriodicGaussian<2>(); }
+    GIVEN("A periodic wide Gaussian of unit charge in 3D") { testProjectWidePeriodicGaussian<3>(); }
 }
 
 template <int D> void testProjectFunction() {
@@ -94,6 +102,46 @@ template <int D> void testProjectFunction() {
     }
     finalize(&mra);
     finalize(&func);
+}
+
+template <int D> void testProjectNarrowPeriodicGaussian() {
+    const auto prec = 1.0e-4;
+
+    auto period = std::array<double, D>{};
+    period.fill(2.0); // Creating a world with period 2 in each direction
+    auto periodic = true;
+
+    GaussFunc<D> *func = nullptr;
+    initialize<D>(&func, periodic, period);
+    MultiResolutionAnalysis<D> *mra = nullptr;
+    initialize<D>(&mra, periodic, period);
+
+    FunctionTree<D> f_tree(*mra);
+    build_grid<D>(f_tree, *func);
+    project<D>(prec, f_tree, *func);
+    REQUIRE(f_tree.integrate() == Approx(1.0));
+}
+
+template <int D> void testProjectWidePeriodicGaussian() {
+    const auto prec = 1.0e-4;
+
+    auto period = std::array<double, D>{};
+    period.fill(2.0); // Creating a world with period 2 in each direction
+    auto pos = Coord<D>{};
+    pos.fill(1.0);
+
+    auto alpha = 1.0;
+    auto beta = std::pow(alpha / pi, static_cast<double>(D) / 2.0);
+    auto func = GaussFunc<D>(alpha, beta, pos);
+    func.makePeriodic(period);
+
+    MultiResolutionAnalysis<D> *mra = nullptr;
+    initialize<D>(&mra, true, period);
+
+    FunctionTree<D> f_tree(*mra);
+    build_grid<D>(f_tree, func);
+    project<D>(prec, f_tree, func);
+    REQUIRE(f_tree.integrate() == Approx(1.0));
 }
 
 } // namespace projection

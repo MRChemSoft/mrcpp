@@ -43,10 +43,10 @@ SCENARIO("Building empty grids", "[build_grid], [tree_builder], [trees]") {
 
 template <int D> void testBuildGrid() {
     GaussFunc<D> *f_func = nullptr;
-    initialize(&f_func);
+    initialize<D>(&f_func);
 
     MultiResolutionAnalysis<D> *mra = nullptr;
-    initialize(&mra);
+    initialize<D>(&mra);
 
     WHEN("the GridGenerator is given no argument") {
         FunctionTree<D> f_tree(*mra);

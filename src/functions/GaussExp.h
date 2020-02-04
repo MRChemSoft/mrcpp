@@ -61,6 +61,11 @@ public:
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
 
+    void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
+
+    auto begin() { return funcs.begin(); }
+    auto end() { return funcs.end(); }
+
     double calcCoulombEnergy();
     double calcSquareNorm();
     void normalize();
@@ -127,6 +132,7 @@ protected:
     static double defaultScreening;
     double screening{0.0};
     double squareNorm{-1.0};
+    bool periodic{false};
 
     std::ostream &print(std::ostream &o) const;
 };

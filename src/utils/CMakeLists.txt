@@ -2,6 +2,7 @@ target_sources(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/periodic_utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Printer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mpi_utils.cpp
@@ -12,6 +13,7 @@ get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
 
 list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/Plotter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/periodic_utils.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Printer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Timer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/mpi_utils.h

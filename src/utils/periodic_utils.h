@@ -25,35 +25,10 @@
 
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <iostream>
-#include <sstream>
-
+#include "MRCPP/mrcpp_declarations.h"
 namespace mrcpp {
-namespace details {
-bool directory_exists(std::string path);
-int get_memory_usage();
-template <int D> bool are_all_equal(const std::array<double, D> &exponent);
-template <typename T, size_t D> bool are_any(const std::array<T, D> &col, const T eq) {
-    return std::any_of(col.cbegin(), col.cend(), [eq](const T &el) { return el == eq; });
-};
-template <typename T, int D> std::array<T, D> convert_to_std_array(T *arr);
-template <typename T> auto stream_collection(const T &coll) -> std::string {
-    std::ostringstream os;
-    bool first = true;
-    os << "[";
-    for (auto elem : coll) {
-        if (!first) os << ", ";
-        os << elem;
-        first = false;
-    }
-    os << "]";
-    return os.str();
-}
-} // namespace details
-
-template <typename T, size_t D> auto operator<<(std::ostream &os, const std::array<T, D> &coll) -> std::ostream & {
-    return (os << details::stream_collection(coll));
-}
+namespace periodic {
+template <int D> void indx_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic);
+template <int D> void coord_manipulation(Coord<D> &r, const std::array<bool, D> &periodic);
+} // namespace periodic
 } // namespace mrcpp

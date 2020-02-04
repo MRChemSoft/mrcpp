@@ -43,8 +43,8 @@ BoundingBox<D>::BoundingBox(int n,
                             const std::array<int, D> &l,
                             const std::array<int, D> &nb,
                             const std::array<double, D> &sf)
-        : cornerIndex(n, l.data())
-        , periodic(false) {
+        : cornerIndex(n, l.data()) {
+    setPeriodic(false);
     setNBoxes(nb);
     setScalingFactor(sf);
     setDerivedParameters();
@@ -52,8 +52,8 @@ BoundingBox<D>::BoundingBox(int n,
 
 template <int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb, const std::array<double, D> &sf)
-        : cornerIndex(idx)
-        , periodic(false) {
+        : cornerIndex(idx) {
+    setPeriodic(false);
     setNBoxes(nb);
     setScalingFactor(sf);
     setDerivedParameters();
@@ -61,8 +61,17 @@ BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &n
 
 template <int D>
 BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
-        : cornerIndex()
-        , periodic(pbc) {
+        : cornerIndex() {
+    setPeriodic(pbc);
+    setNBoxes();
+    setScalingFactor(sf);
+    setDerivedParameters();
+}
+
+template <int D>
+BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc)
+        : cornerIndex() {
+    setPeriodic(pbc);
     setNBoxes();
     setScalingFactor(sf);
     setDerivedParameters();
@@ -70,8 +79,8 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
 
 template <int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
-        : cornerIndex(box.cornerIndex)
-        , periodic(box.periodic) {
+        : cornerIndex(box.cornerIndex) {
+    setPeriodic(box.periodic);
     setNBoxes(box.nBoxes);
     setScalingFactor(box.getScalingFactor());
     setDerivedParameters();
@@ -112,8 +121,19 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
 
 template <int D> void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
+    for (auto &x : sf)
+        if (x == 0.0 and sf != std::array<double, D>{})
+            MSG_ERROR("The scaling factor cannot be zero in any of the directions");
     this->scalingFactor = sf;
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
+}
+
+template <int D> void BoundingBox<D>::setPeriodic(bool pbc) {
+    this->periodic.fill(pbc);
+}
+
+template <int D> void BoundingBox<D>::setPeriodic(std::array<bool, D> pbc) {
+    this->periodic = pbc;
 }
 
 // Specialized for D=1 below

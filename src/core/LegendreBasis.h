@@ -31,8 +31,17 @@
 
 namespace mrcpp {
 
+/** @class LegendreBasis
+ *
+ * @brief Legendre scaling functions as defined by Alpert,
+ * SIAM J Math Anal 24 (1), 246 (1993).
+ */
+
 class LegendreBasis final : public ScalingBasis {
 public:
+    /** @returns New LegendreBasis object
+     * @param[in] k: Polynomial order of basis, `1 < k < 40`
+     */
     LegendreBasis(int k)
             : ScalingBasis(k, Legendre) {
         initScalingBasis();
@@ -40,6 +49,7 @@ public:
         calcCVMaps();
     }
 
+private:
     void initScalingBasis();
     void calcQuadratureValues();
     void calcCVMaps();

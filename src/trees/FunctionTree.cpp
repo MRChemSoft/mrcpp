@@ -23,11 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *  \date 2016
- *          CTCC, University of Tromsø
- */
-
 #include <fstream>
 
 #include "FunctionNode.h"
@@ -44,8 +39,15 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** FunctionTree constructor for Serial Tree.
- * */
+/** @returns New FunctionTree object
+ *
+ *  @param[in] mra: Which MRA the function is defined
+ *  @param[in] sh_mem: Pointer to MPI shared memory block
+ *
+ *  @details Constructs an uninitialized tree, containing only empty root nodes.
+ *  If a shared memory pointer is provided the tree will be allocated in this
+ *  shared memory window, otherwise it will be local to each MPI process.
+ */
 template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
         : MWTree<D>(mra)
@@ -55,7 +57,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
     this->resetEndNodeTable();
 }
 
-//** FunctionTree destructor. */
+// FunctionTree destructor
 template <int D> FunctionTree<D>::~FunctionTree() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
@@ -66,10 +68,13 @@ template <int D> FunctionTree<D>::~FunctionTree() {
     delete this->serialTree_p;
 }
 
-/** Leaves the tree inn the same state as after construction, e.i.
+/** @brief Remove all nodes in the tree
+ *
+ * @details Leaves the tree inn the same state as after construction, i.e.
  * undefined function containing only root nodes without coefficients.
  * The assigned memory (nodeChunks in SerialTree) is NOT released,
- * but is immediately available to the new function. */
+ * but is immediately available to the new function.
+ */
 template <int D> void FunctionTree<D>::clear() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
@@ -82,8 +87,9 @@ template <int D> void FunctionTree<D>::clear() {
     this->getSerialFunctionTree()->clear(this->rootBox.size());
 }
 
-/** Write the tree structure to disk, for later use.
- * Argument file name will get a ".tree" file extension. */
+/** @brief Write the tree structure to disk, for later use
+ * @param[in] file: File name, will get ".tree" extension
+ */
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     // This is basically a copy of MPI send_tree
     Timer t1;
@@ -113,8 +119,10 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     print::time(10, "Time write", t1);
 }
 
-/** Read a previously stored tree structure from disk.
- * Argument file name will get a ".tree" file extension. */
+/** @brief Read a previously stored tree structure from disk
+ * @param[in] file: File name, will get ".tree" extension
+ * @note This tree must have the exact same MRA the one that was saved
+ */
 template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // This is basically a copy of MPI recv_tree
     Timer t1;
@@ -164,6 +172,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     print::time(10, "Time rewrite pointers", t2);
 }
 
+/** @returns Integral of the function over the entire computational domain */
 template <int D> double FunctionTree<D>::integrate() const {
 
     double result = 0.0;
@@ -172,7 +181,7 @@ template <int D> double FunctionTree<D>::integrate() const {
         result += fNode.integrate();
     }
 
-    // Hande potential scaling
+    // Handle potential scaling
     auto sf = this->getMRA().getWorldBox().getScalingFactor();
     auto jacobian = 1.0;
     for (const auto &sf_i : sf) jacobian *= std::sqrt(sf_i);
@@ -182,16 +191,18 @@ template <int D> double FunctionTree<D>::integrate() const {
     return jacobian * result;
 }
 
-/** @brief Evaluate function in a given coordinate
+/** @returns Function value in a point
  *
- * NOTICE: This will only evaluate the _scaling_ part of the
- *         leaf nodes in the tree. If you want to include also
- *         the wavelet part you'll have to manually do a
+ * @param[in] r: Cartesian coordinate
  *
- *         mrcpp::refine_grid(tree, 1)
- *
- *         on the tree first. This is done to allow a fast and const
- *         function evaluation that can be done in OMP parallel.
+ * @note This will only evaluate the _scaling_ part of the
+ *       leaf nodes in the tree, which means that the function
+ *       values will not be fully accurate. If you want to include
+ *       also the _final_ wavelet part you'll have to manually extend
+ *       the MW grid by one level before evaluating, using
+ *       `mrcpp::refine_grid(tree, 1)`
+ *       This is done to allow a fast and const function evaluation
+ *       that can be done in OMP parallel.
  */
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     // Handle potential scaling
@@ -213,9 +224,9 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     return coef * result;
 }
 
-/** @brief In-place square of function
+/** @brief In-place square of MW function representations, fixed grid
  *
- * The leaf node point values of the output function will be in-place
+ * @details The leaf node point values of the function will be in-place
  * squared, no grid refinement.
  *
  */
@@ -242,12 +253,12 @@ template <int D> void FunctionTree<D>::square() {
     this->calcSquareNorm();
 }
 
-/** @brief In-place raise to given power
+/** @brief In-place power of MW function representations, fixed grid
  *
- * @param[in] c Numerical power
+ * @param[in] p: Numerical power
  *
- * The leaf node point values of the output function will be in-place
- * raised to the given power, no grid refinement.
+ * @details The leaf node point values of the function will be in-place raised
+ * to the given power, no grid refinement.
  *
  */
 template <int D> void FunctionTree<D>::power(double p) {
@@ -273,12 +284,12 @@ template <int D> void FunctionTree<D>::power(double p) {
     this->calcSquareNorm();
 }
 
-/** @brief In-place multiplication by a scalar
+/** @brief In-place multiplication by a scalar, fixed grid
  *
- * @param[in] c Scalar coefficient
+ * @param[in] c: Scalar coefficient
  *
- * The leaf node point values of the output function will be in-place
- * multiplied by the given coefficient, no grid refinement.
+ * @details The leaf node point values of the function will be
+ * in-place multiplied by the given coefficient, no grid refinement.
  *
  */
 template <int D> void FunctionTree<D>::rescale(double c) {
@@ -300,6 +311,7 @@ template <int D> void FunctionTree<D>::rescale(double c) {
     this->calcSquareNorm();
 }
 
+/** @brief In-place rescaling by a function norm \f$ ||f||^{-1} \f$, fixed grid */
 template <int D> void FunctionTree<D>::normalize() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
@@ -307,13 +319,13 @@ template <int D> void FunctionTree<D>::normalize() {
     this->rescale(1.0 / std::sqrt(sq_norm));
 }
 
-/** @brief In-place addition of MW function representations
+/** @brief In-place addition with MW function representations, fixed grid
  *
- * @param[in] c Numerical coefficient of input function
- * @param[in] inp Input function to add
+ * @param[in] c: Numerical coefficient of input function
+ * @param[in] inp: Input function to add
  *
- * The input function will be added in-place on the current grid of the output
- * function, i.e. no further grid refinement.
+ * @details The input function will be added in-place on the current grid of
+ * the function, i.e. no further grid refinement.
  *
  */
 template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
@@ -336,13 +348,13 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     inp.deleteGenerated();
 }
 
-/** @brief In-place multiplication of MW function representations
+/** @brief In-place multiplication with MW function representations, fixed grid
  *
- * @param[in] c Numerical coefficient of input function
- * @param[in] inp Input function to multiply
+ * @param[in] c: Numerical coefficient of input function
+ * @param[in] inp: Input function to multiply
  *
- * The input function will be multiplied in-place on the current grid of the
- * output function, i.e. no further grid refinement.
+ * @details The input function will be multiplied in-place on the current grid
+ * of the function, i.e. no further grid refinement.
  *
  */
 template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
@@ -439,9 +451,20 @@ template <int D> void FunctionTree<D>::printSerialIndices() {
     }
 }
 
-/** Reduce the accuracy of the tree by deleting nodes
- * which have a higher precision than the requested precison.
- * By default, the relative precision of the tree is used. */
+/** @brief Reduce the precision of the tree by deleting nodes
+ *
+ * @param prec: New precision criterion
+ * @param splitFac: Splitting factor: 1, 2 or 3
+ * @param absPrec: Use absolute precision
+ *
+ * @details This will run the tree building algorithm in "reverse", starting
+ * from the leaf nodes, and perform split checks on each node based on the given
+ * precision and the local wavelet norm.
+ *
+ * @note The splitting factor appears in the threshold for the wavelet norm as
+ * \f$ ||w|| < 2^{-sn/2} ||f|| \epsilon \f$. In principal, `s` should be equal
+ * to the dimension; in practice, it is set to `s=1`.
+ */
 template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
 
     for (int i = 0; i < this->rootBox.size(); i++) {

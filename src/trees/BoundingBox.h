@@ -23,12 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- *          CTCC, University of Tromsø
- *
- */
-
 #pragma once
 
 #include <array>
@@ -38,6 +32,19 @@
 #include "utils/details.h"
 
 namespace mrcpp {
+
+/** @class BoundingBox
+ *
+ * @brief Class defining the computational domain
+ *
+ * @details The computational domain is made up of a collection of D-dimensional
+ * boxes on a particular length scale \f$ n \f$. The size of each box is then
+ * \f$ [2^{-n}]^D \f$, i.e. higher scale means smaller boxes, and the scale
+ * may be negative. The number of boxes can be different in each dimension
+ * \f$ [n_x, n_y, \dots] \f$, but they must all be on the same scale (size).
+ * Box translations relative to the world origin _must_ be an integer
+ * multiple of the given scale size \f$ 2^{-n} \f$.
+ */
 
 template <int D> class BoundingBox {
 public:

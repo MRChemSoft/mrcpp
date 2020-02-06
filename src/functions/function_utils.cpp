@@ -36,12 +36,12 @@ namespace mrcpp {
 
 /** @brief Generates a GaussExp that is semi-periodic around a unit-cell
  *
- * @param[out] shared_ptr<GaussExp<D>> semi-periodic version of a Gaussian around a unit-cell
- * @param[in] A Gaussian function that is to be made semi-periodic
- * @param[in] The period of the unit cell
- * @param[in] Number of standard diviations covered in each direction. Default 4.0
+ * @returns Semi-periodic version of a Gaussian around a unit-cell
+ * @param[in] inp: A Gaussian function that is to be made semi-periodic
+ * @param[in] period: The period of the unit cell
+ * @param[in] nStdDev: Number of standard diviations covered in each direction. Default 4.0
  *
- * nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
+ * @details nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
  * integral is conserved with respect to the integration limits.
  *
  */

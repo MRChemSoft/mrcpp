@@ -41,27 +41,27 @@
 
 namespace mrcpp {
 
-/** @brief Multiplication of two MW function representations
+/** @brief Multiplication of two MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] c Numerical coefficient
- * @param[in] inp_a Input function a
- * @param[in] inp_b Input function b
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] c: Numerical coefficient
+ * @param[in] inp_a: Input function a
+ * @param[in] inp_b: Input function b
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the product of the two input functions
- * (including the numerical coefficient), using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the product of the two input
+ * functions (including the numerical coefficient), using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
@@ -78,26 +78,26 @@ void multiply(double prec,
     multiply(prec, out, tmp_vec, maxIter, absPrec);
 }
 
-/** @brief Multiplication of several MW function representations
+/** @brief Multiplication of several MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Vector of input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Vector of input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the product of all the functions
- * in the input vector (including their numerical coefficients), using the
- * general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the product of all input
+ * functions in the vector (including their numerical coefficients), using
+ * the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
@@ -126,25 +126,25 @@ void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int
     print::separator(10, ' ');
 }
 
-/** @brief Out-of-place square of MW function representations
+/** @brief Out-of-place square of MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Input function to square
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Input function to square
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the square of the input function,
- * using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the square of the input
+ * function, using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter, bool absPrec) {
@@ -169,34 +169,34 @@ template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> 
     print::separator(10, ' ');
 }
 
-/** @brief Out-of-place power of MW function representations
+/** @brief Out-of-place power of MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Input function to square
- * @param[in] pow Numerical power
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Input function to square
+ * @param[in] p: Numerical power
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the input function raised to the
- * given power, using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the input function raised
+ * to the given power, using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
-void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter, bool absPrec) {
+void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double p, int maxIter, bool absPrec) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    PowerCalculator<D> calculator(inp, pow);
+    PowerCalculator<D> calculator(inp, p);
 
     builder.build(out, calculator, adaptor, maxIter);
 
@@ -214,21 +214,21 @@ void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, 
     print::separator(10, ' ');
 }
 
-/** @brief Dot product of two MW function vectors
+/** @brief Dot product of two MW function vectors, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp_a Input function vector
- * @param[in] inp_b Input function vector
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp_a: Input function vector
+ * @param[in] inp_b: Input function vector
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the dot product of the two input
- * vectors (including their numerical coefficients). The precision parameter
- * is used only in the multiplication part, the final addition will be on
- * the fixed union grid of the components.
+ * @details The output function will be computed as the dot product of the two
+ * input vectors (including their numerical coefficients). The precision
+ * parameter is used only in the multiplication part, the final addition will
+ * be on the fixed union grid of the components.
  *
- * The length of the input vectors must be the same.
+ * @note The length of the input vectors must be the same.
  *
  */
 template <int D>
@@ -258,17 +258,17 @@ void dot(double prec,
     clear(tmp_vec, true);
 }
 
-/** @brief Dot product of two MW function representations
+/** @returns Dot product <bra|ket> of two MW function representations
  *
- * @param[in] bra Bra side input function
- * @param[in] ket Ket side input function
+ * @param[in] bra: Bra side input function
+ * @param[in] ket: Ket side input function
  *
- * The dot product is computed with the trees in compressed form, e.i. scaling
- * coefs only on root nodes, wavelet coefs on all nodes. Since wavelet functions
- * are orthonormal through ALL scales and the root scaling functions are
- * orthonormal to all finer level wavelet functions, this becomes a rather
+ * @details The dot product is computed with the trees in compressed form, i.e.
+ * scaling coefs only on root nodes, wavelet coefs on all nodes. Since wavelet
+ * functions are orthonormal through ALL scales and the root scaling functions
+ * are orthonormal to all finer level wavelet functions, this becomes a rather
  * efficient procedure as you only need to compute the dot product where the
- * grids overlaps.
+ * grids overlap.
  *
  */
 template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
@@ -307,8 +307,8 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
 
 /** @brief abs-dot product of two MW function representations
  *
- * @param[in] bra Bra side input function
- * @param[in] ket Ket side input function
+ * @param[in] bra: Bra side input function
+ * @param[in] ket: Ket side input function
  *
  * If exact=true: the grid of ket MUST include the grid of bra.
  * If exact=false: does not at any time read the coefficients individually.
@@ -371,9 +371,9 @@ template void multiply(double prec,
 template void multiply(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
 template void multiply(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
 template void multiply(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter, bool absPrec);
+template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double p, int maxIter, bool absPrec);
+template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double p, int maxIter, bool absPrec);
+template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double p, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter, bool absPrec);

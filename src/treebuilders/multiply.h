@@ -52,7 +52,7 @@ void multiply(double prec,
 template <int D>
 void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1, bool absPrec = false);
 template <int D>
-void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double pow, int maxIter = -1, bool absPrec = false);
+void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double p, int maxIter = -1, bool absPrec = false);
 template <int D>
 void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter = -1, bool absPrec = false);
 

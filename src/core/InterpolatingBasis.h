@@ -29,8 +29,17 @@
 
 namespace mrcpp {
 
+/** @class InterpolatingBasis
+ *
+ * @brief Interpolating scaling functions as defined by Alpert etal,
+ * J Comp Phys 182, 149-190 (2002).
+ */
+
 class InterpolatingBasis final : public ScalingBasis {
 public:
+    /** @returns New InterpolatingBasis object
+     * @param[in] k: Polynomial order of basis, `1 < k < 40`
+     */
     InterpolatingBasis(int k)
             : ScalingBasis(k, Interpol) {
         initScalingBasis();
@@ -38,6 +47,7 @@ public:
         calcCVMaps();
     }
 
+private:
     void initScalingBasis();
     void calcQuadratureValues();
     void calcCVMaps();

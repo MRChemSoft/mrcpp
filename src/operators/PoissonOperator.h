@@ -29,6 +29,16 @@
 
 namespace mrcpp {
 
+/** @class PoissonOperator
+ *
+ * @brief Convolution with the Poisson Green's function kernel
+ *
+ * @details The Poisson kernel is approximated as a sum of Gaussian
+ * functions in order to allow for separated application of the operator
+ * in the Cartesian directions:
+ * \f$ P(r-r') = \frac{1}{|r-r'|} \approx \sum_m^M \alpha_m e^{-\beta_m (r-r')^2} \f$
+ */
+
 class PoissonOperator final : public ConvolutionOperator<3> {
 public:
     PoissonOperator(const MultiResolutionAnalysis<3> &mra, double pr = -1.0);

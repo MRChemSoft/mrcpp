@@ -30,9 +30,24 @@
 
 namespace mrcpp {
 
+/** @class IdentityConvolution
+ *
+ * @brief Convolution with an identity kernel
+ *
+ * @details The identity kernel (Dirac's delta function) is approximated by a
+ * narrow Gaussian function:
+ * \f$ I(r-r') = \delta(r-r') \approx \alpha e^{-\beta (r-r')^2} \f$
+ */
+
 template <int D> class IdentityConvolution final : public ConvolutionOperator<D> {
 public:
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double pr = -1.0)
+    /** @returns New IdentityConvolution object
+     *  @param[in] mra: Which MRA the operator is defined
+     *  @param[in] pr: Build precision, closeness to delta function
+     *  @details This will project a kernel of a single gaussian with
+     *  exponent sqrt(10/build_prec).
+     */
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double pr)
             : ConvolutionOperator<D>(mra, pr) {
         double epsilon = this->prec / 10.0;
         IdentityKernel identity_kernel(epsilon);

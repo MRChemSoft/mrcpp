@@ -29,8 +29,16 @@
 
 namespace mrcpp {
 
-PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double pr)
-        : ConvolutionOperator<3>(mra, pr) {
+/** @returns New PoissonOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] pr: Build precision, closeness to 1/r
+ *  @details This will construct a gaussian expansion to approximate 1/r,
+ *  and project each term into a one-dimensional MW operator. Subsequent
+ *  application of this operator will apply each of the terms to the input
+ *  function in all Cartesian directions.
+ */
+PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double build_prec)
+        : ConvolutionOperator<3>(mra, build_prec) {
     int oldlevel = Printer::setPrintLevel(0);
     double epsilon = this->prec / 10.0;
     double r_min = calcMinDistance(mra, epsilon);

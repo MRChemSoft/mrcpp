@@ -29,6 +29,12 @@
 
 namespace mrcpp {
 
+/** @class BSOperator
+ *
+ *  @brief B-spline derivative operator as defined by Anderson etal, J Comp Phys X 4, 100033 (2019).
+ *
+ */
+
 template <int D> class BSOperator final : public DerivativeOperator<D> {
 public:
     explicit BSOperator(const MultiResolutionAnalysis<D> &mra, int order);

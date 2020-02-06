@@ -29,6 +29,16 @@
 
 namespace mrcpp {
 
+/** @class HelmholtzOperator
+ *
+ * @brief Convolution with the Helmholtz Green's function kernel
+ *
+ * @details The Helmholtz kernel is approximated as a sum of gaussian functions
+ * in order to allow for separated application of the operator in the Cartesian
+ * directions:
+ * \f$ H(r-r') = \frac{e^{-\mu|r-r'|}}{|r-r'|} \approx \sum_m^M \alpha_m e^{-\beta_m (r-r')^2} \f$
+ */
+
 class HelmholtzOperator final : public ConvolutionOperator<3> {
 public:
     HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double m, double pr = -1.0);

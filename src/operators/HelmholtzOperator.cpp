@@ -29,6 +29,15 @@
 
 namespace mrcpp {
 
+/** @returns New HelmholtzOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] m: Exponential parameter of the operator
+ *  @param[in] pr: Build precision, closeness to exp(-mu*r)/r
+ *  @details This will construct a gaussian expansion to approximate
+ *  exp(-mu*r)/r, and project each term into a one-dimensional MW operator.
+ *  Subsequent application of this operator will apply each of the terms to
+ *  the input function in all Cartesian directions.
+ */
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double m, double pr)
         : ConvolutionOperator<3>(mra, pr)
         , mu(m) {

@@ -32,6 +32,10 @@
 
 namespace mrcpp {
 
+/** @returns New BSOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] order: Derivative order, defined for 1, 2 and 3
+ */
 template <int D>
 BSOperator<D>::BSOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra) {

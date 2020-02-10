@@ -1,4 +1,4 @@
-![MRCPP logo](https://github.com/MRChemSoft/mrcpp/raw/master/doc/gfx/logo.png)
+![MRCPP logo](https://github.com/MRChemSoft/mrcpp/raw/master/docs/gfx/logo.png)
 
 
 
@@ -50,7 +50,7 @@ releases are applied linearly on the `MINOR` release branches.
 
 #### The `master` branch:
 
-<img src="doc/gfx/git-master.png" alt="drawing" width="600"/>
+<img src="docs/gfx/git-master.png" alt="drawing" width="600"/>
 
 - This branch should *not* carry any release tags
 - New features should *always* be directed to this branch
@@ -64,7 +64,7 @@ releases are applied linearly on the `MINOR` release branches.
 
 #### The `release/X.Y` branches:
 
-<img src="doc/gfx/git-release.png" alt="drawing" width="530"/>
+<img src="docs/gfx/git-release.png" alt="drawing" width="530"/>
 
 - This branch should carry *all* release tags associated with the `X.Y` `MINOR`
   release, including `PATCH`es and release candidates `-alpha1`, `-alpha2`, etc

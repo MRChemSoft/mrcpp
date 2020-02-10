@@ -61,14 +61,16 @@ int main(int argc, char **argv) {
 
     mrcpp::FunctionTree<D> p_tree(MRA);
     mrcpp::project<D>(prec, p_tree, p_func);
-
+    std::vector<mrcpp::FunctionTree<D> *> p_trees;
+    p_trees.push_back(&p_tree);
+    mrcpp::print::memory(0, "used memory post project p_func");
     // Applying Poisson operator
     auto t2 = mrcpp::Timer();
     mrcpp::print::separator(0, ' ');
     mrcpp::print::memory(0, "used memory pre apply");
     mrcpp::FunctionTree<D> g_tree(MRA);
     //mrcpp::apply(prec, g_tree, P, f_tree);
-    mrcpp::apply(1.0*prec, g_tree, P, f_tree, p_tree);
+    mrcpp::apply(1.0*prec, g_tree, P, f_tree, p_trees,-1,true);
     mrcpp::print::memory(0, "used memory post apply");
     t2.stop();
 

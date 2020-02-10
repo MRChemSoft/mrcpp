@@ -48,9 +48,10 @@ void multiply(double prec,
               FunctionTree<D> &inp_a,
               FunctionTree<D> &inp_b,
               int maxIter = -1,
-              bool absPrec = false);
+              bool absPrec = false, bool useMaxNorms = false);
+
 template <int D>
-void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1, bool absPrec = false);
+  void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false);
 template <int D>
 void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double p, int maxIter = -1, bool absPrec = false);
 template <int D>

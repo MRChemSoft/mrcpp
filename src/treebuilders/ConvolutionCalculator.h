@@ -39,14 +39,14 @@ public:
 
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
-    void setPrecTree(FunctionTree<D> &tree) { this->precTree = &tree; }
+    void setPrecTree(std::vector<FunctionTree<D> *> treevec) { this->precTrees = treevec; }
 
 private:
     int maxDepth;
     double prec;
     ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
-    FunctionTree<D> *precTree{nullptr};
+    std::vector<FunctionTree<D> *> precTrees;
     std::vector<Timer *> band_t;
     std::vector<Timer *> calc_t;
     std::vector<Timer *> norm_t;

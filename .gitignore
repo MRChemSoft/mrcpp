@@ -90,7 +90,7 @@ coverage.xml
 *.log
 
 # Sphinx documentation
-doc/_build/
+docs/_build/
 
 # PyBuilder
 target/
@@ -110,10 +110,4 @@ venv
 
 .direnv/
 .ccls-cache/
-
-# generated documentation stuff
-doc/Doxyfile
-doc/doctrees/
-doc/html/
-doc/xml/
 

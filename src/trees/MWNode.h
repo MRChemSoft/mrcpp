@@ -160,12 +160,14 @@ protected:
 
     double squareNorm;
     double componentNorms[1 << D]; ///< 2^D components
-    double maxSquareNorm; // Largest squared norm among itself and descendants.
-    double maxWSquareNorm; // Largest wavelet squared norm among itself and descendants.
-                           // NB: must be set before used.
-                           // NB2: normalization is such that a constant function gives constant value, i.e. *not* same normalization as squareNorm
-    void setMaxSquareNorm(); //recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
-    void resetMaxSquareNorm(); //recursively reset maxSquaredNorm  and maxWSquareNorm of parent and descendants to value -1
+    double maxSquareNorm;          // Largest squared norm among itself and descendants.
+    double maxWSquareNorm;         // Largest wavelet squared norm among itself and descendants.
+                                   // NB: must be set before used.
+                           // NB2: normalization is such that a constant function gives constant value, i.e. *not* same
+                           // normalization as squareNorm
+    void setMaxSquareNorm(); // recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
+    void
+    resetMaxSquareNorm(); // recursively reset maxSquaredNorm  and maxWSquareNorm of parent and descendants to value -1
 
     double *coefs;
     int n_coefs;

@@ -107,9 +107,7 @@ void apply(double prec,
     int maxScale = out.getMRA().getMaxScale();
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     adaptor.setPrecTree(precTrees);
-    for (int i = 0; i < precTrees.size(); i++) {
- 	precTrees[i]->makeMaxSquareNorms();
-    }
+    for (int i = 0; i < precTrees.size(); i++) { precTrees[i]->makeMaxSquareNorms(); }
     ConvolutionCalculator<D> calculator(prec, oper, inp);
     calculator.setPrecTree(precTrees);
     pre_t.stop();

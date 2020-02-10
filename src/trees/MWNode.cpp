@@ -1006,12 +1006,12 @@ template <int D> void MWNode<D>::setMaxSquareNorm() {
     this->maxSquareNorm = std::pow(2.0, D * n) * this->getSquareNorm();
 
     if (not this->isEndNode()) {
-       for (int i = 0; i < this->getTDim(); i++) {
+        for (int i = 0; i < this->getTDim(); i++) {
             MWNode<D> &child = *this->children[i];
             child.setMaxSquareNorm();
             this->maxSquareNorm = std::max(this->maxSquareNorm, child.maxSquareNorm);
             this->maxWSquareNorm = std::max(this->maxWSquareNorm, child.maxWSquareNorm);
-      }
+        }
     }
 }
 
@@ -1020,10 +1020,10 @@ template <int D> void MWNode<D>::resetMaxSquareNorm() {
     this->maxSquareNorm = -1.0;
     this->maxWSquareNorm = -1.0;
     if (not this->isEndNode()) {
-       for (int i = 0; i < this->getTDim(); i++) {
-	 MWNode<D> &child = *this->children[i];
-	 child.resetMaxSquareNorm();
-      }
+        for (int i = 0; i < this->getTDim(); i++) {
+            MWNode<D> &child = *this->children[i];
+            child.resetMaxSquareNorm();
+        }
     }
 }
 

@@ -41,14 +41,14 @@ int main(int argc, char **argv) {
     auto g_func = mrcpp::GaussFunc<D>(beta, alpha, g_pos, power);
 
     // analytic product of two gaussians
-    auto prod_pos =   mrcpp::Coord<D>{};
-    auto beta_prod = beta*2;
+    auto prod_pos = mrcpp::Coord<D>{};
+    auto beta_prod = beta * 2;
     auto dist_2 = 0.0;
-    for (int i=0;i< D;i++){
-        dist_2 += (f_pos[i]-g_pos[i])*(f_pos[i]-g_pos[i]);//dot product of coordinate diff
-        prod_pos[i] = 0.5*(f_pos[i]+g_pos[i]);
+    for (int i = 0; i < D; i++) {
+        dist_2 += (f_pos[i] - g_pos[i]) * (f_pos[i] - g_pos[i]); // dot product of coordinate diff
+        prod_pos[i] = 0.5 * (f_pos[i] + g_pos[i]);
     }
-    auto alpha_prod = alpha*alpha*exp(-beta*0.5*dist_2);
+    auto alpha_prod = alpha * alpha * exp(-beta * 0.5 * dist_2);
     auto prod_func = mrcpp::GaussFunc<D>(beta_prod, alpha_prod, prod_pos, power);
 
     // Initialize MW functions
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     // Projecting f and g
     mrcpp::project<D>(prec, f_tree, f_func);
     mrcpp::project<D>(prec, g_tree, g_func);
-    mrcpp::project<D>(prec/1000, prod_tree, prod_func);
+    mrcpp::project<D>(prec / 1000, prod_tree, prod_func);
 
     // h = f*g
     mrcpp::multiply(prec, h_tree, 1.0, f_tree, g_tree);
@@ -77,13 +77,12 @@ int main(int argc, char **argv) {
     mrcpp::print::value(0, "Integral method 2", integral);
     mrcpp::print::value(0, "Square norm method 2", sq_norm);
 
-    h_tree.add(-1.0,prod_tree);
+    h_tree.add(-1.0, prod_tree);
     sq_norm = h_tree.getSquareNorm();
-    mrcpp::print::value(0, "Square norm error method 1" , sq_norm);
-    h2_tree.add(-1.0,prod_tree);
+    mrcpp::print::value(0, "Square norm error method 1", sq_norm);
+    h2_tree.add(-1.0, prod_tree);
     sq_norm = h2_tree.getSquareNorm();
-    mrcpp::print::value(0, "Square norm error method 2" , sq_norm);
-
+    mrcpp::print::value(0, "Square norm error method 2", sq_norm);
 
     mrcpp::print::footer(0, timer, 2);
 

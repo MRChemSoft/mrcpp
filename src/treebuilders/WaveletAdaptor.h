@@ -49,47 +49,47 @@ protected:
     bool multiplicationSplit = false;
 
     bool splitNode(const MWNode<D> &node) const override {
-      if(multiplicationSplit and this->precTrees.size()>0){
-	auto multPrec = 1.0;
-        if(this->precTrees.size()!=2)std::cout<<this->precTrees.size()<<" ERROR "<<std::endl;
-        auto &pNode0 = precTrees[0]->getNode(node.getNodeIndex());
-        auto &pNode1 = precTrees[1]->getNode(node.getNodeIndex());
-        double maxW0=std::sqrt(pNode0.getMaxWSquareNorm());
-        double maxW1=std::sqrt(pNode1.getMaxWSquareNorm());
-        double maxS0=std::sqrt(pNode0.getMaxSquareNorm());
-        double maxS1=std::sqrt(pNode1.getMaxSquareNorm());
-        if(pNode0.isGenNode()){
-            maxW0 = 0.0;
-            maxS0 = std::sqrt(std::pow(2.0, D * node.getScale()) *pNode0.getSquareNorm());
-        }
-        if(pNode1.isGenNode()){
-            maxW1 = 0.0;
-            maxS1 = std::sqrt(std::pow(2.0, D * node.getScale()) *pNode1.getSquareNorm());
-        }
-        //The wavelet contribution (in the product of node0 and node1) can be approximated as
-        multPrec =  maxW0*maxS1 +  maxW1*maxS0 + maxW0*maxW1 ;
-
-        // Note: this never refine deeper than one scale more than input tree grids, because when wavelets are zero for both input trees, multPrec=0
-        // In addition, we force not to refine deeper than input tree grids
-	if (multPrec > this->prec and not (pNode0.isLeafNode() and pNode1.isLeafNode())) {
-	  return true;
-	} else {
-	  return false;
-	}
-      }else{
-        auto precNorm = 1.0;
-        if(this->precTrees.size() >0) precNorm = 0.0;//initialize
-        for (int i = 0; i < this->precTrees.size(); i++) {
-            auto &pNode = precTrees[i]->getNode(node.getNodeIndex());
-            auto n = node.getScale();
-            if(not pNode.isGenNode() and pNode.getMaxSquareNorm()>0.0){
-                precNorm = std::max(precNorm, std::sqrt(pNode.getMaxSquareNorm()));
-            }else{
-                precNorm = std::max(precNorm, std::sqrt(std::pow(2.0, D * n) * pNode.getSquareNorm()));
+        if (multiplicationSplit and this->precTrees.size() > 0) {
+            auto multPrec = 1.0;
+            if (this->precTrees.size() != 2) std::cout << this->precTrees.size() << " ERROR " << std::endl;
+            auto &pNode0 = precTrees[0]->getNode(node.getNodeIndex());
+            auto &pNode1 = precTrees[1]->getNode(node.getNodeIndex());
+            double maxW0 = std::sqrt(pNode0.getMaxWSquareNorm());
+            double maxW1 = std::sqrt(pNode1.getMaxWSquareNorm());
+            double maxS0 = std::sqrt(pNode0.getMaxSquareNorm());
+            double maxS1 = std::sqrt(pNode1.getMaxSquareNorm());
+            if (pNode0.isGenNode()) {
+                maxW0 = 0.0;
+                maxS0 = std::sqrt(std::pow(2.0, D * node.getScale()) * pNode0.getSquareNorm());
             }
-	}
-        return node.splitCheck(this->prec / precNorm, this->splitFac, this->absPrec);
-      }
+            if (pNode1.isGenNode()) {
+                maxW1 = 0.0;
+                maxS1 = std::sqrt(std::pow(2.0, D * node.getScale()) * pNode1.getSquareNorm());
+            }
+            // The wavelet contribution (in the product of node0 and node1) can be approximated as
+            multPrec = maxW0 * maxS1 + maxW1 * maxS0 + maxW0 * maxW1;
+
+            // Note: this never refine deeper than one scale more than input tree grids, because when wavelets are zero
+            // for both input trees, multPrec=0 In addition, we force not to refine deeper than input tree grids
+            if (multPrec > this->prec and not(pNode0.isLeafNode() and pNode1.isLeafNode())) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            auto precNorm = 1.0;
+            if (this->precTrees.size() > 0) precNorm = 0.0; // initialize
+            for (int i = 0; i < this->precTrees.size(); i++) {
+                auto &pNode = precTrees[i]->getNode(node.getNodeIndex());
+                auto n = node.getScale();
+                if (not pNode.isGenNode() and pNode.getMaxSquareNorm() > 0.0) {
+                    precNorm = std::max(precNorm, std::sqrt(pNode.getMaxSquareNorm()));
+                } else {
+                    precNorm = std::max(precNorm, std::sqrt(std::pow(2.0, D * n) * pNode.getSquareNorm()));
+                }
+            }
+            return node.splitCheck(this->prec / precNorm, this->splitFac, this->absPrec);
+        }
     }
 };
 

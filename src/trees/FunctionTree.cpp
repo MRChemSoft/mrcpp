@@ -352,6 +352,42 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     this->calcSquareNorm();
     inp.deleteGenerated();
 }
+/** @brief In-place addition of absolute values of MW function representations
+ *
+ * @param[in] c Numerical coefficient of input function
+ * @param[in] inp Input function to add
+ *
+ * The absolute value of input function will be added in-place on the current grid of the output
+ * function, i.e. no further grid refinement.
+ *
+ */
+template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
+    if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
+#pragma omp parallel firstprivate(c), shared(inp)
+    {
+        int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &out_node = *this->endNodeTable[n];
+            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
+            out_node.mwTransform(Reconstruction);
+            out_node.cvTransform(Forward);
+            inp_node.mwTransform(Reconstruction);
+            inp_node.cvTransform(Forward);
+            double *out_coefs = out_node.getCoefs();
+            const double *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) {
+	      out_coefs[i] = abs(out_coefs[i]) + c * abs(inp_coefs[i]);
+	    }
+            out_node.cvTransform(Backward);
+            out_node.mwTransform(Compression);
+            out_node.calcNorms();
+        }
+    }
+    this->mwTransform(BottomUp);
+    this->calcSquareNorm();
+    inp.deleteGenerated();
+}
 
 /** @brief In-place multiplication with MW function representations, fixed grid
  *

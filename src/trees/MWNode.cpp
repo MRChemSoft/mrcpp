@@ -49,6 +49,7 @@ MWNode<D>::MWNode()
         : tree(nullptr)
         , parent(nullptr)
         , squareNorm(-1.0)
+        , maxSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex()
@@ -58,6 +59,7 @@ MWNode<D>::MWNode()
     setIsLooseNode();
 
     clearNorms();
+    maxSquareNorm = -1.0;
     for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
 }
 
@@ -68,6 +70,7 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree)
         , parent(nullptr)
         , squareNorm(-1.0)
+        , maxSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex(node.nodeIndex)
@@ -995,6 +998,33 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
         o << getCoefs()[0] << ", " << getCoefs()[getNCoefs() - 1] << "}";
     }
     return o;
+}
+
+template <int D> void MWNode<D>::setMaxSquareNorm() {
+    auto n = this->getScale();
+    this->maxWSquareNorm = std::pow(2.0, D * n) * this->getWaveletNorm();
+    this->maxSquareNorm = std::pow(2.0, D * n) * this->getSquareNorm();
+
+    if (not this->isEndNode()) {
+       for (int i = 0; i < this->getTDim(); i++) {
+            MWNode<D> &child = *this->children[i];
+            child.setMaxSquareNorm();
+            this->maxSquareNorm = std::max(this->maxSquareNorm, child.maxSquareNorm);
+            this->maxWSquareNorm = std::max(this->maxWSquareNorm, child.maxWSquareNorm);
+      }
+    }
+}
+
+template <int D> void MWNode<D>::resetMaxSquareNorm() {
+    auto n = this->getScale();
+    this->maxSquareNorm = -1.0;
+    this->maxWSquareNorm = -1.0;
+    if (not this->isEndNode()) {
+       for (int i = 0; i < this->getTDim(); i++) {
+	 MWNode<D> &child = *this->children[i];
+	 child.resetMaxSquareNorm();
+      }
+    }
 }
 
 template class MWNode<1>;

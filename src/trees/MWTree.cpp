@@ -142,10 +142,9 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
     }
 }
 
-/** Traverse tree and set all nodes to zero.
- *
- * Keeps the node structure of the tree, even though the zero function is
- * representable at depth zero. Use cropTree to remove unnecessary nodes.*/
+/** @brief Set the MW coefficients to zero, fixed grid
+ * @details Keeps the node structure of the tree, even though the zero function
+ * is representable at depth zero. Use cropTree to remove unnecessary nodes.*/
 template <int D> void MWTree<D>::setZero() {
     HilbertIterator<D> it(this);
     while (it.next()) {
@@ -225,20 +224,22 @@ template <int D> void MWTree<D>::decrementGenNodeCount() {
     this->nGenNodes[n]--;
 }
 
-/** Get Node count. */
+/** @returns Total number of nodes in the tree, at given depth
+ * @param[in] depth: Tree depth to count, negative means count _all_ nodes
+ */
 template <int D> int MWTree<D>::getNNodes(int depth) const {
     if (depth < 0) { return this->nNodes; }
     if (depth >= this->nodesAtDepth.size()) { return 0; }
     return this->nodesAtDepth[depth];
 }
 
-/** Get GenNode count. Includes an OMP reduction operation. */
+/** Get GenNode count. Includes an OMP reduction operation */
 template <int D> int MWTree<D>::getNGenNodes() {
     updateGenNodeCounts();
     return this->nGenNodes[0];
 }
 
-/** Returns the size of all MW coefs in the tree, in kB. */
+/** @returns Size of all MW coefs in the tree, in kB */
 template <int D> int MWTree<D>::getSizeNodes() const {
     auto nCoefs = getNNodes() * getTDim() * getKp1_d();
     return sizeof(double) * nCoefs / 1024;

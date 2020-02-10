@@ -36,27 +36,26 @@
 
 namespace mrcpp {
 
-/** @brief Projection of analytic function into MW representation
+/** @brief Project an analytic function onto the MW basis, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
-
 template <int D>
 void project(double prec,
              FunctionTree<D> &out,
@@ -67,24 +66,24 @@ void project(double prec,
     mrcpp::project(prec, out, inp, maxIter, absPrec);
 }
 
-/** @brief Projection of analytic function into MW representation
+/** @brief Project an analytic function onto the MW basis, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
@@ -105,13 +104,34 @@ void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, i
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 }
+
+/** @brief Project an analytic vector function onto the MW basis, adaptive grid
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function vector to be built
+ * @param[in] inp: Input function vector
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
 template <int D>
 void project(double prec,
              FunctionTreeVector<D> &out,
              std::vector<std::function<double(const Coord<D> &r)>> func,
              int maxIter,
              bool absPrec) {
-    for (auto j = 0; j < D; j++) { mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter, absPrec); }
+    for (auto j = 0; j < D; j++) mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter, absPrec);
 }
 
 template void project<1>(double prec, FunctionTree<1> &out, RepresentableFunction<1> &inp, int maxIter, bool absPrec);

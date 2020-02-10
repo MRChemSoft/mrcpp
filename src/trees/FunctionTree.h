@@ -23,16 +23,30 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *  Basic class for representing functions in a multiwavelet
- *  representation.
- */
-
 #pragma once
 
 #include "MWTree.h"
 
 namespace mrcpp {
+
+/** @class FunctionTree
+ *
+ * @brief Function representation in MW basis
+ *
+ * @details
+ * Constructing a full grown FunctionTree involves a number of steps,
+ * including setting up a memory allocator, constructing root nodes according
+ * to the given MRA, building an adaptive tree structure and computing MW
+ * coefficients. The FunctionTree constructor does only half of these steps:
+ * It takes an MRA argument, which defines the computational domain and scaling
+ * basis (these are fixed parameters that cannot be changed after construction).
+ * The tree is initialized with a memory allocator and a set of root nodes, but
+ * it does not compute any coefficients and the function is initially
+ * *undefined*. An undefined FunctionTree will have a well defined tree
+ * structure (at the very least the root nodes of the given MRA, but possibly
+ * with additional refinement) and its MW coefficient will be allocated but
+ * uninitialized, and its square norm will be negative (minus one).
+ */
 
 template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
 public:

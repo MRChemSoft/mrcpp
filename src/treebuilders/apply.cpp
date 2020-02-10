@@ -43,23 +43,23 @@ namespace mrcpp {
 
 /** @brief Application of MW integral convolution operator
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] oper Convolution operator to apply
- * @param[in] inp Input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
  *
- * The output function will be computed using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
@@ -94,18 +94,18 @@ void apply(double prec,
 
 /** @brief Application of MW derivative operator
  *
- * @param[in,out] out Output function to be built
- * @param[in] oper Derivative operator to apply
- * @param[in] inp Input function
- * @param[in] dir Direction of derivative
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Derivative operator to apply
+ * @param[in] inp: Input function
+ * @param[in] dir: Direction of derivative
  *
- * The output function will be computed on a FIXED grid that is predetermined
- * by the type of derivative operator. For a strictly local operator (ABGV_00),
- * the grid is an exact copy of the input function. For operators that involve
- * also neighboring nodes (ABGV_55, PH) the base grid will be WIDENED by one node
- * in the direction of application (on each side).
+ * @details The output function will be computed on a FIXED grid that is
+ * predetermined by the type of derivative operator. For a strictly local
+ * operator (ABGV_00), the grid is an exact copy of the input function. For
+ * operators that involve also neighboring nodes (ABGV_55, PH, BS) the base grid
+ * will be WIDENED by one node in the direction of application (on each side).
  *
- * The input function should contain only empty root nodes.
+ * @note The output function should contain only empty root nodes at entry.
  *
  */
 template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
@@ -143,14 +143,14 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
 
 /** @brief Calculation of gradient vector of a function
  *
- * @param[in] oper Derivative operator to apply
- * @param[in] inp Input function
+ * @param[in] oper: Derivative operator to apply
+ * @param[in] inp: Input function
  * @returns FunctionTreeVector containing the gradient
  *
- * The derivative operator is applied in each Cartesian direction to the
- * input function and appended to the output vector.
+ * @details The derivative operator is applied in each Cartesian direction to
+ * the input function and appended to the output vector.
  *
- * The length of the output vector will be the template dimension D.
+ * @note The length of the output vector will be the template dimension D.
  *
  */
 template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
@@ -165,16 +165,18 @@ template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, Fun
 
 /** @brief Calculation of divergence of a function vector
  *
- * @param[in,out] out Output function
- * @param[in] oper Derivative operator to apply
- * @param[in] inp Input function vector
+ * @param[out] out: Output function
+ * @param[in] oper: Derivative operator to apply
+ * @param[in] inp: Input function vector
  *
- * The derivative operator is applied in each Cartesian direction to the
- * corresponding components of the input vector and added up to the final
+ * @details The derivative operator is applied in each Cartesian direction to
+ * the corresponding components of the input vector and added up to the final
  * output. The grid of the output is fixed as the union of the component
- * grids (including any derivative widening, see derivative apply()).
+ * grids (including any derivative widening, see derivative apply).
  *
- * The length of the input vector must be the same as the template dimension D.
+ * @note
+ * - The length of the input vector must be the same as the template dimension D.
+ * - The output function should contain only empty root nodes at entry.
  *
  */
 template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {

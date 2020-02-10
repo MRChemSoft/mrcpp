@@ -27,12 +27,26 @@
 
 #include "ConvolutionOperator.h"
 #include "DerivativeKernel.h"
-#include "Printer"
 
 namespace mrcpp {
 
+/** @class DerivativeConvolution
+ *
+ * @brief Convolution with a derivative kernel
+ *
+ * @details The derivative kernel (derivative of Dirac's delta function) is
+ * approximated by the derivative of a narrow Gaussian function:
+ * \f$ D^x(r-r') = \frac{d}{dx}\delta(r-r') \approx \frac{d}{dx} \alpha e^{-\beta (r-r')^2} \f$
+ */
+
 template <int D> class DerivativeConvolution final : public ConvolutionOperator<D> {
 public:
+    /** @returns New DerivativeConvolution object
+     *  @param[in] mra: Which MRA the operator is defined
+     *  @param[in] pr: Build precision, closeness to delta function
+     *  @details This will project a kernel of a single differentiated
+     *  gaussian with exponent sqrt(10/build_prec).
+     */
     DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double pr)
             : ConvolutionOperator<D>(mra, pr) {
         double epsilon = this->prec / 10.0;

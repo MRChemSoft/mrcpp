@@ -57,17 +57,35 @@ public:
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
     virtual double calcSquareNorm() = 0;
-    virtual double calcOverlap(GaussFunc<D> &b) = 0;
-    virtual double calcOverlap(GaussPoly<D> &b) = 0;
 
+    /** @brief Compute analytic overlap between two Gaussians
+     *  @param[in] this: Left hand Gaussian
+     *  @param[in] rhs: Right hand Gaussian
+     *  @returns Overlap integral
+     */
+    virtual double calcOverlap(GaussFunc<D> &rhs) = 0;
+
+    /** @brief Compute analytic overlap between two Gaussians
+     *  @param[in] this: Left hand Gaussian
+     *  @param[in] rhs: Right hand Gaussian
+     *  @returns Overlap integral
+     */
+    virtual double calcOverlap(GaussPoly<D> &rhs) = 0;
+
+    /** @brief Compute analytic derivative of Gaussian
+     *  @param[in] dir: Cartesian direction of derivative
+     *  @returns New GaussPoly
+     */
     virtual GaussPoly<D> differentiate(int dir) = 0;
 
     void calcScreening(double stdDeviations);
 
+    /** @returns Squared L2 norm of function \f$ ||f||^2 \f$ */
     double getSquareNorm() {
         if (this->squareNorm < 0.0) { calcSquareNorm(); }
         return this->squareNorm;
     }
+    /** @brief Rescale function by its norm \f$ ||f||^{-1} \f$ */
     void normalize() {
         double norm = std::sqrt(getSquareNorm());
         multConstInPlace(1.0 / norm);

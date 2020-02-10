@@ -29,6 +29,12 @@
 
 namespace mrcpp {
 
+/** @class ABGVOperator
+ *
+ * @brief Derivative operator as defined by Alpert, Beylkin, Ginez and Vozovoi,
+ * J Comp Phys 182, 149-190 (2002).
+ */
+
 template <int D> class ABGVOperator final : public DerivativeOperator<D> {
 public:
     ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b);

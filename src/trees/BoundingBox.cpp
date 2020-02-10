@@ -23,13 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- *
- *          CTCC, University of Tromsø
- *
- */
-
 #include "MRCPP/constants.h"
 
 #include "BoundingBox.h"
@@ -38,6 +31,13 @@
 
 namespace mrcpp {
 
+/** @returns New BoundingBox object
+ *
+ * @param[in] n: Length scale, default 0
+ * @param[in] l: Corner translation, default [0, 0, ...]
+ * @param[in] nb: Number of boxes, default [1, 1, ...]
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(int n,
                             const std::array<int, D> &l,

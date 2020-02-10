@@ -12,63 +12,55 @@ program by including:
     #include "MRCPP/MWOperators"
 
 
-Operator application
---------------------
+ConvolutionOperator
+-------------------
 
-The following is added to the list of functions for *defining* MW coefficients
-in a ``FunctionTree``:
+.. NOTE::
 
-apply
-  Apply a MW operator to an input function, adaptive grid.
+    The convolution operators have separate precision parameters for their
+    construction and application. The ``build_prec`` argument to the operator
+    constructors will affect e.g. the number of terms in the separated
+    representations of the Poisson/Helmholtz approximations, as well as the
+    operator bandwidth. The ``apply_prec`` argument to the apply function relates
+    only to the adaptive construction of the output function, based on a wavelet
+    norm error estimate.
 
+.. doxygenclass:: mrcpp::IdentityConvolution
+   :members:
 
-The MW operator can be any of those listed below, and the input function must
-be a well defined (projected) function, while the output function must be in
-an *undefined* state.
+.. doxygenclass:: mrcpp::DerivativeConvolution
+   :members:
 
+.. doxygenclass:: mrcpp::PoissonOperator
+   :members:
 
-Operator construction
----------------------
+.. doxygenclass:: mrcpp::HelmholtzOperator
+   :members:
 
-The following operators are currently implemented in MRCPP:
+.. doxygenfunction:: mrcpp::apply(double, FunctionTree<D>&, ConvolutionOperator<D>&, FunctionTree<D>&, int, bool)
 
-Convolution operators
-+++++++++++++++++++++
+DerivativeOperators
+-------------------
 
-IdentityConvolution
-  Convolution with a narrow Gaussian kernel, close to Dirac's delta function.
+.. NOTE::
 
-DerivativeConvolution
-  Convolution with differentiated narrow Gaussian kernel.
+    The derivative operators have clearly defined requirements on the output
+    grid structure, based on the grid of the input function. This means that
+    there is no real grid adaptivity, and thus no precision parameter is needed
+    for the application of such an operator.
 
-PoissonOperator
-  Convolution with the Poisson Green's function kernel.
+.. doxygenclass:: mrcpp::ABGVOperator
+   :members:
 
-HelmholtzOperator
-  Convolution with the complex Helmholtz Green's function kernel.
+.. doxygenclass:: mrcpp::PHOperator
+   :members:
 
-The convolution operators will adaptively build the output tree based on the
-chosen precision (note that there are separate precision parameters for the
-construction and application of convolution operators).
+.. doxygenclass:: mrcpp::BSOperator
+   :members:
 
-
-Derivative operators
-++++++++++++++++++++
-
-ABGVOperator
-  The Alpert, Beylkin, Gines, Vozovoi derivative operator.
-
-PHOperator
-  Based on Pavel Holoborodko's smoothing derivative.
-
-BSOperator
-  Derivative based on projectrion onto B-splines. This is a `smoothing`
-  derivative operator.
-
-The derivatives operator have clearly defined requirements on the output grid
-structure, based on the grid of the input function. This means that there is no
-real grid adaptivity, and thus no precision parameter is needed for the
-application of such an operator.
+.. doxygenfunction:: mrcpp::apply(FunctionTree<D>&, DerivativeOperator<D>&, FunctionTree<D>&, int)
+.. doxygenfunction:: mrcpp::divergence(FunctionTree<D>&, DerivativeOperator<D>&, FunctionTreeVector<D>&)
+.. doxygenfunction:: mrcpp::gradient(DerivativeOperator<D>&, FunctionTree<D>&)
 
 
 Examples
@@ -94,8 +86,8 @@ potential is computed in the following way:
 
 .. code-block:: cpp
 
-    double apply_prec;                              // Precision defining the operator application
-    double build_prec;                              // Precision defining the operator construction
+    double apply_prec;                              // Precision for operator application
+    double build_prec;                              // Precision for operator construction
 
     mrcpp::PoissonOperator P(MRA, build_prec);      // MW representation of Poisson operator
     mrcpp::FunctionTree<3> f_tree(MRA);             // Input function
@@ -127,8 +119,8 @@ application is similar to the Poisson operator, with an extra argument for the
 
 .. code-block:: cpp
 
-    double apply_prec;                              // Precision defining the operator application
-    double build_prec;                              // Precision defining the operator construction
+    double apply_prec;                              // Precision for operator application
+    double build_prec;                              // Precision for operator construction
     double mu;                                      // Must be a positive real number
 
     mrcpp::HelmholtzOperator H(MRA, mu, build_prec);// MW representation of Helmholtz operator
@@ -143,8 +135,8 @@ ABGVOperator
 
 The ABGV (Alpert, Beylkin, Gines, Vozovoi) derivative operator is initialized
 with two parameters :math:`a` and :math:`b` accounting for the boundary
-conditions between adjacent nodes, see `Alpert etal.
-<http://www.sciencedirect.com/science/article/pii/S0021999102971603>`_.
+conditions between adjacent nodes, see `Alpert et al.
+<http://www.sciencedirect.com/science/article/pii/S0021999102971603>`_
 
 .. code-block:: cpp
 
@@ -192,8 +184,9 @@ BSOperator
 ++++++++++
 
 The BS derivative operator is based on a pre-projection onto B-splines in order
-to remove the discontinuities in the MW basis. This operator is also available
-as a direct second and third derivative.
+to remove the discontinuities in the MW basis, see `Anderson et al.
+<https://www.sciencedirect.com/science/article/pii/S2590055219300496>`_
+This operator is also available as a direct second and third derivative.
 
 
 .. code-block:: cpp

@@ -41,6 +41,11 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysi
     setupFilter();
 }
 
+/** @returns New MultiResolutionAnalysis object
+ * @param[in] bb: Computational domain
+ * @param[in] sb: Polynomial basis
+ * @param[in] depth: Maximum allowed resolution depth, relative to root scale
+ */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth)
         : maxDepth(depth)

@@ -3,9 +3,10 @@
 Plotter
 -------
 
-MRCPP comes with its own plotter class which can be used by the application
+MRCPP comes with its own plotter class which can be used by the host
 program to generate data files for visualization using e.g.
 `gnuplot <http://www.gnuplot.info/>`_,
+`paraview <http://www.paraview.org/>`_,
 `blob <https://github.com/densities/blob/>`_ and
 `geomview <http://www.geomview.org/>`_.
 These features are available by including:
@@ -14,20 +15,13 @@ These features are available by including:
 
     #include "MRCPP/Plotter"
 
-This class will generate an equidistant grid in one (line), two (surf)
-or three (cube) dimensions, and subsequently evaluate the function on
-this grid.
 
-The grid is generated from the vectors A, B and C in relation to the origin O:
- - a ``linePlot`` will plot the line spanned by A, starting from O
- - a ``surfPlot`` will plot the area spanned by A and B, starting from O
- - a ``cubePlot`` will plot the volume spanned by A, B and C, starting from O
-
-The vectors A, B and C do not necessarily have to be orthogonal.
+.. doxygenclass:: mrcpp::Plotter
+    :members:
 
 .. NOTE::
 
-    When plotting FunctionTrees, only the *scaling* part of the
+    When plotting a ``FunctionTree``, only the *scaling* part of the
     leaf nodes will be evaluated, which means that the function
     values will not be fully accurate. This is done to allow a
     fast and ``const`` function evaluation that can be done in
@@ -35,30 +29,6 @@ The vectors A, B and C do not necessarily have to be orthogonal.
     corrections to your function values, you'll have to manually
     extend the MW grid by one level before plotting using
     ``mrcpp::refine_grid(tree, 1)``.
-
-
-Available functions
--------------------
-
-setOrigin
-  Set the point of origin O for the plot.
-
-setRange
-  Set boundary vectors A, B and C for the plot.
-
-linePlot
-  Plot a D-dimensional function along the vector A, starting from O.
-
-surfPlot
-  Plot a D-dimensional function on the area defined by the two boundary
-  vectors A and B, starting from O.
-
-cubePlot
-  Plot a D-dimensional function on the volume defined by the three boundary
-  vectors A, B and C, starting from O.
-
-gridPlot
-  Produce a file for visualizing the multiresolution grid using geomview.
 
 
 Examples

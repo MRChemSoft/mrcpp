@@ -13,34 +13,17 @@ Gaussian features are available by including:
     #include "MRCPP/Gaussians"
 
 
-Available functions
--------------------
+.. doxygenclass:: mrcpp::GaussFunc
+    :members:
 
-evalf
-  Evaluate function in a point.
+.. doxygenclass:: mrcpp::GaussPoly
+    :members:
 
-calcOverlap
-  Compute overlap with another Gaussian.
+.. doxygenclass:: mrcpp::GaussExp
+    :members:
 
-differentiate
-  Compute analytical derivative.
-
-getSquareNorm
-  Returns the squared L2 norm.
-
-normalize
-  Rescale the function by its norm.
-
-mult
-  Multiply two Gaussian functions.
-
-calcCoulombEnergy
-  Compute analytical electrostatic energy between two Gaussian charge
-  distributions.
-
-
-GaussFunc
----------
+Examples
+--------
 
 A ``GaussFunc`` is a simple D-dimensional Gaussian function with a Cartesian
 monomial in front, e.g. in 3D:
@@ -52,7 +35,7 @@ monomial in front, e.g. in 3D:
 
     double alpha, beta;
     std::array<int, 3> pow = {a, b, c};
-    std::array<double, 3> pos = {x_0, y_0, z_0};
+    mrcpp::Coord<3> pos = {x_0, y_0, z_0};
     mrcpp::GaussFunc<3> gauss(beta, alpha, pos, pow);
 
     double E = gauss.calcCoulombEnergy(gauss);              // Analytical energy
@@ -67,26 +50,22 @@ with deeper refinement for higher exponents (steeper function):
     mrcpp::build_grid(g_tree, gauss);                       // Build empty grid
     mrcpp::project(prec, g_tree, gauss);                    // Project Gaussian
 
-GaussPoly
----------
 
 ``GaussPoly`` is a generalization of the ``GaussFunc``, where there is an
 arbitrary polynomial in front of the exponential
 
 .. math:: f(r) = \alpha P(r-r_0) e^{-\beta \|r-r_0\|^2}
 
-for instance making the GaussPoly:
+For instance, the following function can be constructed
 
 .. math:: f(r) = \alpha (a_x + b_x x + c_x x^2) (a_y + b_y y + c_y y^2) (a_z + b_z z + c_z z^2)e^{-\beta \|r-r_0\|^2}
-
-
 
 .. code-block:: cpp
 
     auto gauss_poly = GaussPoly<D>(beta, alpha, pos, pow);
 
     // Create polynomial in x, y and z direction
-    auto pol_x = Polynomial(2); // 2 is the order of the polynomial
+    auto pol_x = Polynomial(2); // 2 is the degree of the polynomial
     pol_x.getCoefs() << a_x, b_x, c_x;
     auto pol_y = Polynomial(2);
     pol_y.getCoefs() << a_y, b_y, c_y;
@@ -98,8 +77,6 @@ for instance making the GaussPoly:
     guass_poly.setPoly(1, pol_y);
     guass_poly.setPoly(2, pol_z);
 
-GaussExp
---------
 
 A ``GaussExp`` is a collection of Gaussians in the form
 
@@ -123,3 +100,4 @@ a single function:
         g_exp.append(gauss_i);                              // Append Gaussian to expansion
     }
     mrcpp::project(prec, tree, g_exp);                      // Project full expansion
+

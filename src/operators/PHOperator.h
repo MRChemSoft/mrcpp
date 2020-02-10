@@ -29,6 +29,15 @@
 
 namespace mrcpp {
 
+/** @class PHOperator
+ *
+ *  @brief Derivative operator based on the smoothing derivative of
+ *  <a
+ *  href="http://www.holoborodko.com/pavel/numerical-methods/numerical-derivative/smooth-low-noise-differentiators/">
+ *  Pavel Holoborodko
+ *  </a>.
+ */
+
 template <int D> class PHOperator final : public DerivativeOperator<D> {
 public:
     PHOperator(const MultiResolutionAnalysis<D> &mra, int order);

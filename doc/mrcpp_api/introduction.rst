@@ -14,6 +14,18 @@ program.
 The API consists of seven include files which will be discussed in more detail
 below:
 
+.. code::
+
+    MRCPP/
+    ├── MWFunctions
+    ├── MWOperators
+    ├── Gaussians
+    ├── Parallel
+    ├── Printer
+    ├── Plotter
+    └── Timer
+
+
 MRCPP/MWFunctions
   Provides features for representation and manipulation of real-valued
   scalar functions in a MW basis, including projection of analytic function,
@@ -74,7 +86,7 @@ which can be written as the lambda function
 
 .. code-block:: cpp
 
-    auto Z = 1.0;                                 // Hydrogen nuclear charge
+    auto Z = 1.0; // Hydrogen nuclear charge
     auto f = [Z] (const mrcpp::Coord<3> &r) -> double {
         auto R = std::sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2]);
         return Z/R;

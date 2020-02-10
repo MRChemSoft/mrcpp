@@ -62,18 +62,15 @@ the shared ``FunctionTree``.
 Blocking communication
 ----------------------
 
+.. doxygenfunction:: mrcpp::send_tree(FunctionTree<D>&, int, int, MPI_Comm, int)
+.. doxygenfunction:: mrcpp::recv_tree(FunctionTree<D>&, int, int, MPI_Comm, int)
+
+Example
++++++++
+
 A blocking send/receive means that the function call does not return until the
 communication is completed. This is a simple and safe option, but can lead to
-significant overhead if the communicating MPI prosesses are not synchronized.
-
-send_tree
-  Send a complete ``FunctionTree`` to a given MPI rank using blocking
-  communication.
-
-recv_tree
-  Receive a complete ``FunctionTree`` from a given MPI rank using blocking
-  communication.
-
+significant overhead if the communicating MPI processes are not synchronized.
 
 .. code-block:: cpp
 
@@ -110,19 +107,24 @@ recv_tree
 Shared memory
 -------------
 
-The sharing of a ``FunctionTree`` happends in three steps: first a
+.. doxygenclass:: mrcpp::SharedMemory
+    :project:
+        MRCPP
+    :members:
+        SharedMemory
+
+.. doxygenfunction:: mrcpp::share_tree(FunctionTree<D>&, int, int, MPI_Comm)
+
+Example
++++++++
+
+The sharing of a ``FunctionTree`` happens in three steps: first a
 ``SharedMemory`` object is initialized with the appropriate shared memory
 communicator; then this object is used in the ``FunctionTree`` constructor;
 finally, *after* the ``FunctionTree`` has been properly computed, a call must
 be made to the ``share_tree`` function. The reason for the last function call
 is that the internal memory pointers needs to be updated *locally* on each MPI
 process whenever the shared memory window has been updated.
-
-
-share_tree
-  Share a ``FunctionTree`` among MPI processes that share the same physical
-  memory. This function should be called every time a *shared* ``FunctionTree``
-  is updated, in order to update the local memory of each MPI process.
 
 .. code-block:: cpp
 

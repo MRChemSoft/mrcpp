@@ -41,7 +41,7 @@ namespace mrcpp {
 
 template <int D> class RepresentableFunction {
 public:
-    /*! Access rank of function as RepresentableFunction<D>::dim */
+    /* Access rank of function as RepresentableFunction<D>::dim */
     static constexpr int dim = D;
 
     RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
@@ -51,6 +51,7 @@ public:
     RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
     virtual ~RepresentableFunction();
 
+    /** @returns Function value in a point @param[in] r: Cartesian coordinate */
     virtual double evalf(const Coord<D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);

@@ -37,24 +37,23 @@
 
 namespace mrcpp {
 
-/** @brief Build grid of based on info from analytic function
+/** @brief Build empty grid based on info from analytic function
  *
- * @param[in,out] out Output tree to be built
- * @param[in] inp Input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[out] out: Output tree to be built
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
  *
- * The grid of the output function will be EXTENDED using the general algorithm:
- *  1) Loop through current leaf nodes of the output tree
- *  2) Refine node based on custom split check from the function
- *  3) Repeat until convergence or maxIter is reached
+ * @details The grid of the output function will be EXTENDED using the general
+ * algorithm:
+ * - Loop through current leaf nodes of the output tree
+ * - Refine node based on custom split check from the function
+ * - Repeat until convergence or `maxIter` is reached
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called. This algorithm requires that the functions
- *  isVisibleAtScale()
- *  isZeroOnInterval()
- * is implemented in the particular RepresentableFunction.
- *
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called. It requires that the functions
+ * `isVisibleAtScale()` and `isZeroOnInterval()` is implemented in the
+ * particular `RepresentableFunction`.
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter) {
@@ -85,6 +84,25 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
     print::separator(10, ' ');
 }
 
+/** @brief Build empty grid based on info from Gaussian expansion
+ *
+ * @param[out] out: Output tree to be built
+ * @param[in] inp: Input Gaussian expansion
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ *
+ * @details The grid of the output function will be EXTENDED using the general
+ * algorithm:
+ * - Loop through current leaf nodes of the output tree
+ * - Refine node based on custom split check from the function
+ * - Repeat until convergence or `maxIter` is reached
+ * - `maxIter < 0` means no bound
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called. It will loop through the Gaussians in the
+ * expansion and extend the grid based on the position and exponent of each
+ * term. Higher exponent means finer resolution.
+ *
+ */
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
     if (!out.getMRA().getWorldBox().isPeriodic()) {
         auto maxScale = out.getMRA().getMaxScale();
@@ -105,23 +123,23 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
     print::separator(10, ' ');
 }
 
-/** @brief Build grid based on another MW function representation
+/** @brief Build empty grid based on another MW function representation
  *
- * @param[in,out] out Output tree to be built
- * @param[in] inp Input tree
- * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[out] out: Output tree to be built
+ * @param[in] inp: Input tree
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
  *
- * The grid of the output function will be EXTENDED with all existing nodes in
- * corresponding input function, using the general algorithm:
- *  1) Loop through current leaf nodes of the output tree
- *  2) Refine node if the corresponding node in the input has children
- *  3) Repeat until all input nodes are covered or maxIter is reached
+ * @details The grid of the output function will be EXTENDED with all existing
+ * nodes in corresponding input function, using the general algorithm:
+ * - Loop through current leaf nodes of the output tree
+ * - Refine node if the corresponding node in the input has children
+ * - Repeat until all input nodes are covered or `maxIter` is reached
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called. This means that all nodes on the input tree will also
- * be in the final output tree, but NOT vice versa.
- *
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called. This means that all nodes on the input
+ * tree will also be in the final output tree (unless `maxIter` is reached,
+ * but NOT vice versa.
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
@@ -133,23 +151,23 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
     print::separator(10, ' ');
 }
 
-/** @brief Build grid based on several MW function representation
+/** @brief Build empty grid based on several MW function representation
  *
- * @param[in,out] out Output tree to be built
- * @param[in] inp Input tree vector
- * @param[in] maxIter Maximum number of refinement iterations in output tree
+ * @param[out] out: Output tree to be built
+ * @param[in] inp: Input tree vector
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
  *
- * The grid of the output function will be EXTENDED with all existing nodes in
- * all corresponding input functions, using the general algorithm:
- *  1) Loop through current leaf nodes of the output tree
- *  2) Refine node if the corresponding node in one of the inputs has children
- *  3) Repeat until all input nodes are covered or maxIter is reached
+ * @details The grid of the output function will be EXTENDED with all existing
+ * nodes in all corresponding input functions, using the general algorithm:
+ * - Loop through current leaf nodes of the output tree
+ * - Refine node if the corresponding node in one of the inputs has children
+ * - Repeat until all input nodes are covered or `maxIter` is reached
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called. This means that the final output grid will contain
- * (at least) the union of the nodes of all input trees.
- *
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called. This means that the final output grid
+ * will contain (at least) the union of the nodes of all input trees (unless
+ * `maxIter` is reached).
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
@@ -161,15 +179,17 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &in
     print::separator(10, ' ');
 }
 
-/** @brief Copy function from one tree onto the grid of another tree
+/** @brief Copy function from one tree onto the grid of another tree, fixed grid
  *
- * @param[in,out] out Output tree to be built
- * @param[in] inp Input tree
+ * @param[out] out: Output function
+ * @param[in] inp: Input function
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called:
- *  1) Loop through current leaf nodes of the output tree
- *  2) Copy MW coefs from the corresponding input node
+ * @details The output function will be computed using the general algorithm:
+ * - Loop through current leaf nodes of the output tree
+ * - Copy MW coefs from the corresponding input node
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called and will overwrite any existing coefs.
  *
  */
 template <int D> void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
@@ -178,13 +198,14 @@ template <int D> void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
     add(-1.0, out, tmp_vec);
 }
 
-/** @brief Copy the grid of another MW function representation
+/** @brief Build empty grid that is identical to another MW grid
  *
- * @param[in,out] out Output tree to be built
- * @param[in] inp Input tree
+ * @param[out] out: Output tree to be built
+ * @param[in] inp: Input tree
  *
- * The grid of the output function will be identical to the grid of the input
- * function, but without MW coefficients.
+ * @note The difference from the corresponding `build_grid` function is that
+ * this will first clear the grid of the `out` function, while `build_grid`
+ * will _extend_ the existing grid.
  *
  */
 template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
@@ -192,12 +213,13 @@ template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     build_grid(out, inp);
 }
 
-/** @brief Clear the grid of a MW function representation
+/** @brief Clear the MW coefficients of a function representation
  *
- * @param[in,out] out Output function to be cleared
+ * @param[in,out] out: Output function to be cleared
  *
- * This will clear all MW coefs in the existing nodes, thus leaving an empty
- * grid that can be reused by computing new MW coefs.
+ * @note This will only clear the MW coefs in the existing nodes, it will not
+ * change the grid of the function. Use `FunctionTree::clear()` to remove all
+ * grid refinement as well.
  *
  */
 template <int D> void clear_grid(FunctionTree<D> &out) {
@@ -208,12 +230,13 @@ template <int D> void clear_grid(FunctionTree<D> &out) {
 
 /** @brief Refine the grid of a MW function representation
  *
- * @param[in,out] out Output tree to be refined
- * @param[in] scales Number of refinement levels
+ * @param[in,out] out: Output tree to be refined
+ * @param[in] scales: Number of refinement levels
+ * @returns The number of nodes that were split
  *
- * This will split ALL nodes in the tree the given number of times, then it will
- * compute scaling coefs of the new nodes, thus leaving the function representation
- * unchanged, but on a larger grid.
+ * @details This will split ALL leaf nodes in the tree the given number of
+ * times, then it will compute scaling coefs of the new nodes, thus leaving
+ * the function representation unchanged, but on a larger grid.
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
@@ -229,14 +252,15 @@ template <int D> int refine_grid(FunctionTree<D> &out, int scales) {
 
 /** @brief Refine the grid of a MW function representation
  *
- * @param[in,out] out Output tree to be refined
- * @param[in] prec Precision for initial split check
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in,out] out: Output tree to be refined
+ * @param[in] prec: Precision for initial split check
+ * @param[in] absPrec: Build output tree based on absolute precision
+ * @returns The number of nodes that were split
  *
- * This will first perform a split check on the existing end nodes in the tree
- * based on the provided precision parameter, then it will compute scaling coefs
- * of the new nodes, thus leaving the function representation unchanged, but on a
- * larger grid.
+ * @details This will first perform a split check on the existing leaf nodes in
+ * the tree based on the provided precision parameter, then it will compute
+ * scaling coefs of the new nodes, thus leaving the function representation
+ * unchanged, but (possibly) on a larger grid.
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec) {
@@ -249,13 +273,14 @@ template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec
 
 /** @brief Refine the grid of a MW function representation
  *
- * @param[in,out] out Output tree to be refined
- * @param[in] inp Input tree
+ * @param[in,out] out: Output tree to be refined
+ * @param[in] inp: Input tree that defines the new grid
+ * @returns The number of nodes that were split
  *
- * This will first perform a split check on the existing end nodes in the output
- * tree based on the structure of the input tree (same as build_grid), then it will
- * compute scaling coefs of the new nodes, thus leaving the function representation
- * unchanged, but on a larger grid.
+ * @details This will first perform a split check on the existing leaf nodes
+ * in the output tree based on the structure of the input tree (same as
+ * build_grid), then it will compute scaling coefs of the new nodes, thus
+ * leaving the function representation unchanged, but on a larger grid.
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {

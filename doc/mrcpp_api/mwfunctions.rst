@@ -17,10 +17,9 @@ coefficients in the MW basis):
 
 * Projection of analytic function
 * Arithmetic operations
-* Mapping of function values
 * Application of MW operator
 
-The first three will be discribed in this chapter, while the last one
+The first two will be discribed in this chapter, while the last one
 regarding operators will be the topic of the next chapter.
 
 The interface for constructing MW representations in MRCPP has a dual focus:
@@ -37,58 +36,25 @@ without excessive allocation/deallocation of memory.
 MultiResolution Analysis (MRA)
 ------------------------------
 
-In order to combine different functions and operators in mathematical
-operations, they need to be compatible. That is, they must be defined on the
-same computational domain and constructed using the same polynomial basis
-(order and type). This information constitutes an MRA, which needs to be
-defined and passed as argument to all function and operator constructors,
-and only functions and operators with compatible MRAs can be combined in
-subsequent calculations. An MRA is defined in two steps, first the
-computational domain is given by a ``BoundingBox`` (D is the dimension)
+.. doxygenclass:: mrcpp::MultiResolutionAnalysis
+    :members:
 
-.. code-block:: cpp
+.. doxygenclass:: mrcpp::BoundingBox
+    :members:
 
-    int n;                                          // Root scale defines box size 2^{-n}
-    std::array<int, D> l;                           // Translation of first box
-    std::array<int, D> nb;                          // Number of boxes
-    BoundingBox<D> world(n, l, nb);
+.. doxygenclass:: mrcpp::LegendreBasis
+    :members:
 
-which is combined with a ``ScalingBasis`` to give an MRA
-
-.. code-block:: cpp
-
-    int N;                                          // Maximum refinement scale 2^{-N}
-    int k;                                          // Polynomial order
-    ScalingBasis basis(k);                          // Legendre or Interpolating basis
-    MultiResolutionAnalysis<D> MRA(world, basis, N);
-
-Two types of ``ScalingBasis`` are supported (``LegendreBasis`` and
-``InterpolatingBasis``), and they are both available at orders
-:math:`k=1,2,\dots,40` (note that some operators are constructed using
-intermediates of order :math:`2k`, so in that case the maximum order available
-is :math:`k=20`).
+.. doxygenclass:: mrcpp::InterpolatingBasis
+    :members:
 
 
 FunctionTree
 ------------
 
-Constructing a full grown ``FunctionTree`` involves a number of steps,
-including setting up a memory allocator, constructing root nodes according
-to the given MRA, building an adaptive tree structure and computing MW
-coefficients. The ``FunctionTree`` constructor does only half of these steps:
-
-.. code-block:: cpp
-
-    FunctionTree<D> tree(MRA);
-
-It takes an MRA argument, which defines the computational domain and scaling
-basis (these are fixed parameters that cannot be changed after construction).
-The tree is initialized with a memory allocator and a set of root nodes, but
-it does not compute any coefficients and the function is initially *undefined*.
-An undefined ``FunctionTree`` will have a well defined tree structure (at the
-very least the root nodes of the given MRA, but possibly with additional
-refinement, as discussed below) and its MW coefficient will be allocated but
-uninitialized, and its square norm will be negative (minus one).
+.. doxygenclass:: mrcpp::FunctionTree
+    :members:
+        FunctionTree
 
 
 Creating defined FunctionTrees
@@ -109,28 +75,16 @@ number of *extra* refinement levels beyond the initial grid, in which the
 adaptive refinement will stop, even if the local precision requirement is not
 met.
 
-setZero
-  Set the MW coefficients to zero, fixed grid.
-
-copy_func
-  Copy existing function into a new tree, fixed grid.
-
-project
-  Project an analytic function onto the MW basis, adaptively grid.
-
-add
-  Add existing functions, adaptive grid.
-
-multiply
-  Multiply existing functions, adaptive grid.
-
-square
-  Multiply an existing function with itself, adaptive grid.
-
-power
-  Raise an existing function to a given power, adaptive grid.
-
-
+.. doxygenfunction:: mrcpp::FunctionTree::setZero
+.. doxygenfunction:: mrcpp::project(double, FunctionTree<D>&, RepresentableFunction<D>&, int, bool)
+.. doxygenfunction:: mrcpp::copy_func(FunctionTree<D>&, FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, double, FunctionTree<D>&, double, FunctionTree<D>&, int, bool)
+.. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
+.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, double, FunctionTree<D>&, FunctionTree<D>&, int, bool)
+.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
+.. doxygenfunction:: mrcpp::square(double, FunctionTree<D>&, FunctionTree<D>&, int, bool)
+.. doxygenfunction:: mrcpp::power(double, FunctionTree<D>&, FunctionTree<D>&, double, int, bool)
+.. doxygenfunction:: mrcpp::dot(double, FunctionTree<D>&, FunctionTreeVector<D>&, FunctionTreeVector<D>&, int, bool)
 
 Creating undefined FunctionTrees
 ++++++++++++++++++++++++++++++++
@@ -138,66 +92,39 @@ Creating undefined FunctionTrees
 The grid of a ``FunctionTree`` can also be constructed *without* computing any
 MW coefficients:
 
-build_grid
-  Build an empty grid based on information from an analytic function, e.g.
-  position and exponent of Gaussian, or based on the structure of another grid.
-
-copy_grid
-  Build an empty grid that is identical to that of an existing function.
-
-clear_grid
-  Clear MW coefficients of an existing function. Keeps grid refinement.
-
-clear
-  Clear MW coefficients and remove all grid refinement.
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, const RepresentableFunction<D>&, int)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, const GaussExp<D>&, int)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, FunctionTree<D>&, int)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, FunctionTreeVector<D>&, int)
+.. doxygenfunction:: mrcpp::copy_grid(FunctionTree<D>&, FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::clear_grid(FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::FunctionTree::clear
 
 
 Changing FunctionTrees
 ++++++++++++++++++++++
 
 There are also a number of in-place operations that *change* the MW
-coefficients of a given defined ``FunctionTree``:
+coefficients of a given defined ``FunctionTree``. All changing operations
+*require* that the ``FunctionTree`` is in a *defined* state.
 
-rescale
-  Multiply the function with a scalar, fixed grid.
-
-normalize
-  Rescale the function by its norm, fixed grid.
-
-add
-  Add an existing function, fixed grid.
-
-multiply
-  Multiply an existing function, fixed grid.
-
-square
-  Multiply an existing function with itself, fixed grid.
-
-power
-  Raise an existing function to a given power, fixed grid.
-
-crop
-  Truncate the wavelet expansion accoring to a new precision threshold.
-
-refine_grid
-  Refine grid and `interpolate` the existing function to the new (larger) grid.
-  Three versions: (1) refine `globally` a given number of levels, (2) refine
-  `locally` based on precision and wavelet norm, (3) refine `locally` based on
-  the structure of another grid.
-
-All changing operations *require* that the ``FunctionTree`` is in a
-*defined* state.
+.. doxygenfunction:: mrcpp::FunctionTree::rescale
+.. doxygenfunction:: mrcpp::FunctionTree::normalize
+.. doxygenfunction:: mrcpp::FunctionTree::add
+.. doxygenfunction:: mrcpp::FunctionTree::multiply
+.. doxygenfunction:: mrcpp::FunctionTree::square
+.. doxygenfunction:: mrcpp::FunctionTree::power
+.. doxygenfunction:: mrcpp::FunctionTree::crop
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, int)
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, double, bool)
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, FunctionTree<D>&)
 
 
 File I/O
 ++++++++
 
-saveTree
-  Write function to file.
-
-loadTree
-  Read function from file. Requires the MRA of the target tree is identical to
-  the MRA of the saved tree.
+.. doxygenfunction:: mrcpp::FunctionTree::saveTree
+.. doxygenfunction:: mrcpp::FunctionTree::loadTree
 
 
 Extracting data
@@ -206,51 +133,77 @@ Extracting data
 Given a ``FunctionTree`` that is a *well defined* function representation, the
 following data can be extracted:
 
-getSquareNorm
-  Returns the squared L2 norm of the function.
+.. doxygenfunction:: mrcpp::FunctionTree::getSquareNorm
+.. doxygenfunction:: mrcpp::FunctionTree::integrate
+.. doxygenfunction:: mrcpp::FunctionTree::evalf
+.. doxygenfunction:: mrcpp::FunctionTree::getNNodes
+.. doxygenfunction:: mrcpp::FunctionTree::getSizeNodes
+.. doxygenfunction:: mrcpp::dot(FunctionTree<D>&, FunctionTree<D>&)
 
-integrate
-  Returns the integral of the function over the entire computational domain.
-
-evalf
-  Returns the function value in a given point. Possibly inaccurate, see below.
-
-dot
-  Returns the dot product of two functions over the entire computational domain.
-
-.. NOTE::
-
-    When evaluating FunctionTrees, only the *scaling* part of the
-    leaf nodes will be evaluated, which means that the function
-    values will not be fully accurate. This is done to allow a
-    fast and ``const`` function evaluation that can be done in
-    OMP parallel. If you want to include also the *final* wavelet
-    corrections to your function values, you'll have to manually
-    extend the MW grid by one level before evaluating using
-    ``mrcpp::refine_grid(tree, 1)``.
 
 FunctionTreeVector
 ------------------
 
-The ``FunctionTreeVector`` is simply an alias for a ``std::vector`` of tuples
-containing a numerical coefficient and a ``FunctionTree`` pointer.
+The ``FunctionTreeVector`` is simply an alias for a ``std::vector`` of
+``std::tuple`` containing a numerical coefficient and a ``FunctionTree``
+pointer.
+
+.. doxygenfunction:: mrcpp::clear(FunctionTreeVector<D>&, bool)
+.. doxygenfunction:: mrcpp::get_coef(FunctionTreeVector<D>&, int)
+.. doxygenfunction:: mrcpp::get_func(FunctionTreeVector<D>&, int)
+.. doxygenfunction:: mrcpp::get_n_nodes(FunctionTreeVector<D>&)
+.. doxygenfunction:: mrcpp::get_size_nodes(FunctionTreeVector<D>&)
+
+
+Examples
+--------
+
+Constructing an MRA
++++++++++++++++++++
+
+An MRA is defined in two steps, first the computational domain is given by a
+``BoundingBox`` (D is the dimension), e.g. for a total domain of
+:math:`[-32,32]^3` in three dimensions (eight root boxes of size :math:`[16]^3`
+each):
+
+.. code-block:: cpp
+
+    int n = -4;                                        // Root scale defines box size 2^{-n}
+    std::array<int, 3> l{-1, -1, -1};                  // Translation of first box [l_x,l_y,l_z]
+    std::array<int, 3> nb{2, 2, 2};                    // Number of boxes [n_x,n_y,n_z]
+    mrcpp::BoundingBox<3> world(n, l, nb);
+
+which is combined with a ``ScalingBasis`` to give an MRA, e.g. interpolating
+scaling functions of order :math:`k=9`:
+
+.. code-block:: cpp
+
+    int N = 20;                                        // Maximum refinement 2^{-(n+N)}
+    int k = 9;                                         // Polynomial order
+    mrcpp::InterpolatingBasis basis(k);                // Legendre or Interpolating basis
+    mrcpp::MultiResolutionAnalysis<D> MRA(world, basis, N);
+
+Two types of ``ScalingBasis`` are supported (``LegendreBasis`` and
+``InterpolatingBasis``), and they are both available at orders
+:math:`k=1,2,\dots,40` (note that some operators are constructed using
+intermediates of order :math:`2k`, so in that case the maximum order available
+is :math:`k=20`).
+
+
+Working withFunctionTreeVectors
++++++++++++++++++++++++++++++++
+
 Elements can be appended to the vector using the ``std::make_tuple``, elements
 are obtained with the ``get_func`` and ``get_coef`` functions:
 
 .. code-block:: cpp
 
-    FunctionTreeVector<D> tree_vec;
+    mrcpp::FunctionTreeVector<D> tree_vec;             // Initialize empty vector
     tree_vec.push_back(std::make_tuple(2.0, &tree_a)); // Push back pointer to FunctionTree
-    double coef = get_coef(tree_vec, 0);               // Get coefficient of first entry
-    FunctionTree<3> &tree = get_func(tree_vec, 0);     // Get function of first entry
-    clear(tree_vec, false);                            // Bool argument for tree destruction
+    auto coef = mrcpp::get_coef(tree_vec, 0);          // Get coefficient of first entry
+    auto &tree = mrcpp::get_func(tree_vec, 0);         // Get function of first entry
+    mrcpp::clear(tree_vec, false);                     // Bool argument for tree destruction
 
-Clearing the vector means removing all its elements, and the ``bool`` argument
-tells if the elements should be properly deallocated (default ``false``).
-
-
-Examples
---------
 
 Building empty grids
 ++++++++++++++++++++
@@ -271,11 +224,11 @@ than just root nodes)
 
 .. code-block:: cpp
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Input tree
-    mrcpp::FunctionTree<D> g_tree(MRA);                     // Output tree
+    mrcpp::FunctionTree<D> f_tree(MRA);   // Input tree
+    mrcpp::FunctionTree<D> g_tree(MRA);   // Output tree
 
-    mrcpp::project(prec, f_tree, f_func);                   // Build adaptive grid for f_tree
-    mrcpp::copy_grid(g_tree, f_tree);                       // Copy grid from f_tree to g_tree
+    mrcpp::project(prec, f_tree, f_func); // Build adaptive grid for f_tree
+    mrcpp::copy_grid(g_tree, f_tree);     // Copy grid from f_tree to g_tree
 
 Passing an analytic function as argument to the generator will build a grid
 based on some predefined information of the function (if there is any,
@@ -283,9 +236,9 @@ otherwise it will do nothing)
 
 .. code-block:: cpp
 
-    mrcpp::RepresentableFunction<D> func;                   // Analytic function
-    mrcpp::FunctionTree<D> tree(MRA);                       // Output tree
-    mrcpp::build_grid(tree, func);                          // Build grid based on f_func
+    mrcpp::RepresentableFunction<D> func; // Analytic function
+    mrcpp::FunctionTree<D> tree(MRA);     // Output tree
+    mrcpp::build_grid(tree, func);        // Build grid based on f_func
 
 The lambda analytic functions do `not` provide such information, this must be
 explicitly implemented as a ``RepresentableFunction`` sub-class (see MRCPP
@@ -301,9 +254,9 @@ successive applications of ``build_grid``
 
 .. code-block:: cpp
 
-    mrcpp::FunctionTree<D> f_tree(MRA);             // Construct empty grid of root nodes
-    mrcpp::build_grid(f_tree, g_tree);              // Extend f with missing nodes relative to g
-    mrcpp::build_grid(f_tree, h_tree);              // Extend f with missing nodes relative to h
+    mrcpp::FunctionTree<D> f_tree(MRA);   // Construct empty grid of root nodes
+    mrcpp::build_grid(f_tree, g_tree);    // Extend f with missing nodes relative to g
+    mrcpp::build_grid(f_tree, h_tree);    // Extend f with missing nodes relative to h
 
 In contrast, doing the same with ``copy_grid`` would clear the ``f_tree`` grid in
 between, and you would *only* get a (identical) copy of the last ``h_tree`` grid,
@@ -312,8 +265,8 @@ grids of two functions equal to their union
 
 .. code-block:: cpp
 
-    mrcpp::build_grid(f_tree, g_tree);              // Extend f with missing nodes relative to g
-    mrcpp::build_grid(g_tree, f_tree);              // Extend g with missing nodes relative to f
+    mrcpp::build_grid(f_tree, g_tree);    // Extend f with missing nodes relative to g
+    mrcpp::build_grid(g_tree, f_tree);    // Extend g with missing nodes relative to f
 
 The union grid of several trees can be constructed in one go using a
 ``FunctionTreeVector``
@@ -326,7 +279,7 @@ The union grid of several trees can be constructed in one go using a
     inp_vec.push_back(std::make_tuple(1.0, tree_3));
 
     mrcpp::FunctionTree<D> f_tree(MRA);
-    mrcpp::build_grid(f_tree, inp_vec);
+    mrcpp::build_grid(f_tree, inp_vec);   // Extend f with missing nodes from all trees in inp_vec
 
 
 Projection
@@ -361,14 +314,14 @@ as for Gaussians:
 
 .. code-block:: cpp
 
-    double prec;                                            // Precision of the projection
-    int max_iter;                                           // Maximum levels of refinement
+    double prec;                                       // Precision of the projection
+    int max_iter;                                      // Maximum levels of refinement
 
-    mrcpp::GaussFunc<D> func;                               // Analytic Gaussian function
-    mrcpp::FunctionTree<D> tree(MRA);                       // Output tree
+    mrcpp::GaussFunc<D> func;                          // Analytic Gaussian function
+    mrcpp::FunctionTree<D> tree(MRA);                  // Output tree
 
-    mrcpp::build_grid(tree, func);                          // Empty grid from analytic function
-    mrcpp::project(prec, tree, func, max_iter);             // Starts projecting from given grid
+    mrcpp::build_grid(tree, func);                     // Empty grid from analytic function
+    mrcpp::project(prec, tree, func, max_iter);        // Starts projecting from given grid
 
 This will first produce an empty grid suited for representing the analytic
 function ``func`` (this is meant as a way to make sure that the projection
@@ -388,18 +341,18 @@ is done in the following way
 
 .. code-block:: cpp
 
-    double a, b, c;                                         // Addition parameters
-    mrcpp::FunctionTree<D> a_tree(MRA);                     // Input function
-    mrcpp::FunctionTree<D> b_tree(MRA);                     // Input function
-    mrcpp::FunctionTree<D> c_tree(MRA);                     // Input function
+    double a, b, c;                                    // Addition parameters
+    mrcpp::FunctionTree<D> a_tree(MRA);                // Input function
+    mrcpp::FunctionTree<D> b_tree(MRA);                // Input function
+    mrcpp::FunctionTree<D> c_tree(MRA);                // Input function
 
-    mrcpp::FunctionTreeVector<D> inp_vec;                   // Vector to hold input functions
-    inp_vec.push_back(std::make_tuple(a, &a_tree));         // Append to vector
-    inp_vec.push_back(std::make_tuple(b, &b_tree));         // Append to vector
-    inp_vec.push_back(std::make_tuple(c, &c_tree));         // Append to vector
+    mrcpp::FunctionTreeVector<D> inp_vec;              // Vector to hold input functions
+    inp_vec.push_back(std::make_tuple(a, &a_tree));    // Append to vector
+    inp_vec.push_back(std::make_tuple(b, &b_tree));    // Append to vector
+    inp_vec.push_back(std::make_tuple(c, &c_tree));    // Append to vector
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Output function
-    mrcpp::add(prec, f_tree, inp_vec);                      // Adaptive addition
+    mrcpp::FunctionTree<D> f_tree(MRA);                // Output function
+    mrcpp::add(prec, f_tree, inp_vec);                 // Adaptive addition
 
 The default initial grid is again only the root nodes, and a positive ``prec``
 is required to build an adaptive tree structure for the result. The special
@@ -415,10 +368,10 @@ Addition of two functions is usually done on their (fixed) union grid
 
 .. code-block:: cpp
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Construct empty root grid
-    mrcpp::build_grid(f_tree, a_tree);                      // Copy grid of g
-    mrcpp::build_grid(f_tree, b_tree);                      // Copy grid of h
-    mrcpp::add(-1.0, f_tree, a, a_tree, b, b_tree);         // Add functions on fixed grid
+    mrcpp::FunctionTree<D> f_tree(MRA);                // Construct empty root grid
+    mrcpp::build_grid(f_tree, a_tree);                 // Copy grid of g
+    mrcpp::build_grid(f_tree, b_tree);                 // Copy grid of h
+    mrcpp::add(-1.0, f_tree, a, a_tree, b, b_tree);    // Add functions on fixed grid
 
 Note that in the case of addition there is no extra information to be gained
 by going beyond the finest refinement levels of the input functions, so the
@@ -441,9 +394,9 @@ wanted grid and then perform the operation on that grid
     inp_vec.push_back(std::make_tuple(b, b_tree));
     inp_vec.push_back(std::make_tuple(c, c_tree));
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Construct empty root grid
-    mrcpp::copy_grid(f_tree, get_func(inp_vec, 0));         // Copy grid of first input function
-    mrcpp::add(-1.0, f_tree, inp_vec);                      // Add functions on fixed grid
+    mrcpp::FunctionTree<D> f_tree(MRA);                // Construct empty root grid
+    mrcpp::copy_grid(f_tree, get_func(inp_vec, 0));    // Copy grid of first input function
+    mrcpp::add(-1.0, f_tree, inp_vec);                 // Add functions on fixed grid
 
 Here you can of course also add a positive ``prec`` to the addition and the
 resulting function will be built adaptively starting from the given initial
@@ -458,18 +411,18 @@ product :math:`f = \prod_i c_i f_i(x)` is done in the following way
 
 .. code-block:: cpp
 
-    double a, b, c;                                         // Multiplication parameters
-    mrcpp::FunctionTree<D> a_tree(MRA);                     // Input function
-    mrcpp::FunctionTree<D> b_tree(MRA);                     // Input function
-    mrcpp::FunctionTree<D> c_tree(MRA);                     // Input function
+    double a, b, c;                                    // Multiplication parameters
+    mrcpp::FunctionTree<D> a_tree(MRA);                // Input function
+    mrcpp::FunctionTree<D> b_tree(MRA);                // Input function
+    mrcpp::FunctionTree<D> c_tree(MRA);                // Input function
 
-    mrcpp::FunctionTreeVector<D> inp_vec;                   // Vector to hold input functions
-    inp_vec.push_back(std::make_tuple(a, &a_tree));         // Append to vector
-    inp_vec.push_back(std::make_tuple(b, &b_tree));         // Append to vector
-    inp_vec.push_back(std::make_tuple(c, &c_tree));         // Append to vector
+    mrcpp::FunctionTreeVector<D> inp_vec;              // Vector to hold input functions
+    inp_vec.push_back(std::make_tuple(a, &a_tree));    // Append to vector
+    inp_vec.push_back(std::make_tuple(b, &b_tree));    // Append to vector
+    inp_vec.push_back(std::make_tuple(c, &c_tree));    // Append to vector
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Output function
-    mrcpp::multipy(prec, f_tree, inp_vec);                  // Adaptive multiplication
+    mrcpp::FunctionTree<D> f_tree(MRA);                // Output function
+    mrcpp::multipy(prec, f_tree, inp_vec);             // Adaptive multiplication
 
 In the special case of multiplying two functions the coefficients are collected
 into one argument
@@ -491,10 +444,10 @@ and function mappings)
 
 .. code-block:: cpp
 
-    mrcpp::FunctionTree<D> f_tree(MRA);                     // Construct empty root grid
-    mrcpp::build_grid(f_tree, a_tree);                      // Copy grid of a
-    mrcpp::build_grid(f_tree, b_tree);                      // Copy grid of b
-    mrcpp::multiply(prec, f_tree, a*b, a_tree, b_tree, 1);  // Allow 1 extra refinement
+    mrcpp::FunctionTree<D> f_tree(MRA);                    // Construct empty root grid
+    mrcpp::build_grid(f_tree, a_tree);                     // Copy grid of a
+    mrcpp::build_grid(f_tree, b_tree);                     // Copy grid of b
+    mrcpp::multiply(prec, f_tree, a*b, a_tree, b_tree, 1); // Allow 1 extra refinement
 
 
 Re-using grids
@@ -505,10 +458,10 @@ its MW expansion coefficients as well as its grid refinement
 
 .. code-block:: cpp
 
-    mrcpp::FunctionTree<D> tree(MRA);                       // tree is an undefined function
-    mrcpp::project(prec, tree, f_func);                     // tree represents analytic function f
-    tree.clear();                                           // tree is an undefined function
-    mrcpp::project(prec, tree, f_func);                     // tree represents analytic function g
+    mrcpp::FunctionTree<D> tree(MRA);                      // tree is an undefined function
+    mrcpp::project(prec, tree, f_func);                    // tree represents analytic function f
+    tree.clear();                                          // tree is an undefined function
+    mrcpp::project(prec, tree, f_func);                    // tree represents analytic function g
 
 This action will leave the ``FunctionTree`` in the same state as after
 construction (undefined function, only root nodes), and its coefficients can
@@ -547,7 +500,7 @@ process)
 
     int n_nodes = 1;
     while (n_nodes > 0) {
-        mrcpp::project(-1.0, tree, func);                   // Project f on fixed grid
-        n_nodes = mrcpp::refine_grid(tree, prec);           // Refine grid based on prec
-        if (n_nodes > 0) mrcpp::clear_grid(tree);           // Clear grid for next iteration
+        mrcpp::project(-1.0, tree, func);                  // Project f on fixed grid
+        n_nodes = mrcpp::refine_grid(tree, prec);          // Refine grid based on prec
+        if (n_nodes > 0) mrcpp::clear_grid(tree);          // Clear grid for next iteration
     }

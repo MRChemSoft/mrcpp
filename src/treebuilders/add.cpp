@@ -37,28 +37,28 @@
 
 namespace mrcpp {
 
-/** @brief Addition of two MW function representations
+/** @brief Addition of two MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] a Numerical coefficient of function a
- * @param[in] inp_a Input function a
- * @param[in] b Numerical coefficient of function b
- * @param[in] inp_b Input function b
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] a: Numerical coefficient of function a
+ * @param[in] inp_a: Input function a
+ * @param[in] b: Numerical coefficient of function b
+ * @param[in] inp_b: Input function b
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the sum of the two input functions
- * (including the numerical coefficient), using the general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the sum of the two input
+ * functions (including the numerical coefficient), using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D>
@@ -76,26 +76,26 @@ void add(double prec,
     add(prec, out, tmp_vec, maxIter, absPrec);
 }
 
-/** @brief Addition of several MW function representations
+/** @brief Addition of several MW function representations, adaptive grid
  *
- * @param[in] prec Build precision of output function
- * @param[in,out] out Output function to be built
- * @param[in] inp Vector of input function
- * @param[in] maxIter Maximum number of refinement iterations in output tree
- * @param[in] absPrec Build output tree based on absolute precision
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Vector of input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
  *
- * The output function will be computed as the sum of all the functions
- * in the input vector (including their numerical coefficients), using the
- * general algorithm:
- *  1) Compute MW coefs on current grid
- *  2) Refine grid where necessary based on prec
- *  3) Repeat until convergence or maxIter is reached
+ * @details The output function will be computed as the sum of all input
+ * functions in the vector (including their numerical coefficients), using
+ * the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
  *
- * This algorithm will start at whatever grid is present in the output tree when
- * the function is called (this grid should however be EMPTY, e.i. no coefs).
- *
- * A negative precision means NO refinement, as do maxIter = 0.
- * A negative maxIter means no bound.
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
  *
  */
 template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec) {

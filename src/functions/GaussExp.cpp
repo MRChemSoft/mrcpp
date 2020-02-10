@@ -23,12 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- */
-
-// TODO checks on exponents to discard elements
-// TODO sanity checks
-
 #include <cstdlib>
 #include <iostream>
 
@@ -291,8 +285,6 @@ template <int D> void GaussExp<D>::multInPlace(double d) {
     this->calcSquareNorm();
 }
 
-/**  compute the norm of a multidimensional gaussian expansion
- */
 template <int D> double GaussExp<D>::calcSquareNorm() {
     /* computing the squares */
     double norm = 0.0;
@@ -327,17 +319,6 @@ template <int D> void GaussExp<D>::normalize() {
     calcSquareNorm();
 }
 
-/** calculate screening radius on the individual 1d terms of the gauss
- * expansion
- *
- *	When projecting a large gaussian expansion on a given node we want to
- *	discard the terms in the expansion that are sufficiently far from the
- *	node. These terms will not contribute to the function on that node, but
- *	nevertheless it will take a considerable amount of time to evaluate them.
- *
- *	By applying this routine a screening of far away gaussians is enabled, and
- *	the projection becomes more efficient.
- */
 template <int D> void GaussExp<D>::calcScreening(double nStdDev) {
     screening = nStdDev;
     for (int i = 0; i < this->size(); i++) { this->funcs[i]->calcScreening(nStdDev); }
@@ -352,9 +333,9 @@ template <int D> void GaussExp<D>::setScreen(bool screen) {
     for (int i = 0; i < this->size(); i++) { this->funcs[i]->setScreen(screen); }
 }
 
-/** Calculate the scaling and wavelet coefs of all the children, and do the
- * outer product to make the nD-scaling coefs. Since a Gaussian expansion
- * is not separable, we have to do the projection term by term. */
+// Calculate the scaling and wavelet coefs of all the children, and do the
+// outer product to make the nD-scaling coefs. Since a Gaussian expansion
+// is not separable, we have to do the projection term by term.
 /*
 template<int D>
 void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
@@ -386,11 +367,6 @@ void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
 }
 */
 
-// Specialized for D=3 below
-template <int D> double GaussExp<D>::calcCoulombEnergy() {
-    NOT_IMPLEMENTED_ABORT
-}
-
 template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
     if (screen < 0) { MSG_ERROR("Screening constant cannot be negative!"); }
     defaultScreening = screen;
@@ -403,6 +379,15 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
         o << getFunc(i) << std::endl << std::endl;
     }
     return o;
+}
+
+/** @returns Coulomb repulsion energy between all pairs in GaussExp, including self-interaction
+ *
+ *  @note Each Gaussian must be normalized to unit charge
+ *  \f$ c = (\alpha/\pi)^{D/2} \f$ for this to be correct!
+ */
+template <int D> double GaussExp<D>::calcCoulombEnergy() {
+    NOT_IMPLEMENTED_ABORT
 }
 
 template <> double GaussExp<3>::calcCoulombEnergy() {

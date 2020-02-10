@@ -23,10 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- */
-
 #pragma once
 
 #include <Eigen/Core>
@@ -58,6 +54,7 @@ public:
 
     void setZero();
 
+    /** @returns Squared L2 norm of the function */
     double getSquareNorm() const { return this->squareNorm; }
     void calcSquareNorm();
     void clearSquareNorm() { this->squareNorm = -1.0; }

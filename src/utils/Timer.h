@@ -31,6 +31,12 @@ namespace mrcpp {
 
 using timeT = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
+/** @class Timer
+ *
+ * @brief Records wall time between the execution of two lines of source code
+ *
+ */
+
 class Timer final {
 public:
     Timer(bool start_timer = true);

@@ -25,7 +25,7 @@ copyright = '2020, Luca Frediani, Stig Rune Jensen, Peter Wind, Magnar Bjorgve, 
 author = 'Luca Frediani, Stig Rune Jensen, Peter Wind, Magnar Bjorgve, Roberto Di Remigio'
 
 # The full version, including alpha/beta/rc tags
-release = '1.2.0-alpha'
+release = '1.2.0-alpha1'
 
 # -- General configuration ---------------------------------------------------
 

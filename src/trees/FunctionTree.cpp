@@ -51,7 +51,8 @@ namespace mrcpp {
 template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
         : MWTree<D>(mra)
-        , RepresentableFunction<D>(nullptr, nullptr) {
+        , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
+                                   mra.getWorldBox().getUpperBounds().data()) {
     this->serialTree_p = new SerialFunctionTree<D>(this, sh_mem);
     this->serialTree_p->allocRoots(*this);
     this->resetEndNodeTable();
@@ -191,7 +192,7 @@ template <int D> double FunctionTree<D>::integrate() const {
     return jacobian * result;
 }
 
-/** @returns Function value in a point
+/** @returns Function value in a point, out of bounds returns zero
  *
  * @param[in] r: Cartesian coordinate
  *
@@ -217,6 +218,9 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
     if (this->getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic()); }
+
+    // Function is zero outside the domain
+    if (this->outOfBounds(arg)) return 0.0;
 
     const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);

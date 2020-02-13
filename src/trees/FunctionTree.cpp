@@ -329,6 +329,7 @@ template <int D> void FunctionTree<D>::normalize() {
  *
  */
 template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
+    if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c), shared(inp)
     {
@@ -358,6 +359,7 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
  *
  */
 template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
+    if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c), shared(inp)
     {

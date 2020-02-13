@@ -26,6 +26,7 @@
 #pragma once
 
 #include "TreeAdaptor.h"
+#include "utils/Printer.h"
 
 namespace mrcpp {
 
@@ -51,7 +52,7 @@ protected:
     bool splitNode(const MWNode<D> &node) const override {
         if (multiplicationSplit and this->precTrees.size() > 0) {
             auto multPrec = 1.0;
-            if (this->precTrees.size() != 2) std::cout << this->precTrees.size() << " ERROR " << std::endl;
+            if (this->precTrees.size() != 2) MSG_ERROR("Invalid precTree size: " << this->precTrees.size());
             auto &pNode0 = precTrees[0]->getNode(node.getNodeIndex());
             auto &pNode1 = precTrees[1]->getNode(node.getNodeIndex());
             double maxW0 = std::sqrt(pNode0.getMaxWSquareNorm());

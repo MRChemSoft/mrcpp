@@ -376,9 +376,7 @@ template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
             inp_node.cvTransform(Forward);
             double *out_coefs = out_node.getCoefs();
             const double *inp_coefs = inp_node.getCoefs();
-            for (int i = 0; i < inp_node.getNCoefs(); i++) {
-	      out_coefs[i] = abs(out_coefs[i]) + c * abs(inp_coefs[i]);
-	    }
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = abs(out_coefs[i]) + c * abs(inp_coefs[i]); }
             out_node.cvTransform(Backward);
             out_node.mwTransform(Compression);
             out_node.calcNorms();

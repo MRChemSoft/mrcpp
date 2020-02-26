@@ -6,18 +6,16 @@ else()
   include(FetchContent)
 
   FetchContent_Declare(eigen3_sources
-    GIT_REPOSITORY
-      https://github.com/eigenteam/eigen-git-mirror
-    GIT_TAG
-      3.3.7
-  )
+    QUIET
+    URL
+      https://gitlab.com/libeigen/eigen/-/archive/before-git-migration/eigen-before-git-migration.tar.gz
+   )
 
   FetchContent_GetProperties(eigen3_sources)
-
+  
+  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
   if(NOT eigen3_sources_POPULATED)
     FetchContent_Populate(eigen3_sources)
-
-    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
     add_subdirectory(
       ${eigen3_sources_SOURCE_DIR}

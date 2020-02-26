@@ -1,6 +1,6 @@
 # Change log
 
-## Version 1.2.0-alpha1 2020-02-10
+## Version 1.2.0-alpha2 2020-02-26
 
 ### Added
 
@@ -16,6 +16,7 @@
 ### Fixed
 
 - Faulty cube plot grid generation
+- Pull Eigen from gitlab instead of deprecated github mirror
 
 
 ## Version 1.1.0 2019-10-30

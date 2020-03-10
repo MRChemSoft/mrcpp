@@ -12,6 +12,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/add.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/apply.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/grid.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/map.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/multiply.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/project.cpp
   )
@@ -29,6 +30,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/CrossCorrelationCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DefaultCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeCalculator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/MapCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/MultiplicationCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/PHCalculator.h
@@ -43,6 +45,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/add.h
   ${CMAKE_CURRENT_SOURCE_DIR}/apply.h
   ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/map.h
   ${CMAKE_CURRENT_SOURCE_DIR}/multiply.h
   ${CMAKE_CURRENT_SOURCE_DIR}/project.h
   )

@@ -91,13 +91,12 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussi
                     }
                 }
                 if (D == 2) pos_vec.push_back(tmp_pos);
+                if (D == 3) tmp_pos[2] = startpos[2];
                 tmp_pos[1] += period[1];
-                tmp_pos[2] = startpos[2];
-                // This will generate a warning since tmp_pos[2] is not initialized when D > 2
             }
         }
-        if (D == 2 or D == 3) tmp_pos[1] = startpos[1];
         if (D == 1) pos_vec.push_back(tmp_pos);
+        if (D == 2 or D == 3) tmp_pos[1] = startpos[1];
         tmp_pos[0] += period[0];
     }
 

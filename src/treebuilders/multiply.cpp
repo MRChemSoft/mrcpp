@@ -102,6 +102,9 @@ void multiply(double prec,
  */
 template <int D>
 void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec) {
+    for (auto i = 0; i < inp.size(); i++)
+        if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
+
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
@@ -148,6 +151,8 @@ void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int
  *
  */
 template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
@@ -193,6 +198,8 @@ template <int D> void square(double prec, FunctionTree<D> &out, FunctionTree<D> 
  */
 template <int D>
 void power(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, double p, int maxIter, bool absPrec) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
@@ -246,8 +253,6 @@ void dot(double prec,
         double coef_b = get_coef(inp_b, d);
         FunctionTree<D> &tree_a = get_func(inp_a, d);
         FunctionTree<D> &tree_b = get_func(inp_b, d);
-        if (out.getMRA() != tree_a.getMRA()) MSG_ABORT("Trees not compatible");
-        if (out.getMRA() != tree_b.getMRA()) MSG_ABORT("Trees not compatible");
         auto *out_d = new FunctionTree<D>(out.getMRA());
         build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter, absPrec);
@@ -272,7 +277,8 @@ void dot(double prec,
  *
  */
 template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
-    if (bra.getMRA() != ket.getMRA()) { MSG_ABORT("Trees not compatible"); }
+    if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
+
     MWNodeVector<D> nodeTable;
     HilbertIterator<D> it(&bra);
     it.setReturnGenNodes(false);
@@ -318,6 +324,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
  * If the product is zero, the functions are disjoints.
  */
 template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket, bool exact) {
+    if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Incompatible MRA");
 
     double result = 0.0;
     int ncoef = bra.getKp1_d() * bra.getTDim();
@@ -331,7 +338,7 @@ template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket
         if (exact) {
             // convert to interpolating coef, take abs, convert back
             FunctionNode<D> *mwNode = static_cast<FunctionNode<D> *>(ket.findNode(idx));
-            if (mwNode == nullptr) { MSG_ABORT("Trees must have same grid"); }
+            if (mwNode == nullptr) MSG_ABORT("Trees must have same grid");
             node.getAbsCoefs(valA);
             mwNode->getAbsCoefs(valB);
             for (int i = 0; i < ncoef; i++) result += valA[i] * valB[i];

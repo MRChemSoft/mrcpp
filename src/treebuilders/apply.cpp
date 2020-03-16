@@ -69,6 +69,8 @@ void apply(double prec,
            FunctionTree<D> &inp,
            int maxIter,
            bool absPrec) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -109,6 +111,8 @@ void apply(double prec,
  *
  */
 template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+
     TreeBuilder<D> builder;
     int maxScale = out.getMRA().getMaxScale();
 
@@ -181,6 +185,8 @@ template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, Fun
  */
 template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
     if (inp.size() != D) MSG_ABORT("Dimension mismatch");
+    for (auto i = 0; i < inp.size(); i++)
+        if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     FunctionTreeVector<D> tmp_vec;
     for (int d = 0; d < D; d++) {

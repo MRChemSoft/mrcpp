@@ -131,6 +131,7 @@ void project(double prec,
              std::vector<std::function<double(const Coord<D> &r)>> func,
              int maxIter,
              bool absPrec) {
+    if (out.size() != func.size()) MSG_ABORT("Size mismatch");
     for (auto j = 0; j < D; j++) mrcpp::project<D>(prec, get_func(out, j), func[j], maxIter, absPrec);
 }
 

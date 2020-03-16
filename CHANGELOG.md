@@ -1,6 +1,6 @@
 # Change log
 
-## Version 1.2.0-alpha2 2020-02-26
+## Version 1.2.0-alpha3 2020-03-16
 
 ### Added
 
@@ -12,11 +12,14 @@
 - New versioning scheme and branching model, documented in README
 - Much improved API documentation
 - Proper installation of MW filters
+- FunctionTrees are now evaluated as zero outside the domain
 
 ### Fixed
 
 - Faulty cube plot grid generation
 - Pull Eigen from gitlab instead of deprecated github mirror
+- Incompatible compiler flags between debug and release
+- Failing periodic unit tests
 
 
 ## Version 1.1.0 2019-10-30

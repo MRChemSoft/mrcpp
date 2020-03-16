@@ -143,6 +143,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
@@ -171,6 +172,9 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
  *
  */
 template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
+    for (auto i = 0; i < inp.size(); i++)
+        if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
+
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
@@ -209,6 +213,7 @@ template <int D> void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
  *
  */
 template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     out.clear();
     build_grid(out, inp);
 }
@@ -284,6 +289,7 @@ template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec
  *
  */
 template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     CopyAdaptor<D> adaptor(inp, maxScale, nullptr);

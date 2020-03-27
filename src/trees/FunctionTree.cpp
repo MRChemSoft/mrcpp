@@ -389,6 +389,34 @@ template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) 
     inp.deleteGenerated();
 }
 
+/** @brief In-place mapping with a predefined function f(x), fixed grid
+ *
+ * @param[in] fmap: mapping function
+ *
+ * @details The input function will be mapped in-place on the current grid
+ * of the function, i.e. no further grid refinement.
+ *
+ */
+template <int D> void FunctionTree<D>::map(FMap fmap) {
+    if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
+    {
+        int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D> &node = *this->endNodeTable[n];
+            node.mwTransform(Reconstruction);
+            node.cvTransform(Forward);
+            double *coefs = node.getCoefs();
+            for (int i = 0; i < node.getNCoefs(); i++) { coefs[i] = fmap(coefs[i]); }
+            node.cvTransform(Backward);
+            node.mwTransform(Compression);
+            node.calcNorms();
+        }
+    }
+    this->mwTransform(BottomUp);
+    this->calcSquareNorm();
+}
+
 template <int D> int FunctionTree<D>::getNChunks() {
     return this->getSerialFunctionTree()->getNChunks();
 }

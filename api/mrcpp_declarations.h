@@ -26,6 +26,7 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <set>
 #include <vector>
 
@@ -108,5 +109,8 @@ template <int D> class OperatorState;
 using OperatorTreeVector = std::vector<OperatorTree *>;
 template <int D> using Coord = std::array<double, D>;
 template <int D> using MWNodeVector = std::vector<MWNode<D> *>;
+
+template <typename T, typename U> using FMap_ = std::function<T(U)>;
+typedef FMap_<double, double> FMap;
 
 } // namespace mrcpp

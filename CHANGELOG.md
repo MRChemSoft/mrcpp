@@ -1,11 +1,12 @@
 # Change log
 
-## Version 1.2.0-alpha3 2020-03-16
+## Version 1.2.0 2020-04-13
 
 ### Added
 
 - Projecton of vector function onto FunctionTreeVector (API)
 - Construction of semi-periodic Gaussians (non-API)
+- CircleCI test build config
 
 ### Changed
 
@@ -20,6 +21,7 @@
 - Pull Eigen from gitlab instead of deprecated github mirror
 - Incompatible compiler flags between debug and release
 - Failing periodic unit tests
+- Plotting range verification
 
 
 ## Version 1.1.0 2019-10-30

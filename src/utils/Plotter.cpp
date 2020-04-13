@@ -463,21 +463,22 @@ template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
 
 /** @brief Checks the validity of the plotting range */
 template <int D> bool Plotter<D>::verifyRange(int dim) const {
-    if (dim == 1) {
-        double len_a = std::sqrt(this->A[0] * this->A[0]);
-        if (len_a < MachineZero) return false;
-    }
-    if (dim == 2) {
-        double len_a = std::sqrt(A[0] * A[0] + A[1] * A[1]);
-        double len_b = std::sqrt(B[0] * B[0] + B[1] * B[1]);
-        if (len_a < MachineZero and len_b < MachineZero) return false;
+
+    auto is_len_zero = [](Coord<D> vec) {
+        double vec_sq = 0.0;
+        for (auto d = 0; d < D; d++) vec_sq += vec[d] * vec[d];
+        if (std::sqrt(vec_sq) < MachineZero) return true;
+        return false;
+    };
+
+    if (is_len_zero(this->A)) return false;
+    if (dim == 2 or dim == 3) {
+        if (is_len_zero(this->B)) return false;
     }
     if (dim == 3) {
-        double len_a = std::sqrt(A[0] * A[0] + A[1] * A[1] + A[2] * A[2]);
-        double len_b = std::sqrt(B[0] * B[0] + B[1] * B[1] + B[2] * B[2]);
-        double len_c = std::sqrt(C[0] * C[0] + C[1] * C[1] + C[2] * C[2]);
-        if ((len_a < MachineZero) and (len_b < MachineZero) and (len_c < MachineZero)) return false;
+        if (is_len_zero(this->C)) return false;
     }
+
     return true;
 }
 

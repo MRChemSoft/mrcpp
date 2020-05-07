@@ -1,8 +1,6 @@
 ![MRCPP logo](https://github.com/MRChemSoft/mrcpp/raw/master/docs/gfx/logo.png)
 
-
-
-[![DOI](https://zenodo.org/badge/106392237.svg)](https://zenodo.org/badge/latestdoi/106392237)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3606670.svg)](https://doi.org/10.5281/zenodo.3606670)
 [![License](https://img.shields.io/badge/license-%20LGPLv3-blue.svg)](../master/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/mrcpp/badge/?version=latest)](http://mrcpp.readthedocs.io/en/latest/?badge=latest)
 [![Travis CI build status](https://travis-ci.org/MRChemSoft/mrcpp.svg?branch=master)](https://travis-ci.org/MRChemSoft/mrcpp)

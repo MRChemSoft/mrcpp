@@ -163,12 +163,6 @@ protected:
     double maxSquareNorm;          // Largest squared norm among itself and descendants.
     double maxWSquareNorm;         // Largest wavelet squared norm among itself and descendants.
                                    // NB: must be set before used.
-    // NB2: normalization is such that a constant function gives constant value, i.e. *not* same
-    // normalization as a squareNorm
-    void setMaxSquareNorm(); // recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
-    void
-    resetMaxSquareNorm(); // recursively reset maxSquaredNorm  and maxWSquareNorm of parent and descendants to value -1
-
     double *coefs;
     int n_coefs;
 
@@ -189,6 +183,8 @@ protected:
     virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();
 
+    void setMaxSquareNorm();
+    void resetMaxSquareNorm();
     virtual double calcComponentNorm(int i) const;
 
     virtual void reCompress();

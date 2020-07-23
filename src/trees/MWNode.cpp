@@ -71,6 +71,7 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         , parent(nullptr)
         , squareNorm(-1.0)
         , maxSquareNorm(-1.0)
+        , maxWSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex(node.nodeIndex)
@@ -1000,6 +1001,11 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
     return o;
 }
 
+/** @brief recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
+ *
+ * @details normalization is such that a constant function gives constant value,
+ * i.e. *not* same normalization as a squareNorm
+ */
 template <int D> void MWNode<D>::setMaxSquareNorm() {
     auto n = this->getScale();
     this->maxWSquareNorm = std::pow(2.0, D * n) * this->getWaveletNorm();
@@ -1014,7 +1020,7 @@ template <int D> void MWNode<D>::setMaxSquareNorm() {
         }
     }
 }
-
+/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1 */
 template <int D> void MWNode<D>::resetMaxSquareNorm() {
     auto n = this->getScale();
     this->maxSquareNorm = -1.0;

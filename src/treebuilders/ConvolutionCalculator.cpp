@@ -220,10 +220,9 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
         auto nTerms = (double)this->oper->size();
-        auto precNorm = 1.0;
-        if (this->precTrees.size() > 0) precNorm = 0.0; // initialize
+        auto precNorm = (this->precTrees.size()) ? 0.0 : 1.0;
         for (int i = 0; i < this->precTrees.size(); i++) {
-            auto &pNode = precTrees[i]->getNode(node.getNodeIndex());
+            auto &pNode = get_func(this->precTrees, i).getNode(node.getNodeIndex());
             auto n = node.getScale();
             if (pNode.getMaxSquareNorm() > 0.0) {
                 precNorm = std::max(precNorm, std::sqrt(pNode.getMaxSquareNorm()));

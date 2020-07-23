@@ -27,6 +27,7 @@
 
 #include "TreeCalculator.h"
 #include "operators/OperatorStatistics.h"
+#include "trees/FunctionTreeVector.h"
 
 #include "MRCPP/mrcpp_declarations.h"
 
@@ -39,14 +40,14 @@ public:
 
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
-    void setPrecTree(std::vector<FunctionTree<D> *> treevec) { this->precTrees = treevec; }
+    void setPrecTree(FunctionTreeVector<D> &treevec) { this->precTrees = treevec; }
 
 private:
     int maxDepth;
     double prec;
     ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
-    std::vector<FunctionTree<D> *> precTrees;
+    FunctionTreeVector<D> precTrees;
     std::vector<Timer *> band_t;
     std::vector<Timer *> calc_t;
     std::vector<Timer *> norm_t;

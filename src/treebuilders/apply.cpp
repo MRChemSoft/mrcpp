@@ -99,15 +99,15 @@ void apply(double prec,
            FunctionTree<D> &out,
            ConvolutionOperator<D> &oper,
            FunctionTree<D> &inp,
-           std::vector<FunctionTree<D> *> precTrees,
+           FunctionTreeVector<D> &precTrees,
            int maxIter,
            bool absPrec) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
+    for (int i = 0; i < precTrees.size(); i++) get_func(precTrees, i).makeMaxSquareNorms();
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     adaptor.setPrecTree(precTrees);
-    for (int i = 0; i < precTrees.size(); i++) { precTrees[i]->makeMaxSquareNorms(); }
     ConvolutionCalculator<D> calculator(prec, oper, inp);
     calculator.setPrecTree(precTrees);
     pre_t.stop();
@@ -257,21 +257,21 @@ template void apply(double prec,
                     FunctionTree<1> &out,
                     ConvolutionOperator<1> &oper,
                     FunctionTree<1> &inp,
-                    std::vector<FunctionTree<1> *> precTrees,
+                    FunctionTreeVector<1> &precTrees,
                     int maxIter,
                     bool absPrec);
 template void apply(double prec,
                     FunctionTree<2> &out,
                     ConvolutionOperator<2> &oper,
                     FunctionTree<2> &inp,
-                    std::vector<FunctionTree<2> *> precTrees,
+                    FunctionTreeVector<2> &precTrees,
                     int maxIter,
                     bool absPrec);
 template void apply(double prec,
                     FunctionTree<3> &out,
                     ConvolutionOperator<3> &oper,
                     FunctionTree<3> &inp,
-                    std::vector<FunctionTree<3> *> precTrees,
+                    FunctionTreeVector<3> &precTrees,
                     int maxIter,
                     bool absPrec);
 template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);

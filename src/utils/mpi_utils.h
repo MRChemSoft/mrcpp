@@ -55,7 +55,9 @@ public:
     double *sh_max_ptr;   // end of shared block
     MPI_Win sh_win;       // MPI window object
     int rank;             // rank among shared group
+    void clear();         // show shared memory as entirely available
 };
+
 
 template <int D> class FunctionTree;
 

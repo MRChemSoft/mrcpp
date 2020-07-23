@@ -63,6 +63,12 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 #endif
 }
 
+void SharedMemory::clear() {
+#ifdef HAVE_MPI
+    this->sh_end_ptr = this->sh_start_ptr;
+#endif
+}
+
 SharedMemory::~SharedMemory() {
 #ifdef HAVE_MPI
     // deallocates the memory block

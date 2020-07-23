@@ -105,6 +105,12 @@ template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
 template <int D> void SerialFunctionTree<D>::clear(int n) {
     for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
     this->nNodes = n;
+    int chunk = n / this->maxNodesPerChunk;
+    this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
+
+    if (this->isShared()) {
+        this->shMem->sh_end_ptr  = this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+    }
 }
 
 template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
@@ -428,9 +434,12 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
     for (int i = nChunks; i < this->nodeChunks.size(); i++)
         delete[](char *)(this->nodeChunks[i]); // remove unused chunks
 
-    // Note that shared coefficients cannot be deallocated, but it is still useful to shrink the holes.
-    if (not this->isShared()) // if the data is shared, it must be freed by MPI_Win_free
+    if (this->isShared()) {
+        // shared coefficients cannot be fully deallocated, only pointer is moved.
+        this->shMem->sh_end_ptr  -= (nChunksStart - nChunks) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+    } else {
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    }
 
     // shrink the stacks
     this->nodeChunks.resize(nChunks);
@@ -538,8 +547,6 @@ template <int D> void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
 }
 
 template <int D> void SerialFunctionTree<D>::deallocGenNodeChunks() {
-    // if(mpiOrbRank==0 and (this->genNodeCoeffChunks.size()*2)*1024/8>10000)cout<<"deallocate genchunks MB
-    // "<<(this->genNodeCoeffChunks.size()*2)*1024/1024/8<<endl;
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[](char *)(this->genNodeChunks[i]);
     this->genNodeCoeffChunks.clear();

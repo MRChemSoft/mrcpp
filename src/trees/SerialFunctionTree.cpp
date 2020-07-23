@@ -109,7 +109,8 @@ template <int D> void SerialFunctionTree<D>::clear(int n) {
     this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
 
     if (this->isShared()) {
-        this->shMem->sh_end_ptr  = this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+        this->shMem->sh_end_ptr  =
+            this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->sizeNodeCoeff * this->maxNodesPerChunk;
     }
 }
 
@@ -436,7 +437,7 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
 
     if (this->isShared()) {
         // shared coefficients cannot be fully deallocated, only pointer is moved.
-        this->shMem->sh_end_ptr  -= (nChunksStart - nChunks) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+        this->shMem->sh_end_ptr -= (nChunksStart - nChunks) * this->sizeNodeCoeff * this->maxNodesPerChunk;
     } else {
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     }

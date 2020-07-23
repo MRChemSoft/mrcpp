@@ -58,7 +58,6 @@ public:
     void clear();         // show shared memory as entirely available
 };
 
-
 template <int D> class FunctionTree;
 
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks = -1);

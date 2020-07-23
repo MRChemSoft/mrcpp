@@ -50,6 +50,7 @@ MWNode<D>::MWNode()
         , parent(nullptr)
         , squareNorm(-1.0)
         , maxSquareNorm(-1.0)
+        , maxWSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex()
@@ -59,7 +60,6 @@ MWNode<D>::MWNode()
     setIsLooseNode();
 
     clearNorms();
-    maxSquareNorm = -1.0;
     for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
 }
 

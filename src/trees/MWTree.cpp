@@ -492,8 +492,6 @@ template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
 template <int D> void MWTree<D>::makeMaxSquareNorms() {
     NodeBox<D> &rBox = this->getRootBox();
     MWNode<D> **roots = rBox.getNodes();
-    int DepthMax = 100, slen = 0;
-    ProjectedNode<D> *stack[DepthMax * 8];
     for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
         // recursively set value of children and descendants
         roots[rIdx]->setMaxSquareNorm();

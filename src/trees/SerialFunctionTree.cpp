@@ -109,7 +109,7 @@ template <int D> void SerialFunctionTree<D>::clear(int n) {
     this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
 
     if (this->isShared()) {
-        this->shMem->sh_end_ptr  =
+        this->shMem->sh_end_ptr =
             this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->sizeNodeCoeff * this->maxNodesPerChunk;
     }
 }

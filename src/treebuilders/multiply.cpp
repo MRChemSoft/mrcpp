@@ -107,7 +107,8 @@ void multiply(double prec,
               FunctionTreeVector<D> &inp,
               int maxIter,
               bool absPrec,
-              bool useMaxNorms) {    for (auto i = 0; i < inp.size(); i++)
+              bool useMaxNorms) {
+    for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();

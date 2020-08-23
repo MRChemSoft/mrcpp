@@ -54,6 +54,7 @@ namespace mrcpp {
  * @param[in] inp_b: Input function b
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of the two input
  * functions (including the numerical coefficient), using the general algorithm:
@@ -90,6 +91,7 @@ void multiply(double prec,
  * @param[in] inp: Vector of input function
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of all input
  * functions in the vector (including their numerical coefficients), using

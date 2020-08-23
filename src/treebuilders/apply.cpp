@@ -94,6 +94,30 @@ void apply(double prec,
     print::separator(10, ' ');
 }
 
+/** @brief Application of MW integral convolution operator
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] precTrees: Precision trees
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on _scaled_ `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * The precision will be scaled locally by the maxNorms of the precTrees input vector.
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
 template <int D>
 void apply(double prec,
            FunctionTree<D> &out,
@@ -105,11 +129,23 @@ void apply(double prec,
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
+
+    // The local precision will be scaled by the maxNorm of the
+    // corresponding node(s) in the precTrees vector.
     for (int i = 0; i < precTrees.size(); i++) get_func(precTrees, i).makeMaxSquareNorms();
+    auto precFunc = [&precTrees](const NodeIndex<D> &idx) -> double {
+        auto maxNorm = (precTrees.size()) ? 0.0 : 1.0;
+        for (int i = 0; i < precTrees.size(); i++) {
+            auto &pNode = get_func(precTrees, i).getNode(idx);
+            maxNorm = std::max(maxNorm, std::sqrt(pNode.getMaxSquareNorm()));
+        }
+        return 1.0 / maxNorm;
+    };
+
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    adaptor.setPrecTree(precTrees);
+    adaptor.setPrecFunction(precFunc);
     ConvolutionCalculator<D> calculator(prec, oper, inp);
-    calculator.setPrecTree(precTrees);
+    calculator.setPrecFunction(precFunc);
     pre_t.stop();
 
     TreeBuilder<D> builder;

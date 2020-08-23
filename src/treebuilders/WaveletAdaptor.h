@@ -39,26 +39,19 @@ public:
             , splitFac(sf) {}
     ~WaveletAdaptor() override = default;
 
-    void setPrecTree(FunctionTreeVector<D> &treevec) { this->precTrees = treevec; }
+    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) {
+        this->precFunc = prec_func;
+    }
 
 protected:
     bool absPrec;
     double prec;
     double splitFac;
-    mutable FunctionTreeVector<D> precTrees;
+    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 
     bool splitNode(const MWNode<D> &node) const override {
-        auto precNorm = (this->precTrees.size()) ? 0.0 : 1.0;
-        for (int i = 0; i < this->precTrees.size(); i++) {
-            auto &pNode = get_func(this->precTrees, i).getNode(node.getNodeIndex());
-            auto n = node.getScale();
-            if (not pNode.isGenNode() and pNode.getMaxSquareNorm() > 0.0) {
-                precNorm = std::max(precNorm, std::sqrt(pNode.getMaxSquareNorm()));
-            } else {
-                precNorm = std::max(precNorm, std::sqrt(std::pow(2.0, D * n) * pNode.getSquareNorm()));
-            }
-        }
-        return node.splitCheck(this->prec / precNorm, this->splitFac, this->absPrec);
+        auto precFac = this->precFunc(node.getNodeIndex()); // returns 1.0 by default
+        return node.splitCheck(this->prec * precFac, this->splitFac, this->absPrec);
     }
 };
 

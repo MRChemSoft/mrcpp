@@ -40,20 +40,22 @@ public:
 
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
-    void setPrecTree(FunctionTreeVector<D> &treevec) { this->precTrees = treevec; }
+    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) {
+        this->precFunc = prec_func;
+    }
 
 private:
     int maxDepth;
     double prec;
     ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
-    FunctionTreeVector<D> precTrees;
     std::vector<Timer *> band_t;
     std::vector<Timer *> calc_t;
     std::vector<Timer *> norm_t;
 
     OperatorStatistics<D> operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
+    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);

@@ -45,27 +45,19 @@ protected:
 
     bool splitNode(const MWNode<D> &node) const override {
         if (this->trees.size() != 2) MSG_ERROR("Invalid tree vec size: " << this->trees.size());
-        auto multPrec = 1.0;
         auto &pNode0 = get_func(trees, 0).getNode(node.getNodeIndex());
         auto &pNode1 = get_func(trees, 1).getNode(node.getNodeIndex());
         double maxW0 = std::sqrt(pNode0.getMaxWSquareNorm());
         double maxW1 = std::sqrt(pNode1.getMaxWSquareNorm());
         double maxS0 = std::sqrt(pNode0.getMaxSquareNorm());
         double maxS1 = std::sqrt(pNode1.getMaxSquareNorm());
-        if (pNode0.isGenNode()) {
-            maxW0 = 0.0;
-            maxS0 = std::sqrt(std::pow(2.0, D * node.getScale()) * pNode0.getSquareNorm());
-        }
-        if (pNode1.isGenNode()) {
-            maxW1 = 0.0;
-            maxS1 = std::sqrt(std::pow(2.0, D * node.getScale()) * pNode1.getSquareNorm());
-        }
+
         // The wavelet contribution (in the product of node0 and node1) can be approximated as
-        multPrec = maxW0 * maxS1 + maxW1 * maxS0 + maxW0 * maxW1;
+        double multNorm = maxW0 * maxS1 + maxW1 * maxS0 + maxW0 * maxW1;
 
         // Note: this never refine deeper than one scale more than input tree grids, because when wavelets are zero
         // for both input trees, multPrec=0 In addition, we force not to refine deeper than input tree grids
-        if (multPrec > this->prec and not(pNode0.isLeafNode() and pNode1.isLeafNode())) {
+        if (multNorm > this->prec and not(pNode0.isLeafNode() and pNode1.isLeafNode())) {
             return true;
         } else {
             return false;

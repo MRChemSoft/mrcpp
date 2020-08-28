@@ -1,6 +1,6 @@
 language: cpp
 sudo: false
-dist: xenial
+dist: bionic
 
 notifications:
   slack:
@@ -14,8 +14,6 @@ env:
     - PYTHONIOENCODING=UTF-8
     - OMP_NUM_THREADS=2
     - CMAKE_VERSION="3.12.4"
-    # Invalidate PYENV_ROOT
-    - PYENV_ROOT=$HOME/fuffa
 
 cache:
   pip: true
@@ -30,34 +28,29 @@ jobs:
           packages:
             - g++
             - lcov
-            - libpython3.5-dev
-            - python3.5-dev
+            - libeigen3-dev
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++'
-        - EIGEN_VER='3.3.4'
     - addons: *1
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='g++'
         - OPENMP='--omp'
-        - EIGEN_VER='3.3.4'
     - addons: *1
       env:
         - BUILD_TYPE='debug'
         - CXX_COMPILER='g++'
         - COVERAGE='--coverage'
-        - EIGEN_VER='3.3.4'
     - addons:
         apt:
           packages:
             - clang
-            - libpython3.5-dev
-            - python3.5-dev
+            - libeigen3-dev
+
       env:
         - BUILD_TYPE='release'
         - CXX_COMPILER='clang++'
-        - EIGEN_VER='3.3.4'
     - stage: Danger Bot
       ruby: 2.5.3
       addons:
@@ -77,15 +70,11 @@ before_install:
 install:
   - ./.ci/cmake.sh
   - export PATH=$HOME/Deps/cmake/$CMAKE_VERSION/bin${PATH:+:$PATH}
-  - ./.ci/eigen.sh
-  - pip install --user pipenv --upgrade
-  - pipenv install --python="/usr/bin/python3.5"
 
 before_script:
   - test -n $CC && unset CC
   - test -n $CXX && unset CXX
   - test -n $FC && unset FC
-  - source $(pipenv --venv)/bin/activate
 
 script:
   - ./.ci/report_versions.sh
@@ -94,7 +83,6 @@ script:
         --type=${BUILD_TYPE} \
         --cxx=${CXX_COMPILER} \
         --enable-examples \
-        --cmake-options="-DEigen3_DIR=${HOME}/Deps/eigen/share/eigen3/cmake/ -DPYTHON_EXECUTABLE=$(type -P python)" \
         ${COVERAGE} \
         ${OPENMP} \
         build

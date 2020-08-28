@@ -38,6 +38,7 @@ ConvolutionOperator
    :members:
 
 .. doxygenfunction:: mrcpp::apply(double, FunctionTree<D>&, ConvolutionOperator<D>&, FunctionTree<D>&, int, bool)
+.. doxygenfunction:: mrcpp::apply(double, FunctionTree<D>&, ConvolutionOperator<D>&, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
 
 DerivativeOperators
 -------------------

@@ -23,7 +23,9 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "multiply.h"
+#include <Eigen/Core>
+
+#include "MultiplicationAdaptor.h"
 #include "MultiplicationCalculator.h"
 #include "PowerCalculator.h"
 #include "SquareCalculator.h"
@@ -31,13 +33,15 @@
 #include "WaveletAdaptor.h"
 #include "add.h"
 #include "grid.h"
+#include "multiply.h"
+
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
 #include "trees/HilbertIterator.h"
 #include "trees/SerialFunctionTree.h"
+
 #include "utils/Printer.h"
 #include "utils/Timer.h"
-#include <Eigen/Core>
 
 namespace mrcpp {
 
@@ -50,6 +54,7 @@ namespace mrcpp {
  * @param[in] inp_b: Input function b
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of the two input
  * functions (including the numerical coefficient), using the general algorithm:
@@ -86,6 +91,7 @@ void multiply(double prec,
  * @param[in] inp: Vector of input function
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of all input
  * functions in the vector (including their numerical coefficients), using
@@ -113,21 +119,16 @@ void multiply(double prec,
 
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-
-    adaptor.setMultiplicationSplit(false);
-    if (useMaxNorms and inp.size() == 2) {
-        std::vector<mrcpp::FunctionTree<D> *> precTrees;
-        for (int i = 0; i < inp.size(); i++) {
-            precTrees.push_back(&get_func(inp, i));
-            precTrees[i]->makeMaxSquareNorms();
-        }
-        adaptor.setPrecTree(precTrees);
-        adaptor.setMultiplicationSplit(true);
-    }
     MultiplicationCalculator<D> calculator(inp);
 
-    builder.build(out, calculator, adaptor, maxIter);
+    if (useMaxNorms) {
+        for (int i = 0; i < inp.size(); i++) get_func(inp, i).makeMaxSquareNorms();
+        MultiplicationAdaptor<D> adaptor(prec, maxScale, inp);
+        builder.build(out, calculator, adaptor, maxIter);
+    } else {
+        WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+        builder.build(out, calculator, adaptor, maxIter);
+    }
 
     Timer trans_t;
     out.mwTransform(BottomUp);
@@ -139,8 +140,6 @@ void multiply(double prec,
         FunctionTree<D> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
-    adaptor.setPrecTree({});
-    adaptor.setMultiplicationSplit(false);
     clean_t.stop();
 
     print::time(10, "Time transform", trans_t);

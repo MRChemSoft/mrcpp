@@ -26,32 +26,42 @@
 #pragma once
 
 #include "TreeAdaptor.h"
+#include "trees/FunctionTreeVector.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
 
-template <int D> class WaveletAdaptor : public TreeAdaptor<D> {
+template <int D> class MultiplicationAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
+    MultiplicationAdaptor(double pr, int ms, FunctionTreeVector<D> &t)
             : TreeAdaptor<D>(ms)
-            , absPrec(ap)
             , prec(pr)
-            , splitFac(sf) {}
-    ~WaveletAdaptor() override = default;
-
-    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) {
-        this->precFunc = prec_func;
-    }
+            , trees(t) {}
+    ~MultiplicationAdaptor() override = default;
 
 protected:
-    bool absPrec;
     double prec;
-    double splitFac;
-    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
+    mutable FunctionTreeVector<D> trees;
 
     bool splitNode(const MWNode<D> &node) const override {
-        auto precFac = this->precFunc(node.getNodeIndex()); // returns 1.0 by default
-        return node.splitCheck(this->prec * precFac, this->splitFac, this->absPrec);
+        if (this->trees.size() != 2) MSG_ERROR("Invalid tree vec size: " << this->trees.size());
+        auto &pNode0 = get_func(trees, 0).getNode(node.getNodeIndex());
+        auto &pNode1 = get_func(trees, 1).getNode(node.getNodeIndex());
+        double maxW0 = std::sqrt(pNode0.getMaxWSquareNorm());
+        double maxW1 = std::sqrt(pNode1.getMaxWSquareNorm());
+        double maxS0 = std::sqrt(pNode0.getMaxSquareNorm());
+        double maxS1 = std::sqrt(pNode1.getMaxSquareNorm());
+
+        // The wavelet contribution (in the product of node0 and node1) can be approximated as
+        double multNorm = maxW0 * maxS1 + maxW1 * maxS0 + maxW0 * maxW1;
+
+        // Note: this never refine deeper than one scale more than input tree grids, because when wavelets are zero
+        // for both input trees, multPrec=0 In addition, we force not to refine deeper than input tree grids
+        if (multNorm > this->prec and not(pNode0.isLeafNode() and pNode1.isLeafNode())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 };
 

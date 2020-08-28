@@ -37,8 +37,8 @@ ConvolutionOperator
 .. doxygenclass:: mrcpp::HelmholtzOperator
    :members:
 
-.. doxygenfunction:: mrcpp::apply(double, FunctionTree<D>&, ConvolutionOperator<D>&, FunctionTree<D>&, int, bool)
-.. doxygenfunction:: mrcpp::apply(double, FunctionTree<D>&, ConvolutionOperator<D>&, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
+.. doxygenfunction:: mrcpp::apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, FunctionTreeVector<D> &precTrees, int maxIter, bool absPrec)
 
 DerivativeOperators
 -------------------
@@ -59,9 +59,9 @@ DerivativeOperators
 .. doxygenclass:: mrcpp::BSOperator
    :members:
 
-.. doxygenfunction:: mrcpp::apply(FunctionTree<D>&, DerivativeOperator<D>&, FunctionTree<D>&, int)
-.. doxygenfunction:: mrcpp::divergence(FunctionTree<D>&, DerivativeOperator<D>&, FunctionTreeVector<D>&)
-.. doxygenfunction:: mrcpp::gradient(DerivativeOperator<D>&, FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir)
+.. doxygenfunction:: mrcpp::divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp)
+.. doxygenfunction:: mrcpp::gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp)
 
 
 Examples

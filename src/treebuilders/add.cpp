@@ -126,33 +126,33 @@ template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<
     print::separator(10, ' ');
 }
 
-template void add(double prec,
-                  FunctionTree<1> &out,
-                  double a,
-                  FunctionTree<1> &tree_a,
-                  double b,
-                  FunctionTree<1> &tree_b,
-                  int maxIter,
-                  bool absPrec);
-template void add(double prec,
-                  FunctionTree<2> &out,
-                  double a,
-                  FunctionTree<2> &tree_a,
-                  double b,
-                  FunctionTree<2> &tree_b,
-                  int maxIter,
-                  bool absPrec);
-template void add(double prec,
-                  FunctionTree<3> &out,
-                  double a,
-                  FunctionTree<3> &tree_a,
-                  double b,
-                  FunctionTree<3> &tree_b,
-                  int maxIter,
-                  bool absPrec);
+template void add<1>(double prec,
+                     FunctionTree<1> &out,
+                     double a,
+                     FunctionTree<1> &tree_a,
+                     double b,
+                     FunctionTree<1> &tree_b,
+                     int maxIter,
+                     bool absPrec);
+template void add<2>(double prec,
+                     FunctionTree<2> &out,
+                     double a,
+                     FunctionTree<2> &tree_a,
+                     double b,
+                     FunctionTree<2> &tree_b,
+                     int maxIter,
+                     bool absPrec);
+template void add<3>(double prec,
+                     FunctionTree<3> &out,
+                     double a,
+                     FunctionTree<3> &tree_a,
+                     double b,
+                     FunctionTree<3> &tree_b,
+                     int maxIter,
+                     bool absPrec);
 
-template void add(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
-template void add(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
-template void add(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
+template void add<1>(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
+template void add<2>(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
+template void add<3>(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
 
 } // namespace mrcpp

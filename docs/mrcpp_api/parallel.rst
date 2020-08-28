@@ -62,8 +62,8 @@ the shared ``FunctionTree``.
 Blocking communication
 ----------------------
 
-.. doxygenfunction:: mrcpp::send_tree(FunctionTree<D>&, int, int, MPI_Comm, int)
-.. doxygenfunction:: mrcpp::recv_tree(FunctionTree<D>&, int, int, MPI_Comm, int)
+.. doxygenfunction:: mrcpp::send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks)
+.. doxygenfunction:: mrcpp::recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChunks)
 
 Example
 +++++++
@@ -113,7 +113,7 @@ Shared memory
     :members:
         SharedMemory
 
-.. doxygenfunction:: mrcpp::share_tree(FunctionTree<D>&, int, int, MPI_Comm)
+.. doxygenfunction:: mrcpp::share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm)
 
 Example
 +++++++

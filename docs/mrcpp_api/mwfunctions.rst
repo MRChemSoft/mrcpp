@@ -76,16 +76,16 @@ adaptive refinement will stop, even if the local precision requirement is not
 met.
 
 .. doxygenfunction:: mrcpp::MWTree::setZero
-.. doxygenfunction:: mrcpp::project(double, FunctionTree<D>&, RepresentableFunction<D>&, int, bool)
-.. doxygenfunction:: mrcpp::copy_func(FunctionTree<D>&, FunctionTree<D>&)
-.. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, double, FunctionTree<D>&, double, FunctionTree<D>&, int, bool)
-.. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
-.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, double, FunctionTree<D>&, FunctionTree<D>&, int, bool, bool)
-.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool, bool)
-.. doxygenfunction:: mrcpp::square(double, FunctionTree<D>&, FunctionTree<D>&, int, bool)
-.. doxygenfunction:: mrcpp::power(double, FunctionTree<D>&, FunctionTree<D>&, double, int, bool)
-.. doxygenfunction:: mrcpp::dot(double, FunctionTree<D>&, FunctionTreeVector<D>&, FunctionTreeVector<D>&, int, bool)
-.. doxygenfunction:: mrcpp::map(double, FunctionTree<D>&, FunctionTree<D>&, FMap, int, bool)
+.. doxygenfunction:: mrcpp::project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::copy_func(FunctionTree<D> &out, FunctionTree<D> &inp)
+.. doxygenfunction:: mrcpp::add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::add(double prec, FunctionTree<D> &out, double a, FunctionTree<D> &inp_a, double b, FunctionTree<D> &inp_b, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec, bool useMaxNorms)
+.. doxygenfunction:: mrcpp::multiply(double prec, FunctionTree<D> &out, double c, FunctionTree<D> &inp_a, FunctionTree<D> &inp_b, int maxIter, bool absPrec, bool useMaxNorms)
+.. doxygenfunction:: mrcpp::square(double prec, FunctionTree<D> &out, FunctionTree<D> &tree, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::power(double prec, FunctionTree<D> &out, FunctionTree<D> &tree, double pow, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, FunctionTreeVector<D> &inp_b, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int maxIter, bool absPrec)
 
 Creating undefined FunctionTrees
 ++++++++++++++++++++++++++++++++
@@ -93,12 +93,12 @@ Creating undefined FunctionTrees
 The grid of a ``FunctionTree`` can also be constructed *without* computing any
 MW coefficients:
 
-.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, const RepresentableFunction<D>&, int)
-.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, const GaussExp<D>&, int)
-.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, FunctionTree<D>&, int)
-.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D>&, FunctionTreeVector<D>&, int)
-.. doxygenfunction:: mrcpp::copy_grid(FunctionTree<D>&, FunctionTree<D>&)
-.. doxygenfunction:: mrcpp::clear_grid(FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter)
+.. doxygenfunction:: mrcpp::build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter)
+.. doxygenfunction:: mrcpp::copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp)
+.. doxygenfunction:: mrcpp::clear_grid(FunctionTree<D> &out)
 .. doxygenfunction:: mrcpp::FunctionTree::clear
 
 
@@ -117,9 +117,9 @@ coefficients of a given defined ``FunctionTree``. All changing operations
 .. doxygenfunction:: mrcpp::FunctionTree::power
 .. doxygenfunction:: mrcpp::FunctionTree::map
 .. doxygenfunction:: mrcpp::FunctionTree::crop
-.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, int)
-.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, double, bool)
-.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D> &out, int scales)
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D> &out, double prec, bool absPrec)
+.. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp)
 
 
 File I/O
@@ -135,12 +135,12 @@ Extracting data
 Given a ``FunctionTree`` that is a *well defined* function representation, the
 following data can be extracted:
 
-.. doxygenfunction:: mrcpp::MWTree::getSquareNorm
 .. doxygenfunction:: mrcpp::FunctionTree::integrate
 .. doxygenfunction:: mrcpp::FunctionTree::evalf
+.. doxygenfunction:: mrcpp::MWTree::getSquareNorm
 .. doxygenfunction:: mrcpp::MWTree::getNNodes
 .. doxygenfunction:: mrcpp::MWTree::getSizeNodes
-.. doxygenfunction:: mrcpp::dot(FunctionTree<D>&, FunctionTree<D>&)
+.. doxygenfunction:: mrcpp::dot(FunctionTree<D> &bra, FunctionTree<D> &ket)
 
 
 FunctionTreeVector
@@ -150,11 +150,11 @@ The ``FunctionTreeVector`` is simply an alias for a ``std::vector`` of
 ``std::tuple`` containing a numerical coefficient and a ``FunctionTree``
 pointer.
 
-.. doxygenfunction:: mrcpp::clear(FunctionTreeVector<D>&, bool)
-.. doxygenfunction:: mrcpp::get_coef(FunctionTreeVector<D>&, int)
-.. doxygenfunction:: mrcpp::get_func(FunctionTreeVector<D>&, int)
-.. doxygenfunction:: mrcpp::get_n_nodes(FunctionTreeVector<D>&)
-.. doxygenfunction:: mrcpp::get_size_nodes(FunctionTreeVector<D>&)
+.. doxygenfunction:: mrcpp::clear(FunctionTreeVector<D> &fs, bool dealloc)
+.. doxygenfunction:: mrcpp::get_coef(const FunctionTreeVector<D> &fs, int i)
+.. doxygenfunction:: mrcpp::get_func(FunctionTreeVector<D> &fs, int i)
+.. doxygenfunction:: mrcpp::get_n_nodes(const FunctionTreeVector<D> &fs)
+.. doxygenfunction:: mrcpp::get_size_nodes(const FunctionTreeVector<D> &fs)
 
 
 Examples

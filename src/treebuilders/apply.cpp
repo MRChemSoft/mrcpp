@@ -271,53 +271,53 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
-template void apply(double prec,
-                    FunctionTree<1> &out,
-                    ConvolutionOperator<1> &oper,
-                    FunctionTree<1> &inp,
-                    int maxIter,
-                    bool absPrec);
-template void apply(double prec,
-                    FunctionTree<2> &out,
-                    ConvolutionOperator<2> &oper,
-                    FunctionTree<2> &inp,
-                    int maxIter,
-                    bool absPrec);
-template void apply(double prec,
-                    FunctionTree<3> &out,
-                    ConvolutionOperator<3> &oper,
-                    FunctionTree<3> &inp,
-                    int maxIter,
-                    bool absPrec);
-template void apply(double prec,
-                    FunctionTree<1> &out,
-                    ConvolutionOperator<1> &oper,
-                    FunctionTree<1> &inp,
-                    FunctionTreeVector<1> &precTrees,
-                    int maxIter,
-                    bool absPrec);
-template void apply(double prec,
-                    FunctionTree<2> &out,
-                    ConvolutionOperator<2> &oper,
-                    FunctionTree<2> &inp,
-                    FunctionTreeVector<2> &precTrees,
-                    int maxIter,
-                    bool absPrec);
-template void apply(double prec,
-                    FunctionTree<3> &out,
-                    ConvolutionOperator<3> &oper,
-                    FunctionTree<3> &inp,
-                    FunctionTreeVector<3> &precTrees,
-                    int maxIter,
-                    bool absPrec);
-template void apply(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
-template void apply(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
-template void apply(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
-template void divergence(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
-template void divergence(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
-template void divergence(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
-template FunctionTreeVector<1> gradient(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
-template FunctionTreeVector<2> gradient(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
-template FunctionTreeVector<3> gradient(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
+template void apply<1>(double prec,
+                       FunctionTree<1> &out,
+                       ConvolutionOperator<1> &oper,
+                       FunctionTree<1> &inp,
+                       int maxIter,
+                       bool absPrec);
+template void apply<2>(double prec,
+                       FunctionTree<2> &out,
+                       ConvolutionOperator<2> &oper,
+                       FunctionTree<2> &inp,
+                       int maxIter,
+                       bool absPrec);
+template void apply<3>(double prec,
+                       FunctionTree<3> &out,
+                       ConvolutionOperator<3> &oper,
+                       FunctionTree<3> &inp,
+                       int maxIter,
+                       bool absPrec);
+template void apply<1>(double prec,
+                       FunctionTree<1> &out,
+                       ConvolutionOperator<1> &oper,
+                       FunctionTree<1> &inp,
+                       FunctionTreeVector<1> &precTrees,
+                       int maxIter,
+                       bool absPrec);
+template void apply<2>(double prec,
+                       FunctionTree<2> &out,
+                       ConvolutionOperator<2> &oper,
+                       FunctionTree<2> &inp,
+                       FunctionTreeVector<2> &precTrees,
+                       int maxIter,
+                       bool absPrec);
+template void apply<3>(double prec,
+                       FunctionTree<3> &out,
+                       ConvolutionOperator<3> &oper,
+                       FunctionTree<3> &inp,
+                       FunctionTreeVector<3> &precTrees,
+                       int maxIter,
+                       bool absPrec);
+template void apply<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
+template void apply<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
+template void apply<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
+template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
+template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
+template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
+template FunctionTreeVector<1> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
+template FunctionTreeVector<2> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
+template FunctionTreeVector<3> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
 
 } // namespace mrcpp

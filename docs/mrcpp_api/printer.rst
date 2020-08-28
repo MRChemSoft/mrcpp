@@ -40,8 +40,8 @@ Some convenience functions for printing output is provided within the
 .. doxygenfunction:: mrcpp::print::separator
 .. doxygenfunction:: mrcpp::print::header
 .. doxygenfunction:: mrcpp::print::footer
-.. doxygenfunction:: mrcpp::print::tree(int, const std::string&, const MWTree<D>&, const Timer&)
-.. doxygenfunction:: mrcpp::print::tree(int, const std::string&, int, int, double)
+.. doxygenfunction:: mrcpp::print::tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer)
+.. doxygenfunction:: mrcpp::print::tree(int level, const std::string &txt, int n, int m, double t)
 .. doxygenfunction:: mrcpp::print::time
 .. doxygenfunction:: mrcpp::print::memory
 

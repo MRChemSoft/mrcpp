@@ -372,78 +372,78 @@ template <int D> double node_norm_dot(FunctionTree<D> &bra, FunctionTree<D> &ket
     return result;
 }
 
-template void multiply(double prec,
-                       FunctionTree<1> &out,
-                       double c,
-                       FunctionTree<1> &tree_a,
-                       FunctionTree<1> &tree_b,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void multiply(double prec,
-                       FunctionTree<2> &out,
-                       double c,
-                       FunctionTree<2> &tree_a,
-                       FunctionTree<2> &tree_b,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void multiply(double prec,
-                       FunctionTree<3> &out,
-                       double c,
-                       FunctionTree<3> &tree_a,
-                       FunctionTree<3> &tree_b,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void multiply(double prec,
-                       FunctionTree<1> &out,
-                       FunctionTreeVector<1> &inp,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void multiply(double prec,
-                       FunctionTree<2> &out,
-                       FunctionTreeVector<2> &inp,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void multiply(double prec,
-                       FunctionTree<3> &out,
-                       FunctionTreeVector<3> &inp,
-                       int maxIter,
-                       bool absPrec,
-                       bool useMaxNorms);
-template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter, bool absPrec);
-template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter, bool absPrec);
-template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter, bool absPrec);
-template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter, bool absPrec);
-template void dot(double prec,
-                  FunctionTree<1> &out,
-                  FunctionTreeVector<1> &inp_a,
-                  FunctionTreeVector<1> &inp_b,
-                  int maxIter,
-                  bool absPrec);
-template void dot(double prec,
-                  FunctionTree<2> &out,
-                  FunctionTreeVector<2> &inp_a,
-                  FunctionTreeVector<2> &inp_b,
-                  int maxIter,
-                  bool absPrec);
-template void dot(double prec,
-                  FunctionTree<3> &out,
-                  FunctionTreeVector<3> &inp_a,
-                  FunctionTreeVector<3> &inp_b,
-                  int maxIter,
-                  bool absPrec);
-template double dot(FunctionTree<1> &bra, FunctionTree<1> &ket);
-template double dot(FunctionTree<2> &bra, FunctionTree<2> &ket);
-template double dot(FunctionTree<3> &bra, FunctionTree<3> &ket);
+template void multiply<1>(double prec,
+                          FunctionTree<1> &out,
+                          double c,
+                          FunctionTree<1> &tree_a,
+                          FunctionTree<1> &tree_b,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<2>(double prec,
+                          FunctionTree<2> &out,
+                          double c,
+                          FunctionTree<2> &tree_a,
+                          FunctionTree<2> &tree_b,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<3>(double prec,
+                          FunctionTree<3> &out,
+                          double c,
+                          FunctionTree<3> &tree_a,
+                          FunctionTree<3> &tree_b,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<1>(double prec,
+                          FunctionTree<1> &out,
+                          FunctionTreeVector<1> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<2>(double prec,
+                          FunctionTree<2> &out,
+                          FunctionTreeVector<2> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<3>(double prec,
+                          FunctionTree<3> &out,
+                          FunctionTreeVector<3> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void power<1>(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter, bool absPrec);
+template void power<2>(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter, bool absPrec);
+template void power<3>(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter, bool absPrec);
+template void square<1>(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter, bool absPrec);
+template void square<2>(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter, bool absPrec);
+template void square<3>(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter, bool absPrec);
+template void dot<1>(double prec,
+                     FunctionTree<1> &out,
+                     FunctionTreeVector<1> &inp_a,
+                     FunctionTreeVector<1> &inp_b,
+                     int maxIter,
+                     bool absPrec);
+template void dot<2>(double prec,
+                     FunctionTree<2> &out,
+                     FunctionTreeVector<2> &inp_a,
+                     FunctionTreeVector<2> &inp_b,
+                     int maxIter,
+                     bool absPrec);
+template void dot<3>(double prec,
+                     FunctionTree<3> &out,
+                     FunctionTreeVector<3> &inp_a,
+                     FunctionTreeVector<3> &inp_b,
+                     int maxIter,
+                     bool absPrec);
+template double dot<1>(FunctionTree<1> &bra, FunctionTree<1> &ket);
+template double dot<2>(FunctionTree<2> &bra, FunctionTree<2> &ket);
+template double dot<3>(FunctionTree<3> &bra, FunctionTree<3> &ket);
 
-template double node_norm_dot(FunctionTree<1> &bra, FunctionTree<1> &ket, bool exact);
-template double node_norm_dot(FunctionTree<2> &bra, FunctionTree<2> &ket, bool exact);
-template double node_norm_dot(FunctionTree<3> &bra, FunctionTree<3> &ket, bool exact);
+template double node_norm_dot<1>(FunctionTree<1> &bra, FunctionTree<1> &ket, bool exact);
+template double node_norm_dot<2>(FunctionTree<2> &bra, FunctionTree<2> &ket, bool exact);
+template double node_norm_dot<3>(FunctionTree<3> &bra, FunctionTree<3> &ket, bool exact);
 
 } // namespace mrcpp

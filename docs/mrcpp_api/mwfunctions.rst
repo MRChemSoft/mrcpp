@@ -75,16 +75,17 @@ number of *extra* refinement levels beyond the initial grid, in which the
 adaptive refinement will stop, even if the local precision requirement is not
 met.
 
-.. doxygenfunction:: mrcpp::FunctionTree::setZero
+.. doxygenfunction:: mrcpp::MWTree::setZero
 .. doxygenfunction:: mrcpp::project(double, FunctionTree<D>&, RepresentableFunction<D>&, int, bool)
 .. doxygenfunction:: mrcpp::copy_func(FunctionTree<D>&, FunctionTree<D>&)
 .. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, double, FunctionTree<D>&, double, FunctionTree<D>&, int, bool)
 .. doxygenfunction:: mrcpp::add(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
-.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, double, FunctionTree<D>&, FunctionTree<D>&, int, bool)
-.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool)
+.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, double, FunctionTree<D>&, FunctionTree<D>&, int, bool, bool)
+.. doxygenfunction:: mrcpp::multiply(double, FunctionTree<D>&, FunctionTreeVector<D>&, int, bool, bool)
 .. doxygenfunction:: mrcpp::square(double, FunctionTree<D>&, FunctionTree<D>&, int, bool)
 .. doxygenfunction:: mrcpp::power(double, FunctionTree<D>&, FunctionTree<D>&, double, int, bool)
 .. doxygenfunction:: mrcpp::dot(double, FunctionTree<D>&, FunctionTreeVector<D>&, FunctionTreeVector<D>&, int, bool)
+.. doxygenfunction:: mrcpp::map(double, FunctionTree<D>&, FunctionTree<D>&, FMap, int, bool)
 
 Creating undefined FunctionTrees
 ++++++++++++++++++++++++++++++++
@@ -114,6 +115,7 @@ coefficients of a given defined ``FunctionTree``. All changing operations
 .. doxygenfunction:: mrcpp::FunctionTree::multiply
 .. doxygenfunction:: mrcpp::FunctionTree::square
 .. doxygenfunction:: mrcpp::FunctionTree::power
+.. doxygenfunction:: mrcpp::FunctionTree::map
 .. doxygenfunction:: mrcpp::FunctionTree::crop
 .. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, int)
 .. doxygenfunction:: mrcpp::refine_grid(FunctionTree<D>&, double, bool)
@@ -133,11 +135,11 @@ Extracting data
 Given a ``FunctionTree`` that is a *well defined* function representation, the
 following data can be extracted:
 
-.. doxygenfunction:: mrcpp::FunctionTree::getSquareNorm
+.. doxygenfunction:: mrcpp::MWTree::getSquareNorm
 .. doxygenfunction:: mrcpp::FunctionTree::integrate
 .. doxygenfunction:: mrcpp::FunctionTree::evalf
-.. doxygenfunction:: mrcpp::FunctionTree::getNNodes
-.. doxygenfunction:: mrcpp::FunctionTree::getSizeNodes
+.. doxygenfunction:: mrcpp::MWTree::getNNodes
+.. doxygenfunction:: mrcpp::MWTree::getSizeNodes
 .. doxygenfunction:: mrcpp::dot(FunctionTree<D>&, FunctionTree<D>&)
 
 

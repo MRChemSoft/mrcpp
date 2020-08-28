@@ -1008,8 +1008,8 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
  */
 template <int D> void MWNode<D>::setMaxSquareNorm() {
     auto n = this->getScale();
-    this->maxWSquareNorm = calcMaxWSquareNorm();
-    this->maxSquareNorm = calcMaxSquareNorm();
+    this->maxWSquareNorm = calcScaledWSquareNorm();
+    this->maxSquareNorm = calcScaledSquareNorm();
 
     if (not this->isEndNode()) {
         for (int i = 0; i < this->getTDim(); i++) {

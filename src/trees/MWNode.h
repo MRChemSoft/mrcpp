@@ -82,9 +82,11 @@ public:
     inline bool isLooseNode() const;
 
     double getSquareNorm() const { return this->squareNorm; }
-    double getMaxSquareNorm() const { return (this->maxSquareNorm > 0.0) ? this->maxSquareNorm : calcMaxSquareNorm(); }
+    double getMaxSquareNorm() const {
+        return (this->maxSquareNorm > 0.0) ? this->maxSquareNorm : calcScaledSquareNorm();
+    }
     double getMaxWSquareNorm() const {
-        return (this->maxWSquareNorm > 0.0) ? this->maxWSquareNorm : calcMaxWSquareNorm();
+        return (this->maxWSquareNorm > 0.0) ? this->maxWSquareNorm : calcScaledWSquareNorm();
     }
 
     double getScalingNorm() const;
@@ -188,8 +190,8 @@ protected:
 
     void setMaxSquareNorm();
     void resetMaxSquareNorm();
-    double calcMaxSquareNorm() const { return std::pow(2.0, D * getScale()) * getSquareNorm(); }
-    double calcMaxWSquareNorm() const { return std::pow(2.0, D * getScale()) * getWaveletNorm(); }
+    double calcScaledSquareNorm() const { return std::pow(2.0, D * getScale()) * getSquareNorm(); }
+    double calcScaledWSquareNorm() const { return std::pow(2.0, D * getScale()) * getWaveletNorm(); }
     virtual double calcComponentNorm(int i) const;
 
     virtual void reCompress();

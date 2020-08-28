@@ -58,6 +58,10 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${
     GENERATED 1
   )
 
+if("${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" VERSION_LESS 3.6)
+    message(FATAL_ERROR "You will need Python >= 3.6 to run mrcpp")
+endif()
+
 list(APPEND mrcpp_headers
   ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/config.h
   ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/version.h

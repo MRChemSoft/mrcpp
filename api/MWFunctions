@@ -33,6 +33,7 @@
 
 #include "treebuilders/grid.h"
 #include "treebuilders/project.h"
+#include "treebuilders/map.h"
 #include "treebuilders/multiply.h"
 #include "treebuilders/add.h"
 

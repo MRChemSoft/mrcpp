@@ -219,9 +219,11 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
-        auto nTerms = (double)this->oper->size();
-        gThrs = this->prec * std::sqrt(gThrs / nTerms);
+        auto nTerms = static_cast<double>(this->oper->size());
+        auto precFac = this->precFunc(gNode.getNodeIndex());
+        gThrs = this->prec * precFac * std::sqrt(gThrs / nTerms);
     }
+
     os.gThreshold = gThrs;
 
     this->calc_t[omp_get_thread_num()]->resume();

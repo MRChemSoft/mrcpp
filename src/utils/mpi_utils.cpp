@@ -47,8 +47,10 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 #ifdef HAVE_MPI
     MPI_Comm_rank(comm, &this->rank);
     // MPI_Aint types are used for adresses (can be larger than int)
-    MPI_Aint size = (rank == 0) ? 1024 * 1024 * sh_size : 0; // rank 0 defines length of segment
-    int disp_unit = 16;                                      // in order for the compiler to keep aligned
+    MPI_Aint size = (rank == 0) ? sh_size : 0; // rank 0 defines length of segment
+    size *= 1024 * 1024;                       // ->MB NB: Must be multiplied separately, for not overflow int type.
+
+    int disp_unit = 16; // in order for the compiler to keep aligned
     // size is in bytes
     MPI_Win_allocate_shared(size, disp_unit, MPI_INFO_NULL, comm, &this->sh_start_ptr, &this->sh_win);
     MPI_Win_fence(0, this->sh_win); // wait until finished
@@ -57,6 +59,12 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
     MPI_Win_shared_query(this->sh_win, 0, &qsize, &qdisp, &this->sh_start_ptr);
     MPI_Win_fence(0, this->sh_win);
     this->sh_max_ptr = this->sh_start_ptr + qsize / sizeof(double);
+    this->sh_end_ptr = this->sh_start_ptr;
+#endif
+}
+
+void SharedMemory::clear() {
+#ifdef HAVE_MPI
     this->sh_end_ptr = this->sh_start_ptr;
 #endif
 }

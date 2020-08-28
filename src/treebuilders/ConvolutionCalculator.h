@@ -27,6 +27,7 @@
 
 #include "TreeCalculator.h"
 #include "operators/OperatorStatistics.h"
+#include "trees/FunctionTreeVector.h"
 
 #include "MRCPP/mrcpp_declarations.h"
 
@@ -39,6 +40,10 @@ public:
 
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
+    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) {
+        this->precFunc = prec_func;
+    }
+
 private:
     int maxDepth;
     double prec;
@@ -50,6 +55,7 @@ private:
 
     OperatorStatistics<D> operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
+    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);

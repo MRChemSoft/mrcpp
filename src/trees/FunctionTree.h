@@ -72,6 +72,7 @@ public:
     void rescale(double c);
     void normalize();
     void add(double c, FunctionTree<D> &inp);
+    void absadd(double c, FunctionTree<D> &inp);
     void multiply(double c, FunctionTree<D> &inp);
     void map(FMap fmap);
 

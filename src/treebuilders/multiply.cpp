@@ -23,7 +23,9 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "multiply.h"
+#include <Eigen/Core>
+
+#include "MultiplicationAdaptor.h"
 #include "MultiplicationCalculator.h"
 #include "PowerCalculator.h"
 #include "SquareCalculator.h"
@@ -31,13 +33,15 @@
 #include "WaveletAdaptor.h"
 #include "add.h"
 #include "grid.h"
+#include "multiply.h"
+
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
 #include "trees/HilbertIterator.h"
 #include "trees/SerialFunctionTree.h"
+
 #include "utils/Printer.h"
 #include "utils/Timer.h"
-#include <Eigen/Core>
 
 namespace mrcpp {
 
@@ -50,6 +54,7 @@ namespace mrcpp {
  * @param[in] inp_b: Input function b
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of the two input
  * functions (including the numerical coefficient), using the general algorithm:
@@ -71,11 +76,12 @@ void multiply(double prec,
               FunctionTree<D> &inp_a,
               FunctionTree<D> &inp_b,
               int maxIter,
-              bool absPrec) {
+              bool absPrec,
+              bool useMaxNorms) {
     FunctionTreeVector<D> tmp_vec;
     tmp_vec.push_back(std::make_tuple(c, &inp_a));
     tmp_vec.push_back(std::make_tuple(1.0, &inp_b));
-    multiply(prec, out, tmp_vec, maxIter, absPrec);
+    multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms);
 }
 
 /** @brief Multiplication of several MW function representations, adaptive grid
@@ -85,6 +91,7 @@ void multiply(double prec,
  * @param[in] inp: Vector of input function
  * @param[in] maxIter: Maximum number of refinement iterations in output tree
  * @param[in] absPrec: Build output tree based on absolute precision
+ * @param[in] useMaxNorms: Build output tree based on norm estimates from input
  *
  * @details The output function will be computed as the product of all input
  * functions in the vector (including their numerical coefficients), using
@@ -101,16 +108,27 @@ void multiply(double prec,
  *
  */
 template <int D>
-void multiply(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec) {
+void multiply(double prec,
+              FunctionTree<D> &out,
+              FunctionTreeVector<D> &inp,
+              int maxIter,
+              bool absPrec,
+              bool useMaxNorms) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     MultiplicationCalculator<D> calculator(inp);
 
-    builder.build(out, calculator, adaptor, maxIter);
+    if (useMaxNorms) {
+        for (int i = 0; i < inp.size(); i++) get_func(inp, i).makeMaxSquareNorms();
+        MultiplicationAdaptor<D> adaptor(prec, maxScale, inp);
+        builder.build(out, calculator, adaptor, maxIter);
+    } else {
+        WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+        builder.build(out, calculator, adaptor, maxIter);
+    }
 
     Timer trans_t;
     out.mwTransform(BottomUp);
@@ -360,27 +378,45 @@ template void multiply(double prec,
                        FunctionTree<1> &tree_a,
                        FunctionTree<1> &tree_b,
                        int maxIter,
-                       bool absPrec);
+                       bool absPrec,
+                       bool useMaxNorms);
 template void multiply(double prec,
                        FunctionTree<2> &out,
                        double c,
                        FunctionTree<2> &tree_a,
                        FunctionTree<2> &tree_b,
                        int maxIter,
-                       bool absPrec);
+                       bool absPrec,
+                       bool useMaxNorms);
 template void multiply(double prec,
                        FunctionTree<3> &out,
                        double c,
                        FunctionTree<3> &tree_a,
                        FunctionTree<3> &tree_b,
                        int maxIter,
-                       bool absPrec);
-template void multiply(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
-template void multiply(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
-template void multiply(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double p, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double p, int maxIter, bool absPrec);
-template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double p, int maxIter, bool absPrec);
+                       bool absPrec,
+                       bool useMaxNorms);
+template void multiply(double prec,
+                       FunctionTree<1> &out,
+                       FunctionTreeVector<1> &inp,
+                       int maxIter,
+                       bool absPrec,
+                       bool useMaxNorms);
+template void multiply(double prec,
+                       FunctionTree<2> &out,
+                       FunctionTreeVector<2> &inp,
+                       int maxIter,
+                       bool absPrec,
+                       bool useMaxNorms);
+template void multiply(double prec,
+                       FunctionTree<3> &out,
+                       FunctionTreeVector<3> &inp,
+                       int maxIter,
+                       bool absPrec,
+                       bool useMaxNorms);
+template void power(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter, bool absPrec);
+template void power(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter, bool absPrec);
+template void power(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter, bool absPrec);
 template void square(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter, bool absPrec);

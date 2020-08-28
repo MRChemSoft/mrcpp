@@ -488,6 +488,16 @@ template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
     return o;
 }
 
+/** set values for maxSquareNorm in all nodes  */
+template <int D> void MWTree<D>::makeMaxSquareNorms() {
+    NodeBox<D> &rBox = this->getRootBox();
+    MWNode<D> **roots = rBox.getNodes();
+    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
+        // recursively set value of children and descendants
+        roots[rIdx]->setMaxSquareNorm();
+    }
+}
+
 template class MWTree<1>;
 template class MWTree<2>;
 template class MWTree<3>;

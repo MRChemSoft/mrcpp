@@ -49,6 +49,8 @@ MWNode<D>::MWNode()
         : tree(nullptr)
         , parent(nullptr)
         , squareNorm(-1.0)
+        , maxSquareNorm(-1.0)
+        , maxWSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex()
@@ -68,6 +70,8 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree)
         , parent(nullptr)
         , squareNorm(-1.0)
+        , maxSquareNorm(-1.0)
+        , maxWSquareNorm(-1.0)
         , coefs(nullptr)
         , n_coefs(0)
         , nodeIndex(node.nodeIndex)
@@ -995,6 +999,38 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
         o << getCoefs()[0] << ", " << getCoefs()[getNCoefs() - 1] << "}";
     }
     return o;
+}
+
+/** @brief recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
+ *
+ * @details normalization is such that a constant function gives constant value,
+ * i.e. *not* same normalization as a squareNorm
+ */
+template <int D> void MWNode<D>::setMaxSquareNorm() {
+    auto n = this->getScale();
+    this->maxWSquareNorm = calcScaledWSquareNorm();
+    this->maxSquareNorm = calcScaledSquareNorm();
+
+    if (not this->isEndNode()) {
+        for (int i = 0; i < this->getTDim(); i++) {
+            MWNode<D> &child = *this->children[i];
+            child.setMaxSquareNorm();
+            this->maxSquareNorm = std::max(this->maxSquareNorm, child.maxSquareNorm);
+            this->maxWSquareNorm = std::max(this->maxWSquareNorm, child.maxWSquareNorm);
+        }
+    }
+}
+/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1 */
+template <int D> void MWNode<D>::resetMaxSquareNorm() {
+    auto n = this->getScale();
+    this->maxSquareNorm = -1.0;
+    this->maxWSquareNorm = -1.0;
+    if (not this->isEndNode()) {
+        for (int i = 0; i < this->getTDim(); i++) {
+            MWNode<D> &child = *this->children[i];
+            child.resetMaxSquareNorm();
+        }
+    }
 }
 
 template class MWNode<1>;

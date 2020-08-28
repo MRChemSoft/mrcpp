@@ -122,6 +122,8 @@ public:
     int countNodes(int depth = -1);
     void RecountNodes();
 
+    void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
+
     SerialTree<D> *getSerialTree() { return this->serialTree_p; }
 
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }

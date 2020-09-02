@@ -131,6 +131,9 @@ template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
         root_p->parent = nullptr;
         for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
 
+        root_p->maxSquareNorm = -1.0;
+        root_p->maxWSquareNorm = -1.0;
+
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<D>();
 
@@ -178,6 +181,9 @@ template <int D> void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
         child_p->parent = &parent;
         for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
 
+        child_p->maxSquareNorm = -1.0;
+        child_p->maxWSquareNorm = -1.0;
+
         child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
@@ -223,6 +229,9 @@ template <int D> void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent)
         child_p->tree = parent.tree;
         child_p->parent = &parent;
         for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
+
+        child_p->maxSquareNorm = -1.0;
+        child_p->maxWSquareNorm = -1.0;
 
         child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);

@@ -1,5 +1,12 @@
 # Change log
 
+## Version 1.3.1 2020-09-02
+
+### Fixed
+
+- Uninitialized (max)norms used in space-varying precision algorithms
+
+
 ## Version 1.3.0 2020-08-28
 
 ### Added

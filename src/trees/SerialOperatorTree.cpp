@@ -99,6 +99,9 @@ void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
         root_p->parent = nullptr;
         for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
 
+        root_p->maxSquareNorm = -1.0;
+        root_p->maxWSquareNorm = -1.0;
+
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<2>();
 
@@ -145,6 +148,9 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
         child_p->tree = parent.tree;
         child_p->parent = &parent;
         for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
+
+        child_p->maxSquareNorm = -1.0;
+        child_p->maxWSquareNorm = -1.0;
 
         child_p->nodeIndex = NodeIndex<2>(parent.getNodeIndex(), cIdx);
         child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);

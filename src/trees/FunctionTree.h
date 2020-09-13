@@ -58,7 +58,7 @@ public:
     void clear();
 
     double integrate() const;
-    double evalf(const Coord<D> &r) const;
+    double evalf(const Coord<D> &r) const override;
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);

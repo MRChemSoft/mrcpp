@@ -63,8 +63,8 @@ public:
 
     double calcSquareNorm() override;
 
-    double evalfCore(const Coord<D> &r) const;
-    double evalf(double r, int dim) const;
+    double evalfCore(const Coord<D> &r) const override;
+    double evalf(double r, int dim) const override;
 
     double calcOverlap(GaussFunc<D> &b) override;
     double calcOverlap(GaussPoly<D> &b) override;

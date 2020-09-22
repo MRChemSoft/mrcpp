@@ -9,6 +9,13 @@ target_compile_definitions(mrcpp
     $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 
+target_compile_options(mrcpp
+  INTERFACE
+    $<INSTALL_INTERFACE:${_cmake_cxx_flags}>
+    $<INSTALL_INTERFACE:$<$<CONFIG:Release>:${_cmake_cxx_flags_release}>>
+    $<INSTALL_INTERFACE:$<$<CONFIG:RelWithDebInfo>:${_cmake_cxx_flags_relwithdebinfo}>>
+  )
+
 target_include_directories(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}

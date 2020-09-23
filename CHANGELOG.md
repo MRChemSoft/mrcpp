@@ -1,5 +1,12 @@
 # Change log
 
+## Version 1.3.3 2020-09-23
+
+### Fixed
+
+- Export compiler flags with MRCPP Cmake target
+
+
 ## Version 1.3.2 2020-09-14
 
 ### Fixed

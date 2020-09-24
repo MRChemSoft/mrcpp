@@ -103,6 +103,9 @@ public:
     void makeNodeTable(MWNodeVector<D> &nodeTable);
     void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
 
+    int getNodeTableSize() const { return this->endNodeTable.size(); }
+    int getNNodesAtDepth(int i) const { return this->nodesAtDepth[i]; }
+
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 

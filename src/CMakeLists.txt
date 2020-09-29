@@ -9,13 +9,6 @@ target_compile_definitions(mrcpp
     $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 
-target_compile_options(mrcpp
-  INTERFACE
-    $<INSTALL_INTERFACE:${_cmake_cxx_flags}>
-    $<INSTALL_INTERFACE:$<$<CONFIG:Release>:${_cmake_cxx_flags_release}>>
-    $<INSTALL_INTERFACE:$<$<CONFIG:RelWithDebInfo>:${_cmake_cxx_flags_relwithdebinfo}>>
-  )
-
 target_include_directories(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
@@ -30,8 +23,8 @@ target_include_directories(mrcpp
 target_link_libraries(mrcpp
   PUBLIC
     Eigen3::Eigen
-    $<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:OpenMP::OpenMP_CXX>
-    $<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>
+    $<BUILD_INTERFACE:$<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:OpenMP::OpenMP_CXX>>
+    $<BUILD_INTERFACE:$<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>>
   )
 
 add_subdirectory(core)

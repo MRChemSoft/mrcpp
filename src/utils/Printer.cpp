@@ -109,13 +109,13 @@ void print::environment(int level) {
 #endif
 
 #ifdef HAVE_MPI
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     println(level, " Parallelization       : MPI/OpenMP");
 #else
     println(level, " Parallelization       : MPI");
 #endif
 #else
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     println(level, " Parallelization       : OpenMP");
 #else
     println(level, " Parallelization       : NONE");

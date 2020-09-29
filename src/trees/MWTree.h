@@ -35,7 +35,7 @@
 
 namespace mrcpp {
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
 #define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
 #define UNSET_TREE_LOCK() omp_unset_lock(&this->tree_lock)
 #define TEST_TREE_LOCK() omp_test_lock(&this->tree_lock)
@@ -176,7 +176,7 @@ protected:
 
     virtual std::ostream &print(std::ostream &o);
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     omp_lock_t tree_lock;
 #endif
 };

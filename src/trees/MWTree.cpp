@@ -56,7 +56,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     omp_init_lock(&tree_lock);
 #endif
 }
@@ -69,7 +69,7 @@ template <int D> MWTree<D>::~MWTree() {
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     deleteNodeCounters();
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     omp_destroy_lock(&tree_lock);
 #endif
 }

@@ -37,6 +37,7 @@
 #include <vector>
 
 #include "SerialTree.h"
+#include "utils/omp_utils.h"
 
 namespace mrcpp {
 
@@ -67,7 +68,7 @@ protected:
     OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
 
 private:
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
     omp_lock_t Soper_tree_lock;
 #endif
 };

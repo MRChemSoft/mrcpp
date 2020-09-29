@@ -27,7 +27,7 @@
 
 #define EIGEN_DONT_PARALLELIZE
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
 #include <omp.h>
 #else
 #define omp_get_max_threads() 1

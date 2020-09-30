@@ -45,7 +45,7 @@ namespace mrcpp {
  * the parameters are done in derived classes. */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
-        : nThreads(omp_get_max_threads())
+        : nThreads(mrcpp_get_max_threads())
         , MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
@@ -55,10 +55,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
-
-#ifdef _OPENMP
-    omp_init_lock(&tree_lock);
-#endif
+    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWTree destructor. */
@@ -68,10 +65,7 @@ template <int D> MWTree<D>::~MWTree() {
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     deleteNodeCounters();
-
-#ifdef _OPENMP
-    omp_destroy_lock(&tree_lock);
-#endif
+    MRCPP_DESTROY_OMP_LOCK();
 }
 
 /** Calculate the squared norm of a function represented as a tree.
@@ -109,7 +103,7 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
 template <int D> void MWTree<D>::mwTransformUp() {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
-#pragma omp parallel shared(nodeTable)
+#pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         int start = nodeTable.size() - 2;
         for (int n = start; n >= 0; n--) {
@@ -129,7 +123,7 @@ template <int D> void MWTree<D>::mwTransformUp() {
 template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
-#pragma omp parallel shared(nodeTable)
+#pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         for (int n = 0; n < nodeTable.size(); n++) {
             int n_nodes = nodeTable[n].size();
@@ -199,18 +193,18 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
  * get merged with the correct global counters in xxxNodes[0]. This method
  * should be called outside of the parallel region for performance reasons. */
 template <int D> void MWTree<D>::updateGenNodeCounts() {
-    SET_TREE_LOCK();
+    MRCPP_SET_OMP_LOCK();
     for (int i = 1; i < this->nThreads; i++) {
         this->nGenNodes[0] += this->nGenNodes[i];
         this->nGenNodes[i] = 0;
     }
     assert(this->nGenNodes[0] >= 0);
-    UNSET_TREE_LOCK();
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 /** Adds a GenNode to the count. */
 template <int D> void MWTree<D>::incrementGenNodeCount() {
-    int n = omp_get_thread_num();
+    int n = mrcpp_get_thread_num();
     assert(n >= 0);
     assert(n < this->nThreads);
     this->nGenNodes[n]++;
@@ -218,7 +212,7 @@ template <int D> void MWTree<D>::incrementGenNodeCount() {
 
 /** Removes a GenNode from the count. */
 template <int D> void MWTree<D>::decrementGenNodeCount() {
-    int n = omp_get_thread_num();
+    int n = mrcpp_get_thread_num();
     assert(n >= 0);
     assert(n < this->nThreads);
     this->nGenNodes[n]--;

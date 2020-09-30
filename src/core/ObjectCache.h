@@ -34,16 +34,6 @@ namespace mrcpp {
 
 #define getObjectCache(T, X) ObjectCache<T> &X = ObjectCache<T>::getInstance();
 
-#ifdef _OPENMP
-#define SET_CACHE_LOCK() omp_set_lock(&this->cache_lock)
-#define UNSET_CACHE_LOCK() omp_unset_lock(&this->cache_lock)
-#define TEST_CACHE_LOCK() omp_test_lock(&this->cache_lock)
-#else
-#define SET_CACHE_LOCK()
-#define UNSET_CACHE_LOCK()
-#define TEST_CACHE_LOCK()
-#endif
-
 template <class T> class ObjectCache {
 public:
     static ObjectCache<T> &getInstance();
@@ -64,23 +54,19 @@ protected:
     ObjectCache() {
         this->objs.push_back(nullptr);
         this->mem.push_back(0);
-#ifdef _OPENMP
-        omp_init_lock(&cache_lock);
-#endif
+        MRCPP_INIT_OMP_LOCK();
     }
 
     virtual ~ObjectCache() {
-        SET_CACHE_LOCK();
+        MRCPP_SET_OMP_LOCK();
         clear();
-        UNSET_CACHE_LOCK();
-#ifdef _OPENMP
-        omp_destroy_lock(&cache_lock);
-#endif
+        MRCPP_UNSET_OMP_LOCK();
+        MRCPP_DESTROY_OMP_LOCK();
     }
     ObjectCache(ObjectCache<T> const &oc) = delete;
     ObjectCache<T> &operator=(ObjectCache<T> const &oc) = delete;
-#ifdef _OPENMP
-    omp_lock_t cache_lock;
+#ifdef MRCPP_HAS_OMP
+    omp_lock_t omp_lock;
 #endif
 private:
     int highWaterMark{0};

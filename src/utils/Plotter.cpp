@@ -278,7 +278,7 @@ Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &fun
     auto npts = coords.rows();
     if (npts == 0) MSG_ERROR("Empty coordinates");
     Eigen::VectorXd values = VectorXd::Zero(npts);
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) num_threads(mrcpp_get_num_threads())
     for (auto i = 0; i < npts; i++) {
         Coord<D> r{};
         for (auto d = 0; d < D; d++) r[d] = coords(i, d);

@@ -56,13 +56,13 @@ template <int T> FilterCache<T>::FilterCache() {
 }
 
 template <int T> void FilterCache<T>::load(int order) {
-    SET_CACHE_LOCK();
+    MRCPP_SET_OMP_LOCK();
     if (not hasId(order)) {
         auto *f = new MWFilter(order, type);
         int memo = f->getFilter().size() * sizeof(double);
         ObjectCache<MWFilter>::load(order, f, memo);
     }
-    UNSET_CACHE_LOCK();
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template <int T> MWFilter &FilterCache<T>::get(int order) {

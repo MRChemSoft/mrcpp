@@ -73,7 +73,7 @@ template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
     basis.evalf(arg, val);
 
     double result = 0.0;
-    //#pragma omp parallel for shared(fact) reduction(+:result)
+    //#pragma omp parallel for shared(fact) reduction(+:result) num_threads(mrcpp_get_num_threads())
     for (int i = 0; i < this->getKp1_d(); i++) {
         double temp = this->coefs[i];
         for (int j = 0; j < D; j++) {

@@ -80,9 +80,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
     this->cvptr_GenNode = *(char **)(tmpGenNode);
     delete tmpGenNode;
 
-#ifdef _OPENMP
-    omp_init_lock(&Sfunc_tree_lock);
-#endif
+    MRCPP_INIT_OMP_LOCK();
 }
 
 /** SerialTree destructor. */
@@ -96,9 +94,7 @@ template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
     this->nodeStackStatus.clear();
     this->genNodeStackStatus.clear();
 
-#ifdef _OPENMP
-    omp_destroy_lock(&Sfunc_tree_lock);
-#endif
+    MRCPP_DESTROY_OMP_LOCK();
 }
 
 /** reset the start node counter */
@@ -465,7 +461,7 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
 
 // return pointer to the last active node or NULL if failed
 template <int D> GenNode<D> *SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, double **coefs_p) {
-    omp_set_lock(&Sfunc_tree_lock);
+    MRCPP_SET_OMP_LOCK();
     *serialIx = this->nGenNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -527,12 +523,12 @@ template <int D> GenNode<D> *SerialFunctionTree<D>::allocGenNodes(int nAlloc, in
     this->nGenNodes += nAlloc;
     this->lastGenNode += nAlloc;
 
-    omp_unset_lock(&Sfunc_tree_lock);
+    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 template <int D> void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
-    omp_set_lock(&Sfunc_tree_lock);
+    MRCPP_SET_OMP_LOCK();
     if (this->nGenNodes < 0) {
         println(0, "minNodes exceeded " << this->nGenNodes);
         this->nGenNodes++;
@@ -553,7 +549,7 @@ template <int D> void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
         int chunk = this->nGenNodes / this->maxNodesPerChunk; // find the right chunk
         this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes % (this->maxNodesPerChunk);
     }
-    omp_unset_lock(&Sfunc_tree_lock);
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template <int D> void SerialFunctionTree<D>::deallocGenNodeChunks() {

@@ -57,7 +57,7 @@ template <int D> DerivativeCalculator<D>::~DerivativeCalculator() {
 }
 
 template <int D> void DerivativeCalculator<D>::initTimers() {
-    int nThreads = omp_get_max_threads();
+    int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(Timer(false));
         this->calc_t.push_back(Timer(false));
@@ -73,7 +73,7 @@ template <int D> void DerivativeCalculator<D>::clearTimers() {
 
 template <int D> void DerivativeCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
-    int nThreads = omp_get_max_threads();
+    int nThreads = mrcpp_get_max_threads();
     printout(20, "\n\nthread ");
     for (int i = 0; i < nThreads; i++) printout(20, std::setw(9) << i);
     printout(20, "\nband     ");
@@ -95,16 +95,16 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
-    this->band_t[omp_get_thread_num()].resume();
+    this->band_t[mrcpp_get_thread_num()].resume();
     std::vector<NodeIndex<D>> idx_band;
     MWNodeVector<D> fBand = makeOperBand(gNode, idx_band);
-    this->band_t[omp_get_thread_num()].stop();
+    this->band_t[mrcpp_get_thread_num()].stop();
 
     assert(this->oper->size() == 1);
     const OperatorTree &oTree = this->oper->getComponent(0);
     os.oTree = &oTree;
 
-    this->calc_t[omp_get_thread_num()].resume();
+    this->calc_t[mrcpp_get_thread_num()].resume();
     for (int n = 0; n < fBand.size(); n++) {
         MWNode<D> &fNode = *fBand[n];
         NodeIndex<D> &fIdx = idx_band[n];
@@ -124,11 +124,11 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     const double sf =
         std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
     for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= sf;
-    this->calc_t[omp_get_thread_num()].stop();
+    this->calc_t[mrcpp_get_thread_num()].stop();
 
-    this->norm_t[omp_get_thread_num()].resume();
+    this->norm_t[mrcpp_get_thread_num()].resume();
     gNode.calcNorms();
-    this->norm_t[omp_get_thread_num()].stop();
+    this->norm_t[mrcpp_get_thread_num()].stop();
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */

@@ -35,16 +35,6 @@
 
 namespace mrcpp {
 
-#ifdef _OPENMP
-#define SET_TREE_LOCK() omp_set_lock(&this->tree_lock)
-#define UNSET_TREE_LOCK() omp_unset_lock(&this->tree_lock)
-#define TEST_TREE_LOCK() omp_test_lock(&this->tree_lock)
-#else
-#define SET_TREE_LOCK()
-#define UNSET_TREE_LOCK()
-#define TEST_TREE_LOCK() false
-#endif
-
 template <int D> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra);
@@ -176,8 +166,8 @@ protected:
 
     virtual std::ostream &print(std::ostream &o);
 
-#ifdef _OPENMP
-    omp_lock_t tree_lock;
+#ifdef MRCPP_HAS_OMP
+    omp_lock_t omp_lock;
 #endif
 };
 

@@ -237,7 +237,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 template <int D> void FunctionTree<D>::square() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
-#pragma omp parallel
+#pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
         int nCoefs = this->getTDim() * this->getKp1_d();
@@ -268,7 +268,7 @@ template <int D> void FunctionTree<D>::square() {
 template <int D> void FunctionTree<D>::power(double p) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
-#pragma omp parallel
+#pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
         int nCoefs = this->getTDim() * this->getKp1_d();
@@ -298,7 +298,7 @@ template <int D> void FunctionTree<D>::power(double p) {
  */
 template <int D> void FunctionTree<D>::rescale(double c) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
-#pragma omp parallel firstprivate(c)
+#pragma omp parallel firstprivate(c) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
         int nCoefs = this->getTDim() * this->getKp1_d();
@@ -335,7 +335,7 @@ template <int D> void FunctionTree<D>::normalize() {
 template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
-#pragma omp parallel firstprivate(c), shared(inp)
+#pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
@@ -363,7 +363,7 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
  */
 template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
-#pragma omp parallel firstprivate(c), shared(inp)
+#pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
@@ -399,7 +399,7 @@ template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
 template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
-#pragma omp parallel firstprivate(c), shared(inp)
+#pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
@@ -435,7 +435,7 @@ template <int D> void FunctionTree<D>::map(FMap fmap) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     {
         int nNodes = this->getNEndNodes();
-#pragma omp for schedule(guided)
+#pragma omp parallel for schedule(guided) num_threads(mrcpp_get_num_threads())
         for (int n = 0; n < nNodes; n++) {
             MWNode<D> &node = *this->endNodeTable[n];
             node.mwTransform(Reconstruction);

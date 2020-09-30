@@ -27,14 +27,28 @@
 
 #define EIGEN_DONT_PARALLELIZE
 
-#ifdef _OPENMP
+#ifdef MRCPP_HAS_OMP
 #include <omp.h>
+#define mrcpp_get_max_threads() omp_get_max_threads()
+#define mrcpp_get_num_threads() mrcpp::max_threads
+#define mrcpp_get_thread_num() omp_get_thread_num()
+#define MRCPP_INIT_OMP_LOCK() omp_init_lock(&this->omp_lock)
+#define MRCPP_DESTROY_OMP_LOCK() omp_destroy_lock(&this->omp_lock)
+#define MRCPP_SET_OMP_LOCK() omp_set_lock(&this->omp_lock)
+#define MRCPP_UNSET_OMP_LOCK() omp_unset_lock(&this->omp_lock)
+#define MRCPP_TEST_OMP_LOCK() omp_test_lock(&this->omp_lock)
 #else
-#define omp_get_max_threads() 1
-#define omp_get_num_threads() 1
-#define omp_get_thread_num() 0
-#define omp_set_dynamic(n)
-#define omp_set_lock(x)
-#define omp_unset_lock(x)
-#define omp_test_lock(x)
+#define mrcpp_get_max_threads() 1
+#define mrcpp_get_num_threads() 1
+#define mrcpp_get_thread_num() 0
+#define MRCPP_INIT_OMP_LOCK()
+#define MRCPP_DESTROY_OMP_LOCK()
+#define MRCPP_SET_OMP_LOCK()
+#define MRCPP_UNSET_OMP_LOCK()
+#define MRCPP_TEST_OMP_LOCK()
 #endif
+
+namespace mrcpp {
+extern int max_threads;
+void set_max_threads(int threads);
+} // namespace mrcpp

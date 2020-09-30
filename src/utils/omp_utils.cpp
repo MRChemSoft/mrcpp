@@ -23,18 +23,20 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#pragma once
+#include "omp_utils.h"
 
 namespace mrcpp {
-inline constexpr auto mwfilters_source_dir() noexcept {
-  return "@MW_FILTER_SOURCE_DIR@";
+
+// By default we get OMP_NUM_THREADS
+int max_threads = mrcpp_get_max_threads();
+
+void set_max_threads(int threads) {
+    auto omp_max = mrcpp_get_max_threads();
+    if (threads < 1 or threads > omp_max) {
+        mrcpp::max_threads = omp_max;
+    } else {
+        mrcpp::max_threads = threads;
+    }
 }
 
-inline constexpr auto mwfilters_install_dir() noexcept {
-  return "@MW_FILTER_INSTALL_DIR@";
-}
 } // namespace mrcpp
-
-#define BLAS_H "@BLAS_H@"
-
-#cmakedefine HAVE_BLAS

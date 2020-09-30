@@ -9,6 +9,10 @@ target_compile_definitions(mrcpp
     $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 
+if (TARGET OpenMP::OpenMP_CXX)
+  target_compile_definitions(mrcpp PUBLIC MRCPP_HAS_OMP)
+endif()
+
 target_include_directories(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}

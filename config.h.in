@@ -37,8 +37,4 @@ inline constexpr auto mwfilters_install_dir() noexcept {
 
 #define BLAS_H "@BLAS_H@"
 
-#cmakedefine HAVE_MPI
-
-#cmakedefine MRCPP_HAS_OMP
-
 #cmakedefine HAVE_BLAS

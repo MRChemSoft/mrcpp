@@ -51,4 +51,4 @@
 namespace mrcpp {
 extern int max_threads;
 void set_max_threads(int threads);
-}
+} // namespace mrcpp

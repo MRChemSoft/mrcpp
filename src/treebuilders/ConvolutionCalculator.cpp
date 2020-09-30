@@ -62,7 +62,7 @@ template <int D> ConvolutionCalculator<D>::~ConvolutionCalculator() {
 }
 
 template <int D> void ConvolutionCalculator<D>::initTimers() {
-    int nThreads = omp_get_max_threads();
+    int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(new Timer(false));
         this->calc_t.push_back(new Timer(false));
@@ -71,7 +71,7 @@ template <int D> void ConvolutionCalculator<D>::initTimers() {
 }
 
 template <int D> void ConvolutionCalculator<D>::clearTimers() {
-    int nThreads = omp_get_max_threads();
+    int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         delete this->band_t[i];
         delete this->calc_t[i];
@@ -84,7 +84,7 @@ template <int D> void ConvolutionCalculator<D>::clearTimers() {
 
 template <int D> void ConvolutionCalculator<D>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
-    int nThreads = omp_get_max_threads();
+    int nThreads = mrcpp_get_max_threads();
     printout(20, "\n\nthread ");
     for (int i = 0; i < nThreads; i++) printout(20, std::setw(9) << i);
     printout(20, "\nband     ");
@@ -211,10 +211,10 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
-    this->band_t[omp_get_thread_num()]->resume();
+    this->band_t[mrcpp_get_thread_num()]->resume();
     std::vector<NodeIndex<D>> idx_band;
     MWNodeVector<D> *fBand = makeOperBand(gNode, idx_band);
-    this->band_t[omp_get_thread_num()]->stop();
+    this->band_t[mrcpp_get_thread_num()]->stop();
 
     MWTree<D> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
@@ -226,7 +226,7 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
     os.gThreshold = gThrs;
 
-    this->calc_t[omp_get_thread_num()]->resume();
+    this->calc_t[mrcpp_get_thread_num()]->resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D> &fNode = *(*fBand)[n];
         NodeIndex<D> &fIdx = idx_band[n];
@@ -244,11 +244,11 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
             }
         }
     }
-    this->calc_t[omp_get_thread_num()]->stop();
+    this->calc_t[mrcpp_get_thread_num()]->stop();
 
-    this->norm_t[omp_get_thread_num()]->resume();
+    this->norm_t[mrcpp_get_thread_num()]->resume();
     gNode.calcNorms();
-    this->norm_t[omp_get_thread_num()]->stop();
+    this->norm_t[mrcpp_get_thread_num()]->stop();
     delete fBand;
 }
 

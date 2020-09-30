@@ -45,7 +45,7 @@ namespace mrcpp {
  * the parameters are done in derived classes. */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
-        : nThreads(omp_get_max_threads())
+        : nThreads(mrcpp_get_max_threads())
         , MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
@@ -103,7 +103,7 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
 template <int D> void MWTree<D>::mwTransformUp() {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
-#pragma omp parallel shared(nodeTable)
+#pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         int start = nodeTable.size() - 2;
         for (int n = start; n >= 0; n--) {
@@ -123,7 +123,7 @@ template <int D> void MWTree<D>::mwTransformUp() {
 template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<D>> nodeTable;
     makeNodeTable(nodeTable);
-#pragma omp parallel shared(nodeTable)
+#pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         for (int n = 0; n < nodeTable.size(); n++) {
             int n_nodes = nodeTable[n].size();
@@ -204,7 +204,7 @@ template <int D> void MWTree<D>::updateGenNodeCounts() {
 
 /** Adds a GenNode to the count. */
 template <int D> void MWTree<D>::incrementGenNodeCount() {
-    int n = omp_get_thread_num();
+    int n = mrcpp_get_thread_num();
     assert(n >= 0);
     assert(n < this->nThreads);
     this->nGenNodes[n]++;
@@ -212,7 +212,7 @@ template <int D> void MWTree<D>::incrementGenNodeCount() {
 
 /** Removes a GenNode from the count. */
 template <int D> void MWTree<D>::decrementGenNodeCount() {
-    int n = omp_get_thread_num();
+    int n = mrcpp_get_thread_num();
     assert(n >= 0);
     assert(n < this->nThreads);
     this->nGenNodes[n]--;

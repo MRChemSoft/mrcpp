@@ -310,7 +310,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     // OMP is disabled in order to get EXACT results (to the very last digit), the
     // order of summation makes the result different beyond the 14th digit or so.
     // OMP does improve the performace, but its not worth it for the time being.
-    //#pragma omp parallel firstprivate(n_nodes, locResult)
+    //#pragma omp parallel firstprivate(n_nodes, locResult) num_threads(mrcpp_get_num_threads())
     //		shared(nodeTable,rhs,result)
     //    {
     //#pragma omp for schedule(guided)

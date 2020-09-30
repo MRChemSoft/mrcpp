@@ -32,7 +32,7 @@ namespace mrcpp {
 
 template <int D>
 OperatorStatistics<D>::OperatorStatistics()
-        : nThreads(omp_get_max_threads())
+        : nThreads(mrcpp_get_max_threads())
         , totFCount(0)
         , totGCount(0)
         , totGenCount(0)
@@ -83,13 +83,13 @@ template <int D> void OperatorStatistics<D>::flushNodeCounters() {
 
 /** Increment g-node usage counter. Needed for load balancing. */
 template <int D> void OperatorStatistics<D>::incrementGNodeCounters(const MWNode<D> &gNode) {
-    int thread = omp_get_thread_num();
+    int thread = mrcpp_get_thread_num();
     this->gCount[thread]++;
 }
 
 /** Increment operator application counter. */
 template <int D> void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt) {
-    int thread = omp_get_thread_num();
+    int thread = mrcpp_get_thread_num();
     this->fCount[thread]++;
     (*this->compCount[thread])(ft, gt) += 1;
     if (fNode.isGenNode()) { this->genCount[thread]++; }

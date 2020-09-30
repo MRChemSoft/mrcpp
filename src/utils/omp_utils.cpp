@@ -23,32 +23,20 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#pragma once
-
-#define EIGEN_DONT_PARALLELIZE
-
-#ifdef MRCPP_HAS_OMP
-#include <omp.h>
-#define mrcpp_get_max_threads() omp_get_max_threads()
-#define mrcpp_get_num_threads() mrcpp::max_threads
-#define mrcpp_get_thread_num() omp_get_thread_num()
-#define MRCPP_INIT_OMP_LOCK() omp_init_lock(&this->omp_lock)
-#define MRCPP_DESTROY_OMP_LOCK() omp_destroy_lock(&this->omp_lock)
-#define MRCPP_SET_OMP_LOCK() omp_set_lock(&this->omp_lock)
-#define MRCPP_UNSET_OMP_LOCK() omp_unset_lock(&this->omp_lock)
-#define MRCPP_TEST_OMP_LOCK() omp_test_lock(&this->omp_lock)
-#else
-#define mrcpp_get_max_threads() 1
-#define mrcpp_get_num_threads() 1
-#define mrcpp_get_thread_num() 0
-#define MRCPP_INIT_OMP_LOCK()
-#define MRCPP_DESTROY_OMP_LOCK()
-#define MRCPP_SET_OMP_LOCK()
-#define MRCPP_UNSET_OMP_LOCK()
-#define MRCPP_TEST_OMP_LOCK()
-#endif
+#include "omp_utils.h"
 
 namespace mrcpp {
-extern int max_threads;
-void set_max_threads(int threads);
+
+// By default we get OMP_NUM_THREADS
+int max_threads = mrcpp_get_max_threads();
+
+void set_max_threads(int threads) {
+    auto omp_max = mrcpp_get_max_threads();
+    if (threads < 1 or threads > omp_max) {
+        mrcpp::max_threads = omp_max;
+    } else {
+        mrcpp::max_threads = threads;
+    }
 }
+
+} // namespace mrcpp

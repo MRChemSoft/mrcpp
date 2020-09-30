@@ -40,13 +40,13 @@ public:
         return theScalingCache;
     }
     void load(int order) {
-        SET_CACHE_LOCK();
+        MRCPP_SET_OMP_LOCK();
         if (not this->hasId(order)) {
             P *f = new P(order);
             int memo = 2 * SQUARE(order + 1) * sizeof(double); // approx
             ObjectCache<P>::load(order, f, memo);
         }
-        UNSET_CACHE_LOCK();
+        MRCPP_UNSET_OMP_LOCK();
     }
 
     P &get(int order) {

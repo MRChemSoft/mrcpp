@@ -55,10 +55,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
     allocNodeCounters();
-
-#ifdef MRCPP_HAS_OMP
-    omp_init_lock(&tree_lock);
-#endif
+    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWTree destructor. */
@@ -68,10 +65,7 @@ template <int D> MWTree<D>::~MWTree() {
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     deleteNodeCounters();
-
-#ifdef MRCPP_HAS_OMP
-    omp_destroy_lock(&tree_lock);
-#endif
+    MRCPP_DESTROY_OMP_LOCK();
 }
 
 /** Calculate the squared norm of a function represented as a tree.
@@ -199,13 +193,13 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
  * get merged with the correct global counters in xxxNodes[0]. This method
  * should be called outside of the parallel region for performance reasons. */
 template <int D> void MWTree<D>::updateGenNodeCounts() {
-    SET_TREE_LOCK();
+    MRCPP_SET_OMP_LOCK();
     for (int i = 1; i < this->nThreads; i++) {
         this->nGenNodes[0] += this->nGenNodes[i];
         this->nGenNodes[i] = 0;
     }
     assert(this->nGenNodes[0] >= 0);
-    UNSET_TREE_LOCK();
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 /** Adds a GenNode to the count. */

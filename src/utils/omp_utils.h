@@ -29,12 +29,16 @@
 
 #ifdef MRCPP_HAS_OMP
 #include <omp.h>
+
+#define MRCPP_INIT_OMP_LOCK() omp_init_lock(&this->omp_lock)
+#define MRCPP_DESTROY_OMP_LOCK() omp_destroy_lock(&this->omp_lock)
+#define MRCPP_SET_OMP_LOCK() omp_set_lock(&this->omp_lock)
+#define MRCPP_UNSET_OMP_LOCK() omp_unset_lock(&this->omp_lock)
+#define MRCPP_TEST_OMP_LOCK() omp_test_lock(&this->omp_lock)
 #else
-#define omp_get_max_threads() 1
-#define omp_get_num_threads() 1
-#define omp_get_thread_num() 0
-#define omp_set_dynamic(n)
-#define omp_set_lock(x)
-#define omp_unset_lock(x)
-#define omp_test_lock(x)
+#define MRCPP_INIT_OMP_LOCK()
+#define MRCPP_DESTROY_OMP_LOCK()
+#define MRCPP_SET_OMP_LOCK()
+#define MRCPP_UNSET_OMP_LOCK()
+#define MRCPP_TEST_OMP_LOCK()
 #endif

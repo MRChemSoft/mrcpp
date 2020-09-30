@@ -47,13 +47,13 @@ QuadratureCache::QuadratureCache() {
 QuadratureCache::~QuadratureCache() = default;
 
 void QuadratureCache::load(int k) {
-    SET_CACHE_LOCK();
+    MRCPP_SET_OMP_LOCK();
     if (not hasId(k)) {
         auto *gp = new GaussQuadrature(k, this->A, this->B, this->intervals);
         int memo = 2 * k * sizeof(double);
         ObjectCache<GaussQuadrature>::load(k, gp, memo);
     }
-    UNSET_CACHE_LOCK();
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 GaussQuadrature &QuadratureCache::get(int k) {

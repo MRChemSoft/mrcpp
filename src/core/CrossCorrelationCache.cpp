@@ -56,13 +56,13 @@ template <int T> CrossCorrelationCache<T>::CrossCorrelationCache() {
 }
 
 template <int T> void CrossCorrelationCache<T>::load(int order) {
-    SET_CACHE_LOCK();
+    MRCPP_SET_OMP_LOCK();
     if (not hasId(order)) {
         auto *ccc = new CrossCorrelation(order, type);
         int memo = ccc->getLMatrix().size() * 2 * sizeof(double);
         ObjectCache<CrossCorrelation>::load(order, ccc, memo);
     }
-    UNSET_CACHE_LOCK();
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template <int T> CrossCorrelation &CrossCorrelationCache<T>::get(int order) {

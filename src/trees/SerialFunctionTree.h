@@ -96,7 +96,7 @@ protected:
 
 private:
 #ifdef MRCPP_HAS_OMP
-    omp_lock_t Sfunc_tree_lock;
+    omp_lock_t omp_lock;
 #endif
 };
 

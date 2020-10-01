@@ -5,12 +5,14 @@ add_dependencies(mrcpp mrcpp-info)
 target_compile_definitions(mrcpp
   INTERFACE
     $<INSTALL_INTERFACE:USING_MRCPP>
-  PUBLIC
-    $<$<TARGET_EXISTS:MPI::MPI_CXX>:HAVE_MPI>
   )
 
 if (TARGET OpenMP::OpenMP_CXX)
   target_compile_definitions(mrcpp PUBLIC MRCPP_HAS_OMP)
+endif()
+
+if (TARGET MPI::MPI_CXX)
+  target_compile_definitions(mrcpp PUBLIC MRCPP_HAS_MPI)
 endif()
 
 target_include_directories(mrcpp

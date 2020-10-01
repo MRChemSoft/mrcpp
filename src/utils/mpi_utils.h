@@ -25,7 +25,7 @@
 
 #pragma once
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
 #include <mpi.h>
 #else
 using MPI_Comm = int;

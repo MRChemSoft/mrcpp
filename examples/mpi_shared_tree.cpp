@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     auto srank = int();
     auto ssize = int();
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Init(&argc, &argv);
 
     wcomm = MPI_COMM_WORLD;
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
     delete shared_mem;
 
     // Finalize MPI
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Finalize();
 #endif
 

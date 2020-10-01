@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     auto wrank = int();
     auto wsize = int();
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Init(&argc, &argv);
 
     comm = MPI_COMM_WORLD;
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     }
 
     // Finalize MPI
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Finalize();
 #endif
 

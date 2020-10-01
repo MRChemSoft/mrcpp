@@ -44,7 +44,7 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
         , sh_win(0)
         , rank(0) {
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Comm_rank(comm, &this->rank);
     // MPI_Aint types are used for adresses (can be larger than int)
     MPI_Aint size = (rank == 0) ? sh_size : 0; // rank 0 defines length of segment
@@ -64,13 +64,13 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 }
 
 void SharedMemory::clear() {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     this->sh_end_ptr = this->sh_start_ptr;
 #endif
 }
 
 SharedMemory::~SharedMemory() {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     // deallocates the memory block
     MPI_Win_free(&this->sh_win);
 #endif
@@ -90,7 +90,7 @@ SharedMemory::~SharedMemory() {
  *  step before the main communication.
  */
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks) {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
@@ -126,7 +126,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Com
  *  step before the main communication.
  */
 template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChunks) {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Status status;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
 
@@ -180,7 +180,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
  *  updated, in order to update the local memory of each MPI process.
  */
 template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     Timer t1;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");

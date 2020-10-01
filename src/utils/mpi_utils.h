@@ -27,10 +27,17 @@
 
 #ifdef MRCPP_HAS_MPI
 #include <mpi.h>
+namespace mrcpp {
+using mpi_comm = MPI_Comm;
+using mpi_win = MPI_Win;
+using mpi_request = MPI_Request;
+} // namespace mrcpp
 #else
-using MPI_Comm = int;
-using MPI_Win = int;
-using MPI_Request = int;
+namespace mrcpp {
+using mpi_comm = int;
+using mpi_win = int;
+using mpi_request = int;
+} // namespace mrcpp
 #endif
 
 namespace mrcpp {
@@ -45,23 +52,24 @@ namespace mrcpp {
  */
 class SharedMemory {
 public:
-    SharedMemory(MPI_Comm comm, int sh_size);
+    SharedMemory(mrcpp::mpi_comm comm, int sh_size);
     SharedMemory(const SharedMemory &mem) = delete;
     SharedMemory &operator=(const SharedMemory &mem) = delete;
     ~SharedMemory();
 
-    double *sh_start_ptr; // start of shared block
-    double *sh_end_ptr;   // end of used part
-    double *sh_max_ptr;   // end of shared block
-    MPI_Win sh_win;       // MPI window object
-    int rank;             // rank among shared group
-    void clear();         // show shared memory as entirely available
+    void clear(); // show shared memory as entirely available
+
+    double *sh_start_ptr;  // start of shared block
+    double *sh_end_ptr;    // end of used part
+    double *sh_max_ptr;    // end of shared block
+    mrcpp::mpi_win sh_win; // MPI window object
+    int rank;              // rank among shared group
 };
 
 template <int D> class FunctionTree;
 
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks = -1);
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChunks = -1);
-template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm);
+template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks = -1);
+template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks = -1);
+template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

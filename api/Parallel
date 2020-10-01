@@ -24,3 +24,4 @@
  */
 
 #include "utils/mpi_utils.h"
+#include "utils/omp_utils.h"

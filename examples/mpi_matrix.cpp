@@ -15,18 +15,17 @@ int main(int argc, char **argv) {
     mrcpp::Timer tot_t;
 
     // Initialize MPI
-    MPI_Comm comm;
-    int wrank, wsize;
 #ifdef MRCPP_HAS_MPI
     MPI_Init(&argc, &argv);
 
-    comm = MPI_COMM_WORLD;
+    int wrank, wsize;
+    MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &wrank);
     MPI_Comm_size(comm, &wsize);
 #else
-    comm = 0;
-    wrank = 0;
-    wsize = 1;
+    int comm = 0;
+    int wrank = 0;
+    int wsize = 1;
 #endif
 
     // Initialize printing

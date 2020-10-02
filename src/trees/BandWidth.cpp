@@ -36,23 +36,6 @@ bool BandWidth::isEmpty(int depth) const {
     return false;
 }
 
-int BandWidth::getWidth(int depth, int index) const {
-    assert(depth >= 0);
-    assert(index >= 0 and index < 4);
-    if (depth > getDepth()) { // No bw at requested depth
-        return -1;
-    }
-    return this->widths(depth, index);
-}
-
-int BandWidth::getMaxWidth(int depth) const {
-    assert(depth >= 0);
-    if (depth > getDepth()) { // No bw at requested depth
-        return -1;
-    }
-    return this->widths(depth, 4);
-}
-
 void BandWidth::setWidth(int depth, int index, int wd) {
     assert(depth >= 0 and depth < getDepth());
     assert(index >= 0 and index < 4);

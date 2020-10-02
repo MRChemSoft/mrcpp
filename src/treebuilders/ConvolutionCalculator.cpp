@@ -101,7 +101,7 @@ template <int D> void ConvolutionCalculator<D>::printTimers() const {
  operator. The band size is used for thresholding. */
 template <int D> void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &oTree = this->oper->getComponent(i);
+        const OperatorTree &oTree = *(*this->oper)[i];
         const BandWidth &bw = oTree.getBandWidth();
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
@@ -193,14 +193,6 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
     l[dim] = l_start;
 }
 
-template <int D> int ConvolutionCalculator<D>::getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
-    assert(i >= 0 and i < this->bandSizes.size());
-    MatrixXi &bs = *this->bandSizes[i];
-    assert(depth >= 0 and depth <= bs.rows());
-    int k = os.gt * this->nComp + os.ft;
-    return bs(depth, k);
-}
-
 template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     auto &gNode = static_cast<FunctionNode<D> &>(node);
     gNode.zeroCoefs();
@@ -257,7 +249,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
     int depth = os.gNode->getDepth();
     double fNorm = os.fNode->getComponentNorm(os.ft);
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &ot = this->oper->getComponent(i);
+        const OperatorTree &ot = *(*this->oper)[i];
         const BandWidth &bw = ot.getBandWidth();
         if (os.getMaxDeltaL() > bw.getMaxWidth(depth)) { continue; }
         os.oTree = &ot;

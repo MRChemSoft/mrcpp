@@ -37,14 +37,14 @@ namespace mrcpp {
  *  @param[in] comm: Communicator sharing resources
  *  @param[in] sh_size: Memory size, in MB
  */
-SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
+SharedMemory::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
         : sh_start_ptr(nullptr)
         , sh_end_ptr(nullptr)
         , sh_max_ptr(nullptr)
         , sh_win(0)
         , rank(0) {
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Comm_rank(comm, &this->rank);
     // MPI_Aint types are used for adresses (can be larger than int)
     MPI_Aint size = (rank == 0) ? sh_size : 0; // rank 0 defines length of segment
@@ -64,13 +64,13 @@ SharedMemory::SharedMemory(MPI_Comm comm, int sh_size)
 }
 
 void SharedMemory::clear() {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     this->sh_end_ptr = this->sh_start_ptr;
 #endif
 }
 
 SharedMemory::~SharedMemory() {
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     // deallocates the memory block
     MPI_Win_free(&this->sh_win);
 #endif
@@ -89,8 +89,8 @@ SharedMemory::~SharedMemory() {
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Comm comm, int nChunks) {
-#ifdef HAVE_MPI
+template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks) {
+#ifdef MRCPP_HAS_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
@@ -125,8 +125,8 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, MPI_Com
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm, int nChunks) {
-#ifdef HAVE_MPI
+template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks) {
+#ifdef MRCPP_HAS_MPI
     MPI_Status status;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
 
@@ -179,8 +179,8 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, MPI_Com
  *  @details This function should be called every time a shared function is
  *  updated, in order to update the local memory of each MPI process.
  */
-template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Comm comm) {
-#ifdef HAVE_MPI
+template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm) {
+#ifdef MRCPP_HAS_MPI
     Timer t1;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
@@ -234,14 +234,14 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, MPI_Co
 #endif
 }
 
-template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, MPI_Comm comm, int nChunks);
-template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, MPI_Comm comm, int nChunks);
-template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, MPI_Comm comm, int nChunks);
-template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm, int nChunks);
-template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm, int nChunks);
-template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm, int nChunks);
-template void share_tree<1>(FunctionTree<1> &tree, int src, int tag, MPI_Comm comm);
-template void share_tree<2>(FunctionTree<2> &tree, int src, int tag, MPI_Comm comm);
-template void share_tree<3>(FunctionTree<3> &tree, int src, int tag, MPI_Comm comm);
+template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void share_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

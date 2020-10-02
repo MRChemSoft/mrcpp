@@ -1,10 +1,21 @@
 # Change log
 
+## Version 1.3.4 2020-10-02
+
+### Fixed
+
+- Allow to remove arch-specific optimization flags
+- Undo export of compiler flags with MRCPP CMake target
+- Encapsulate OpenMP within MRCPP and export MRCPP_HAS_OMP flag
+- Encapsulate MPI within MRCPP and export MRCPP_HAS_MPI flag
+- Fix faulty OpenMP locks
+- Minor inlining optimizations
+
 ## Version 1.3.3 2020-09-23
 
 ### Fixed
 
-- Export compiler flags with MRCPP Cmake target
+- Export compiler flags with MRCPP CMake target
 
 
 ## Version 1.3.2 2020-09-14

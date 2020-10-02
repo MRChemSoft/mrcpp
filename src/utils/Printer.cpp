@@ -108,7 +108,7 @@ void print::environment(int level) {
                                                       << EIGEN_MINOR_VERSION);
 #endif
 
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
 #ifdef MRCPP_HAS_OMP
     println(level, " Parallelization       : MPI/OpenMP (" << mrcpp_get_num_threads() << " threads)");
 #else

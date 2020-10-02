@@ -41,7 +41,7 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
         , maxNodes(0)
         , tree_p(tree)
         ,
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
         shMem(mem) {
 #else
         shMem(nullptr) {

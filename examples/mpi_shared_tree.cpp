@@ -17,19 +17,12 @@ int main(int argc, char **argv) {
     auto tot_t = mrcpp::Timer();
 
     // Initialize MPI
-
-    auto wcomm = MPI_Comm();
-    auto scomm = MPI_Comm();
-
-    auto wrank = int();
-    auto wsize = int();
-    auto srank = int();
-    auto ssize = int();
-
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Init(&argc, &argv);
 
-    wcomm = MPI_COMM_WORLD;
+    int wrank, wsize, srank, ssize;
+    MPI_Comm scomm;
+    MPI_Comm wcomm = MPI_COMM_WORLD;
     MPI_Comm_rank(wcomm, &wrank);
     MPI_Comm_size(wcomm, &wsize);
 
@@ -37,13 +30,13 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(scomm, &srank);
     MPI_Comm_size(scomm, &ssize);
 #else
-    wcomm = 0;
-    wrank = 0;
-    wsize = 1;
+    int wcomm = 0;
+    int wrank = 0;
+    int wsize = 1;
 
-    scomm = 0;
-    srank = 0;
-    ssize = 1;
+    int scomm = 0;
+    int srank = 0;
+    int ssize = 1;
 #endif
 
     // Initialize printing
@@ -101,7 +94,7 @@ int main(int argc, char **argv) {
     delete shared_mem;
 
     // Finalize MPI
-#ifdef HAVE_MPI
+#ifdef MRCPP_HAS_MPI
     MPI_Finalize();
 #endif
 

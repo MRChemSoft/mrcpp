@@ -72,7 +72,11 @@ private:
     void printTimers() const;
 
     void initBandSizes();
-    int getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const;
+    int getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
+        int k = os.gt * this->nComp + os.ft;
+        return (*this->bandSizes[i])(depth, k);
+    }
+
     void calcBandSizeFactor(Eigen::MatrixXi &bs, int depth, const BandWidth &bw);
 
     void calcNode(MWNode<D> &node) override;

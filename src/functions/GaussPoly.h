@@ -48,7 +48,7 @@ namespace mrcpp {
  * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 
-template <int D> class GaussPoly final : public Gaussian<D> {
+template <int D> class GaussPoly : public Gaussian<D> {
 public:
     GaussPoly(double alpha = 0.0, double coef = 1.0, const Coord<D> &pos = {}, const std::array<int, D> &power = {});
     GaussPoly(const std::array<double, D> &alpha,

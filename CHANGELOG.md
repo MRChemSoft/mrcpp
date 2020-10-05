@@ -1,5 +1,11 @@
 # Change log
 
+## Version 1.3.5 2020-10-05
+
+### Fixed
+
+- Remove final qualifier GaussFunc/GaussPoly (fixing pybind11 bindings)
+
 ## Version 1.3.4 2020-10-02
 
 ### Fixed

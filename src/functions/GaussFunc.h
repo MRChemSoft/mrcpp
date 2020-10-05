@@ -45,7 +45,7 @@ namespace mrcpp {
  * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 
-template <int D> class GaussFunc final : public Gaussian<D> {
+template <int D> class GaussFunc : public Gaussian<D> {
 public:
     /** @returns New GaussFunc object
      *  @param[in] beta: Exponent, \f$ e^{-\beta r^2} \f$

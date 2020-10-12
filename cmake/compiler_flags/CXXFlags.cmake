@@ -19,7 +19,6 @@ set(CMAKE_CXX_EXTENSIONS FALSE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 if(ENABLE_ARCH_FLAGS)
-  include(${CMAKE_CURRENT_LIST_DIR}/set_compiler_flag.cmake)
   # iterate over list of flags and use the first one that is compatible with the
   # compiler in use
   if(CMAKE_CXX_COMPILER_ID MATCHES GNU)

@@ -26,7 +26,7 @@ builds are quite generic without architecture specific optimizations.
 
 ### From source including code examples
 
-To build MRCPP on with MPI+OpenMP parallelization:
+To build MRCPP from source with MPI+OpenMP parallelization:
 
     $ git clone git@github.com:MRChemSoft/mrcpp.git
     $ cd mrcpp
@@ -69,6 +69,10 @@ To install MRCPP in a Spack environment `myenv`:
     $ spack install mrcpp @1.3.6                    # tagged version (MPI+OpenMP)
     $ spack install mrcpp -mpi                      # latest version (OpenMP only)
 
+For information on available Spack builds:
+
+    $ spack info mrcpp
+
 
 ### Using EasyBuild
 
@@ -79,6 +83,6 @@ available):
     $ eb MRCPP-<version>-<toolchain> --robot
     $ module load MRCPP/<version>-<toolchain>
 
-
-See [EasyBuild](https://github.com/easybuilders/easybuild-easyconfigs/m/MRCPP)
+See
+[EasyBuild](https://github.com/easybuilders/easybuild-easyconfigs/tree/develop/easybuild/easyconfigs/m/MRCPP)
 for available `<versions>` and `<toolchains>`.

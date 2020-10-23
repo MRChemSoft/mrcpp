@@ -18,3 +18,67 @@ Sciences at UiT - The Arctic University of Norway.
 ### User support: [mrchem.slack.com](https://join.slack.com/t/mrchem/shared_invite/enQtNTI3MjMzNjM0NTk0LWNkODZjNTMwYmM4NmRmODExMjQzMDc3NThlMzNmNmIyNWQwM2YwOGY0OWY4NmNmNzE4ZmM2NzgxYzUzNDg3NDM)
 ### Documentation: [mrcpp.readthedocs.io](http://mrcpp.readthedocs.io)
 
+
+## Installation
+
+For optimal performance it is recommended to build from source, as the packaged
+builds are quite generic without architecture specific optimizations.
+
+### From source including code examples
+
+To build MRCPP on with MPI+OpenMP parallelization:
+
+    $ git clone git@github.com:MRChemSoft/mrcpp.git
+    $ cd mrcpp
+    $ ./setup --prefix=<install-dir> --enable-examples --omp -mpi --cxx=<mpi-compiler> <build-dir>
+    $ cd <build-dir>
+    $ make
+    $ make test
+    $ make install
+
+The `--enable-examples` will trigger compilation of the code snippets in the
+`examples/` directory. Each example will get a separate executable under
+`<build-dir>/bin`, but these are not installed.
+
+For more information on different kinds of builds, see
+[installation instructions](http://mrcpp.readthedocs.io/en/latest/install.html).
+
+
+### Using Conda
+
+To install MRCPP in a Conda environment `myenv`:
+
+    $ conda create -n myenv
+    $ conda activate myenv
+    $ conda install -c conda-forge mrcpp            # latest version (OpenMP only)
+    $ conda install -c conda-forge mrcpp=1.3.6      # tagged version (OpenMP only)
+    $ conda install -c conda-forge mrcpp=*openmpi*  # latest version (MPI+OpenMP)
+    $ conda install -c conda-forge mrcpp=*mpich*    # latest version (MPI+OpenMP)
+
+To list all available versions
+
+    $ conda search -c conda-forge mrcpp
+
+### Using Spack
+
+To install MRCPP in a Spack environment `myenv`:
+
+    $ spack env create myenv
+    $ spack env activate myenv
+    $ spack install mrcpp                           # latest version (MPI+OpenMP)
+    $ spack install mrcpp @1.3.6                    # tagged version (MPI+OpenMP)
+    $ spack install mrcpp -mpi                      # latest version (OpenMP only)
+
+
+### Using EasyBuild
+
+To install MRCPP in an EasyBuild/Lmod environment (only MPI+OpenMP version
+available):
+
+    $ eb MRCPP-<version>-<toolchain> --fetch
+    $ eb MRCPP-<version>-<toolchain> --robot
+    $ module load MRCPP/<version>-<toolchain>
+
+
+See [EasyBuild](https://github.com/easybuilders/easybuild-easyconfigs/m/MRCPP)
+for available `<versions>` and `<toolchains>`.

@@ -30,7 +30,7 @@ To build MRCPP from source with MPI+OpenMP parallelization:
 
     $ git clone git@github.com:MRChemSoft/mrcpp.git
     $ cd mrcpp
-    $ ./setup --prefix=<install-dir> --enable-examples --omp -mpi --cxx=<mpi-compiler> <build-dir>
+    $ ./setup --prefix=<install-dir> --enable-examples --omp --mpi --cxx=<mpi-compiler> <build-dir>
     $ cd <build-dir>
     $ make
     $ make test

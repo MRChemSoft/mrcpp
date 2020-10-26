@@ -46,6 +46,9 @@ For more information on different kinds of builds, see
 
 ### Using Conda
 
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/mrcpp/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/mrcpp/badges/downloads.svg)](https://anaconda.org/conda-forge/mrcpp)
+
 To install MRCPP in a Conda environment `myenv`:
 
     $ conda create -n myenv

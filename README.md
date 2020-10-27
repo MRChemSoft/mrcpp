@@ -54,10 +54,10 @@ To install MRCPP in a Conda environment `myenv`:
 
     $ conda create -n myenv
     $ conda activate myenv
-    $ conda install -c conda-forge mrcpp            # latest version (OpenMP only)
-    $ conda install -c conda-forge mrcpp=1.3.6      # tagged version (OpenMP only)
-    $ conda install -c conda-forge mrcpp=*openmpi*  # latest version (MPI+OpenMP)
-    $ conda install -c conda-forge mrcpp=*mpich*    # latest version (MPI+OpenMP)
+    $ conda install -c conda-forge mrcpp                # latest version (OpenMP only)
+    $ conda install -c conda-forge mrcpp=1.3.6          # tagged version (OpenMP only)
+    $ conda install -c conda-forge mrcpp=*=*openmpi*    # latest version (MPI+OpenMP)
+    $ conda install -c conda-forge mrcpp=*=*mpich*      # latest version (MPI+OpenMP)
 
 To list all available versions
 
@@ -69,9 +69,9 @@ To install MRCPP in a Spack environment `myenv`:
 
     $ spack env create myenv
     $ spack env activate myenv
-    $ spack install mrcpp                           # latest version (MPI+OpenMP)
-    $ spack install mrcpp @1.3.6                    # tagged version (MPI+OpenMP)
-    $ spack install mrcpp -mpi                      # latest version (OpenMP only)
+    $ spack install mrcpp                               # latest version (MPI+OpenMP)
+    $ spack install mrcpp @1.3.6                        # tagged version (MPI+OpenMP)
+    $ spack install mrcpp -mpi                          # latest version (OpenMP only)
 
 For information on available Spack builds:
 

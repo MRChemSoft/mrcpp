@@ -1,5 +1,14 @@
 # Change log
 
+## Version 1.3.6 2020-10-27
+
+### Fixed
+
+- Put OpenMP and MPI in CMake INTERFACE
+- Fix --arch-flags CMake option
+- Fix kramdown security issue
+- Document variuos packaging options
+
 ## Version 1.3.5 2020-10-05
 
 ### Fixed

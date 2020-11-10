@@ -1,0 +1,8 @@
+name: mrcpp-gha
+channels:
+  - conda-forge
+dependencies:
+  - cmake
+  - cxx-compiler
+  - eigen
+  - ninja

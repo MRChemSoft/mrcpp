@@ -1,0 +1,9 @@
+name: mrcpp-codecov
+channels:
+  - conda-forge
+dependencies:
+  - cmake
+  - cxx-compiler
+  - eigen
+  - lcov
+  - ninja

@@ -36,7 +36,7 @@ jobs:
     - name: Build
       shell: bash -l {0}
       run: |
-        cmake --build build --config $BUILD_TYPE --target install -- -v -d stats
+        cmake --build build --config $BUILD_TYPE -- -v -d stats
     
     - name: Test MRCPP and generate coverage report
       shell: bash -l {0}

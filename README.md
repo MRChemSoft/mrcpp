@@ -3,7 +3,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3606670.svg)](https://doi.org/10.5281/zenodo.3606670)
 [![License](https://img.shields.io/badge/license-%20LGPLv3-blue.svg)](../master/LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/mrcpp/badge/?version=latest)](http://mrcpp.readthedocs.io/en/latest/?badge=latest)
-[![Travis CI build status](https://travis-ci.org/MRChemSoft/mrcpp.svg?branch=master)](https://travis-ci.org/MRChemSoft/mrcpp)
+![Build and test MRCPP](https://github.com/MRChemSoft/mrcpp/workflows/Build%20and%20test%20MRCPP/badge.svg)
 [![CircleCI](https://circleci.com/gh/MRChemSoft/mrcpp/tree/master.svg?style=svg)](https://circleci.com/gh/MRChemSoft/mrcpp)
 [![codecov](https://codecov.io/gh/MRChemSoft/mrcpp/branch/master/graph/badge.svg)](https://codecov.io/gh/MRChemSoft/mrcpp)
 

@@ -48,7 +48,7 @@ jobs:
     - name: Configure
       shell: bash -l {0}
       run: |
-        python ./setup --type=$BUILD_TYPE --omp --enable-examples --generator=Ninja build
+        python ./setup --type=$BUILD_TYPE --omp --enable-examples --generator=Ninja --prefix=$GITHUB_WORKSPACE/Software/MRCPP build
     - name: Build
       shell: bash -l {0}
       run: |

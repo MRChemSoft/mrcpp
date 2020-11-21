@@ -674,7 +674,7 @@ template <int D> void MWNode<D>::getBounds(double *lb, double *ub) const {
     const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactor();
     int n = getScale();
     double p = std::pow(2.0, -n);
-    const int *l = getTranslation();
+    const NodeIndex<D> &l = getNodeIndex();
     for (int i = 0; i < D; i++) {
         lb[i] = sf[i] * (p * l[i]);
         ub[i] = sf[i] * (p * (l[i] + 1));
@@ -693,7 +693,7 @@ template <int D> int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
     int diffScale = nIdx.getScale() - getScale() - 1;
     assert(diffScale >= 0);
     for (int d = 0; d < D; d++) {
-        int bit = (nIdx.getTranslation()[d] >> (diffScale)) & 1;
+        int bit = (nIdx[d] >> (diffScale)) & 1;
         cIdx = cIdx + (bit << d);
     }
     assert(cIdx >= 0);
@@ -709,9 +709,9 @@ template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     assert(hasCoord(r));
     int cIdx = 0;
     double sFac = std::pow(2.0, -getScale());
-    const int *l = getTranslation();
+    const NodeIndex<D> &l = getNodeIndex();
     for (int d = 0; d < D; d++) {
-        if (r[d] > sFac * (l[d] + 0.5)) { cIdx = cIdx + (1 << d); }
+        if (r[d] > sFac * (l[d] + 0.5)) cIdx = cIdx + (1 << d);
     }
     assert(cIdx >= 0);
     assert(cIdx < getTDim());
@@ -725,9 +725,9 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
 
-    double sFac = std::pow(2.0, -this->getScale());
-    const int *l = this->getTranslation();
-    for (int d = 0; d < D; d++) { pts.col(d) = sFac * (roots.array() + double(l[d])); }
+    double sFac = std::pow(2.0, -getScale());
+    const NodeIndex<D> &l = getNodeIndex();
+    for (int d = 0; d < D; d++) pts.col(d) = sFac * (roots.array() + static_cast<double>(l[d]));
 }
 
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
@@ -737,11 +737,11 @@ template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
 
-    double sFac = std::pow(2.0, -(this->getScale() + 1));
-    const int *l = this->getTranslation();
+    double sFac = std::pow(2.0, -(getScale() + 1));
+    const NodeIndex<D> &l = getNodeIndex();
     for (int d = 0; d < D; d++) {
-        pts.row(d).segment(0, kp1) = sFac * (roots.array() + 2.0 * double(l[d]));
-        pts.row(d).segment(kp1, kp1) = sFac * (roots.array() + 2.0 * double(l[d]) + 1);
+        pts.row(d).segment(0, kp1) = sFac * (roots.array() + 2.0 * static_cast<double>(l[d]));
+        pts.row(d).segment(kp1, kp1) = sFac * (roots.array() + 2.0 * static_cast<double>(l[d]) + 1.0);
     }
 }
 
@@ -929,7 +929,7 @@ template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
 /** Test if a given coordinate is within the boundaries of the node. */
 template <int D> bool MWNode<D>::hasCoord(const Coord<D> &r) const {
     double sFac = std::pow(2.0, -getScale());
-    const int *l = getTranslation();
+    const NodeIndex<D> &l = getNodeIndex();
     //    println(1, "[" << r[0] << "," << r[1] << "," << r[2] << "]");
     //    println(1, "[" << l[0] << "," << l[1] << "," << l[2] << "]");
     //    println(1, *this);
@@ -962,11 +962,11 @@ template <int D> bool MWNode<D>::isCompatible(const MWNode<D> &node) {
  * overlapping support. */
 template <int D> bool MWNode<D>::isAncestor(const NodeIndex<D> &idx) const {
     int relScale = idx.getScale() - getScale();
-    if (relScale < 0) { return false; }
-    const int *l = getTranslation();
+    if (relScale < 0) return false;
+    const NodeIndex<D> &l = getNodeIndex();
     for (int d = 0; d < D; d++) {
-        int reqTransl = idx.getTranslation()[d] >> relScale;
-        if (l[d] != reqTransl) { return false; }
+        int reqTransl = idx[d] >> relScale;
+        if (l[d] != reqTransl) return false;
     }
     return true;
 }

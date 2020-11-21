@@ -86,10 +86,12 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
 
 void PHCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
-    int np1 = node.getScale() + 1;
+
+    const auto &idx = node.getNodeIndex();
+    int l = idx[1] - idx[0];
+    int np1 = idx.getScale() + 1;
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();
-    int l = node.getTranslation()[1] - node.getTranslation()[0];
     double two_np1 = std::pow(2.0, this->diff_order * np1);
     double *coefs = node.getCoefs();
 

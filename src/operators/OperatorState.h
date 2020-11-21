@@ -115,11 +115,11 @@ private:
     double *oData[D];
 
     void calcMaxDeltaL() {
-        const int *gl = this->gNode->getNodeIndex().getTranslation();
-        const int *fl = this->fIdx->getTranslation();
+        const auto &gl = this->gNode->getNodeIndex();
+        const auto &fl = *this->fIdx;
         int max_dl = 0;
         for (int d = 0; d < D; d++) {
-            int dl = abs(fl[d] - gl[d]);
+            int dl = std::abs(fl[d] - gl[d]);
             if (dl > max_dl) { max_dl = dl; }
         }
         this->maxDeltaL = max_dl;

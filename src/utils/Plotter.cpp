@@ -410,7 +410,7 @@ template <> void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::str
     double length = std::pow(2.0, -node.getScale());
     std::ostream &o = *this->fout;
 
-    for (int d = 0; d < 3; d++) origin[d] = node.getTranslation()[d] * length;
+    for (int d = 0; d < 3; d++) origin[d] = node.getNodeIndex()[d] * length;
 
     o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " "
       << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length

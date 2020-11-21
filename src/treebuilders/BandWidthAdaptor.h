@@ -44,13 +44,10 @@ private:
     const int bandWidth;
 
     bool splitNode(const MWNode<2> &node) const override {
-        const NodeIndex<2> &idx = node.getNodeIndex();
-        int lx = idx.getTranslation(0);
-        int ly = idx.getTranslation(1);
-        int dl = abs(lx - ly);
+        const auto &idx = node.getNodeIndex();
+        int dl = std::abs(idx[0] - idx[1]);
         // Within band width on NEXT scale
-        if ((lx == 0) and (2 * dl <= this->bandWidth)) { return true; }
-        return false;
+        return ((idx[0] == 0) and (2 * dl <= this->bandWidth));
     }
 };
 

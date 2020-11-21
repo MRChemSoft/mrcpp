@@ -43,7 +43,7 @@ BoundingBox<D>::BoundingBox(int n,
                             const std::array<int, D> &l,
                             const std::array<int, D> &nb,
                             const std::array<double, D> &sf)
-        : cornerIndex(n, l.data()) {
+        : cornerIndex(n, l) {
     setPeriodic(false);
     setNBoxes(nb);
     setScalingFactor(sf);
@@ -108,13 +108,12 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
 
 template <int D> void BoundingBox<D>::setDerivedParameters() {
     assert(this->totBoxes > 0);
-    int scale = this->cornerIndex.getScale();
-    const int *l = this->cornerIndex.getTranslation();
+    const NodeIndex<D> &cIdx = this->cornerIndex;
     for (int d = 0; d < D; d++) {
         assert(this->nBoxes[d] > 0);
-        this->unitLengths[d] = this->scalingFactor[d] * std::pow(2.0, -scale);
+        this->unitLengths[d] = this->scalingFactor[d] * std::pow(2.0, -cIdx.getScale());
         this->boxLengths[d] = this->unitLengths[d] * this->nBoxes[d];
-        this->lowerBounds[d] = l[d] * this->unitLengths[d];
+        this->lowerBounds[d] = cIdx[d] * this->unitLengths[d];
         this->upperBounds[d] = this->lowerBounds[d] + this->boxLengths[d];
     }
 }
@@ -139,22 +138,20 @@ template <int D> void BoundingBox<D>::setPeriodic(std::array<bool, D> pbc) {
 // Specialized for D=1 below
 template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     assert(bIdx >= 0 and bIdx <= this->totBoxes);
-    int l[D];
+    std::array<int, D> l;
     for (int d = D - 1; d >= 0; d--) {
         int ncells = 1;
-        for (int i = 0; i < d; i++) { ncells *= this->nBoxes[i]; }
+        for (int i = 0; i < d; i++) ncells *= this->nBoxes[i];
         double div = bIdx / ncells;
         double iint;
         std::modf(div, &iint);
-        l[d] = (int)iint;
+        l[d] = static_cast<int>(iint);
         bIdx -= ncells * l[d];
     }
 
-    int n = getScale();
-    const int *cl = this->cornerIndex.getTranslation();
-    for (int d = 0; d < D; d++) { l[d] += cl[d]; }
-    NodeIndex<D> nIdx(n, l);
-    return nIdx;
+    const NodeIndex<D> &cIdx = this->cornerIndex;
+    for (int d = 0; d < D; d++) l[d] += cIdx[d];
+    return NodeIndex<D>(getScale(), l);
 }
 
 // Specialized for D=1 below
@@ -184,21 +181,17 @@ template <int D> int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
 
 // Specialized for D=1 below
 template <int D> int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &nIdx) const {
-
     if (this->isPeriodic()) return 0;
 
-    int n = nIdx.getScale();
-    int cn = this->cornerIndex.getScale();
-    const int *l = nIdx.getTranslation();
-    const int *cl = this->cornerIndex.getTranslation();
-    int relScale = n - cn;
+    const NodeIndex<D> &cIdx = this->cornerIndex;
+    int relScale = nIdx.getScale() - cIdx.getScale();
     if (relScale < 0) return -1;
 
     int bIdx = 0;
     for (int d = D - 1; d >= 0; d--) {
         int ncells = 1;
         for (int i = 0; i < d; i++) { ncells *= this->nBoxes[i]; }
-        int reqTransl = (l[d] >> relScale) - cl[d];
+        int reqTransl = (nIdx[d] >> relScale) - cIdx[d];
         if (reqTransl < 0 or reqTransl >= this->nBoxes[d]) return -1;
         bIdx += ncells * reqTransl;
     }
@@ -249,11 +242,10 @@ template <> int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
 }
 
 template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
-    int n = getScale();
-    int cl = this->cornerIndex.getTranslation(0);
-    int l = bIdx + cl;
-    NodeIndex<1> nIdx(n, &l);
-    return nIdx;
+    const NodeIndex<1> &cIdx = this->cornerIndex;
+    int n = cIdx.getScale();
+    int l = bIdx + cIdx[0];
+    return NodeIndex<1>(n, {l});
 }
 
 template <> int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &nIdx) const {

@@ -33,117 +33,78 @@
 
 #include <iostream>
 
-#include "MRCPP/mrcpp_declarations.h"
-
 namespace mrcpp {
 
 template <int D> class NodeIndex final {
 public:
-    NodeIndex(int n = 0, const int *l = nullptr);
-    NodeIndex(const NodeIndex<D> &idx);
-    NodeIndex(const NodeIndex<D> &pIdx, int cIdx);
+    // regular constructors
+    NodeIndex(int n = 0, const std::array<int, D> &l = {})
+            : N(static_cast<short int>(n))
+            , L(l) {}
 
-    inline NodeIndex<D> &operator=(const NodeIndex<D> &idx);
-    inline bool operator==(const NodeIndex<D> &idx) const;
-    inline bool operator!=(const NodeIndex<D> &idx) const;
+    // relative constructors
+    NodeIndex<D> parent() const {
+        std::array<int, D> l;
+        for (int d = 0; d < D; d++) l[d] = (this->L[d] < 0) ? (this->L[d] - 1) / 2 : this->L[d] / 2;
+        return NodeIndex<D>(this->N - 1, l);
+    }
+    NodeIndex<D> child(int cIdx) const {
+        std::array<int, D> l;
+        for (int d = 0; d < D; d++) l[d] = (2 * this->L[d]) + ((cIdx >> d) & 1);
+        return NodeIndex<D>(this->N + 1, l);
+    }
 
-    void setScale(int n) { this->N = (short int)n; }
-    inline void setTranslation(const int *l);
+    // comparisons
+    bool operator!=(const NodeIndex<D> &idx) const { return not(*this == idx); }
+    bool operator==(const NodeIndex<D> &idx) const {
+        bool out = (this->N == idx.N) ? true : false;
+        for (int d = 0; d < D; d++) out &= (this->L[d] == idx.L[d]);
+        return out;
+    }
 
+    // setters
+    void setScale(int n) { this->N = static_cast<short int>(n); }
+    void setTranslation(const std::array<int, D> &l) { this->L = l; }
+
+    // value getters
     int getScale() const { return this->N; }
     int getTranslation(int d) const { return this->L[d]; }
-    int *getTranslation() { return this->L; }
-    const int *getTranslation() const { return this->L; }
 
+    // reference getters
+    int &operator[](int d) { return this->L[d]; }
+    const int &operator[](int d) const { return this->L[d]; }
+    std::array<int, D> &getTranslation() { return this->L; }
+    const std::array<int, D> &getTranslation() const { return this->L; }
+
+    // ostream printer
     friend std::ostream &operator<<(std::ostream &o, const NodeIndex<D> &idx) { return idx.print(o); }
-    friend class NodeIndexComp<D>;
 
 private:
-    short int N;
-    int L[D];
+    short int N;          ///< Length scale index 2^N
+    std::array<int, D> L; ///< Translation index [x,y,z,...]
 
-    std::ostream &print(std::ostream &o) const;
-};
-
-template <int D> NodeIndex<D>::NodeIndex(int n, const int *l) {
-    this->N = (short int)n;
-    setTranslation(l);
-}
-
-template <int D> NodeIndex<D>::NodeIndex(const NodeIndex<D> &idx) {
-    this->N = idx.N;
-    setTranslation(idx.L);
-}
-
-template <int D> NodeIndex<D>::NodeIndex(const NodeIndex<D> &pIdx, int cIdx) {
-    this->N = pIdx.N + 1;
-    const int *l = pIdx.getTranslation();
-    for (int d = 0; d < D; d++) { this->L[d] = (2 * l[d]) + ((cIdx >> d) & 1); }
-}
-
-template <int D> NodeIndex<D> &NodeIndex<D>::operator=(const NodeIndex<D> &idx) {
-    if (&idx == this) { return *this; }
-    this->N = idx.N;
-    setTranslation(idx.L);
-    return *this;
-}
-
-template <int D> void NodeIndex<D>::setTranslation(const int *l) {
-    for (int d = 0; d < D; d++) {
-        if (l != nullptr) {
-            this->L[d] = l[d];
-        } else {
-            this->L[d] = 0;
-        }
-    }
-}
-
-template <int D> bool NodeIndex<D>::operator==(const NodeIndex<D> &idx) const {
-    if (this->N != idx.N) return false;
-    for (int d = 0; d < D; d++) {
-        if (this->L[d] != idx.L[d]) return false;
-    }
-    return true;
-}
-
-template <int D> bool NodeIndex<D>::operator!=(const NodeIndex<D> &idx) const {
-    if (this->N != idx.N) return true;
-    for (int d = 0; d < D; d++) {
-        if (this->L[d] != idx.L[d]) return true;
-    }
-    return false;
-}
-
-template <int D> std::ostream &NodeIndex<D>::print(std::ostream &o) const {
-    o << "[ " << this->N << " | ";
-    for (int d = 0; d < D - 1; d++) { o << this->L[d] << ", "; }
-    o << this->L[D - 1] << "]";
-    return o;
-}
-
-template <int D> class NodeIndexComp {
-public:
-    bool operator()(const NodeIndex<D> &a, const NodeIndex<D> &b) const {
-        if (a.N < b.N) { return true; }
-        if (a.N > b.N) { return false; }
-        for (int d = 0; d < D; d++) {
-            if (a.L[d] == b.L[d]) { continue; }
-            if (a.L[d] < b.L[d]) { return true; }
-            return false;
-        }
-        return false;
-    }
-
-    bool operator()(const NodeIndex<D> *a, const NodeIndex<D> *b) const {
-        if (a->N < b->N) { return true; }
-        if (a->N > b->N) { return false; }
-        for (int d = 0; d < D; d++) {
-            if (a->L[d] == b->L[d]) { continue; }
-            if (a->L[d] < b->L[d]) { return true; }
-            return false;
-        }
-        return false;
+    std::ostream &print(std::ostream &o) const {
+        o << "[ " << this->N << " | ";
+        for (int d = 0; d < D - 1; d++) o << this->L[d] << ", ";
+        o << this->L[D - 1] << "]";
+        return o;
     }
 };
+
+/** @brief Check whether indices are directly related (not sibling) */
+template <int D> bool related(const NodeIndex<D> &a, const NodeIndex<D> &b) {
+    const auto &sr = (a.getScale() < b.getScale()) ? a : b;
+    const auto &jr = (a.getScale() >= b.getScale()) ? a : b;
+    auto rel_scale = jr.getScale() - sr.getScale();
+
+    bool related = true;
+    for (int d = 0; d < D; d++) related &= (sr[d] == (jr[d] >> rel_scale));
+    return related;
+}
+
+/** @brief Check whether indices are siblings, i.e. same parent */
+template <int D> bool siblings(const NodeIndex<D> &a, const NodeIndex<D> &b) {
+    return (a.parent() == b.parent());
+}
 
 } // namespace mrcpp

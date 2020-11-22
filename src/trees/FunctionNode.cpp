@@ -62,11 +62,11 @@ template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
 
     double arg[D];
     double n_factor = std::pow(2.0, this->getScale());
-    const int *l_factor = this->getTranslation();
-    for (int i = 0; i < D; i++) { arg[i] = r[i] * n_factor - (double)l_factor[i]; }
+    const NodeIndex<D> &l_factor = this->getNodeIndex();
+    for (int i = 0; i < D; i++) arg[i] = r[i] * n_factor - static_cast<double>(l_factor[i]);
 
     int fact[D + 1];
-    for (int i = 0; i < D + 1; i++) { fact[i] = math_utils::ipow(this->getKp1(), i); }
+    for (int i = 0; i < D + 1; i++) fact[i] = math_utils::ipow(this->getKp1(), i);
 
     MatrixXd val(this->getKp1(), D);
     const ScalingBasis &basis = this->getMWTree().getMRA().getScalingBasis();

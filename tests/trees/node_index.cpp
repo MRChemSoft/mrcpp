@@ -32,12 +32,19 @@ using namespace mrcpp;
 namespace node_index {
 
 template <int D> void testConstructors();
+template <int D> void testRelations();
 template <int D> void testCompare();
 
 TEST_CASE("NodeIndex constructors", "[node_index_constructor], [node_index]") {
     SECTION("1D") { testConstructors<1>(); }
     SECTION("2D") { testConstructors<2>(); }
     SECTION("3D") { testConstructors<3>(); }
+}
+
+TEST_CASE("NodeIndex family relations", "[node_index_relations], [node_index]") {
+    SECTION("1D") { testRelations<1>(); }
+    SECTION("2D") { testRelations<2>(); }
+    SECTION("3D") { testRelations<3>(); }
 }
 
 SCENARIO("Node indices can be compared", "[node_index_compare], [node_index]") {
@@ -60,11 +67,15 @@ template <int D> void testConstructors() {
 
     SECTION("Child constructor") {
         int i = D;
-        auto *cIdx = new NodeIndex<D>(*nIdx, i);
-        REQUIRE(cIdx->getScale() == (nIdx->getScale() + 1));
-        finalize(&cIdx);
+        auto cIdx = nIdx->child(i);
+        REQUIRE(cIdx.getScale() == (nIdx->getScale() + 1));
     }
 
+    SECTION("Parent constructor") {
+        int i = D;
+        auto cIdx = nIdx->parent();
+        REQUIRE(cIdx.getScale() == (nIdx->getScale() - 1));
+    }
     SECTION("Default constructor") {
         auto *cIdx = new NodeIndex<D>();
         SECTION("Assignment operator") {
@@ -74,6 +85,61 @@ template <int D> void testConstructors() {
         finalize(&cIdx);
     }
     finalize(&nIdx);
+}
+
+template <int D> void testRelations() {
+    for (int n = -2; n < 3; n++) {
+        for (int l = -2; l < 5; l++) {
+            NodeIndex<D> parent(n, {l});
+            auto grand = parent.parent();
+            auto child_0 = parent.child(D);
+            auto child_00 = child_0.child(D);
+            auto child_01 = child_0.child(D - 1);
+            auto child_1 = parent.child(D - 1);
+            auto child_10 = child_1.child(D);
+            auto child_11 = child_1.child(D - 1);
+            REQUIRE(related<D>(grand, grand));
+            REQUIRE(related<D>(parent, grand));
+            REQUIRE(related<D>(grand, child_0));
+            REQUIRE(related<D>(child_1, grand));
+            REQUIRE(related<D>(child_00, grand));
+            REQUIRE(related<D>(grand, child_01));
+            REQUIRE(related<D>(grand, child_10));
+            REQUIRE(related<D>(child_11, grand));
+
+            REQUIRE(related<D>(parent, grand));
+            REQUIRE(related<D>(parent, parent));
+            REQUIRE(related<D>(child_0, parent));
+            REQUIRE(related<D>(parent, child_1));
+            REQUIRE(related<D>(child_00, parent));
+            REQUIRE(related<D>(parent, child_01));
+            REQUIRE(related<D>(child_10, parent));
+            REQUIRE(related<D>(parent, child_11));
+
+            REQUIRE(related<D>(grand, child_0));
+            REQUIRE(related<D>(child_0, parent));
+            REQUIRE(!related<D>(child_1, child_0));
+            REQUIRE(related<D>(child_0, child_01));
+            REQUIRE(related<D>(child_00, child_0));
+            REQUIRE(!related<D>(child_10, child_0));
+            REQUIRE(!related<D>(child_0, child_11));
+
+            REQUIRE(related<D>(child_1, grand));
+            REQUIRE(related<D>(parent, child_1));
+            REQUIRE(!related<D>(child_0, child_1));
+            REQUIRE(related<D>(child_11, child_1));
+            REQUIRE(!related<D>(child_1, child_00));
+            REQUIRE(related<D>(child_0, child_00));
+            REQUIRE(!related<D>(child_01, child_1));
+
+            REQUIRE(siblings<D>(child_1, child_0));
+            REQUIRE(siblings<D>(child_01, child_00));
+            REQUIRE(!siblings<D>(child_01, child_11));
+            REQUIRE(!siblings<D>(child_11, child_1));
+            REQUIRE(!siblings<D>(grand, child_1));
+            REQUIRE(!siblings<D>(grand, parent));
+        }
+    }
 }
 
 template <int D> void testCompare() {
@@ -100,11 +166,7 @@ template <int D> void testCompare() {
         }
     }
     WHEN("aIdx is given a different translation") {
-        const int *l1 = aIdx->getTranslation();
-        int l2[D];
-        for (int d = 0; d < D; d++) { l2[d] = l1[d]; }
-        l2[D - 1]++;
-        aIdx->setTranslation(l2);
+        (*aIdx)[D - 1]++;
         THEN("aIdx != bIdx") {
             REQUIRE(*aIdx != *bIdx);
             REQUIRE_FALSE(*aIdx == *bIdx);

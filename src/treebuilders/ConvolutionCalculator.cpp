@@ -147,24 +147,22 @@ MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, 
         const NodeIndex<D> &cIdx = fWorld.getCornerIndex();
         const NodeIndex<D> &gIdx = gNode.getNodeIndex();
 
-        int l_start[D];
-        int l_end[D];
         int nbox[D];
+        int scale = gNode.getScale();
+        NodeIndex<D> sIdx(scale); // start index
+        NodeIndex<D> eIdx(scale); // end index
         for (int i = 0; i < D; i++) {
-            l_start[i] = gIdx.getTranslation(i) - width;
-            l_end[i] = gIdx.getTranslation(i) + width;
+            sIdx[i] = gIdx[i] - width;
+            eIdx[i] = gIdx[i] + width;
             // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << depth);
-            int c_i = cIdx.getTranslation(i) * (1 << depth);
-            if (l_start[i] < c_i and !periodic) { l_start[i] = c_i; }
-            if (l_end[i] > c_i + nboxes - 1 and !periodic) { l_end[i] = c_i + nboxes - 1; }
-            nbox[i] = l_end[i] - l_start[i] + 1;
+            int c_i = cIdx[i] * (1 << depth);
+            if (sIdx[i] < c_i and !periodic) sIdx[i] = c_i;
+            if (eIdx[i] > c_i + nboxes - 1 and !periodic) eIdx[i] = c_i + nboxes - 1;
+            nbox[i] = eIdx[i] - sIdx[i] + 1;
         }
 
-        int scale = gNode.getScale();
-        NodeIndex<D> idx(scale, l_start);
-
-        fillOperBand(band, idx_band, idx, nbox, D - 1);
+        fillOperBand(band, idx_band, sIdx, nbox, D - 1);
     }
     return band;
 }
@@ -176,21 +174,20 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
                                             NodeIndex<D> &idx,
                                             const int *nbox,
                                             int dim) {
-    int *l = idx.getTranslation();
-    int l_start = l[dim];
+    int l_start = idx[dim];
     for (int j = 0; j < nbox[dim]; j++) {
         // Recurse until dim == 0
         if (dim > 0) {
             fillOperBand(band, idx_band, idx, nbox, dim - 1);
-            l[dim]++;
+            idx[dim]++;
             continue;
         }
         MWNode<D> &fNode = this->fTree->getNode(idx);
         idx_band.push_back(idx);
         band->push_back(&fNode);
-        l[dim]++;
+        idx[dim]++;
     }
-    l[dim] = l_start;
+    idx[dim] = l_start;
 }
 
 template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
@@ -264,17 +261,15 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
-    NodeIndex<D> &fIdx = *os.fIdx;
-
-    const int *gTransl = gNode.getTranslation();
-    const int *fTransl = fIdx.getTranslation();
+    const NodeIndex<D> &fIdx = *os.fIdx;
+    const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
 
     double oNorm = 1.0;
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        int oTransl = fTransl[d] - gTransl[d];
+        int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.
         //  Not needed if the thresholding at the end of this routine is active.

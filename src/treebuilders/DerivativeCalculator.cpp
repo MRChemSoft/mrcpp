@@ -144,7 +144,7 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
     int width = this->oper->getMaxBandWidth();
     for (int w = -width; w <= width; w++) {
         NodeIndex<D> idx_w(idx_0);
-        idx_w.getTranslation()[this->applyDir] += w;
+        idx_w[this->applyDir] += w;
 
         // returns -1 if out of bounds and 0 for periodic
         int rIdx_w = this->fTree->getRootIndex(idx_w);
@@ -162,17 +162,15 @@ template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &o
     const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
-    NodeIndex<D> &fIdx = *os.fIdx;
-
-    const int *gTransl = gNode.getTranslation();
-    const int *fTransl = fIdx.getTranslation();
+    const NodeIndex<D> &fIdx = *os.fIdx;
+    const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
 
     double oNorm = 1.0;
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        int oTransl = fTransl[d] - gTransl[d];
+        int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.
         //  Not needed if the thresholding at the end of this routine is active.

@@ -34,8 +34,8 @@ namespace mrcpp {
 namespace periodic {
 
 template <int D> void indx_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic) {
-    int translation[D];
     if (idx.getScale() < 0) MSG_ABORT("Negative value in bit-shift");
+    std::array<int, D> translation;
     int two_n = 1 << idx.getScale();
     for (auto i = 0; i < D; i++) {
         translation[i] = idx.getTranslation(i);

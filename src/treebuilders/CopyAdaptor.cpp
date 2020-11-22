@@ -56,11 +56,10 @@ template <int D> void CopyAdaptor<D>::setBandWidth(int *bw) {
 template <int D> bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
     const NodeIndex<D> &idx = node.getNodeIndex();
     for (int c = 0; c < node.getTDim(); c++) {
-        NodeIndex<D> cIdx(idx, c);
         for (int d = 0; d < D; d++) {
             for (int bw = -this->bandWidth[d]; bw <= this->bandWidth[d]; bw++) {
-                NodeIndex<D> bwIdx(cIdx);
-                bwIdx.getTranslation()[d] += bw;
+                NodeIndex<D> bwIdx = idx.child(c);
+                bwIdx[d] += bw;
                 for (int i = 0; i < this->tree_vec.size(); i++) {
                     const FunctionTree<D> &func_i = get_func(tree_vec, i);
                     const MWNode<D> *node_i = func_i.findNode(bwIdx);

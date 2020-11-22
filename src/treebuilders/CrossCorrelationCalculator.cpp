@@ -67,13 +67,12 @@ template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, Cros
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
     for (int i = 0; i < t_dim; i++) {
-        NodeIndex<2> cIdx(idx, i);
-        const int *l = cIdx.getTranslation();
+        NodeIndex<2> l = idx.child(i);
         int l_a = l[1] - l[0] - 1;
         int l_b = l[1] - l[0];
 
-        NodeIndex<1> idx_a(scale, &l_a);
-        NodeIndex<1> idx_b(scale, &l_b);
+        NodeIndex<1> idx_a(scale, {l_a});
+        NodeIndex<1> idx_b(scale, {l_b});
 
         const MWNode<1> &node_a = this->kernel->getNode(idx_a);
         const MWNode<1> &node_b = this->kernel->getNode(idx_b);

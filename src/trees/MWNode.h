@@ -59,7 +59,6 @@ public:
     }
     int getSerialIx() const { return this->serialIx; }
     void setSerialIx(int Ix) { this->serialIx = Ix; }
-    const int *getTranslation() const { return getNodeIndex().getTranslation(); }
 
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
     const HilbertPath<D> &getHilbertPath() const { return this->hilbertPath; }

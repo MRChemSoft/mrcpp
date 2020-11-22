@@ -88,8 +88,8 @@ template <int D> void testNodeFetchers() {
     NodeIndex<D> *root = nullptr;
     initialize(&root);
     const NodeIndex<D> idx_0(*root);
-    const NodeIndex<D> idx_1(idx_0, cIdx);
-    const NodeIndex<D> idx_2(idx_1, cIdx);
+    const NodeIndex<D> idx_1 = idx_0.child(cIdx);
+    const NodeIndex<D> idx_2 = idx_1.child(cIdx);
     finalize(&root);
 
     MultiResolutionAnalysis<D> *mra = nullptr;

@@ -148,7 +148,7 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
         child_p->maxSquareNorm = -1.0;
         child_p->maxWSquareNorm = -1.0;
 
-        child_p->nodeIndex = NodeIndex<2>(parent.getNodeIndex(), cIdx);
+        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);
 
         child_p->n_coefs = this->sizeNodeCoeff;

@@ -180,7 +180,7 @@ template <int D> void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
         child_p->maxSquareNorm = -1.0;
         child_p->maxWSquareNorm = -1.0;
 
-        child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
+        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
         child_p->n_coefs = this->sizeNodeCoeff;
@@ -229,7 +229,7 @@ template <int D> void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent)
         child_p->maxSquareNorm = -1.0;
         child_p->maxWSquareNorm = -1.0;
 
-        child_p->nodeIndex = NodeIndex<D>(parent.getNodeIndex(), cIdx);
+        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
         child_p->n_coefs = this->sizeGenNodeCoeff;

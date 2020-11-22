@@ -23,10 +23,8 @@ template <class T> void finalize(T **obj) {
 template <int D> void initialize(mrcpp::NodeIndex<D> **idx) {
     if (idx == nullptr) INVALID_ARG_ABORT;
     if (*idx != nullptr) INVALID_ARG_ABORT;
-    int scale = 1;
-    int l[D];
-    for (int d = 0; d < D; d++) { l[d] = d - 1; }
-    *idx = new mrcpp::NodeIndex<D>(scale, l);
+    *idx = new mrcpp::NodeIndex<D>(1);
+    for (int d = 0; d < D; d++) (**idx)[d] = d - 1;
 }
 
 template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
@@ -37,8 +35,8 @@ template <int D> void testInitial(const mrcpp::NodeIndex<D> *idx) {
 
     for (int d = 0; d < D; d++) {
         const int l = d - 1;
-        REQUIRE((l == idx->getTranslation(d)));
-        REQUIRE((l == idx->getTranslation()[d]));
+        REQUIRE((l == (*idx)[d]));
+        REQUIRE((l == (*idx)[d]));
     }
 }
 

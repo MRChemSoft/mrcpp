@@ -99,9 +99,9 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     LebesgueIterator<2> it(this);
     while (it.next()) {
         int n = it.getNode().getDepth();
-        const int *l = it.getNode().getTranslation();
-        maxTransl[n] = std::max(maxTransl[n], abs(l[0]));
-        maxTransl[n] = std::max(maxTransl[n], abs(l[1]));
+        const NodeIndex<2> &l = it.getNode().getNodeIndex();
+        maxTransl[n] = std::max(maxTransl[n], std::abs(l[0]));
+        maxTransl[n] = std::max(maxTransl[n], std::abs(l[1]));
     }
 }
 
@@ -126,8 +126,7 @@ void OperatorTree::setupOperNodeCache() {
         auto **nodes = new OperatorNode *[n_nodes];
         int j = 0;
         for (int i = n_transl; i >= 0; i--) {
-            int l[2] = {0, i};
-            NodeIndex<2> idx(scale, l);
+            NodeIndex<2> idx(scale, {0, i});
             // Generated OperatorNodes are still OperatorNodes
             if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
@@ -137,8 +136,7 @@ void OperatorTree::setupOperNodeCache() {
             }
         }
         for (int i = 1; i <= n_transl; i++) {
-            int l[2] = {i, 0};
-            NodeIndex<2> idx(scale, l);
+            NodeIndex<2> idx(scale, {i, 0});
             if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;

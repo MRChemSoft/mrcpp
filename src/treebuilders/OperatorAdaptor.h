@@ -41,8 +41,8 @@ protected:
             if (node.getComponentNorm(i) > 0.0) { chkCompNorm = 1; }
         }
 
-        const int *l = node.getTranslation();
-        int chkTransl = (l[0] == 0 or l[1] == 0);
+        const auto &idx = node.getNodeIndex();
+        int chkTransl = (idx[0] == 0 or idx[1] == 0);
 
         int split = 1;
         split *= chkTransl;

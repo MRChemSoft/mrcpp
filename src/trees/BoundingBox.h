@@ -31,6 +31,8 @@
 #include "NodeIndex.h"
 #include "utils/details.h"
 
+#include "MRCPP/mrcpp_declarations.h"
+
 namespace mrcpp {
 
 /** @class BoundingBox

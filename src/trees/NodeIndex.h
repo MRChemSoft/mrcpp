@@ -57,7 +57,7 @@ public:
     // comparisons
     bool operator!=(const NodeIndex<D> &idx) const { return not(*this == idx); }
     bool operator==(const NodeIndex<D> &idx) const {
-        bool out = (this->N == idx.N) ? true : false;
+        bool out = (this->N == idx.N);
         for (int d = 0; d < D; d++) out &= (this->L[d] == idx.L[d]);
         return out;
     }
@@ -69,19 +69,11 @@ public:
     // value getters
     int getScale() const { return this->N; }
     int getTranslation(int d) const { return this->L[d]; }
+    std::array<int, D> getTranslation() const { return this->L; }
 
     // reference getters
     int &operator[](int d) { return this->L[d]; }
     const int &operator[](int d) const { return this->L[d]; }
-    std::array<int, D> &getTranslation() { return this->L; }
-    const std::array<int, D> &getTranslation() const { return this->L; }
-
-    // ostream printer
-    friend std::ostream &operator<<(std::ostream &o, const NodeIndex<D> &idx) { return idx.print(o); }
-
-private:
-    short int N;          ///< Length scale index 2^N
-    std::array<int, D> L; ///< Translation index [x,y,z,...]
 
     std::ostream &print(std::ostream &o) const {
         o << "[ " << this->N << " | ";
@@ -89,7 +81,16 @@ private:
         o << this->L[D - 1] << "]";
         return o;
     }
+
+private:
+    short int N;          ///< Length scale index 2^N
+    std::array<int, D> L; ///< Translation index [x,y,z,...]
 };
+
+/** @brief ostream printer */
+template <int D> std::ostream &operator<<(std::ostream &o, const NodeIndex<D> &idx) {
+    return idx.print(o);
+}
 
 /** @brief Check whether indices are directly related (not sibling) */
 template <int D> bool related(const NodeIndex<D> &a, const NodeIndex<D> &b) {

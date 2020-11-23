@@ -235,7 +235,7 @@ template <int D> int MWTree<D>::getNGenNodes() {
 
 /** @returns Size of all MW coefs in the tree, in kB */
 template <int D> int MWTree<D>::getSizeNodes() const {
-    auto nCoefs = getNNodes() * getTDim() * getKp1_d();
+    auto nCoefs = 1ll * getNNodes() * getTDim() * getKp1_d();
     return sizeof(double) * nCoefs / 1024;
 }
 

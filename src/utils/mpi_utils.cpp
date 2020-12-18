@@ -28,7 +28,7 @@
 #include "Timer.h"
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
-#include "trees/FunctionNodeAllocator.h"
+#include "trees/ProjectedNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -91,7 +91,7 @@ SharedMemory::~SharedMemory() {
  */
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
-    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
+    auto &allocator = tree.getProjectedNodeAllocator();
 
     if (nChunks < 0) {
         nChunks = allocator.getNChunksUsed();
@@ -129,7 +129,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
 template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
-    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
+    auto &allocator = tree.getProjectedNodeAllocator();
 
     if (nChunks < 0) {
         MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, tag, comm, &status);
@@ -185,7 +185,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
 template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm) {
 #ifdef MRCPP_HAS_MPI
     Timer t1;
-    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
+    auto &allocator = tree.getProjectedNodeAllocator();
 
     int size, rank;
     MPI_Comm_size(comm, &size);

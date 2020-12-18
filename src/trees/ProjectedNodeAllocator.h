@@ -38,12 +38,12 @@
 
 namespace mrcpp {
 
-template <int D> class FunctionNodeAllocator final : public NodeAllocator<D> {
+template <int D> class ProjectedNodeAllocator final : public NodeAllocator<D> {
 public:
-    FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *sh_mem);
-    FunctionNodeAllocator(const FunctionNodeAllocator<D> &tree) = delete;
-    FunctionNodeAllocator<D> &operator=(const FunctionNodeAllocator<D> &tree) = delete;
-    ~FunctionNodeAllocator() override;
+    ProjectedNodeAllocator(FunctionTree<D> *tree, SharedMemory *sh_mem);
+    ProjectedNodeAllocator(const ProjectedNodeAllocator<D> &tree) = delete;
+    ProjectedNodeAllocator<D> &operator=(const ProjectedNodeAllocator<D> &tree) = delete;
+    ~ProjectedNodeAllocator() override;
 
     void allocRoots(MWTree<D> &tree) override;
     void allocChildren(MWNode<D> &parent) override;

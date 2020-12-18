@@ -25,11 +25,11 @@
 
 #include <fstream>
 
-#include "FunctionNodeAllocator.h"
 #include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "HilbertIterator.h"
 #include "ProjectedNode.h"
+#include "ProjectedNodeAllocator.h"
 
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
@@ -55,7 +55,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         : MWTree<D>(mra)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
-    this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem);
+    this->nodeAllocator_p = new ProjectedNodeAllocator<D>(this, sh_mem);
     this->genNodeAllocator_p = new GenNodeAllocator<D>(this);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
@@ -89,7 +89,7 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
-    this->getFunctionNodeAllocator().clear(this->rootBox.size());
+    this->getProjectedNodeAllocator().clear(this->rootBox.size());
 }
 
 /** @brief Write the tree structure to disk, for later use
@@ -106,7 +106,7 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     if (not f.is_open()) MSG_ERROR("Unable to open file");
 
     this->deleteGenerated();
-    FunctionNodeAllocator<D> &allocator = this->getFunctionNodeAllocator();
+    auto &allocator = this->getProjectedNodeAllocator();
 
     // Write size of tree
     int nChunks = allocator.getNChunksUsed();
@@ -141,7 +141,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // Read size of tree
     int nChunks;
     f.read((char *)&nChunks, sizeof(int));
-    FunctionNodeAllocator<D> &allocator = this->getFunctionNodeAllocator();
+    auto &allocator = this->getProjectedNodeAllocator();
 
     // Read tree data, chunk by chunk
     int count = 1;
@@ -456,11 +456,11 @@ template <int D> void FunctionTree<D>::map(FMap fmap) {
 }
 
 template <int D> int FunctionTree<D>::getNChunks() {
-    return this->getFunctionNodeAllocator().getNChunks();
+    return this->getProjectedNodeAllocator().getNChunks();
 }
 
 template <int D> int FunctionTree<D>::getNChunksUsed() {
-    return this->getFunctionNodeAllocator().getNChunksUsed();
+    return this->getProjectedNodeAllocator().getNChunksUsed();
 }
 
 template <int D> void FunctionTree<D>::getEndValues(VectorXd &data) {
@@ -502,7 +502,7 @@ template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
 }
 
 template <int D> void FunctionTree<D>::printSerialIndices() {
-    FunctionNodeAllocator<D> &allocator = this->getFunctionNodeAllocator();
+    ProjectedNodeAllocator<D> &allocator = this->getProjectedNodeAllocator();
     int n = 0;
     for (int iChunk = 0; iChunk < allocator.getNChunks(); iChunk++) {
         int iShift = iChunk * allocator.maxNodesPerChunk;
@@ -543,7 +543,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
-    int nChunks = this->getFunctionNodeAllocator().shrinkChunks();
+    int nChunks = this->getProjectedNodeAllocator().shrinkChunks();
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;

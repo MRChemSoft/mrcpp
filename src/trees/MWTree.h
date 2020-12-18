@@ -53,7 +53,7 @@ public:
     int getKp1() const { return this->order + 1; }
     int getKp1_d() const { return this->kp1_d; }
     int getDim() const { return D; }
-    int getTDim() const { return this->tDim; }
+    int getTDim() const { return (1 << D); }
     int getNNodes(int depth = -1) const;
     int getNEndNodes() const { return this->endNodeTable.size(); }
     int getNGenNodes();
@@ -131,9 +131,6 @@ protected:
     // Parameters that are set in construction and should never change
     const int nThreads;
     const MultiResolutionAnalysis<D> MRA;
-
-    // Static default parameters
-    const static int tDim = (1 << D);
 
     // Constant parameters that are derived internally
     const int order;

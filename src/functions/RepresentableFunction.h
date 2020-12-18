@@ -42,7 +42,7 @@ namespace mrcpp {
 template <int D> class RepresentableFunction {
 public:
     /* Access rank of function as RepresentableFunction<D>::dim */
-    static constexpr int dim = D;
+    // static constexpr int dim = D;
 
     RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
     RepresentableFunction(const std::vector<double> &a, const std::vector<double> &b)

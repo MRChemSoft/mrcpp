@@ -50,13 +50,10 @@ public:
     int getKp1_d() const { return getMWTree().getKp1_d(); }
     int getOrder() const { return getMWTree().getOrder(); }
     int getScalingType() const { return getMWTree().getMRA().getScalingBasis().getScalingType(); }
-    int getTDim() const { return getMWTree().getTDim(); }
+    int getTDim() const { return (1 << D); }
     int getDepth() const { return getNodeIndex().getScale() - getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
-    int getNChildren() const {
-        if (isBranchNode()) return getTDim();
-        return 0;
-    }
+    int getNChildren() const { return (isBranchNode()) ? getTDim() : 0; }
     int getSerialIx() const { return this->serialIx; }
     void setSerialIx(int Ix) { this->serialIx = Ix; }
 

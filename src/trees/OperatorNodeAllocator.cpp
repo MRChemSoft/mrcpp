@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "SerialOperatorTree.h"
+#include "OperatorNodeAllocator.h"
 #include "OperatorNode.h"
 #include "OperatorTree.h"
 #include "utils/Printer.h"
@@ -43,8 +43,8 @@ int NOtrees = 0;
  * ~GenNode. Serial tree nodes are not using the destructors, but explicitely call to deallocNodes or deallocGenNodes
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
-SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
-        : SerialTree<2>(tree, nullptr)
+OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
+        : NodeAllocator<2>(tree, nullptr)
         , sNodes(nullptr)
         , lastNode(nullptr) {
 
@@ -66,7 +66,7 @@ SerialOperatorTree::SerialOperatorTree(OperatorTree *tree)
 }
 
 /** SerialTree destructor. */
-SerialOperatorTree::~SerialOperatorTree() {
+OperatorNodeAllocator::~OperatorNodeAllocator() {
     for (auto &nodeChunk : this->nodeChunks) delete[](char *) nodeChunk;
     for (auto &nodeCoeffChunk : this->nodeCoeffChunks) delete[] nodeCoeffChunk;
 
@@ -78,7 +78,7 @@ SerialOperatorTree::~SerialOperatorTree() {
     MRCPP_DESTROY_OMP_LOCK();
 }
 
-void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
+void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
     int sIx;
     double *coefs_p;
     // reserve place for nRoots
@@ -126,7 +126,7 @@ void SerialOperatorTree::allocRoots(MWTree<2> &tree) {
     }
 }
 
-void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
+void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
     int sIx;
     double *coefs_p;
     // NB: serial tree MUST generate all children consecutively
@@ -175,16 +175,16 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
     }
 }
 
-void SerialOperatorTree::allocChildrenNoCoeff(MWNode<2> &parent) {
+void OperatorNodeAllocator::allocChildrenNoCoeff(MWNode<2> &parent) {
     NOT_IMPLEMENTED_ABORT;
 }
 
-void SerialOperatorTree::allocGenChildren(MWNode<2> &parent) {
+void OperatorNodeAllocator::allocGenChildren(MWNode<2> &parent) {
     NOT_REACHED_ABORT;
 }
 
 // return pointer to the last active node or NULL if failed
-OperatorNode *SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     *serialIx = this->nNodes;
     int chunkIx = (*serialIx) % (this->maxNodesPerChunk);
 
@@ -234,7 +234,7 @@ OperatorNode *SerialOperatorTree::allocNodes(int nAlloc, int *serialIx, double *
     return newNode;
 }
 
-void SerialOperatorTree::deallocNodes(int serialIx) {
+void OperatorNodeAllocator::deallocNodes(int serialIx) {
     if (this->nNodes < 0) {
         println(0, "minNodes exceeded " << this->nNodes);
         this->nNodes++;
@@ -253,11 +253,11 @@ void SerialOperatorTree::deallocNodes(int serialIx) {
     }
 }
 
-void SerialOperatorTree::deallocGenNodes(int serialIx) {
+void OperatorNodeAllocator::deallocGenNodes(int serialIx) {
     NOT_REACHED_ABORT;
 }
 
-void SerialOperatorTree::deallocGenNodeChunks() {
+void OperatorNodeAllocator::deallocGenNodeChunks() {
     NOT_REACHED_ABORT;
 }
 

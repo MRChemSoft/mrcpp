@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "MWTree.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
@@ -33,7 +33,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D>
-SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
+NodeAllocator<D>::NodeAllocator(MWTree<D> *tree, SharedMemory *mem)
         : nNodes(0)
         , maxNodesPerChunk(0)
         , sizeNodeCoeff(0)
@@ -48,8 +48,8 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
 #endif
 }
 
-template class SerialTree<1>;
-template class SerialTree<2>;
-template class SerialTree<3>;
+template class NodeAllocator<1>;
+template class NodeAllocator<2>;
+template class NodeAllocator<3>;
 
 } // namespace mrcpp

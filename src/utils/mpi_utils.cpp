@@ -28,7 +28,7 @@
 #include "Timer.h"
 #include "trees/FunctionTree.h"
 #include "trees/ProjectedNode.h"
-#include "trees/SerialFunctionTree.h"
+#include "trees/FunctionNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -91,11 +91,11 @@ SharedMemory::~SharedMemory() {
  */
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
-    SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
-    if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
+    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
+    if (allocator.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     if (nChunks < 0) {
-        nChunks = sTree.getNChunksUsed();
+        nChunks = allocator.getNChunksUsed();
         MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, tag, comm);
         println(10, " Sending " << nChunks << " chunks");
     }
@@ -103,11 +103,11 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
     Timer t1;
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag + iChunk + 1, comm);
+        count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+        MPI_Send(allocator.nodeChunks[iChunk], count, MPI_BYTE, dst, tag + iChunk + 1, comm);
         if (Coeff) {
-            count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-            MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm);
+            count = allocator.sizeNodeCoeff * allocator.maxNodesPerChunk;
+            MPI_Send(allocator.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm);
         }
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
@@ -130,7 +130,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
 template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
-    SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
+    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
 
     if (nChunks < 0) {
         MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, tag, comm, &status);
@@ -140,35 +140,35 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
     Timer t1;
     int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        if (iChunk < sTree.nodeChunks.size()) {
-            sTree.sNodes = sTree.nodeChunks[iChunk];
+        if (iChunk < allocator.nodeChunks.size()) {
+            allocator.sNodes = allocator.nodeChunks[iChunk];
         } else {
             double *sNodesCoeff;
-            if (sTree.isShared()) {
+            if (allocator.isShared()) {
                 // for coefficients, take from the shared memory block
-                SharedMemory *shMem = sTree.getMemory();
+                SharedMemory *shMem = allocator.getMemory();
                 sNodesCoeff = shMem->sh_end_ptr;
-                shMem->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
+                shMem->sh_end_ptr += (allocator.sizeNodeCoeff * allocator.maxNodesPerChunk);
                 // may increase size dynamically in the future
                 if (shMem->sh_max_ptr < shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
-                if (Coeff) sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
+                if (Coeff) sNodesCoeff = new double[allocator.sizeNodeCoeff * allocator.maxNodesPerChunk];
             }
-            if (Coeff) sTree.nodeCoeffChunks.push_back(sNodesCoeff);
-            sTree.sNodes = (ProjectedNode<D> *)new char[sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
-            sTree.nodeChunks.push_back(sTree.sNodes);
+            if (Coeff) allocator.nodeCoeffChunks.push_back(sNodesCoeff);
+            allocator.sNodes = (ProjectedNode<D> *)new char[allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
+            allocator.nodeChunks.push_back(allocator.sNodes);
         }
-        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag + iChunk + 1, comm, &status);
+        count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+        MPI_Recv(allocator.nodeChunks[iChunk], count, MPI_BYTE, src, tag + iChunk + 1, comm, &status);
         if (Coeff) {
-            count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-            MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag + iChunk + 1001, comm, &status);
+            count = allocator.sizeNodeCoeff * allocator.maxNodesPerChunk;
+            MPI_Recv(allocator.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag + iChunk + 1001, comm, &status);
         }
     }
     println(10, " Time receive                " << std::setw(30) << t1.elapsed());
 
     Timer t2;
-    sTree.rewritePointers(Coeff);
+    allocator.rewritePointers(Coeff);
     println(10, " Time rewrite pointers       " << std::setw(30) << t2.elapsed());
 #endif
 }
@@ -186,8 +186,8 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
 template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm) {
 #ifdef MRCPP_HAS_MPI
     Timer t1;
-    SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
-    if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
+    FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
+    if (allocator.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     int size, rank;
     MPI_Comm_size(comm, &size);
@@ -197,15 +197,15 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
         if (dst == src) continue;
         int dst_tag = tag * (dst + 1);
         if (rank == src) {
-            int nChunks = sTree.nodeChunks.size();
+            int nChunks = allocator.nodeChunks.size();
             println(10, " Sending " << nChunks << " chunks");
             MPI_Send(&nChunks, sizeof(int), MPI_BYTE, dst, dst_tag, comm);
             int count = 1;
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-                count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+                count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
                 println(10, " Sending chunk " << iChunk);
-                MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag + iChunk + 1, comm);
-                count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+                MPI_Send(allocator.nodeChunks[iChunk], count, MPI_BYTE, dst, dst_tag + iChunk + 1, comm);
+                count = allocator.sizeNodeCoeff * allocator.maxNodesPerChunk;
             }
         }
         if (rank == dst) {
@@ -217,21 +217,21 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
 
             int count = 1;
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-                if (iChunk < sTree.nodeChunks.size()) {
-                    sTree.sNodes = sTree.nodeChunks[iChunk];
+                if (iChunk < allocator.nodeChunks.size()) {
+                    allocator.sNodes = allocator.nodeChunks[iChunk];
                 } else {
-                    if (iChunk == 0) sTree.getMemory()->sh_end_ptr = sTree.getMemory()->sh_start_ptr;
-                    double *sNodesCoeff = sTree.getMemory()->sh_end_ptr;
-                    sTree.getMemory()->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
-                    sTree.nodeCoeffChunks.push_back(sNodesCoeff);
-                    sTree.sNodes = (ProjectedNode<D> *)new char[sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
-                    sTree.nodeChunks.push_back(sTree.sNodes);
+                    if (iChunk == 0) allocator.getMemory()->sh_end_ptr = allocator.getMemory()->sh_start_ptr;
+                    double *sNodesCoeff = allocator.getMemory()->sh_end_ptr;
+                    allocator.getMemory()->sh_end_ptr += (allocator.sizeNodeCoeff * allocator.maxNodesPerChunk);
+                    allocator.nodeCoeffChunks.push_back(sNodesCoeff);
+                    allocator.sNodes = (ProjectedNode<D> *)new char[allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
+                    allocator.nodeChunks.push_back(allocator.sNodes);
                 }
-                count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
+                count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
                 println(10, " Receiving chunk " << iChunk);
-                MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag + iChunk + 1, comm, &status);
+                MPI_Recv(allocator.nodeChunks[iChunk], count, MPI_BYTE, src, dst_tag + iChunk + 1, comm, &status);
             }
-            sTree.rewritePointers();
+            allocator.rewritePointers();
         }
     }
     println(10, " Time share                  " << std::setw(30) << t1.elapsed());

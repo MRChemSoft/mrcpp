@@ -56,7 +56,7 @@ public:
 
     friend class MWNode<2>;
     friend class OperatorTree;
-    friend class SerialOperatorTree;
+    friend class OperatorNodeAllocator;
 
 protected:
     OperatorNode()

@@ -38,7 +38,6 @@
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
 #include "trees/HilbertIterator.h"
-#include "trees/SerialFunctionTree.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"

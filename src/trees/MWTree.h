@@ -111,7 +111,7 @@ public:
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
-    SerialTree<D> *getSerialTree() { return this->serialTree_p; }
+    NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
 
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
@@ -120,9 +120,9 @@ public:
     friend class ProjectedNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;
-    friend class SerialTree<D>;
-    friend class SerialFunctionTree<D>;
-    friend class SerialOperatorTree;
+    friend class NodeAllocator<D>;
+    friend class FunctionNodeAllocator<D>;
+    friend class OperatorNodeAllocator;
 
 protected:
     // Parameters that are set in construction and should never change
@@ -136,7 +136,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    SerialTree<D> *serialTree_p;
+    NodeAllocator<D> *nodeAllocator_p{nullptr};
 
     // Tree data
     int nNodes;

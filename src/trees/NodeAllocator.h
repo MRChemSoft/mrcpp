@@ -40,12 +40,12 @@
 
 namespace mrcpp {
 
-template <int D> class SerialTree {
+template <int D> class NodeAllocator {
 public:
-    SerialTree(MWTree<D> *tree, SharedMemory *mem);
-    SerialTree(const SerialTree<D> &tree) = delete;
-    SerialTree<D> &operator=(const SerialTree<D> &tree) = delete;
-    virtual ~SerialTree() = default;
+    NodeAllocator(MWTree<D> *tree, SharedMemory *mem);
+    NodeAllocator(const NodeAllocator<D> &tree) = delete;
+    NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
+    virtual ~NodeAllocator() = default;
 
     MWTree<D> *getTree() { return this->tree_p; }
     SharedMemory *getMemory() { return this->shMem; }

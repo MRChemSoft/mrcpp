@@ -35,7 +35,7 @@ public:
     void genChildren() override;
     void deleteChildren() override;
 
-    friend class SerialFunctionTree<D>;
+    friend class FunctionNodeAllocator<D>;
 
 protected:
     ProjectedNode()

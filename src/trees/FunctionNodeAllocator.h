@@ -36,17 +36,17 @@
 
 #include <vector>
 
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "utils/omp_utils.h"
 
 namespace mrcpp {
 
-template <int D> class SerialFunctionTree final : public SerialTree<D> {
+template <int D> class FunctionNodeAllocator final : public NodeAllocator<D> {
 public:
-    SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *sh_mem);
-    SerialFunctionTree(const SerialFunctionTree<D> &tree) = delete;
-    SerialFunctionTree<D> &operator=(const SerialFunctionTree<D> &tree) = delete;
-    ~SerialFunctionTree() override;
+    FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *sh_mem);
+    FunctionNodeAllocator(const FunctionNodeAllocator<D> &tree) = delete;
+    FunctionNodeAllocator<D> &operator=(const FunctionNodeAllocator<D> &tree) = delete;
+    ~FunctionNodeAllocator() override;
 
     void allocRoots(MWTree<D> &tree) override;
     void allocChildren(MWNode<D> &parent) override;

@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "SerialFunctionTree.h"
+#include "FunctionNodeAllocator.h"
 #include "FunctionTree.h"
 #include "GenNode.h"
 #include "ProjectedNode.h"
@@ -44,8 +44,8 @@ namespace mrcpp {
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
 template <int D>
-SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *mem)
-        : SerialTree<D>(tree, mem)
+FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem)
+        : NodeAllocator<D>(tree, mem)
         , nGenNodes(0)
         , lastNode(nullptr)
         , lastGenNode(nullptr) {
@@ -67,8 +67,8 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
         this->maxNodesPerChunk = (sizePerChunk / this->sizeNodeCoeff / sizeof(double) / 8) * 8;
     }
 
-    this->lastNode = // position just after last allocated node, i.e. where to put next node
-        static_cast<ProjectedNode<D> *>(this->sNodes);
+    // position just after last allocated node, i.e. where to put next node
+    this->lastNode = static_cast<ProjectedNode<D> *>(this->sNodes);
     this->lastGenNode = this->sGenNodes; // position just after last allocated Gen node, i.e. where to put next node
 
     // make virtual table pointers
@@ -83,8 +83,7 @@ SerialFunctionTree<D>::SerialFunctionTree(FunctionTree<D> *tree, SharedMemory *m
     MRCPP_INIT_OMP_LOCK();
 }
 
-/** SerialTree destructor. */
-template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
+template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[](char *)(this->nodeChunks[i]);
     if (not this->isShared()) // if the data is shared, it must be freed by MPI_Win_free
@@ -98,7 +97,7 @@ template <int D> SerialFunctionTree<D>::~SerialFunctionTree() {
 }
 
 /** reset the start node counter */
-template <int D> void SerialFunctionTree<D>::clear(int n) {
+template <int D> void FunctionNodeAllocator<D>::clear(int n) {
     for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
     this->nNodes = n;
     int chunk = n / this->maxNodesPerChunk;
@@ -110,7 +109,7 @@ template <int D> void SerialFunctionTree<D>::clear(int n) {
     }
 }
 
-template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
+template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     int sIx;
     double *coefs_p;
     // reserve place for nRoots
@@ -158,7 +157,7 @@ template <int D> void SerialFunctionTree<D>::allocRoots(MWTree<D> &tree) {
     }
 }
 
-template <int D> void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
+template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
     int sIx;
     double *coefs_p;
     // NB: serial tree MUST generate all children consecutively
@@ -207,7 +206,7 @@ template <int D> void SerialFunctionTree<D>::allocChildren(MWNode<D> &parent) {
     }
 }
 
-template <int D> void SerialFunctionTree<D>::allocChildrenNoCoeff(MWNode<D> &parent) {
+template <int D> void FunctionNodeAllocator<D>::allocChildrenNoCoeff(MWNode<D> &parent) {
     int sIx;
     // all children must be generated at once if several threads are active
     int nChildren = parent.getTDim();
@@ -253,7 +252,7 @@ template <int D> void SerialFunctionTree<D>::allocChildrenNoCoeff(MWNode<D> &par
     }
 }
 
-template <int D> void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent) {
+template <int D> void FunctionNodeAllocator<D>::allocGenChildren(MWNode<D> &parent) {
     int sIx;
     double *coefs_p;
     // NB: serial tree MUST generate all children consecutively
@@ -303,7 +302,7 @@ template <int D> void SerialFunctionTree<D>::allocGenChildren(MWNode<D> &parent)
 }
 
 // return pointer to the last active node or NULL if failed
-template <int D> ProjectedNode<D> *SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+template <int D> ProjectedNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -377,15 +376,14 @@ template <int D> ProjectedNode<D> *SerialFunctionTree<D>::allocNodes(int nAlloc,
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
-template <int D> ProjectedNode<D> *SerialFunctionTree<D>::allocNodes(int nAlloc, int *serialIx) {
+template <int D> ProjectedNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
     if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
         // we want nodes allocated simultaneously to be allocated on the same piece.
         // possibly jump over the last nodes from the old chunk
-        this->nNodes =
-            this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+        this->nNodes = this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
 
         int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
 
@@ -436,7 +434,7 @@ template <int D> ProjectedNode<D> *SerialFunctionTree<D>::allocNodes(int nAlloc,
     return newNode;
 }
 
-template <int D> void SerialFunctionTree<D>::deallocNodes(int serialIx) {
+template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
     if (this->nNodes < 0) {
         println(0, "minNodes exceeded " << this->nNodes);
         this->nNodes++;
@@ -456,7 +454,7 @@ template <int D> void SerialFunctionTree<D>::deallocNodes(int serialIx) {
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
-template <int D> int SerialFunctionTree<D>::shrinkChunks() {
+template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     int nAlloc = (1 << D);
     if (this->maxNodesPerChunk * this->nodeChunks.size() <=
         this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
@@ -567,7 +565,7 @@ template <int D> int SerialFunctionTree<D>::shrinkChunks() {
 }
 
 // return pointer to the last active node or NULL if failed
-template <int D> GenNode<D> *SerialFunctionTree<D>::allocGenNodes(int nAlloc, int *serialIx, double **coefs_p) {
+template <int D> GenNode<D> *FunctionNodeAllocator<D>::allocGenNodes(int nAlloc, int *serialIx, double **coefs_p) {
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->nGenNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -634,7 +632,7 @@ template <int D> GenNode<D> *SerialFunctionTree<D>::allocGenNodes(int nAlloc, in
     return newNode;
 }
 
-template <int D> void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
+template <int D> void FunctionNodeAllocator<D>::deallocGenNodes(int serialIx) {
     MRCPP_SET_OMP_LOCK();
     if (this->nGenNodes < 0) {
         println(0, "minNodes exceeded " << this->nGenNodes);
@@ -659,7 +657,7 @@ template <int D> void SerialFunctionTree<D>::deallocGenNodes(int serialIx) {
     MRCPP_UNSET_OMP_LOCK();
 }
 
-template <int D> void SerialFunctionTree<D>::deallocGenNodeChunks() {
+template <int D> void FunctionNodeAllocator<D>::deallocGenNodeChunks() {
     for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->genNodeChunks.size(); i++) delete[](char *)(this->genNodeChunks[i]);
     this->genNodeCoeffChunks.clear();
@@ -668,7 +666,7 @@ template <int D> void SerialFunctionTree<D>::deallocGenNodeChunks() {
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
-template <int D> void SerialFunctionTree<D>::rewritePointers(bool Coeff) {
+template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool Coeff) {
 
     this->getTree()->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
@@ -748,11 +746,11 @@ template <int D> void SerialFunctionTree<D>::rewritePointers(bool Coeff) {
     this->lastNode = this->nodeChunks[ichunk] + inode;
 }
 
-template <int D> int SerialFunctionTree<D>::getNChunksUsed() const {
+template <int D> int FunctionNodeAllocator<D>::getNChunksUsed() const {
     return (this->nNodes + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk;
 }
 
-template class SerialFunctionTree<1>;
-template class SerialFunctionTree<2>;
-template class SerialFunctionTree<3>;
+template class FunctionNodeAllocator<1>;
+template class FunctionNodeAllocator<2>;
+template class FunctionNodeAllocator<3>;
 } // namespace mrcpp

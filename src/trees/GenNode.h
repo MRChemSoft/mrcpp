@@ -45,7 +45,7 @@ public:
     void setValues(const Eigen::VectorXd &vec) override;
     void getValues(Eigen::VectorXd &vec) override;
 
-    friend class SerialFunctionTree<D>;
+    friend class FunctionNodeAllocator<D>;
 
 protected:
     GenNode()

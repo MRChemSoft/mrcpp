@@ -31,7 +31,7 @@
 #include "GenNode.h"
 #include "MWTree.h"
 #include "ProjectedNode.h"
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -43,7 +43,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 /** MWNode default constructor.
- *  Should be used only by SerialTree to obtain
+ *  Should be used only by NodeAllocator to obtain
  *  virtual table pointers for the derived classes. */
 template <int D>
 MWNode<D>::MWNode()
@@ -599,13 +599,13 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
 
 template <int D> void MWNode<D>::createChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getSerialTree()->allocChildren(*this);
+    this->getMWTree().getNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 
 template <int D> void MWNode<D>::createChildrenNoCoeff() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getSerialTree()->allocChildrenNoCoeff(*this);
+    this->getMWTree().getNodeAllocator().allocChildrenNoCoeff(*this);
     this->setIsBranchNode();
 }
 

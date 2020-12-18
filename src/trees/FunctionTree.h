@@ -85,15 +85,11 @@ public:
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    SerialFunctionTree<D> *getSerialFunctionTree() { return static_cast<SerialFunctionTree<D> *>(this->serialTree_p); }
     void printSerialIndices();
 
-    const FunctionNode<D> &getEndFuncNode(int i) const {
-        return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i));
-    }
-    const FunctionNode<D> &getRootFuncNode(int i) const {
-        return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i));
-    }
+    FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
+    const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
+    const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
     void makeCoeffVector(std::vector<double *> &coefs,
                          std::vector<int> &indices,

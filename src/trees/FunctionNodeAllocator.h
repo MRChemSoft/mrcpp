@@ -34,10 +34,7 @@
 
 #pragma once
 
-#include <vector>
-
 #include "NodeAllocator.h"
-#include "utils/omp_utils.h"
 
 namespace mrcpp {
 
@@ -51,55 +48,23 @@ public:
     void allocRoots(MWTree<D> &tree) override;
     void allocChildren(MWNode<D> &parent) override;
     void allocChildrenNoCoeff(MWNode<D> &parent) override;
-    void allocGenChildren(MWNode<D> &parent) override;
-
     void deallocNodes(int serialIx) override;
-    void deallocGenNodes(int serialIx) override;
-    void deallocGenNodeChunks() override;
 
-    int getNChunks() const { return this->nodeChunks.size(); }
+    int getNChunks() const override { return this->nodeChunks.size(); }
     int getNChunksUsed() const;
-
     int shrinkChunks();
 
-    std::vector<ProjectedNode<D> *> nodeChunks;
-    std::vector<double *> nodeCoeffChunks;
-
-    ProjectedNode<D> *sNodes; // serial ProjectedNodes
-    GenNode<D> *sGenNodes;    // serial GenNodes
-
-    std::vector<GenNode<D> *> genNodeChunks;
-    std::vector<double *> genNodeCoeffChunks;
-
-    int nGenNodes; // number of GenNodes already defined
-
-    double **genCoeffStack;
-
-    //    int *genNodeStackStatus;
-    std::vector<int> genNodeStackStatus;
-
     void rewritePointers(bool Coeff = true);
-
     void clear(int n);
 
+    char *cvptr_ProjectedNode{nullptr};      // virtual table pointer for ProjectedNode
+    ProjectedNode<D> *sNodes{nullptr};       // serial ProjectedNodes
+    ProjectedNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
+    std::vector<ProjectedNode<D> *> nodeChunks;
+
 protected:
-    int maxGenNodes;      // max number of Gen nodes that can be defined
-    int sizeGenNodeCoeff; // size of coeff for one Gen node
-
-    char *cvptr_ProjectedNode; // virtual table pointer for ProjectedNode
-    char *cvptr_GenNode;       // virtual table pointer for GenNode
-
-    ProjectedNode<D> *lastNode; // pointer just after the last active node, i.e. where to put next node
-    GenNode<D> *lastGenNode;    // pointer just after the last active Gen node, i.e. where to put next node
-
-    ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
     ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx); // Does not allocate coefficents
-    GenNode<D> *allocGenNodes(int nAlloc, int *serialIx, double **coefs_p);
-
-private:
-#ifdef MRCPP_HAS_OMP
-    omp_lock_t omp_lock;
-#endif
+    ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
 };
 
 } // namespace mrcpp

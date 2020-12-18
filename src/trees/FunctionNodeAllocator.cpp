@@ -25,7 +25,6 @@
 
 #include "FunctionNodeAllocator.h"
 #include "FunctionTree.h"
-#include "GenNode.h"
 #include "ProjectedNode.h"
 #include "utils/Printer.h"
 #include "utils/mpi_utils.h"
@@ -46,19 +45,13 @@ namespace mrcpp {
 template <int D>
 FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem)
         : NodeAllocator<D>(tree, mem)
-        , nGenNodes(0)
-        , lastNode(nullptr)
-        , lastGenNode(nullptr) {
+        , lastNode(nullptr) {
 
-    // Size for GenNodes chunks. ProjectedNodes will be 8 times larger
-    this->sizeGenNodeCoeff = this->tree_p->getKp1_d();       // One block
-    this->sizeNodeCoeff = (1 << D) * this->sizeGenNodeCoeff; // TDim  blocks
+    this->sizeNodeCoeff = (1 << D) * this->tree_p->getKp1_d(); // TDim  blocks
     println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff * sizeof(double) / 1024);
-    println(10, "SizeGenNode Coeff (kB) " << this->sizeGenNodeCoeff * sizeof(double) / 1024);
 
-    int sizePerChunk =
-        2 * 1024 *
-        1024; // 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible
+    // 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible
+    int sizePerChunk = 2 * 1024 * 1024;
     if (D < 3) {
         // define rather from number of nodes per chunk
         this->maxNodesPerChunk = 64;
@@ -69,29 +62,21 @@ FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMem
 
     // position just after last allocated node, i.e. where to put next node
     this->lastNode = static_cast<ProjectedNode<D> *>(this->sNodes);
-    this->lastGenNode = this->sGenNodes; // position just after last allocated Gen node, i.e. where to put next node
 
     // make virtual table pointers
     auto *tmpNode = new ProjectedNode<D>();
     this->cvptr_ProjectedNode = *(char **)(tmpNode);
     delete tmpNode;
 
-    auto *tmpGenNode = new GenNode<D>();
-    this->cvptr_GenNode = *(char **)(tmpGenNode);
-    delete tmpGenNode;
-
     MRCPP_INIT_OMP_LOCK();
 }
 
 template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
-    for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[](char *)(this->nodeChunks[i]);
     if (not this->isShared()) // if the data is shared, it must be freed by MPI_Win_free
         for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
-    for (int i = 0; i < this->genNodeChunks.size(); i++) delete[](char *)(this->genNodeChunks[i]);
 
     this->nodeStackStatus.clear();
-    this->genNodeStackStatus.clear();
 
     MRCPP_DESTROY_OMP_LOCK();
 }
@@ -249,55 +234,6 @@ template <int D> void FunctionNodeAllocator<D>::allocChildrenNoCoeff(MWNode<D> &
 
         sIx++;
         child_p++;
-    }
-}
-
-template <int D> void FunctionNodeAllocator<D>::allocGenChildren(MWNode<D> &parent) {
-    int sIx;
-    double *coefs_p;
-    // NB: serial tree MUST generate all children consecutively
-    // all children must be generated at once if several threads are active
-    int nChildren = parent.getTDim();
-    GenNode<D> *child_p = this->allocGenNodes(nChildren, &sIx, &coefs_p);
-
-    // position of first child
-    parent.childSerialIx = sIx; // not used fro Gennodes?
-    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        parent.children[cIdx] = child_p;
-
-        *(char **)(child_p) = this->cvptr_GenNode;
-
-        child_p->tree = parent.tree;
-        child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
-
-        child_p->maxSquareNorm = -1.0;
-        child_p->maxWSquareNorm = -1.0;
-
-        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
-        child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
-
-        child_p->n_coefs = this->sizeGenNodeCoeff;
-        child_p->coefs = coefs_p;
-
-        child_p->lockX = 0;
-        child_p->serialIx = sIx;
-        child_p->parentSerialIx = parent.serialIx;
-        child_p->childSerialIx = -1;
-
-        child_p->status = 0;
-
-        child_p->clearNorms();
-        child_p->setIsLeafNode();
-        child_p->setIsAllocated();
-        child_p->clearHasCoefs();
-        child_p->setIsGenNode();
-
-        child_p->tree->incrementGenNodeCount();
-
-        sIx++;
-        child_p++;
-        coefs_p += this->sizeGenNodeCoeff;
     }
 }
 
@@ -564,107 +500,6 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     return nChunksStart - nChunks;
 }
 
-// return pointer to the last active node or NULL if failed
-template <int D> GenNode<D> *FunctionNodeAllocator<D>::allocGenNodes(int nAlloc, int *serialIx, double **coefs_p) {
-    MRCPP_SET_OMP_LOCK();
-    *serialIx = this->nGenNodes;
-    int chunkIx = *serialIx % (this->maxNodesPerChunk);
-
-    // Not necessarily wrong, but new:
-    assert(nAlloc == (1 << D));
-
-    if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
-        // start on new chunk
-        // we want nodes allocated simultaneously to be allocated on the same chunk.
-        // possibly jump over the last nodes from the old chunk
-        this->nGenNodes =
-            this->maxNodesPerChunk * ((this->nGenNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
-
-        int chunk = this->nGenNodes / this->maxNodesPerChunk; // find the right chunk
-
-        // careful: nodeChunks.size() is an unsigned int
-        if (chunk + 1 > this->genNodeChunks.size()) {
-            // need to allocate new chunk
-            this->sGenNodes = (GenNode<D> *)new char[this->maxNodesPerChunk * sizeof(GenNode<D>)];
-            for (int i = 0; i < this->maxNodesPerChunk; i++) {
-                this->sGenNodes[i].serialIx = -1;
-                this->sGenNodes[i].parentSerialIx = -1;
-                this->sGenNodes[i].childSerialIx = -1;
-            }
-            this->genNodeChunks.push_back(this->sGenNodes);
-            auto *sGenNodesCoeff = new double[this->sizeGenNodeCoeff * this->maxNodesPerChunk];
-            this->genNodeCoeffChunks.push_back(sGenNodesCoeff);
-            // allocate new chunk in nodeStackStatus
-            int oldsize = this->genNodeStackStatus.size();
-            int newsize = oldsize + this->maxNodesPerChunk;
-            for (int i = oldsize; i < newsize; i++) this->genNodeStackStatus.push_back(0);
-            this->maxGenNodes = newsize;
-
-            if (chunk % 100 == 99 and D == 3)
-                println(10,
-                        "\n number of GenNodes " << this->nGenNodes << ",number of GenNodechunks now "
-                                                 << this->genNodeChunks.size() << ", total size coeff  (MB) "
-                                                 << (this->nGenNodes / 1024) * this->sizeGenNodeCoeff / 128);
-        }
-        this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes % (this->maxNodesPerChunk);
-        *serialIx = this->nGenNodes;
-        chunkIx = *serialIx % (this->maxNodesPerChunk);
-    }
-    assert((this->nGenNodes + nAlloc - 1) / this->maxNodesPerChunk < this->genNodeChunks.size());
-
-    GenNode<D> *newNode = this->lastGenNode;
-    GenNode<D> *newNode_cp = newNode;
-
-    int chunk = this->nGenNodes / this->maxNodesPerChunk; // find the right chunk
-    *coefs_p = this->genNodeCoeffChunks[chunk] + chunkIx * this->sizeGenNodeCoeff;
-
-    for (int i = 0; i < nAlloc; i++) {
-        newNode_cp->serialIx = *serialIx + i; // Until overwritten!
-        if (this->genNodeStackStatus[*serialIx + i] != 0)
-            println(0, *serialIx + i << " NodeStackStatus: not available " << this->genNodeStackStatus[*serialIx + i]);
-        this->genNodeStackStatus[*serialIx + i] = 1;
-        newNode_cp++;
-    }
-    this->nGenNodes += nAlloc;
-    this->lastGenNode += nAlloc;
-
-    MRCPP_UNSET_OMP_LOCK();
-    return newNode;
-}
-
-template <int D> void FunctionNodeAllocator<D>::deallocGenNodes(int serialIx) {
-    MRCPP_SET_OMP_LOCK();
-    if (this->nGenNodes < 0) {
-        println(0, "minNodes exceeded " << this->nGenNodes);
-        this->nGenNodes++;
-    }
-    this->genNodeStackStatus[serialIx] = 0; // mark as available
-    if (serialIx == this->nGenNodes - 1) {  // top of stack
-        int topStack = this->nGenNodes;
-        while (this->genNodeStackStatus[topStack - 1] == 0) {
-            topStack--;
-            if (topStack < 1) {
-                // remove all the GenNodeChunks once there are noe more genNodes
-                this->deallocGenNodeChunks();
-                break;
-            }
-        }
-        this->nGenNodes = topStack; // move top of stack
-        // has to redefine lastGenNode
-        int chunk = this->nGenNodes / this->maxNodesPerChunk; // find the right chunk
-        this->lastGenNode = this->genNodeChunks[chunk] + this->nGenNodes % (this->maxNodesPerChunk);
-    }
-    MRCPP_UNSET_OMP_LOCK();
-}
-
-template <int D> void FunctionNodeAllocator<D>::deallocGenNodeChunks() {
-    for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
-    for (int i = 0; i < this->genNodeChunks.size(); i++) delete[](char *)(this->genNodeChunks[i]);
-    this->genNodeCoeffChunks.clear();
-    this->genNodeChunks.clear();
-    this->genNodeStackStatus.clear();
-}
-
 /** Traverse tree and redefine pointer, counter and tables. */
 template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool Coeff) {
 
@@ -679,15 +514,6 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool Coeff) {
     int nodecount = this->nodeChunks.size() * this->maxNodesPerChunk;
     while (nodecount > this->nodeStackStatus.size()) this->nodeStackStatus.push_back(0);
     this->maxNodes = this->nodeStackStatus.size();
-
-    // clear all gennodes and their chunks:
-    for (int i = 0; i < this->genNodeCoeffChunks.size(); i++) delete[] this->genNodeCoeffChunks[i];
-    for (int i = 0; i < this->genNodeChunks.size(); i++) delete[](char *)(this->genNodeChunks[i]);
-    this->genNodeCoeffChunks.clear();
-    this->genNodeStackStatus.clear();
-    this->genNodeChunks.clear();
-    this->nGenNodes = 0;
-    this->maxGenNodes = 0;
 
     NodeBox<D> &rBox = this->getTree()->getRootBox();
     MWNode<D> **roots = rBox.getNodes();

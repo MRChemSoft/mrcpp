@@ -92,7 +92,6 @@ SharedMemory::~SharedMemory() {
 template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
     FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
-    if (allocator.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     if (nChunks < 0) {
         nChunks = allocator.getNChunksUsed();
@@ -187,7 +186,6 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
 #ifdef MRCPP_HAS_MPI
     Timer t1;
     FunctionNodeAllocator<D> &allocator = tree.getFunctionNodeAllocator();
-    if (allocator.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
 
     int size, rank;
     MPI_Comm_size(comm, &size);

@@ -23,40 +23,43 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
+/**
+ *
+ *
+ *  \date Jul, 2016
+ *  \author Peter Wind <peter.wind@uit.no> \n
+ *  CTCC, University of Tromsø
  *
  */
 
 #pragma once
 
-#include "FunctionNode.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
-template <int D> class GenNode final : public FunctionNode<D> {
+template <int D> class GenNodeAllocator final : public NodeAllocator<D> {
 public:
-    double getWaveletNorm() const override { return 0.0; }
+    GenNodeAllocator(FunctionTree<D> *tree);
+    GenNodeAllocator(const GenNodeAllocator<D> &tree) = delete;
+    GenNodeAllocator<D> &operator=(const GenNodeAllocator<D> &tree) = delete;
+    ~GenNodeAllocator() override;
 
-    void createChildren() override;
-    void genChildren() override;
-    void cvTransform(int kind) override;
-    void mwTransform(int kind) override;
+    void allocRoots(MWTree<D> &tree) override;
+    void allocChildren(MWNode<D> &parent) override;
+    void allocChildrenNoCoeff(MWNode<D> &parent) override;
+    void deallocNodes(int serialIx) override;
 
-    void setValues(const Eigen::VectorXd &vec) override;
-    void getValues(Eigen::VectorXd &vec) override;
+    int getNChunks() const override { return this->nodeChunks.size(); }
 
-    friend class GenNodeAllocator<D>;
+    char *cvptr_GenNode{nullptr};  // virtual table pointer for GenNode
+    GenNode<D> *sNodes{nullptr};   // serial GenNodes
+    GenNode<D> *lastNode{nullptr}; // pointer just after the last active Gen node, i.e. where to put next node
+    std::vector<GenNode<D> *> nodeChunks;
 
 protected:
-    GenNode()
-            : FunctionNode<D>() {}
-    GenNode(const GenNode<D> &node) = delete;
-    GenNode<D> &operator=(const GenNode<D> &node) = delete;
-    ~GenNode() override { assert(this->tree == nullptr); }
-
-    double calcComponentNorm(int i) const override;
-    void dealloc() override;
-    void reCompress() override;
+    GenNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+    void deallocNodeChunks();
 };
 
 } // namespace mrcpp

@@ -39,7 +39,7 @@ template <int D> void ProjectedNode<D>::createChildren() {
 
 template <int D> void ProjectedNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->tree->getNodeAllocator().allocGenChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 

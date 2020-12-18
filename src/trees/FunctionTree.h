@@ -25,8 +25,10 @@
 
 #pragma once
 
-#include "MWTree.h"
 #include <map>
+
+#include "MWTree.h"
+#include "GenNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -88,6 +90,8 @@ public:
     void printSerialIndices();
 
     FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
+    GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
@@ -104,6 +108,7 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
+    GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };
 

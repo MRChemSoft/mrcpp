@@ -35,7 +35,7 @@ template <int D> void GenNode<D>::createChildren() {
 
 template <int D> void GenNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->tree->getNodeAllocator().allocGenChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 
@@ -73,7 +73,7 @@ template <int D> void GenNode<D>::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementGenNodeCount();
-    this->tree->getNodeAllocator().deallocGenNodes(sIdx);
+    this->getFuncTree().getGenNodeAllocator().deallocNodes(sIdx);
 }
 
 template <int D> void GenNode<D>::reCompress() {

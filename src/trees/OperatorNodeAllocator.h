@@ -34,10 +34,7 @@
 
 #pragma once
 
-#include <vector>
-
 #include "NodeAllocator.h"
-#include "utils/omp_utils.h"
 
 namespace mrcpp {
 
@@ -51,27 +48,17 @@ public:
     void allocRoots(MWTree<2> &tree) override;
     void allocChildren(MWNode<2> &parent) override;
     void allocChildrenNoCoeff(MWNode<2> &parent) override;
-    void allocGenChildren(MWNode<2> &parent) override;
-
     void deallocNodes(int serialIx) override;
-    void deallocGenNodes(int serialIx) override;
-    void deallocGenNodeChunks() override;
+
+    int getNChunks() const override { return this->nodeChunks.size(); }
 
 protected:
-    OperatorNode *sNodes; // serial OperatorNodes
-
+    char *cvptr_OperatorNode{nullptr};   // virtual table pointer for OperatorNode
+    OperatorNode *sNodes{nullptr};       // serial OperatorNodes
+    OperatorNode *lastNode{nullptr};     // pointer to the last active node
     std::vector<OperatorNode *> nodeChunks;
-    std::vector<double *> nodeCoeffChunks;
-
-    char *cvptr_OperatorNode; // virtual table pointer for OperatorNode
-    OperatorNode *lastNode;   // pointer to the last active node
 
     OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
-
-private:
-#ifdef MRCPP_HAS_OMP
-    omp_lock_t omp_lock;
-#endif
 };
 
 } // namespace mrcpp

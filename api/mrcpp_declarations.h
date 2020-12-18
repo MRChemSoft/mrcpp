@@ -60,6 +60,7 @@ class OperatorTree;
 
 template <int D> class NodeAllocator;
 template <int D> class FunctionNodeAllocator;
+template <int D> class GenNodeAllocator;
 class OperatorNodeAllocator;
 
 template <int D> class MWNode;

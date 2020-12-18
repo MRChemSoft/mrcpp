@@ -127,8 +127,6 @@ public:
     virtual void cvTransform(int kind);
     virtual void mwTransform(int kind);
 
-    bool splitCheck(double prec, double splitFac, bool absPrec) const;
-
     double getNodeNorm(const NodeIndex<D> &idx) const;
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
@@ -180,7 +178,6 @@ protected:
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
-    double getScaleFactor(double splitFac, bool absPrec) const;
 
     virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();

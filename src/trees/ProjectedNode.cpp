@@ -26,6 +26,7 @@
 #include "ProjectedNode.h"
 #include "SerialTree.h"
 #include "utils/Printer.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
@@ -73,7 +74,8 @@ template <> void ProjectedNode<3>::reCompress() {
 
         assert(inp + 7 * stride == this->getMWChild(7).getCoefs());
 
-        this->tree->getSerialTree()->S_mwTransformBack(inp, out, stride);
+        auto &tree = getMWTree();
+        tree_utils::mw_transform_back(tree, inp, out, stride);
         this->setHasCoefs();
         this->calcNorms();
     }

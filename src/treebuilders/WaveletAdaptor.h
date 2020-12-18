@@ -27,6 +27,7 @@
 
 #include "TreeAdaptor.h"
 #include "utils/Printer.h"
+#include "utils/tree_utils.h"
 
 namespace mrcpp {
 
@@ -51,7 +52,7 @@ protected:
 
     bool splitNode(const MWNode<D> &node) const override {
         auto precFac = this->precFunc(node.getNodeIndex()); // returns 1.0 by default
-        return node.splitCheck(this->prec * precFac, this->splitFac, this->absPrec);
+        return tree_utils::split_check(node, this->prec * precFac, this->splitFac, this->absPrec);
     }
 };
 

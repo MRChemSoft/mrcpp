@@ -90,9 +90,6 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
-    void makeNodeTable(MWNodeVector<D> &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
-
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 

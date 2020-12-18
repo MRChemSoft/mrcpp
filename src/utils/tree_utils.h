@@ -23,33 +23,20 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "SerialTree.h"
-#include "MWTree.h"
-#include "utils/Printer.h"
-#include "utils/math_utils.h"
+#pragma once
 
-using namespace Eigen;
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
+namespace tree_utils {
 
-template <int D>
-SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
-        : nNodes(0)
-        , maxNodesPerChunk(0)
-        , sizeNodeCoeff(0)
-        , coeffStack(nullptr)
-        , maxNodes(0)
-        , tree_p(tree)
-        ,
-#ifdef MRCPP_HAS_MPI
-        shMem(mem) {
-#else
-        shMem(nullptr) {
-#endif
-}
+template<int D> bool split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec);
 
-template class SerialTree<1>;
-template class SerialTree<2>;
-template class SerialTree<3>;
+template<int D> void make_node_table(MWTree<D> &tree, MWNodeVector<D> &table);
+template<int D> void make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table);
 
+template<int D> void mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
+template<int D> void mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride);
+
+} // namespace node_utils
 } // namespace mrcpp

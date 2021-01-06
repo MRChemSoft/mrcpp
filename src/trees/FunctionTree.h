@@ -28,6 +28,7 @@
 #include <map>
 
 #include "MWTree.h"
+#include "ProjectedNodeAllocator.h"
 #include "GenNodeAllocator.h"
 
 namespace mrcpp {
@@ -78,9 +79,6 @@ public:
     void absadd(double c, FunctionTree<D> &inp);
     void multiply(double c, FunctionTree<D> &inp);
     void map(FMap fmap);
-
-    int getNChunks();
-    int getNChunksUsed();
 
     int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 

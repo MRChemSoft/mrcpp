@@ -23,10 +23,11 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+ #include "FunctionTree.h"
+
 #include <fstream>
 
 #include "FunctionNode.h"
-#include "FunctionTree.h"
 #include "HilbertIterator.h"
 #include "ProjectedNode.h"
 #include "ProjectedNodeAllocator.h"
@@ -453,14 +454,6 @@ template <int D> void FunctionTree<D>::map(FMap fmap) {
     }
     this->mwTransform(BottomUp);
     this->calcSquareNorm();
-}
-
-template <int D> int FunctionTree<D>::getNChunks() {
-    return this->getProjectedNodeAllocator().getNChunks();
-}
-
-template <int D> int FunctionTree<D>::getNChunksUsed() {
-    return this->getProjectedNodeAllocator().getNChunksUsed();
 }
 
 template <int D> void FunctionTree<D>::getEndValues(VectorXd &data) {

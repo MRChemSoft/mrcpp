@@ -72,14 +72,14 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
         f_tree.clear();                     // leaves memory chunks
         project(100 * prec, f_tree, *func); // should use less chunks
 
-        const int refChunks = f_tree.getNChunks();
-        const int refChunksUsed = f_tree.getNChunksUsed();
+        const int refChunks = f_tree.getProjectedNodeAllocator().getNChunks();
+        const int refChunksUsed = f_tree.getProjectedNodeAllocator().getNChunksUsed();
         REQUIRE(refChunksUsed < refChunks);
 
         f_tree.saveTree("f");
         THEN("the old tree remains unchanged") {
-            int nChunks = f_tree.getNChunks();
-            int nChunksUsed = f_tree.getNChunksUsed();
+            int nChunks = f_tree.getProjectedNodeAllocator().getNChunks();
+            int nChunksUsed = f_tree.getProjectedNodeAllocator().getNChunksUsed();
             REQUIRE(nChunks == refChunks);
             REQUIRE(nChunksUsed == refChunksUsed);
         }
@@ -87,8 +87,8 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
             FunctionTree<3> g_tree(*mra);
             g_tree.loadTree("f");
             THEN("the new tree has no empty chunks") {
-                int nChunks = g_tree.getNChunks();
-                int nChunksUsed = g_tree.getNChunksUsed();
+                int nChunks = g_tree.getProjectedNodeAllocator().getNChunks();
+                int nChunksUsed = g_tree.getProjectedNodeAllocator().getNChunksUsed();
                 REQUIRE(nChunksUsed == nChunks);
                 REQUIRE(nChunksUsed == refChunksUsed);
             }

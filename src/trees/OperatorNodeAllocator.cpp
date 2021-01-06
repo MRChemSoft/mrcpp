@@ -52,7 +52,7 @@ OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
     this->nNodes = 0;
     NOtrees++;
 
-    this->sizeNodeCoeff = 4 * this->tree_p->getKp1_d();
+    this->coeffsPerNode = 4 * this->tree_p->getKp1_d();
 
     this->maxNodesPerChunk = 1024;
     this->lastNode = (OperatorNode *)this->sNodes; // position of last allocated node
@@ -101,7 +101,7 @@ void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<2>();
 
-        root_p->n_coefs = this->sizeNodeCoeff;
+        root_p->n_coefs = this->coeffsPerNode;
         root_p->coefs = coefs_p;
 
         root_p->lockX = 0;
@@ -122,7 +122,7 @@ void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
 
         sIx++;
         root_p++;
-        coefs_p += this->sizeNodeCoeff;
+        coefs_p += this->coeffsPerNode;
     }
 }
 
@@ -151,7 +151,7 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->sizeNodeCoeff;
+        child_p->n_coefs = this->coeffsPerNode;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -171,7 +171,7 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
 
         sIx++;
         child_p++;
-        coefs_p += this->sizeNodeCoeff;
+        coefs_p += this->coeffsPerNode;
     }
 }
 
@@ -198,7 +198,7 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
             // need to allocate new chunk
             this->sNodes = (OperatorNode *)new char[this->maxNodesPerChunk * sizeof(OperatorNode)];
             this->nodeChunks.push_back(this->sNodes);
-            auto *sNodesCoeff = new double[this->sizeNodeCoeff * this->maxNodesPerChunk];
+            auto *sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
             this->nodeCoeffChunks.push_back(sNodesCoeff);
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
@@ -216,7 +216,7 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
     OperatorNode *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
-    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->sizeNodeCoeff;
+    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
 
     for (int i = 0; i < nAlloc; i++) {
         if (this->nodeStackStatus[*serialIx + i] != 0)

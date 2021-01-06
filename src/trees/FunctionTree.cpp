@@ -97,8 +97,10 @@ template <int D> void FunctionTree<D>::clear() {
  * @param[in] file: File name, will get ".tree" extension
  */
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
-    // This is basically a copy of MPI send_tree
     Timer t1;
+    this->deleteGenerated();
+    auto &allocator = this->getProjectedNodeAllocator();
+
     std::stringstream fname;
     fname << file << ".tree";
 
@@ -106,20 +108,14 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     f.open(fname.str(), std::ios::out | std::ios::binary);
     if (not f.is_open()) MSG_ERROR("Unable to open file");
 
-    this->deleteGenerated();
-    auto &allocator = this->getProjectedNodeAllocator();
-
     // Write size of tree
     int nChunks = allocator.getNChunksUsed();
     f.write((char *)&nChunks, sizeof(int));
 
     // Write tree data, chunk by chunk
-    int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        f.write((char *)allocator.nodeChunks[iChunk], count);
-        count = allocator.sizeNodeCoeff * allocator.maxNodesPerChunk;
-        f.write((char *)allocator.nodeCoeffChunks[iChunk], count * sizeof(double));
+        f.write((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.write((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }
     f.close();
     print::time(10, "Time write", t1);
@@ -130,7 +126,6 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
  * @note This tree must have the exact same MRA the one that was saved
  */
 template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
-    // This is basically a copy of MPI recv_tree
     Timer t1;
     std::stringstream fname;
     fname << file << ".tree";
@@ -142,33 +137,13 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // Read size of tree
     int nChunks;
     f.read((char *)&nChunks, sizeof(int));
-    auto &allocator = this->getProjectedNodeAllocator();
 
     // Read tree data, chunk by chunk
-    int count = 1;
+    auto &allocator = this->getProjectedNodeAllocator();
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        if (iChunk < allocator.nodeChunks.size()) {
-            allocator.sNodes = allocator.nodeChunks[iChunk];
-        } else {
-            double *sNodesCoeff;
-            if (allocator.isShared()) {
-                // for coefficients, take from the shared memory block
-                SharedMemory *shMem = allocator.getMemory();
-                sNodesCoeff = shMem->sh_end_ptr;
-                shMem->sh_end_ptr += (allocator.sizeNodeCoeff * allocator.maxNodesPerChunk);
-                // may increase size dynamically in the future
-                if (shMem->sh_max_ptr < shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
-            } else {
-                sNodesCoeff = new double[allocator.sizeNodeCoeff * allocator.maxNodesPerChunk];
-            }
-            allocator.nodeCoeffChunks.push_back(sNodesCoeff);
-            allocator.sNodes = (ProjectedNode<D> *)new char[allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
-            allocator.nodeChunks.push_back(allocator.sNodes);
-        }
-        count = allocator.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        f.read((char *)allocator.nodeChunks[iChunk], count);
-        count = allocator.sizeNodeCoeff * allocator.maxNodesPerChunk;
-        f.read((char *)allocator.nodeCoeffChunks[iChunk], count * sizeof(double));
+        allocator.initChunk(iChunk);
+        f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }
     f.close();
     print::time(10, "Time read tree", t1);

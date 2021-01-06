@@ -47,17 +47,17 @@ ProjectedNodeAllocator<D>::ProjectedNodeAllocator(FunctionTree<D> *tree, SharedM
         : NodeAllocator<D>(tree, mem)
         , lastNode(nullptr) {
 
-    this->sizeNodeCoeff = (1 << D) * this->tree_p->getKp1_d(); // TDim  blocks
-    println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff * sizeof(double) / 1024);
+    this->coeffsPerNode = (1 << D) * this->tree_p->getKp1_d(); // TDim  blocks
+    println(10, "SizeNode Coeff (kB) " << this->coeffsPerNode * sizeof(double) / 1024);
 
     // 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible
     int sizePerChunk = 2 * 1024 * 1024;
     if (D < 3) {
         // define rather from number of nodes per chunk
         this->maxNodesPerChunk = 64;
-        sizePerChunk = this->maxNodesPerChunk * this->sizeNodeCoeff;
+        sizePerChunk = this->maxNodesPerChunk * this->coeffsPerNode;
     } else {
-        this->maxNodesPerChunk = (sizePerChunk / this->sizeNodeCoeff / sizeof(double) / 8) * 8;
+        this->maxNodesPerChunk = (sizePerChunk / this->coeffsPerNode / sizeof(double) / 8) * 8;
     }
 
     // position just after last allocated node, i.e. where to put next node
@@ -90,7 +90,7 @@ template <int D> void ProjectedNodeAllocator<D>::clear(int n) {
 
     if (this->isShared()) {
         this->shMem->sh_end_ptr =
-            this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+            this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->coeffsPerNode * this->maxNodesPerChunk;
     }
 }
 
@@ -117,7 +117,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
         root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
         root_p->hilbertPath = HilbertPath<D>();
 
-        root_p->n_coefs = this->sizeNodeCoeff;
+        root_p->n_coefs = this->coeffsPerNode;
         root_p->coefs = coefs_p;
 
         root_p->lockX = 0;
@@ -138,7 +138,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
 
         sIx++;
         root_p++;
-        coefs_p += this->sizeNodeCoeff;
+        coefs_p += this->coeffsPerNode;
     }
 }
 
@@ -167,7 +167,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->sizeNodeCoeff;
+        child_p->n_coefs = this->coeffsPerNode;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -187,7 +187,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
         sIx++;
         child_p++;
-        coefs_p += this->sizeNodeCoeff;
+        coefs_p += this->coeffsPerNode;
     }
 }
 
@@ -245,8 +245,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
     if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
         // we want nodes allocated simultaneously to be allocated on the same piece.
         // possibly jump over the last nodes from the old chunk
-        this->nNodes =
-            this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+        this->nNodes = this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
 
         int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
 
@@ -257,11 +256,11 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
             if (this->isShared()) {
                 // for coefficients, take from the shared memory block
                 sNodesCoeff = this->shMem->sh_end_ptr;
-                this->shMem->sh_end_ptr += (this->sizeNodeCoeff * this->maxNodesPerChunk);
+                this->shMem->sh_end_ptr += (this->coeffsPerNode * this->maxNodesPerChunk);
                 // may increase size dynamically in the future
                 if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
-                sNodesCoeff = new double[this->sizeNodeCoeff * this->maxNodesPerChunk];
+                sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
             }
 
             this->nodeCoeffChunks.push_back(sNodesCoeff);
@@ -284,7 +283,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
                         std::endl
                             << " number of nodes " << this->nNodes << ",number of Nodechunks now "
                             << this->nodeChunks.size() << ", total size coeff  (MB) "
-                            << (this->nNodes * this->sizeNodeCoeff) / 1024 / 128);
+                            << (this->nNodes * this->coeffsPerNode) / 1024 / 128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -296,7 +295,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
     ProjectedNode<D> *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
-    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->sizeNodeCoeff;
+    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
 
     for (int i = 0; i < nAlloc; i++) {
         if (this->nodeStackStatus[*serialIx + i] != 0)
@@ -345,7 +344,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
                         std::endl
                             << " number of nodes " << this->nNodes << ",number of Nodechunks now "
                             << this->nodeChunks.size() << ", total size coeff  (MB) "
-                            << (this->nNodes * this->sizeNodeCoeff) / 1024 / 128);
+                            << (this->nNodes * this->coeffsPerNode) / 1024 / 128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -436,13 +435,13 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
 
         // coefs have new adresses
         for (int i = 0; i < nAlloc; i++)
-            (NodeAvail + i)->coefs = this->nodeCoeffChunks[ichunk] + (inode + i) * this->sizeNodeCoeff;
+            (NodeAvail + i)->coefs = this->nodeCoeffChunks[ichunk] + (inode + i) * this->coeffsPerNode;
         // copy coefs to new adress
         if (not this->isShared()) {
-            for (int i = 0; i < nAlloc * this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
+            for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
         } else {
             if (this->shMem->rank == 0) // only master copy the data. careful with sync
-                for (int i = 0; i < nAlloc * this->sizeNodeCoeff; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
+                for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
         }
 
         // new nodes have another adress
@@ -483,7 +482,7 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
 
     if (this->isShared()) {
         // shared coefficients cannot be fully deallocated, only pointer is moved.
-        this->shMem->sh_end_ptr -= (nChunksStart - nChunks) * this->sizeNodeCoeff * this->maxNodesPerChunk;
+        this->shMem->sh_end_ptr -= (nChunksStart - nChunks) * this->coeffsPerNode * this->maxNodesPerChunk;
     } else {
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     }
@@ -501,7 +500,7 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
-template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool Coeff) {
+template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool coeff) {
     this->getTree()->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
@@ -546,7 +545,7 @@ template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool Coeff) {
 
         //"adress" of coefs is the same as node, but in another array
         node->coefs = nullptr;
-        if(Coeff) node->coefs = this->nodeCoeffChunks[ichunk] + inode * this->sizeNodeCoeff;
+        if (coeff) node->coefs = this->nodeCoeffChunks[ichunk] + inode * this->coeffsPerNode;
 
         // adress of parent and children must be corrected
         // can be on a different chunks
@@ -596,7 +595,27 @@ template <int D> void ProjectedNodeAllocator<D>::print() const {
     }
 }
 
+template <int D> void ProjectedNodeAllocator<D>::initChunk(int iChunk, bool coeff) {
+    if (iChunk < getNChunks()) {
+        this->sNodes = this->nodeChunks[iChunk];
+    } else {
+        double *sNodesCoeff = nullptr;
+        if (this->isShared()) {
+            if (iChunk == 0) this->shMem->sh_end_ptr = this->shMem->sh_start_ptr;
+            sNodesCoeff = this->shMem->sh_end_ptr;
+            this->shMem->sh_end_ptr += (this->maxNodesPerChunk * this->coeffsPerNode);
+            if (this->shMem->sh_end_ptr > this->shMem->sh_max_ptr) MSG_ABORT("Shared block too small");
+        } else if (coeff) {
+            sNodesCoeff = new double[getCoeffChunkSize()];
+        }
+        if (coeff) this->nodeCoeffChunks.push_back(sNodesCoeff);
+        this->sNodes = (ProjectedNode<D> *)new char[getNodeChunkSize()];
+        this->nodeChunks.push_back(this->sNodes);
+    }
+}
+
 template class ProjectedNodeAllocator<1>;
 template class ProjectedNodeAllocator<2>;
 template class ProjectedNodeAllocator<3>;
+
 } // namespace mrcpp

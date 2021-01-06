@@ -52,12 +52,12 @@ public:
 
     int getNChunks() const override { return this->nodeChunks.size(); }
 
+protected:
     char *cvptr_GenNode{nullptr};  // virtual table pointer for GenNode
     GenNode<D> *sNodes{nullptr};   // serial GenNodes
     GenNode<D> *lastNode{nullptr}; // pointer just after the last active Gen node, i.e. where to put next node
     std::vector<GenNode<D> *> nodeChunks;
 
-protected:
     GenNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
     void deallocNodeChunks();
 };

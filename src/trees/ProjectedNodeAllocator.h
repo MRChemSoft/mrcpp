@@ -45,25 +45,32 @@ public:
     ProjectedNodeAllocator<D> &operator=(const ProjectedNodeAllocator<D> &tree) = delete;
     ~ProjectedNodeAllocator() override;
 
+    int getNChunks() const override { return this->nodeChunks.size(); }
+    int getNChunksUsed() const;
+    int getNodeChunkSize() const { return this->maxNodesPerChunk * sizeof(ProjectedNode<D>); }
+    int getCoeffChunkSize() const { return this->maxNodesPerChunk * this->coeffsPerNode * sizeof(double); }
+
+    double *getCoeffChunk(int i) { return this->nodeCoeffChunks[i]; }
+    ProjectedNode<D> *getNodeChunk(int i) { return this->nodeChunks[i]; }
+
     void allocRoots(MWTree<D> &tree) override;
     void allocChildren(MWNode<D> &parent) override;
     void allocChildrenNoCoeff(MWNode<D> &parent) override;
     void deallocNodes(int serialIx) override;
 
-    int getNChunks() const override { return this->nodeChunks.size(); }
-    int getNChunksUsed() const;
     int shrinkChunks();
+    void initChunk(int iChunk, bool coeff = true);
 
-    void rewritePointers(bool Coeff = true);
+    void rewritePointers(bool coeff = true);
     void clear(int n);
     void print() const;
 
+protected:
     char *cvptr_ProjectedNode{nullptr};      // virtual table pointer for ProjectedNode
     ProjectedNode<D> *sNodes{nullptr};       // serial ProjectedNodes
     ProjectedNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
     std::vector<ProjectedNode<D> *> nodeChunks;
 
-protected:
     ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx); // Does not allocate coefficents
     ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
 };

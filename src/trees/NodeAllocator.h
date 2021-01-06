@@ -59,14 +59,14 @@ public:
 
     virtual int getNChunks() const = 0;
 
+protected:
     int nNodes{0};                  // number of Nodes already defined
     int maxNodes{0};                // max number of nodes that can be defined
+    int coeffsPerNode{0};           // number of coeff for one node
     int maxNodesPerChunk{0};        // max number of nodes per allocation
-    int sizeNodeCoeff{0};           // size of coeff for one node
-
     std::vector<int> nodeStackStatus;
     std::vector<double *> nodeCoeffChunks;
-protected:
+
     MWTree<D> *tree_p{nullptr};     // pointer to external object
     SharedMemory *shMem{nullptr}; // pointer to external object
 

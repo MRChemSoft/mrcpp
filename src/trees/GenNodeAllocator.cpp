@@ -47,17 +47,17 @@ GenNodeAllocator<D>::GenNodeAllocator(FunctionTree<D> *tree)
         : NodeAllocator<D>(tree, nullptr) {
 
     // Size for GenNodes chunks
-    this->sizeNodeCoeff = this->tree_p->getKp1_d();       // One block
-    println(10, "SizeNode Coeff (kB) " << this->sizeNodeCoeff * sizeof(double) / 1024);
+    this->coeffsPerNode = this->tree_p->getKp1_d();       // One block
+    println(10, "SizeNode Coeff (kB) " << this->coeffsPerNode * sizeof(double) / 1024);
 
     // 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible
     int sizePerChunk = 2 * 1024 * 1024;
     if (D < 3) {
         // define rather from number of nodes per chunk
         this->maxNodesPerChunk = 64;
-        sizePerChunk = this->maxNodesPerChunk * this->sizeNodeCoeff;
+        sizePerChunk = this->maxNodesPerChunk * this->coeffsPerNode;
     } else {
-        this->maxNodesPerChunk = (sizePerChunk / this->sizeNodeCoeff / sizeof(double) / 8) * 8;
+        this->maxNodesPerChunk = (sizePerChunk / this->coeffsPerNode / sizeof(double) / 8) * 8;
     }
 
     // position just after last allocated node, i.e. where to put next node
@@ -111,7 +111,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->sizeNodeCoeff;
+        child_p->n_coefs = this->coeffsPerNode;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -131,7 +131,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
 
         sIx++;
         child_p++;
-        coefs_p += this->sizeNodeCoeff;
+        coefs_p += this->coeffsPerNode;
     }
 }
 
@@ -162,7 +162,7 @@ template <int D> GenNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, int *se
                 this->sNodes[i].childSerialIx = -1;
             }
             this->nodeChunks.push_back(this->sNodes);
-            auto *sNodesCoeff = new double[this->sizeNodeCoeff * this->maxNodesPerChunk];
+            auto *sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
             this->nodeCoeffChunks.push_back(sNodesCoeff);
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
@@ -174,7 +174,7 @@ template <int D> GenNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, int *se
                 println(10,
                         "\n number of GenNodes " << this->nNodes << ",number of GenNodechunks now "
                                                  << this->nodeChunks.size() << ", total size coeff  (MB) "
-                                                 << (this->nNodes / 1024) * this->sizeNodeCoeff / 128);
+                                                 << (this->nNodes / 1024) * this->coeffsPerNode / 128);
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
         *serialIx = this->nNodes;
@@ -186,7 +186,7 @@ template <int D> GenNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, int *se
     GenNode<D> *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
-    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->sizeNodeCoeff;
+    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
 
     for (int i = 0; i < nAlloc; i++) {
         newNode_cp->serialIx = *serialIx + i; // Until overwritten!

@@ -575,6 +575,27 @@ template <int D> int ProjectedNodeAllocator<D>::getNChunksUsed() const {
     return (this->nNodes + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk;
 }
 
+template <int D> void ProjectedNodeAllocator<D>::print() const {
+    int n = 0;
+    for (int iChunk = 0; iChunk < getNChunks(); iChunk++) {
+        int iShift = iChunk * this->maxNodesPerChunk;
+        printout(0, "new chunk \n");
+        for (int i = 0; i < this->maxNodesPerChunk; i++) {
+            int status = this->nodeStackStatus[iShift + i];
+            int sIdx = this->nodeChunks[iChunk][i].serialIx;
+            int pIdx = this->nodeChunks[iChunk][i].parentSerialIx;
+            int cIdx = this->nodeChunks[iChunk][i].childSerialIx;
+            printout(0, std::setw(4) << n++);
+            printout(0, std::setw(4) << status);
+            printout(0, std::setw(6) << sIdx);
+            printout(0, std::setw(6) << pIdx);
+            printout(0, std::setw(6) << cIdx << "   ");
+            if (status == 1) printout(0, this->nodeChunks[iChunk][i].getNodeIndex());
+            printout(0, "\n");
+        }
+    }
+}
+
 template class ProjectedNodeAllocator<1>;
 template class ProjectedNodeAllocator<2>;
 template class ProjectedNodeAllocator<3>;

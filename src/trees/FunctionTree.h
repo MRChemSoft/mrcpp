@@ -85,8 +85,6 @@ public:
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    void printSerialIndices();
-
     ProjectedNodeAllocator<D> &getProjectedNodeAllocator() { return static_cast<ProjectedNodeAllocator<D> &>(*this->nodeAllocator_p); }
     GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
 

@@ -56,6 +56,7 @@ public:
 
     void rewritePointers(bool Coeff = true);
     void clear(int n);
+    void print() const;
 
     char *cvptr_ProjectedNode{nullptr};      // virtual table pointer for ProjectedNode
     ProjectedNode<D> *sNodes{nullptr};       // serial ProjectedNodes

@@ -494,28 +494,6 @@ template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
     return MWTree<D>::print(o);
 }
 
-template <int D> void FunctionTree<D>::printSerialIndices() {
-    ProjectedNodeAllocator<D> &allocator = this->getProjectedNodeAllocator();
-    int n = 0;
-    for (int iChunk = 0; iChunk < allocator.getNChunks(); iChunk++) {
-        int iShift = iChunk * allocator.maxNodesPerChunk;
-        printout(0, "new chunk \n");
-        for (int i = 0; i < allocator.maxNodesPerChunk; i++) {
-            int status = allocator.nodeStackStatus[iShift + i];
-            int sIdx = allocator.nodeChunks[iChunk][i].serialIx;
-            int pIdx = allocator.nodeChunks[iChunk][i].parentSerialIx;
-            int cIdx = allocator.nodeChunks[iChunk][i].childSerialIx;
-            printout(0, std::setw(4) << n++);
-            printout(0, std::setw(4) << status);
-            printout(0, std::setw(6) << sIdx);
-            printout(0, std::setw(6) << pIdx);
-            printout(0, std::setw(6) << cIdx << "   ");
-            if (status == 1) printout(0, allocator.nodeChunks[iChunk][i].getNodeIndex());
-            printout(0, "\n");
-        }
-    }
-}
-
 /** @brief Reduce the precision of the tree by deleting nodes
  *
  * @param prec: New precision criterion

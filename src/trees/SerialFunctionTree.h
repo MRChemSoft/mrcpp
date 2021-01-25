@@ -50,6 +50,7 @@ public:
 
     void allocRoots(MWTree<D> &tree) override;
     void allocChildren(MWNode<D> &parent) override;
+    void allocChildrenNoCoeff(MWNode<D> &parent) override;
     void allocGenChildren(MWNode<D> &parent) override;
 
     void deallocNodes(int serialIx) override;
@@ -77,7 +78,7 @@ public:
     //    int *genNodeStackStatus;
     std::vector<int> genNodeStackStatus;
 
-    void rewritePointers();
+    void rewritePointers(bool Coeff = true);
 
     void clear(int n);
 
@@ -92,6 +93,7 @@ protected:
     GenNode<D> *lastGenNode;    // pointer just after the last active Gen node, i.e. where to put next node
 
     ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+    ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx); // Does not allocate coefficents
     GenNode<D> *allocGenNodes(int nAlloc, int *serialIx, double **coefs_p);
 
 private:

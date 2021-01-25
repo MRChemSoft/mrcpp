@@ -57,6 +57,7 @@ public:
 
     virtual void allocRoots(MWTree<D> &tree) = 0;
     virtual void allocChildren(MWNode<D> &parent) = 0;
+    virtual void allocChildrenNoCoeff(MWNode<D> &parent) = 0;
     virtual void allocGenChildren(MWNode<D> &parent) = 0;
 
     virtual void deallocNodes(int serialIx) = 0;

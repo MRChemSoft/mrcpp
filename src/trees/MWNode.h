@@ -123,6 +123,7 @@ public:
     void clearNorms();
 
     virtual void createChildren();
+    virtual void createChildrenNoCoeff();
     virtual void genChildren();
     virtual void deleteChildren();
 

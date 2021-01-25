@@ -50,6 +50,7 @@ public:
 
     void allocRoots(MWTree<2> &tree) override;
     void allocChildren(MWNode<2> &parent) override;
+    void allocChildrenNoCoeff(MWNode<2> &parent) override;
     void allocGenChildren(MWNode<2> &parent) override;
 
     void deallocNodes(int serialIx) override;

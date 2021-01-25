@@ -26,6 +26,7 @@
 #pragma once
 
 #include "MWTree.h"
+#include <map>
 
 namespace mrcpp {
 
@@ -93,6 +94,18 @@ public:
     const FunctionNode<D> &getRootFuncNode(int i) const {
         return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i));
     }
+
+    void makeCoeffVector(std::vector<double *> &coefs,
+                         std::vector<int> &indices,
+                         std::vector<int> &parent_indices,
+                         std::vector<double> &scalefac,
+                         int &max_index,
+                         MWTree<D> &refTree);
+    void makeTreefromCoeff(MWTree<D> &refTree,
+                           std::vector<double *> coefpVec,
+                           std::map<int, int> &ix2coef,
+                           double absPrec);
+    void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
     std::ostream &print(std::ostream &o) override;

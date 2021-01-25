@@ -248,16 +248,16 @@ template <int D> void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState
         if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
-                g += f.transpose() * op;
+                g.noalias() += f.transpose() * op;
             } else {
-                g = f.transpose() * op;
+                g.noalias() = f.transpose() * op;
             }
         } else {
             // Identity operator in direction i
             if (i == D - 1) { // Last dir: Add up into g
-                g += f.transpose();
+                g.noalias() += f.transpose();
             } else {
-                g = f.transpose();
+                g.noalias() = f.transpose();
             }
         }
     }

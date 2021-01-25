@@ -630,6 +630,12 @@ template <int D> void MWNode<D>::createChildren() {
     this->setIsBranchNode();
 }
 
+template <int D> void MWNode<D>::createChildrenNoCoeff() {
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    this->getMWTree().getSerialTree()->allocChildrenNoCoeff(*this);
+    this->setIsBranchNode();
+}
+
 template <int D> void MWNode<D>::genChildren() {
     NOT_REACHED_ABORT;
 }

@@ -175,6 +175,10 @@ void SerialOperatorTree::allocChildren(MWNode<2> &parent) {
     }
 }
 
+void SerialOperatorTree::allocChildrenNoCoeff(MWNode<2> &parent) {
+    NOT_IMPLEMENTED_ABORT;
+}
+
 void SerialOperatorTree::allocGenChildren(MWNode<2> &parent) {
     NOT_REACHED_ABORT;
 }

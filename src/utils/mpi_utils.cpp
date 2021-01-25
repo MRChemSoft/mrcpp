@@ -89,7 +89,7 @@ SharedMemory::~SharedMemory() {
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks) {
+template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
     if (sTree.nGenNodes != 0) MSG_ABORT("Sending of GenNodes not implemented");
@@ -105,8 +105,10 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
         MPI_Send(sTree.nodeChunks[iChunk], count, MPI_BYTE, dst, tag + iChunk + 1, comm);
-        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm);
+        if (Coeff) {
+            count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+            MPI_Send(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, dst, tag + iChunk + 1001, comm);
+        }
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
@@ -125,7 +127,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks) {
+template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     SerialFunctionTree<D> &sTree = *tree.getSerialFunctionTree();
@@ -150,21 +152,23 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
                 // may increase size dynamically in the future
                 if (shMem->sh_max_ptr < shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
-                sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
+                if (Coeff) sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
             }
-            sTree.nodeCoeffChunks.push_back(sNodesCoeff);
+            if (Coeff) sTree.nodeCoeffChunks.push_back(sNodesCoeff);
             sTree.sNodes = (ProjectedNode<D> *)new char[sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
             sTree.nodeChunks.push_back(sTree.sNodes);
         }
         count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
         MPI_Recv(sTree.nodeChunks[iChunk], count, MPI_BYTE, src, tag + iChunk + 1, comm, &status);
-        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag + iChunk + 1001, comm, &status);
+        if (Coeff) {
+            count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
+            MPI_Recv(sTree.nodeCoeffChunks[iChunk], count, MPI_DOUBLE, src, tag + iChunk + 1001, comm, &status);
+        }
     }
     println(10, " Time receive                " << std::setw(30) << t1.elapsed());
 
     Timer t2;
-    sTree.rewritePointers();
+    sTree.rewritePointers(Coeff);
     println(10, " Time rewrite pointers       " << std::setw(30) << t2.elapsed());
 #endif
 }
@@ -234,12 +238,12 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
 #endif
 }
 
-template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
-template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
-template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks);
-template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
-template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
-template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks);
+template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
+template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
+template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
+template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
+template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
+template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool Coeff);
 template void share_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm);
 template void share_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm);
 template void share_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm);

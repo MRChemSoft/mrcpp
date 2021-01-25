@@ -72,8 +72,8 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
         f_tree.clear();                     // leaves memory chunks
         project(100 * prec, f_tree, *func); // should use less chunks
 
-        const int refChunks = f_tree.getProjectedNodeAllocator().getNChunks();
-        const int refChunksUsed = f_tree.getProjectedNodeAllocator().getNChunksUsed();
+        const int refChunks = f_tree.getNChunks();
+        const int refChunksUsed = f_tree.getNChunksUsed();
         REQUIRE(refChunksUsed < refChunks);
 
         f_tree.saveTree("f");

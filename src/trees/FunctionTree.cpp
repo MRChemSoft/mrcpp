@@ -549,14 +549,20 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
  * Returns an array with the address of the coefs, an array with the
  * corresponding values of serialIx in refTree, and an array with the sizes of the nodes.
  * Set index -1 for nodes that are not present in refTree */
-  template <int D> void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree)  {
+template <int D>
+void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
+                                      std::vector<int> &indices,
+                                      std::vector<int> &parent_indices,
+                                      std::vector<double> &scalefac,
+                                      int &max_index,
+                                      MWTree<D> &refTree) {
     coefs.clear();
     indices.clear();
     parent_indices.clear();
     max_index = 0;
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
-    std::vector<MWNode<D> *> refstack; // nodes from refTree
+    std::vector<MWNode<D> *> refstack;  // nodes from refTree
     std::vector<MWNode<D> *> thisstack; // nodes from this Tree
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
         refstack.push_back(refTree.getRootBox().getNodes()[rIdx]);
@@ -566,22 +572,25 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
     while (thisstack.size() > stack_p) {
         // refNode and thisNode are the same node in space, but on different trees
         MWNode<D> *thisNode = thisstack[stack_p];
-	MWNode<D> *refNode = refstack[stack_p++];
+        MWNode<D> *refNode = refstack[stack_p++];
         coefs.push_back(thisNode->getCoefs());
         if (refNode != nullptr) {
             indices.push_back(refNode->getSerialIx());
             max_index = std::max(max_index, refNode->getSerialIx());
             parent_indices.push_back(refNode->parentSerialIx); // is -1 for root nodes
-            scalefac.push_back(refNode->getScaleFactor(1.0, true)); // could be faster: essentially inverse of powers of 2
-	} else {
+            scalefac.push_back(
+                refNode->getScaleFactor(1.0, true)); // could be faster: essentially inverse of powers of 2
+        } else {
             indices.push_back(-1); // indicates that the node is not in the refTree
             parent_indices.push_back(-2);
             scalefac.push_back(1.0);
         }
         if (thisNode->getNChildren() > 0) {
             for (int i = 0; i < thisNode->getNChildren(); i++) {
-	        if (refNode!=nullptr and refNode->getNChildren() > 0) refstack.push_back(refNode->children[i]);
-		else refstack.push_back(nullptr);
+                if (refNode != nullptr and refNode->getNChildren() > 0)
+                    refstack.push_back(refNode->children[i]);
+                else
+                    refstack.push_back(nullptr);
                 thisstack.push_back(thisNode->children[i]);
             }
         }
@@ -592,11 +601,15 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
  * reference tree and a list of coefficients.
  * It is the reference tree (refTree) which is traversed, but one does not descend
  * into children if the norm of this tree is smaller than absPrec. */
-template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std::vector<double*> coefpVec, std::map<int,int> &ix2coef, double absPrec) {
+template <int D>
+void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
+                                        std::vector<double *> coefpVec,
+                                        std::map<int, int> &ix2coef,
+                                        double absPrec) {
     std::vector<MWNode<D> *> stack;
-    std::map<int,MWNode<D> *> ix2node; // gives the nodes in this tree for a given ix
+    std::map<int, MWNode<D> *> ix2node; // gives the nodes in this tree for a given ix
     int sizecoef = (1 << this->getDim()) * this->getKp1_d();
-    int sizecoefW = ((1 <<  this->getDim()) - 1) * this->getKp1_d();
+    int sizecoefW = ((1 << this->getDim()) - 1) * this->getKp1_d();
     this->squareNorm = 0.0;
     for (int rIdx = 0; rIdx < refTree.getRootBox().size(); rIdx++) {
         MWNode<D> *refNode = refTree.getRootBox().getNodes()[rIdx];
@@ -610,15 +623,15 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
         int ix = -1;
         if (ix2coef.count(refNode->getSerialIx()) > 0) ix = ix2coef[refNode->getSerialIx()];
         MWNode<D> *node = ix2node[ix]; // corresponding node in this tree
-        //copy coefficients into this tree
+        // copy coefficients into this tree
         int size = sizecoefW;
         if (refNode->isRootNode()) {
-            size =  sizecoef;
-	    for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
+            size = sizecoef;
+            for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
         } else {
             // only wavelets are defined in coefVec. Scaling part set below, when creating children
             if (ix < coefpVec.size() and ix >= 0) {
-	        for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = coefpVec[ix][k];
+                for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = coefpVec[ix][k];
             } else {
                 // we do not have W coefficients. Set them to zero
                 for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = 0.0;
@@ -629,26 +642,25 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
         if (node->splitCheck(absPrec, 1.0, true) and refNode->getNChildren() > 0) {
             // include children in tree
             node->createChildren();
-	    double *inp = node->getCoefs();
-	    double *out = node->getMWChild(0).getCoefs();
-	    this->getSerialTree()->S_mwTransform(inp, out, false, sizecoef, true); // make the scaling part
-            for (int i = 0; i < refNode->getNChildren(); i++){
+            double *inp = node->getCoefs();
+            double *out = node->getMWChild(0).getCoefs();
+            this->getSerialTree()->S_mwTransform(inp, out, false, sizecoef, true); // make the scaling part
+            for (int i = 0; i < refNode->getNChildren(); i++) {
                 stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
                 int ixc = ix2coef[refNode->children[i]->getSerialIx()];
                 ix2node[ixc] = node->children[i]; // corresponding child node in this tree
                 node->children[i]->setHasCoefs();
             }
         } else {
-	    this->squareNorm += node->getSquareNorm();
-	}
+            this->squareNorm += node->getSquareNorm();
+        }
     }
     SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
 }
 
-
 /** Traverse tree using DFS and append same nodes as another tree, without coefficients */
 template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
-    std::vector<MWNode<D> *> instack; // node from inTree
+    std::vector<MWNode<D> *> instack;   // node from inTree
     std::vector<MWNode<D> *> thisstack; // node from this Tree
     for (int rIdx = 0; rIdx < inTree.getRootBox().size(); rIdx++) {
         instack.push_back(inTree.getRootBox().getNodes()[rIdx]);
@@ -658,14 +670,14 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         // inNode and thisNode are the same node in space, but on different trees
         MWNode<D> *thisNode = thisstack.back();
         thisstack.pop_back();
-	MWNode<D> *inNode = instack.back();
+        MWNode<D> *inNode = instack.back();
         instack.pop_back();
         if (inNode->getNChildren() > 0) {
             if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildrenNoCoeff();
             for (int i = 0; i < inNode->getNChildren(); i++) {
                 instack.push_back(inNode->children[i]);
                 thisstack.push_back(thisNode->children[i]);
-           }
+            }
         }
     }
 }

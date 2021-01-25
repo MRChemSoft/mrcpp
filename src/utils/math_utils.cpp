@@ -191,9 +191,9 @@ void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, i
     Map<MatrixXd> f(in, kp1, kp1_dm1);
     Map<MatrixXd> g(out, kp1_dm1, kp1);
     if (fac < MachineZero) {
-        g = f.transpose() * filter;
+        g.noalias() = f.transpose() * filter;
     } else {
-        g += f.transpose() * filter;
+        g.noalias() += f.transpose() * filter;
     }
 #endif
 }

@@ -53,7 +53,7 @@ public:
     int getKp1() const { return this->order + 1; }
     int getKp1_d() const { return this->kp1_d; }
     int getDim() const { return D; }
-    int getTDim() const { return this->tDim; }
+    int getTDim() const { return (1 << D); }
     int getNNodes(int depth = -1) const;
     int getNEndNodes() const { return this->endNodeTable.size(); }
     int getNGenNodes();
@@ -90,9 +90,6 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
-    void makeNodeTable(MWNodeVector<D> &nodeTable);
-    void makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable);
-
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 
@@ -114,7 +111,7 @@ public:
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
-    SerialTree<D> *getSerialTree() { return this->serialTree_p; }
+    NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
 
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
@@ -123,17 +120,15 @@ public:
     friend class ProjectedNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;
-    friend class SerialTree<D>;
-    friend class SerialFunctionTree<D>;
-    friend class SerialOperatorTree;
+    friend class NodeAllocator<D>;
+    friend class ProjectedNodeAllocator<D>;
+    friend class GenNodeAllocator<D>;
+    friend class OperatorNodeAllocator;
 
 protected:
     // Parameters that are set in construction and should never change
     const int nThreads;
     const MultiResolutionAnalysis<D> MRA;
-
-    // Static default parameters
-    const static int tDim = (1 << D);
 
     // Constant parameters that are derived internally
     const int order;
@@ -142,7 +137,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    SerialTree<D> *serialTree_p;
+    NodeAllocator<D> *nodeAllocator_p{nullptr};
 
     // Tree data
     int nNodes;

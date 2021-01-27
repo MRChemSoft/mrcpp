@@ -35,6 +35,7 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 #include "utils/periodic_utils.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
@@ -102,7 +103,7 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
  * coefficients of BranchNodes (can be used after operator application). */
 template <int D> void MWTree<D>::mwTransformUp() {
     std::vector<MWNodeVector<D>> nodeTable;
-    makeNodeTable(nodeTable);
+    tree_utils::make_node_table(*this, nodeTable);
 #pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         int start = nodeTable.size() - 2;
@@ -122,7 +123,7 @@ template <int D> void MWTree<D>::mwTransformUp() {
  * existing scaling coefficients (can be used after operator application). */
 template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<D>> nodeTable;
-    makeNodeTable(nodeTable);
+    tree_utils::make_node_table(*this, nodeTable);
 #pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
         for (int n = 0; n < nodeTable.size(); n++) {
@@ -342,32 +343,6 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int de
     if (getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, getRootBox().getPeriodic()); }
     const MWNode<D> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
-}
-
-/** Traverse tree along the Hilbert path and find nodes of any rankId.
- * Returns one nodeVector for the whole tree. GenNodes disregarded. */
-template <int D> void MWTree<D>::makeNodeTable(MWNodeVector<D> &nodeTable) {
-    HilbertIterator<D> it(this);
-    it.setReturnGenNodes(false);
-    while (it.next()) {
-        MWNode<D> &node = it.getNode();
-        nodeTable.push_back(&node);
-    }
-}
-
-/** Traverse tree along the Hilbert path and find nodes of any rankId.
- * Returns one nodeVector per scale. GenNodes disregarded. */
-template <int D> void MWTree<D>::makeNodeTable(std::vector<MWNodeVector<D>> &nodeTable) {
-    HilbertIterator<D> it(this);
-    it.setReturnGenNodes(false);
-    while (it.next()) {
-        MWNode<D> &node = it.getNode();
-        int depth = node.getDepth();
-        if (depth + 1 > nodeTable.size()) { // Add one more element
-            nodeTable.push_back(MWNodeVector<D>());
-        }
-        nodeTable[depth].push_back(&node);
-    }
 }
 
 template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {

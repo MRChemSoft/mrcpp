@@ -24,7 +24,7 @@
  */
 
 #include "GenNode.h"
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
@@ -35,7 +35,7 @@ template <int D> void GenNode<D>::createChildren() {
 
 template <int D> void GenNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->tree->getSerialTree()->allocGenChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 
@@ -73,7 +73,7 @@ template <int D> void GenNode<D>::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementGenNodeCount();
-    this->tree->getSerialTree()->deallocGenNodes(sIdx);
+    this->getFuncTree().getGenNodeAllocator().deallocNodes(sIdx);
 }
 
 template <int D> void GenNode<D>::reCompress() {

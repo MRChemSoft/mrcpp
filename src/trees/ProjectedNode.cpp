@@ -24,8 +24,9 @@
  */
 
 #include "ProjectedNode.h"
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "utils/Printer.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
@@ -38,7 +39,7 @@ template <int D> void ProjectedNode<D>::createChildren() {
 
 template <int D> void ProjectedNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->tree->getSerialTree()->allocGenChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 
@@ -53,7 +54,7 @@ template <int D> void ProjectedNode<D>::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getSerialTree()->deallocNodes(sIdx);
+    this->tree->getNodeAllocator().deallocNodes(sIdx);
 }
 
 /** Update the coefficients of the node by a mw transform of the scaling
@@ -73,7 +74,8 @@ template <> void ProjectedNode<3>::reCompress() {
 
         assert(inp + 7 * stride == this->getMWChild(7).getCoefs());
 
-        this->tree->getSerialTree()->S_mwTransformBack(inp, out, stride);
+        auto &tree = getMWTree();
+        tree_utils::mw_transform_back(tree, inp, out, stride);
         this->setHasCoefs();
         this->calcNorms();
     }

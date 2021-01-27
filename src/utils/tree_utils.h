@@ -23,40 +23,20 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- */
-
 #pragma once
 
-#include "FunctionNode.h"
+#include "MRCPP/mrcpp_declarations.h"
 
 namespace mrcpp {
+namespace tree_utils {
 
-template <int D> class GenNode final : public FunctionNode<D> {
-public:
-    double getWaveletNorm() const override { return 0.0; }
+template<int D> bool split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec);
 
-    void createChildren() override;
-    void genChildren() override;
-    void cvTransform(int kind) override;
-    void mwTransform(int kind) override;
+template<int D> void make_node_table(MWTree<D> &tree, MWNodeVector<D> &table);
+template<int D> void make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table);
 
-    void setValues(const Eigen::VectorXd &vec) override;
-    void getValues(Eigen::VectorXd &vec) override;
+template<int D> void mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
+template<int D> void mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride);
 
-    friend class GenNodeAllocator<D>;
-
-protected:
-    GenNode()
-            : FunctionNode<D>() {}
-    GenNode(const GenNode<D> &node) = delete;
-    GenNode<D> &operator=(const GenNode<D> &node) = delete;
-    ~GenNode() override { assert(this->tree == nullptr); }
-
-    double calcComponentNorm(int i) const override;
-    void dealloc() override;
-    void reCompress() override;
-};
-
+} // namespace node_utils
 } // namespace mrcpp

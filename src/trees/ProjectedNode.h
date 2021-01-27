@@ -35,11 +35,10 @@ public:
     void genChildren() override;
     void deleteChildren() override;
 
-    friend class SerialFunctionTree<D>;
+    friend class ProjectedNodeAllocator<D>;
 
 protected:
-    ProjectedNode()
-            : FunctionNode<D>() {}
+    ProjectedNode() : FunctionNode<D>() {}
     ProjectedNode(const ProjectedNode<D> &node) = delete;
     ProjectedNode<D> &operator=(const ProjectedNode<D> &node) = delete;
     ~ProjectedNode() override { assert(this->tree == nullptr); }

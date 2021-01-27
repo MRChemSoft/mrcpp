@@ -57,9 +57,11 @@ template <int D> class MultiResolutionAnalysis;
 template <int D> class MWTree;
 template <int D> class FunctionTree;
 class OperatorTree;
-template <int D> class SerialTree;
-template <int D> class SerialFunctionTree;
-class SerialOperatorTree;
+
+template <int D> class NodeAllocator;
+template <int D> class ProjectedNodeAllocator;
+template <int D> class GenNodeAllocator;
+class OperatorNodeAllocator;
 
 template <int D> class MWNode;
 template <int D> class FunctionNode;

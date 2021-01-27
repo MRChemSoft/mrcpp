@@ -23,17 +23,20 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+ #include "FunctionTree.h"
+
 #include <fstream>
 
 #include "FunctionNode.h"
-#include "FunctionTree.h"
 #include "HilbertIterator.h"
 #include "ProjectedNode.h"
-#include "SerialFunctionTree.h"
-#include "utils/Printer.h"
-#include "utils/Timer.h"
+#include "ProjectedNodeAllocator.h"
+
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
+#include "utils/Printer.h"
+#include "utils/Timer.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
@@ -53,8 +56,9 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         : MWTree<D>(mra)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
-    this->serialTree_p = new SerialFunctionTree<D>(this, sh_mem);
-    this->serialTree_p->allocRoots(*this);
+    this->nodeAllocator_p = new ProjectedNodeAllocator<D>(this, sh_mem);
+    this->genNodeAllocator_p = new GenNodeAllocator<D>(this);
+    this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
 
@@ -66,7 +70,8 @@ template <int D> FunctionTree<D>::~FunctionTree() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
-    delete this->serialTree_p;
+    delete this->nodeAllocator_p;
+    delete this->genNodeAllocator_p;
 }
 
 /** @brief Remove all nodes in the tree
@@ -85,15 +90,17 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
-    this->getSerialFunctionTree()->clear(this->rootBox.size());
+    this->getProjectedNodeAllocator().clear(this->rootBox.size());
 }
 
 /** @brief Write the tree structure to disk, for later use
  * @param[in] file: File name, will get ".tree" extension
  */
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
-    // This is basically a copy of MPI send_tree
     Timer t1;
+    this->deleteGenerated();
+    auto &allocator = this->getProjectedNodeAllocator();
+
     std::stringstream fname;
     fname << file << ".tree";
 
@@ -101,20 +108,14 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     f.open(fname.str(), std::ios::out | std::ios::binary);
     if (not f.is_open()) MSG_ERROR("Unable to open file");
 
-    this->deleteGenerated();
-    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
-
     // Write size of tree
-    int nChunks = sTree.getNChunksUsed();
+    int nChunks = allocator.getNChunksUsed();
     f.write((char *)&nChunks, sizeof(int));
 
     // Write tree data, chunk by chunk
-    int count = 1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        f.write((char *)sTree.nodeChunks[iChunk], count);
-        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        f.write((char *)sTree.nodeCoeffChunks[iChunk], count * sizeof(double));
+        f.write((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.write((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }
     f.close();
     print::time(10, "Time write", t1);
@@ -125,7 +126,6 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
  * @note This tree must have the exact same MRA the one that was saved
  */
 template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
-    // This is basically a copy of MPI recv_tree
     Timer t1;
     std::stringstream fname;
     fname << file << ".tree";
@@ -137,39 +137,19 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // Read size of tree
     int nChunks;
     f.read((char *)&nChunks, sizeof(int));
-    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
 
     // Read tree data, chunk by chunk
-    int count = 1;
+    auto &allocator = this->getProjectedNodeAllocator();
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        if (iChunk < sTree.nodeChunks.size()) {
-            sTree.sNodes = sTree.nodeChunks[iChunk];
-        } else {
-            double *sNodesCoeff;
-            if (sTree.isShared()) {
-                // for coefficients, take from the shared memory block
-                SharedMemory *shMem = sTree.getMemory();
-                sNodesCoeff = shMem->sh_end_ptr;
-                shMem->sh_end_ptr += (sTree.sizeNodeCoeff * sTree.maxNodesPerChunk);
-                // may increase size dynamically in the future
-                if (shMem->sh_max_ptr < shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
-            } else {
-                sNodesCoeff = new double[sTree.sizeNodeCoeff * sTree.maxNodesPerChunk];
-            }
-            sTree.nodeCoeffChunks.push_back(sNodesCoeff);
-            sTree.sNodes = (ProjectedNode<D> *)new char[sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>)];
-            sTree.nodeChunks.push_back(sTree.sNodes);
-        }
-        count = sTree.maxNodesPerChunk * sizeof(ProjectedNode<D>);
-        f.read((char *)sTree.nodeChunks[iChunk], count);
-        count = sTree.sizeNodeCoeff * sTree.maxNodesPerChunk;
-        f.read((char *)sTree.nodeCoeffChunks[iChunk], count * sizeof(double));
+        allocator.initChunk(iChunk);
+        f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }
     f.close();
     print::time(10, "Time read tree", t1);
 
     Timer t2;
-    sTree.rewritePointers();
+    allocator.rewritePointers();
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -451,14 +431,6 @@ template <int D> void FunctionTree<D>::map(FMap fmap) {
     this->calcSquareNorm();
 }
 
-template <int D> int FunctionTree<D>::getNChunks() {
-    return this->getSerialFunctionTree()->getNChunks();
-}
-
-template <int D> int FunctionTree<D>::getNChunksUsed() {
-    return this->getSerialFunctionTree()->getNChunksUsed();
-}
-
 template <int D> void FunctionTree<D>::getEndValues(VectorXd &data) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
@@ -497,28 +469,6 @@ template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
     return MWTree<D>::print(o);
 }
 
-template <int D> void FunctionTree<D>::printSerialIndices() {
-    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
-    int n = 0;
-    for (int iChunk = 0; iChunk < sTree.getNChunks(); iChunk++) {
-        int iShift = iChunk * sTree.maxNodesPerChunk;
-        printout(0, "new chunk \n");
-        for (int i = 0; i < sTree.maxNodesPerChunk; i++) {
-            int status = sTree.nodeStackStatus[iShift + i];
-            int sIdx = sTree.nodeChunks[iChunk][i].serialIx;
-            int pIdx = sTree.nodeChunks[iChunk][i].parentSerialIx;
-            int cIdx = sTree.nodeChunks[iChunk][i].childSerialIx;
-            printout(0, std::setw(4) << n++);
-            printout(0, std::setw(4) << status);
-            printout(0, std::setw(6) << sIdx);
-            printout(0, std::setw(6) << pIdx);
-            printout(0, std::setw(6) << cIdx << "   ");
-            if (status == 1) printout(0, sTree.nodeChunks[iChunk][i].getNodeIndex());
-            printout(0, "\n");
-        }
-    }
-}
-
 /** @brief Reduce the precision of the tree by deleting nodes
  *
  * @param prec: New precision criterion
@@ -539,7 +489,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
-    int nChunks = this->getSerialFunctionTree()->shrinkChunks();
+    int nChunks = this->getProjectedNodeAllocator().shrinkChunks();
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;
@@ -578,8 +528,8 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
             indices.push_back(refNode->getSerialIx());
             max_index = std::max(max_index, refNode->getSerialIx());
             parent_indices.push_back(refNode->parentSerialIx); // is -1 for root nodes
-            scalefac.push_back(
-                refNode->getScaleFactor(1.0, true)); // could be faster: essentially inverse of powers of 2
+            double sfac = std::pow(2.0, -0.5*(refNode->getScale() + 1.0));
+            scalefac.push_back(sfac); // could be faster: essentially inverse of powers of 2
         } else {
             indices.push_back(-1); // indicates that the node is not in the refTree
             parent_indices.push_back(-2);
@@ -639,12 +589,13 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
         }
         node->setHasCoefs();
         node->calcNorms();
-        if (node->splitCheck(absPrec, 1.0, true) and refNode->getNChildren() > 0) {
+        bool need_split = tree_utils::split_check(*node, absPrec, 1.0, true);
+        if (need_split and refNode->getNChildren() > 0) {
             // include children in tree
             node->createChildren();
             double *inp = node->getCoefs();
             double *out = node->getMWChild(0).getCoefs();
-            this->getSerialTree()->S_mwTransform(inp, out, false, sizecoef, true); // make the scaling part
+            tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
             for (int i = 0; i < refNode->getNChildren(); i++) {
                 stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
                 int ixc = ix2coef[refNode->children[i]->getSerialIx()];
@@ -655,7 +606,6 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
             this->squareNorm += node->getSquareNorm();
         }
     }
-    SerialFunctionTree<D> &sTree = *this->getSerialFunctionTree();
 }
 
 /** Traverse tree using DFS and append same nodes as another tree, without coefficients */

@@ -61,7 +61,7 @@ template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, Cros
     const MatrixXd &rMat = ccc.getRMatrix(node.getOrder());
 
     int scale = node.getScale() + 1;
-    int t_dim = node.getMWTree().getTDim();
+    int t_dim = node.getTDim();
     int kp1_d = node.getKp1_d();
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);

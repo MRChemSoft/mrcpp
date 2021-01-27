@@ -31,18 +31,19 @@
 #include "GenNode.h"
 #include "MWTree.h"
 #include "ProjectedNode.h"
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
 /** MWNode default constructor.
- *  Should be used only by SerialTree to obtain
+ *  Should be used only by NodeAllocator to obtain
  *  virtual table pointers for the derived classes. */
 template <int D>
 MWNode<D>::MWNode()
@@ -178,21 +179,22 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     if (not this->hasCoefs()) MSG_ABORT("No coefficients!");
 
     if (overwrite) {
-        for (int i = 0; i < this->getTDim(); i++) { this->getMWChild(i).zeroCoefs(); }
+        for (int i = 0; i < getTDim(); i++) getMWChild(i).zeroCoefs();
     }
 
     // coeff of child should be have been allocated already here
-    int stride = this->getMWChild(0).getNCoefs();
-    double *inp = this->getCoefs();
-    double *out = this->getMWChild(0).getCoefs();
+    int stride = getMWChild(0).getNCoefs();
+    double *inp = getCoefs();
+    double *out = getMWChild(0).getCoefs();
     bool readOnlyScaling = false;
     if (this->isGenNode()) readOnlyScaling = true;
 
-    this->tree->getSerialTree()->S_mwTransform(inp, out, readOnlyScaling, stride, overwrite);
+    auto &tree = getMWTree();
+    tree_utils::mw_transform(tree, inp, out, readOnlyScaling, stride, overwrite);
 
-    for (int i = 0; i < this->getTDim(); i++) {
-        this->getMWChild(i).setHasCoefs();
-        this->getMWChild(i).calcNorms(); // should need to compute only scaling norms
+    for (int i = 0; i < getTDim(); i++) {
+        getMWChild(i).setHasCoefs();
+        getMWChild(i).calcNorms(); // should need to compute only scaling norms
     }
 }
 
@@ -585,7 +587,7 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
         for (int i = 0; i < this->getTDim(); i++) {
             MWNode<D> &child = *this->children[i];
             if (child.crop(prec, splitFac, absPrec)) {
-                if (this->splitCheck(prec, splitFac, absPrec) == false) {
+                if (tree_utils::split_check(*this, prec, splitFac, absPrec) == false) {
                     this->deleteChildren();
                     return true;
                 }
@@ -595,44 +597,15 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
     return false;
 }
 
-template <int D> bool MWNode<D>::splitCheck(double prec, double splitFac, bool absPrec) const {
-    if (prec < 0.0) { return false; }
-    double scale_fac = getScaleFactor(splitFac, absPrec);
-    double w_thrs = std::max(2.0 * MachinePrec, prec * scale_fac);
-    double w_norm = std::sqrt(getWaveletNorm());
-    if (w_norm > w_thrs) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-/** Calculate the threshold for the wavelet norm.
- *
- * Calculates the threshold that has to be met in the wavelet norm in order to
- * guarantee the precision in the function representation. Depends on the
- * square norm of the function and the requested relative accuracy. */
-template <int D> double MWNode<D>::getScaleFactor(double splitFac, bool absPrec) const {
-    double t_norm = 1.0;
-    double sq_norm = this->tree->getSquareNorm();
-    if (sq_norm > 0.0 and not absPrec) { t_norm = std::sqrt(sq_norm); }
-    double scale_fac = 1.0;
-    if (splitFac > MachineZero) {
-        double expo = 0.5 * splitFac * (getScale() + 1);
-        scale_fac = std::pow(2.0, -expo);
-    }
-    return t_norm * scale_fac;
-}
-
 template <int D> void MWNode<D>::createChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getSerialTree()->allocChildren(*this);
+    this->getMWTree().getNodeAllocator().allocChildren(*this);
     this->setIsBranchNode();
 }
 
 template <int D> void MWNode<D>::createChildrenNoCoeff() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getSerialTree()->allocChildrenNoCoeff(*this);
+    this->getMWTree().getNodeAllocator().allocChildrenNoCoeff(*this);
     this->setIsBranchNode();
 }
 

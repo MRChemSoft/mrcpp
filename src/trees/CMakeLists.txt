@@ -13,9 +13,9 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNode.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SerialFunctionTree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SerialOperatorTree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SerialTree.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNodeAllocator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GenNodeAllocator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNodeAllocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.cpp
   )
 
@@ -39,9 +39,10 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNode.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/SerialFunctionTree.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/SerialOperatorTree.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/SerialTree.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/ProjectedNodeAllocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/GenNodeAllocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNodeAllocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/NodeAllocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.h
   )
 

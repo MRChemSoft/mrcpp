@@ -23,29 +23,71 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "SerialTree.h"
-#include "MWTree.h"
-#include "utils/Printer.h"
-#include "utils/math_utils.h"
+#include "tree_utils.h"
 
-using namespace Eigen;
+#include <algorithm>
+#include <cmath>
+
+#include "MRCPP/constants.h"
+
+#include "math_utils.h"
+#include "Printer.h"
+
+#include "trees/HilbertIterator.h"
+#include "trees/MWTree.h"
+#include "trees/MWNode.h"
+
 
 namespace mrcpp {
 
-template <int D>
-SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
-        : nNodes(0)
-        , maxNodesPerChunk(0)
-        , sizeNodeCoeff(0)
-        , coeffStack(nullptr)
-        , maxNodes(0)
-        , tree_p(tree)
-        ,
-#ifdef MRCPP_HAS_MPI
-        shMem(mem) {
-#else
-        shMem(nullptr) {
-#endif
+/** Calculate the threshold for the wavelet norm.
+*
+* Calculates the threshold that has to be met in the wavelet norm in order to
+* guarantee the precision in the function representation. Depends on the
+* square norm of the function and the requested relative accuracy. */
+template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec) {
+    bool split = false;
+    if (prec > 0.0) {
+        double t_norm = 1.0;
+        double sq_norm = node.getMWTree().getSquareNorm();
+        if (sq_norm > 0.0 and not abs_prec) t_norm = std::sqrt(sq_norm);
+
+        double scale_fac = 1.0;
+        if (split_fac > MachineZero) {
+            double expo = 0.5 * split_fac * (node.getScale() + 1);
+            scale_fac = std::pow(2.0, -expo);
+        }
+
+        double w_thrs = std::max(2.0 * MachinePrec, prec * t_norm * scale_fac);
+        double w_norm = std::sqrt(node.getWaveletNorm());
+        if (w_norm > w_thrs) split = true;
+    }
+    return split;
+}
+
+/** Traverse tree along the Hilbert path and find nodes of any rankId.
+ * Returns one nodeVector for the whole tree. GenNodes disregarded. */
+template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<D> &table) {
+    HilbertIterator<D> it(&tree);
+    it.setReturnGenNodes(false);
+    while (it.next()) {
+        MWNode<D> &node = it.getNode();
+        table.push_back(&node);
+    }
+}
+
+/** Traverse tree along the Hilbert path and find nodes of any rankId.
+ * Returns one nodeVector per scale. GenNodes disregarded. */
+template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table) {
+    HilbertIterator<D> it(&tree);
+    it.setReturnGenNodes(false);
+    while (it.next()) {
+        MWNode<D> &node = it.getNode();
+        int depth = node.getDepth();
+        // Add one more element
+        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
+        table[depth].push_back(&node);
+    }
 }
 
 /** Make children scaling coefficients from parent
@@ -54,18 +96,18 @@ SerialTree<D>::SerialTree(MWTree<D> *tree, SharedMemory *mem)
  * The output is written directly into the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <int D>
-void SerialTree<D>::S_mwTransform(double *coeff_in,
-                                  double *coeff_out,
-                                  bool readOnlyScaling,
-                                  int stride,
-                                  bool b_overwrite) {
+template <int D> void tree_utils::mw_transform(const MWTree<D> &tree,
+                                               double *coeff_in,
+                                               double *coeff_out,
+                                               bool readOnlyScaling,
+                                               int stride,
+                                               bool b_overwrite) {
     int operation = Reconstruction;
-    int kp1 = this->getTree()->getKp1();
-    int kp1_d = this->getTree()->getKp1_d();
+    int kp1 = tree.getKp1();
+    int kp1_d = tree.getKp1_d();
     int tDim = (1 << D);
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
-    const MWFilter &filter = this->getTree()->getMRA().getFilter();
+    const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
     double tmpcoeff[kp1_d * tDim];
     double tmpcoeff2[kp1_d * tDim];
@@ -92,7 +134,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
             if ((gt | mask) == (ft | mask)) {
                 double *in = coeff_in + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                 math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                 overwrite = 1.0;
@@ -112,7 +154,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
                 if ((gt | mask) == (ft | mask)) {
                     double *in = tmpcoeff + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                    const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                    const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                     math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                     overwrite = 1.0;
@@ -135,7 +177,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
                 if ((gt | mask) == (ft | mask)) {
                     double *in = tmpcoeff2 + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                    const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                    const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                     math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                     overwrite = 1.0;
@@ -165,7 +207,7 @@ void SerialTree<D>::S_mwTransform(double *coeff_in,
 }
 
 // Specialized for D=3 below.
-template <int D> void SerialTree<D>::S_mwTransformBack(double *coeff_in, double *coeff_out, int stride) {
+template <int D> void tree_utils::mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride) {
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -175,13 +217,13 @@ template <int D> void SerialTree<D>::S_mwTransformBack(double *coeff_in, double 
  * The output is read directly from the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coeff_out, int stride) {
+template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff_in, double *coeff_out, int stride) {
     int operation = Compression;
-    int kp1 = this->getTree()->getKp1();
-    int kp1_d = this->getTree()->getKp1_d();
+    int kp1 = tree.getKp1();
+    int kp1_d = tree.getKp1_d();
     int tDim = 8;
     int kp1_dm1 = math_utils::ipow(kp1, 2);
-    const MWFilter &filter = this->getTree()->getMRA().getFilter();
+    const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
     double tmpcoeff[kp1_d * tDim];
 
@@ -200,7 +242,7 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
             if ((gt | mask) == (ft | mask)) {
                 double *in = coeff_in + ft * stride;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                 math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                 overwrite = 1.0;
@@ -219,7 +261,7 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
             if ((gt | mask) == (ft | mask)) {
                 double *in = coeff_out + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                 math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                 overwrite = 1.0;
@@ -239,7 +281,7 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
             if ((gt | mask) == (ft | mask)) {
                 double *in = tmpcoeff + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
-                const MatrixXd &oper = filter.getSubFilter(filter_index, operation);
+                const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
                 math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
                 overwrite = 1.0;
@@ -249,8 +291,24 @@ template <> void SerialTree<3>::S_mwTransformBack(double *coeff_in, double *coef
     }
 }
 
-template class SerialTree<1>;
-template class SerialTree<2>;
-template class SerialTree<3>;
+template bool tree_utils::split_check<1>(const MWNode<1> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<2>(const MWNode<2> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<3>(const MWNode<3> &node, double prec, double split_fac, bool abs_prec);
+
+template void tree_utils::make_node_table<1>(MWTree<1> &tree, MWNodeVector<1> &table);
+template void tree_utils::make_node_table<2>(MWTree<2> &tree, MWNodeVector<2> &table);
+template void tree_utils::make_node_table<3>(MWTree<3> &tree, MWNodeVector<3> &table);
+
+template void tree_utils::make_node_table<1>(MWTree<1> &tree, std::vector<MWNodeVector<1>> &table);
+template void tree_utils::make_node_table<2>(MWTree<2> &tree, std::vector<MWNodeVector<2>> &table);
+template void tree_utils::make_node_table<3>(MWTree<3> &tree, std::vector<MWNodeVector<3>> &table);
+
+template void tree_utils::mw_transform<1>(const MWTree<1> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<2>(const MWTree<2> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<3>(const MWTree<3> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+
+template void tree_utils::mw_transform_back<1>(MWTree<1> &tree, double *coeff_in, double *coeff_out, int stride);
+template void tree_utils::mw_transform_back<2>(MWTree<2> &tree, double *coeff_in, double *coeff_out, int stride);
+template void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff_in, double *coeff_out, int stride);
 
 } // namespace mrcpp

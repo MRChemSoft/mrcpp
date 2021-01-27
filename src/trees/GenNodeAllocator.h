@@ -34,44 +34,32 @@
 
 #pragma once
 
-#include <vector>
-
-#include "SerialTree.h"
-#include "utils/omp_utils.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
-class SerialOperatorTree final : public SerialTree<2> {
+template <int D> class GenNodeAllocator final : public NodeAllocator<D> {
 public:
-    SerialOperatorTree(OperatorTree *tree);
-    SerialOperatorTree(const SerialOperatorTree &tree) = delete;
-    SerialOperatorTree &operator=(const SerialOperatorTree &tree) = delete;
-    ~SerialOperatorTree() override;
+    GenNodeAllocator(FunctionTree<D> *tree);
+    GenNodeAllocator(const GenNodeAllocator<D> &tree) = delete;
+    GenNodeAllocator<D> &operator=(const GenNodeAllocator<D> &tree) = delete;
+    ~GenNodeAllocator() override;
 
-    void allocRoots(MWTree<2> &tree) override;
-    void allocChildren(MWNode<2> &parent) override;
-    void allocChildrenNoCoeff(MWNode<2> &parent) override;
-    void allocGenChildren(MWNode<2> &parent) override;
-
+    void allocRoots(MWTree<D> &tree) override;
+    void allocChildren(MWNode<D> &parent) override;
+    void allocChildrenNoCoeff(MWNode<D> &parent) override;
     void deallocNodes(int serialIx) override;
-    void deallocGenNodes(int serialIx) override;
-    void deallocGenNodeChunks() override;
+
+    int getNChunks() const override { return this->nodeChunks.size(); }
 
 protected:
-    OperatorNode *sNodes; // serial OperatorNodes
+    char *cvptr_GenNode{nullptr};  // virtual table pointer for GenNode
+    GenNode<D> *sNodes{nullptr};   // serial GenNodes
+    GenNode<D> *lastNode{nullptr}; // pointer just after the last active Gen node, i.e. where to put next node
+    std::vector<GenNode<D> *> nodeChunks;
 
-    std::vector<OperatorNode *> nodeChunks;
-    std::vector<double *> nodeCoeffChunks;
-
-    char *cvptr_OperatorNode; // virtual table pointer for OperatorNode
-    OperatorNode *lastNode;   // pointer to the last active node
-
-    OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
-
-private:
-#ifdef MRCPP_HAS_OMP
-    omp_lock_t omp_lock;
-#endif
+    GenNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+    void deallocNodeChunks();
 };
 
 } // namespace mrcpp

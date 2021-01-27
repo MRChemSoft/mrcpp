@@ -33,50 +33,47 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <vector>
 
 #include "MRCPP/mrcpp_declarations.h"
+#include "utils/omp_utils.h"
 
 namespace mrcpp {
 
-template <int D> class SerialTree {
+template <int D> class NodeAllocator {
 public:
-    SerialTree(MWTree<D> *tree, SharedMemory *mem);
-    SerialTree(const SerialTree<D> &tree) = delete;
-    SerialTree<D> &operator=(const SerialTree<D> &tree) = delete;
-    virtual ~SerialTree() = default;
+    NodeAllocator(MWTree<D> *tree, SharedMemory *mem) : tree_p(tree), shMem(mem) {}
+    NodeAllocator(const NodeAllocator<D> &tree) = delete;
+    NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
+    virtual ~NodeAllocator() = default;
 
     MWTree<D> *getTree() { return this->tree_p; }
     SharedMemory *getMemory() { return this->shMem; }
 
-    bool isShared() const {
-        if (this->shMem == nullptr) return false;
-        return true;
-    }
+    bool isShared() const { return (this->shMem != nullptr); }
 
     virtual void allocRoots(MWTree<D> &tree) = 0;
     virtual void allocChildren(MWNode<D> &parent) = 0;
     virtual void allocChildrenNoCoeff(MWNode<D> &parent) = 0;
-    virtual void allocGenChildren(MWNode<D> &parent) = 0;
-
     virtual void deallocNodes(int serialIx) = 0;
-    virtual void deallocGenNodes(int serialIx) = 0;
-    virtual void deallocGenNodeChunks() = 0;
 
-    void S_mwTransform(double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
-    void S_mwTransformBack(double *coeff_in, double *coeff_out, int stride);
-
-    int nNodes; // number of Nodes already defined
-    int maxNodesPerChunk;
-    std::vector<int> nodeStackStatus;
-    int sizeNodeCoeff; // size of coeff for one node
-    double **coeffStack;
-    int maxNodes; // max number of nodes that can be defined
+    virtual int getNChunks() const = 0;
 
 protected:
-    MWTree<D> *tree_p;
-    SharedMemory *shMem;
+    int nNodes{0};                  // number of Nodes already defined
+    int maxNodes{0};                // max number of nodes that can be defined
+    int coeffsPerNode{0};           // number of coeff for one node
+    int maxNodesPerChunk{0};        // max number of nodes per allocation
+    std::vector<int> nodeStackStatus;
+    std::vector<double *> nodeCoeffChunks;
+
+    MWTree<D> *tree_p{nullptr};     // pointer to external object
+    SharedMemory *shMem{nullptr}; // pointer to external object
+
+#ifdef MRCPP_HAS_OMP
+    omp_lock_t omp_lock;
+#endif
 };
+
 
 } // namespace mrcpp

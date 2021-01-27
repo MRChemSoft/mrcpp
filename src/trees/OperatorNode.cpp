@@ -24,7 +24,7 @@
  */
 
 #include "OperatorNode.h"
-#include "SerialTree.h"
+#include "NodeAllocator.h"
 #include "utils/math_utils.h"
 
 using namespace Eigen;
@@ -37,7 +37,7 @@ void OperatorNode::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getSerialTree()->deallocNodes(sIdx);
+    this->tree->getNodeAllocator().deallocNodes(sIdx);
 }
 
 /** Calculate one specific component norm of the OperatorNode.

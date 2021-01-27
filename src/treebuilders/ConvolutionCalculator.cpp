@@ -31,6 +31,7 @@
 #include "trees/OperatorNode.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include "utils/tree_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -357,7 +358,7 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
 
 template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     auto *nodeVec = new MWNodeVector<D>;
-    tree.makeNodeTable(*nodeVec);
+    tree_utils::make_node_table(tree, *nodeVec);
     return nodeVec;
 }
 

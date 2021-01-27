@@ -30,6 +30,7 @@
 #include "trees/MWTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include "utils/tree_utils.h"
 
 namespace mrcpp {
 
@@ -90,7 +91,7 @@ template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &
 
     Timer clean_t;
     MWNodeVector<D> nodeVec;
-    tree.makeNodeTable(nodeVec);
+    tree_utils::make_node_table(tree, nodeVec);
     calculator.calcNodeVector(nodeVec); // clear all coefficients
     clean_t.stop();
 

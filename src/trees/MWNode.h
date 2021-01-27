@@ -50,13 +50,10 @@ public:
     int getKp1_d() const { return getMWTree().getKp1_d(); }
     int getOrder() const { return getMWTree().getOrder(); }
     int getScalingType() const { return getMWTree().getMRA().getScalingBasis().getScalingType(); }
-    int getTDim() const { return getMWTree().getTDim(); }
+    int getTDim() const { return (1 << D); }
     int getDepth() const { return getNodeIndex().getScale() - getMWTree().getRootScale(); }
     int getScale() const { return getNodeIndex().getScale(); }
-    int getNChildren() const {
-        if (isBranchNode()) return getTDim();
-        return 0;
-    }
+    int getNChildren() const { return (isBranchNode()) ? getTDim() : 0; }
     int getSerialIx() const { return this->serialIx; }
     void setSerialIx(int Ix) { this->serialIx = Ix; }
 
@@ -130,8 +127,6 @@ public:
     virtual void cvTransform(int kind);
     virtual void mwTransform(int kind);
 
-    bool splitCheck(double prec, double splitFac, bool absPrec) const;
-
     double getNodeNorm(const NodeIndex<D> &idx) const;
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
@@ -152,8 +147,9 @@ public:
 
     friend class TreeBuilder<D>;
     friend class MultiplicationCalculator<D>;
-    friend class SerialFunctionTree<D>;
-    friend class SerialOperatorTree;
+    friend class ProjectedNodeAllocator<D>;
+    friend class GenNodeAllocator<D>;
+    friend class OperatorNodeAllocator;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
@@ -183,7 +179,6 @@ protected:
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
-    double getScaleFactor(double splitFac, bool absPrec) const;
 
     virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();

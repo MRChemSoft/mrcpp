@@ -23,40 +23,42 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
+/**
+ *
+ *
+ *  \date Jul, 2016
+ *  \author Peter Wind <peter.wind@uit.no> \n
+ *  CTCC, University of Tromsø
  *
  */
 
 #pragma once
 
-#include "FunctionNode.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
-template <int D> class GenNode final : public FunctionNode<D> {
+class OperatorNodeAllocator final : public NodeAllocator<2> {
 public:
-    double getWaveletNorm() const override { return 0.0; }
+    OperatorNodeAllocator(OperatorTree *tree);
+    OperatorNodeAllocator(const OperatorNodeAllocator &tree) = delete;
+    OperatorNodeAllocator &operator=(const OperatorNodeAllocator &tree) = delete;
+    ~OperatorNodeAllocator() override;
 
-    void createChildren() override;
-    void genChildren() override;
-    void cvTransform(int kind) override;
-    void mwTransform(int kind) override;
+    void allocRoots(MWTree<2> &tree) override;
+    void allocChildren(MWNode<2> &parent) override;
+    void allocChildrenNoCoeff(MWNode<2> &parent) override;
+    void deallocNodes(int serialIx) override;
 
-    void setValues(const Eigen::VectorXd &vec) override;
-    void getValues(Eigen::VectorXd &vec) override;
-
-    friend class GenNodeAllocator<D>;
+    int getNChunks() const override { return this->nodeChunks.size(); }
 
 protected:
-    GenNode()
-            : FunctionNode<D>() {}
-    GenNode(const GenNode<D> &node) = delete;
-    GenNode<D> &operator=(const GenNode<D> &node) = delete;
-    ~GenNode() override { assert(this->tree == nullptr); }
+    char *cvptr_OperatorNode{nullptr};   // virtual table pointer for OperatorNode
+    OperatorNode *sNodes{nullptr};       // serial OperatorNodes
+    OperatorNode *lastNode{nullptr};     // pointer to the last active node
+    std::vector<OperatorNode *> nodeChunks;
 
-    double calcComponentNorm(int i) const override;
-    void dealloc() override;
-    void reCompress() override;
+    OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
 };
 
 } // namespace mrcpp

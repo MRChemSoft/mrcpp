@@ -27,9 +27,10 @@
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
 #include "OperatorNode.h"
-#include "SerialOperatorTree.h"
-#include "SerialTree.h"
+#include "OperatorNodeAllocator.h"
+#include "NodeAllocator.h"
 #include "utils/Printer.h"
+#include "utils/tree_utils.h"
 
 using namespace Eigen;
 
@@ -43,8 +44,8 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         , nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
 
-    this->serialTree_p = new SerialOperatorTree(this);
-    this->serialTree_p->allocRoots(*this);
+    this->nodeAllocator_p = new OperatorNodeAllocator(this);
+    this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
 
@@ -57,7 +58,7 @@ OperatorTree::~OperatorTree() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
-    delete this->serialTree_p;
+    delete this->nodeAllocator_p;
 }
 
 void OperatorTree::clearBandWidth() {
@@ -167,7 +168,7 @@ void OperatorTree::clearOperNodeCache() {
  * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformUp() {
     std::vector<MWNodeVector<2>> nodeTable;
-    makeNodeTable(nodeTable);
+    tree_utils::make_node_table(*this, nodeTable);
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
         int nNodes = nodeTable[n].size();
@@ -186,7 +187,7 @@ void OperatorTree::mwTransformUp() {
  * in parallel. FunctionTrees should be fine. */
 void OperatorTree::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<2>> nodeTable;
-    makeNodeTable(nodeTable);
+    tree_utils::make_node_table(*this, nodeTable);
     for (auto &n : nodeTable) {
         int n_nodes = n.size();
         for (int i = 0; i < n_nodes; i++) {

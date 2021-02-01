@@ -589,7 +589,7 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
         }
         node->setHasCoefs();
         node->calcNorms();
-        bool need_split = tree_utils::split_check(*node, absPrec, 1.0, true);
+        bool need_split = absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true);
         if (need_split and refNode->getNChildren() > 0) {
             // include children in tree
             node->createChildren();

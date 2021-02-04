@@ -46,8 +46,7 @@ public:
     ~GenNodeAllocator() override;
 
     void allocRoots(MWTree<D> &tree) override;
-    void allocChildren(MWNode<D> &parent) override;
-    void allocChildrenNoCoeff(MWNode<D> &parent) override;
+    void allocChildren(MWNode<D> &parent, bool allocCoefs) override;
     void deallocNodes(int serialIx) override;
 
     int getNChunks() const override { return this->nodeChunks.size(); }

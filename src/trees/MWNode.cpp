@@ -597,15 +597,9 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
     return false;
 }
 
-template <int D> void MWNode<D>::createChildren() {
+template <int D> void MWNode<D>::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getNodeAllocator().allocChildren(*this);
-    this->setIsBranchNode();
-}
-
-template <int D> void MWNode<D>::createChildrenNoCoeff() {
-    if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getNodeAllocator().allocChildrenNoCoeff(*this);
+    this->getMWTree().getNodeAllocator().allocChildren(*this, coefs);
     this->setIsBranchNode();
 }
 

@@ -592,7 +592,7 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
         bool need_split = absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true);
         if (need_split and refNode->getNChildren() > 0) {
             // include children in tree
-            node->createChildren();
+            node->createChildren(true);
             double *inp = node->getCoefs();
             double *out = node->getMWChild(0).getCoefs();
             tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
@@ -623,7 +623,7 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         MWNode<D> *inNode = instack.back();
         instack.pop_back();
         if (inNode->getNChildren() > 0) {
-            if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildrenNoCoeff();
+            if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildren(false);
             for (int i = 0; i < inNode->getNChildren(); i++) {
                 instack.push_back(inNode->children[i]);
                 thisstack.push_back(thisNode->children[i]);

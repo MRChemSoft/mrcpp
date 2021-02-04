@@ -37,7 +37,7 @@ template <int D> class GenNode final : public FunctionNode<D> {
 public:
     double getWaveletNorm() const override { return 0.0; }
 
-    void createChildren() override;
+    void createChildren(bool coefs) override;
     void genChildren() override;
     void cvTransform(int kind) override;
     void mwTransform(int kind) override;

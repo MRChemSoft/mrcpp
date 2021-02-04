@@ -126,13 +126,18 @@ void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
     }
 }
 
-void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
-    int sIx;
-    double *coefs_p;
+void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
+    int sIx;
     int nChildren = parent.getTDim();
-    OperatorNode *child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    double *coefs_p = nullptr;
+    OperatorNode *child_p = nullptr;
+    if (allocCoefs) {
+        child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    } else {
+        NOT_REACHED_ABORT;
+    }
 
     // position of first child
     parent.childSerialIx = sIx;
@@ -151,7 +156,7 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->coeffsPerNode;
+        child_p->n_coefs = (allocCoefs) ? this->coeffsPerNode : 0;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -163,7 +168,7 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
 
         child_p->clearNorms();
         child_p->setIsLeafNode();
-        child_p->setIsAllocated();
+        if (allocCoefs) child_p->setIsAllocated();
         child_p->clearHasCoefs();
         child_p->setIsEndNode();
 
@@ -171,12 +176,8 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent) {
 
         sIx++;
         child_p++;
-        coefs_p += this->coeffsPerNode;
+        if (allocCoefs) coefs_p += this->coeffsPerNode;
     }
-}
-
-void OperatorNodeAllocator::allocChildrenNoCoeff(MWNode<2> &parent) {
-    NOT_IMPLEMENTED_ABORT;
 }
 
 // return pointer to the last active node or NULL if failed

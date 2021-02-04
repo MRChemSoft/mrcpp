@@ -119,8 +119,7 @@ public:
     void zeroNorms();
     void clearNorms();
 
-    virtual void createChildren();
-    virtual void createChildrenNoCoeff();
+    virtual void createChildren(bool coefs);
     virtual void genChildren();
     virtual void deleteChildren();
 

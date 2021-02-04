@@ -82,17 +82,18 @@ template <int D> void GenNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     NOT_REACHED_ABORT;
 }
 
-template <int D> void GenNodeAllocator<D>::allocChildrenNoCoeff(MWNode<D> &parent) {
-    NOT_REACHED_ABORT;
-}
-
-template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
-    int sIx;
-    double *coefs_p;
+template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
+    int sIx;
     int nChildren = parent.getTDim();
-    GenNode<D> *child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    double *coefs_p = nullptr;
+    GenNode<D> *child_p = nullptr;
+    if (allocCoefs) {
+        child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    } else {
+        NOT_REACHED_ABORT;
+    }
 
     // position of first child
     parent.childSerialIx = sIx; // not used fro Gennodes?
@@ -103,7 +104,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
 
         child_p->tree = parent.tree;
         child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
+        for (int i = 0; i < child_p->getTDim(); i++) child_p->children[i] = nullptr;
 
         child_p->maxSquareNorm = -1.0;
         child_p->maxWSquareNorm = -1.0;
@@ -111,7 +112,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->coeffsPerNode;
+        child_p->n_coefs = (allocCoefs) ? this->coeffsPerNode : 0;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -123,7 +124,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
 
         child_p->clearNorms();
         child_p->setIsLeafNode();
-        child_p->setIsAllocated();
+        if (allocCoefs) child_p->setIsAllocated();
         child_p->clearHasCoefs();
         child_p->setIsGenNode();
 
@@ -131,7 +132,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
 
         sIx++;
         child_p++;
-        coefs_p += this->coeffsPerNode;
+        if (allocCoefs) coefs_p += this->coeffsPerNode;
     }
 }
 

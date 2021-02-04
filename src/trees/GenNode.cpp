@@ -29,13 +29,13 @@
 
 namespace mrcpp {
 
-template <int D> void GenNode<D>::createChildren() {
+template <int D> void GenNode<D>::createChildren(bool coefs) {
     NOT_REACHED_ABORT;
 }
 
 template <int D> void GenNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
     this->setIsBranchNode();
 }
 

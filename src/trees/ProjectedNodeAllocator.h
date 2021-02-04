@@ -54,8 +54,7 @@ public:
     ProjectedNode<D> *getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void allocRoots(MWTree<D> &tree) override;
-    void allocChildren(MWNode<D> &parent) override;
-    void allocChildrenNoCoeff(MWNode<D> &parent) override;
+    void allocChildren(MWNode<D> &parent, bool allocCoefs) override;
     void deallocNodes(int serialIx) override;
 
     int shrinkChunks();

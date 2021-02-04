@@ -142,13 +142,18 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     }
 }
 
-template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent) {
-    int sIx;
-    double *coefs_p;
+template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
+    int sIx;
     int nChildren = parent.getTDim();
-    ProjectedNode<D> *child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    double *coefs_p = nullptr;
+    ProjectedNode<D> *child_p = nullptr;
+    if (allocCoefs) {
+        child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
+    } else {
+        child_p = this->allocNodes(nChildren, &sIx);
+    }
 
     // position of first child
     parent.childSerialIx = sIx;
@@ -159,7 +164,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
         child_p->tree = parent.tree;
         child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
+        for (int i = 0; i < child_p->getTDim(); i++) child_p->children[i] = nullptr;
 
         child_p->maxSquareNorm = -1.0;
         child_p->maxWSquareNorm = -1.0;
@@ -167,7 +172,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
         child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
         child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
 
-        child_p->n_coefs = this->coeffsPerNode;
+        child_p->n_coefs = (allocCoefs) ? this->coeffsPerNode : 0;
         child_p->coefs = coefs_p;
 
         child_p->lockX = 0;
@@ -179,7 +184,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
         child_p->clearNorms();
         child_p->setIsLeafNode();
-        child_p->setIsAllocated();
+        if (allocCoefs) child_p->setIsAllocated();
         child_p->clearHasCoefs();
         child_p->setIsEndNode();
 
@@ -187,53 +192,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
         sIx++;
         child_p++;
-        coefs_p += this->coeffsPerNode;
-    }
-}
-
-template <int D> void ProjectedNodeAllocator<D>::allocChildrenNoCoeff(MWNode<D> &parent) {
-    int sIx;
-    // all children must be generated at once if several threads are active
-    int nChildren = parent.getTDim();
-    ProjectedNode<D> *child_p = this->allocNodes(nChildren, &sIx);
-
-    // position of first child
-    parent.childSerialIx = sIx;
-    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        parent.children[cIdx] = child_p;
-
-        *(char **)(child_p) = this->cvptr_ProjectedNode;
-
-        child_p->tree = parent.tree;
-        child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
-
-        child_p->maxSquareNorm = -1.0;
-        child_p->maxWSquareNorm = -1.0;
-
-        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
-        child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
-
-        child_p->n_coefs = 0;
-        child_p->coefs = nullptr;
-
-        child_p->lockX = 0;
-        child_p->serialIx = sIx;
-        child_p->parentSerialIx = parent.serialIx;
-        child_p->childSerialIx = -1;
-
-        child_p->status = 0;
-
-        child_p->clearNorms();
-        child_p->setIsLeafNode();
-        child_p->clearIsAllocated();
-        child_p->clearHasCoefs();
-        child_p->setIsEndNode();
-
-        child_p->tree->incrementNodeCount(child_p->getScale());
-
-        sIx++;
-        child_p++;
+        if (allocCoefs) coefs_p += this->coeffsPerNode;
     }
 }
 

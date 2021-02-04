@@ -32,14 +32,14 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D> void ProjectedNode<D>::createChildren() {
-    MWNode<D>::createChildren();
+template <int D> void ProjectedNode<D>::createChildren(bool coefs) {
+    MWNode<D>::createChildren(coefs);
     this->clearIsEndNode();
 }
 
 template <int D> void ProjectedNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getFuncTree().getGenNodeAllocator().allocChildren(*this);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
     this->setIsBranchNode();
 }
 

@@ -40,12 +40,12 @@ public:
     const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
     const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
 
-    void createChildren() override {
-        MWNode<2>::createChildren();
+    void createChildren(bool coefs) override {
+        MWNode<2>::createChildren(coefs);
         this->clearIsEndNode();
     }
     void genChildren() override {
-        MWNode<2>::createChildren();
+        MWNode<2>::createChildren(true);
         this->clearIsEndNode();
         this->giveChildrenCoefs();
     }

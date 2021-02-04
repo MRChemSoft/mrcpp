@@ -45,11 +45,7 @@ public:
             if (node.isBranchNode()) continue;
             if (node.getScale() + 2 > this->maxScale) continue;
             if (splitNode(node)) {
-                if (this->allocCoefs) {
-                    node.createChildren();
-                } else {
-                    node.createChildrenNoCoeff();
-                }
+                node.createChildren(this->allocCoefs);
                 for (int i = 0; i < node.getNChildren(); i++) out.push_back(&node.getMWChild(i));
             }
         }

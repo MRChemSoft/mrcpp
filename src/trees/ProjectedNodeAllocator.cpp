@@ -226,7 +226,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildrenNoCoeff(MWNode<D> 
 
         child_p->clearNorms();
         child_p->setIsLeafNode();
-        child_p->setIsAllocated();
+        child_p->clearIsAllocated();
         child_p->clearHasCoefs();
         child_p->setIsEndNode();
 

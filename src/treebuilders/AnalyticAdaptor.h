@@ -32,8 +32,8 @@ namespace mrcpp {
 
 template <int D> class AnalyticAdaptor final : public TreeAdaptor<D> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms)
-            : TreeAdaptor<D>(ms)
+    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms, bool alloc = true)
+            : TreeAdaptor<D>(ms, alloc)
             , func(&f) {}
 
 private:

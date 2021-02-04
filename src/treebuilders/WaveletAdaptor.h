@@ -33,8 +33,8 @@ namespace mrcpp {
 
 template <int D> class WaveletAdaptor : public TreeAdaptor<D> {
 public:
-    WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
-            : TreeAdaptor<D>(ms)
+    WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0, bool alloc = true)
+            : TreeAdaptor<D>(ms, alloc)
             , absPrec(ap)
             , prec(pr)
             , splitFac(sf) {}

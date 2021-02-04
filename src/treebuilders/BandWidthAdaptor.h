@@ -36,8 +36,8 @@ namespace mrcpp {
 
 class BandWidthAdaptor final : public TreeAdaptor<2> {
 public:
-    BandWidthAdaptor(int bw, int ms)
-            : TreeAdaptor<2>(ms)
+    BandWidthAdaptor(int bw, int ms, bool alloc = true)
+            : TreeAdaptor<2>(ms, alloc)
             , bandWidth(bw) {}
 
 private:

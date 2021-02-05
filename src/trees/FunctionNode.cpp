@@ -207,7 +207,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
 
 template <int D> void FunctionNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true, true);
     this->setIsBranchNode();
 }
 

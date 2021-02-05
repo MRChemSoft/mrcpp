@@ -54,7 +54,7 @@ public:
     FunctionNode<D> *getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void allocRoots(MWTree<D> &tree) override;
-    void allocChildren(MWNode<D> &parent, bool allocCoefs) override;
+    void allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) override;
     void deallocNodes(int serialIx) override;
 
     int shrinkChunks();

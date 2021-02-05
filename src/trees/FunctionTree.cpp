@@ -59,7 +59,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
     for (int i = 0; i < this->nThreads; i++) this->nGenNodes[i] = 0;
 
     this->nodeAllocator_p = new ProjectedNodeAllocator<D>(this, sh_mem);
-    this->genNodeAllocator_p = new GenNodeAllocator<D>(this);
+    this->genNodeAllocator_p = new ProjectedNodeAllocator<D>(this, nullptr);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
 }

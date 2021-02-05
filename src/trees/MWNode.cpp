@@ -598,7 +598,7 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
 
 template <int D> void MWNode<D>::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getNodeAllocator().allocChildren(*this, coefs);
+    this->getMWTree().getNodeAllocator().allocChildren(*this, coefs, false);
     this->setIsBranchNode();
 }
 

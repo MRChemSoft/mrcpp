@@ -142,7 +142,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     }
 }
 
-template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs) {
+template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
     int sIx;
@@ -184,11 +184,16 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
         child_p->clearNorms();
         child_p->setIsLeafNode();
-        if (allocCoefs) child_p->setIsAllocated();
-        child_p->clearHasCoefs();
         child_p->setIsEndNode();
+        child_p->clearHasCoefs();
+        if (allocCoefs) child_p->setIsAllocated();
 
-        child_p->tree->incrementNodeCount(child_p->getScale());
+        if (genNode) {
+            child_p->setIsGenNode();
+            child_p->getFuncTree().incrementGenNodeCount();
+        } else {
+            child_p->getFuncTree().incrementNodeCount(child_p->getScale());
+        }
 
         sIx++;
         child_p++;
@@ -198,6 +203,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 
 // return pointer to the last active node or NULL if failed
 template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+    MRCPP_SET_OMP_LOCK();
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -265,12 +271,14 @@ template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAll
     this->nNodes += nAlloc;
     this->lastNode += nAlloc;
 
+    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
 template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
+    MRCPP_SET_OMP_LOCK();
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -325,10 +333,12 @@ template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAll
     this->nNodes += nAlloc;
     this->lastNode += nAlloc;
 
+    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 template <int D> void ProjectedNodeAllocator<D>::deallocNodes(int serialIx) {
+    MRCPP_SET_OMP_LOCK();
     if (this->nNodes < 0) {
         println(0, "minNodes exceeded " << this->nNodes);
         this->nNodes++;
@@ -345,6 +355,7 @@ template <int D> void ProjectedNodeAllocator<D>::deallocNodes(int serialIx) {
         int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
         this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
     }
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */

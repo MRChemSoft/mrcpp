@@ -115,7 +115,6 @@ public:
     friend class TreeBuilder<D>;
     friend class NodeAllocator<D>;
     friend class ProjectedNodeAllocator<D>;
-    friend class GenNodeAllocator<D>;
     friend class OperatorNodeAllocator;
 
 protected:

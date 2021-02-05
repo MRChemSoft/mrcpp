@@ -29,7 +29,6 @@
 
 #include "MWTree.h"
 #include "ProjectedNodeAllocator.h"
-#include "GenNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -91,7 +90,7 @@ public:
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
     ProjectedNodeAllocator<D> &getProjectedNodeAllocator() { return static_cast<ProjectedNodeAllocator<D> &>(*this->nodeAllocator_p); }
-    GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    ProjectedNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -116,7 +115,7 @@ public:
 
 protected:
     int *nGenNodes;
-    GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    ProjectedNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };
 

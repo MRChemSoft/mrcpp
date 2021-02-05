@@ -126,7 +126,8 @@ void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
     }
 }
 
-void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs) {
+void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs, bool genNode) {
+    if (genNode) MSG_WARN("Operators should not have GenNodes");
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
     int sIx;

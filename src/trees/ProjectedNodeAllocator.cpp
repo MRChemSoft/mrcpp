@@ -25,7 +25,7 @@
 
 #include "ProjectedNodeAllocator.h"
 #include "FunctionTree.h"
-#include "ProjectedNode.h"
+#include "FunctionNode.h"
 #include "utils/Printer.h"
 #include "utils/mpi_utils.h"
 
@@ -38,7 +38,7 @@ namespace mrcpp {
  * Serial trees are made of projected nodes, and include gennodes and loose nodes separately.
  * All created (using class creator) Projected nodes or GenNodes are loose nodes.
  * Loose nodes have their coeff in serial Tree, but not the node part.
- * Projected nodes and GenNodes that are created by their creator, are detroyed by destructor ~ProjectedNode and
+ * Projected nodes and GenNodes that are created by their creator, are detroyed by destructor ~FunctionNode and
  * ~GenNode. Serial tree nodes are not using the destructors, but explicitely call to deallocNodes or deallocGenNodes
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
@@ -61,10 +61,10 @@ ProjectedNodeAllocator<D>::ProjectedNodeAllocator(FunctionTree<D> *tree, SharedM
     }
 
     // position just after last allocated node, i.e. where to put next node
-    this->lastNode = static_cast<ProjectedNode<D> *>(this->sNodes);
+    this->lastNode = static_cast<FunctionNode<D> *>(this->sNodes);
 
     // make virtual table pointers
-    auto *tmpNode = new ProjectedNode<D>();
+    auto *tmpNode = new FunctionNode<D>();
     this->cvptr_ProjectedNode = *(char **)(tmpNode);
     delete tmpNode;
 
@@ -99,7 +99,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     double *coefs_p;
     // reserve place for nRoots
     int nRoots = tree.getRootBox().size();
-    ProjectedNode<D> *root_p = this->allocNodes(nRoots, &sIx, &coefs_p);
+    FunctionNode<D> *root_p = this->allocNodes(nRoots, &sIx, &coefs_p);
 
     MWNode<D> **roots = tree.getRootBox().getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
@@ -148,7 +148,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
     int sIx;
     int nChildren = parent.getTDim();
     double *coefs_p = nullptr;
-    ProjectedNode<D> *child_p = nullptr;
+    FunctionNode<D> *child_p = nullptr;
     if (allocCoefs) {
         child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
     } else {
@@ -197,7 +197,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 }
 
 // return pointer to the last active node or NULL if failed
-template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -223,7 +223,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
             }
 
             this->nodeCoeffChunks.push_back(sNodesCoeff);
-            this->sNodes = (ProjectedNode<D> *)new char[this->maxNodesPerChunk * sizeof(ProjectedNode<D>)];
+            this->sNodes = (FunctionNode<D> *)new char[this->maxNodesPerChunk * sizeof(FunctionNode<D>)];
             for (int i = 0; i < this->maxNodesPerChunk; i++) {
                 this->sNodes[i].serialIx = -1;
                 this->sNodes[i].parentSerialIx = -1;
@@ -250,8 +250,8 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
     }
     assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
-    ProjectedNode<D> *newNode = this->lastNode;
-    ProjectedNode<D> *newNode_cp = newNode;
+    FunctionNode<D> *newNode = this->lastNode;
+    FunctionNode<D> *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
     *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
@@ -270,7 +270,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
-template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
+template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -284,7 +284,7 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
         // careful: nodeChunks.size() is an unsigned int
         if (chunk + 1 > this->nodeChunks.size()) {
             // need to allocate new chunk
-            this->sNodes = (ProjectedNode<D> *)new char[this->maxNodesPerChunk * sizeof(ProjectedNode<D>)];
+            this->sNodes = (FunctionNode<D> *)new char[this->maxNodesPerChunk * sizeof(FunctionNode<D>)];
             for (int i = 0; i < this->maxNodesPerChunk; i++) {
                 this->sNodes[i].serialIx = -1;
                 this->sNodes[i].parentSerialIx = -1;
@@ -311,8 +311,8 @@ template <int D> ProjectedNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAl
     }
     assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
-    ProjectedNode<D> *newNode = this->lastNode;
-    ProjectedNode<D> *newNode_cp = newNode;
+    FunctionNode<D> *newNode = this->lastNode;
+    FunctionNode<D> *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
 
@@ -378,7 +378,7 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
         // move node from posocc to posavail
         int ichunk = posocc / this->maxNodesPerChunk;
         int inode = posocc % this->maxNodesPerChunk;
-        ProjectedNode<D> *NodeOcc = this->nodeChunks[ichunk] + inode;
+        FunctionNode<D> *NodeOcc = this->nodeChunks[ichunk] + inode;
 
         // check that all siblings are consecutive. Should never be root node.
         for (int i = 0; i < nAlloc; i++) assert(this->nodeStackStatus[posavail + i] == 0);
@@ -387,10 +387,10 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
 
         ichunk = posavail / this->maxNodesPerChunk;
         inode = posavail % this->maxNodesPerChunk;
-        ProjectedNode<D> *NodeAvail = this->nodeChunks[ichunk] + inode;
+        FunctionNode<D> *NodeAvail = this->nodeChunks[ichunk] + inode;
 
         // just copy everything "as is"
-        for (int i = 0; i < nAlloc * sizeof(ProjectedNode<D>); i++) ((char *)NodeAvail)[i] = ((char *)NodeOcc)[i];
+        for (int i = 0; i < nAlloc * sizeof(FunctionNode<D>); i++) ((char *)NodeAvail)[i] = ((char *)NodeOcc)[i];
 
         // coefs have new adresses
         for (int i = 0; i < nAlloc; i++)
@@ -476,14 +476,14 @@ template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool coeff) {
     MWNode<D> **roots = rBox.getNodes();
 
     int DepthMax = 100, slen = 0;
-    ProjectedNode<D> *stack[DepthMax * 8];
+    FunctionNode<D> *stack[DepthMax * 8];
     for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
         roots[rIdx] = (this->nodeChunks[0]) + rIdx; // adress of roots are at start of NodeChunks[0] array
         stack[slen++] = (this->nodeChunks[0]) + rIdx;
     }
     this->nNodes = 0;
     while (slen) {
-        ProjectedNode<D> *node = stack[--slen];
+        FunctionNode<D> *node = stack[--slen];
         for (int i = 0; i < node->getNChildren(); i++) {
             int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
             int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
@@ -568,7 +568,7 @@ template <int D> void ProjectedNodeAllocator<D>::initChunk(int iChunk, bool coef
             sNodesCoeff = new double[getCoeffChunkSize()];
         }
         if (coeff) this->nodeCoeffChunks.push_back(sNodesCoeff);
-        this->sNodes = (ProjectedNode<D> *)new char[getNodeChunkSize()];
+        this->sNodes = (FunctionNode<D> *)new char[getNodeChunkSize()];
         this->nodeChunks.push_back(this->sNodes);
     }
 }

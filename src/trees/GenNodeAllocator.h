@@ -53,11 +53,11 @@ public:
 
 protected:
     char *cvptr_GenNode{nullptr};  // virtual table pointer for GenNode
-    ProjectedNode<D> *sNodes{nullptr};   // serial GenNodes
-    ProjectedNode<D> *lastNode{nullptr}; // pointer just after the last active Gen node, i.e. where to put next node
-    std::vector<ProjectedNode<D> *> nodeChunks;
+    FunctionNode<D> *sNodes{nullptr};   // serial GenNodes
+    FunctionNode<D> *lastNode{nullptr}; // pointer just after the last active Gen node, i.e. where to put next node
+    std::vector<FunctionNode<D> *> nodeChunks;
 
-    ProjectedNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+    FunctionNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
     void deallocNodeChunks();
 };
 

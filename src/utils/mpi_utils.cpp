@@ -27,7 +27,6 @@
 #include "Printer.h"
 #include "Timer.h"
 #include "trees/FunctionTree.h"
-#include "trees/ProjectedNode.h"
 #include "trees/ProjectedNodeAllocator.h"
 
 namespace mrcpp {

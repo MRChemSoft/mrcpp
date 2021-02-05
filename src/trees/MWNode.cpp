@@ -29,7 +29,6 @@
 
 #include "MWNode.h"
 #include "MWTree.h"
-#include "ProjectedNode.h"
 #include "NodeAllocator.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"

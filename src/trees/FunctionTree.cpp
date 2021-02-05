@@ -29,7 +29,6 @@
 
 #include "FunctionNode.h"
 #include "HilbertIterator.h"
-#include "ProjectedNode.h"
 #include "ProjectedNodeAllocator.h"
 
 #include "utils/mpi_utils.h"

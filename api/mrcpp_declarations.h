@@ -65,7 +65,6 @@ class OperatorNodeAllocator;
 
 template <int D> class MWNode;
 template <int D> class FunctionNode;
-template <int D> class ProjectedNode;
 class OperatorNode;
 
 template <int D> class IdentityConvolution;

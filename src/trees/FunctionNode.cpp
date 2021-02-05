@@ -29,6 +29,7 @@
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 #include "utils/periodic_utils.h"
+#include "utils/tree_utils.h"
 
 #ifdef HAVE_BLAS
 extern "C" {
@@ -197,6 +198,61 @@ template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
     this->cvTransform(Backward);
     this->mwTransform(Compression);
     this->coefs = coefsTmp; // restore original array (same address)
+}
+
+template <int D> void FunctionNode<D>::createChildren(bool coefs) {
+    MWNode<D>::createChildren(coefs);
+    this->clearIsEndNode();
+}
+
+template <int D> void FunctionNode<D>::genChildren() {
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
+    this->setIsBranchNode();
+}
+
+template <int D> void FunctionNode<D>::deleteChildren() {
+    MWNode<D>::deleteChildren();
+    this->setIsEndNode();
+}
+
+template <int D> void FunctionNode<D>::dealloc() {
+    int sIdx = this->serialIx;
+    this->serialIx = -1;
+    this->parentSerialIx = -1;
+    this->childSerialIx = -1;
+    auto &ftree = this->getFuncTree();
+    if (this->isGenNode()) {
+        ftree.decrementGenNodeCount();
+        ftree.getGenNodeAllocator().deallocNodes(sIdx);
+    } else {
+        ftree.decrementNodeCount(this->getScale());
+        ftree.getNodeAllocator().deallocNodes(sIdx);
+    }
+}
+
+/** Update the coefficients of the node by a mw transform of the scaling
+ * coefficients of the children. Option to overwrite or add up existing
+ * coefficients. Specialized for D=3 below. */
+template <int D> void FunctionNode<D>::reCompress() {
+    MWNode<D>::reCompress();
+}
+
+template <> void FunctionNode<3>::reCompress() {
+    if (this->isBranchNode()) {
+        if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
+        // can write directly from children coeff into parent coeff
+        int stride = this->getMWChild(0).getNCoefs();
+        double *inp = this->getMWChild(0).getCoefs();
+        double *out = this->coefs;
+
+        assert(inp + 7 * stride == this->getMWChild(7).getCoefs());
+
+        auto &tree = getMWTree();
+        tree_utils::mw_transform_back(tree, inp, out, stride);
+        this->setHasCoefs();
+        this->calcNorms();
+    }
 }
 
 /** Inner product of the functions represented by the scaling basis of the nodes.

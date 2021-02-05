@@ -32,7 +32,7 @@
 
 namespace mrcpp {
 
-template <int D> class FunctionNode : public MWNode<D> {
+template <int D> class FunctionNode final : public MWNode<D> {
 public:
     FunctionTree<D> &getFuncTree() { return static_cast<FunctionTree<D> &>(*this->tree); }
     FunctionNode<D> &getFuncParent() { return static_cast<FunctionNode<D> &>(*this->parent); }
@@ -40,15 +40,19 @@ public:
 
     const FunctionTree<D> &getFuncTree() const { return static_cast<const FunctionTree<D> &>(*this->tree); }
     const FunctionNode<D> &getFuncParent() const { return static_cast<const FunctionNode<D> &>(*this->parent); }
-    const FunctionNode<D> &getFuncChild(int i) const {
-        return static_cast<const FunctionNode<D> &>(*this->children[i]);
-    }
+    const FunctionNode<D> &getFuncChild(int i) const { return static_cast<const FunctionNode<D> &>(*this->children[i]); }
+
+    void createChildren(bool coefs) override;
+    void genChildren() override;
+    void deleteChildren() override;
 
     virtual void setValues(const Eigen::VectorXd &vec);
     virtual void getValues(Eigen::VectorXd &vec);
     virtual void getAbsCoefs(double *absCoefs);
 
     friend class FunctionTree<D>;
+    friend class GenNodeAllocator<D>;
+    friend class ProjectedNodeAllocator<D>;
 
 protected:
     FunctionNode()
@@ -59,6 +63,9 @@ protected:
 
     double evalf(Coord<D> r);
     double evalScaling(const Coord<D> &r) const;
+
+    void dealloc() override;
+    void reCompress() override;
 
     double integrate() const;
     double integrateLegendre() const;

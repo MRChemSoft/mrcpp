@@ -24,7 +24,7 @@
  */
 
 #include "GenNodeAllocator.h"
-#include "ProjectedNode.h"
+#include "FunctionNode.h"
 #include "FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/mpi_utils.h"
@@ -64,7 +64,7 @@ GenNodeAllocator<D>::GenNodeAllocator(FunctionTree<D> *tree)
     this->lastNode = this->sNodes;
 
     // make virtual table pointers
-    auto *tmpGenNode = new ProjectedNode<D>();
+    auto *tmpGenNode = new FunctionNode<D>();
     this->cvptr_GenNode = *(char **)(tmpGenNode);
     delete tmpGenNode;
 
@@ -88,7 +88,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool
     int sIx;
     int nChildren = parent.getTDim();
     double *coefs_p = nullptr;
-    ProjectedNode<D> *child_p = nullptr;
+    FunctionNode<D> *child_p = nullptr;
     if (allocCoefs) {
         child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
     } else {
@@ -137,7 +137,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool
 }
 
 // return pointer to the last active node or NULL if failed
-template <int D> ProjectedNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+template <int D> FunctionNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -156,7 +156,7 @@ template <int D> ProjectedNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, i
         // careful: nodeChunks.size() is an unsigned int
         if (chunk + 1 > this->nodeChunks.size()) {
             // need to allocate new chunk
-            this->sNodes = (ProjectedNode<D> *)new char[this->maxNodesPerChunk * sizeof(ProjectedNode<D>)];
+            this->sNodes = (FunctionNode<D> *)new char[this->maxNodesPerChunk * sizeof(FunctionNode<D>)];
             for (int i = 0; i < this->maxNodesPerChunk; i++) {
                 this->sNodes[i].serialIx = -1;
                 this->sNodes[i].parentSerialIx = -1;
@@ -183,8 +183,8 @@ template <int D> ProjectedNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, i
     }
     assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
-    ProjectedNode<D> *newNode = this->lastNode;
-    ProjectedNode<D> *newNode_cp = newNode;
+    FunctionNode<D> *newNode = this->lastNode;
+    FunctionNode<D> *newNode_cp = newNode;
 
     int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
     *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;

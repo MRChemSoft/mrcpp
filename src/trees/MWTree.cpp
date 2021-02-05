@@ -383,14 +383,6 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
-template <int D> void MWTree<D>::saveTree(const std::string &file) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template <int D> void MWTree<D>::loadTree(const std::string &file) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
 template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;

@@ -69,8 +69,8 @@ public:
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 
-    void saveTree(const std::string &file) override;
-    void loadTree(const std::string &file) override;
+    void saveTree(const std::string &file);
+    void loadTree(const std::string &file);
 
     // In place operations
     void square();

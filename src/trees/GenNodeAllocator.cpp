@@ -128,7 +128,7 @@ template <int D> void GenNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool
         child_p->clearHasCoefs();
         child_p->setIsGenNode();
 
-        child_p->tree->incrementGenNodeCount();
+        child_p->getFuncTree().incrementGenNodeCount();
 
         sIx++;
         child_p++;

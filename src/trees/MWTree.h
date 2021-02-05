@@ -56,7 +56,6 @@ public:
     int getTDim() const { return (1 << D); }
     int getNNodes(int depth = -1) const;
     int getNEndNodes() const { return this->endNodeTable.size(); }
-    int getNGenNodes();
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
     int getSizeNodes() const;
@@ -95,8 +94,6 @@ public:
 
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
-
-    void deleteGenerated();
 
     int getNThreads() const { return this->nThreads; }
 
@@ -141,7 +138,6 @@ protected:
 
     // Tree data
     int nNodes;
-    int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
     MWNodeVector<D> endNodeTable;  ///< Final projected nodes
@@ -150,14 +146,8 @@ protected:
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
 
-    void allocNodeCounters();
-    void deleteNodeCounters();
-
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
-    void updateGenNodeCounts();
-    void incrementGenNodeCount();
-    void decrementGenNodeCount();
 
     virtual std::ostream &print(std::ostream &o);
 

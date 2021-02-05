@@ -64,6 +64,8 @@ public:
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
 
+    int getNGenNodes();
+
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 
@@ -94,6 +96,8 @@ public:
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
+    void deleteGenerated();
+
     void makeCoeffVector(std::vector<double *> &coefs,
                          std::vector<int> &indices,
                          std::vector<int> &parent_indices,
@@ -106,7 +110,12 @@ public:
                            double absPrec);
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
+    void updateGenNodeCounts();
+    void incrementGenNodeCount();
+    void decrementGenNodeCount();
+
 protected:
+    int *nGenNodes;
     GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };

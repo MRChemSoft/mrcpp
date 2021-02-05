@@ -72,7 +72,7 @@ template <int D> void GenNode<D>::dealloc() {
     this->serialIx = -1;
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
-    this->tree->decrementGenNodeCount();
+    this->getFuncTree().decrementGenNodeCount();
     this->getFuncTree().getGenNodeAllocator().deallocNodes(sIdx);
 }
 

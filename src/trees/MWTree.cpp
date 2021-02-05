@@ -55,7 +55,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
     MRCPP_INIT_OMP_LOCK();
 }
 
@@ -65,7 +64,6 @@ template <int D> MWTree<D>::~MWTree() {
     if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    deleteNodeCounters();
     MRCPP_DESTROY_OMP_LOCK();
 }
 
@@ -149,15 +147,6 @@ template <int D> void MWTree<D>::setZero() {
     this->squareNorm = 0.0;
 }
 
-template <int D> void MWTree<D>::allocNodeCounters() {
-    this->nGenNodes = new int[this->nThreads];
-    for (int i = 0; i < this->nThreads; i++) { this->nGenNodes[i] = 0; }
-}
-
-template <int D> void MWTree<D>::deleteNodeCounters() {
-    delete[] this->nGenNodes;
-}
-
 /** Increment node counters for non-GenNodes. This routine is not thread
  * safe, and must NEVER be called outside a critical region in parallel.
  * It's way. way too expensive to lock the tree, so don't even think
@@ -188,37 +177,6 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
     assert(this->nNodes >= 0);
 }
 
-/** Update GenNode counts in a safe way. Since GenNodes are created on the
- * fly, we cannot control when to update the node counters without locking
- * the whole tree. Therefore GenNodes update thread-private counters, which
- * get merged with the correct global counters in xxxNodes[0]. This method
- * should be called outside of the parallel region for performance reasons. */
-template <int D> void MWTree<D>::updateGenNodeCounts() {
-    MRCPP_SET_OMP_LOCK();
-    for (int i = 1; i < this->nThreads; i++) {
-        this->nGenNodes[0] += this->nGenNodes[i];
-        this->nGenNodes[i] = 0;
-    }
-    assert(this->nGenNodes[0] >= 0);
-    MRCPP_UNSET_OMP_LOCK();
-}
-
-/** Adds a GenNode to the count. */
-template <int D> void MWTree<D>::incrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]++;
-}
-
-/** Removes a GenNode from the count. */
-template <int D> void MWTree<D>::decrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]--;
-}
-
 /** @returns Total number of nodes in the tree, at given depth
  * @param[in] depth: Tree depth to count, negative means count _all_ nodes
  */
@@ -226,12 +184,6 @@ template <int D> int MWTree<D>::getNNodes(int depth) const {
     if (depth < 0) { return this->nNodes; }
     if (depth >= this->nodesAtDepth.size()) { return 0; }
     return this->nodesAtDepth[depth];
-}
-
-/** Get GenNode count. Includes an OMP reduction operation */
-template <int D> int MWTree<D>::getNGenNodes() {
-    updateGenNodeCounts();
-    return this->nGenNodes[0];
 }
 
 /** @returns Size of all MW coefs in the tree, in kB */
@@ -431,10 +383,6 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
-template <int D> void MWTree<D>::deleteGenerated() {
-    for (int n = 0; n < getNEndNodes(); n++) { getEndMWNode(n).deleteGenerated(); }
-}
-
 template <int D> void MWTree<D>::saveTree(const std::string &file) {
     NOT_IMPLEMENTED_ABORT;
 }
@@ -449,7 +397,6 @@ template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
     o << "  order: " << this->order << std::endl;
     o << "  nodes: " << this->getNNodes() << std::endl;
     o << "  endNodes: " << this->endNodeTable.size() << std::endl;
-    o << "  genNodes: " << this->getNGenNodes() << std::endl;
     o << "  nodes per scale: " << std::endl;
     for (int i = 0; i < this->nodesAtDepth.size(); i++) {
         o << "    scale=" << i + this->getRootScale() << "  nodes=" << this->nodesAtDepth[i] << std::endl;

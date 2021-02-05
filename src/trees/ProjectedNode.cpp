@@ -53,8 +53,14 @@ template <int D> void ProjectedNode<D>::dealloc() {
     this->serialIx = -1;
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
-    this->tree->decrementNodeCount(this->getScale());
-    this->tree->getNodeAllocator().deallocNodes(sIdx);
+    auto &ftree = this->getFuncTree();
+    if (this->isGenNode()) {
+        ftree.decrementGenNodeCount();
+        ftree.getGenNodeAllocator().deallocNodes(sIdx);
+    } else {
+        ftree.decrementNodeCount(this->getScale());
+        ftree.getNodeAllocator().deallocNodes(sIdx);
+    }
 }
 
 /** Update the coefficients of the node by a mw transform of the scaling

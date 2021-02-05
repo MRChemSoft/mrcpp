@@ -168,12 +168,20 @@ template <int D> void FunctionNode<D>::setValues(const VectorXd &vec) {
 }
 
 template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
-    vec = VectorXd::Zero(this->n_coefs);
-    this->mwTransform(Reconstruction);
-    this->cvTransform(Forward);
-    for (int i = 0; i < this->n_coefs; i++) { vec(i) = this->coefs[i]; }
-    this->cvTransform(Backward);
-    this->mwTransform(Compression);
+    if (this->isGenNode()) {
+        MWNode<D> copy(*this);
+        vec = Eigen::VectorXd::Zero(copy.getNCoefs());
+        copy.mwTransform(Reconstruction);
+        copy.cvTransform(Forward);
+        for (int i = 0; i < this->n_coefs; i++) { vec(i) = copy.getCoefs()[i]; }
+    } else {
+        vec = VectorXd::Zero(this->n_coefs);
+        this->mwTransform(Reconstruction);
+        this->cvTransform(Forward);
+        for (int i = 0; i < this->n_coefs; i++) { vec(i) = this->coefs[i]; }
+        this->cvTransform(Backward);
+        this->mwTransform(Compression);
+    }
 }
 
 /** get coefficients corresponding to absolute value of function

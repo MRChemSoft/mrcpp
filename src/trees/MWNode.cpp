@@ -28,7 +28,6 @@
  */
 
 #include "MWNode.h"
-#include "GenNode.h"
 #include "MWTree.h"
 #include "ProjectedNode.h"
 #include "NodeAllocator.h"
@@ -548,7 +547,7 @@ template <int D> double MWNode<D>::getWaveletNorm() const {
 
 /** Calculate the norm of one component (NOT the squared norm!). */
 template <int D> double MWNode<D>::calcComponentNorm(int i) const {
-    assert(i == 0 or (not this->isGenNode())); // GenNodes have no wavelets coefficients
+    if (this->isGenNode() and i != 0) return 0.0;
     assert(this->isAllocated());
     assert(this->hasCoefs());
 
@@ -569,6 +568,7 @@ template <int D> double MWNode<D>::calcComponentNorm(int i) const {
  * coefficients of the children. Option to overwrite or add up existing
  * coefficients. */
 template <int D> void MWNode<D>::reCompress() {
+    if (this->isGenNode()) NOT_IMPLEMENTED_ABORT;
     if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         copyCoefsFromChildren();

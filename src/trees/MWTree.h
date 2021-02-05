@@ -110,7 +110,6 @@ public:
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
-    friend class GenNode<D>;
     friend class ProjectedNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;

@@ -4,7 +4,6 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/GenNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HilbertPath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MWNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MWTree.cpp
@@ -27,7 +26,6 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTreeVector.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/GenNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/HilbertIterator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/HilbertPath.h
   ${CMAKE_CURRENT_SOURCE_DIR}/LebesgueIterator.h

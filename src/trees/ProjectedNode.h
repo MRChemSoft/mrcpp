@@ -36,6 +36,7 @@ public:
     void deleteChildren() override;
 
     friend class ProjectedNodeAllocator<D>;
+    friend class GenNodeAllocator<D>;
 
 protected:
     ProjectedNode() : FunctionNode<D>() {}

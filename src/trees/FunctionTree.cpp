@@ -29,7 +29,7 @@
 
 #include "FunctionNode.h"
 #include "HilbertIterator.h"
-#include "ProjectedNodeAllocator.h"
+#include "FunctionNodeAllocator.h"
 
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
@@ -58,8 +58,8 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
     this->nGenNodes = new int[this->nThreads];
     for (int i = 0; i < this->nThreads; i++) this->nGenNodes[i] = 0;
 
-    this->nodeAllocator_p = new ProjectedNodeAllocator<D>(this, sh_mem);
-    this->genNodeAllocator_p = new ProjectedNodeAllocator<D>(this, nullptr);
+    this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem);
+    this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
 }
@@ -93,7 +93,7 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
-    this->getProjectedNodeAllocator().clear(this->rootBox.size());
+    this->getFunctionNodeAllocator().clear(this->rootBox.size());
 }
 
 /** @brief Write the tree structure to disk, for later use
@@ -102,7 +102,7 @@ template <int D> void FunctionTree<D>::clear() {
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     Timer t1;
     this->deleteGenerated();
-    auto &allocator = this->getProjectedNodeAllocator();
+    auto &allocator = this->getFunctionNodeAllocator();
 
     std::stringstream fname;
     fname << file << ".tree";
@@ -142,7 +142,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     f.read((char *)&nChunks, sizeof(int));
 
     // Read tree data, chunk by chunk
-    auto &allocator = this->getProjectedNodeAllocator();
+    auto &allocator = this->getFunctionNodeAllocator();
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         allocator.initChunk(iChunk);
         f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
@@ -493,7 +493,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
-    int nChunks = this->getProjectedNodeAllocator().shrinkChunks();
+    int nChunks = this->getFunctionNodeAllocator().shrinkChunks();
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;

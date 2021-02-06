@@ -758,7 +758,7 @@ template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
 /** Const version of node retriever that NEVER generates.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
  * node and ASSUMES the requested node is in fact decending from this node. */
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) const {
@@ -778,7 +778,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
 /** Node retriever that NEVER generates.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
  * node and ASSUMES the requested node is in fact decending from this node. */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
@@ -802,10 +802,10 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
-/** Node retriever that return requested ProjectedNode or EndNode.
+/** Node retriever that return requested Node or EndNode.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or the EndNode on the
+ * This routine returns the appropriate Node, or the EndNode on the
  * path to the requested node, and will never create or return GenNodes.
  * Recursion starts at at this node and ASSUMES the requested node is in fact
  * decending from this node. */

@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "ProjectedNodeAllocator.h"
+#include "FunctionNodeAllocator.h"
 #include "FunctionTree.h"
 #include "FunctionNode.h"
 #include "utils/Printer.h"
@@ -43,7 +43,7 @@ namespace mrcpp {
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
 template <int D>
-ProjectedNodeAllocator<D>::ProjectedNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem)
+FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem)
         : NodeAllocator<D>(tree, mem)
         , lastNode(nullptr) {
 
@@ -71,7 +71,7 @@ ProjectedNodeAllocator<D>::ProjectedNodeAllocator(FunctionTree<D> *tree, SharedM
     MRCPP_INIT_OMP_LOCK();
 }
 
-template <int D> ProjectedNodeAllocator<D>::~ProjectedNodeAllocator() {
+template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
     for (int i = 0; i < this->nodeChunks.size(); i++) delete[](char *)(this->nodeChunks[i]);
     if (not this->isShared()) // if the data is shared, it must be freed by MPI_Win_free
         for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
@@ -82,7 +82,7 @@ template <int D> ProjectedNodeAllocator<D>::~ProjectedNodeAllocator() {
 }
 
 /** reset the start node counter */
-template <int D> void ProjectedNodeAllocator<D>::clear(int n) {
+template <int D> void FunctionNodeAllocator<D>::clear(int n) {
     for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
     this->nNodes = n;
     int chunk = n / this->maxNodesPerChunk;
@@ -94,7 +94,7 @@ template <int D> void ProjectedNodeAllocator<D>::clear(int n) {
     }
 }
 
-template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
+template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     int sIx;
     double *coefs_p;
     // reserve place for nRoots
@@ -142,7 +142,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     }
 }
 
-template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) {
+template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
     int sIx;
@@ -202,7 +202,7 @@ template <int D> void ProjectedNodeAllocator<D>::allocChildren(MWNode<D> &parent
 }
 
 // return pointer to the last active node or NULL if failed
-template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -277,7 +277,7 @@ template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAll
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
-template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
+template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->nNodes;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -337,7 +337,7 @@ template <int D> FunctionNode<D> *ProjectedNodeAllocator<D>::allocNodes(int nAll
     return newNode;
 }
 
-template <int D> void ProjectedNodeAllocator<D>::deallocNodes(int serialIx) {
+template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
     MRCPP_SET_OMP_LOCK();
     if (this->nNodes < 0) {
         println(0, "minNodes exceeded " << this->nNodes);
@@ -359,7 +359,7 @@ template <int D> void ProjectedNodeAllocator<D>::deallocNodes(int serialIx) {
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
-template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
+template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     int nAlloc = (1 << D);
     if (this->maxNodesPerChunk * this->nodeChunks.size() <=
         this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
@@ -470,7 +470,7 @@ template <int D> int ProjectedNodeAllocator<D>::shrinkChunks() {
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
-template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool coeff) {
+template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     this->getTree()->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
@@ -540,11 +540,11 @@ template <int D> void ProjectedNodeAllocator<D>::rewritePointers(bool coeff) {
     this->lastNode = this->nodeChunks[ichunk] + inode;
 }
 
-template <int D> int ProjectedNodeAllocator<D>::getNChunksUsed() const {
+template <int D> int FunctionNodeAllocator<D>::getNChunksUsed() const {
     return (this->nNodes + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk;
 }
 
-template <int D> void ProjectedNodeAllocator<D>::print() const {
+template <int D> void FunctionNodeAllocator<D>::print() const {
     int n = 0;
     for (int iChunk = 0; iChunk < getNChunks(); iChunk++) {
         int iShift = iChunk * this->maxNodesPerChunk;
@@ -565,7 +565,7 @@ template <int D> void ProjectedNodeAllocator<D>::print() const {
     }
 }
 
-template <int D> void ProjectedNodeAllocator<D>::initChunk(int iChunk, bool coeff) {
+template <int D> void FunctionNodeAllocator<D>::initChunk(int iChunk, bool coeff) {
     if (iChunk < getNChunks()) {
         this->sNodes = this->nodeChunks[iChunk];
     } else {
@@ -584,8 +584,8 @@ template <int D> void ProjectedNodeAllocator<D>::initChunk(int iChunk, bool coef
     }
 }
 
-template class ProjectedNodeAllocator<1>;
-template class ProjectedNodeAllocator<2>;
-template class ProjectedNodeAllocator<3>;
+template class FunctionNodeAllocator<1>;
+template class FunctionNodeAllocator<2>;
+template class FunctionNodeAllocator<3>;
 
 } // namespace mrcpp

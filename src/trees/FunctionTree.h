@@ -28,7 +28,7 @@
 #include <map>
 
 #include "MWTree.h"
-#include "ProjectedNodeAllocator.h"
+#include "FunctionNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -81,16 +81,16 @@ public:
     void multiply(double c, FunctionTree<D> &inp);
     void map(FMap fmap);
 
-    int getNChunks() { return getProjectedNodeAllocator().getNChunks(); }
-    int getNChunksUsed() { return getProjectedNodeAllocator().getNChunksUsed(); }
+    int getNChunks() { return getFunctionNodeAllocator().getNChunks(); }
+    int getNChunksUsed() { return getFunctionNodeAllocator().getNChunksUsed(); }
 
     int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    ProjectedNodeAllocator<D> &getProjectedNodeAllocator() { return static_cast<ProjectedNodeAllocator<D> &>(*this->nodeAllocator_p); }
-    ProjectedNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
+    FunctionNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -115,7 +115,7 @@ public:
 
 protected:
     int *nGenNodes;
-    ProjectedNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };
 

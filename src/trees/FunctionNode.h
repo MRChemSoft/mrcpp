@@ -51,7 +51,7 @@ public:
     virtual void getAbsCoefs(double *absCoefs);
 
     friend class FunctionTree<D>;
-    friend class ProjectedNodeAllocator<D>;
+    friend class FunctionNodeAllocator<D>;
 
 protected:
     FunctionNode()

@@ -195,7 +195,7 @@ template <int D> int MWTree<D>::getSizeNodes() const {
 /** Find and return the node with the given NodeIndex, const version.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
@@ -210,7 +210,7 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
 /** Find and return the node with the given NodeIndex.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
@@ -236,7 +236,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
 
 /** Find and return the node with the given NodeIndex.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
@@ -248,7 +248,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
 
 /** Find and return the node with the given NodeIndex.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
@@ -274,7 +274,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
 
 /** Find and return the node at a given depth that contains a given coordinate.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
@@ -287,7 +287,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 
 /** Find and return the node at a given depth that contains a given coordinate.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {

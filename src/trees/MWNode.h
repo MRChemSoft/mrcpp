@@ -146,7 +146,7 @@ public:
 
     friend class TreeBuilder<D>;
     friend class MultiplicationCalculator<D>;
-    friend class ProjectedNodeAllocator<D>;
+    friend class FunctionNodeAllocator<D>;
     friend class OperatorNodeAllocator;
     friend class MWTree<D>;
     friend class FunctionTree<D>;

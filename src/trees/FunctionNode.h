@@ -71,7 +71,7 @@ protected:
     double integrateInterpolating() const;
 };
 
-template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
-template <int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template <int D> double dot_wavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
 
 } // namespace mrcpp

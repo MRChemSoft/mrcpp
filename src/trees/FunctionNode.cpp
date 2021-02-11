@@ -133,10 +133,10 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
     const VectorXd &weights = qc.getWeights(qOrder);
 
     double sqWeights[qOrder];
-    for (int i = 0; i < qOrder; i++) { sqWeights[i] = std::sqrt(weights[i]); }
+    for (int i = 0; i < qOrder; i++) sqWeights[i] = std::sqrt(weights[i]);
 
     int kp1_p[D];
-    for (int i = 0; i < D; i++) { kp1_p[i] = math_utils::ipow(qOrder, i); }
+    for (int i = 0; i < D; i++) kp1_p[i] = math_utils::ipow(qOrder, i);
 
     VectorXd coefs;
     this->getCoefs(coefs);
@@ -174,12 +174,12 @@ template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
         vec = Eigen::VectorXd::Zero(copy.getNCoefs());
         copy.mwTransform(Reconstruction);
         copy.cvTransform(Forward);
-        for (int i = 0; i < this->n_coefs; i++) { vec(i) = copy.getCoefs()[i]; }
+        for (int i = 0; i < this->n_coefs; i++) vec(i) = copy.getCoefs()[i];
     } else {
         vec = VectorXd::Zero(this->n_coefs);
         this->mwTransform(Reconstruction);
         this->cvTransform(Forward);
-        for (int i = 0; i < this->n_coefs; i++) { vec(i) = this->coefs[i]; }
+        for (int i = 0; i < this->n_coefs; i++) vec(i) = this->coefs[i];
         this->cvTransform(Backward);
         this->mwTransform(Compression);
     }
@@ -190,11 +190,11 @@ template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
  * Leaves the original coefficients unchanged. */
 template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
     double *coefsTmp = this->coefs;
-    for (int i = 0; i < this->n_coefs; i++) { absCoefs[i] = coefsTmp[i]; } // copy
-    this->coefs = absCoefs;                                                // swap coefs
+    for (int i = 0; i < this->n_coefs; i++) absCoefs[i] = coefsTmp[i]; // copy
+    this->coefs = absCoefs;                                            // swap coefs
     this->mwTransform(Reconstruction);
     this->cvTransform(Forward);
-    for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = std::abs(this->coefs[i]); }
+    for (int i = 0; i < this->n_coefs; i++) this->coefs[i] = std::abs(this->coefs[i]);
     this->cvTransform(Backward);
     this->mwTransform(Compression);
     this->coefs = coefsTmp; // restore original array (same address)
@@ -261,7 +261,7 @@ template <> void FunctionNode<3>::reCompress() {
  * the node on the full support of the nodes. The scaling basis is fully
  * orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support. */
-template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -273,7 +273,7 @@ template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNod
     return cblas_ddot(size, a, 1, b, 1);
 #else
     double result = 0.0;
-    for (int i = 0; i < size; i++) { result += a[i] * b[i]; }
+    for (int i = 0; i < size; i++) result += a[i] * b[i];
     return result;
 #endif
 }
@@ -284,8 +284,8 @@ template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNod
  * the node on the full support of the nodes. The wavelet basis is fully
  * orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support. */
-template <int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
-    if (bra.isGenNode() or ket.isGenNode()) { return 0.0; }
+template <int D> double dot_wavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+    if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -299,17 +299,17 @@ template <int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNod
     return cblas_ddot(size, &a[start], 1, &b[start], 1);
 #else
     double result = 0.0;
-    for (int i = 0; i < size; i++) { result += a[start + i] * b[start + i]; }
+    for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
     return result;
 #endif
 }
 
-template double dotScaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double dotScaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double dotScaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
-template double dotWavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double dotWavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double dotWavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double dot_scaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double dot_scaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double dot_scaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double dot_wavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
+template double dot_wavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
+template double dot_wavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
 
 template class FunctionNode<1>;
 template class FunctionNode<2>;

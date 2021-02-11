@@ -48,7 +48,6 @@ OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
         , sNodes(nullptr)
         , lastNode(nullptr) {
 
-    this->maxNodes = 0;
     this->nNodes = 0;
     NOtrees++;
 
@@ -206,7 +205,6 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
-            this->maxNodes = newsize;
         }
         this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
         *serialIx = this->nNodes;

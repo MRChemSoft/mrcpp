@@ -241,7 +241,6 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
-            this->maxNodes = newsize;
 
             if (chunk % 100 == 99 and D == 3)
                 println(10,
@@ -304,7 +303,6 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
-            this->maxNodes = newsize;
 
             if (chunk % 100 == 99 and D == 3)
                 println(10,
@@ -462,8 +460,6 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     this->nodeCoeffChunks.resize(nChunks);
     this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
 
-    this->maxNodes = this->nodeStackStatus.size();
-
     this->getTree()->resetEndNodeTable();
 
     return nChunksStart - nChunks;
@@ -481,7 +477,6 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     // nodeChunks have been adapted to receiving tree and maybe larger than nodeStackStatus
     int nodecount = this->nodeChunks.size() * this->maxNodesPerChunk;
     while (nodecount > this->nodeStackStatus.size()) this->nodeStackStatus.push_back(0);
-    this->maxNodes = this->nodeStackStatus.size();
 
     NodeBox<D> &rBox = this->getTree()->getRootBox();
     MWNode<D> **roots = rBox.getNodes();

@@ -60,7 +60,6 @@ public:
 
 protected:
     int nNodes{0};                  // number of Nodes already defined
-    int maxNodes{0};                // max number of nodes that can be defined
     int coeffsPerNode{0};           // number of coeff for one node
     int maxNodesPerChunk{0};        // max number of nodes per allocation
     std::vector<int> nodeStackStatus;

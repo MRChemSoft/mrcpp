@@ -35,6 +35,7 @@
 #pragma once
 
 #include "NodeAllocator.h"
+#include "FunctionNode.h"
 
 namespace mrcpp {
 

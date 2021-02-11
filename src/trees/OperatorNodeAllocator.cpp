@@ -56,11 +56,6 @@ OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
     this->maxNodesPerChunk = 1024;
     this->lastNode = (OperatorNode *)this->sNodes; // position of last allocated node
 
-    // make virtual table pointers
-    auto *tmpNode = new OperatorNode();
-    this->cvptr_OperatorNode = *(char **)(tmpNode);
-    delete tmpNode;
-
     MRCPP_INIT_OMP_LOCK();
 }
 
@@ -86,38 +81,17 @@ void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
 
     MWNode<2> **roots = tree.getRootBox().getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
+        new (root_p) OperatorNode(tree, rIdx);
         roots[rIdx] = root_p;
 
-        *(char **)(root_p) = this->cvptr_OperatorNode;
-
-        root_p->tree = &tree;
-        root_p->parent = nullptr;
-        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
-
-        root_p->maxSquareNorm = -1.0;
-        root_p->maxWSquareNorm = -1.0;
-
-        root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
-        root_p->hilbertPath = HilbertPath<2>();
-
-        root_p->n_coefs = this->coeffsPerNode;
-        root_p->coefs = coefs_p;
-
-        root_p->lockX = 0;
         root_p->serialIx = sIx;
         root_p->parentSerialIx = -1; // to indicate rootnode
         root_p->childSerialIx = -1;
 
-        root_p->status = 0;
-
-        root_p->clearNorms();
-        root_p->setIsLeafNode();
+        root_p->n_coefs = this->coeffsPerNode;
+        root_p->coefs = coefs_p;
         root_p->setIsAllocated();
-        root_p->clearHasCoefs();
-        root_p->setIsEndNode();
-        root_p->setIsRootNode();
-
-        tree.incrementNodeCount(root_p->getScale());
+        root_p->tree->incrementNodeCount(root_p->getScale());
 
         sIx++;
         root_p++;
@@ -142,41 +116,21 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs, bo
     // position of first child
     parent.childSerialIx = sIx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        new (child_p) OperatorNode(parent, cIdx);
         parent.children[cIdx] = child_p;
 
-        *(char **)(child_p) = this->cvptr_OperatorNode;
-
-        child_p->tree = parent.tree;
-        child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) { child_p->children[i] = nullptr; }
-
-        child_p->maxSquareNorm = -1.0;
-        child_p->maxWSquareNorm = -1.0;
-
-        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
-        child_p->hilbertPath = HilbertPath<2>(parent.getHilbertPath(), cIdx);
-
-        child_p->n_coefs = (allocCoefs) ? this->coeffsPerNode : 0;
-        child_p->coefs = coefs_p;
-
-        child_p->lockX = 0;
         child_p->serialIx = sIx;
         child_p->parentSerialIx = parent.serialIx;
         child_p->childSerialIx = -1;
 
-        child_p->status = 0;
-
-        child_p->clearNorms();
-        child_p->setIsLeafNode();
-        if (allocCoefs) child_p->setIsAllocated();
-        child_p->clearHasCoefs();
-        child_p->setIsEndNode();
-
+        child_p->n_coefs = this->coeffsPerNode;
+        child_p->coefs = coefs_p;
+        child_p->setIsAllocated();
         child_p->tree->incrementNodeCount(child_p->getScale());
 
         sIx++;
         child_p++;
-        if (allocCoefs) coefs_p += this->coeffsPerNode;
+        coefs_p += this->coeffsPerNode;
     }
 }
 

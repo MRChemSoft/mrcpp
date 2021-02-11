@@ -66,7 +66,6 @@ public:
     void print() const;
 
 protected:
-    char *cvptr_ProjectedNode{nullptr};      // virtual table pointer for FunctionNode
     FunctionNode<D> *sNodes{nullptr};       // serial ProjectedNodes
     FunctionNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
     std::vector<FunctionNode<D> *> nodeChunks;

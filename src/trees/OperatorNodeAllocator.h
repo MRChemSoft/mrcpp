@@ -52,7 +52,6 @@ public:
     int getNChunks() const override { return this->nodeChunks.size(); }
 
 protected:
-    char *cvptr_OperatorNode{nullptr};   // virtual table pointer for OperatorNode
     OperatorNode *sNodes{nullptr};       // serial OperatorNodes
     OperatorNode *lastNode{nullptr};     // pointer to the last active node
     std::vector<OperatorNode *> nodeChunks;

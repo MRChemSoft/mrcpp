@@ -41,6 +41,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+
 /** Function evaluation.
  * Evaluate all polynomials defined on the node. */
 template <int D> double FunctionNode<D>::evalf(Coord<D> r) {

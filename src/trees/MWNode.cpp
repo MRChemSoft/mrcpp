@@ -47,19 +47,42 @@ template <int D>
 MWNode<D>::MWNode()
         : tree(nullptr)
         , parent(nullptr)
-        , squareNorm(-1.0)
-        , maxSquareNorm(-1.0)
-        , maxWSquareNorm(-1.0)
-        , coefs(nullptr)
-        , n_coefs(0)
         , nodeIndex()
-        , hilbertPath()
-        , status(0) {
+        , hilbertPath() {
     setIsLeafNode();
     setIsLooseNode();
 
     clearNorms();
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+}
+
+template <int D>
+MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
+        : tree(&tree)
+        , parent(nullptr)
+        , nodeIndex(tree.getRootBox().getNodeIndex(rIdx))
+        , hilbertPath() {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    clearNorms();
+    clearIsAllocated();
+    clearHasCoefs();
+    setIsRootNode();
+    setIsLeafNode();
+    setIsEndNode();
+}
+
+template <int D>
+MWNode<D>::MWNode(MWNode<D> &parent, int cIdx)
+        : tree(parent.tree)
+        , parent(&parent)
+        , nodeIndex(parent.getNodeIndex().child(cIdx))
+        , hilbertPath(parent.getHilbertPath(), cIdx) {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    clearNorms();
+    clearIsAllocated();
+    clearHasCoefs();
+    setIsLeafNode();
+    setIsEndNode();
 }
 
 /** MWNode copy constructor.
@@ -68,23 +91,17 @@ template <int D>
 MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree)
         , parent(nullptr)
-        , squareNorm(-1.0)
-        , maxSquareNorm(-1.0)
-        , maxWSquareNorm(-1.0)
-        , coefs(nullptr)
-        , n_coefs(0)
         , nodeIndex(node.nodeIndex)
-        , hilbertPath(node.hilbertPath)
-        , status(0) {
+        , hilbertPath(node.hilbertPath) {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     setIsLeafNode();
     setIsLooseNode();
 
     allocCoefs(this->getTDim(), this->getKp1_d());
-
     if (node.hasCoefs()) {
         setCoefBlock(0, node.getNCoefs(), node.getCoefs());
         if (this->getNCoefs() > node.getNCoefs()) {
-            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) { this->coefs[i] = 0.0; }
+            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
         }
         this->setHasCoefs();
         this->calcNorms();
@@ -92,7 +109,6 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         this->clearHasCoefs();
         this->clearNorms();
     }
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
 }
 
 /** MWNode destructor.

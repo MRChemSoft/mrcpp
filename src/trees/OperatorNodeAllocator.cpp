@@ -176,9 +176,9 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
+    this->nNodes += nAlloc;
     this->topStack += nAlloc;
     this->lastNode += nAlloc;
-    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
     return newNode;
 }
@@ -194,7 +194,7 @@ void OperatorNodeAllocator::deallocNodes(int serialIx) {
         int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
         this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
     }
-    this->decrementNodeCounter(mrcpp_get_thread_num(), 1);
+    this->nNodes--;
 }
 
 } // namespace mrcpp

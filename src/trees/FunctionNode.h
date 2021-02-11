@@ -52,6 +52,7 @@ public:
 
     friend class FunctionTree<D>;
     friend class FunctionNodeAllocator<D>;
+    friend class GenNodeAllocator<D>;
 
 protected:
     FunctionNode() : MWNode<D>() {}

@@ -129,7 +129,6 @@ protected:
     NodeAllocator<D> *nodeAllocator_p{nullptr};
 
     // Tree data
-    int nNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
     MWNodeVector<D> endNodeTable;  ///< Final projected nodes
@@ -140,7 +139,6 @@ protected:
 
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
-    void flushNodeCounter() { this->nNodes = getNodeAllocator().flushNodeCounter(); }
 
     virtual std::ostream &print(std::ostream &o);
 

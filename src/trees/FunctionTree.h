@@ -29,6 +29,7 @@
 
 #include "MWTree.h"
 #include "FunctionNodeAllocator.h"
+#include "GenNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -63,7 +64,7 @@ public:
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
 
-    int getNGenNodes() { return getGenNodeAllocator().flushNodeCounter(); }
+    int getNGenNodes() const { return getGenNodeAllocator().getNNodes(); }
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
@@ -89,8 +90,11 @@ public:
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
+    GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
     FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
-    FunctionNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+
+    const GenNodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
+    const FunctionNodeAllocator<D> &getFunctionNodeAllocator() const { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -110,7 +114,7 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
-    FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };
 

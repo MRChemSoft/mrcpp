@@ -41,7 +41,7 @@ namespace mrcpp {
 
 template <int D> class FunctionNodeAllocator final : public NodeAllocator<D> {
 public:
-    FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *sh_mem);
+    FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *sh_mem, bool gen = false);
     FunctionNodeAllocator(const FunctionNodeAllocator<D> &tree) = delete;
     FunctionNodeAllocator<D> &operator=(const FunctionNodeAllocator<D> &tree) = delete;
     ~FunctionNodeAllocator() override;
@@ -55,7 +55,7 @@ public:
     FunctionNode<D> *getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void allocRoots(MWTree<D> &tree) override;
-    void allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) override;
+    void allocChildren(MWNode<D> &parent, bool allocCoefs) override;
     void deallocNodes(int serialIx) override;
 
     int shrinkChunks();
@@ -66,6 +66,7 @@ public:
     void print() const;
 
 protected:
+    bool genNode{false};
     FunctionNode<D> *sNodes{nullptr};       // serial ProjectedNodes
     FunctionNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
     std::vector<FunctionNode<D> *> nodeChunks;

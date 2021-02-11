@@ -56,7 +56,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
     this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem);
-    this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr);
+    this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr, true);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
     this->flushNodeCounter();

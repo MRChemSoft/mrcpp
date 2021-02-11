@@ -43,11 +43,13 @@ namespace mrcpp {
  * Gen nodes and loose nodes are not counted with MWTree->[in/de]crementNodeCount()
  */
 template <int D>
-FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem)
+FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMemory *mem, bool gen)
         : NodeAllocator<D>(tree, mem)
+        , genNode(gen)
         , lastNode(nullptr) {
 
-    this->coeffsPerNode = (1 << D) * this->tree_p->getKp1_d(); // TDim  blocks
+    int tDim = (this->genNode) ? 1 : (1 << D); // genNodes have only one block
+    this->coeffsPerNode = tDim * this->tree_p->getKp1_d();
     println(10, "SizeNode Coeff (kB) " << this->coeffsPerNode * sizeof(double) / 1024);
 
     // 2 MB small for no waisting place, but large enough so that latency and overhead work is negligible
@@ -114,7 +116,7 @@ template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     }
 }
 
-template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs, bool genNode) {
+template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent, bool allocCoefs) {
     // NB: serial tree MUST generate all children consecutively
     // all children must be generated at once if several threads are active
     int sIx;
@@ -143,7 +145,7 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
             child_p->setIsAllocated();
         }
 
-        if (genNode) {
+        if (this->genNode) {
             child_p->setIsGenNode();
         } else {
             child_p->tree->incrementNodeCount(child_p->getScale());

@@ -153,27 +153,29 @@ public:
     friend class OperatorTree;
 
 protected:
-    MWTree<D> *tree;
-    MWNode<D> *parent;           ///< Parent node
+    MWTree<D> *tree{nullptr};
+    MWNode<D> *parent{nullptr};  ///< Parent node
     MWNode<D> *children[1 << D]; ///< 2^D children
 
-    double squareNorm;
+    double squareNorm{-1.0};
     double componentNorms[1 << D]; ///< 2^D components
-    double maxSquareNorm;          // Largest squared norm among itself and descendants.
-    double maxWSquareNorm;         // Largest wavelet squared norm among itself and descendants.
+    double maxSquareNorm{-1.0};    // Largest squared norm among itself and descendants.
+    double maxWSquareNorm{-1.0};   // Largest wavelet squared norm among itself and descendants.
                                    // NB: must be set before used.
-    double *coefs;
-    int n_coefs;
+    double *coefs{nullptr};
+    int n_coefs{0};
 
-    int lockX;          // manual lock tag (avoiding omp set/unset)
-    int serialIx;       // index in serial Tree
-    int parentSerialIx; // index of parent in serial Tree, or -1 for roots
-    int childSerialIx;  // index of first child in serial Tree, or -1 for leafnodes/endnodes
+    int lockX{0};          // manual lock tag (avoiding omp set/unset)
+    int serialIx{-1};       // index in serial Tree
+    int parentSerialIx{-1}; // index of parent in serial Tree, or -1 for roots
+    int childSerialIx{-1};  // index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     NodeIndex<D> nodeIndex;
     HilbertPath<D> hilbertPath;
 
     MWNode();
+    MWNode(MWTree<D> &tree, int rIdx);
+    MWNode(MWNode<D> &parent, int cIdx);
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
@@ -223,7 +225,7 @@ protected:
     static const unsigned char FlagLooseNode = B8(01000000);
 
 private:
-    unsigned char status;
+    unsigned char status{0};
 };
 
 /** Allocation status of s/d-coefs is stored in the status bits for

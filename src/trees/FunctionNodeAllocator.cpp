@@ -63,11 +63,6 @@ FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMem
     // position just after last allocated node, i.e. where to put next node
     this->lastNode = static_cast<FunctionNode<D> *>(this->sNodes);
 
-    // make virtual table pointers
-    auto *tmpNode = new FunctionNode<D>();
-    this->cvptr_ProjectedNode = *(char **)(tmpNode);
-    delete tmpNode;
-
     MRCPP_INIT_OMP_LOCK();
 }
 
@@ -89,52 +84,29 @@ template <int D> void FunctionNodeAllocator<D>::clear(int n) {
     this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
 
     if (this->isShared()) {
-        this->shMem->sh_end_ptr =
-            this->shMem->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->coeffsPerNode * this->maxNodesPerChunk;
+        this->shmem_p->sh_end_ptr = this->shmem_p->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->coeffsPerNode * this->maxNodesPerChunk;
     }
 }
 
 template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
     int sIx;
     double *coefs_p;
-    // reserve place for nRoots
     int nRoots = tree.getRootBox().size();
     FunctionNode<D> *root_p = this->allocNodes(nRoots, &sIx, &coefs_p);
 
     MWNode<D> **roots = tree.getRootBox().getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
+        new (root_p) FunctionNode<D>(tree, rIdx);
         roots[rIdx] = root_p;
 
-        *(char **)(root_p) = this->cvptr_ProjectedNode;
-
-        root_p->tree = &tree;
-        root_p->parent = nullptr;
-        for (int i = 0; i < root_p->getTDim(); i++) { root_p->children[i] = nullptr; }
-
-        root_p->maxSquareNorm = -1.0;
-        root_p->maxWSquareNorm = -1.0;
-
-        root_p->nodeIndex = tree.getRootBox().getNodeIndex(rIdx);
-        root_p->hilbertPath = HilbertPath<D>();
+        root_p->serialIx = sIx;
+        root_p->parentSerialIx = -1;
+        root_p->childSerialIx = -1;
 
         root_p->n_coefs = this->coeffsPerNode;
         root_p->coefs = coefs_p;
-
-        root_p->lockX = 0;
-        root_p->serialIx = sIx;
-        root_p->parentSerialIx = -1; // to indicate rootnode
-        root_p->childSerialIx = -1;
-
-        root_p->status = 0;
-
-        root_p->clearNorms();
-        root_p->setIsLeafNode();
         root_p->setIsAllocated();
-        root_p->clearHasCoefs();
-        root_p->setIsEndNode();
-        root_p->setIsRootNode();
-
-        tree.incrementNodeCount(root_p->getScale());
+        root_p->tree->incrementNodeCount(root_p->getScale());
 
         sIx++;
         root_p++;
@@ -158,40 +130,23 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
     // position of first child
     parent.childSerialIx = sIx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        new (child_p) FunctionNode<D>(parent, cIdx);
         parent.children[cIdx] = child_p;
 
-        *(char **)(child_p) = this->cvptr_ProjectedNode;
-
-        child_p->tree = parent.tree;
-        child_p->parent = &parent;
-        for (int i = 0; i < child_p->getTDim(); i++) child_p->children[i] = nullptr;
-
-        child_p->maxSquareNorm = -1.0;
-        child_p->maxWSquareNorm = -1.0;
-
-        child_p->nodeIndex = parent.getNodeIndex().child(cIdx);
-        child_p->hilbertPath = HilbertPath<D>(parent.getHilbertPath(), cIdx);
-
-        child_p->n_coefs = (allocCoefs) ? this->coeffsPerNode : 0;
-        child_p->coefs = coefs_p;
-
-        child_p->lockX = 0;
         child_p->serialIx = sIx;
         child_p->parentSerialIx = parent.serialIx;
         child_p->childSerialIx = -1;
 
-        child_p->status = 0;
-
-        child_p->clearNorms();
-        child_p->setIsLeafNode();
-        child_p->setIsEndNode();
-        child_p->clearHasCoefs();
-        if (allocCoefs) child_p->setIsAllocated();
+        if (allocCoefs) {
+            child_p->n_coefs = this->coeffsPerNode;
+            child_p->coefs = coefs_p;
+            child_p->setIsAllocated();
+        }
 
         if (genNode) {
             child_p->setIsGenNode();
         } else {
-            child_p->getFuncTree().incrementNodeCount(child_p->getScale());
+            child_p->tree->incrementNodeCount(child_p->getScale());
         }
 
         sIx++;
@@ -219,10 +174,10 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             double *sNodesCoeff;
             if (this->isShared()) {
                 // for coefficients, take from the shared memory block
-                sNodesCoeff = this->shMem->sh_end_ptr;
-                this->shMem->sh_end_ptr += (this->coeffsPerNode * this->maxNodesPerChunk);
+                sNodesCoeff = this->shmem_p->sh_end_ptr;
+                this->shmem_p->sh_end_ptr += (this->coeffsPerNode * this->maxNodesPerChunk);
                 // may increase size dynamically in the future
-                if (this->shMem->sh_max_ptr < this->shMem->sh_end_ptr) MSG_ABORT("Shared block too small");
+                if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
             } else {
                 sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
             }
@@ -404,7 +359,7 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
         if (not this->isShared()) {
             for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
         } else {
-            if (this->shMem->rank == 0) // only master copy the data. careful with sync
+            if (this->shmem_p->rank == 0) // only master copy the data. careful with sync
                 for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
         }
 
@@ -446,7 +401,7 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
 
     if (this->isShared()) {
         // shared coefficients cannot be fully deallocated, only pointer is moved.
-        this->shMem->sh_end_ptr -= (nChunksStart - nChunks) * this->coeffsPerNode * this->maxNodesPerChunk;
+        this->shmem_p->sh_end_ptr -= (nChunksStart - nChunks) * this->coeffsPerNode * this->maxNodesPerChunk;
     } else {
         for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
     }
@@ -500,9 +455,6 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         this->getTree()->incrementNodeCount(node->getScale());
         if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
         if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);
-
-        // normally (intel) the virtual table does not change, but we overwrite anyway
-        *(char **)(node) = this->cvptr_ProjectedNode;
 
         node->tree = this->getTree();
 
@@ -560,10 +512,10 @@ template <int D> void FunctionNodeAllocator<D>::initChunk(int iChunk, bool coeff
     } else {
         double *sNodesCoeff = nullptr;
         if (this->isShared()) {
-            if (iChunk == 0) this->shMem->sh_end_ptr = this->shMem->sh_start_ptr;
-            sNodesCoeff = this->shMem->sh_end_ptr;
-            this->shMem->sh_end_ptr += (this->maxNodesPerChunk * this->coeffsPerNode);
-            if (this->shMem->sh_end_ptr > this->shMem->sh_max_ptr) MSG_ABORT("Shared block too small");
+            if (iChunk == 0) this->shmem_p->sh_end_ptr = this->shmem_p->sh_start_ptr;
+            sNodesCoeff = this->shmem_p->sh_end_ptr;
+            this->shmem_p->sh_end_ptr += (this->maxNodesPerChunk * this->coeffsPerNode);
+            if (this->shmem_p->sh_end_ptr > this->shmem_p->sh_max_ptr) MSG_ABORT("Shared block too small");
         } else if (coeff) {
             sNodesCoeff = new double[getCoeffChunkSize()];
         }

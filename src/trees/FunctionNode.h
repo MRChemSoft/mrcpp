@@ -54,10 +54,11 @@ public:
     friend class FunctionNodeAllocator<D>;
 
 protected:
-    FunctionNode()
-            : MWNode<D>() {}
+    FunctionNode() : MWNode<D>() {}
+    FunctionNode(MWTree<D> &tree, int rIdx) : MWNode<D>(tree, rIdx) {}
+    FunctionNode(MWNode<D> &parent, int cIdx) : MWNode<D>(parent, cIdx) {}
     FunctionNode(const FunctionNode<D> &node) = delete;
-    FunctionTree<D> &operator=(const FunctionNode<D> &node) = delete;
+    FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
     virtual ~FunctionNode() { assert(this->tree == 0); }
 
     double evalf(Coord<D> r);

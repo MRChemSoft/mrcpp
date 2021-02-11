@@ -47,7 +47,7 @@ public:
     ~FunctionNodeAllocator() override;
 
     int getNChunks() const override { return this->nodeChunks.size(); }
-    int getNChunksUsed() const;
+    int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; }
     int getNodeChunkSize() const { return this->maxNodesPerChunk * sizeof(FunctionNode<D>); }
     int getCoeffChunkSize() const { return this->maxNodesPerChunk * this->coeffsPerNode * sizeof(double); }
 

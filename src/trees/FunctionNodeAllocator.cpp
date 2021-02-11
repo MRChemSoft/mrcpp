@@ -84,7 +84,7 @@ template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
 /** reset the start node counter */
 template <int D> void FunctionNodeAllocator<D>::clear(int n) {
     for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
-    this->nNodes = n;
+    this->topStack = n;
     int chunk = n / this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
 
@@ -190,7 +190,6 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
 
         if (genNode) {
             child_p->setIsGenNode();
-            child_p->getFuncTree().incrementGenNodeCount();
         } else {
             child_p->getFuncTree().incrementNodeCount(child_p->getScale());
         }
@@ -204,15 +203,15 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
 // return pointer to the last active node or NULL if failed
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     MRCPP_SET_OMP_LOCK();
-    *serialIx = this->nNodes;
+    *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
     if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
         // we want nodes allocated simultaneously to be allocated on the same piece.
         // possibly jump over the last nodes from the old chunk
-        this->nNodes = this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+        this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
 
-        int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
 
         // careful: nodeChunks.size() is an unsigned int
         if (chunk + 1 > this->nodeChunks.size()) {
@@ -245,20 +244,20 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             if (chunk % 100 == 99 and D == 3)
                 println(10,
                         std::endl
-                            << " number of nodes " << this->nNodes << ",number of Nodechunks now "
+                            << " number of nodes " << this->topStack << ",number of Nodechunks now "
                             << this->nodeChunks.size() << ", total size coeff  (MB) "
-                            << (this->nNodes * this->coeffsPerNode) / 1024 / 128);
+                            << (this->topStack * this->coeffsPerNode) / 1024 / 128);
         }
-        this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
-        *serialIx = this->nNodes;
+        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
+        *serialIx = this->topStack;
         chunkIx = *serialIx % (this->maxNodesPerChunk);
     }
-    assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
+    assert((this->topStack + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
     FunctionNode<D> *newNode = this->lastNode;
     FunctionNode<D> *newNode_cp = newNode;
 
-    int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+    int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
     *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
 
     for (int i = 0; i < nAlloc; i++) {
@@ -267,8 +266,9 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
-    this->nNodes += nAlloc;
+    this->topStack += nAlloc;
     this->lastNode += nAlloc;
+    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
     MRCPP_UNSET_OMP_LOCK();
     return newNode;
@@ -278,15 +278,15 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
 // Will not allocate coefficients
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
     MRCPP_SET_OMP_LOCK();
-    *serialIx = this->nNodes;
+    *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
     if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
         // we want nodes allocated simultaneously to be allocated on the same piece.
         // possibly jump over the last nodes from the old chunk
-        this->nNodes = this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+        this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
 
-        int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
 
         // careful: nodeChunks.size() is an unsigned int
         if (chunk + 1 > this->nodeChunks.size()) {
@@ -307,20 +307,20 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             if (chunk % 100 == 99 and D == 3)
                 println(10,
                         std::endl
-                            << " number of nodes " << this->nNodes << ",number of Nodechunks now "
+                            << " number of nodes " << this->topStack << ",number of Nodechunks now "
                             << this->nodeChunks.size() << ", total size coeff  (MB) "
-                            << (this->nNodes * this->coeffsPerNode) / 1024 / 128);
+                            << (this->topStack * this->coeffsPerNode) / 1024 / 128);
         }
-        this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
-        *serialIx = this->nNodes;
+        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
+        *serialIx = this->topStack;
         chunkIx = *serialIx % (this->maxNodesPerChunk);
     }
-    assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
+    assert((this->topStack + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
     FunctionNode<D> *newNode = this->lastNode;
     FunctionNode<D> *newNode_cp = newNode;
 
-    int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+    int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
 
     for (int i = 0; i < nAlloc; i++) {
         if (this->nodeStackStatus[*serialIx + i] != 0)
@@ -328,8 +328,9 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
-    this->nNodes += nAlloc;
+    this->topStack += nAlloc;
     this->lastNode += nAlloc;
+    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
     MRCPP_UNSET_OMP_LOCK();
     return newNode;
@@ -337,23 +338,18 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
 
 template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
     MRCPP_SET_OMP_LOCK();
-    if (this->nNodes < 0) {
-        println(0, "minNodes exceeded " << this->nNodes);
-        this->nNodes++;
-    }
     this->nodeStackStatus[serialIx] = 0; // mark as available
-    if (serialIx == this->nNodes - 1) {  // top of stack
-        int topStack = this->nNodes;
-        while (this->nodeStackStatus[topStack - 1] == 0) {
-            topStack--;
-            if (topStack < 1) break;
+    if (serialIx == this->topStack - 1) {  // top of stack
+        while (this->nodeStackStatus[this->topStack - 1] == 0) {
+            this->topStack--;
+            if (this->topStack < 1) break;
         }
-        this->nNodes = topStack; // move top of stack
         // has to redefine lastNode
-        int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
-        this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
+        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
+        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
     }
     MRCPP_UNSET_OMP_LOCK();
+    this->decrementNodeCounter(mrcpp_get_thread_num(), 1);
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
@@ -374,15 +370,15 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
         // find first available spot
         // Note that last positions on a chunk cannot be used if there is no place for 8 siblings on the same chunk
         while ((this->nodeStackStatus[posavail] != 0 or
-                (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and
-               posavail < this->nNodes)
+               (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and
+               posavail < this->topStack)
             posavail++;
-        if (posavail >= this->nNodes) break; // treated all nodes
+        if (posavail >= this->topStack) break; // treated all nodes
 
         // find next allocated spot after available
         posocc = posavail;
-        while (this->nodeStackStatus[posocc] == 0 and posavail < this->nNodes) posocc++;
-        if (posocc >= this->nNodes) break; // treated all nodes
+        while (this->nodeStackStatus[posocc] == 0 and posavail < this->topStack) posocc++;
+        if (posocc >= this->topStack) break; // treated all nodes
 
         // move node from posocc to posavail
         int ichunk = posocc / this->maxNodesPerChunk;
@@ -437,11 +433,11 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     }
 
     // find the last used node
-    posocc = this->nNodes - 1;
+    posocc = this->topStack - 1;
     while (this->nodeStackStatus[posocc] == 0 and posocc > 0) posocc--;
-    this->nNodes = posocc + 1;
-    int ichunk = this->nNodes / this->maxNodesPerChunk;
-    int inode = this->nNodes % this->maxNodesPerChunk;
+    this->topStack = posocc + 1;
+    int ichunk = this->topStack / this->maxNodesPerChunk;
+    int inode = this->topStack % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
 
     int nChunks = posocc / this->maxNodesPerChunk + 1; // number of occupied chunks
@@ -461,13 +457,14 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
 
     this->getTree()->resetEndNodeTable();
+    this->getTree()->flushNodeCounter();
 
     return nChunksStart - nChunks;
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
 template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
-    this->getTree()->nNodes = 0;
+    this->resetNodeCounter();
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
     this->getTree()->clearEndNodeTable();
@@ -487,7 +484,7 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         roots[rIdx] = (this->nodeChunks[0]) + rIdx; // adress of roots are at start of NodeChunks[0] array
         stack[slen++] = (this->nodeChunks[0]) + rIdx;
     }
-    this->nNodes = 0;
+    this->topStack = 0;
     while (slen) {
         FunctionNode<D> *node = stack[--slen];
         for (int i = 0; i < node->getNChildren(); i++) {
@@ -498,7 +495,8 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         int ichunk = node->serialIx / this->maxNodesPerChunk;
         int inode = node->serialIx % this->maxNodesPerChunk;
 
-        this->nNodes = std::max(this->nNodes, ichunk * this->maxNodesPerChunk + inode + 1);
+        this->topStack = std::max(this->topStack, ichunk * this->maxNodesPerChunk + inode + 1);
+        this->incrementNodeCounter(mrcpp_get_thread_num(), 1);
         this->getTree()->incrementNodeCount(node->getScale());
         if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
         if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);
@@ -530,13 +528,9 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         }
         this->nodeStackStatus[node->serialIx] = 1; // occupied
     }
-    int ichunk = this->nNodes / this->maxNodesPerChunk;
-    int inode = this->nNodes % this->maxNodesPerChunk;
+    int ichunk = this->topStack / this->maxNodesPerChunk;
+    int inode = this->topStack % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
-}
-
-template <int D> int FunctionNodeAllocator<D>::getNChunksUsed() const {
-    return (this->nNodes + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk;
 }
 
 template <int D> void FunctionNodeAllocator<D>::print() const {

@@ -48,7 +48,7 @@ OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
         , sNodes(nullptr)
         , lastNode(nullptr) {
 
-    this->nNodes = 0;
+    this->topStack = 0;
     NOtrees++;
 
     this->coeffsPerNode = 4 * this->tree_p->getKp1_d();
@@ -182,17 +182,16 @@ void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs, bo
 
 // return pointer to the last active node or NULL if failed
 OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
-    *serialIx = this->nNodes;
+    *serialIx = this->topStack;
     int chunkIx = (*serialIx) % (this->maxNodesPerChunk);
 
     if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
         // start on new chunk
         // we want nodes allocated simultaneously to be allocated on the same piece.
         // possibly jump over the last nodes from the old chunk
-        this->nNodes =
-            this->maxNodesPerChunk * ((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+        this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
 
-        int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
 
         // careful: nodeChunks.size() is an unsigned int
         if (chunk + 1 > this->nodeChunks.size()) {
@@ -206,16 +205,16 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
             int newsize = oldsize + this->maxNodesPerChunk;
             for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
         }
-        this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
-        *serialIx = this->nNodes;
+        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
+        *serialIx = this->topStack;
         chunkIx = *serialIx % (this->maxNodesPerChunk);
     }
-    assert((this->nNodes + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
+    assert((this->topStack + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
     OperatorNode *newNode = this->lastNode;
     OperatorNode *newNode_cp = newNode;
 
-    int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
+    int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
     *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
 
     for (int i = 0; i < nAlloc; i++) {
@@ -224,29 +223,25 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
-    this->nNodes += nAlloc;
+    this->topStack += nAlloc;
     this->lastNode += nAlloc;
+    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
     return newNode;
 }
 
 void OperatorNodeAllocator::deallocNodes(int serialIx) {
-    if (this->nNodes < 0) {
-        println(0, "minNodes exceeded " << this->nNodes);
-        this->nNodes++;
-    }
     this->nodeStackStatus[serialIx] = 0; // mark as available
-    if (serialIx == this->nNodes - 1) {  // top of stack
-        int topStack = this->nNodes;
-        while (this->nodeStackStatus[topStack - 1] == 0) {
-            topStack--;
-            if (topStack < 1) break;
+    if (serialIx == this->topStack - 1) {  // top of stack
+        while (this->nodeStackStatus[this->topStack - 1] == 0) {
+            this->topStack--;
+            if (this->topStack < 1) break;
         }
-        this->nNodes = topStack; // move top of stack
         // has to redefine lastNode
-        int chunk = this->nNodes / this->maxNodesPerChunk; // find the right chunk
-        this->lastNode = this->nodeChunks[chunk] + this->nNodes % (this->maxNodesPerChunk);
+        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
+        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
     }
+    this->decrementNodeCounter(mrcpp_get_thread_num(), 1);
 }
 
 } // namespace mrcpp

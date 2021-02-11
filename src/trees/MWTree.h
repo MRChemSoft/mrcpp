@@ -95,17 +95,15 @@ public:
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
 
-    int getNThreads() const { return this->nThreads; }
-
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
-    void RecountNodes();
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
     NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
+    const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
 
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
@@ -119,7 +117,6 @@ public:
 
 protected:
     // Parameters that are set in construction and should never change
-    const int nThreads;
     const MultiResolutionAnalysis<D> MRA;
 
     // Constant parameters that are derived internally
@@ -143,6 +140,7 @@ protected:
 
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
+    void flushNodeCounter() { this->nNodes = getNodeAllocator().flushNodeCounter(); }
 
     virtual std::ostream &print(std::ostream &o);
 

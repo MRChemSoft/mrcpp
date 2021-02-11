@@ -63,7 +63,7 @@ public:
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
 
-    int getNGenNodes();
+    int getNGenNodes() { return getGenNodeAllocator().flushNodeCounter(); }
 
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
@@ -109,12 +109,7 @@ public:
                            double absPrec);
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
-    void updateGenNodeCounts();
-    void incrementGenNodeCount();
-    void decrementGenNodeCount();
-
 protected:
-    int *nGenNodes;
     FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };

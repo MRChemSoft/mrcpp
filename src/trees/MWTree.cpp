@@ -32,6 +32,7 @@
 #include "MWTree.h"
 #include "HilbertIterator.h"
 #include "MultiResolutionAnalysis.h"
+#include "NodeAllocator.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 #include "utils/periodic_utils.h"
@@ -46,8 +47,7 @@ namespace mrcpp {
  * the parameters are done in derived classes. */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
-        : nThreads(mrcpp_get_max_threads())
-        , MRA(mra)
+        : MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
         , name("nn")
@@ -61,7 +61,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
 /** MWTree destructor. */
 template <int D> MWTree<D>::~MWTree() {
     this->endNodeTable.clear();
-    if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
     MRCPP_DESTROY_OMP_LOCK();
@@ -156,10 +155,9 @@ template <int D> void MWTree<D>::incrementNodeCount(int scale) {
     assert(depth >= 0);
     int n = this->nodesAtDepth.size() - 1;
     if (depth > n) {
-        for (int i = 0; i < depth - n; i++) { this->nodesAtDepth.push_back(0); }
+        for (int i = 0; i < depth - n; i++) this->nodesAtDepth.push_back(0);
     }
     this->nodesAtDepth[depth]++;
-    this->nNodes++;
 }
 
 /** Decrement node counters for non-GenNodes. This routine is not thread
@@ -172,18 +170,20 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
     assert(depth < this->nodesAtDepth.size());
     this->nodesAtDepth[depth]--;
     assert(this->nodesAtDepth[depth] >= 0);
-    if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) { this->nodesAtDepth.pop_back(); }
-    this->nNodes--;
-    assert(this->nNodes >= 0);
+    if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) this->nodesAtDepth.pop_back();
 }
 
 /** @returns Total number of nodes in the tree, at given depth
  * @param[in] depth: Tree depth to count, negative means count _all_ nodes
  */
 template <int D> int MWTree<D>::getNNodes(int depth) const {
-    if (depth < 0) { return this->nNodes; }
-    if (depth >= this->nodesAtDepth.size()) { return 0; }
-    return this->nodesAtDepth[depth];
+    int N = 0;
+    if (depth < 0) {
+        N = this->nNodes;
+    } else if (depth < this->nodesAtDepth.size()) {
+        N = this->nodesAtDepth[depth];
+    }
+    return N;
 }
 
 /** @returns Size of all MW coefs in the tree, in kB */
@@ -335,20 +335,6 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
     //    return nNodes;
 }
 
-/** Traverse tree and count nodes. */
-template <int D> void MWTree<D>::RecountNodes() {
-    int DepthMax = 100, slen = 0;
-    MWNode<D> *stack[DepthMax * 8];
-    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
-        stack[slen++] = this->getRootBox().getNodes()[rIdx];
-    }
-    this->nNodes = 0;
-    while (slen) {
-        this->nNodes++;
-        MWNode<D> *fpos = stack[--slen];
-        for (int i = 0; i < fpos->getNChildren(); i++) stack[slen++] = fpos->children[i];
-    }
-}
 /** Traverse tree and count nodes belonging to this rank. */
 template <int D> int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;

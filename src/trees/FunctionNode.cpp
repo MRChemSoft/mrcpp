@@ -223,7 +223,6 @@ template <int D> void FunctionNode<D>::dealloc() {
     this->childSerialIx = -1;
     auto &ftree = this->getFuncTree();
     if (this->isGenNode()) {
-        ftree.decrementGenNodeCount();
         ftree.getGenNodeAllocator().deallocNodes(sIdx);
     } else {
         ftree.decrementNodeCount(this->getScale());

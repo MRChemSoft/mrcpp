@@ -47,6 +47,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
     this->nodeAllocator_p = new OperatorNodeAllocator(this);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
+    this->flushNodeCounter();
 }
 
 OperatorTree::~OperatorTree() {

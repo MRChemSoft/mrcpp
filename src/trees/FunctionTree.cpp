@@ -55,13 +55,11 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         : MWTree<D>(mra)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
-    this->nGenNodes = new int[this->nThreads];
-    for (int i = 0; i < this->nThreads; i++) this->nGenNodes[i] = 0;
-
     this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem);
     this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
+    this->flushNodeCounter();
 }
 
 // FunctionTree destructor
@@ -74,7 +72,6 @@ template <int D> FunctionTree<D>::~FunctionTree() {
     }
     delete this->nodeAllocator_p;
     delete this->genNodeAllocator_p;
-    delete[] this->nGenNodes;
 }
 
 /** @brief Remove all nodes in the tree
@@ -94,6 +91,7 @@ template <int D> void FunctionTree<D>::clear() {
     this->resetEndNodeTable();
     this->clearSquareNorm();
     this->getFunctionNodeAllocator().clear(this->rootBox.size());
+    this->flushNodeCounter();
 }
 
 /** @brief Write the tree structure to disk, for later use
@@ -153,6 +151,8 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
 
     Timer t2;
     allocator.rewritePointers();
+    this->resetEndNodeTable();
+    this->flushNodeCounter();
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -496,6 +496,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
     int nChunks = this->getFunctionNodeAllocator().shrinkChunks();
     this->resetEndNodeTable();
     this->calcSquareNorm();
+    this->flushNodeCounter();
     return nChunks;
 }
 
@@ -634,43 +635,6 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
             }
         }
     }
-}
-
-/** Update GenNode counts in a safe way. Since GenNodes are created on the
- * fly, we cannot control when to update the node counters without locking
- * the whole tree. Therefore GenNodes update thread-private counters, which
- * get merged with the correct global counters in xxxNodes[0]. This method
- * should be called outside of the parallel region for performance reasons. */
-template <int D> void FunctionTree<D>::updateGenNodeCounts() {
-    MRCPP_SET_OMP_LOCK();
-    for (int i = 1; i < this->nThreads; i++) {
-        this->nGenNodes[0] += this->nGenNodes[i];
-        this->nGenNodes[i] = 0;
-    }
-    assert(this->nGenNodes[0] >= 0);
-    MRCPP_UNSET_OMP_LOCK();
-}
-
-/** Adds a GenNode to the count. */
-template <int D> void FunctionTree<D>::incrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]++;
-}
-
-/** Removes a GenNode from the count. */
-template <int D> void FunctionTree<D>::decrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]--;
-}
-
-/** Get GenNode count. Includes an OMP reduction operation */
-template <int D> int FunctionTree<D>::getNGenNodes() {
-    updateGenNodeCounts();
-    return this->nGenNodes[0];
 }
 
 template <int D> void FunctionTree<D>::deleteGenerated() {

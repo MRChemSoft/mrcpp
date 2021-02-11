@@ -74,7 +74,6 @@ template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
         for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
 
     this->nodeStackStatus.clear();
-
     MRCPP_DESTROY_OMP_LOCK();
 }
 
@@ -145,11 +144,7 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
             child_p->setIsAllocated();
         }
 
-        if (this->genNode) {
-            child_p->setIsGenNode();
-        } else {
-            child_p->tree->incrementNodeCount(child_p->getScale());
-        }
+        child_p->tree->incrementNodeCount(child_p->getScale());
 
         sIx++;
         child_p++;
@@ -159,7 +154,6 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
 
 // return pointer to the last active node or NULL if failed
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
-    MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -223,18 +217,16 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
+    this->nNodes += nAlloc;
     this->topStack += nAlloc;
     this->lastNode += nAlloc;
-    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
-    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
-    MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -285,16 +277,14 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
         this->nodeStackStatus[*serialIx + i] = 1;
         newNode_cp++;
     }
+    this->nNodes += nAlloc;
     this->topStack += nAlloc;
     this->lastNode += nAlloc;
-    this->incrementNodeCounter(mrcpp_get_thread_num(), nAlloc);
 
-    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
-    MRCPP_SET_OMP_LOCK();
     this->nodeStackStatus[serialIx] = 0; // mark as available
     if (serialIx == this->topStack - 1) {  // top of stack
         while (this->nodeStackStatus[this->topStack - 1] == 0) {
@@ -305,8 +295,7 @@ template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
         int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
         this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
     }
-    MRCPP_UNSET_OMP_LOCK();
-    this->decrementNodeCounter(mrcpp_get_thread_num(), 1);
+    this->nNodes--;
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
@@ -412,16 +401,14 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     this->nodeChunks.resize(nChunks);
     this->nodeCoeffChunks.resize(nChunks);
     this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
-
     this->getTree()->resetEndNodeTable();
-    this->getTree()->flushNodeCounter();
 
     return nChunksStart - nChunks;
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
 template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
-    this->resetNodeCounter();
+    this->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
     this->getTree()->clearEndNodeTable();
@@ -452,8 +439,8 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         int ichunk = node->serialIx / this->maxNodesPerChunk;
         int inode = node->serialIx % this->maxNodesPerChunk;
 
+        this->nNodes++;
         this->topStack = std::max(this->topStack, ichunk * this->maxNodesPerChunk + inode + 1);
-        this->incrementNodeCounter(mrcpp_get_thread_num(), 1);
         this->getTree()->incrementNodeCount(node->getScale());
         if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
         if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);

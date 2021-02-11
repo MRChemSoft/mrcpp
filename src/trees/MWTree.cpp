@@ -51,7 +51,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
         , name("nn")
-        , nNodes(0)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
@@ -179,7 +178,7 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
 template <int D> int MWTree<D>::getNNodes(int depth) const {
     int N = 0;
     if (depth < 0) {
-        N = this->nNodes;
+        N = getNodeAllocator().getNNodes();
     } else if (depth < this->nodesAtDepth.size()) {
         N = this->nodesAtDepth[depth];
     }

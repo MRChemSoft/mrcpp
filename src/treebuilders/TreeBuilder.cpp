@@ -79,7 +79,6 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
         iter++;
     }
     tree.resetEndNodeTable();
-    tree.flushNodeCounter();
     delete workVec;
 
     print::separator(10, ' ');
@@ -120,7 +119,6 @@ template <int D> int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adap
     }
     delete workVec;
     tree.resetEndNodeTable();
-    tree.flushNodeCounter();
     split_t.stop();
 
     printout(10, "  -- #  0: Split        ");

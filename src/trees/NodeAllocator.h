@@ -42,7 +42,7 @@ namespace mrcpp {
 
 template <int D> class NodeAllocator {
 public:
-    NodeAllocator(MWTree<D> *tree, SharedMemory *mem) : tree_p(tree), shmem_p(mem) { initNodeCounter(); }
+    NodeAllocator(MWTree<D> *tree, SharedMemory *mem) : tree_p(tree), shmem_p(mem) {};
     NodeAllocator(const NodeAllocator<D> &tree) = delete;
     NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
     virtual ~NodeAllocator() = default;
@@ -57,29 +57,18 @@ public:
     virtual void deallocNodes(int serialIx) = 0;
 
     virtual int getNChunks() const = 0;
-    int flushNodeCounter() {
-        MRCPP_SET_OMP_LOCK();
-        int nNodes = 0;
-        for (auto n : this->nodeCounter) nNodes += n;
-        MRCPP_UNSET_OMP_LOCK();
-        return nNodes;
-    }
+    int getNNodes() const { return this->nNodes; }
 
 protected:
+    int nNodes{0};                  // number of nodes actually in use
     int topStack{0};                // index of last node on stack
     int coeffsPerNode{0};           // number of coeff for one node
     int maxNodesPerChunk{0};        // max number of nodes per allocation
-    std::vector<int> nodeCounter;   // thread safe node counter
     std::vector<int> nodeStackStatus;
     std::vector<double *> nodeCoeffChunks;
 
     MWTree<D> *tree_p{nullptr};     // pointer to external object
     SharedMemory *shmem_p{nullptr}; // pointer to external object
-
-    void initNodeCounter() { for (int i = 0; i < mrcpp_get_max_threads(); i++) this->nodeCounter.push_back(0); }
-    void resetNodeCounter() { for (int i = 0; i < this->nodeCounter.size(); i++) this->nodeCounter[i] = 0; }
-    void incrementNodeCounter(int thread, int count) { this->nodeCounter[thread] += count; }
-    void decrementNodeCounter(int thread, int count) { this->nodeCounter[thread] -= count; }
 
 #ifdef MRCPP_HAS_OMP
     omp_lock_t omp_lock;

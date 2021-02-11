@@ -29,7 +29,6 @@
 
 #include "FunctionNode.h"
 #include "HilbertIterator.h"
-#include "FunctionNodeAllocator.h"
 
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
@@ -56,10 +55,9 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
     this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem);
-    this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr, true);
+    this->genNodeAllocator_p = new GenNodeAllocator<D>(this);
     this->nodeAllocator_p->allocRoots(*this);
     this->resetEndNodeTable();
-    this->flushNodeCounter();
 }
 
 // FunctionTree destructor
@@ -91,7 +89,6 @@ template <int D> void FunctionTree<D>::clear() {
     this->resetEndNodeTable();
     this->clearSquareNorm();
     this->getFunctionNodeAllocator().clear(this->rootBox.size());
-    this->flushNodeCounter();
 }
 
 /** @brief Write the tree structure to disk, for later use
@@ -152,7 +149,6 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     Timer t2;
     allocator.rewritePointers();
     this->resetEndNodeTable();
-    this->flushNodeCounter();
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -496,7 +492,6 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
     int nChunks = this->getFunctionNodeAllocator().shrinkChunks();
     this->resetEndNodeTable();
     this->calcSquareNorm();
-    this->flushNodeCounter();
     return nChunks;
 }
 

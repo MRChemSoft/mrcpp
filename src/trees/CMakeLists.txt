@@ -12,6 +12,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNodeAllocator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GenNodeAllocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNodeAllocator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.cpp
   )
@@ -35,6 +36,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNodeAllocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/GenNodeAllocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorNodeAllocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/NodeAllocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeIterator.h

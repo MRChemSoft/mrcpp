@@ -33,8 +33,8 @@ namespace mrcpp {
 
 template <int D> class MultiplicationAdaptor : public TreeAdaptor<D> {
 public:
-    MultiplicationAdaptor(double pr, int ms, FunctionTreeVector<D> &t, bool alloc = true)
-            : TreeAdaptor<D>(ms, alloc)
+    MultiplicationAdaptor(double pr, int ms, FunctionTreeVector<D> &t)
+            : TreeAdaptor<D>(ms)
             , prec(pr)
             , trees(t) {}
     ~MultiplicationAdaptor() override = default;

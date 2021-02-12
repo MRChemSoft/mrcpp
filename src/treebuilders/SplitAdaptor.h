@@ -31,8 +31,8 @@ namespace mrcpp {
 
 template <int D> class SplitAdaptor final : public TreeAdaptor<D> {
 public:
-    SplitAdaptor(int ms, bool sp, bool alloc = true)
-            : TreeAdaptor<D>(ms, alloc)
+    SplitAdaptor(int ms, bool sp)
+            : TreeAdaptor<D>(ms)
             , split(sp) {}
 
 private:

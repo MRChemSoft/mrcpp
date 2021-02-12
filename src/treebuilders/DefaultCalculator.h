@@ -34,7 +34,7 @@ public:
     // Reimplementation without OpenMP, the default is faster this way
     void calcNodeVector(MWNodeVector<D> &nodeVec) override {
         int nNodes = nodeVec.size();
-        for (int n = 0; n < nNodes; n++) calcNode(*nodeVec[n]);
+        for (int n = 0; n < nNodes; n++) { calcNode(*nodeVec[n]); }
     }
 
 private:

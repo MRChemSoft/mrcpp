@@ -54,7 +54,6 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
-    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWTree destructor. */
@@ -62,7 +61,6 @@ template <int D> MWTree<D>::~MWTree() {
     this->endNodeTable.clear();
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    MRCPP_DESTROY_OMP_LOCK();
 }
 
 /** Calculate the squared norm of a function represented as a tree.

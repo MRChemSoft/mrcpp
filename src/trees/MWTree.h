@@ -141,10 +141,6 @@ protected:
     void decrementNodeCount(int scale);
 
     virtual std::ostream &print(std::ostream &o);
-
-#ifdef MRCPP_HAS_OMP
-    omp_lock_t omp_lock;
-#endif
 };
 
 } // namespace mrcpp

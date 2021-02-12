@@ -68,22 +68,9 @@ public:
     bool isAncestor(const NodeIndex<D> &idx) const;
     bool isDecendant(const NodeIndex<D> &idx) const;
 
-    inline bool hasCoefs() const;
-    inline bool isRootNode() const;
-    inline bool isEndNode() const;
-    inline bool isGenNode() const;
-    inline bool isLeafNode() const;
-    inline bool isAllocated() const;
-    inline bool isBranchNode() const;
-    inline bool isLooseNode() const;
-
     double getSquareNorm() const { return this->squareNorm; }
-    double getMaxSquareNorm() const {
-        return (this->maxSquareNorm > 0.0) ? this->maxSquareNorm : calcScaledSquareNorm();
-    }
-    double getMaxWSquareNorm() const {
-        return (this->maxWSquareNorm > 0.0) ? this->maxWSquareNorm : calcScaledWSquareNorm();
-    }
+    double getMaxSquareNorm() const { return (maxSquareNorm > 0.0) ? maxSquareNorm : calcScaledSquareNorm(); }
+    double getMaxWSquareNorm() const { return (maxWSquareNorm > 0.0) ? maxWSquareNorm : calcScaledWSquareNorm(); }
 
     double getScalingNorm() const;
     virtual double getWaveletNorm() const;
@@ -127,6 +114,16 @@ public:
     virtual void mwTransform(int kind);
 
     double getNodeNorm(const NodeIndex<D> &idx) const;
+
+    bool hasCoefs() const { return (this->status & FlagHasCoefs); }
+    bool isEndNode() const { return (this->status & FlagEndNode); }
+    bool isGenNode() const { return (this->status & FlagGenNode); }
+    bool isRootNode() const { return (this->status & FlagRootNode); }
+    bool isLeafNode() const { return not(this->status & FlagBranchNode); }
+    bool isAllocated() const { return (this->status & FlagAllocated); }
+    bool isBranchNode() const { return (this->status & FlagBranchNode); }
+    bool isLooseNode() const { return (this->status & FlagLooseNode); }
+    bool checkStatus(unsigned char mask) const { return (mask == (this->status & mask)); }
 
     void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
     void setIsEndNode() { SET_BITS(status, FlagEndNode); }
@@ -198,7 +195,6 @@ protected:
     int getChildIndex(const Coord<D> &r) const;
 
     bool diffBranch(const MWNode<D> &rhs) const;
-    inline bool checkStatus(unsigned char mask) const;
 
     MWNode<D> *retrieveNode(const Coord<D> &r, int depth);
     MWNode<D> *retrieveNode(const NodeIndex<D> &idx);
@@ -228,53 +224,5 @@ protected:
 private:
     unsigned char status{0};
 };
-
-/** Allocation status of s/d-coefs is stored in the status bits for
- * serialization purposes. It's not enough to test if coefs == 0.
- */
-template <int D> bool MWNode<D>::isAllocated() const {
-    if (this->status & FlagAllocated) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::hasCoefs() const {
-    if (this->status & FlagHasCoefs) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::isGenNode() const {
-    if (this->status & FlagGenNode) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::isLeafNode() const {
-    if (this->status & FlagBranchNode) { return false; }
-    return true;
-}
-
-template <int D> bool MWNode<D>::isBranchNode() const {
-    if (this->status & FlagBranchNode) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::isLooseNode() const {
-    if (this->status & FlagLooseNode) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::isEndNode() const {
-    if (this->status & FlagEndNode) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::isRootNode() const {
-    if (this->status & FlagRootNode) { return true; }
-    return false;
-}
-
-template <int D> bool MWNode<D>::checkStatus(unsigned char mask) const {
-    if (mask == (this->status & mask)) { return true; }
-    return false;
-}
 
 } // namespace mrcpp

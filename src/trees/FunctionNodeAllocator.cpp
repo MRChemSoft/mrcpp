@@ -79,7 +79,8 @@ template <int D> FunctionNodeAllocator<D>::~FunctionNodeAllocator() {
 
 /** reset the start node counter */
 template <int D> void FunctionNodeAllocator<D>::clear(int n) {
-    for (int i = n; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
+    MRCPP_SET_OMP_LOCK();
+    std::fill(this->nodeStackStatus.begin() + n, this->nodeStackStatus.end(), 0);
     this->topStack = n;
     int chunk = n / this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[chunk] + n % (this->maxNodesPerChunk);
@@ -87,6 +88,7 @@ template <int D> void FunctionNodeAllocator<D>::clear(int n) {
     if (this->isShared()) {
         this->shmem_p->sh_end_ptr = this->shmem_p->sh_start_ptr + (n / this->maxNodesPerChunk + 1) * this->coeffsPerNode * this->maxNodesPerChunk;
     }
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
@@ -107,7 +109,12 @@ template <int D> void FunctionNodeAllocator<D>::allocRoots(MWTree<D> &tree) {
         root_p->n_coefs = this->coeffsPerNode;
         root_p->coefs = coefs_p;
         root_p->setIsAllocated();
-        root_p->tree->incrementNodeCount(root_p->getScale());
+
+        if (this->genNode) {
+            root_p->setIsGenNode();
+        } else {
+            root_p->tree->incrementNodeCount(root_p->getScale());
+        }
 
         sIx++;
         root_p++;
@@ -144,7 +151,11 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
             child_p->setIsAllocated();
         }
 
-        child_p->tree->incrementNodeCount(child_p->getScale());
+        if (this->genNode) {
+            child_p->setIsGenNode();
+        } else {
+            child_p->tree->incrementNodeCount(child_p->getScale());
+        }
 
         sIx++;
         child_p++;
@@ -154,6 +165,7 @@ template <int D> void FunctionNodeAllocator<D>::allocChildren(MWNode<D> &parent,
 
 // return pointer to the last active node or NULL if failed
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
+    MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -222,12 +234,14 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
     this->topStack += nAlloc;
     this->lastNode += nAlloc;
 
+    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
+    MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
 
@@ -283,10 +297,12 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
     this->topStack += nAlloc;
     this->lastNode += nAlloc;
 
+    MRCPP_UNSET_OMP_LOCK();
     return newNode;
 }
 
 template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
+    MRCPP_SET_OMP_LOCK();
     this->nodeStackStatus[serialIx] = 0; // mark as available
     if (serialIx == this->topStack - 1) {  // top of stack
         while (this->nodeStackStatus[this->topStack - 1] == 0) {
@@ -298,13 +314,16 @@ template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
         this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
     }
     this->nNodes--;
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
+    MRCPP_SET_OMP_LOCK();
     int nAlloc = (1 << D);
     if (this->maxNodesPerChunk * this->nodeChunks.size() <=
         this->getTree()->getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
+        MRCPP_UNSET_OMP_LOCK();
         return 0; // no chunks to remove
     }
 
@@ -405,11 +424,13 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
     this->getTree()->resetEndNodeTable();
 
+    MRCPP_UNSET_OMP_LOCK();
     return nChunksStart - nChunks;
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
 template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
+    MRCPP_SET_OMP_LOCK();
     this->nNodes = 0;
     this->getTree()->nodesAtDepth.clear();
     this->getTree()->squareNorm = 0.0;
@@ -484,6 +505,7 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     int ichunk = this->topStack / this->maxNodesPerChunk;
     int inode = this->topStack % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template <int D> void FunctionNodeAllocator<D>::print() const {
@@ -508,6 +530,7 @@ template <int D> void FunctionNodeAllocator<D>::print() const {
 }
 
 template <int D> void FunctionNodeAllocator<D>::initChunk(int iChunk, bool coeff) {
+    MRCPP_SET_OMP_LOCK();
     if (iChunk < getNChunks()) {
         this->sNodes = this->nodeChunks[iChunk];
     } else {
@@ -524,6 +547,7 @@ template <int D> void FunctionNodeAllocator<D>::initChunk(int iChunk, bool coeff
         this->sNodes = (FunctionNode<D> *)new char[getNodeChunkSize()];
         this->nodeChunks.push_back(this->sNodes);
     }
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 template class FunctionNodeAllocator<1>;

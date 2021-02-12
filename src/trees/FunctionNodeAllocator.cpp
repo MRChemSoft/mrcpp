@@ -415,6 +415,13 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     this->getTree()->squareNorm = 0.0;
     this->getTree()->clearEndNodeTable();
 
+    // make virtual table pointers
+    char *cvptr_FunctionNode = nullptr;
+    {
+        FunctionNode<D> tmp;
+        cvptr_FunctionNode = *(char **)(&tmp);
+    }
+
     // reinitialize stacks
     for (int i = 0; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
     // nodeChunks have been adapted to receiving tree and maybe larger than nodeStackStatus
@@ -446,6 +453,9 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         this->getTree()->incrementNodeCount(node->getScale());
         if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
         if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);
+
+        // normally (intel) the virtual table does not change, but we overwrite anyway
+        *(char **)(node) = cvptr_FunctionNode;
 
         node->tree = this->getTree();
 

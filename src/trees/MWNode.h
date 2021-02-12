@@ -163,7 +163,6 @@ protected:
     double *coefs{nullptr};
     int n_coefs{0};
 
-    int lockX{0};          // manual lock tag (avoiding omp set/unset)
     int serialIx{-1};       // index in serial Tree
     int parentSerialIx{-1}; // index of parent in serial Tree, or -1 for roots
     int childSerialIx{-1};  // index of first child in serial Tree, or -1 for leafnodes/endnodes
@@ -223,6 +222,10 @@ protected:
 
 private:
     unsigned char status{0};
+
+#ifdef MRCPP_HAS_OMP
+    omp_lock_t omp_lock;
+#endif
 };
 
 } // namespace mrcpp

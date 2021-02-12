@@ -29,7 +29,6 @@
 
 #include "MWTree.h"
 #include "FunctionNodeAllocator.h"
-#include "GenNodeAllocator.h"
 
 namespace mrcpp {
 
@@ -90,10 +89,10 @@ public:
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    FunctionNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
     FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
 
-    const GenNodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
+    const FunctionNodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
     const FunctionNodeAllocator<D> &getFunctionNodeAllocator() const { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
@@ -114,7 +113,7 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
-    GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 };
 

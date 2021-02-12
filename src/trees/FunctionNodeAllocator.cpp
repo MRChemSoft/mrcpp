@@ -190,7 +190,8 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
-            for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
+            this->nodeStackStatus.resize(newsize);
+            std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
 
             if (chunk % 100 == 99 and D == 3)
                 println(10,
@@ -251,7 +252,8 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
-            for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
+            this->nodeStackStatus.resize(newsize);
+            std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
 
             if (chunk % 100 == 99 and D == 3)
                 println(10,

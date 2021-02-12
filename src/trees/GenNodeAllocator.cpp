@@ -71,7 +71,6 @@ template <int D> GenNodeAllocator<D>::~GenNodeAllocator() {
         for (int i = 0; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
 
     this->nodeStackStatus.clear();
-
     MRCPP_DESTROY_OMP_LOCK();
 }
 
@@ -154,7 +153,8 @@ template <int D> FunctionNode<D> *GenNodeAllocator<D>::allocNodes(int nAlloc, in
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
-            for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
+            this->nodeStackStatus.resize(newsize);
+            std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
 
             if (chunk % 100 == 99 and D == 3)
                 println(10,

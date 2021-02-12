@@ -156,7 +156,8 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
             // allocate new chunk in nodeStackStatus
             int oldsize = this->nodeStackStatus.size();
             int newsize = oldsize + this->maxNodesPerChunk;
-            for (int i = oldsize; i < newsize; i++) this->nodeStackStatus.push_back(0);
+            this->nodeStackStatus.resize(newsize);
+            std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
         }
         this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
         *serialIx = this->topStack;

@@ -31,8 +31,8 @@ namespace mrcpp {
 
 class OperatorAdaptor final : public WaveletAdaptor<2> {
 public:
-    OperatorAdaptor(double pr, int ms, bool ap = false, bool alloc = true)
-            : WaveletAdaptor<2>(pr, ms, ap, alloc) {}
+    OperatorAdaptor(double pr, int ms, bool ap = false)
+            : WaveletAdaptor<2>(pr, ms, ap) {}
 
 protected:
     bool splitNode(const MWNode<2> &node) const override {

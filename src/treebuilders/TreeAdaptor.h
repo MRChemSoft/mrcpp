@@ -32,8 +32,8 @@ namespace mrcpp {
 
 template <int D> class TreeAdaptor {
 public:
-    TreeAdaptor(int ms, bool alloc)
-            : maxScale(ms), allocCoefs(alloc) {}
+    TreeAdaptor(int ms)
+            : maxScale(ms) {}
     virtual ~TreeAdaptor() = default;
 
     void setMaxScale(int ms) { this->maxScale = ms; }
@@ -45,7 +45,7 @@ public:
             if (node.isBranchNode()) continue;
             if (node.getScale() + 2 > this->maxScale) continue;
             if (splitNode(node)) {
-                node.createChildren(this->allocCoefs);
+                node.createChildren(true);
                 for (int i = 0; i < node.getNChildren(); i++) out.push_back(&node.getMWChild(i));
             }
         }
@@ -53,7 +53,6 @@ public:
 
 protected:
     int maxScale;
-    bool allocCoefs;
 
     virtual bool splitNode(const MWNode<D> &node) const = 0;
 };

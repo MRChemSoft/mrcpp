@@ -32,8 +32,8 @@ namespace mrcpp {
 
 template <int D> class CopyAdaptor final : public TreeAdaptor<D> {
 public:
-    CopyAdaptor(FunctionTree<D> &t, int ms, int *bw, bool alloc = true);
-    CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw, bool alloc = true);
+    CopyAdaptor(FunctionTree<D> &t, int ms, int *bw);
+    CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw);
 
 private:
     int bandWidth[D];

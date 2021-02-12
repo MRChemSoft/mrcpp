@@ -57,28 +57,28 @@ namespace mrcpp {
  * particular `RepresentableFunction`.
  *
  */
-template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter, bool allocCoefs) {
+template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp, int maxIter) {
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    AnalyticAdaptor<D> adaptor(inp, maxScale, allocCoefs);
+    AnalyticAdaptor<D> adaptor(inp, maxScale);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
 }
 
-template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, int maxIter, bool allocCoefs) {
+template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, int maxIter) {
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
     DefaultCalculator<D> calculator;
 
     if (!out.getMRA().getWorldBox().isPeriodic()) {
-        AnalyticAdaptor<D> adaptor(inp, maxScale, allocCoefs);
+        AnalyticAdaptor<D> adaptor(inp, maxScale);
         builder.build(out, calculator, adaptor, maxIter);
     } else {
         auto period = out.getMRA().getWorldBox().getScalingFactor();
         auto g_exp = function_utils::make_gaussian_periodic<D>(inp, period);
         for (auto i = 0; i < g_exp->size(); i++) {
-            AnalyticAdaptor<D> adaptor(g_exp->getFunc(i), maxScale, allocCoefs);
+            AnalyticAdaptor<D> adaptor(g_exp->getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     }
@@ -104,13 +104,13 @@ template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, i
  * term. Higher exponent means finer resolution.
  *
  */
-template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter, bool allocCoefs) {
+template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
     if (!out.getMRA().getWorldBox().isPeriodic()) {
         auto maxScale = out.getMRA().getMaxScale();
         TreeBuilder<D> builder;
         DefaultCalculator<D> calculator;
         for (auto i = 0; i < inp.size(); i++) {
-            AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale, allocCoefs);
+            AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
@@ -143,11 +143,11 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
  * but NOT vice versa.
  *
  */
-template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter, bool allocCoefs) {
+template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int maxIter) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    CopyAdaptor<D> adaptor(inp, maxScale, nullptr, allocCoefs);
+    CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
@@ -172,13 +172,13 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTree<D> &inp, int
  * `maxIter` is reached).
  *
  */
-template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool allocCoefs) {
+template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
-    CopyAdaptor<D> adaptor(inp, maxScale, nullptr, allocCoefs);
+    CopyAdaptor<D> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
@@ -213,10 +213,10 @@ template <int D> void copy_func(FunctionTree<D> &out, FunctionTree<D> &inp) {
  * will _extend_ the existing grid.
  *
  */
-template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp, bool allocCoefs) {
+template <int D> void copy_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     out.clear();
-    build_grid(out, inp, -1, allocCoefs);
+    build_grid(out, inp);
 }
 
 /** @brief Clear the MW coefficients of a function representation
@@ -298,27 +298,27 @@ template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     return nSplit;
 }
 
-template void build_grid<1>(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter, bool allocCoefs);
-template void build_grid<2>(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter, bool allocCoefs);
-template void build_grid<3>(FunctionTree<3> &out, const GaussExp<3> &inp, int maxIter, bool allocCoefs);
-template void build_grid<1>(FunctionTree<1> &out, const Gaussian<1> &inp, int maxIter, bool allocCoefs);
-template void build_grid<2>(FunctionTree<2> &out, const Gaussian<2> &inp, int maxIter, bool allocCoefs);
-template void build_grid<3>(FunctionTree<3> &out, const Gaussian<3> &inp, int maxIter, bool allocCoefs);
-template void build_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp, int maxIter, bool allocCoefs);
-template void build_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp, int maxIter, bool allocCoefs);
-template void build_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp, int maxIter, bool allocCoefs);
-template void build_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp, int maxIter, bool allocCoefs);
-template void build_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp, int maxIter, bool allocCoefs);
-template void build_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, int maxIter, bool allocCoefs);
-template void build_grid<1>(FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool allocCoefs);
-template void build_grid<2>(FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool allocCoefs);
-template void build_grid<3>(FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool allocCoefs);
+template void build_grid<1>(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const GaussExp<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, const Gaussian<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const Gaussian<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const Gaussian<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
 template void copy_func<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
 template void copy_func<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
 template void copy_func<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
-template void copy_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp, bool allocCoefs);
-template void copy_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp, bool allocCoefs);
-template void copy_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, bool allocCoefs);
+template void copy_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
+template void copy_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
+template void copy_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
 template void clear_grid<1>(FunctionTree<1> &out);
 template void clear_grid<2>(FunctionTree<2> &out);
 template void clear_grid<3>(FunctionTree<3> &out);

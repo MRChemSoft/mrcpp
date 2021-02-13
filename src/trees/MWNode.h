@@ -170,8 +170,8 @@ protected:
     HilbertPath<D> hilbertPath;
 
     MWNode();
-    MWNode(MWTree<D> &tree, int rIdx);
-    MWNode(MWNode<D> &parent, int cIdx);
+    MWNode(MWTree<D> &tree, int rIdx, int sIdx = -1);
+    MWNode(MWNode<D> &parent, int cIdx, int sIdx = -1);
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);

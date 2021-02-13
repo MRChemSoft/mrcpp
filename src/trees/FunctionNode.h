@@ -55,8 +55,8 @@ public:
 
 protected:
     FunctionNode() : MWNode<D>() {}
-    FunctionNode(MWTree<D> &tree, int rIdx) : MWNode<D>(tree, rIdx) {}
-    FunctionNode(MWNode<D> &parent, int cIdx) : MWNode<D>(parent, cIdx) {}
+    FunctionNode(MWTree<D> &tree, int rIdx, int sIdx = -1) : MWNode<D>(tree, rIdx, sIdx) {}
+    FunctionNode(MWNode<D> &parent, int cIdx, int sIdx = -1) : MWNode<D>(parent, cIdx, sIdx) {}
     FunctionNode(const FunctionNode<D> &node) = delete;
     FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
     virtual ~FunctionNode() { assert(this->tree == 0); }

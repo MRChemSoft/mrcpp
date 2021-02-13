@@ -58,9 +58,10 @@ MWNode<D>::MWNode()
 }
 
 template <int D>
-MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
+MWNode<D>::MWNode(MWTree<D> &tree, int rIdx, int sIdx)
         : tree(&tree)
         , parent(nullptr)
+        , serialIx(sIdx)
         , nodeIndex(tree.getRootBox().getNodeIndex(rIdx))
         , hilbertPath() {
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
@@ -74,9 +75,10 @@ MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
 }
 
 template <int D>
-MWNode<D>::MWNode(MWNode<D> &parent, int cIdx)
+MWNode<D>::MWNode(MWNode<D> &parent, int cIdx, int sIdx)
         : tree(parent.tree)
         , parent(&parent)
+        , serialIx(sIdx)
         , nodeIndex(parent.getNodeIndex().child(cIdx))
         , hilbertPath(parent.getHilbertPath(), cIdx) {
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;

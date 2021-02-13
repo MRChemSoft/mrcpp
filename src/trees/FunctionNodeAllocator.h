@@ -65,14 +65,20 @@ public:
     void clear(int n);
     void print() const;
 
+    int alloc(int nAlloc) override;
+    double * getCoef_p(int sIdx) override;
+    FunctionNode<D> * getNode_p(int sIdx) override;
+
 protected:
     bool genNode{false};
     FunctionNode<D> *sNodes{nullptr};       // serial ProjectedNodes
     FunctionNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
-    std::vector<FunctionNode<D> *> nodeChunks;
+    std::vector<FunctionNode<D> *> nodeChunks{};
 
     FunctionNode<D> *allocNodes(int nAlloc, int *serialIx); // Does not allocate coefficents
     FunctionNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+
+    void appendChunk();
 };
 
 } // namespace mrcpp

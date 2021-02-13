@@ -202,13 +202,54 @@ template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
 }
 
 template <int D> void FunctionNode<D>::createChildren(bool coefs) {
-    MWNode<D>::createChildren(coefs);
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    auto &allocator = this->getFuncTree().getFunctionNodeAllocator();
+
+    int nChildren = this->getTDim();
+    int sIdx = allocator.alloc(nChildren);
+
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        auto *child_p = allocator.getNode_p(sIdx);
+
+        // construct into allocator memory
+        new (child_p) FunctionNode<D>(*this, cIdx, sIdx);
+        child_p->coefs = allocator.getCoef_p(sIdx);
+        child_p->n_coefs = allocator.getNCoefs();
+        child_p->setIsAllocated();
+        child_p->setIsLeafNode();
+        child_p->setIsEndNode();
+        child_p->clearHasCoefs();
+
+        this->getMWTree().incrementNodeCount(child_p->getScale());
+        this->children[cIdx] = child_p;
+        sIdx++;
+    }
+    this->setIsBranchNode();
     this->clearIsEndNode();
 }
 
 template <int D> void FunctionNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
+    auto &allocator = this->getFuncTree().getGenNodeAllocator();
+
+    int nChildren = this->getTDim();
+    int sIdx = allocator.alloc(nChildren);
+
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        auto *child_p = allocator.getNode_p(sIdx);
+
+        // construct into allocator memory
+        new (child_p) FunctionNode<D>(*this, cIdx, sIdx);
+        child_p->coefs = allocator.getCoef_p(sIdx);
+        child_p->n_coefs = allocator.getNCoefs();
+        child_p->setIsAllocated();
+        child_p->setIsLeafNode();
+        child_p->setIsGenNode();
+        child_p->clearHasCoefs();
+
+        this->children[cIdx] = child_p;
+        sIdx++;
+    }
     this->setIsBranchNode();
 }
 

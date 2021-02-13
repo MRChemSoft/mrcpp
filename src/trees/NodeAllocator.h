@@ -58,6 +58,11 @@ public:
 
     virtual int getNChunks() const = 0;
     int getNNodes() const { return this->nNodes; }
+    int getNCoefs() const { return this->coeffsPerNode; }
+
+    virtual int alloc(int nAlloc) { return -1; }
+    virtual double * getCoef_p(int sIdx) { return nullptr; }
+    virtual FunctionNode<D> * getNode_p(int sIdx) { return nullptr; }
 
 protected:
     int nNodes{0};                  // number of nodes actually in use

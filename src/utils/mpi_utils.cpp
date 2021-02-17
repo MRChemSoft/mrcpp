@@ -133,7 +133,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
 
     Timer t1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        allocator.initChunk(iChunk, coeff);
+        if (iChunk >= allocator.getNChunks()) allocator.appendChunk();
         MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, tag + iChunk + 1, comm, &status);
         if (coeff)
             MPI_Recv(allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
@@ -185,7 +185,7 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
             println(10, " Received " << nChunks << " chunks");
 
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-                allocator.initChunk(iChunk);
+                if (iChunk >= allocator.getNChunks()) allocator.appendChunk();
                 println(10, " Receiving chunk " << iChunk);
                 MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, dst_tag + iChunk + 1, comm, &status);
             }

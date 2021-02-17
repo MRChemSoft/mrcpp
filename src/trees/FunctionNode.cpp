@@ -208,17 +208,22 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     int nChildren = this->getTDim();
     int sIdx = allocator.alloc(nChildren);
 
+    this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         auto *child_p = allocator.getNode_p(sIdx);
 
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(*this, cIdx, sIdx);
+        new (child_p) FunctionNode<D>(*this, cIdx);
         child_p->coefs = allocator.getCoef_p(sIdx);
         child_p->n_coefs = allocator.getNCoefs();
         child_p->setIsAllocated();
         child_p->setIsLeafNode();
         child_p->setIsEndNode();
         child_p->clearHasCoefs();
+
+        child_p->serialIx = sIdx;
+        child_p->parentSerialIx = this->serialIx;
+        child_p->childSerialIx = -1;
 
         this->getMWTree().incrementNodeCount(child_p->getScale());
         this->children[cIdx] = child_p;
@@ -235,17 +240,22 @@ template <int D> void FunctionNode<D>::genChildren() {
     int nChildren = this->getTDim();
     int sIdx = allocator.alloc(nChildren);
 
+    this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         auto *child_p = allocator.getNode_p(sIdx);
 
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(*this, cIdx, sIdx);
+        new (child_p) FunctionNode<D>(*this, cIdx);
         child_p->coefs = allocator.getCoef_p(sIdx);
         child_p->n_coefs = allocator.getNCoefs();
         child_p->setIsAllocated();
         child_p->setIsLeafNode();
         child_p->setIsGenNode();
         child_p->clearHasCoefs();
+
+        child_p->serialIx = sIdx;
+        child_p->parentSerialIx = this->serialIx;
+        child_p->childSerialIx = -1;
 
         this->children[cIdx] = child_p;
         sIdx++;

@@ -24,6 +24,9 @@
  */
 
 #include "FunctionNodeAllocator.h"
+
+#include <stack>
+
 #include "FunctionTree.h"
 #include "FunctionNode.h"
 #include "utils/Printer.h"
@@ -61,9 +64,6 @@ FunctionNodeAllocator<D>::FunctionNodeAllocator(FunctionTree<D> *tree, SharedMem
     } else {
         this->maxNodesPerChunk = (sizePerChunk / this->coeffsPerNode / sizeof(double) / 8) * 8;
     }
-
-    // position just after last allocated node, i.e. where to put next node
-    this->lastNode = static_cast<FunctionNode<D> *>(this->sNodes);
 
     MRCPP_INIT_OMP_LOCK();
 }
@@ -215,26 +215,26 @@ template <int D> int FunctionNodeAllocator<D>::alloc(int nAlloc) {
 
 template <int D> void FunctionNodeAllocator<D>::appendChunk() {
     // make coeff chunk
-    double *sNodesCoeff = nullptr;
+    double *c_chunk = nullptr;
     if (this->isShared()) {
         // for coefficients, take from the shared memory block
-        sNodesCoeff = this->shmem_p->sh_end_ptr;
+        c_chunk = this->shmem_p->sh_end_ptr;
         this->shmem_p->sh_end_ptr += (this->coeffsPerNode * this->maxNodesPerChunk);
         // may increase size dynamically in the future
         if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
     } else {
-        sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
+        c_chunk = new double[getCoeffChunkSize()];
     }
-    this->nodeCoeffChunks.push_back(sNodesCoeff);
+    this->nodeCoeffChunks.push_back(c_chunk);
 
     // make node chunk
-    auto sNodes = (FunctionNode<D> *)new char[this->maxNodesPerChunk * sizeof(FunctionNode<D>)];
+    auto n_chunk = (FunctionNode<D> *)new char[this->maxNodesPerChunk * sizeof(FunctionNode<D>)];
     for (int i = 0; i < this->maxNodesPerChunk; i++) {
-        sNodes[i].serialIx = -1;
-        sNodes[i].parentSerialIx = -1;
-        sNodes[i].childSerialIx = -1;
+        n_chunk[i].serialIx = -1;
+        n_chunk[i].parentSerialIx = -1;
+        n_chunk[i].childSerialIx = -1;
     }
-    this->nodeChunks.push_back(sNodes);
+    this->nodeChunks.push_back(n_chunk);
 
     // append to nodeStackStatus
     int oldsize = this->nodeStackStatus.size();
@@ -244,9 +244,9 @@ template <int D> void FunctionNodeAllocator<D>::appendChunk() {
 }
 
 // return pointer to the last active node or NULL if failed
+/*
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
     NOT_REACHED_ABORT;
-    /*
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -318,14 +318,14 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
 
     MRCPP_UNSET_OMP_LOCK();
     return newNode;
-    */
 }
+*/
 
 // return pointer to the last active node or NULL if failed
 // Will not allocate coefficients
+/*
 template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAlloc, int *serialIx) {
     NOT_REACHED_ABORT;
-    /*
     MRCPP_SET_OMP_LOCK();
     *serialIx = this->topStack;
     int chunkIx = *serialIx % (this->maxNodesPerChunk);
@@ -384,8 +384,8 @@ template <int D> FunctionNode<D> *FunctionNodeAllocator<D>::allocNodes(int nAllo
 
     MRCPP_UNSET_OMP_LOCK();
     return newNode;
-    */
 }
+*/
 
 template <int D> void FunctionNodeAllocator<D>::deallocNodes(int serialIx) {
     MRCPP_SET_OMP_LOCK();
@@ -530,33 +530,28 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     }
 
     // reinitialize stacks
-    for (int i = 0; i < this->nodeStackStatus.size(); i++) this->nodeStackStatus[i] = 0;
-    // nodeChunks have been adapted to receiving tree and maybe larger than nodeStackStatus
     int nodecount = this->nodeChunks.size() * this->maxNodesPerChunk;
-    while (nodecount > this->nodeStackStatus.size()) this->nodeStackStatus.push_back(0);
+    this->nodeStackStatus.resize(nodecount);
+    std::fill(this->nodeStackStatus.begin(), this->nodeStackStatus.end(), 0);
 
-    NodeBox<D> &rBox = this->getTree()->getRootBox();
-    MWNode<D> **roots = rBox.getNodes();
+    NodeBox<D> &rootbox = this->getTree()->getRootBox();
+    MWNode<D> **roots = rootbox.getNodes();
 
-    int DepthMax = 100, slen = 0;
-    FunctionNode<D> *stack[DepthMax * 8];
-    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
-        roots[rIdx] = (this->nodeChunks[0]) + rIdx; // adress of roots are at start of NodeChunks[0] array
-        stack[slen++] = (this->nodeChunks[0]) + rIdx;
+    std::stack<FunctionNode<D> *> stack;
+    for (int rIdx = 0; rIdx < rootbox.size(); rIdx++) {
+        auto *root_p = getNode_p(rIdx);
+        stack.push(root_p);
+        roots[rIdx] = root_p;
     }
     this->topStack = 0;
-    while (slen) {
-        FunctionNode<D> *node = stack[--slen];
-        for (int i = 0; i < node->getNChildren(); i++) {
-            int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
-            int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
-            stack[slen++] = this->nodeChunks[n_ichunk] + n_inode;
-        }
-        int ichunk = node->serialIx / this->maxNodesPerChunk;
-        int inode = node->serialIx % this->maxNodesPerChunk;
+    while (not stack.empty()) {
+        auto *node = stack.top();
+        auto sIx = node->serialIx;
+        auto pIx = node->parentSerialIx;
+        auto cIx = node->childSerialIx;
 
         this->nNodes++;
-        this->topStack = std::max(this->topStack, ichunk * this->maxNodesPerChunk + inode + 1);
+        this->topStack = std::max(this->topStack, sIx + 1);
         this->getTree()->incrementNodeCount(node->getScale());
         if (node->isEndNode()) this->getTree()->squareNorm += node->getSquareNorm();
         if (node->isEndNode()) this->getTree()->endNodeTable.push_back(node);
@@ -565,32 +560,18 @@ template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
         *(char **)(node) = cvptr_FunctionNode;
 
         node->tree = this->getTree();
+        node->coefs = (coeff) ? this->getCoef_p(node->serialIx) : nullptr;
+        node->parent = (node->parentSerialIx >= 0) ? this->getNode_p(node->parentSerialIx) : nullptr;
 
-        //"adress" of coefs is the same as node, but in another array
-        node->coefs = nullptr;
-        if (coeff) node->coefs = this->nodeCoeffChunks[ichunk] + inode * this->coeffsPerNode;
-
-        // adress of parent and children must be corrected
-        // can be on a different chunks
-        if (node->parentSerialIx >= 0) {
-            int n_ichunk = node->parentSerialIx / this->maxNodesPerChunk;
-            int n_inode = node->parentSerialIx % this->maxNodesPerChunk;
-            node->parent = this->nodeChunks[n_ichunk] + n_inode;
-            assert(node->parent->serialIx == node->parentSerialIx);
-        } else {
-            node->parent = nullptr;
-        }
-
+        stack.pop();
         for (int i = 0; i < node->getNChildren(); i++) {
-            int n_ichunk = (node->childSerialIx + i) / this->maxNodesPerChunk;
-            int n_inode = (node->childSerialIx + i) % this->maxNodesPerChunk;
-            node->children[i] = this->nodeChunks[n_ichunk] + n_inode;
+            auto *child_p = this->getNode_p(node->childSerialIx + i);
+            node->children[i] = child_p;
+            stack.push(child_p);
         }
-        this->nodeStackStatus[node->serialIx] = 1; // occupied
+        this->nodeStackStatus[sIx] = 1; // occupied
     }
-    int ichunk = this->topStack / this->maxNodesPerChunk;
-    int inode = this->topStack % this->maxNodesPerChunk;
-    this->lastNode = this->nodeChunks[ichunk] + inode;
+    this->lastNode = this->getNode_p(this->topStack);
     MRCPP_UNSET_OMP_LOCK();
 }
 
@@ -598,7 +579,8 @@ template <int D> void FunctionNodeAllocator<D>::print() const {
     int n = 0;
     for (int iChunk = 0; iChunk < getNChunks(); iChunk++) {
         int iShift = iChunk * this->maxNodesPerChunk;
-        printout(0, "new chunk \n");
+        printout(0, "\nnew chunk \n");
+        printout(0, " idx  occ   sIx   pIx   cIx\n");
         for (int i = 0; i < this->maxNodesPerChunk; i++) {
             int status = this->nodeStackStatus[iShift + i];
             int sIdx = this->nodeChunks[iChunk][i].serialIx;
@@ -615,26 +597,28 @@ template <int D> void FunctionNodeAllocator<D>::print() const {
     }
 }
 
+/*
 template <int D> void FunctionNodeAllocator<D>::initChunk(int iChunk, bool coeff) {
     MRCPP_SET_OMP_LOCK();
     if (iChunk < getNChunks()) {
-        this->sNodes = this->nodeChunks[iChunk];
+        // this->sNodes = this->nodeChunks[iChunk];
     } else {
-        double *sNodesCoeff = nullptr;
+        double *c_chunk = nullptr;
         if (this->isShared()) {
             if (iChunk == 0) this->shmem_p->sh_end_ptr = this->shmem_p->sh_start_ptr;
-            sNodesCoeff = this->shmem_p->sh_end_ptr;
+            c_chunk = this->shmem_p->sh_end_ptr;
             this->shmem_p->sh_end_ptr += (this->maxNodesPerChunk * this->coeffsPerNode);
             if (this->shmem_p->sh_end_ptr > this->shmem_p->sh_max_ptr) MSG_ABORT("Shared block too small");
         } else if (coeff) {
-            sNodesCoeff = new double[getCoeffChunkSize()];
+            c_chunk = new double[getCoeffChunkSize()];
         }
-        if (coeff) this->nodeCoeffChunks.push_back(sNodesCoeff);
-        this->sNodes = (FunctionNode<D> *)new char[getNodeChunkSize()];
-        this->nodeChunks.push_back(this->sNodes);
+        if (coeff) this->nodeCoeffChunks.push_back(c_chunk);
+        auto n_chunk = (FunctionNode<D> *)new char[getNodeChunkSize()];
+        this->nodeChunks.push_back(n_chunk);
     }
     MRCPP_UNSET_OMP_LOCK();
 }
+*/
 
 template class FunctionNodeAllocator<1>;
 template class FunctionNodeAllocator<2>;

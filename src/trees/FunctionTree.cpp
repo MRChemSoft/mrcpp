@@ -73,7 +73,7 @@ void FunctionTree<D>::allocRootNodes() {
         auto *root_p = allocator.getNode_p(sIdx);
 
         // construct into allocator memory
-        new (root_p) FunctionNode<D>(*this, rIdx, sIdx);
+        new (root_p) FunctionNode<D>(*this, rIdx);
         root_p->n_coefs = allocator.getNCoefs();
         root_p->coefs = allocator.getCoef_p(sIdx);
         root_p->setIsAllocated();
@@ -81,6 +81,10 @@ void FunctionTree<D>::allocRootNodes() {
         root_p->setIsLeafNode();
         root_p->setIsEndNode();
         root_p->clearHasCoefs();
+
+        root_p->serialIx = sIdx;
+        root_p->parentSerialIx = -1;
+        root_p->childSerialIx = -1;
 
         this->incrementNodeCount(root_p->getScale());
         roots[rIdx] = root_p;
@@ -167,7 +171,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     // Read tree data, chunk by chunk
     auto &allocator = this->getFunctionNodeAllocator();
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        allocator.initChunk(iChunk);
+        if (iChunk >= allocator.getNChunks()) allocator.appendChunk();
         f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
         f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }

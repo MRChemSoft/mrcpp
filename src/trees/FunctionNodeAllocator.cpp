@@ -281,7 +281,7 @@ template <int D> void FunctionNodeAllocator<D>::moveNodes(int nNodes, int srcIdx
     for (int i = 0; i < nNodes * sizeof(FunctionNode<D>); i++) ((char *)dstNode)[i] = ((char *)srcNode)[i];
 
     // coefs have new adresses
-    double *coefs_p = getCoefNoLock(srcIdx);
+    double *coefs_p = getCoefNoLock(dstIdx);
     for (int i = 0; i < nNodes; i++) (dstNode + i)->coefs = coefs_p + i * this->getNCoefs();
 
     // copy coefs to new adress

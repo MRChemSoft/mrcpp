@@ -58,6 +58,7 @@ public:
 
     virtual int getNChunks() const = 0;
     int getNNodes() const { return this->nNodes; }
+    int getNCoefs() const { return this->coeffsPerNode; }
 
 protected:
     int nNodes{0};                  // number of nodes actually in use

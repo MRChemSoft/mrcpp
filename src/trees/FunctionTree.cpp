@@ -56,8 +56,46 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
                                    mra.getWorldBox().getUpperBounds().data()) {
     this->nodeAllocator_p = new FunctionNodeAllocator<D>(this, sh_mem, false);
     this->genNodeAllocator_p = new FunctionNodeAllocator<D>(this, nullptr, true);
-    this->nodeAllocator_p->allocRoots(*this);
+    this->allocRootNodes();
     this->resetEndNodeTable();
+}
+
+template <int D>
+void FunctionTree<D>::allocRootNodes() {
+    auto &allocator = this->getFunctionNodeAllocator();
+    auto &rootbox = this->getRootBox();
+
+    int nRoots = rootbox.size();
+    int sIdx = allocator.alloc(nRoots);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coef_p = allocator.getCoef_p(sIdx);
+    auto *root_p = allocator.getNode_p(sIdx);
+
+    MWNode<D> **roots = rootbox.getNodes();
+    for (int rIdx = 0; rIdx < nRoots; rIdx++) {
+        // construct into allocator memory
+        new (root_p) FunctionNode<D>(*this, rIdx);
+        roots[rIdx] = root_p;
+
+        root_p->serialIx = sIdx;
+        root_p->parentSerialIx = -1;
+        root_p->childSerialIx = -1;
+
+        root_p->n_coefs = n_coefs;
+        root_p->coefs = coef_p;;
+        root_p->setIsAllocated();
+
+        root_p->setIsRootNode();
+        root_p->setIsLeafNode();
+        root_p->setIsEndNode();
+        root_p->clearHasCoefs();
+
+        this->incrementNodeCount(root_p->getScale());
+        sIdx++;
+        root_p++;
+        coef_p += n_coefs;
+    }
 }
 
 // FunctionTree destructor

@@ -202,13 +202,76 @@ template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
 }
 
 template <int D> void FunctionNode<D>::createChildren(bool coefs) {
-    MWNode<D>::createChildren(coefs);
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    auto &allocator = this->getFuncTree().getFunctionNodeAllocator();
+
+    int nChildren = this->getTDim();
+    int sIdx = allocator.alloc(nChildren);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coefs_p = allocator.getCoef_p(sIdx);
+    auto *child_p = allocator.getNode_p(sIdx);
+
+    this->childSerialIx = sIdx;
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        // construct into allocator memory
+        new (child_p) FunctionNode<D>(*this, cIdx);
+        this->children[cIdx] = child_p;
+
+        child_p->serialIx = sIdx;
+        child_p->parentSerialIx = this->serialIx;
+        child_p->childSerialIx = -1;
+
+        child_p->n_coefs = n_coefs;
+        child_p->coefs = coefs_p;
+        child_p->setIsAllocated();
+
+        child_p->setIsLeafNode();
+        child_p->setIsEndNode();
+        child_p->clearHasCoefs();
+
+        this->getMWTree().incrementNodeCount(child_p->getScale());
+        sIdx++;
+        child_p++;
+        coefs_p += n_coefs;
+    }
+    this->setIsBranchNode();
     this->clearIsEndNode();
 }
 
 template <int D> void FunctionNode<D>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getFuncTree().getGenNodeAllocator().allocChildren(*this, true);
+    auto &allocator = this->getFuncTree().getGenNodeAllocator();
+
+    int nChildren = this->getTDim();
+    int sIdx = allocator.alloc(nChildren);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coefs_p = allocator.getCoef_p(sIdx);
+    auto *child_p = allocator.getNode_p(sIdx);
+
+    this->childSerialIx = sIdx;
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        // construct into allocator memory
+        new (child_p) FunctionNode<D>(*this, cIdx);
+        this->children[cIdx] = child_p;
+
+        child_p->serialIx = sIdx;
+        child_p->parentSerialIx = (this->isGenNode()) ? this->serialIx: -1;
+        child_p->childSerialIx = -1;
+
+        child_p->n_coefs = n_coefs;
+        child_p->coefs = coefs_p;
+        child_p->setIsAllocated();
+
+        child_p->setIsLeafNode();
+        child_p->setIsGenNode();
+        child_p->clearHasCoefs();
+
+        sIdx++;
+        child_p++;
+        coefs_p += n_coefs;
+    }
     this->setIsBranchNode();
 }
 

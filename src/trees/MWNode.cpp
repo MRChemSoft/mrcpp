@@ -171,7 +171,7 @@ template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
 }
 
 template <int D> void MWNode<D>::zeroCoefs() {
-    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated " << *this);
 
     for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
     this->zeroNorms();
@@ -195,6 +195,7 @@ template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
 
 template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
+    if (not this->isAllocated()) MSG_ABORT("Not allocated!");
     if (not this->hasCoefs()) MSG_ABORT("No coefficients!");
 
     if (overwrite) {

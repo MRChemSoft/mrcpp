@@ -115,6 +115,8 @@ public:
 protected:
     FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
+
+    void allocRootNodes();
 };
 
 } // namespace mrcpp

@@ -226,12 +226,7 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     int nChunksStart = this->nodeChunks.size();
 
     while (true) {
-        // find first available spot
-        // Note that last positions on a chunk cannot be used if there is no place for 8 siblings on the same chunk
-        while ((this->nodeStackStatus[posavail] != 0 or
-               (posavail + nAlloc - 1) / this->maxNodesPerChunk != posavail / this->maxNodesPerChunk) and
-               posavail < this->topStack)
-            posavail++;
+        posavail = findNextAvailable(posavail, nAlloc);
         if (posavail >= this->topStack) break; // treated all nodes
 
         posocc = findNextOccupied(posavail);

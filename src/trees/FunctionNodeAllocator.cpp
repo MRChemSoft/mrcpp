@@ -234,9 +234,7 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
             posavail++;
         if (posavail >= this->topStack) break; // treated all nodes
 
-        // find next allocated spot after available
-        posocc = posavail;
-        while (this->nodeStackStatus[posocc] == 0 and posavail < this->topStack) posocc++;
+        posocc = findNextOccupied(posavail);
         if (posocc >= this->topStack) break; // treated all nodes
 
         moveNodes(nAlloc, posocc, posavail);

@@ -184,7 +184,7 @@ OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, doubl
     return newNode;
 }
 
-void OperatorNodeAllocator::deallocNodes(int serialIx) {
+void OperatorNodeAllocator::dealloc(int serialIx) {
     this->nodeStackStatus[serialIx] = 0; // mark as available
     if (serialIx == this->topStack - 1) {  // top of stack
         while (this->nodeStackStatus[this->topStack - 1] == 0) {

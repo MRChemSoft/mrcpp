@@ -37,7 +37,7 @@ void OperatorNode::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getNodeAllocator().deallocNodes(sIdx);
+    this->tree->getNodeAllocator().dealloc(sIdx);
 }
 
 /** Calculate one specific component norm of the OperatorNode.

@@ -54,31 +54,27 @@ public:
     double *getCoeffChunk(int i) { return this->nodeCoeffChunks[i]; }
     FunctionNode<D> *getNodeChunk(int i) { return this->nodeChunks[i]; }
 
-    void allocRoots(MWTree<D> &tree) override;
-    void allocChildren(MWNode<D> &parent, bool allocCoefs) override;
-    void deallocNodes(int serialIx) override;
+    int alloc(int nAlloc, bool coeff = true);
+    void dealloc(int serialIx) override;
 
-    int shrinkChunks();
     void initChunk(int iChunk, bool coeff = true);
+    int shrinkChunks();
 
     void rewritePointers(bool coeff = true);
     void clear(int n);
     void print() const;
 
-    int alloc(int nAlloc);
     double * getCoef_p(int sIdx);
     FunctionNode<D> * getNode_p(int sIdx);
 
 protected:
     bool genNode{false};
-    FunctionNode<D> *sNodes{nullptr};       // serial ProjectedNodes
-    FunctionNode<D> *lastNode{nullptr};     // pointer just after the last active node, i.e. where to put next node
+    FunctionNode<D> *lastNode{nullptr}; // pointer just after the last active node, i.e. where to put next node
     std::vector<FunctionNode<D> *> nodeChunks{};
 
-    FunctionNode<D> *allocNodes(int nAlloc, int *serialIx); // Does not allocate coefficents
-    FunctionNode<D> *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
-
-    void appendChunk();
+    double * getCoefNoLock(int sIdx);
+    FunctionNode<D> * getNodeNoLock(int sIdx);
+    void appendChunk(bool coeff = true);
 };
 
 } // namespace mrcpp

@@ -299,25 +299,11 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     int inode = this->topStack % this->maxNodesPerChunk;
     this->lastNode = this->nodeChunks[ichunk] + inode;
 
-    int nChunks = posocc / this->maxNodesPerChunk + 1; // number of occupied chunks
-    for (int i = nChunks; i < this->nodeChunks.size(); i++)
-        delete[](char *)(this->nodeChunks[i]); // remove unused chunks
-
-    if (this->isShared()) {
-        // shared coefficients cannot be fully deallocated, only pointer is moved.
-        this->shmem_p->sh_end_ptr -= (nChunksStart - nChunks) * this->coeffsPerNode * this->maxNodesPerChunk;
-    } else {
-        for (int i = nChunks; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
-    }
-
-    // shrink the stacks
-    this->nodeChunks.resize(nChunks);
-    this->nodeCoeffChunks.resize(nChunks);
-    this->nodeStackStatus.resize(nChunks * this->maxNodesPerChunk);
+    int nChunksAfter = deleteUnusedChunks();
     this->getTree()->resetEndNodeTable();
 
     MRCPP_UNSET_OMP_LOCK();
-    return nChunksStart - nChunks;
+    return nChunksStart - nChunksAfter;
 }
 
 template <int D> int FunctionNodeAllocator<D>::findNextAvailable(int pos, int nAlloc) const {

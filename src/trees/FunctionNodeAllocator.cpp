@@ -219,12 +219,8 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
         return 0; // no chunks to remove
     }
 
-    double *coefs_p;
-    MWTree<D> *tree = this->tree_p;
-    int posavail = tree->getRootBox().size(); // start after root nodes
     int posocc = 0;
-    int nChunksStart = this->nodeChunks.size();
-
+    int posavail = this->getTree()->getRootBox().size(); // start after root nodes
     while (true) {
         posavail = findNextAvailable(posavail, nAlloc);
         if (posavail >= this->topStack) break; // treated all nodes
@@ -239,15 +235,13 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     posocc = this->topStack - 1;
     while (this->nodeStackStatus[posocc] == 0 and posocc > 0) posocc--;
     this->topStack = posocc + 1;
-    int ichunk = this->topStack / this->maxNodesPerChunk;
-    int inode = this->topStack % this->maxNodesPerChunk;
-    this->lastNode = this->nodeChunks[ichunk] + inode;
+    this->lastNode = getNodeNoLock(this->topStack);
 
-    int nChunksAfter = deleteUnusedChunks();
+    int nChunksDeleted = deleteUnusedChunks();
     this->getTree()->resetEndNodeTable();
 
     MRCPP_UNSET_OMP_LOCK();
-    return nChunksStart - nChunksAfter;
+    return nChunksDeleted;
 }
 
 template <int D> int FunctionNodeAllocator<D>::findNextAvailable(int pos, int nAlloc) const {
@@ -339,7 +333,7 @@ template <int D> int FunctionNodeAllocator<D>::deleteUnusedChunks() {
     this->nodeChunks.resize(nChunksUsed);
     this->nodeCoeffChunks.resize(nChunksUsed);
     this->nodeStackStatus.resize(nChunksUsed * this->maxNodesPerChunk);
-    return nChunksUsed;
+    return nChunksTotal - nChunksUsed;
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */

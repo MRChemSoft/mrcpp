@@ -74,7 +74,13 @@ protected:
 
     double * getCoefNoLock(int sIdx);
     FunctionNode<D> * getNodeNoLock(int sIdx);
+
+    int deleteUnusedChunks();
     void appendChunk(bool coeff = true);
+    void moveNodes(int nNodes, int srcIdx, int dstIdx);
+
+    int findNextAvailable(int pos, int nAlloc) const;
+    int findNextOccupied(int pos) const;
 };
 
 } // namespace mrcpp

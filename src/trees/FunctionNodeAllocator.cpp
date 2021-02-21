@@ -320,6 +320,98 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
     return nChunksStart - nChunks;
 }
 
+template <int D> int FunctionNodeAllocator<D>::findNextAvailable(int pos, int nAlloc) const {
+    // Last positions on a chunk cannot be used if there is no place for nAlloc siblings on the same chunk
+    bool chunkTooSmall = (pos + nAlloc - 1) / this->maxNodesPerChunk != pos / this->maxNodesPerChunk;
+    bool posIsOccupied = (this->nodeStackStatus[pos] != 0);
+    bool endOfStack = (pos >= this->topStack);
+    while ((posIsOccupied or chunkTooSmall) and not(endOfStack)) {
+        pos++;
+        chunkTooSmall = (pos + nAlloc - 1) / this->maxNodesPerChunk != pos / this->maxNodesPerChunk;
+        posIsOccupied = (this->nodeStackStatus[pos] != 0);
+        endOfStack = (pos >= this->topStack);
+    }
+    return pos;
+}
+
+template <int D> int FunctionNodeAllocator<D>::findNextOccupied(int pos) const {
+    bool posIsAvailable = (this->nodeStackStatus[pos] == 0);
+    bool endOfStack = (pos >= this->topStack);
+    while (posIsAvailable and not(endOfStack)) {
+        pos++;
+        posIsAvailable = (this->nodeStackStatus[pos] == 0);
+        endOfStack = (pos >= this->topStack);
+    }
+    return pos;
+}
+
+template <int D> void FunctionNodeAllocator<D>::moveNodes(int nNodes, int srcIdx, int dstIdx) {
+    FunctionNode<D> *srcNode = getNodeNoLock(srcIdx);
+    FunctionNode<D> *dstNode = getNodeNoLock(dstIdx);
+
+    // check that all siblings are consecutive. Should never be root node.
+    for (int i = 0; i < nNodes; i++) assert(this->nodeStackStatus[dstIdx + i] == 0);
+    for (int i = 1; i < nNodes; i++) assert((srcNode + i)->parent->serialIx == srcNode->parent->serialIx); // siblings
+
+    // just copy everything "as is"
+    for (int i = 0; i < nNodes * sizeof(FunctionNode<D>); i++) ((char *)dstNode)[i] = ((char *)srcNode)[i];
+
+    // coefs have new adresses
+    double *coefs_p = getCoefNoLock(srcIdx);
+    for (int i = 0; i < nNodes; i++) (dstNode + i)->coefs = coefs_p + i * this->getNCoefs();
+
+    // copy coefs to new adress
+    if (not this->isShared()) {
+        for (int i = 0; i < nNodes * this->coeffsPerNode; i++) dstNode->coefs[i] = srcNode->coefs[i];
+    } else {
+        if (this->shmem_p->rank == 0) // only master copy the data. careful with sync
+            for (int i = 0; i < nNodes * this->coeffsPerNode; i++) dstNode->coefs[i] = srcNode->coefs[i];
+    }
+
+    // update node
+    for (int i = 0; i < nNodes; i++) (dstNode + i)->serialIx = dstIdx + i;
+
+    // update parent
+    dstNode->parent->childSerialIx = dstIdx;
+    for (int i = 0; i < nNodes; i++) dstNode->parent->children[i] = dstNode + i;
+
+    // update children
+    for (int i = 0; i < nNodes; i++) {
+        for (int j = 0; j < (dstNode + i)->getNChildren(); j++) {
+            (dstNode + i)->children[j]->parentSerialIx = dstIdx + i;
+            (dstNode + i)->children[j]->parent = dstNode + i;
+        }
+    }
+
+    // mark moved nodes as occupied
+    for (int i = 0; i < nNodes; i++) this->nodeStackStatus[dstIdx + i] = 1;
+    dstIdx += nNodes;
+
+    // delete "old" nodes
+    for (int i = 0; i < nNodes; i++) this->nodeStackStatus[srcIdx + i] = 0;
+    for (int i = 0; i < nNodes; i++) (srcNode + i)->serialIx = -1;
+}
+
+template <int D> int FunctionNodeAllocator<D>::deleteUnusedChunks() {
+    // number of occupied chunks
+    int nChunksTotal = getNChunks();
+    int nChunksUsed = getNChunksUsed();
+    for (int i = nChunksUsed; i < this->nodeChunks.size(); i++) delete[](char *)(this->nodeChunks[i]);
+
+    if (this->isShared()) {
+        // shared coefficients cannot be fully deallocated, only pointer is moved.
+        this->shmem_p->sh_end_ptr -= (nChunksTotal - nChunksUsed) * this->coeffsPerNode * this->maxNodesPerChunk;
+    } else {
+        for (int i = nChunksUsed; i < this->nodeCoeffChunks.size(); i++) delete[] this->nodeCoeffChunks[i];
+    }
+
+    // shrink the stacks
+    this->nodeChunks.resize(nChunksUsed);
+    this->nodeCoeffChunks.resize(nChunksUsed);
+    this->nodeStackStatus.resize(nChunksUsed * this->maxNodesPerChunk);
+    return nChunksUsed;
+}
+
 /** Traverse tree and redefine pointer, counter and tables. */
 template <int D> void FunctionNodeAllocator<D>::rewritePointers(bool coeff) {
     MRCPP_SET_OMP_LOCK();

@@ -239,56 +239,7 @@ template <int D> int FunctionNodeAllocator<D>::shrinkChunks() {
         while (this->nodeStackStatus[posocc] == 0 and posavail < this->topStack) posocc++;
         if (posocc >= this->topStack) break; // treated all nodes
 
-        // move node from posocc to posavail
-        int ichunk = posocc / this->maxNodesPerChunk;
-        int inode = posocc % this->maxNodesPerChunk;
-        FunctionNode<D> *NodeOcc = this->nodeChunks[ichunk] + inode;
-
-        // check that all siblings are consecutive. Should never be root node.
-        for (int i = 0; i < nAlloc; i++) assert(this->nodeStackStatus[posavail + i] == 0);
-        for (int i = 1; i < nAlloc; i++)
-            assert((NodeOcc + i)->parent->serialIx == (NodeOcc)->parent->serialIx); // siblings
-
-        ichunk = posavail / this->maxNodesPerChunk;
-        inode = posavail % this->maxNodesPerChunk;
-        FunctionNode<D> *NodeAvail = this->nodeChunks[ichunk] + inode;
-
-        // just copy everything "as is"
-        for (int i = 0; i < nAlloc * sizeof(FunctionNode<D>); i++) ((char *)NodeAvail)[i] = ((char *)NodeOcc)[i];
-
-        // coefs have new adresses
-        for (int i = 0; i < nAlloc; i++)
-            (NodeAvail + i)->coefs = this->nodeCoeffChunks[ichunk] + (inode + i) * this->coeffsPerNode;
-        // copy coefs to new adress
-        if (not this->isShared()) {
-            for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
-        } else {
-            if (this->shmem_p->rank == 0) // only master copy the data. careful with sync
-                for (int i = 0; i < nAlloc * this->coeffsPerNode; i++) NodeAvail->coefs[i] = NodeOcc->coefs[i];
-        }
-
-        // new nodes have another adress
-        for (int i = 0; i < nAlloc; i++) (NodeAvail + i)->serialIx = posavail + i;
-
-        // new nodes have another adress. Update parent
-        NodeAvail->parent->childSerialIx = posavail;
-        for (int i = 0; i < nAlloc; i++) NodeAvail->parent->children[i] = NodeAvail + i;
-
-        // Update children too
-        for (int i = 0; i < nAlloc; i++) {
-            for (int j = 0; j < (NodeAvail + i)->getNChildren(); j++)
-                (NodeAvail + i)->children[j]->parentSerialIx = posavail + i;
-            for (int j = 0; j < (NodeAvail + i)->getNChildren(); j++)
-                (NodeAvail + i)->children[j]->parent = NodeAvail + i;
-        }
-
-        // mark moved nodes as occupied
-        for (int i = 0; i < nAlloc; i++) this->nodeStackStatus[posavail + i] = 1;
-        posavail += nAlloc;
-
-        // delete "old" nodes
-        for (int i = 0; i < nAlloc; i++) this->nodeStackStatus[posocc + i] = 0;
-        for (int i = 0; i < nAlloc; i++) (NodeOcc + i)->serialIx = -1;
+        moveNodes(nAlloc, posocc, posavail);
     }
 
     // find the last used node

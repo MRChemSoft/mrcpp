@@ -27,7 +27,6 @@
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
 #include "OperatorNode.h"
-#include "OperatorNodeAllocator.h"
 #include "NodeAllocator.h"
 #include "utils/Printer.h"
 #include "utils/tree_utils.h"
@@ -44,13 +43,13 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         , nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
 
-    this->nodeAllocator_p = new OperatorNodeAllocator(this);
+    this->nodeAllocator_p = new NodeAllocator<2>(this, nullptr);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
 
 void OperatorTree::allocRootNodes() {
-    auto &allocator = this->getOperatorNodeAllocator();
+    auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
 
     int nRoots = rootbox.size();

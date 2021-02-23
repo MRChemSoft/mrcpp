@@ -75,7 +75,7 @@ double OperatorNode::calcComponentNorm(int i) const {
 
 void OperatorNode::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    auto &allocator = this->getOperTree().getOperatorNodeAllocator();
+    auto &allocator = this->getOperTree().getNodeAllocator();
 
     int nChildren = this->getTDim();
     int sIdx = allocator.alloc(nChildren);

@@ -44,9 +44,8 @@ public:
     void genChildren() override;
     void deleteChildren() override;
 
-    friend class MWNode<2>;
     friend class OperatorTree;
-    friend class OperatorNodeAllocator;
+    friend class NodeAllocator<2>;
 
 protected:
     OperatorNode() : MWNode<2>() {};

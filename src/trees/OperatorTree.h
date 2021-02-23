@@ -26,7 +26,7 @@
 #pragma once
 
 #include "MWTree.h"
-#include "OperatorNodeAllocator.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
@@ -50,9 +50,6 @@ public:
 
     OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
-
-    OperatorNodeAllocator &getOperatorNodeAllocator() { return static_cast<OperatorNodeAllocator &>(*this->nodeAllocator_p); }
-    const OperatorNodeAllocator &getOperatorNodeAllocator() const { return static_cast<OperatorNodeAllocator &>(*this->nodeAllocator_p); }
 
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;

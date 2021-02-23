@@ -28,7 +28,7 @@
 #include <map>
 
 #include "MWTree.h"
-#include "FunctionNodeAllocator.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
@@ -81,19 +81,16 @@ public:
     void multiply(double c, FunctionTree<D> &inp);
     void map(FMap fmap);
 
-    int getNChunks() { return getFunctionNodeAllocator().getNChunks(); }
-    int getNChunksUsed() { return getFunctionNodeAllocator().getNChunksUsed(); }
+    int getNChunks() { return this->getNodeAllocator().getNChunks(); }
+    int getNChunksUsed() { return this->getNodeAllocator().getNChunksUsed(); }
 
     int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    FunctionNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
-    FunctionNodeAllocator<D> &getFunctionNodeAllocator() { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
-
-    const FunctionNodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
-    const FunctionNodeAllocator<D> &getFunctionNodeAllocator() const { return static_cast<FunctionNodeAllocator<D> &>(*this->nodeAllocator_p); }
+    NodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    const NodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
@@ -113,7 +110,7 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
-    FunctionNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    NodeAllocator<D> *genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 
     void allocRootNodes();

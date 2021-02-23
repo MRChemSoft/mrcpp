@@ -143,11 +143,12 @@ public:
 
     friend class TreeBuilder<D>;
     friend class MultiplicationCalculator<D>;
-    friend class FunctionNodeAllocator<D>;
-    friend class OperatorNodeAllocator;
+    friend class NodeAllocator<D>;
     friend class MWTree<D>;
     friend class FunctionTree<D>;
     friend class OperatorTree;
+    friend class FunctionNode<D>;
+    friend class OperatorNode;
 
 protected:
     MWTree<D> *tree{nullptr};

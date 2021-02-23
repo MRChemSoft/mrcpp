@@ -25,6 +25,7 @@
 
 #include "FunctionNode.h"
 #include "FunctionTree.h"
+#include "NodeAllocator.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
@@ -203,7 +204,7 @@ template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
 
 template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    auto &allocator = this->getFuncTree().getFunctionNodeAllocator();
+    auto &allocator = this->getFuncTree().getNodeAllocator();
 
     int nChildren = this->getTDim();
     int sIdx = allocator.alloc(nChildren);

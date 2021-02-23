@@ -112,8 +112,6 @@ public:
     friend class OperatorNode;
     friend class TreeBuilder<D>;
     friend class NodeAllocator<D>;
-    friend class FunctionNodeAllocator<D>;
-    friend class OperatorNodeAllocator;
 
 protected:
     // Parameters that are set in construction and should never change

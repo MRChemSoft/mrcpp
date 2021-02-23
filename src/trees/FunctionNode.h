@@ -27,8 +27,8 @@
 
 #include <Eigen/Core>
 
-#include "FunctionTree.h"
 #include "MWNode.h"
+#include "FunctionTree.h"
 
 namespace mrcpp {
 
@@ -51,7 +51,7 @@ public:
     virtual void getAbsCoefs(double *absCoefs);
 
     friend class FunctionTree<D>;
-    friend class FunctionNodeAllocator<D>;
+    friend class NodeAllocator<D>;
 
 protected:
     FunctionNode() : MWNode<D>() {}

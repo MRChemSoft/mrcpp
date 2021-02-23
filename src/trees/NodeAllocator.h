@@ -52,8 +52,6 @@ public:
 
     bool isShared() const { return (this->shmem_p != nullptr); }
 
-    virtual void allocRoots(MWTree<D> &tree) {}
-    virtual void allocChildren(MWNode<D> &parent, bool allocCoefs) {}
     virtual void dealloc(int serialIx) = 0;
 
     virtual int getNChunks() const = 0;

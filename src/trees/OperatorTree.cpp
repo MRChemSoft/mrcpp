@@ -45,8 +45,45 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
     if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
 
     this->nodeAllocator_p = new OperatorNodeAllocator(this);
-    this->nodeAllocator_p->allocRoots(*this);
+    this->allocRootNodes();
     this->resetEndNodeTable();
+}
+
+void OperatorTree::allocRootNodes() {
+    auto &allocator = this->getOperatorNodeAllocator();
+    auto &rootbox = this->getRootBox();
+
+    int nRoots = rootbox.size();
+    int sIdx = allocator.alloc(nRoots);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coef_p = allocator.getCoef_p(sIdx);
+    auto *root_p = allocator.getNode_p(sIdx);
+
+    MWNode<2> **roots = rootbox.getNodes();
+    for (int rIdx = 0; rIdx < nRoots; rIdx++) {
+        // construct into allocator memory
+        new (root_p) OperatorNode(*this, rIdx);
+        roots[rIdx] = root_p;
+
+        root_p->serialIx = sIdx;
+        root_p->parentSerialIx = -1;
+        root_p->childSerialIx = -1;
+
+        root_p->n_coefs = n_coefs;
+        root_p->coefs = coef_p;;
+        root_p->setIsAllocated();
+
+        root_p->setIsRootNode();
+        root_p->setIsLeafNode();
+        root_p->setIsEndNode();
+        root_p->clearHasCoefs();
+
+        this->incrementNodeCount(root_p->getScale());
+        sIdx++;
+        root_p++;
+        coef_p += n_coefs;
+    }
 }
 
 OperatorTree::~OperatorTree() {

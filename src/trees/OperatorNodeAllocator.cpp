@@ -30,8 +30,6 @@
 
 namespace mrcpp {
 
-int NOtrees = 0;
-
 /** SerialTree class constructor.
  * Allocate the root FunctionNodes and fill in the empty slots of rootBox.
  * Initializes rootNodes to represent the zero function and allocate their nodes.
@@ -45,146 +43,104 @@ int NOtrees = 0;
  */
 OperatorNodeAllocator::OperatorNodeAllocator(OperatorTree *tree)
         : NodeAllocator<2>(tree, nullptr)
-        , sNodes(nullptr)
         , lastNode(nullptr) {
+    // reserve space for chunk pointers to avoid excessive reallocation
+    this->nodeChunks.reserve(100);
+    this->nodeCoeffChunks.reserve(100);
 
     this->topStack = 0;
-    NOtrees++;
-
     this->coeffsPerNode = 4 * this->tree_p->getKp1_d();
-
     this->maxNodesPerChunk = 1024;
-    this->lastNode = (OperatorNode *)this->sNodes; // position of last allocated node
 
     MRCPP_INIT_OMP_LOCK();
 }
 
 /** SerialTree destructor. */
 OperatorNodeAllocator::~OperatorNodeAllocator() {
-    for (auto &nodeChunk : this->nodeChunks) delete[](char *) nodeChunk;
-    for (auto &nodeCoeffChunk : this->nodeCoeffChunks) delete[] nodeCoeffChunk;
-
-    //    delete[] this->nodeStackStatus;
+    for (auto &chunk : this->nodeChunks) delete[](char *) chunk;
+    for (auto &chunk : this->nodeCoeffChunks) delete[] chunk;
     this->nodeStackStatus.clear();
-
-    NOtrees--;
-
     MRCPP_DESTROY_OMP_LOCK();
 }
 
-void OperatorNodeAllocator::allocRoots(MWTree<2> &tree) {
-    int sIx;
-    double *coefs_p;
-    // reserve place for nRoots
-    int nRoots = tree.getRootBox().size();
-    OperatorNode *root_p = this->allocNodes(nRoots, &sIx, &coefs_p);
-
-    MWNode<2> **roots = tree.getRootBox().getNodes();
-    for (int rIdx = 0; rIdx < nRoots; rIdx++) {
-        new (root_p) OperatorNode(tree, rIdx);
-        roots[rIdx] = root_p;
-
-        root_p->serialIx = sIx;
-        root_p->parentSerialIx = -1; // to indicate rootnode
-        root_p->childSerialIx = -1;
-
-        root_p->n_coefs = this->coeffsPerNode;
-        root_p->coefs = coefs_p;
-        root_p->setIsAllocated();
-        root_p->tree->incrementNodeCount(root_p->getScale());
-
-        sIx++;
-        root_p++;
-        coefs_p += this->coeffsPerNode;
-    }
+int OperatorNodeAllocator::getNChunks() const {
+    return this->nodeChunks.size();
 }
 
-void OperatorNodeAllocator::allocChildren(MWNode<2> &parent, bool allocCoefs) {
-    // NB: serial tree MUST generate all children consecutively
-    // all children must be generated at once if several threads are active
-    int sIx;
-    int nChildren = parent.getTDim();
-    double *coefs_p = nullptr;
-    OperatorNode *child_p = nullptr;
-    if (allocCoefs) {
-        child_p = this->allocNodes(nChildren, &sIx, &coefs_p);
-    } else {
-        NOT_REACHED_ABORT;
-    }
-
-    // position of first child
-    parent.childSerialIx = sIx;
-    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        new (child_p) OperatorNode(parent, cIdx);
-        parent.children[cIdx] = child_p;
-
-        child_p->serialIx = sIx;
-        child_p->parentSerialIx = parent.serialIx;
-        child_p->childSerialIx = -1;
-
-        child_p->n_coefs = this->coeffsPerNode;
-        child_p->coefs = coefs_p;
-        child_p->setIsAllocated();
-        child_p->tree->incrementNodeCount(child_p->getScale());
-
-        sIx++;
-        child_p++;
-        coefs_p += this->coeffsPerNode;
-    }
+int OperatorNodeAllocator::getNodeChunkSize() const {
+    return this->maxNodesPerChunk * sizeof(OperatorNode);
 }
 
-// return pointer to the last active node or NULL if failed
-OperatorNode *OperatorNodeAllocator::allocNodes(int nAlloc, int *serialIx, double **coefs_p) {
-    *serialIx = this->topStack;
-    int chunkIx = (*serialIx) % (this->maxNodesPerChunk);
+int OperatorNodeAllocator::getCoeffChunkSize() const {
+    return this->maxNodesPerChunk * this->coeffsPerNode * sizeof(double);
+}
 
-    if (chunkIx == 0 or chunkIx + nAlloc > this->maxNodesPerChunk) {
-        // start on new chunk
-        // we want nodes allocated simultaneously to be allocated on the same piece.
-        // possibly jump over the last nodes from the old chunk
-        this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk); // start of next chunk
+OperatorNode * OperatorNodeAllocator::getNode_p(int sIdx) {
+    MRCPP_SET_OMP_LOCK();
+    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
+    int cIdx = sIdx % this->maxNodesPerChunk;   // position in chunk
+    OperatorNode *node = this->nodeChunks[chunk] + cIdx;
+    MRCPP_UNSET_OMP_LOCK();
+    return node;
+}
 
-        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
+double * OperatorNodeAllocator::getCoef_p(int sIdx) {
+    MRCPP_SET_OMP_LOCK();
+    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
+    int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
+    double *coefs = this->nodeCoeffChunks[chunk] + idx * this->coeffsPerNode;
+    MRCPP_UNSET_OMP_LOCK();
+    return coefs;
+}
 
-        // careful: nodeChunks.size() is an unsigned int
-        if (chunk + 1 > this->nodeChunks.size()) {
-            // need to allocate new chunk
-            this->sNodes = (OperatorNode *)new char[this->maxNodesPerChunk * sizeof(OperatorNode)];
-            this->nodeChunks.push_back(this->sNodes);
-            auto *sNodesCoeff = new double[this->coeffsPerNode * this->maxNodesPerChunk];
-            this->nodeCoeffChunks.push_back(sNodesCoeff);
-            // allocate new chunk in nodeStackStatus
-            int oldsize = this->nodeStackStatus.size();
-            int newsize = oldsize + this->maxNodesPerChunk;
-            this->nodeStackStatus.resize(newsize);
-            std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
-        }
-        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
-        *serialIx = this->topStack;
-        chunkIx = *serialIx % (this->maxNodesPerChunk);
+OperatorNode * OperatorNodeAllocator::getNodeNoLock(int sIdx) {
+    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
+    int cIdx = sIdx % this->maxNodesPerChunk;   // position in chunk
+    OperatorNode *node = this->nodeChunks[chunk] + cIdx;
+    return node;
+}
+
+double * OperatorNodeAllocator::getCoefNoLock(int sIdx) {
+    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
+    int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
+    double *coefs = this->nodeCoeffChunks[chunk] + idx * this->coeffsPerNode;
+    return coefs;
+}
+
+int OperatorNodeAllocator::alloc(int nAlloc, bool coeff) {
+    MRCPP_SET_OMP_LOCK();
+
+    // move topstack to start of next chunk if current chunk is too small
+    int cIdx = this->topStack % (this->maxNodesPerChunk);
+    bool chunkOverflow = ((cIdx + nAlloc) > this->maxNodesPerChunk);
+    if (chunkOverflow) this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk);
+
+    // append chunk if necessary
+    int chunk = this->topStack / this->maxNodesPerChunk;
+    bool needNewChunk = (chunk >= this->nodeChunks.size());
+    if (needNewChunk) appendChunk(coeff);
+
+    // return value is index of first new node
+    auto sIdx = this->topStack;
+
+    // fill stack status
+    auto &status = this->nodeStackStatus;
+    for (int i = sIdx; i < sIdx + nAlloc; i++) {
+        if (status[i] != 0) MSG_ERROR(" NodeStackStatus: not available [" << i << "] : " << status[i]);
+        status[i] = 1;
     }
-    assert((this->topStack + nAlloc - 1) / this->maxNodesPerChunk < this->nodeChunks.size());
 
-    OperatorNode *newNode = this->lastNode;
-    OperatorNode *newNode_cp = newNode;
-
-    int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
-    *coefs_p = this->nodeCoeffChunks[chunk] + chunkIx * this->coeffsPerNode;
-
-    for (int i = 0; i < nAlloc; i++) {
-        if (this->nodeStackStatus[*serialIx + i] != 0)
-            println(0, *serialIx + i << " NodeStackStatus: not available " << this->nodeStackStatus[*serialIx + i]);
-        this->nodeStackStatus[*serialIx + i] = 1;
-        newNode_cp++;
-    }
+    // advance stack pointers
     this->nNodes += nAlloc;
     this->topStack += nAlloc;
-    this->lastNode += nAlloc;
+    this->lastNode = getNodeNoLock(sIdx) + nAlloc;
+    MRCPP_UNSET_OMP_LOCK();
 
-    return newNode;
+    return sIdx;
 }
 
 void OperatorNodeAllocator::dealloc(int serialIx) {
+    MRCPP_SET_OMP_LOCK();
     this->nodeStackStatus[serialIx] = 0; // mark as available
     if (serialIx == this->topStack - 1) {  // top of stack
         while (this->nodeStackStatus[this->topStack - 1] == 0) {
@@ -192,10 +148,33 @@ void OperatorNodeAllocator::dealloc(int serialIx) {
             if (this->topStack < 1) break;
         }
         // has to redefine lastNode
-        int chunk = this->topStack / this->maxNodesPerChunk; // find the right chunk
-        this->lastNode = this->nodeChunks[chunk] + this->topStack % (this->maxNodesPerChunk);
+        this->lastNode = getNodeNoLock(this->topStack);
     }
     this->nNodes--;
+    MRCPP_UNSET_OMP_LOCK();
+}
+
+void OperatorNodeAllocator::appendChunk(bool coeff) {
+    // make coeff chunk
+    if (coeff) {
+        double *c_chunk = new double[getCoeffChunkSize()];
+        this->nodeCoeffChunks.push_back(c_chunk);
+    }
+
+    // make node chunk
+    auto n_chunk = (OperatorNode *)new char[getNodeChunkSize()];
+    for (int i = 0; i < this->maxNodesPerChunk; i++) {
+        n_chunk[i].serialIx = -1;
+        n_chunk[i].parentSerialIx = -1;
+        n_chunk[i].childSerialIx = -1;
+    }
+    this->nodeChunks.push_back(n_chunk);
+
+    // append to nodeStackStatus
+    int oldsize = this->nodeStackStatus.size();
+    int newsize = oldsize + this->maxNodesPerChunk;
+    this->nodeStackStatus.resize(newsize);
+    std::fill(this->nodeStackStatus.begin() + oldsize, this->nodeStackStatus.end(), 0);
 }
 
 } // namespace mrcpp

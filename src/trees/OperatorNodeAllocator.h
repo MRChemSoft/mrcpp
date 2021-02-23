@@ -45,18 +45,24 @@ public:
     OperatorNodeAllocator &operator=(const OperatorNodeAllocator &tree) = delete;
     ~OperatorNodeAllocator() override;
 
-    void allocRoots(MWTree<2> &tree) override;
-    void allocChildren(MWNode<2> &parent, bool allocCoefs) override;
+    int alloc(int nAlloc, bool coeff = true);
     void dealloc(int serialIx) override;
 
-    int getNChunks() const override { return this->nodeChunks.size(); }
+    int getNChunks() const override;
+    int getNodeChunkSize() const;
+    int getCoeffChunkSize() const;
+
+    double * getCoef_p(int sIdx);
+    OperatorNode * getNode_p(int sIdx);
 
 protected:
-    OperatorNode *sNodes{nullptr};       // serial OperatorNodes
     OperatorNode *lastNode{nullptr};     // pointer to the last active node
-    std::vector<OperatorNode *> nodeChunks;
+    std::vector<OperatorNode *> nodeChunks{};
 
-    OperatorNode *allocNodes(int nAlloc, int *serialIx, double **coefs_p);
+    double * getCoefNoLock(int sIdx);
+    OperatorNode * getNodeNoLock(int sIdx);
+
+    void appendChunk(bool coeff = true);
 };
 
 } // namespace mrcpp

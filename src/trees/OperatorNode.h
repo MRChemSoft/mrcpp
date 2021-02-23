@@ -40,19 +40,9 @@ public:
     const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
     const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
 
-    void createChildren(bool coefs) override {
-        MWNode<2>::createChildren(coefs);
-        this->clearIsEndNode();
-    }
-    void genChildren() override {
-        MWNode<2>::createChildren(true);
-        this->clearIsEndNode();
-        this->giveChildrenCoefs();
-    }
-    void deleteChildren() override {
-        MWNode<2>::deleteChildren();
-        this->setIsEndNode();
-    }
+    void createChildren(bool coefs) override;
+    void genChildren() override;
+    void deleteChildren() override;
 
     friend class MWNode<2>;
     friend class OperatorTree;

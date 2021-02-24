@@ -48,10 +48,14 @@ public:
     NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
     ~NodeAllocator();
 
-    int alloc(int nAlloc, bool coeff = true);
+    int alloc(int nNodes, bool coefs = true);
     void dealloc(int sIdx);
+
+    void init(int nChunks, bool coefs = true);
     void clear(int sIdx);
+
     int compress();
+    void reassemble();
 
     int getNNodes() const { return this->nNodes; }
     int getNCoefs() const { return this->coeffsPerNode; }
@@ -67,9 +71,6 @@ public:
     MWNode<D> * getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void print() const;
-
-    void initChunk(int iChunk, bool coeff = true);
-    void rewritePointers(bool coeff = true);
 
 protected:
     int nNodes{0};                  // number of nodes actually in use
@@ -94,13 +95,13 @@ protected:
     double * getCoefNoLock(int sIdx);
     MWNode<D> * getNodeNoLock(int sIdx);
 
-    void appendChunk(bool coeff = true);
+    void appendChunk(bool coeff);
 
     void moveNodes(int nNodes, int srcIdx, int dstIdx);
     int deleteUnusedChunks();
 
-    int findNextAvailable(int pos, int nAlloc) const;
-    int findNextOccupied(int pos) const;
+    int findNextAvailable(int sIdx, int nNodes) const;
+    int findNextOccupied(int sIdx) const;
 
 #ifdef MRCPP_HAS_OMP
     omp_lock_t omp_lock;

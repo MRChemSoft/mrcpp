@@ -177,8 +177,8 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
 
     // Read tree data, chunk by chunk
     auto &allocator = this->getNodeAllocator();
+    allocator.init(nChunks);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        allocator.initChunk(iChunk);
         f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
         f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
     }
@@ -186,7 +186,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     print::time(10, "Time read tree", t1);
 
     Timer t2;
-    allocator.rewritePointers();
+    allocator.reassemble();
     this->resetEndNodeTable();
     print::time(10, "Time rewrite pointers", t2);
 }

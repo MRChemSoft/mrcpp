@@ -96,6 +96,7 @@ template <int D> NodeAllocator<D>::~NodeAllocator() {
 /** reset the start node counter */
 template <int D> void NodeAllocator<D>::clear(int sIdx) {
     MRCPP_SET_OMP_LOCK();
+    if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
     std::fill(this->stackStatus.begin() + sIdx, this->stackStatus.end(), 0);
     this->topStack = sIdx;
     this->last_p = getNodeNoLock(sIdx);
@@ -108,43 +109,40 @@ template <int D> void NodeAllocator<D>::clear(int sIdx) {
 
 template <int D> MWNode<D> * NodeAllocator<D>::getNode_p(int sIdx) {
     MRCPP_SET_OMP_LOCK();
-    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
-    int cIdx = sIdx % this->maxNodesPerChunk;   // position in chunk
-    MWNode<D> *node = this->nodeChunks[chunk] + cIdx;
+    auto *node = getNodeNoLock(sIdx);
     MRCPP_UNSET_OMP_LOCK();
     return node;
 }
 
 template <int D> double * NodeAllocator<D>::getCoef_p(int sIdx) {
     MRCPP_SET_OMP_LOCK();
-    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
-    int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
-    double *coefs = this->coeffChunks[chunk] + idx * this->coeffsPerNode;
+    auto *coefs = getCoefNoLock(sIdx);
     MRCPP_UNSET_OMP_LOCK();
     return coefs;
 }
 
 template <int D> MWNode<D> * NodeAllocator<D>::getNodeNoLock(int sIdx) {
+    if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
     int chunk = sIdx / this->maxNodesPerChunk; // which chunk
-    int cIdx = sIdx % this->maxNodesPerChunk;   // position in chunk
-    MWNode<D> *node = this->nodeChunks[chunk] + cIdx;
-    return node;
+    int cIdx = sIdx % this->maxNodesPerChunk;  // position in chunk
+    return this->nodeChunks[chunk] + cIdx;
 }
 
 template <int D> double * NodeAllocator<D>::getCoefNoLock(int sIdx) {
+    if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
     int chunk = sIdx / this->maxNodesPerChunk; // which chunk
     int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
-    double *coefs = this->coeffChunks[chunk] + idx * this->coeffsPerNode;
-    return coefs;
+    return this->coeffChunks[chunk] + idx * this->coeffsPerNode;
 }
 
-template <int D> int NodeAllocator<D>::alloc(int nAlloc, bool coeff) {
+template <int D> int NodeAllocator<D>::alloc(int nNodes, bool coeff) {
     MRCPP_SET_OMP_LOCK();
+    if (nNodes <= 0 or nNodes > this->maxNodesPerChunk) MSG_ABORT("Cannot allocate " << nNodes << " nodes");
 
     // move topstack to start of next chunk if current chunk is too small
     int cIdx = this->topStack % (this->maxNodesPerChunk);
-    bool chunkOverflow = ((cIdx + nAlloc) > this->maxNodesPerChunk);
-    if (chunkOverflow) this->topStack = this->maxNodesPerChunk * ((this->topStack + nAlloc - 1) / this->maxNodesPerChunk);
+    bool chunkOverflow = ((cIdx + nNodes) > this->maxNodesPerChunk);
+    if (chunkOverflow) this->topStack = this->maxNodesPerChunk * ((this->topStack + nNodes - 1) / this->maxNodesPerChunk);
 
     // append chunk if necessary
     int chunk = this->topStack / this->maxNodesPerChunk;
@@ -156,24 +154,25 @@ template <int D> int NodeAllocator<D>::alloc(int nAlloc, bool coeff) {
 
     // fill stack status
     auto &status = this->stackStatus;
-    for (int i = sIdx; i < sIdx + nAlloc; i++) {
+    for (int i = sIdx; i < sIdx + nNodes; i++) {
         if (status[i] != 0) MSG_ERROR(" NodeStackStatus: not available [" << i << "] : " << status[i]);
         status[i] = 1;
     }
 
     // advance stack pointers
-    this->nNodes += nAlloc;
-    this->topStack += nAlloc;
-    this->last_p = getNodeNoLock(sIdx) + nAlloc;
+    this->nNodes += nNodes;
+    this->topStack += nNodes;
+    this->last_p = getNodeNoLock(sIdx) + nNodes;
     MRCPP_UNSET_OMP_LOCK();
 
     return sIdx;
 }
 
-template <int D> void NodeAllocator<D>::dealloc(int serialIx) {
+template <int D> void NodeAllocator<D>::dealloc(int sIdx) {
     MRCPP_SET_OMP_LOCK();
-    this->stackStatus[serialIx] = 0; // mark as available
-    if (serialIx == this->topStack - 1) {  // top of stack
+    if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
+    this->stackStatus[sIdx] = 0; // mark as available
+    if (sIdx == this->topStack - 1) {  // top of stack
         while (this->stackStatus[this->topStack - 1] == 0) {
             this->topStack--;
             if (this->topStack < 1) break;
@@ -185,9 +184,15 @@ template <int D> void NodeAllocator<D>::dealloc(int serialIx) {
     MRCPP_UNSET_OMP_LOCK();
 }
 
-template <int D> void NodeAllocator<D>::initChunk(int iChunk, bool coeff) {
+template <int D> void NodeAllocator<D>::init(int nChunks, bool coefs) {
     MRCPP_SET_OMP_LOCK();
-    if (iChunk >= getNChunks()) appendChunk(coeff);
+    if (nChunks <= 0) MSG_ABORT("Invalid number of chunks: " << nChunks);
+    for (int i = getNChunks(); i < nChunks; i++) appendChunk(coefs);
+
+    // reinitialize stacks
+    int nodeCount = this->nodeChunks.size() * this->maxNodesPerChunk;
+    this->stackStatus.resize(nodeCount);
+    std::fill(this->stackStatus.begin(), this->stackStatus.end(), 0);
     MRCPP_UNSET_OMP_LOCK();
 }
 
@@ -226,23 +231,23 @@ template <int D> void NodeAllocator<D>::appendChunk(bool coeff) {
 /** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D> int NodeAllocator<D>::compress() {
     MRCPP_SET_OMP_LOCK();
-    int nAlloc = (1 << D);
+    int nNodes = (1 << D);
     if (this->maxNodesPerChunk * this->nodeChunks.size() <=
-        getTree().getNNodes() + this->maxNodesPerChunk + nAlloc - 1) {
+        getTree().getNNodes() + this->maxNodesPerChunk + nNodes - 1) {
         MRCPP_UNSET_OMP_LOCK();
-        return 0; // no chunks to remove
+        return 0; // nothing to compress
     }
 
     int posocc = 0;
     int posavail = getTree().getRootBox().size(); // start after root nodes
     while (true) {
-        posavail = findNextAvailable(posavail, nAlloc);
+        posavail = findNextAvailable(posavail, nNodes);
         if (posavail >= this->topStack) break; // treated all nodes
 
         posocc = findNextOccupied(posavail);
         if (posocc >= this->topStack) break; // treated all nodes
 
-        moveNodes(nAlloc, posocc, posavail);
+        moveNodes(nNodes, posocc, posavail);
     }
 
     // find the last used node
@@ -262,6 +267,7 @@ template <int D> int NodeAllocator<D>::deleteUnusedChunks() {
     // number of occupied chunks
     int nChunksTotal = getNChunks();
     int nChunksUsed = getNChunksUsed();
+    assert(nChunksTotal >= nChunksUsed);
     for (int i = nChunksUsed; i < nChunksTotal; i++) delete[](char *)(this->nodeChunks[i]);
 
     if (isShared()) {
@@ -279,8 +285,13 @@ template <int D> int NodeAllocator<D>::deleteUnusedChunks() {
 }
 
 template <int D> void NodeAllocator<D>::moveNodes(int nNodes, int srcIdx, int dstIdx) {
+    assert(nNodes > 0);
+    assert(nNodes <= this->maxNodesPerChunk);
+
     auto *srcNode = getNodeNoLock(srcIdx);
     auto *dstNode = getNodeNoLock(dstIdx);
+    assert(srcNode != nullptr);
+    assert(dstNode != nullptr);
 
     // check that all siblings are consecutive. Should never be root node.
     for (int i = 0; i < nNodes; i++) assert(this->stackStatus[dstIdx + i] == 0);
@@ -291,6 +302,7 @@ template <int D> void NodeAllocator<D>::moveNodes(int nNodes, int srcIdx, int ds
 
     // coefs have new adresses
     double *coefs_p = getCoefNoLock(dstIdx);
+    if (coefs_p == nullptr) NOT_IMPLEMENTED_ABORT; // Nodes without coefs not handled atm
     for (int i = 0; i < nNodes; i++) (dstNode + i)->coefs = coefs_p + i * getNCoefs();
 
     // copy coefs to new adress
@@ -325,44 +337,48 @@ template <int D> void NodeAllocator<D>::moveNodes(int nNodes, int srcIdx, int ds
     for (int i = 0; i < nNodes; i++) (srcNode + i)->serialIx = -1;
 }
 
-template <int D> int NodeAllocator<D>::findNextAvailable(int pos, int nAlloc) const {
-    // Last positions on a chunk cannot be used if there is no place for nAlloc siblings on the same chunk
-    bool chunkTooSmall = (pos + nAlloc - 1) / this->maxNodesPerChunk != pos / this->maxNodesPerChunk;
-    bool posIsOccupied = (this->stackStatus[pos] != 0);
-    bool endOfStack = (pos >= this->topStack);
+// Last positions on a chunk cannot be used if there is no place for nNodes siblings on the same chunk
+template <int D> int NodeAllocator<D>::findNextAvailable(int sIdx, int nNodes) const {
+    assert(sIdx >= 0);
+    assert(sIdx < this->stackStatus.size());
+    assert(nNodes >= 0);
+    assert(nNodes < this->maxNodesPerChunk);
+    bool chunkTooSmall = (sIdx + nNodes - 1) / this->maxNodesPerChunk != sIdx / this->maxNodesPerChunk;
+    bool posIsOccupied = (this->stackStatus[sIdx] != 0);
+    bool endOfStack = (sIdx >= this->topStack);
     while ((posIsOccupied or chunkTooSmall) and not(endOfStack)) {
-        pos++;
-        chunkTooSmall = (pos + nAlloc - 1) / this->maxNodesPerChunk != pos / this->maxNodesPerChunk;
-        posIsOccupied = (this->stackStatus[pos] != 0);
-        endOfStack = (pos >= this->topStack);
+        sIdx++;
+        chunkTooSmall = (sIdx + nNodes - 1) / this->maxNodesPerChunk != sIdx / this->maxNodesPerChunk;
+        posIsOccupied = (this->stackStatus[sIdx] != 0);
+        endOfStack = (sIdx >= this->topStack);
     }
-    return pos;
+    assert(sIdx >= 0);
+    assert(sIdx < this->stackStatus.size());
+    return sIdx;
 }
 
-template <int D> int NodeAllocator<D>::findNextOccupied(int pos) const {
-    bool posIsAvailable = (this->stackStatus[pos] == 0);
-    bool endOfStack = (pos >= this->topStack);
+template <int D> int NodeAllocator<D>::findNextOccupied(int sIdx) const {
+    assert(sIdx >= 0);
+    assert(sIdx < this->stackStatus.size());
+    bool posIsAvailable = (this->stackStatus[sIdx] == 0);
+    bool endOfStack = (sIdx >= this->topStack);
     while (posIsAvailable and not(endOfStack)) {
-        pos++;
-        posIsAvailable = (this->stackStatus[pos] == 0);
-        endOfStack = (pos >= this->topStack);
+        sIdx++;
+        posIsAvailable = (this->stackStatus[sIdx] == 0);
+        endOfStack = (sIdx >= this->topStack);
     }
-    return pos;
+    assert(sIdx >= 0);
+    assert(sIdx < this->stackStatus.size());
+    return sIdx;
 }
 
 /** Traverse tree and redefine pointer, counter and tables. */
-template <int D> void NodeAllocator<D>::rewritePointers(bool coeff) {
+template <int D> void NodeAllocator<D>::reassemble() {
     MRCPP_SET_OMP_LOCK();
     this->nNodes = 0;
     getTree().nodesAtDepth.clear();
     getTree().squareNorm = 0.0;
     getTree().clearEndNodeTable();
-
-    // reinitialize stacks
-    // nodeChunks have been adapted to receiving tree and maybe larger than stackStatus
-    int nodeCount = this->nodeChunks.size() * this->maxNodesPerChunk;
-    this->stackStatus.resize(nodeCount);
-    std::fill(this->stackStatus.begin(), this->stackStatus.end(), 0);
 
     NodeBox<D> &rootbox = getTree().getRootBox();
     MWNode<D> **roots = rootbox.getNodes();
@@ -370,39 +386,43 @@ template <int D> void NodeAllocator<D>::rewritePointers(bool coeff) {
     std::stack<MWNode<D> *> stack;
     for (int rIdx = 0; rIdx < rootbox.size(); rIdx++) {
         auto *root_p = getNodeNoLock(rIdx);
+        assert(root_p != nullptr);
         stack.push(root_p);
         roots[rIdx] = root_p;
     }
     this->topStack = 0;
     while (not stack.empty()) {
-        auto *node = stack.top();
-        auto sIdx = node->serialIx;
-        auto pIdx = node->parentSerialIx;
-        auto cIdx = node->childSerialIx;
+        auto *node_p = stack.top();
+        assert(node_p != nullptr);
+        auto sIdx = node_p->serialIx;
+        auto pIdx = node_p->parentSerialIx;
+        auto cIdx = node_p->childSerialIx;
 
         this->nNodes++;
         this->topStack = std::max(this->topStack, sIdx + 1);
-        getTree().incrementNodeCount(node->getScale());
-        if (node->isEndNode()) getTree().squareNorm += node->getSquareNorm();
-        if (node->isEndNode()) getTree().endNodeTable.push_back(node);
+        getTree().incrementNodeCount(node_p->getScale());
+        if (node_p->isEndNode()) getTree().squareNorm += node_p->getSquareNorm();
+        if (node_p->isEndNode()) getTree().endNodeTable.push_back(node_p);
 
         // normally (intel) the virtual table does not change, but we overwrite anyway
-        *(char **)(node) = this->cvptr;
+        *(char **)(node_p) = this->cvptr;
 
-        node->tree = this->tree_p;
-        node->coefs = (coeff) ? getCoefNoLock(sIdx) : nullptr;
-        node->parent = (pIdx >= 0) ? getNodeNoLock(pIdx) : nullptr;
+        node_p->tree = this->tree_p;
+        node_p->coefs = getCoefNoLock(sIdx);
+        node_p->parent = getNodeNoLock(pIdx);
 
         stack.pop();
         auto *child_p = getNodeNoLock(cIdx);
-        for (int i = 0; i < node->getNChildren(); i++) {
-            node->children[i] = child_p;
+        for (int i = 0; i < node_p->getNChildren(); i++) {
+            assert(child_p != nullptr);
+            node_p->children[i] = child_p;
             stack.push(child_p);
             child_p++;
         }
         this->stackStatus[sIdx] = 1; // occupied
     }
     this->last_p = getNodeNoLock(this->topStack);
+    assert(this->last_p != nullptr);
     MRCPP_UNSET_OMP_LOCK();
 }
 

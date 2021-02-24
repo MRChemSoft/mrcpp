@@ -207,7 +207,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     auto &allocator = this->getFuncTree().getNodeAllocator();
 
     int nChildren = this->getTDim();
-    int sIdx = allocator.alloc(nChildren);
+    int sIdx = allocator.alloc(nChildren, coefs);
 
     auto n_coefs = allocator.getNCoefs();
     auto *coefs_p = allocator.getCoef_p(sIdx);
@@ -234,7 +234,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
         this->getMWTree().incrementNodeCount(child_p->getScale());
         sIdx++;
         child_p++;
-        coefs_p += n_coefs;
+        if (coefs) coefs_p += n_coefs;
     }
     this->setIsBranchNode();
     this->clearIsEndNode();

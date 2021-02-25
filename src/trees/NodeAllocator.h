@@ -95,9 +95,8 @@ protected:
     double * getCoefNoLock(int sIdx);
     MWNode<D> * getNodeNoLock(int sIdx);
 
-    void appendChunk(bool coefs);
-
     void moveNodes(int nNodes, int srcIdx, int dstIdx);
+    void appendChunk(bool coefs);
     int deleteUnusedChunks();
 
     int findNextAvailable(int sIdx, int nNodes) const;

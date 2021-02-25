@@ -45,7 +45,7 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
 
     int nodesPerChunk = 1024;
     int coefsPerNode = this->getTDim() * this->getKp1_d();
-    this->nodeAllocator_p = new NodeAllocator<2>(this, nullptr, coefsPerNode, nodesPerChunk);
+    this->nodeAllocator_p = std::make_unique<NodeAllocator<2>>(this, nullptr, coefsPerNode, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
@@ -96,7 +96,6 @@ OperatorTree::~OperatorTree() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
-    delete this->nodeAllocator_p;
 }
 
 void OperatorTree::clearBandWidth() {

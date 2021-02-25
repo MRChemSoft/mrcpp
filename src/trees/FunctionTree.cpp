@@ -58,8 +58,8 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
     int nodesPerChunk = 64;
     int coefsGenNodes = this->getKp1_d();
     int coefsRegNodes = this->getTDim() * this->getKp1_d();
-    this->nodeAllocator_p = new NodeAllocator<D>(this, sh_mem, coefsRegNodes, nodesPerChunk);
-    this->genNodeAllocator_p = new NodeAllocator<D>(this, nullptr, coefsGenNodes, nodesPerChunk);
+    this->nodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, sh_mem, coefsRegNodes, nodesPerChunk);
+    this->genNodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, nullptr, coefsGenNodes, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
@@ -110,8 +110,6 @@ template <int D> FunctionTree<D>::~FunctionTree() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
-    delete this->nodeAllocator_p;
-    delete this->genNodeAllocator_p;
 }
 
 /** @brief Remove all nodes in the tree

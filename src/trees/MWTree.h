@@ -124,7 +124,7 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    NodeAllocator<D> *nodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D>> nodeAllocator_p{nullptr};
 
     // Tree data
     double squareNorm;

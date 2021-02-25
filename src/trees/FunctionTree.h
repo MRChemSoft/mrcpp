@@ -110,7 +110,7 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
-    NodeAllocator<D> *genNodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
 
     void allocRootNodes();

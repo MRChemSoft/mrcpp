@@ -55,8 +55,11 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         : MWTree<D>(mra)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
-    this->nodeAllocator_p = new NodeAllocator<D>(this, sh_mem, false);
-    this->genNodeAllocator_p = new NodeAllocator<D>(this, nullptr, true);
+    int nodesPerChunk = 64;
+    int coefsGenNodes = this->getKp1_d();
+    int coefsRegNodes = this->getTDim() * this->getKp1_d();
+    this->nodeAllocator_p = new NodeAllocator<D>(this, sh_mem, coefsRegNodes, nodesPerChunk);
+    this->genNodeAllocator_p = new NodeAllocator<D>(this, nullptr, coefsGenNodes, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
@@ -152,7 +155,7 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         f.write((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.write((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
+        f.write((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time write", t1);
@@ -180,7 +183,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     allocator.init(nChunks);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
+        f.read((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time read tree", t1);

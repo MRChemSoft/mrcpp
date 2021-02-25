@@ -43,7 +43,9 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         , nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
 
-    this->nodeAllocator_p = new NodeAllocator<2>(this, nullptr);
+    int nodesPerChunk = 1024;
+    int coefsPerNode = this->getTDim() * this->getKp1_d();
+    this->nodeAllocator_p = new NodeAllocator<2>(this, nullptr, coefsPerNode, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }

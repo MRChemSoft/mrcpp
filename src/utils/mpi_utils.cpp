@@ -102,7 +102,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Send(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, dst, tag + iChunk + 1, comm);
         if (coeff)
-            MPI_Send(allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
+            MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
@@ -136,7 +136,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, tag + iChunk + 1, comm, &status);
         if (coeff)
-            MPI_Recv(allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
+            MPI_Recv(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
     }
     println(10, " Time receive                " << std::setw(30) << t1.elapsed());
 

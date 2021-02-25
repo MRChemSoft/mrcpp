@@ -42,8 +42,8 @@ namespace mrcpp {
 
 template <int D> class NodeAllocator final {
 public:
-    NodeAllocator(OperatorTree *tree, SharedMemory *mem);
-    NodeAllocator(FunctionTree<D> *tree, SharedMemory *mem, bool gen = false);
+    NodeAllocator(OperatorTree *tree, SharedMemory *mem, int coefsPerNode, int nodesPerChunk);
+    NodeAllocator(FunctionTree<D> *tree, SharedMemory *mem, int coefsPerNode, int nodesPerChunk);
     NodeAllocator(const NodeAllocator<D> &tree) = delete;
     NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
     ~NodeAllocator();
@@ -58,16 +58,16 @@ public:
     void reassemble();
 
     int getNNodes() const { return this->nNodes; }
-    int getNCoefs() const { return this->coeffsPerNode; }
+    int getNCoefs() const { return this->coefsPerNode; }
     int getNChunks() const { return this->nodeChunks.size(); }
     int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; }
     int getNodeChunkSize() const { return this->maxNodesPerChunk * this->sizeOfNode; }
-    int getCoeffChunkSize() const { return this->maxNodesPerChunk * this->coeffsPerNode * sizeof(double); }
+    int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(double); }
 
     double * getCoef_p(int sIdx);
     MWNode<D> * getNode_p(int sIdx);
 
-    double * getCoeffChunk(int i) { return this->coeffChunks[i]; }
+    double * getCoefChunk(int i) { return this->coefChunks[i]; }
     MWNode<D> * getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void print() const;
@@ -76,12 +76,12 @@ protected:
     int nNodes{0};                  // number of nodes actually in use
     int topStack{0};                // index of last node on stack
     int sizeOfNode{0};              // sizeof(NodeType)
-    int coeffsPerNode{0};           // number of coeff for one node
+    int coefsPerNode{0};            // number of coef for one node
     int maxNodesPerChunk{0};        // max number of nodes per allocation
 
     std::vector<int> stackStatus{};
+    std::vector<double *> coefChunks{};
     std::vector<MWNode<D> *> nodeChunks{};
-    std::vector<double *> coeffChunks{};
 
     char *cvptr{nullptr};           // pointer to virtual table
     MWNode<D> *last_p{nullptr};     // pointer just after the last active node, i.e. where to put next node
@@ -95,7 +95,7 @@ protected:
     double * getCoefNoLock(int sIdx);
     MWNode<D> * getNodeNoLock(int sIdx);
 
-    void appendChunk(bool coeff);
+    void appendChunk(bool coefs);
 
     void moveNodes(int nNodes, int srcIdx, int dstIdx);
     int deleteUnusedChunks();

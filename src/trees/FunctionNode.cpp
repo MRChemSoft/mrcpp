@@ -225,7 +225,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
 
         child_p->n_coefs = n_coefs;
         child_p->coefs = coefs_p;
-        child_p->setIsAllocated();
+        if (coefs) child_p->setIsAllocated();
 
         child_p->setIsLeafNode();
         child_p->setIsEndNode();

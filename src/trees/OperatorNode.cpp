@@ -96,7 +96,7 @@ void OperatorNode::createChildren(bool coefs) {
 
         child_p->n_coefs = n_coefs;
         child_p->coefs = coefs_p;
-        child_p->setIsAllocated();
+        if (coefs) child_p->setIsAllocated();
 
         child_p->setIsLeafNode();
         child_p->setIsEndNode();
@@ -105,7 +105,7 @@ void OperatorNode::createChildren(bool coefs) {
         this->getMWTree().incrementNodeCount(child_p->getScale());
         sIdx++;
         child_p++;
-        coefs_p += n_coefs;
+        if (coefs) coefs_p += n_coefs;
     }
     this->setIsBranchNode();
     this->clearIsEndNode();

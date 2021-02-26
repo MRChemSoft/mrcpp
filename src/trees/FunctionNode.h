@@ -46,9 +46,9 @@ public:
     void genChildren() override;
     void deleteChildren() override;
 
-    virtual void setValues(const Eigen::VectorXd &vec);
-    virtual void getValues(Eigen::VectorXd &vec);
-    virtual void getAbsCoefs(double *absCoefs);
+    void setValues(const Eigen::VectorXd &vec);
+    void getValues(Eigen::VectorXd &vec);
+    void getAbsCoefs(double *absCoefs);
 
     friend class FunctionTree<D>;
     friend class NodeAllocator<D>;
@@ -59,7 +59,7 @@ protected:
     FunctionNode(MWNode<D> &parent, int cIdx) : MWNode<D>(parent, cIdx) {}
     FunctionNode(const FunctionNode<D> &node) = delete;
     FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
-    virtual ~FunctionNode() { assert(this->tree == 0); }
+    ~FunctionNode() = default;
 
     double evalf(Coord<D> r);
     double evalScaling(const Coord<D> &r) const;

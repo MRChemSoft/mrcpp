@@ -53,6 +53,7 @@ protected:
     OperatorNode(MWNode<2> &parent, int cIdx) : MWNode<2>(parent, cIdx) {};
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
+    ~OperatorNode() = default;
 
     void dealloc() override;
     double calcComponentNorm(int i) const override;

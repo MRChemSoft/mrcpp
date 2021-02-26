@@ -160,6 +160,8 @@ template <int D> int NodeAllocator<D>::alloc(int nNodes, bool coefs) {
 template <int D> void NodeAllocator<D>::dealloc(int sIdx) {
     MRCPP_SET_OMP_LOCK();
     if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
+    auto *node_p = getNodeNoLock(sIdx);
+    node_p->~MWNode();
     this->stackStatus[sIdx] = 0; // mark as available
     if (sIdx == this->topStack - 1) {  // top of stack
         while (this->stackStatus[this->topStack - 1] == 0) {

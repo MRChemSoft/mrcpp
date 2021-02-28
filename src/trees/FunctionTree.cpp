@@ -128,7 +128,6 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
-    this->getNodeAllocator().clear(this->rootBox.size());
 }
 
 /** @brief Write the tree structure to disk, for later use

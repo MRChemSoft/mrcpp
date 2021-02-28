@@ -52,7 +52,6 @@ public:
     void dealloc(int sIdx);
 
     void init(int nChunks, bool coefs = true);
-    void clear(int sIdx);
 
     int compress();
     void reassemble();

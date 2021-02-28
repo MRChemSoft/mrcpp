@@ -82,20 +82,6 @@ template <int D> NodeAllocator<D>::~NodeAllocator() {
     MRCPP_DESTROY_OMP_LOCK();
 }
 
-/** reset the start node counter */
-template <int D> void NodeAllocator<D>::clear(int sIdx) {
-    MRCPP_SET_OMP_LOCK();
-    if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
-    std::fill(this->stackStatus.begin() + sIdx, this->stackStatus.end(), 0);
-    this->topStack = sIdx;
-    this->last_p = getNodeNoLock(sIdx);
-
-    if (isShared())
-        getMemory().sh_end_ptr = getMemory().sh_start_ptr + (sIdx / this->maxNodesPerChunk + 1) * this->coefsPerNode * this->maxNodesPerChunk;
-
-    MRCPP_UNSET_OMP_LOCK();
-}
-
 template <int D> MWNode<D> * NodeAllocator<D>::getNode_p(int sIdx) {
     MRCPP_SET_OMP_LOCK();
     auto *node = getNodeNoLock(sIdx);

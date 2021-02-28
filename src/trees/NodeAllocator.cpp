@@ -383,6 +383,7 @@ template <int D> void NodeAllocator<D>::reassemble() {
 
         // normally (intel) the virtual table does not change, but we overwrite anyway
         *(char **)(node_p) = this->cvptr;
+        node_p->initNodeLock();
 
         node_p->tree = this->tree_p;
         node_p->coefs = getCoefNoLock(sIdx);

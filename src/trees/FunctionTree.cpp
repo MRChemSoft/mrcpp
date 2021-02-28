@@ -104,12 +104,7 @@ void FunctionTree<D>::allocRootNodes() {
 
 // FunctionTree destructor
 template <int D> FunctionTree<D>::~FunctionTree() {
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
-        root.deleteChildren();
-        root.dealloc();
-        this->rootBox.clearNode(i);
-    }
+    this->deleteRootNodes();
 }
 
 /** @brief Remove all nodes in the tree
@@ -176,6 +171,7 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     f.read((char *)&nChunks, sizeof(int));
 
     // Read tree data, chunk by chunk
+    this->deleteRootNodes();
     auto &allocator = this->getNodeAllocator();
     allocator.init(nChunks);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {

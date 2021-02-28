@@ -90,12 +90,7 @@ void OperatorTree::allocRootNodes() {
 OperatorTree::~OperatorTree() {
     clearOperNodeCache();
     clearBandWidth();
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<2> &root = this->getRootMWNode(i);
-        root.deleteChildren();
-        root.dealloc();
-        this->rootBox.clearNode(i);
-    }
+    this->deleteRootNodes();
 }
 
 void OperatorTree::clearBandWidth() {

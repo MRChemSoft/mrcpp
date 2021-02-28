@@ -92,6 +92,7 @@ public:
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 
+    void deleteRootNodes();
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
 

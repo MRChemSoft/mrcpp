@@ -63,6 +63,15 @@ template <int D> MWTree<D>::~MWTree() {
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
 }
 
+template <int D> void MWTree<D>::deleteRootNodes() {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.dealloc();
+        this->rootBox.clearNode(i);
+    }
+}
+
 /** Calculate the squared norm of a function represented as a tree.
  *
  * Norm is calculated using endNodes only, but if your endNodeTable is

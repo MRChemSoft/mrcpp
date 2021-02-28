@@ -132,6 +132,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
     }
 
     Timer t1;
+    tree.deleteRootNodes();
     allocator.init(nChunks, coeff);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, tag + iChunk + 1, comm, &status);
@@ -183,6 +184,7 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
             int nChunks;
             MPI_Recv(&nChunks, sizeof(int), MPI_BYTE, src, dst_tag, comm, &status);
             println(10, " Received " << nChunks << " chunks");
+            tree.deleteRootNodes();
             allocator.init(nChunks);
 
             for (int iChunk = 0; iChunk < nChunks; iChunk++) {

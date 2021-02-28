@@ -177,6 +177,7 @@ protected:
 
     bool crop(double prec, double splitFac, bool absPrec);
 
+    void initNodeLock() { MRCPP_INIT_OMP_LOCK(); }
     virtual void allocCoefs(int n_blocks, int block_size);
     virtual void freeCoefs();
 

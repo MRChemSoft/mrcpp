@@ -38,6 +38,7 @@ public:
     void setReturnGenNodes(bool i = true) { this->returnGenNodes = i; }
     void setMaxDepth(int depth) { this->maxDepth = depth; }
 
+    void init(MWTree<D> *tree);
     bool next();
     MWNode<D> &getNode() { return *this->state->node; }
 
@@ -54,7 +55,6 @@ protected:
 
     virtual int getChildIndex(int i) const = 0;
 
-    void init(MWTree<D> *tree);
     bool tryNode();
     bool tryChild(int i);
     bool tryNextRoot();

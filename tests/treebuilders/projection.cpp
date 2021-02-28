@@ -144,4 +144,32 @@ template <int D> void testProjectWidePeriodicGaussian() {
     REQUIRE(f_tree.integrate() == Approx(1.0));
 }
 
+TEST_CASE("Crop FunctionTree", "[function_tree], [crop]") {
+    const int D = 3;
+    const auto prec_1 = 1.0e-3;
+    const auto prec_21 = 1.0e-5;
+    const auto prec_22 = 1.0e-2;
+    Printer::init(0);
+
+    GaussFunc<D> *func = nullptr;
+    initialize(&func);
+    MultiResolutionAnalysis<D> *mra = nullptr;
+    initialize(&mra);
+
+    FunctionTree<D> tree_1(*mra);
+    project(prec_1, tree_1, *func);
+
+    FunctionTree<D> tree_2(*mra);
+    project(prec_21, tree_2, *func);
+
+    const int nodes_1 = tree_1.getNNodes();
+    const int nodes_21 = tree_2.getNNodes();
+    REQUIRE(nodes_21 > nodes_1);
+
+    tree_2.crop(prec_22);
+
+    const int nodes_22 = tree_2.getNNodes();
+    REQUIRE(nodes_22 < nodes_21);
+}
+
 } // namespace projection

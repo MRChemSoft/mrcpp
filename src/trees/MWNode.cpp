@@ -28,9 +28,7 @@
  */
 
 #include "MWNode.h"
-#include "GenNode.h"
 #include "MWTree.h"
-#include "ProjectedNode.h"
 #include "NodeAllocator.h"
 #include "core/QuadratureCache.h"
 #include "utils/Printer.h"
@@ -49,19 +47,45 @@ template <int D>
 MWNode<D>::MWNode()
         : tree(nullptr)
         , parent(nullptr)
-        , squareNorm(-1.0)
-        , maxSquareNorm(-1.0)
-        , maxWSquareNorm(-1.0)
-        , coefs(nullptr)
-        , n_coefs(0)
         , nodeIndex()
-        , hilbertPath()
-        , status(0) {
+        , hilbertPath() {
     setIsLeafNode();
     setIsLooseNode();
 
     clearNorms();
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    MRCPP_INIT_OMP_LOCK();
+}
+
+template <int D>
+MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
+        : tree(&tree)
+        , parent(nullptr)
+        , nodeIndex(tree.getRootBox().getNodeIndex(rIdx))
+        , hilbertPath() {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    clearNorms();
+    clearIsAllocated();
+    clearHasCoefs();
+    setIsRootNode();
+    setIsLeafNode();
+    setIsEndNode();
+    MRCPP_INIT_OMP_LOCK();
+}
+
+template <int D>
+MWNode<D>::MWNode(MWNode<D> &parent, int cIdx)
+        : tree(parent.tree)
+        , parent(&parent)
+        , nodeIndex(parent.getNodeIndex().child(cIdx))
+        , hilbertPath(parent.getHilbertPath(), cIdx) {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    clearNorms();
+    clearIsAllocated();
+    clearHasCoefs();
+    setIsLeafNode();
+    setIsEndNode();
+    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWNode copy constructor.
@@ -70,23 +94,17 @@ template <int D>
 MWNode<D>::MWNode(const MWNode<D> &node)
         : tree(node.tree)
         , parent(nullptr)
-        , squareNorm(-1.0)
-        , maxSquareNorm(-1.0)
-        , maxWSquareNorm(-1.0)
-        , coefs(nullptr)
-        , n_coefs(0)
         , nodeIndex(node.nodeIndex)
-        , hilbertPath(node.hilbertPath)
-        , status(0) {
+        , hilbertPath(node.hilbertPath) {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     setIsLeafNode();
     setIsLooseNode();
 
     allocCoefs(this->getTDim(), this->getKp1_d());
-
     if (node.hasCoefs()) {
         setCoefBlock(0, node.getNCoefs(), node.getCoefs());
         if (this->getNCoefs() > node.getNCoefs()) {
-            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) { this->coefs[i] = 0.0; }
+            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
         }
         this->setHasCoefs();
         this->calcNorms();
@@ -94,13 +112,14 @@ MWNode<D>::MWNode(const MWNode<D> &node)
         this->clearHasCoefs();
         this->clearNorms();
     }
-    for (int i = 0; i < getTDim(); i++) { this->children[i] = nullptr; }
+    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWNode destructor.
  * Recursive deallocation of a node and all its decendants */
 template <int D> MWNode<D>::~MWNode() {
     if (this->isLooseNode()) this->freeCoefs();
+    MRCPP_DESTROY_OMP_LOCK();
 }
 
 template <int D> void MWNode<D>::dealloc() {
@@ -152,7 +171,7 @@ template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
 }
 
 template <int D> void MWNode<D>::zeroCoefs() {
-    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
+    if (not this->isAllocated()) MSG_ABORT("Coefs not allocated " << *this);
 
     for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
     this->zeroNorms();
@@ -176,6 +195,7 @@ template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
 
 template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
+    if (not this->isAllocated()) MSG_ABORT("Not allocated!");
     if (not this->hasCoefs()) MSG_ABORT("No coefficients!");
 
     if (overwrite) {
@@ -210,139 +230,13 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
     }
 }
 
-/** Generates children nodes in a thread safe manner if (*this) is a leaf node */
 template <int D> void MWNode<D>::threadSafeGenChildren() {
-    // set_node_lock caused segmentation errors seldom and randomly -> avoided
-
-    // we make many copies of the genChildren calls
-    // the chance that 2 different nodes are treated in the same copy is small and therefore
-    // the different critical sections will not interfer too much
-    if (this->isLeafNode() or this->lockX != 0) {
-        this->lockX = 1;
-
-        int nCritical = 16;
-        switch (this->serialIx % nCritical) {
-            case 0:
-#pragma omp critical(g0)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 1:
-#pragma omp critical(g1)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 2:
-#pragma omp critical(g2)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 3:
-#pragma omp critical(g3)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 4:
-#pragma omp critical(g4)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 5:
-#pragma omp critical(g5)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 6:
-#pragma omp critical(g6)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 7:
-#pragma omp critical(g7)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 8:
-#pragma omp critical(g8)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 9:
-#pragma omp critical(g9)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 10:
-#pragma omp critical(g10)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 11:
-#pragma omp critical(g11)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 12:
-#pragma omp critical(g12)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 13:
-#pragma omp critical(g13)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 14:
-#pragma omp critical(g14)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            case 15:
-#pragma omp critical(g15)
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-                break;
-            default:
-#pragma omp critical
-                if (isLeafNode()) {
-                    genChildren();
-                    giveChildrenCoefs();
-                }
-        }
-        this->lockX = 0;
+    MRCPP_SET_OMP_LOCK();
+    if (isLeafNode()) {
+        genChildren();
+        giveChildrenCoefs();
     }
+    MRCPP_UNSET_OMP_LOCK();
 }
 
 /** Coefficient-Value transform
@@ -548,7 +442,7 @@ template <int D> double MWNode<D>::getWaveletNorm() const {
 
 /** Calculate the norm of one component (NOT the squared norm!). */
 template <int D> double MWNode<D>::calcComponentNorm(int i) const {
-    assert(i == 0 or (not this->isGenNode())); // GenNodes have no wavelets coefficients
+    if (this->isGenNode() and i != 0) return 0.0;
     assert(this->isAllocated());
     assert(this->hasCoefs());
 
@@ -569,6 +463,7 @@ template <int D> double MWNode<D>::calcComponentNorm(int i) const {
  * coefficients of the children. Option to overwrite or add up existing
  * coefficients. */
 template <int D> void MWNode<D>::reCompress() {
+    if (this->isGenNode()) NOT_IMPLEMENTED_ABORT;
     if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         copyCoefsFromChildren();
@@ -597,16 +492,8 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
     return false;
 }
 
-template <int D> void MWNode<D>::createChildren() {
-    if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getNodeAllocator().allocChildren(*this);
-    this->setIsBranchNode();
-}
-
-template <int D> void MWNode<D>::createChildrenNoCoeff() {
-    if (this->isBranchNode()) MSG_ABORT("Node already has children");
-    this->getMWTree().getNodeAllocator().allocChildrenNoCoeff(*this);
-    this->setIsBranchNode();
+template <int D> void MWNode<D>::createChildren(bool coefs) {
+    NOT_REACHED_ABORT;
 }
 
 template <int D> void MWNode<D>::genChildren() {
@@ -765,7 +652,7 @@ template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
 /** Const version of node retriever that NEVER generates.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
  * node and ASSUMES the requested node is in fact decending from this node. */
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) const {
@@ -785,7 +672,7 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
 /** Node retriever that NEVER generates.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
  * node and ASSUMES the requested node is in fact decending from this node. */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
@@ -809,10 +696,10 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
-/** Node retriever that return requested ProjectedNode or EndNode.
+/** Node retriever that return requested Node or EndNode.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or the EndNode on the
+ * This routine returns the appropriate Node, or the EndNode on the
  * path to the requested node, and will never create or return GenNodes.
  * Recursion starts at at this node and ASSUMES the requested node is in fact
  * decending from this node. */

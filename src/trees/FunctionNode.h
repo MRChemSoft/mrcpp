@@ -27,12 +27,12 @@
 
 #include <Eigen/Core>
 
-#include "FunctionTree.h"
 #include "MWNode.h"
+#include "FunctionTree.h"
 
 namespace mrcpp {
 
-template <int D> class FunctionNode : public MWNode<D> {
+template <int D> class FunctionNode final : public MWNode<D> {
 public:
     FunctionTree<D> &getFuncTree() { return static_cast<FunctionTree<D> &>(*this->tree); }
     FunctionNode<D> &getFuncParent() { return static_cast<FunctionNode<D> &>(*this->parent); }
@@ -40,32 +40,39 @@ public:
 
     const FunctionTree<D> &getFuncTree() const { return static_cast<const FunctionTree<D> &>(*this->tree); }
     const FunctionNode<D> &getFuncParent() const { return static_cast<const FunctionNode<D> &>(*this->parent); }
-    const FunctionNode<D> &getFuncChild(int i) const {
-        return static_cast<const FunctionNode<D> &>(*this->children[i]);
-    }
+    const FunctionNode<D> &getFuncChild(int i) const { return static_cast<const FunctionNode<D> &>(*this->children[i]); }
 
-    virtual void setValues(const Eigen::VectorXd &vec);
-    virtual void getValues(Eigen::VectorXd &vec);
-    virtual void getAbsCoefs(double *absCoefs);
+    void createChildren(bool coefs) override;
+    void genChildren() override;
+    void deleteChildren() override;
+
+    void setValues(const Eigen::VectorXd &vec);
+    void getValues(Eigen::VectorXd &vec);
+    void getAbsCoefs(double *absCoefs);
 
     friend class FunctionTree<D>;
+    friend class NodeAllocator<D>;
 
 protected:
-    FunctionNode()
-            : MWNode<D>() {}
+    FunctionNode() : MWNode<D>() {}
+    FunctionNode(MWTree<D> &tree, int rIdx) : MWNode<D>(tree, rIdx) {}
+    FunctionNode(MWNode<D> &parent, int cIdx) : MWNode<D>(parent, cIdx) {}
     FunctionNode(const FunctionNode<D> &node) = delete;
-    FunctionTree<D> &operator=(const FunctionNode<D> &node) = delete;
-    virtual ~FunctionNode() { assert(this->tree == 0); }
+    FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
+    ~FunctionNode() = default;
 
     double evalf(Coord<D> r);
     double evalScaling(const Coord<D> &r) const;
+
+    void dealloc() override;
+    void reCompress() override;
 
     double integrate() const;
     double integrateLegendre() const;
     double integrateInterpolating() const;
 };
 
-template <int D> double dotScaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
-template <int D> double dotWavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template <int D> double dot_wavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
 
 } // namespace mrcpp

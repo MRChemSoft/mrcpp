@@ -319,8 +319,8 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
         if (mwNode == nullptr) continue;
 
         const auto &ketNode = static_cast<const FunctionNode<D> &>(*mwNode);
-        if (braNode.isRootNode()) { locResult += dotScaling(braNode, ketNode); }
-        locResult += dotWavelet(braNode, ketNode);
+        if (braNode.isRootNode()) locResult += dot_scaling(braNode, ketNode);
+        locResult += dot_wavelet(braNode, ketNode);
     }
     //#pragma omp critical
     result += locResult;

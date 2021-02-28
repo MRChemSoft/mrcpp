@@ -40,29 +40,20 @@ public:
     const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
     const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
 
-    void createChildren() override {
-        MWNode<2>::createChildren();
-        this->clearIsEndNode();
-    }
-    void genChildren() override {
-        MWNode<2>::createChildren();
-        this->clearIsEndNode();
-        this->giveChildrenCoefs();
-    }
-    void deleteChildren() override {
-        MWNode<2>::deleteChildren();
-        this->setIsEndNode();
-    }
+    void createChildren(bool coefs) override;
+    void genChildren() override;
+    void deleteChildren() override;
 
-    friend class MWNode<2>;
     friend class OperatorTree;
-    friend class OperatorNodeAllocator;
+    friend class NodeAllocator<2>;
 
 protected:
-    OperatorNode()
-            : MWNode<2>(){};
+    OperatorNode() : MWNode<2>() {};
+    OperatorNode(MWTree<2> &tree, int rIdx) : MWNode<2>(tree, rIdx) {};
+    OperatorNode(MWNode<2> &parent, int cIdx) : MWNode<2>(parent, cIdx) {};
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
+    ~OperatorNode() = default;
 
     void dealloc() override;
     double calcComponentNorm(int i) const override;

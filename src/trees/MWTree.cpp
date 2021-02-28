@@ -32,6 +32,7 @@
 #include "MWTree.h"
 #include "HilbertIterator.h"
 #include "MultiResolutionAnalysis.h"
+#include "NodeAllocator.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 #include "utils/periodic_utils.h"
@@ -46,27 +47,29 @@ namespace mrcpp {
  * the parameters are done in derived classes. */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
-        : nThreads(mrcpp_get_max_threads())
-        , MRA(mra)
+        : MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
         , name("nn")
-        , nNodes(0)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
-    allocNodeCounters();
-    MRCPP_INIT_OMP_LOCK();
 }
 
 /** MWTree destructor. */
 template <int D> MWTree<D>::~MWTree() {
     this->endNodeTable.clear();
-    if (this->nNodes != 0) MSG_ERROR("Node count != 0 -> " << this->nNodes);
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
-    deleteNodeCounters();
-    MRCPP_DESTROY_OMP_LOCK();
+}
+
+template <int D> void MWTree<D>::deleteRootNodes() {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.dealloc();
+        this->rootBox.clearNode(i);
+    }
 }
 
 /** Calculate the squared norm of a function represented as a tree.
@@ -149,15 +152,6 @@ template <int D> void MWTree<D>::setZero() {
     this->squareNorm = 0.0;
 }
 
-template <int D> void MWTree<D>::allocNodeCounters() {
-    this->nGenNodes = new int[this->nThreads];
-    for (int i = 0; i < this->nThreads; i++) { this->nGenNodes[i] = 0; }
-}
-
-template <int D> void MWTree<D>::deleteNodeCounters() {
-    delete[] this->nGenNodes;
-}
-
 /** Increment node counters for non-GenNodes. This routine is not thread
  * safe, and must NEVER be called outside a critical region in parallel.
  * It's way. way too expensive to lock the tree, so don't even think
@@ -167,10 +161,9 @@ template <int D> void MWTree<D>::incrementNodeCount(int scale) {
     assert(depth >= 0);
     int n = this->nodesAtDepth.size() - 1;
     if (depth > n) {
-        for (int i = 0; i < depth - n; i++) { this->nodesAtDepth.push_back(0); }
+        for (int i = 0; i < depth - n; i++) this->nodesAtDepth.push_back(0);
     }
     this->nodesAtDepth[depth]++;
-    this->nNodes++;
 }
 
 /** Decrement node counters for non-GenNodes. This routine is not thread
@@ -183,55 +176,20 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
     assert(depth < this->nodesAtDepth.size());
     this->nodesAtDepth[depth]--;
     assert(this->nodesAtDepth[depth] >= 0);
-    if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) { this->nodesAtDepth.pop_back(); }
-    this->nNodes--;
-    assert(this->nNodes >= 0);
-}
-
-/** Update GenNode counts in a safe way. Since GenNodes are created on the
- * fly, we cannot control when to update the node counters without locking
- * the whole tree. Therefore GenNodes update thread-private counters, which
- * get merged with the correct global counters in xxxNodes[0]. This method
- * should be called outside of the parallel region for performance reasons. */
-template <int D> void MWTree<D>::updateGenNodeCounts() {
-    MRCPP_SET_OMP_LOCK();
-    for (int i = 1; i < this->nThreads; i++) {
-        this->nGenNodes[0] += this->nGenNodes[i];
-        this->nGenNodes[i] = 0;
-    }
-    assert(this->nGenNodes[0] >= 0);
-    MRCPP_UNSET_OMP_LOCK();
-}
-
-/** Adds a GenNode to the count. */
-template <int D> void MWTree<D>::incrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]++;
-}
-
-/** Removes a GenNode from the count. */
-template <int D> void MWTree<D>::decrementGenNodeCount() {
-    int n = mrcpp_get_thread_num();
-    assert(n >= 0);
-    assert(n < this->nThreads);
-    this->nGenNodes[n]--;
+    if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) this->nodesAtDepth.pop_back();
 }
 
 /** @returns Total number of nodes in the tree, at given depth
  * @param[in] depth: Tree depth to count, negative means count _all_ nodes
  */
 template <int D> int MWTree<D>::getNNodes(int depth) const {
-    if (depth < 0) { return this->nNodes; }
-    if (depth >= this->nodesAtDepth.size()) { return 0; }
-    return this->nodesAtDepth[depth];
-}
-
-/** Get GenNode count. Includes an OMP reduction operation */
-template <int D> int MWTree<D>::getNGenNodes() {
-    updateGenNodeCounts();
-    return this->nGenNodes[0];
+    int N = 0;
+    if (depth < 0) {
+        N = getNodeAllocator().getNNodes();
+    } else if (depth < this->nodesAtDepth.size()) {
+        N = this->nodesAtDepth[depth];
+    }
+    return N;
 }
 
 /** @returns Size of all MW coefs in the tree, in kB */
@@ -243,7 +201,7 @@ template <int D> int MWTree<D>::getSizeNodes() const {
 /** Find and return the node with the given NodeIndex, const version.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
@@ -258,7 +216,7 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
 /** Find and return the node with the given NodeIndex.
  *
  * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate ProjectedNode, or a NULL pointer if
+ * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
 template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
@@ -284,7 +242,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
 
 /** Find and return the node with the given NodeIndex.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
@@ -296,7 +254,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
 
 /** Find and return the node with the given NodeIndex.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
@@ -322,7 +280,7 @@ template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
 
 /** Find and return the node at a given depth that contains a given coordinate.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
@@ -335,7 +293,7 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
 
 /** Find and return the node at a given depth that contains a given coordinate.
  *
- * This routine returns the ProjectedNode you ask for, or the EndNode on
+ * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
 template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
@@ -383,20 +341,6 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
     //    return nNodes;
 }
 
-/** Traverse tree and count nodes. */
-template <int D> void MWTree<D>::RecountNodes() {
-    int DepthMax = 100, slen = 0;
-    MWNode<D> *stack[DepthMax * 8];
-    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
-        stack[slen++] = this->getRootBox().getNodes()[rIdx];
-    }
-    this->nNodes = 0;
-    while (slen) {
-        this->nNodes++;
-        MWNode<D> *fpos = stack[--slen];
-        for (int i = 0; i < fpos->getNChildren(); i++) stack[slen++] = fpos->children[i];
-    }
-}
 /** Traverse tree and count nodes belonging to this rank. */
 template <int D> int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
@@ -431,25 +375,12 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
-template <int D> void MWTree<D>::deleteGenerated() {
-    for (int n = 0; n < getNEndNodes(); n++) { getEndMWNode(n).deleteGenerated(); }
-}
-
-template <int D> void MWTree<D>::saveTree(const std::string &file) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
-template <int D> void MWTree<D>::loadTree(const std::string &file) {
-    NOT_IMPLEMENTED_ABORT;
-}
-
 template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;
     o << "  order: " << this->order << std::endl;
     o << "  nodes: " << this->getNNodes() << std::endl;
     o << "  endNodes: " << this->endNodeTable.size() << std::endl;
-    o << "  genNodes: " << this->getNGenNodes() << std::endl;
     o << "  nodes per scale: " << std::endl;
     for (int i = 0; i < this->nodesAtDepth.size(); i++) {
         o << "    scale=" << i + this->getRootScale() << "  nodes=" << this->nodesAtDepth[i] << std::endl;

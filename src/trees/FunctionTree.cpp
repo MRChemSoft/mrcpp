@@ -28,9 +28,8 @@
 #include <fstream>
 
 #include "FunctionNode.h"
+#include "NodeAllocator.h"
 #include "HilbertIterator.h"
-#include "ProjectedNode.h"
-#include "ProjectedNodeAllocator.h"
 
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
@@ -56,22 +55,56 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
         : MWTree<D>(mra)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
                                    mra.getWorldBox().getUpperBounds().data()) {
-    this->nodeAllocator_p = new ProjectedNodeAllocator<D>(this, sh_mem);
-    this->genNodeAllocator_p = new GenNodeAllocator<D>(this);
-    this->nodeAllocator_p->allocRoots(*this);
+    int nodesPerChunk = 64;
+    int coefsGenNodes = this->getKp1_d();
+    int coefsRegNodes = this->getTDim() * this->getKp1_d();
+    this->nodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, sh_mem, coefsRegNodes, nodesPerChunk);
+    this->genNodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, nullptr, coefsGenNodes, nodesPerChunk);
+    this->allocRootNodes();
     this->resetEndNodeTable();
+}
+
+template <int D>
+void FunctionTree<D>::allocRootNodes() {
+    auto &allocator = this->getNodeAllocator();
+    auto &rootbox = this->getRootBox();
+
+    int nRoots = rootbox.size();
+    int sIdx = allocator.alloc(nRoots);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coef_p = allocator.getCoef_p(sIdx);
+    auto *root_p = allocator.getNode_p(sIdx);
+
+    MWNode<D> **roots = rootbox.getNodes();
+    for (int rIdx = 0; rIdx < nRoots; rIdx++) {
+        // construct into allocator memory
+        new (root_p) FunctionNode<D>(*this, rIdx);
+        roots[rIdx] = root_p;
+
+        root_p->serialIx = sIdx;
+        root_p->parentSerialIx = -1;
+        root_p->childSerialIx = -1;
+
+        root_p->n_coefs = n_coefs;
+        root_p->coefs = coef_p;;
+        root_p->setIsAllocated();
+
+        root_p->setIsRootNode();
+        root_p->setIsLeafNode();
+        root_p->setIsEndNode();
+        root_p->clearHasCoefs();
+
+        this->incrementNodeCount(root_p->getScale());
+        sIdx++;
+        root_p++;
+        coef_p += n_coefs;
+    }
 }
 
 // FunctionTree destructor
 template <int D> FunctionTree<D>::~FunctionTree() {
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
-        root.deleteChildren();
-        root.dealloc();
-        this->rootBox.clearNode(i);
-    }
-    delete this->nodeAllocator_p;
-    delete this->genNodeAllocator_p;
+    this->deleteRootNodes();
 }
 
 /** @brief Remove all nodes in the tree
@@ -90,7 +123,6 @@ template <int D> void FunctionTree<D>::clear() {
     }
     this->resetEndNodeTable();
     this->clearSquareNorm();
-    this->getProjectedNodeAllocator().clear(this->rootBox.size());
 }
 
 /** @brief Write the tree structure to disk, for later use
@@ -99,7 +131,7 @@ template <int D> void FunctionTree<D>::clear() {
 template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     Timer t1;
     this->deleteGenerated();
-    auto &allocator = this->getProjectedNodeAllocator();
+    auto &allocator = this->getNodeAllocator();
 
     std::stringstream fname;
     fname << file << ".tree";
@@ -115,7 +147,7 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         f.write((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.write((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
+        f.write((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time write", t1);
@@ -139,17 +171,19 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     f.read((char *)&nChunks, sizeof(int));
 
     // Read tree data, chunk by chunk
-    auto &allocator = this->getProjectedNodeAllocator();
+    this->deleteRootNodes();
+    auto &allocator = this->getNodeAllocator();
+    allocator.init(nChunks);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        allocator.initChunk(iChunk);
         f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.read((char *) allocator.getCoeffChunk(iChunk), allocator.getCoeffChunkSize());
+        f.read((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time read tree", t1);
 
     Timer t2;
-    allocator.rewritePointers();
+    allocator.reassemble();
+    this->resetEndNodeTable();
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -466,6 +500,7 @@ template <int D> void FunctionTree<D>::setEndValues(VectorXd &data) {
 
 template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
     o << std::endl << "*FunctionTree: " << this->name << std::endl;
+    o << "  genNodes: " << getNGenNodes() << std::endl;
     return MWTree<D>::print(o);
 }
 
@@ -484,12 +519,11 @@ template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
  * to the dimension; in practice, it is set to `s=1`.
  */
 template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
-
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
-    int nChunks = this->getProjectedNodeAllocator().shrinkChunks();
+    int nChunks = this->getNodeAllocator().compress();
     this->resetEndNodeTable();
     this->calcSquareNorm();
     return nChunks;
@@ -592,7 +626,7 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
         bool need_split = absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true);
         if (need_split and refNode->getNChildren() > 0) {
             // include children in tree
-            node->createChildren();
+            node->createChildren(true);
             double *inp = node->getCoefs();
             double *out = node->getMWChild(0).getCoefs();
             tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
@@ -623,7 +657,7 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         MWNode<D> *inNode = instack.back();
         instack.pop_back();
         if (inNode->getNChildren() > 0) {
-            if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildrenNoCoeff();
+            if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildren(false);
             for (int i = 0; i < inNode->getNChildren(); i++) {
                 instack.push_back(inNode->children[i]);
                 thisstack.push_back(thisNode->children[i]);
@@ -631,6 +665,11 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         }
     }
 }
+
+template <int D> void FunctionTree<D>::deleteGenerated() {
+    for (int n = 0; n < this->getNEndNodes(); n++) getEndFuncNode(n).deleteGenerated();
+}
+
 
 template class FunctionTree<1>;
 template class FunctionTree<2>;

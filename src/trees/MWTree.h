@@ -56,7 +56,6 @@ public:
     int getTDim() const { return (1 << D); }
     int getNNodes(int depth = -1) const;
     int getNEndNodes() const { return this->endNodeTable.size(); }
-    int getNGenNodes();
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
     int getSizeNodes() const;
@@ -93,41 +92,30 @@ public:
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
 
+    void deleteRootNodes();
     void resetEndNodeTable();
     void clearEndNodeTable() { this->endNodeTable.clear(); }
-
-    void deleteGenerated();
-
-    int getNThreads() const { return this->nThreads; }
-
-    virtual void saveTree(const std::string &file);
-    virtual void loadTree(const std::string &file);
 
     int countBranchNodes(int depth = -1);
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
-    void RecountNodes();
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
     NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
+    const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
 
     friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
-    friend class GenNode<D>;
-    friend class ProjectedNode<D>;
+    friend class FunctionNode<D>;
     friend class OperatorNode;
     friend class TreeBuilder<D>;
     friend class NodeAllocator<D>;
-    friend class ProjectedNodeAllocator<D>;
-    friend class GenNodeAllocator<D>;
-    friend class OperatorNodeAllocator;
 
 protected:
     // Parameters that are set in construction and should never change
-    const int nThreads;
     const MultiResolutionAnalysis<D> MRA;
 
     // Constant parameters that are derived internally
@@ -137,11 +125,9 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    NodeAllocator<D> *nodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D>> nodeAllocator_p{nullptr};
 
     // Tree data
-    int nNodes;
-    int *nGenNodes;
     double squareNorm;
     NodeBox<D> rootBox;            ///< The actual container of nodes
     MWNodeVector<D> endNodeTable;  ///< Final projected nodes
@@ -150,20 +136,10 @@ protected:
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();
 
-    void allocNodeCounters();
-    void deleteNodeCounters();
-
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
-    void updateGenNodeCounts();
-    void incrementGenNodeCount();
-    void decrementGenNodeCount();
 
     virtual std::ostream &print(std::ostream &o);
-
-#ifdef MRCPP_HAS_OMP
-    omp_lock_t omp_lock;
-#endif
 };
 
 } // namespace mrcpp

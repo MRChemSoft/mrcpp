@@ -45,8 +45,8 @@ public:
             if (node.isBranchNode()) continue;
             if (node.getScale() + 2 > this->maxScale) continue;
             if (splitNode(node)) {
-                node.createChildren();
-                for (int i = 0; i < node.getNChildren(); i++) { out.push_back(&node.getMWChild(i)); }
+                node.createChildren(true);
+                for (int i = 0; i < node.getNChildren(); i++) out.push_back(&node.getMWChild(i));
             }
         }
     }

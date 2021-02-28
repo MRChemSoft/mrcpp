@@ -28,8 +28,7 @@
 #include <map>
 
 #include "MWTree.h"
-#include "ProjectedNodeAllocator.h"
-#include "GenNodeAllocator.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
@@ -64,11 +63,13 @@ public:
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
 
+    int getNGenNodes() const { return getGenNodeAllocator().getNNodes(); }
+
     void getEndValues(Eigen::VectorXd &data);
     void setEndValues(Eigen::VectorXd &data);
 
-    void saveTree(const std::string &file) override;
-    void loadTree(const std::string &file) override;
+    void saveTree(const std::string &file);
+    void loadTree(const std::string &file);
 
     // In place operations
     void square();
@@ -80,19 +81,21 @@ public:
     void multiply(double c, FunctionTree<D> &inp);
     void map(FMap fmap);
 
-    int getNChunks() { return getProjectedNodeAllocator().getNChunks(); }
-    int getNChunksUsed() { return getProjectedNodeAllocator().getNChunksUsed(); }
+    int getNChunks() { return this->getNodeAllocator().getNChunks(); }
+    int getNChunksUsed() { return this->getNodeAllocator().getNChunksUsed(); }
 
     int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 
     FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
     FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
-    ProjectedNodeAllocator<D> &getProjectedNodeAllocator() { return static_cast<ProjectedNodeAllocator<D> &>(*this->nodeAllocator_p); }
-    GenNodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    NodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    const NodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
 
     const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
+
+    void deleteGenerated();
 
     void makeCoeffVector(std::vector<double *> &coefs,
                          std::vector<int> &indices,
@@ -107,8 +110,10 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:
-    GenNodeAllocator<D> *genNodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) override;
+
+    void allocRootNodes();
 };
 
 } // namespace mrcpp

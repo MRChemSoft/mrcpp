@@ -25,6 +25,8 @@
 
 #include "OperatorNode.h"
 #include "NodeAllocator.h"
+
+#include "utils/Printer.h"
 #include "utils/math_utils.h"
 
 using namespace Eigen;
@@ -37,7 +39,7 @@ void OperatorNode::dealloc() {
     this->parentSerialIx = -1;
     this->childSerialIx = -1;
     this->tree->decrementNodeCount(this->getScale());
-    this->tree->getNodeAllocator().deallocNodes(sIdx);
+    this->tree->getNodeAllocator().dealloc(sIdx);
 }
 
 /** Calculate one specific component norm of the OperatorNode.
@@ -69,6 +71,54 @@ double OperatorNode::calcComponentNorm(int i) const {
         }
     }
     return norm;
+}
+
+void OperatorNode::createChildren(bool coefs) {
+    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    auto &allocator = this->getOperTree().getNodeAllocator();
+
+    int nChildren = this->getTDim();
+    int sIdx = allocator.alloc(nChildren);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coefs_p = allocator.getCoef_p(sIdx);
+    auto *child_p = allocator.getNode_p(sIdx);
+
+    this->childSerialIx = sIdx;
+    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+        // construct into allocator memory
+        new (child_p) OperatorNode(*this, cIdx);
+        this->children[cIdx] = child_p;
+
+        child_p->serialIx = sIdx;
+        child_p->parentSerialIx = this->serialIx;
+        child_p->childSerialIx = -1;
+
+        child_p->n_coefs = n_coefs;
+        child_p->coefs = coefs_p;
+        if (coefs) child_p->setIsAllocated();
+
+        child_p->setIsLeafNode();
+        child_p->setIsEndNode();
+        child_p->clearHasCoefs();
+
+        this->getMWTree().incrementNodeCount(child_p->getScale());
+        sIdx++;
+        child_p++;
+        if (coefs) coefs_p += n_coefs;
+    }
+    this->setIsBranchNode();
+    this->clearIsEndNode();
+}
+
+void OperatorNode::genChildren() {
+    this->createChildren(true);
+    this->giveChildrenCoefs();
+}
+
+void OperatorNode::deleteChildren() {
+    MWNode<2>::deleteChildren();
+    this->setIsEndNode();
 }
 
 } // namespace mrcpp

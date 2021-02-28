@@ -78,8 +78,8 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
 
         f_tree.saveTree("f");
         THEN("the old tree remains unchanged") {
-            int nChunks = f_tree.getProjectedNodeAllocator().getNChunks();
-            int nChunksUsed = f_tree.getProjectedNodeAllocator().getNChunksUsed();
+            int nChunks = f_tree.getNodeAllocator().getNChunks();
+            int nChunksUsed = f_tree.getNodeAllocator().getNChunksUsed();
             REQUIRE(nChunks == refChunks);
             REQUIRE(nChunksUsed == refChunksUsed);
         }
@@ -87,8 +87,8 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
             FunctionTree<3> g_tree(*mra);
             g_tree.loadTree("f");
             THEN("the new tree has no empty chunks") {
-                int nChunks = g_tree.getProjectedNodeAllocator().getNChunks();
-                int nChunksUsed = g_tree.getProjectedNodeAllocator().getNChunksUsed();
+                int nChunks = g_tree.getNodeAllocator().getNChunks();
+                int nChunksUsed = g_tree.getNodeAllocator().getNChunksUsed();
                 REQUIRE(nChunksUsed == nChunks);
                 REQUIRE(nChunksUsed == refChunksUsed);
             }

@@ -28,6 +28,7 @@
 #include "TreeCalculator.h"
 #include "trees/MWNode.h"
 #include "trees/MWTree.h"
+#include "trees/NodeAllocator.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/tree_utils.h"

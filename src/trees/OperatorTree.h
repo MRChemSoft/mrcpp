@@ -26,6 +26,7 @@
 #pragma once
 
 #include "MWTree.h"
+#include "NodeAllocator.h"
 
 namespace mrcpp {
 
@@ -59,6 +60,7 @@ protected:
     OperatorNode ***nodePtrStore;  ///< Avoids tree lookups
     OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
 
+    void allocRootNodes();
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 
     std::ostream &print(std::ostream &o) override;

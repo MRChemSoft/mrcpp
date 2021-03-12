@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
- #include "FunctionTree.h"
+#include "FunctionTree.h"
 
 #include <fstream>
 
@@ -529,9 +529,9 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
     return nChunks;
 }
 
-/** Traverse tree using BFS and find nodes of any rankId.
- * Returns an array with the address of the coefs, an array with the
- * corresponding values of serialIx in refTree, and an array with the sizes of the nodes.
+/** Traverse tree using BFS and returns an array with the address of the coefs.
+ * Also returns an array with the corresponding indices defined as the
+ * values of serialIx in refTree, and an array with the indices of the parent.
  * Set index -1 for nodes that are not present in refTree */
 template <int D>
 void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
@@ -646,6 +646,7 @@ void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
 template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
     std::vector<MWNode<D> *> instack;   // node from inTree
     std::vector<MWNode<D> *> thisstack; // node from this Tree
+    this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < inTree.getRootBox().size(); rIdx++) {
         instack.push_back(inTree.getRootBox().getNodes()[rIdx]);
         thisstack.push_back(this->getRootBox().getNodes()[rIdx]);
@@ -657,10 +658,25 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         MWNode<D> *inNode = instack.back();
         instack.pop_back();
         if (inNode->getNChildren() > 0) {
+            thisNode->clearIsEndNode();
             if (thisNode->getNChildren() < inNode->getNChildren()) thisNode->createChildren(false);
             for (int i = 0; i < inNode->getNChildren(); i++) {
                 instack.push_back(inNode->children[i]);
                 thisstack.push_back(thisNode->children[i]);
+            }
+        } else {
+            // construct EndNodeTable for "This", starting from this branch
+            // This could be done more efficiently, if it proves to be time consuming
+            std::vector<MWNode<D> *> branchstack;   // local stack starting from this branch
+            branchstack.push_back(thisNode);
+            while (branchstack.size() > 0) {
+                MWNode<D> *branchNode = branchstack.back();
+                branchstack.pop_back();
+                if (branchNode->getNChildren() > 0) {
+                    for (int i = 0; i < branchNode->getNChildren(); i++) {
+                        branchstack.push_back(branchNode->children[i]);
+                    }
+                } else this->endNodeTable.push_back(branchNode);
             }
         }
     }

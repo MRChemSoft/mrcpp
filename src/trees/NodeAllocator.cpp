@@ -184,7 +184,7 @@ template <int D> void NodeAllocator<D>::appendChunk(bool coefs) {
             // may increase size dynamically in the future
             if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
         } else {
-            c_chunk = new double[getCoefChunkSize()];
+            c_chunk = new double[getCoefChunkSize() / sizeof(double)];
         }
         this->coefChunks.push_back(c_chunk);
     }

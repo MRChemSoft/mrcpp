@@ -2,7 +2,7 @@
  * MRCPP, a numerical library based on multiresolution analysis and
  * the multiwavelet basis which provide low-scaling algorithms as well as
  * rigorous error control in numerical computations.
- * Copyright (C) 2019 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ * Copyright (C) 2021 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
  *
  * This file is part of MRCPP.
  *

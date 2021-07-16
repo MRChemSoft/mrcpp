@@ -36,28 +36,44 @@ TreeIterator<D>::TreeIterator(int dir)
         , initialState(nullptr) {}
 
 template <int D> TreeIterator<D>::~TreeIterator() {
-    if (this->initialState != nullptr) { delete this->initialState; }
+    if (this->initialState != nullptr) delete this->initialState;
 }
 
 template <int D> bool TreeIterator<D>::next() {
-    if (not this->state) { return false; }
+    if (not this->state) return false;
     if (this->mode == TopDown) {
-        if (this->tryNode()) { return true; }
+        if (this->tryNode()) return true;
     }
     MWNode<D> &node = *this->state->node;
     if (checkDepth(node) and checkGenerated(node)) {
         const int nChildren = 1 << D;
         for (int i = 0; i < nChildren; i++) {
             int cIdx = getChildIndex(i);
-            if (this->tryChild(cIdx)) { return true; }
+            if (this->tryChild(cIdx)) return true;
         }
     }
-    if (this->tryNextRoot()) { return true; }
+    if (this->tryNextRoot()) return true;
     if (this->mode == BottomUp) {
-        if (this->tryNode()) { return true; }
+        if (this->tryNode()) return true;
     }
     this->removeState();
     return next();
+}
+template <int D> bool TreeIterator<D>::nextParent() {
+    if (not this->state) return false;
+    if (this->mode == BottomUp) {
+        if (this->tryNode()) return true;
+    }
+    MWNode<D> &node = *this->state->node;
+    if (this->tryNextRootParent()) return true;
+    if (checkDepth(node)) {
+        if (this->tryParent()) return true;
+    }
+    if (this->mode == TopDown) {
+        if (this->tryNode()) return true;
+    }
+    this->removeState();
+    return nextParent();
 }
 
 template <int D> void TreeIterator<D>::init(MWTree<D> *tree) {
@@ -81,10 +97,19 @@ template <int D> bool TreeIterator<D>::tryChild(int i) {
     if (this->state->doneChild[i]) { return false; }
     this->state->doneChild[i] = true;
     if (this->state->node->isLeafNode()) { return false; }
-    if (this->state->node->isLeafNode()) { return false; }
     MWNode<D> *child = &this->state->node->getMWChild(i);
     this->state = new IteratorNode<D>(child, this->state);
     return next();
+}
+
+template <int D> bool TreeIterator<D>::tryParent() {
+    if (not this->state) return false;
+    if (this->state->doneParent) return false;
+    this->state->doneParent = true;
+    if (not this->state->node->hasParent()) return false;
+    MWNode<D> *parent = &this->state->node->getMWParent();
+    this->state = new IteratorNode<D>(parent, this->state);
+    return nextParent();
 }
 
 template <int D> bool TreeIterator<D>::tryNextRoot() {
@@ -95,6 +120,16 @@ template <int D> bool TreeIterator<D>::tryNextRoot() {
     MWNode<D> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
     this->state = new IteratorNode<D>(nextRoot, this->state);
     return next();
+}
+
+template <int D> bool TreeIterator<D>::tryNextRootParent() {
+    if (not this->state) { return false; }
+    if (not this->state->node->isRootNode()) { return false; }
+    this->root++;
+    if (this->root >= this->nRoots) { return false; }
+    MWNode<D> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
+    this->state = new IteratorNode<D>(nextRoot, this->state);
+    return nextParent();
 }
 
 template <int D> void TreeIterator<D>::removeState() {
@@ -143,7 +178,8 @@ template <int D>
 IteratorNode<D>::IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx)
         : node(nd)
         , next(nx)
-        , doneNode(false) {
+        , doneNode(false)
+        , doneParent(false) {
     int nChildren = 1 << D;
     for (int i = 0; i < nChildren; i++) { this->doneChild[i] = false; }
 }

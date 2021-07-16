@@ -40,7 +40,42 @@ template <int D> void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
     double *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {
         for (int d = 0; d < D; d++) { r[d] = scaling_factor[d] * exp_pts(d, i); }
-        coefs[i] = this->func->evalf(r);
+        if (not this->periodic) {
+            coefs[i] = this->func->evalf(r);
+        } else {
+            auto period = scaling_factor[0] * 2.0;
+            coefs[i] = 0.0;
+            if (D == 1) {
+                for (auto x = -1; x < 2; x++) {
+                    auto coord = r;
+                    coord[0] += x * period;
+                    coefs[i] += this->func->evalf(coord);
+                }
+            }
+            if (D == 2) {
+                for (auto x = -1; x < 2; x++) {
+                    for (auto y = -1; y < 2; y++) {
+                        auto coord = r;
+                        coord[0] += x * period;
+                        coord[1] += y * period;
+                        coefs[i] += this->func->evalf(coord);
+                    }
+                }
+            }
+            if (D == 3) {
+                for (auto x = -1; x < 2; x++) {
+                    for (auto y = -1; y < 2; y++) {
+                        for (auto z = -1; z < 2; z++) {
+                            auto coord = r;
+                            coord[0] += x * period;
+                            coord[1] += y * period;
+                            coord[2] += z * period;
+                            coefs[i] += this->func->evalf(coord);
+                        }
+                    }
+                }
+            }
+        }
     }
     node.cvTransform(Backward);
     node.mwTransform(Compression);

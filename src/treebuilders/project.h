@@ -31,7 +31,12 @@
 
 namespace mrcpp {
 template <int D>
-void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter = -1, bool absPrec = false);
+void project(double prec,
+             FunctionTree<D> &out,
+             RepresentableFunction<D> &inp,
+             int maxIter = -1,
+             bool absPrec = false,
+             bool periodic = false);
 template <int D>
 void project(double prec,
              FunctionTree<D> &out,

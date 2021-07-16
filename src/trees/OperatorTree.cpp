@@ -26,8 +26,8 @@
 #include "OperatorTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
-#include "OperatorNode.h"
 #include "NodeAllocator.h"
+#include "OperatorNode.h"
 #include "utils/Printer.h"
 #include "utils/tree_utils.h"
 
@@ -42,6 +42,11 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
         , nodePtrStore(nullptr)
         , nodePtrAccess(nullptr) {
     if (this->normPrec < 0.0) MSG_ABORT("Negative prec");
+
+    // auto oper_reach = (*tree).getPeriodicOperatorReach();
+    // auto n = 6;
+    // while (std::pow(2, n) < std::pow(oper_reach, 2)) { n += 1; }
+    // this->maxNodesPerChunk = std::pow(2, n);
 
     int nodesPerChunk = 1024;
     int coefsPerNode = this->getTDim() * this->getKp1_d();
@@ -72,7 +77,7 @@ void OperatorTree::allocRootNodes() {
         root_p->childSerialIx = -1;
 
         root_p->n_coefs = n_coefs;
-        root_p->coefs = coef_p;;
+        root_p->coefs = coef_p;
         root_p->setIsAllocated();
 
         root_p->setIsRootNode();

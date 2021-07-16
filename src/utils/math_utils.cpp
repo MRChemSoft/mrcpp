@@ -173,20 +173,7 @@ void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
 
 void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
 #ifdef HAVE_BLAS
-    cblas_dgemm(CblasColMajor,
-                CblasTrans,
-                CblasNoTrans,
-                kp1_dm1,
-                kp1,
-                kp1,
-                1.0,
-                in,
-                kp1,
-                filter.data(),
-                kp1,
-                fac,
-                out,
-                kp1_dm1);
+    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
 #else
     Map<MatrixXd> f(in, kp1, kp1_dm1);
     Map<MatrixXd> g(out, kp1_dm1, kp1);
@@ -203,20 +190,13 @@ void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, i
  * This method uses the "output" vector as initial input, in order to
  * avoid the use of temporaries.
  */
-void math_utils::tensor_expand_coefs(int dim,
-                                     int dir,
-                                     int kp1,
-                                     int kp1_d,
-                                     const MatrixXd &primitive,
-                                     VectorXd &expanded) {
+void math_utils::tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d, const MatrixXd &primitive, VectorXd &expanded) {
     if (dir < dim - 1) {
         int idx = math_utils::ipow(kp1, dir + 1);
         int nelem = idx * kp1;
         int pos = kp1_d - nelem;
         int inpos = kp1_d - idx;
-        for (int i = 0; i < kp1; i++) {
-            expanded.segment(pos + i * idx, idx) = expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
-        }
+        for (int i = 0; i < kp1; i++) expanded.segment(pos + i * idx, idx) = expanded.segment(inpos, idx) * primitive.col(dir + 1)(i);
         tensor_expand_coefs(dim, dir + 1, kp1, kp1_d, primitive, expanded);
     }
 }
@@ -251,6 +231,37 @@ template <int D> double math_utils::calc_distance(const Coord<D> &a, const Coord
     double r = 0.0;
     for (int i = 0; i < D; i++) { r += std::pow(a[i] - b[i], 2.0); }
     return std::sqrt(r);
+}
+
+/** Calculate the cartesian_product A x B */
+std::vector<std::vector<int>> math_utils::cartesian_product(std::vector<int> A, std::vector<int> B) {
+    std::vector<std::vector<int>> output;
+    for (auto &a : A) {
+        for (auto &b : B) output.push_back(std::vector<int>{a, b});
+    }
+    return output;
+}
+
+/** Calculate the cartesian product between a matrix l_A  and the vector B */
+std::vector<std::vector<int>> math_utils::cartesian_product(std::vector<std::vector<int>> l_A, std::vector<int> B) {
+    std::vector<std::vector<int>> output;
+    for (auto A : l_A) {
+        for (auto &b : B) {
+            A.push_back(b);
+            output.push_back(A);
+            A.pop_back();
+        }
+    }
+    return output;
+}
+
+/** Calculate the cartesian product between A vector and itself with A repeater,
+ ie. reapeat 4 is equal to the cartesian product A x A x A x A */
+std::vector<std::vector<int>> math_utils::cartesian_product(std::vector<int> A, int repeat) {
+    std::vector<std::vector<int>> output;
+    output = cartesian_product(A, A);
+    for (auto i = 0; i < repeat - 2; i++) output = cartesian_product(output, A);
+    return output;
 }
 
 template double math_utils::calc_distance<1>(const Coord<1> &a, const Coord<1> &b);

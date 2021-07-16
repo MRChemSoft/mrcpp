@@ -57,15 +57,14 @@ double matrix_norm_2(const Eigen::MatrixXd &M);
 
 void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
-void tensor_expand_coefs(int dim,
-                         int dir,
-                         int kp1,
-                         int kp1_d,
-                         const Eigen::MatrixXd &primitive,
-                         Eigen::VectorXd &expanded);
+void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d, const Eigen::MatrixXd &primitive, Eigen::VectorXd &expanded);
 
 void tensor_expand_coords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
+
+std::vector<std::vector<int>> cartesian_product(std::vector<int> A, std::vector<int> B);
+std::vector<std::vector<int>> cartesian_product(std::vector<std::vector<int>> l_A, std::vector<int> B);
+std::vector<std::vector<int>> cartesian_product(std::vector<int> a, int dim);
 
 template <int D> double calc_distance(const Coord<D> &a, const Coord<D> &b);
 

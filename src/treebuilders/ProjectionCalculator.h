@@ -31,13 +31,17 @@ namespace mrcpp {
 
 template <int D> class ProjectionCalculator final : public TreeCalculator<D> {
 public:
-    ProjectionCalculator(const RepresentableFunction<D> &inp_func, const std::array<double, D> &sf)
+    ProjectionCalculator(const RepresentableFunction<D> &inp_func,
+                         const std::array<double, D> &sf,
+                         double periodic = false)
             : func(&inp_func)
-            , scaling_factor(sf) {}
+            , scaling_factor(sf)
+            , periodic(periodic) {}
 
 private:
     const RepresentableFunction<D> *func;
     const std::array<double, D> scaling_factor;
+    double periodic{false};
     void calcNode(MWNode<D> &node) override;
 };
 

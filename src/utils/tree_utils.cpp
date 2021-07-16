@@ -30,21 +30,20 @@
 
 #include "MRCPP/constants.h"
 
-#include "math_utils.h"
 #include "Printer.h"
+#include "math_utils.h"
 
 #include "trees/HilbertIterator.h"
-#include "trees/MWTree.h"
 #include "trees/MWNode.h"
-
+#include "trees/MWTree.h"
 
 namespace mrcpp {
 
 /** Calculate the threshold for the wavelet norm.
-*
-* Calculates the threshold that has to be met in the wavelet norm in order to
-* guarantee the precision in the function representation. Depends on the
-* square norm of the function and the requested relative accuracy. */
+ *
+ * Calculates the threshold that has to be met in the wavelet norm in order to
+ * guarantee the precision in the function representation. Depends on the
+ * square norm of the function and the requested relative accuracy. */
 template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec) {
     bool split = false;
     if (prec > 0.0) {
@@ -70,6 +69,12 @@ template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec
 template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<D> &table) {
     HilbertIterator<D> it(&tree);
     it.setReturnGenNodes(false);
+    while (it.nextParent()) {
+        MWNode<D> &node = it.getNode();
+        if (node.getDepth() == 0) continue;
+        table.push_back(&node);
+    }
+    it.init(&tree);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         table.push_back(&node);
@@ -81,9 +86,18 @@ template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<
 template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table) {
     HilbertIterator<D> it(&tree);
     it.setReturnGenNodes(false);
+    while (it.nextParent()) {
+        MWNode<D> &node = it.getNode();
+        if (node.getDepth() == 0) continue;
+        int depth = node.getDepth() + tree.getNNegScales();
+        // Add one more element
+        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
+        table[depth].push_back(&node);
+    }
+    it.init(&tree);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
-        int depth = node.getDepth();
+        int depth = node.getDepth() + tree.getNNegScales();
         // Add one more element
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
         table[depth].push_back(&node);
@@ -96,12 +110,7 @@ template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<M
  * The output is written directly into the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <int D> void tree_utils::mw_transform(const MWTree<D> &tree,
-                                               double *coeff_in,
-                                               double *coeff_out,
-                                               bool readOnlyScaling,
-                                               int stride,
-                                               bool b_overwrite) {
+template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite) {
     int operation = Reconstruction;
     int kp1 = tree.getKp1();
     int kp1_d = tree.getKp1_d();

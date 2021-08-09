@@ -28,13 +28,13 @@
 #include <fstream>
 
 #include "FunctionNode.h"
-#include "NodeAllocator.h"
 #include "HilbertIterator.h"
+#include "NodeAllocator.h"
 
-#include "utils/mpi_utils.h"
-#include "utils/periodic_utils.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include "utils/mpi_utils.h"
+#include "utils/periodic_utils.h"
 #include "utils/tree_utils.h"
 
 using namespace Eigen;
@@ -53,8 +53,7 @@ namespace mrcpp {
 template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
         : MWTree<D>(mra)
-        , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(),
-                                   mra.getWorldBox().getUpperBounds().data()) {
+        , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
     int nodesPerChunk = 64;
     int coefsGenNodes = this->getKp1_d();
     int coefsRegNodes = this->getTDim() * this->getKp1_d();
@@ -64,8 +63,7 @@ FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemor
     this->resetEndNodeTable();
 }
 
-template <int D>
-void FunctionTree<D>::allocRootNodes() {
+template <int D> void FunctionTree<D>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
 
@@ -79,7 +77,7 @@ void FunctionTree<D>::allocRootNodes() {
     MWNode<D> **roots = rootbox.getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
         // construct into allocator memory
-        new (root_p) FunctionNode<D>(*this, rIdx);
+        new (root_p) FunctionNode<D>(this, rIdx);
         roots[rIdx] = root_p;
 
         root_p->serialIx = sIdx;
@@ -87,7 +85,7 @@ void FunctionTree<D>::allocRootNodes() {
         root_p->childSerialIx = -1;
 
         root_p->n_coefs = n_coefs;
-        root_p->coefs = coef_p;;
+        root_p->coefs = coef_p;
         root_p->setIsAllocated();
 
         root_p->setIsRootNode();
@@ -146,8 +144,8 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
 
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        f.write((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.write((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
+        f.write((char *)allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.write((char *)allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time write", t1);
@@ -175,8 +173,8 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
     auto &allocator = this->getNodeAllocator();
     allocator.init(nChunks);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        f.read((char *) allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.read((char *) allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
+        f.read((char *)allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+        f.read((char *)allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
     print::time(10, "Time read tree", t1);
@@ -220,25 +218,27 @@ template <int D> double FunctionTree<D>::integrate() const {
  *       that can be done in OMP parallel.
  */
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
+
     // Handle potential scaling
     const auto sf = this->getMRA().getWorldBox().getScalingFactor();
     auto arg = r;
     for (auto i = 0; i < D; i++) arg[i] = arg[i] / sf[i];
 
-    // Adjust for scaling factor included in basis
-    auto coef = 1.0;
-    for (const auto &fac : sf) coef /= std::sqrt(fac);
-
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
     if (this->getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic()); }
 
-    // Function is zero outside the domain
-    if (this->outOfBounds(arg)) return 0.0;
+    // Function is zero outside the domain for non-periodic functions
+    if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;
 
     const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);
     auto result = f_node.evalScaling(arg);
+
+    // Adjust for scaling factor included in basis
+    auto coef = 1.0;
+    for (const auto &fac : sf) coef /= std::sqrt(fac);
+
     return coef * result;
 }
 
@@ -534,12 +534,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
  * values of serialIx in refTree, and an array with the indices of the parent.
  * Set index -1 for nodes that are not present in refTree */
 template <int D>
-void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
-                                      std::vector<int> &indices,
-                                      std::vector<int> &parent_indices,
-                                      std::vector<double> &scalefac,
-                                      int &max_index,
-                                      MWTree<D> &refTree) {
+void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree) {
     coefs.clear();
     indices.clear();
     parent_indices.clear();
@@ -562,7 +557,7 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
             indices.push_back(refNode->getSerialIx());
             max_index = std::max(max_index, refNode->getSerialIx());
             parent_indices.push_back(refNode->parentSerialIx); // is -1 for root nodes
-            double sfac = std::pow(2.0, -0.5*(refNode->getScale() + 1.0));
+            double sfac = std::pow(2.0, -0.5 * (refNode->getScale() + 1.0));
             scalefac.push_back(sfac); // could be faster: essentially inverse of powers of 2
         } else {
             indices.push_back(-1); // indicates that the node is not in the refTree
@@ -585,11 +580,7 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
  * reference tree and a list of coefficients.
  * It is the reference tree (refTree) which is traversed, but one does not descend
  * into children if the norm of this tree is smaller than absPrec. */
-template <int D>
-void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree,
-                                        std::vector<double *> coefpVec,
-                                        std::map<int, int> &ix2coef,
-                                        double absPrec) {
+template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec) {
     std::vector<MWNode<D> *> stack;
     std::map<int, MWNode<D> *> ix2node; // gives the nodes in this tree for a given ix
     int sizecoef = (1 << this->getDim()) * this->getKp1_d();
@@ -667,25 +658,27 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         } else {
             // construct EndNodeTable for "This", starting from this branch
             // This could be done more efficiently, if it proves to be time consuming
-            std::vector<MWNode<D> *> branchstack;   // local stack starting from this branch
+            std::vector<MWNode<D> *> branchstack; // local stack starting from this branch
             branchstack.push_back(thisNode);
             while (branchstack.size() > 0) {
                 MWNode<D> *branchNode = branchstack.back();
                 branchstack.pop_back();
                 if (branchNode->getNChildren() > 0) {
-                    for (int i = 0; i < branchNode->getNChildren(); i++) {
-                        branchstack.push_back(branchNode->children[i]);
-                    }
-                } else this->endNodeTable.push_back(branchNode);
+                    for (int i = 0; i < branchNode->getNChildren(); i++) { branchstack.push_back(branchNode->children[i]); }
+                } else
+                    this->endNodeTable.push_back(branchNode);
             }
         }
     }
 }
 
 template <int D> void FunctionTree<D>::deleteGenerated() {
-    for (int n = 0; n < this->getNEndNodes(); n++) getEndFuncNode(n).deleteGenerated();
+    for (int n = 0; n < this->getNEndNodes(); n++) this->getEndMWNode(n).deleteGenerated();
 }
 
+template <int D> void FunctionTree<D>::deleteGeneratedParents() {
+    for (int n = 0; n < this->getRootBox().size(); n++) this->getRootMWNode(n).deleteParent();
+}
 
 template class FunctionTree<1>;
 template class FunctionTree<2>;

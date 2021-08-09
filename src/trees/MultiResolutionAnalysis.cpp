@@ -35,7 +35,10 @@ template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
         : maxDepth(mra.maxDepth)
         , basis(mra.basis)
-        , world(mra.world) {
+        , world(mra.world)
+        , periodic_operator_reach(mra.periodic_operator_reach)
+        , periodic_cut_off(mra.periodic_cut_off)
+        , operator_scale(mra.operator_scale) {
     if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
     if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
     setupFilter();
@@ -80,8 +83,9 @@ template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKerne
     auto tot_l = std::array<int, 1>{2 * max_l};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
+    auto oper_scale = (box.isPeriodic()) ? this->operator_scale : box.getScale();
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
-    BoundingBox<1> kern_box(box.getScale(), start_l, tot_l, sf);
+    BoundingBox<1> kern_box(oper_scale, start_l, tot_l, sf);
     MultiResolutionAnalysis<1> mra(kern_box, *kern_basis);
     delete kern_basis;
     return mra;
@@ -100,9 +104,12 @@ template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOpera
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
     auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};
-    NodeIndex<2> idx(box.getScale());
-    BoundingBox<2> oper_box(box.getScale(), l, nbox, sf);
-    return MultiResolutionAnalysis<2>(oper_box, basis);
+
+    auto oper_scale = (box.isPeriodic()) ? this->operator_scale : box.getScale();
+    BoundingBox<2> oper_box(oper_scale, l, nbox, sf);
+    auto oper_mra = MultiResolutionAnalysis<2>(oper_box, basis);
+    oper_mra.setPeriodicOperatorReach(this->getPeriodicOperatorReach());
+    return oper_mra;
 }
 
 template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {

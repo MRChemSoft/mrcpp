@@ -50,10 +50,7 @@ namespace mrcpp {
 
 template <int D> class BoundingBox {
 public:
-    BoundingBox(int n = 0,
-                const std::array<int, D> &l = {},
-                const std::array<int, D> &nb = {},
-                const std::array<double, D> &sf = {});
+    BoundingBox(int n = 0, const std::array<int, D> &l = {}, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {}, bool pbc = false);
     BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {}, const std::array<double, D> &sf = {});
     BoundingBox(const std::array<double, D> &sf, bool pbc = true);
     BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc);
@@ -66,8 +63,8 @@ public:
 
     NodeIndex<D> getNodeIndex(int bIdx) const;
 
-    int getBoxIndex(const Coord<D> &r) const;
-    int getBoxIndex(const NodeIndex<D> &nIdx) const;
+    int getBoxIndex(Coord<D> r) const;
+    int getBoxIndex(NodeIndex<D> nIdx) const;
 
     int size() const { return this->totBoxes; }
     int size(int d) const { return this->nBoxes[d]; }

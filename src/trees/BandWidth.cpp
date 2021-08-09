@@ -37,7 +37,7 @@ bool BandWidth::isEmpty(int depth) const {
 }
 
 void BandWidth::setWidth(int depth, int index, int wd) {
-    assert(depth >= 0 and depth < getDepth());
+    if (depth < 0 or depth >= getDepth()) MSG_ABORT("Depth cannot be negative!");
     assert(index >= 0 and index < 4);
     assert(wd >= 0);
     this->widths(depth, index) = wd;

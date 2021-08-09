@@ -40,6 +40,7 @@ public:
 
     void init(MWTree<D> *tree);
     bool next();
+    bool nextParent();
     MWNode<D> &getNode() { return *this->state->node; }
 
     friend class IteratorNode<D>;
@@ -55,9 +56,11 @@ protected:
 
     virtual int getChildIndex(int i) const = 0;
 
-    bool tryNode();
+    bool tryParent();
     bool tryChild(int i);
+    bool tryNode();
     bool tryNextRoot();
+    bool tryNextRootParent();
     void removeState();
     void setDirection(int dir);
     bool checkDepth(const MWNode<D> &node) const;
@@ -69,6 +72,7 @@ public:
     MWNode<D> *node;
     IteratorNode<D> *next;
     bool doneNode;
+    bool doneParent;
     bool doneChild[1 << D];
 
     IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx = nullptr);

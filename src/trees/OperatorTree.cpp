@@ -26,8 +26,8 @@
 #include "OperatorTree.h"
 #include "BandWidth.h"
 #include "LebesgueIterator.h"
-#include "OperatorNode.h"
 #include "NodeAllocator.h"
+#include "OperatorNode.h"
 #include "utils/Printer.h"
 #include "utils/tree_utils.h"
 
@@ -64,7 +64,7 @@ void OperatorTree::allocRootNodes() {
     MWNode<2> **roots = rootbox.getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
         // construct into allocator memory
-        new (root_p) OperatorNode(*this, rIdx);
+        new (root_p) OperatorNode(this, rIdx);
         roots[rIdx] = root_p;
 
         root_p->serialIx = sIdx;
@@ -72,7 +72,7 @@ void OperatorTree::allocRootNodes() {
         root_p->childSerialIx = -1;
 
         root_p->n_coefs = n_coefs;
-        root_p->coefs = coef_p;;
+        root_p->coefs = coef_p;
         root_p->setIsAllocated();
 
         root_p->setIsRootNode();

@@ -41,6 +41,8 @@
 
 namespace mrcpp {
 
+template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec);
+
 /** @brief Application of MW integral convolution operator
  *
  * @param[in] prec: Build precision of output function
@@ -62,13 +64,7 @@ namespace mrcpp {
  * no coefs).
  *
  */
-template <int D>
-void apply(double prec,
-           FunctionTree<D> &out,
-           ConvolutionOperator<D> &oper,
-           FunctionTree<D> &inp,
-           int maxIter,
-           bool absPrec) {
+template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     Timer pre_t;
@@ -76,6 +72,56 @@ void apply(double prec,
     int maxScale = out.getMRA().getMaxScale();
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     ConvolutionCalculator<D> calculator(prec, oper, inp);
+    pre_t.stop();
+    TreeBuilder<D> builder;
+    builder.build(out, calculator, adaptor, maxIter);
+
+    Timer post_t;
+    oper.clearBandWidths();
+    out.mwTransform(TopDown, false); // add coarse scale contributions
+    out.mwTransform(BottomUp);
+    out.calcSquareNorm();
+    out.deleteGeneratedParents();
+    inp.deleteGenerated();
+    inp.deleteGeneratedParents();
+    post_t.stop();
+
+    print::time(10, "Time pre operator", pre_t);
+    print::time(10, "Time post operator", post_t);
+    print::separator(10, ' ');
+}
+
+/** @brief Application of MW integral convolution operator
+ *
+ * @param[in] inside: Use points inside (true) or outside (false) the unitcell
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
+template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+
+    Timer pre_t;
+    oper.calcBandWidths(prec);
+    int maxScale = out.getMRA().getMaxScale();
+    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    calculator.startManipulateOperator(inside);
     pre_t.stop();
 
     TreeBuilder<D> builder;
@@ -86,7 +132,9 @@ void apply(double prec,
     out.mwTransform(TopDown, false); // add coarse scale contributions
     out.mwTransform(BottomUp);
     out.calcSquareNorm();
+    out.deleteGeneratedParents();
     inp.deleteGenerated();
+    inp.deleteGeneratedParents();
     post_t.stop();
 
     print::time(10, "Time pre operator", pre_t);
@@ -118,14 +166,7 @@ void apply(double prec,
  * no coefs).
  *
  */
-template <int D>
-void apply(double prec,
-           FunctionTree<D> &out,
-           ConvolutionOperator<D> &oper,
-           FunctionTree<D> &inp,
-           FunctionTreeVector<D> &precTrees,
-           int maxIter,
-           bool absPrec) {
+template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, FunctionTreeVector<D> &precTrees, int maxIter, bool absPrec) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -164,6 +205,57 @@ void apply(double prec,
     print::separator(10, ' ');
 }
 
+/** @brief Application of MW integral convolution operator on a periodic cell,
+           excluding contributions inside the unit cell.
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
+template <int D> void apply_far_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+    apply_on_unit_cell<D>(false, prec, out, oper, inp, maxIter, absPrec);
+}
+
+/** @brief Application of MW integral convolution operator on a periodic cell,
+           excluding contributions outside the unit cell.
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
+template <int D> void apply_near_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+    apply_on_unit_cell<D>(true, prec, out, oper, inp, maxIter, absPrec);
+}
 /** @brief Application of MW derivative operator
  *
  * @param[out] out: Output function to be built
@@ -202,6 +294,9 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     SplitAdaptor<D> apply_adaptor(maxScale, false); // Splits no nodes
     DerivativeCalculator<D> apply_calculator(dir, oper, inp);
     builder.build(out, apply_calculator, apply_adaptor, 0);
+    auto periodic = out.getMRA().getWorldBox().isPeriodic();
+    auto operator_scale = out.getMRA().getOperatorScale();
+    if (periodic) out.rescale(pow(2.0, -operator_scale));
 
     Timer post_t;
     oper.clearBandWidths();
@@ -271,45 +366,18 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
-template void apply<1>(double prec,
-                       FunctionTree<1> &out,
-                       ConvolutionOperator<1> &oper,
-                       FunctionTree<1> &inp,
-                       int maxIter,
-                       bool absPrec);
-template void apply<2>(double prec,
-                       FunctionTree<2> &out,
-                       ConvolutionOperator<2> &oper,
-                       FunctionTree<2> &inp,
-                       int maxIter,
-                       bool absPrec);
-template void apply<3>(double prec,
-                       FunctionTree<3> &out,
-                       ConvolutionOperator<3> &oper,
-                       FunctionTree<3> &inp,
-                       int maxIter,
-                       bool absPrec);
-template void apply<1>(double prec,
-                       FunctionTree<1> &out,
-                       ConvolutionOperator<1> &oper,
-                       FunctionTree<1> &inp,
-                       FunctionTreeVector<1> &precTrees,
-                       int maxIter,
-                       bool absPrec);
-template void apply<2>(double prec,
-                       FunctionTree<2> &out,
-                       ConvolutionOperator<2> &oper,
-                       FunctionTree<2> &inp,
-                       FunctionTreeVector<2> &precTrees,
-                       int maxIter,
-                       bool absPrec);
-template void apply<3>(double prec,
-                       FunctionTree<3> &out,
-                       ConvolutionOperator<3> &oper,
-                       FunctionTree<3> &inp,
-                       FunctionTreeVector<3> &precTrees,
-                       int maxIter,
-                       bool absPrec);
+template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
+template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
+template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
+template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, FunctionTreeVector<1> &precTrees, int maxIter, bool absPrec);
+template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, FunctionTreeVector<2> &precTrees, int maxIter, bool absPrec);
+template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, FunctionTreeVector<3> &precTrees, int maxIter, bool absPrec);
+template void apply_far_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
+template void apply_far_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
+template void apply_far_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
+template void apply_near_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
+template void apply_near_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
+template void apply_near_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
 template void apply<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
 template void apply<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
 template void apply<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);

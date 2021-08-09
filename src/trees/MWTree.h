@@ -31,6 +31,7 @@
 #include "utils/omp_utils.h"
 
 #include "MultiResolutionAnalysis.h"
+#include "NodeAllocator.h"
 #include "NodeBox.h"
 
 namespace mrcpp {
@@ -54,10 +55,12 @@ public:
     int getKp1_d() const { return this->kp1_d; }
     int getDim() const { return D; }
     int getTDim() const { return (1 << D); }
-    int getNNodes(int depth = -1) const;
+    int getNNodes() const { return getNodeAllocator().getNNodes(); }
+    int getNNegScales() const { return this->nodesAtNegativeDepth.size(); }
     int getNEndNodes() const { return this->endNodeTable.size(); }
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
+    int getNNodesAtDepth(int i) const;
     int getSizeNodes() const;
 
     NodeBox<D> &getRootBox() { return this->rootBox; }
@@ -69,8 +72,8 @@ public:
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
-    int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
-    int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
+    int getRootIndex(Coord<D> r) const { return this->rootBox.getBoxIndex(r); }
+    int getRootIndex(NodeIndex<D> nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
     MWNode<D> *findNode(NodeIndex<D> nIdx);
     const MWNode<D> *findNode(NodeIndex<D> nIdx) const;
@@ -79,7 +82,7 @@ public:
     MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx);
     const MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
+    MWNode<D> &getNode(Coord<D> r, int depth = -1);
     MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
     const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
 
@@ -88,6 +91,8 @@ public:
 
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
+
+    int getPeriodicOperatorReach() const { return this->MRA.getPeriodicOperatorReach(); }
 
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
@@ -129,9 +134,10 @@ protected:
 
     // Tree data
     double squareNorm;
-    NodeBox<D> rootBox;            ///< The actual container of nodes
-    MWNodeVector<D> endNodeTable;  ///< Final projected nodes
-    std::vector<int> nodesAtDepth; ///< Node counter
+    NodeBox<D> rootBox;                    ///< The actual container of nodes
+    MWNodeVector<D> endNodeTable;          ///< Final projected nodes
+    std::vector<int> nodesAtDepth;         ///< Node counter
+    std::vector<int> nodesAtNegativeDepth; ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);
     virtual void mwTransformUp();

@@ -30,13 +30,13 @@
 namespace mrcpp {
 namespace tree_utils {
 
-template<int D> bool split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec);
+template <int D> bool split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec);
 
-template<int D> void make_node_table(MWTree<D> &tree, MWNodeVector<D> &table);
-template<int D> void make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table);
+template <int D> void make_node_table(MWTree<D> &tree, MWNodeVector<D> &table);
+template <int D> void make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table);
 
-template<int D> void mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
-template<int D> void mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride);
+template <int D> void mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
+template <int D> void mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride);
 
-} // namespace node_utils
+} // namespace tree_utils
 } // namespace mrcpp

@@ -87,8 +87,7 @@ template <int D> void ConvolutionOperator<D>::clearKernel() {
     mrcpp::clear(this->kern_exp, true);
 }
 
-template <int D>
-double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
+template <int D> double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
     int maxScale = MRA.getMaxScale();
     return std::sqrt(epsilon * std::pow(2.0, -maxScale));
 }
@@ -96,7 +95,14 @@ double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> 
 template <int D> double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
     const Coord<D> &lb = MRA.getWorldBox().getLowerBounds();
     const Coord<D> &ub = MRA.getWorldBox().getUpperBounds();
-    return math_utils::calc_distance<D>(lb, ub);
+    auto max_distance = math_utils::calc_distance<D>(lb, ub);
+    if (MRA.getWorldBox().isPeriodic()) {
+        auto period = MRA.getWorldBox().getScalingFactor();
+        max_distance *= std::pow(2.0, -MRA.getOperatorScale());
+        if (MRA.getOperatorScale() < 0) max_distance *= 2.0;
+        if (MRA.getOperatorScale() == 0) max_distance *= 2.0 * MRA.getPeriodicOperatorReach() + 1.0;
+    }
+    return max_distance;
 }
 
 template class ConvolutionOperator<1>;

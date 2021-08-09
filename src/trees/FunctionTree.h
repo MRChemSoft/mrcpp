@@ -96,17 +96,10 @@ public:
     const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
 
     void deleteGenerated();
+    void deleteGeneratedParents();
 
-    void makeCoeffVector(std::vector<double *> &coefs,
-                         std::vector<int> &indices,
-                         std::vector<int> &parent_indices,
-                         std::vector<double> &scalefac,
-                         int &max_index,
-                         MWTree<D> &refTree);
-    void makeTreefromCoeff(MWTree<D> &refTree,
-                           std::vector<double *> coefpVec,
-                           std::map<int, int> &ix2coef,
-                           double absPrec);
+    void makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree);
+    void makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec);
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
 protected:

@@ -188,15 +188,15 @@ template <int D> void MWTree<D>::incrementNodeCount(int scale) {
 template <int D> void MWTree<D>::decrementNodeCount(int scale) {
     int depth = scale - getRootScale();
     if (depth < 0) {
-        assert(depth < this->nodesAtNegativeDepth.size());
+        assert(-depth - 1 < this->nodesAtNegativeDepth.size());
         this->nodesAtNegativeDepth[-depth - 1]--;
-        assert(this->nodesAtNegativeDepth[depth - 1] >= 0);
-        if (this->nodesAtNegativeDepth[-depth - 1] == 0 and this->nodesAtNegativeDepth.size() > 1) { this->nodesAtNegativeDepth.pop_back(); }
+        assert(this->nodesAtNegativeDepth[-depth - 1] >= 0);
+        if (this->nodesAtNegativeDepth[-depth - 1] == 0 and this->nodesAtNegativeDepth.size() > 1) this->nodesAtNegativeDepth.pop_back();
     } else {
         assert(depth < this->nodesAtDepth.size());
         this->nodesAtDepth[depth]--;
         assert(this->nodesAtDepth[depth] >= 0);
-        if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) { this->nodesAtDepth.pop_back(); }
+        if (this->nodesAtDepth[depth] == 0 and this->nodesAtDepth.size() > 1) this->nodesAtDepth.pop_back();
     }
 }
 

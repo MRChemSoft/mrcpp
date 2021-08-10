@@ -332,7 +332,10 @@ template <int D> void FunctionNode<D>::reCompress() {
 }
 
 template <> void FunctionNode<3>::reCompress() {
-    if (this->isBranchNode()) {
+    if (this->getDepth() < 0) {
+        // This happens for negative scale pbc operators
+        MWNode<3>::reCompress();
+    } else if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         // can write directly from children coeff into parent coeff
         int stride = this->getMWChild(0).getNCoefs();

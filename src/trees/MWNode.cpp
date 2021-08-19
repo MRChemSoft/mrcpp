@@ -322,7 +322,7 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
         out_vec = tmp;
     }
 
-    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
+    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactors();
     double sf_prod = 1.0;
     for (const auto &s : sf) sf_prod *= s;
     if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
@@ -602,7 +602,7 @@ template <int D> void MWNode<D>::getCenter(double *r) const {
 }
 
 template <int D> void MWNode<D>::getBounds(double *lb, double *ub) const {
-    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactor();
+    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactors();
     int n = getScale();
     double p = std::pow(2.0, -n);
     const NodeIndex<D> &l = getNodeIndex();

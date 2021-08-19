@@ -97,7 +97,7 @@ template <int D> double ConvolutionOperator<D>::calcMaxDistance(const MultiResol
     const Coord<D> &ub = MRA.getWorldBox().getUpperBounds();
     auto max_distance = math_utils::calc_distance<D>(lb, ub);
     if (MRA.getWorldBox().isPeriodic()) {
-        auto period = MRA.getWorldBox().getScalingFactor();
+        auto period = MRA.getWorldBox().getScalingFactors();
         max_distance *= std::pow(2.0, -MRA.getOperatorScale());
         if (MRA.getOperatorScale() < 0) max_distance *= 2.0;
         if (MRA.getOperatorScale() == 0) max_distance *= 2.0 * MRA.getPeriodicOperatorReach() + 1.0;

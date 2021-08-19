@@ -44,7 +44,7 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
         : cornerIndex(n, l) {
     setPeriodic(pbc);
     setNBoxes(nb);
-    setScalingFactor(sf);
+    setScalingFactors(sf);
     setDerivedParameters();
 }
 
@@ -53,7 +53,7 @@ BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &n
         : cornerIndex(idx) {
     setPeriodic(false);
     setNBoxes(nb);
-    setScalingFactor(sf);
+    setScalingFactors(sf);
     setDerivedParameters();
 }
 
@@ -62,7 +62,7 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
         : cornerIndex() {
     setPeriodic(pbc);
     setNBoxes();
-    setScalingFactor(sf);
+    setScalingFactors(sf);
     setDerivedParameters();
 }
 
@@ -71,7 +71,7 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D>
         : cornerIndex() {
     setPeriodic(pbc);
     setNBoxes();
-    setScalingFactor(sf);
+    setScalingFactors(sf);
     setDerivedParameters();
 }
 
@@ -80,7 +80,7 @@ BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
     setPeriodic(box.periodic);
     setNBoxes(box.nBoxes);
-    setScalingFactor(box.getScalingFactor());
+    setScalingFactors(box.getScalingFactors());
     setDerivedParameters();
 }
 
@@ -89,7 +89,7 @@ template <int D> BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> 
         this->cornerIndex = box.cornerIndex;
         this->periodic = box.periodic;
         setNBoxes(box.nBoxes);
-        setScalingFactor(box.getScalingFactor());
+        setScalingFactors(box.getScalingFactors());
         setDerivedParameters();
     }
     return *this;
@@ -115,7 +115,7 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
     }
 }
 
-template <int D> void BoundingBox<D>::setScalingFactor(const std::array<double, D> &sf) {
+template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
     for (auto &x : sf)
         if (x == 0.0 and sf != std::array<double, D>{}) MSG_ABORT("The scaling factor cannot be zero in any of the directions");

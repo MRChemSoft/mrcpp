@@ -81,7 +81,7 @@ public:
     const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
     const Coord<D> &getUpperBounds() const { return this->upperBounds; }
     const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
-    const std::array<double, D> &getScalingFactor() const { return this->scalingFactor; }
+    const std::array<double, D> &getScalingFactors() const { return this->scalingFactor; }
     friend std::ostream &operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
@@ -100,7 +100,7 @@ protected:
 
     void setNBoxes(const std::array<int, D> &nb = {});
     void setDerivedParameters();
-    void setScalingFactor(const std::array<double, D> &sf);
+    void setScalingFactors(const std::array<double, D> &sf);
     void setPeriodic(std::array<bool, D> periodic);
     void setPeriodic(bool periodic);
 

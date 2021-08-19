@@ -83,7 +83,7 @@ template <int D> void project(double prec, FunctionTree<D> &out, std::function<d
  */
 template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter, bool absPrec) {
     int maxScale = out.getMRA().getMaxScale();
-    const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactor();
+    const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactors();
     TreeBuilder<D> builder;
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
 

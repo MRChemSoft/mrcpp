@@ -195,7 +195,7 @@ template <int D> double FunctionTree<D>::integrate() const {
     }
 
     // Handle potential scaling
-    auto sf = this->getMRA().getWorldBox().getScalingFactor();
+    auto sf = this->getMRA().getWorldBox().getScalingFactors();
     auto jacobian = 1.0;
     for (const auto &sf_i : sf) jacobian *= std::sqrt(sf_i);
     // Square root of scaling factor in each diection. The seemingly missing
@@ -220,7 +220,7 @@ template <int D> double FunctionTree<D>::integrate() const {
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 
     // Handle potential scaling
-    const auto sf = this->getMRA().getWorldBox().getScalingFactor();
+    const auto sf = this->getMRA().getWorldBox().getScalingFactors();
     auto arg = r;
     for (auto i = 0; i < D; i++) arg[i] = arg[i] / sf[i];
 

@@ -49,6 +49,8 @@ public:
     virtual ~Gaussian() = default;
 
     void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
+    bool isPeriodic() const { return (gauss_exp != nullptr); }
+    const GaussExp<D> &getPeriodicGaussExp() const { return *this->gauss_exp; }
 
     virtual double evalfCore(const Coord<D> &r) const = 0;
 

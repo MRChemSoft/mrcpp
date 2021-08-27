@@ -62,7 +62,7 @@ GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
 
     int nTerms = 1;
     for (int d = 0; d < D; d++) {
-        nTerms *= (gPoly.getPower(d) + 1);
+        nTerms *= (gPoly.getPow(d) + 1);
         pos[d] = gPoly.getPos()[d];
     }
 
@@ -373,9 +373,9 @@ template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
 }
 
 template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
-    o << "Gaussian Expansion: " << size() << " terms" << std::endl;
+    o << "Gaussian expansion: " << size() << " terms" << std::endl;
     for (int i = 0; i < size(); i++) {
-        o << "Term " << i << ":" << std::endl;
+        o << "Term" << std::setw(3) << i << " :" << std::endl;
         o << getFunc(i) << std::endl << std::endl;
     }
     return o;

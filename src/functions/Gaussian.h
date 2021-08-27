@@ -55,7 +55,7 @@ public:
     virtual double evalfCore(const Coord<D> &r) const = 0;
 
     double evalf(const Coord<D> &r) const;
-    virtual double evalf(double r, int dim) const = 0;
+    virtual double evalf1D(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
     virtual double calcSquareNorm() = 0;
@@ -99,19 +99,21 @@ public:
     }
     void operator*=(double c) { multConstInPlace(c); }
 
-    bool checkScreen(int n, const int *l) const;
-    int getPower(int i) const { return power[i]; }
     bool getScreen() const { return screen; }
-    const std::array<int, D> &getPower() const { return power; }
-    const std::array<double, D> &getPos() const { return pos; }
+    bool checkScreen(int n, const int *l) const;
+
+    int getPow(int i) const { return power[i]; }
     double getCoef() const { return coef; }
+    double getExp(int i) const { return alpha[i]; }
+    const std::array<int, D> &getPow() const { return power; }
+    const std::array<double, D> &getPos() const { return pos; }
     std::array<double, D> getExp() const { return alpha; }
     std::array<double, D> getPeriod() const { return period; }
 
     double getMaximumStandardDiviation() const;
 
-    virtual void setPower(const std::array<int, D> &power) = 0;
-    virtual void setPower(int d, int power) = 0;
+    virtual void setPow(const std::array<int, D> &power) = 0;
+    virtual void setPow(int d, int power) = 0;
     void setScreen(bool _screen) { this->screen = _screen; }
     void setCoef(double cf) {
         this->coef = cf;

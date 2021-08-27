@@ -69,7 +69,7 @@ public:
     double calcSquareNorm() override;
 
     double evalfCore(const Coord<D> &r) const override;
-    double evalf(double r, int dir) const override;
+    double evalf1D(double r, int dir) const override;
 
     static double calcOverlap(GaussFunc<D> &lhs, GaussFunc<D> &rhs);
     double calcOverlap(GaussFunc<D> &rhs) override;
@@ -84,16 +84,14 @@ public:
     GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
     GaussFunc<D> operator*(double c) { return this->mult(c); }
 
-    void setPower(int d, int power) override {
+    void setPow(int d, int power) override {
         this->power[d] = power;
         this->squareNorm = -1.0;
     }
-    void setPower(const std::array<int, D> &power) override {
+    void setPow(const std::array<int, D> &power) override {
         this->power = power;
         this->squareNorm = -1.0;
     }
-
-    using Gaussian<D>::evalf;
 
 private:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);

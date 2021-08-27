@@ -69,8 +69,6 @@ public:
     void normalize();
 
     void calcScreening(double nStdDev = defaultScreening);
-    bool isVisibleAtScale(int scale, int nPts) const override;
-    bool isZeroOnInterval(const double *lb, const double *ub) const override;
 
     double evalf(const Coord<D> &r) const override;
 
@@ -95,7 +93,7 @@ public:
     double getScreening() const { return screening; }
     std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
-    const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
+    const std::array<int, D> &getPow(int i) const { return this->funcs[i]->getPow(); }
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     double getSquareNorm() {
@@ -117,7 +115,7 @@ public:
     void setScreen(bool screen);
     void setExp(int i, double a) { this->funcs[i]->setExp(a); }
     void setCoef(int i, double b) { this->funcs[i]->setCoef(b); }
-    void setPower(int i, const std::array<int, D> &power) { this->funcs[i]->setPower(power); }
+    void setPow(int i, const std::array<int, D> &power) { this->funcs[i]->setPow(power); }
     void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
     /** @brief Append Gaussian to expansion */
@@ -126,6 +124,7 @@ public:
     void append(const GaussExp<D> &g);
 
     friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
+    friend class Gaussian<D>;
 
 protected:
     std::vector<Gaussian<D> *> funcs;
@@ -135,6 +134,9 @@ protected:
     bool periodic{false};
 
     std::ostream &print(std::ostream &o) const;
+
+    bool isVisibleAtScale(int scale, int nPts) const override;
+    bool isZeroOnInterval(const double *lb, const double *ub) const override;
 };
 
 } // namespace mrcpp

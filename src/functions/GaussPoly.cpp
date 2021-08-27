@@ -78,7 +78,7 @@ template <int D>
 GaussPoly<D>::GaussPoly(const GaussFunc<D> &gf)
         : Gaussian<D>(gf) {
     for (int d = 0; d < D; d++) {
-        int order = this->getPower(d);
+        int order = this->getPow(d);
         poly[d] = new Polynomial(order);
         VectorXd coefs = VectorXd::Zero(order + 1);
         coefs[order] = 1.0;
@@ -133,7 +133,7 @@ template <int D> double GaussPoly<D>::evalfCore(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-template <int D> double GaussPoly<D>::evalf(const double r, int d) const {
+template <int D> double GaussPoly<D>::evalf1D(const double r, int d) const {
     // NOTE!
     //     This function evaluation will give the first dimension the full coef
     //     amplitude, leaving all other directions with amplitude 1.0. This is to
@@ -163,7 +163,7 @@ template <int D> void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
 template <int D>
 void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const {
     dir--;
-    for (int i = 0; i < this->getPower(dir) + 1; i++) {
+    for (int i = 0; i < this->getPow(dir) + 1; i++) {
         pow[dir] = i;
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
@@ -187,7 +187,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
                                      std::array<int, D> &pow,
                                      int dir) const {
     dir--;
-    for (int i = 0; i < this->getPower(dir) + 1; i++) {
+    for (int i = 0; i < this->getPow(dir) + 1; i++) {
         pow[dir] = i;
         if (dir > 0) {
             fillCoefPowVector(coefs, power, pow, dir);
@@ -213,7 +213,7 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
     result.multPureGauss(lhs, rhs);
     for (int d = 0; d < D; d++) {
         double newPos = result.getPos()[d];
-        int lhsPow = lhs.getPower(d);
+        int lhsPow = lhs.getPow(d);
         Polynomial lhsPoly(lhsPow);
         lhsPoly.clearCoefs();
         for (int p = 0; p <= lhsPow; p++) {
@@ -222,7 +222,7 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
             lhsPoly += tmpPoly;
         }
 
-        int rhsPow = rhs.getPower(d);
+        int rhsPow = rhs.getPow(d);
         Polynomial rhsPoly(rhsPow);
         rhsPoly.clearCoefs();
         for (int p = 0; p <= rhsPow; p++) {
@@ -248,13 +248,13 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(double c) {
     return g;
 }
 
-template <int D> void GaussPoly<D>::setPower(int d, int pow) {
+template <int D> void GaussPoly<D>::setPow(int d, int pow) {
     if (poly[d] != nullptr) { delete poly[d]; }
     poly[d] = new Polynomial(pow);
     this->squareNorm = -1.0;
 }
 
-template <int D> void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
+template <int D> void GaussPoly<D>::setPow(const std::array<int, D> &pow) {
     for (int d = 0; d < D; d++) {
         if (poly[d] != nullptr) { delete poly[d]; }
         poly[d] = new Polynomial(pow[d]);
@@ -274,25 +274,24 @@ template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 }
 
 template <int D> std::ostream &GaussPoly<D>::print(std::ostream &o) const {
-    auto expTmp = this->getExp();
-    auto is_array = details::are_all_equal<D>(expTmp);
+    auto is_array = details::are_all_equal<D>(this->getExp());
 
     // If all of the values in the exponential are the same only
     // one is printed, else, all of them are printed
+    o << "Coef    : " << this->getCoef() << std::endl;
     if (!is_array) {
-        o << "Exp:   ";
-        for (auto &alpha : expTmp) { o << alpha << " "; }
+        o << "Exp     : ";
+        for (auto &alpha : this->getExp()) o << alpha << " ";
     } else {
-        o << "Exp:   " << expTmp[0] << std::endl;
+        o << "Exp     : " << this->getExp(0) << std::endl;
     }
-    o << "Coef: " << this->getCoef() << std::endl;
-    o << "Pos:   ";
-    for (int i = 0; i < D; i++) { o << this->getPos()[i] << " "; }
+    o << "Pos     : ";
+    for (int i = 0; i < D; i++) o << this->getPos()[i] << " ";
     o << std::endl;
-    for (int i = 0; i < D; i++) {
-        o << "Dim " << i << ": order " << this->getPower(i) << std::endl;
-        o << this->getPolyCoefs(i) << std::endl;
-    }
+    o << "Pow     : ";
+    for (int i = 0; i < D; i++) o << this->getPow()[i] << " ";
+    o << std::endl;
+    for (int i = 0; i < D; i++) o << "Poly[" << i << "] : " << this->getPolyCoefs(i).transpose() << std::endl;
     return o;
 }
 

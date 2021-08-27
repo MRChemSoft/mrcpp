@@ -147,7 +147,7 @@ template <int D> void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &value
     assert(points.cols() == values.cols());
     assert(points.rows() == values.rows());
     for (int d = 0; d < D; d++) {
-        for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf(points(i, d), d); }
+        for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf1D(points(i, d), d); }
     }
 }
 

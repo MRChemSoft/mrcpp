@@ -64,7 +64,7 @@ template <int D> double GaussFunc<D>::evalfCore(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-template <int D> double GaussFunc<D>::evalf(double r, int d) const {
+template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
@@ -107,7 +107,7 @@ template <int D> double GaussFunc<D>::calcSquareNorm() {
 
 template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
     GaussPoly<D> result(*this);
-    int oldPow = this->getPower(dir);
+    int oldPow = this->getPow(dir);
 
     Polynomial newPoly(oldPow + 1);
     newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
@@ -131,10 +131,10 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     for (int d = 0; d < D; d++) { newExp[d] = lhsExp[d] + rhsExp[d]; }
 
     std::array<int, D> newPow;
-    for (int d = 0; d < D; d++) { newPow[d] = lhs.getPower(d) + rhs.getPower(d); }
+    for (int d = 0; d < D; d++) { newPow[d] = lhs.getPow(d) + rhs.getPow(d); }
     this->setCoef(newCoef);
     this->setExp(newExp);
-    this->setPower(newPow);
+    this->setPow(newPow);
     //	this->squareNorm = -1.0;
     this->calcSquareNorm();
 }
@@ -150,8 +150,8 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     result.multPureGauss(lhs, rhs);
     for (int d = 0; d < D; d++) {
         double newPos = result.getPos()[d];
-        Polynomial lhsPoly(newPos - lhs.getPos()[d], lhs.getPower(d));
-        Polynomial rhsPoly(newPos - rhs.getPos()[d], rhs.getPower(d));
+        Polynomial lhsPoly(newPos - lhs.getPos()[d], lhs.getPow(d));
+        Polynomial rhsPoly(newPos - rhs.getPos()[d], rhs.getPow(d));
         Polynomial newPoly = lhsPoly * rhsPoly;
         result.setPoly(d, newPoly);
     }
@@ -273,22 +273,24 @@ double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a, doubl
 }
 
 template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
+    auto is_array = details::are_all_equal<D>(this->getExp());
 
     // If all of the values in the exponential are the same only
     // one is printed, else, all of them are printed.
 
-    if (!details::are_all_equal<D>(this->getExp())) {
-        o << "Exp:   ";
-        for (auto &alpha : this->getExp()) { o << alpha << " "; }
+    o << "Coef    : " << this->getCoef() << std::endl;
+    if (!is_array) {
+        o << "Exp     : ";
+        for (auto &alpha : this->getExp()) o << alpha << " ";
     } else {
-        o << "Exp:   " << this->getExp()[0] << std::endl;
+        o << "Exp     : " << this->getExp(0) << std::endl;
     }
-    o << "Coef:  " << this->getCoef() << std::endl;
-    o << "Pos:   ";
-    for (int i = 0; i < D; i++) { o << this->getPos()[i] << " "; }
+    o << "Pos     : ";
+    for (int i = 0; i < D; i++) o << this->getPos()[i] << " ";
     o << std::endl;
-    o << "Power: ";
-    for (int i = 0; i < D; i++) { o << this->getPower(i) << " "; }
+    o << "Pow     : ";
+    for (int i = 0; i < D; i++) o << this->getPow()[i] << " ";
+    o << std::endl;
     return o;
 }
 

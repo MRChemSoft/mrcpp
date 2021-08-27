@@ -64,7 +64,7 @@ public:
     double calcSquareNorm() override;
 
     double evalfCore(const Coord<D> &r) const override;
-    double evalf(double r, int dim) const override;
+    double evalf1D(double r, int dim) const override;
 
     double calcOverlap(GaussFunc<D> &b) override;
     double calcOverlap(GaussPoly<D> &b) override;
@@ -83,8 +83,8 @@ public:
     const Polynomial &getPoly(int i) const { return *poly[i]; }
     Polynomial &getPoly(int i) { return *poly[i]; }
 
-    void setPower(int d, int pow) override;
-    void setPower(const std::array<int, D> &pow) override;
+    void setPow(int d, int pow) override;
+    void setPow(const std::array<int, D> &pow) override;
     void setPoly(int d, Polynomial &poly);
 
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
@@ -92,8 +92,6 @@ public:
                            std::vector<int *> &power,
                            std::array<int, D> &pow,
                            int dir) const;
-
-    using Gaussian<D>::evalf;
 
 private:
     Polynomial *poly[D];

@@ -75,7 +75,6 @@ public:
     double getScalingNorm() const;
     virtual double getWaveletNorm() const;
     double getComponentNorm(int i) const { return this->componentNorms[i]; }
-    bool hasComponentNorms() const;
 
     int getNCoefs() const { return this->n_coefs; }
     void getCoefs(Eigen::VectorXd &c) const;

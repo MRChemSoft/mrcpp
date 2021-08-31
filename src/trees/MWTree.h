@@ -44,6 +44,7 @@ public:
     virtual ~MWTree();
 
     void setZero();
+    void clear();
 
     /** @returns Squared L2 norm of the function */
     double getSquareNorm() const { return this->squareNorm; }
@@ -57,7 +58,6 @@ public:
     int getTDim() const { return (1 << D); }
     int getNNodes() const { return getNodeAllocator().getNNodes(); }
     int getNNegScales() const { return this->nodesAtNegativeDepth.size(); }
-    int getNEndNodes() const { return this->endNodeTable.size(); }
     int getRootScale() const { return this->rootBox.getScale(); }
     int getDepth() const { return this->nodesAtDepth.size(); }
     int getNNodesAtDepth(int i) const;
@@ -86,9 +86,10 @@ public:
     MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
     const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
 
+    int getNEndNodes() const { return this->endNodeTable.size(); }
+    int getNRootNodes() const { return this->rootBox.size(); }
     MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
     MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
-
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
@@ -111,7 +112,7 @@ public:
     NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
     const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
 
-    friend std::ostream &operator<<(std::ostream &o, MWTree<D> &tree) { return tree.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
     friend class FunctionNode<D>;
@@ -145,7 +146,7 @@ protected:
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
 
-    virtual std::ostream &print(std::ostream &o);
+    virtual std::ostream &print(std::ostream &o) const;
 };
 
 } // namespace mrcpp

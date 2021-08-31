@@ -74,6 +74,24 @@ template <int D> void MWTree<D>::deleteRootNodes() {
     }
 }
 
+/** @brief Remove all nodes in the tree
+ *
+ * @details Leaves the tree inn the same state as after construction, i.e.
+ * undefined function containing only root nodes without coefficients.
+ * The assigned memory (nodeChunks in NodeAllocator) is NOT released,
+ * but is immediately available to the new function.
+ */
+template <int D> void MWTree<D>::clear() {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.clearHasCoefs();
+        root.clearNorms();
+    }
+    this->resetEndNodeTable();
+    this->clearSquareNorm();
+}
+
 /** Calculate the squared norm of a function represented as a tree.
  *
  * Norm is calculated using endNodes only, but if your endNodeTable is
@@ -405,7 +423,7 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
-template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
+template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;
     o << "  order: " << this->order << std::endl;

@@ -63,7 +63,7 @@ protected:
     void allocRootNodes();
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 
-    std::ostream &print(std::ostream &o) override;
+    std::ostream &print(std::ostream &o) const override;
 };
 
 } // namespace mrcpp

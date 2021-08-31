@@ -58,8 +58,6 @@ public:
     FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
     ~FunctionTree() override;
 
-    void clear();
-
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
 
@@ -104,7 +102,7 @@ public:
 
 protected:
     std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
-    std::ostream &print(std::ostream &o) override;
+    std::ostream &print(std::ostream &o) const override;
 
     void allocRootNodes();
 };

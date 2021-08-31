@@ -80,9 +80,6 @@ MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
     clearNorms();
     clearIsAllocated();
     clearHasCoefs();
-    setIsRootNode();
-    setIsLeafNode();
-    setIsEndNode();
     MRCPP_INIT_OMP_LOCK();
 }
 
@@ -96,8 +93,6 @@ MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
     clearNorms();
     clearIsAllocated();
     clearHasCoefs();
-    setIsLeafNode();
-    setIsEndNode();
     MRCPP_INIT_OMP_LOCK();
 }
 
@@ -928,8 +923,8 @@ template <int D> bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
 template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
     std::string flags = "       ";
     o << getNodeIndex();
-    if (isRootNode()) { flags[0] = 'R'; }
-    if (isEndNode()) { flags[1] = 'E'; }
+    if (isRootNode()) flags[0] = 'R';
+    if (isEndNode()) flags[1] = 'E';
     if (isBranchNode()) {
         flags[2] = 'B';
     } else {
@@ -940,14 +935,13 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
     } else {
         flags[3] = 'P';
     }
-    if (isAllocated()) { flags[4] = 'A'; }
-    if (hasCoefs()) { flags[5] = 'C'; }
+    if (isAllocated()) flags[4] = 'A';
+    if (hasCoefs()) flags[5] = 'C';
     o << " " << flags;
-    o << " sqNorm=" << this->squareNorm;
-    if (hasCoefs()) {
-        o << " Coefs={";
-        o << getCoefs()[0] << ", " << getCoefs()[getNCoefs() - 1] << "}";
-    }
+    o << " Norms (sq, s, w) = (";
+    o << std::setw(12) << std::setprecision(4) << getSquareNorm() << ",";
+    o << std::setw(12) << std::setprecision(4) << getScalingNorm() << ",";
+    o << std::setw(12) << std::setprecision(4) << getWaveletNorm() << ")";
     return o;
 }
 

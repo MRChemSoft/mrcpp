@@ -32,6 +32,7 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
 
 namespace mrcpp {
 
@@ -76,9 +77,9 @@ public:
     const int &operator[](int d) const { return this->L[d]; }
 
     std::ostream &print(std::ostream &o) const {
-        o << "[ " << this->N << " | ";
-        for (int d = 0; d < D - 1; d++) o << this->L[d] << ", ";
-        o << this->L[D - 1] << "]";
+        o << "[ " << std::setw(3) << this->N << " | ";
+        for (int d = 0; d < D - 1; d++) o << std::setw(4) << this->L[d] << ", ";
+        o << std::setw(4) << this->L[D - 1] << "]";
         return o;
     }
 

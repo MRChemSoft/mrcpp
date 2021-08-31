@@ -47,6 +47,8 @@ public:
     void genParent() override;
     void deleteChildren() override;
 
+    double integrate() const;
+
     void setValues(const Eigen::VectorXd &vec);
     void getValues(Eigen::VectorXd &vec);
     void getAbsCoefs(double *absCoefs);
@@ -73,7 +75,6 @@ protected:
     void dealloc() override;
     void reCompress() override;
 
-    double integrate() const;
     double integrateLegendre() const;
     double integrateInterpolating() const;
 };

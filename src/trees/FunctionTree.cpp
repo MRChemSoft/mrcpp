@@ -104,24 +104,6 @@ template <int D> FunctionTree<D>::~FunctionTree() {
     this->deleteRootNodes();
 }
 
-/** @brief Remove all nodes in the tree
- *
- * @details Leaves the tree inn the same state as after construction, i.e.
- * undefined function containing only root nodes without coefficients.
- * The assigned memory (nodeChunks in SerialTree) is NOT released,
- * but is immediately available to the new function.
- */
-template <int D> void FunctionTree<D>::clear() {
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
-        root.deleteChildren();
-        root.clearHasCoefs();
-        root.clearNorms();
-    }
-    this->resetEndNodeTable();
-    this->clearSquareNorm();
-}
-
 /** @brief Write the tree structure to disk, for later use
  * @param[in] file: File name, will get ".tree" extension
  */
@@ -497,7 +479,7 @@ template <int D> void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
-template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) {
+template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) const {
     o << std::endl << "*FunctionTree: " << this->name << std::endl;
     o << "  genNodes: " << getNGenNodes() << std::endl;
     return MWTree<D>::print(o);

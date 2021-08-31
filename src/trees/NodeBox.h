@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- *
- *  \date May 24, 2014
- *  \author Stig Rune Jensen <stig.r.jensen@uit.no> \n
- *          CTCC, University of Tromsø
- *
- */
-
 #pragma once
 
 #include "BoundingBox.h"
@@ -50,12 +41,12 @@ public:
     void setNode(int idx, MWNode<D> **node);
     void clearNode(int idx) { this->nodes[idx] = nullptr; }
 
-    MWNode<D> &getNode(const NodeIndex<D> &idx);
-    MWNode<D> &getNode(const Coord<D> &r);
+    MWNode<D> &getNode(NodeIndex<D> idx);
+    MWNode<D> &getNode(Coord<D> r);
     MWNode<D> &getNode(int i = 0);
 
-    const MWNode<D> &getNode(const NodeIndex<D> &idx) const;
-    const MWNode<D> &getNode(const Coord<D> &r) const;
+    const MWNode<D> &getNode(NodeIndex<D> idx) const;
+    const MWNode<D> &getNode(Coord<D> r) const;
     const MWNode<D> &getNode(int i = 0) const;
 
     int getNOccupied() const { return this->nOccupied; }

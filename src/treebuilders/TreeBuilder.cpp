@@ -55,7 +55,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
         calc_t.stop();
 
         norm_t.resume();
-        if (iter == 0) { sNorm = calcScalingNorm(*workVec); }
+        if (iter == 0) sNorm = calcScalingNorm(*workVec);
         wNorm += calcWaveletNorm(*workVec);
 
         if (sNorm < 0.0 or wNorm < 0.0) {
@@ -152,7 +152,7 @@ template <int D> double TreeBuilder<D>::calcScalingNorm(const MWNodeVector<D> &v
     double sNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
         const MWNode<D> &node = *vec[i];
-        sNorm += node.getScalingNorm();
+        if (node.getDepth() >= 0) sNorm += node.getScalingNorm();
     }
     return sNorm;
 }
@@ -161,7 +161,7 @@ template <int D> double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector<D> &v
     double wNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
         const MWNode<D> &node = *vec[i];
-        wNorm += node.getWaveletNorm();
+        if (node.getDepth() >= 0) wNorm += node.getWaveletNorm();
     }
     return wNorm;
 }

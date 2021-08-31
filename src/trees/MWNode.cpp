@@ -58,10 +58,23 @@ MWNode<D>::MWNode()
 }
 
 template <int D>
-MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
-        : tree(&tree)
+MWNode<D>::MWNode(MWTree<D> *tree, const NodeIndex<D> &idx)
+        : tree(tree)
         , parent(nullptr)
-        , nodeIndex(tree.getRootBox().getNodeIndex(rIdx))
+        , nodeIndex(idx)
+        , hilbertPath() {
+    for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
+    clearNorms();
+    clearIsAllocated();
+    clearHasCoefs();
+    MRCPP_INIT_OMP_LOCK();
+}
+
+template <int D>
+MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
+        : tree(tree)
+        , parent(nullptr)
+        , nodeIndex(tree->getRootBox().getNodeIndex(rIdx))
         , hilbertPath() {
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     clearNorms();
@@ -74,11 +87,11 @@ MWNode<D>::MWNode(MWTree<D> &tree, int rIdx)
 }
 
 template <int D>
-MWNode<D>::MWNode(MWNode<D> &parent, int cIdx)
-        : tree(parent.tree)
-        , parent(&parent)
-        , nodeIndex(parent.getNodeIndex().child(cIdx))
-        , hilbertPath(parent.getHilbertPath(), cIdx) {
+MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
+        : tree(parent->tree)
+        , parent(parent)
+        , nodeIndex(parent->getNodeIndex().child(cIdx))
+        , hilbertPath(parent->getHilbertPath(), cIdx) {
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     clearNorms();
     clearIsAllocated();
@@ -157,8 +170,8 @@ template <int D> void MWNode<D>::printCoefs() const {
     println(0, "\nMW coefs");
     int kp1_d = this->getKp1_d();
     for (int i = 0; i < this->n_coefs; i++) {
-        println(0, this->coefs[i]);
         if (i % kp1_d == 0) println(0, "\n");
+        println(0, this->coefs[i]);
     }
 }
 
@@ -218,6 +231,44 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     }
 }
 
+template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
+
+    MWNode<D> node_i = *this;
+
+    node_i.mwTransform(Reconstruction);
+
+    int kp1_d = this->getKp1_d();
+    int nChildren = this->getTDim();
+
+    if (this->children[cIdx] == nullptr) MSG_ABORT("Child does not exist!");
+    MWNode<D> &child = getMWChild(cIdx);
+    if (overwrite) {
+        child.setCoefBlock(0, kp1_d, &node_i.getCoefs()[cIdx * kp1_d]);
+    } else {
+        child.addCoefBlock(0, kp1_d, &node_i.getCoefs()[cIdx * kp1_d]);
+    }
+    child.setHasCoefs();
+    child.calcNorms();
+}
+
+/** Takes a MWParent and generates coefficients, reverse operation from
+ * giveChildrenCoefs */
+template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
+    MWNode<D> node = *this;
+    MWNode<D> &parent = getMWParent();
+    int kp1_d = this->getKp1_d();
+    if (node.getScale() == 0) {
+        NodeBox<D> &box = this->getMWTree().getRootBox();
+        auto reverse = getTDim() - 1;
+        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
+    } else {
+        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &node.getCoefs()[0]); }
+    }
+    parent.mwTransform(Compression);
+    parent.setHasCoefs();
+    parent.calcNorms();
+}
+
 /** Takes the scaling coefficients of the children and stores them consecutively
  * in the  given vector. */
 template <int D> void MWNode<D>::copyCoefsFromChildren() {
@@ -271,7 +322,7 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
         out_vec = tmp;
     }
 
-    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactor();
+    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactors();
     double sf_prod = 1.0;
     for (const auto &s : sf) sf_prod *= s;
     if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
@@ -500,6 +551,10 @@ template <int D> void MWNode<D>::genChildren() {
     NOT_REACHED_ABORT;
 }
 
+template <int D> void MWNode<D>::genParent() {
+    NOT_REACHED_ABORT;
+}
+
 /** Recursive deallocation of children and all their descendants.
  * Leaves node as LeafNode and children[] as null pointer. */
 template <int D> void MWNode<D>::deleteChildren() {
@@ -514,6 +569,16 @@ template <int D> void MWNode<D>::deleteChildren() {
     }
     this->childSerialIx = -1;
     this->setIsLeafNode();
+}
+
+/** Recursive deallocation of parent and all their forefathers. */
+template <int D> void MWNode<D>::deleteParent() {
+    if (this->parent == nullptr) return;
+    MWNode<D> &parent = getMWParent();
+    parent.deleteParent();
+    parent.dealloc();
+    this->parentSerialIx = -1;
+    this->parent = nullptr;
 }
 
 template <int D> void MWNode<D>::deleteGenerated() {
@@ -537,7 +602,7 @@ template <int D> void MWNode<D>::getCenter(double *r) const {
 }
 
 template <int D> void MWNode<D>::getBounds(double *lb, double *ub) const {
-    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactor();
+    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactors();
     int n = getScale();
     double p = std::pow(2.0, -n);
     const NodeIndex<D> &l = getNodeIndex();
@@ -766,11 +831,30 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
         assert(getNodeIndex() == idx);
         return this;
     }
+
     assert(isAncestor(idx));
     threadSafeGenChildren();
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNode(idx);
+}
+
+/** Node retriever that ALWAYS returns the requested node.
+ *
+ * WARNING: This routine is NOT thread safe! Must be used within omp critical.
+ *
+ * Recursive routine to find and return the node with a given NodeIndex. This
+ * routine always returns the appropriate node, and will generate nodes that
+ * does not exist. Recursion starts at this node and ASSUMES the requested
+ * node is in fact related to this node. */
+template <int D> MWNode<D> *MWNode<D>::retrieveParent(const NodeIndex<D> &idx) {
+    if (getScale() < idx.getScale()) MSG_ABORT("Scale error")
+    if (getScale() == idx.getScale()) return this;
+    if (this->parent == nullptr) {
+        genParent();
+        giveParentCoefs();
+    }
+    return this->parent->retrieveParent(idx);
 }
 
 /** Gives the norm (absolute value) of the node at the given NodeIndex.

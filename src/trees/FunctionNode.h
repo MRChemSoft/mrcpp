@@ -27,8 +27,8 @@
 
 #include <Eigen/Core>
 
-#include "MWNode.h"
 #include "FunctionTree.h"
+#include "MWNode.h"
 
 namespace mrcpp {
 
@@ -44,6 +44,7 @@ public:
 
     void createChildren(bool coefs) override;
     void genChildren() override;
+    void genParent() override;
     void deleteChildren() override;
 
     void setValues(const Eigen::VectorXd &vec);
@@ -54,9 +55,14 @@ public:
     friend class NodeAllocator<D>;
 
 protected:
-    FunctionNode() : MWNode<D>() {}
-    FunctionNode(MWTree<D> &tree, int rIdx) : MWNode<D>(tree, rIdx) {}
-    FunctionNode(MWNode<D> &parent, int cIdx) : MWNode<D>(parent, cIdx) {}
+    FunctionNode()
+            : MWNode<D>() {}
+    FunctionNode(MWTree<D> *tree, int rIdx)
+            : MWNode<D>(tree, rIdx) {}
+    FunctionNode(MWNode<D> *parent, int cIdx)
+            : MWNode<D>(parent, cIdx) {}
+    FunctionNode(MWTree<D> *tree, const NodeIndex<D> &idx)
+            : MWNode<D>(tree, idx) {}
     FunctionNode(const FunctionNode<D> &node) = delete;
     FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
     ~FunctionNode() = default;

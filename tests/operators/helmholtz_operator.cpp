@@ -202,23 +202,65 @@ TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [he
     double apply_prec = 3.0e-2;
     double build_prec = 3.0e-3;
 
-    // 2.0*pi periodic in all dirs
-    auto scaling_factor = std::array<double, 3>{2.0 * pi, 2.0 * pi, 2.0 * pi};
-    auto periodic = true;
-    BoundingBox<3> box(scaling_factor, periodic);
+    // 2.0*pi periodic in all dirs // UPDATE ME
+    auto scaling_factor = std::array<double, 3>{pi, pi, pi};
+    auto corner = std::array<int, 3>{-1, -1, -1};
+    auto boxes = std::array<int, 3>{2, 2, 2};
+    auto world = mrcpp::BoundingBox<3>(0, corner, boxes, scaling_factor, true);
     int order = 5;
 
     InterpolatingBasis basis(order);
-    MultiResolutionAnalysis<3> MRA(box, basis, 25);
+    MultiResolutionAnalysis<3> MRA(world, basis, 25);
+    MRA.setPeriodicOperatorReach(10);
+    MRA.setPeriodicOperatorCutOff(9);
 
     auto mu = 4.3;
     HelmholtzOperator H(MRA, mu, build_prec);
 
     // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
-    auto source = [mu](const mrcpp::Coord<3> &r) {
-        return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) +
-               mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi);
-    };
+    auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
+
+    FunctionTree<3> source_tree(MRA);
+    project<3>(proj_prec, source_tree, source);
+
+    FunctionTree<3> sol_tree(MRA);
+    FunctionTree<3> in_tree(MRA);
+    FunctionTree<3> out_tree(MRA);
+    FunctionTree<3> in_out_tree(MRA);
+
+    apply(apply_prec, sol_tree, H, source_tree);
+    apply_near_field(apply_prec, in_tree, H, source_tree);
+    apply_far_field(apply_prec, out_tree, H, source_tree);
+
+    add(apply_prec, in_out_tree, 1.0, in_tree, 1.0, out_tree);
+
+    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(in_out_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
+    REQUIRE(in_out_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+}
+
+TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz], [helmholtz_operator], [mw_operator]. [negative_scale]") {
+    double proj_prec = 3.0e-3;
+    double apply_prec = 3.0e-2;
+    double build_prec = 3.0e-3;
+
+    // 2.0*pi periodic in all dirs // UPDATE ME
+    auto scaling_factor = std::array<double, 3>{pi, pi, pi};
+    auto corner = std::array<int, 3>{-1, -1, -1};
+    auto boxes = std::array<int, 3>{2, 2, 2};
+    auto world = mrcpp::BoundingBox<3>(0, corner, boxes, scaling_factor, true);
+    int order = 5;
+
+    InterpolatingBasis basis(order);
+    MultiResolutionAnalysis<3> MRA(world, basis, 25);
+    MRA.setOperatorScale(-4);
+
+    auto mu = 4.3;
+    HelmholtzOperator H(MRA, mu, build_prec);
+
+    // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
+    auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
 
     FunctionTree<3> source_tree(MRA);
     project<3>(proj_prec, source_tree, source);

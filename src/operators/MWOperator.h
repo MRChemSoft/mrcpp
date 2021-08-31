@@ -53,6 +53,9 @@ public:
     OperatorTree &getComponent(int i);
     const OperatorTree &getComponent(int i) const;
 
+    int getRootScale() const { return this->oper_mra.getRootScale(); }
+    int getOperatorScale() const { return this->oper_mra.getOperatorScale(); }
+
     OperatorTree *operator[](int i) { return this->oper_exp[i]; }
     const OperatorTree *operator[](int i) const { return this->oper_exp[i]; }
 

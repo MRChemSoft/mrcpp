@@ -61,13 +61,21 @@ public:
     const BoundingBox<D> &getWorldBox() const { return this->world; }
 
     void setPeriodicOperatorReach(int reach) { this->periodic_operator_reach = reach; }
-    int getPeriodicOperatorReach() { return this->periodic_operator_reach; }
+    int getPeriodicOperatorReach() const { return this->periodic_operator_reach; }
+
+    void setPeriodicOperatorCutOff(int periodic_cut_off) { this->periodic_cut_off = periodic_cut_off; }
+    int getPeriodicOperatorCutOff() const { return this->periodic_cut_off; }
+
+    void setOperatorScale(int scale) { this->operator_scale = scale; }
+    int getOperatorScale() const { return this->operator_scale; }
 
     void setStds(double stds) { this->n_gauss_stds = stds; }
     double getStds() { return this->n_gauss_stds; }
 
     MultiResolutionAnalysis<1> getKernelMRA() const;
     MultiResolutionAnalysis<2> getOperatorMRA() const;
+
+    int getRootScale() const { return this->world.getScale(); }
 
     bool operator==(const MultiResolutionAnalysis<D> &mra) const;
     bool operator!=(const MultiResolutionAnalysis<D> &mra) const;
@@ -78,7 +86,9 @@ protected:
     const int maxDepth;
     const ScalingBasis basis;
     const BoundingBox<D> world;
-    int periodic_operator_reach{10};
+    int periodic_operator_reach{2};
+    int periodic_cut_off{1};
+    int operator_scale{0};
     double n_gauss_stds{4};
     MWFilter *filter;
 

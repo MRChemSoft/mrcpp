@@ -48,9 +48,12 @@ public:
     friend class NodeAllocator<2>;
 
 protected:
-    OperatorNode() : MWNode<2>() {};
-    OperatorNode(MWTree<2> &tree, int rIdx) : MWNode<2>(tree, rIdx) {};
-    OperatorNode(MWNode<2> &parent, int cIdx) : MWNode<2>(parent, cIdx) {};
+    OperatorNode()
+            : MWNode<2>(){};
+    OperatorNode(MWTree<2> *tree, int rIdx)
+            : MWNode<2>(tree, rIdx){};
+    OperatorNode(MWNode<2> *parent, int cIdx)
+            : MWNode<2>(parent, cIdx){};
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
     ~OperatorNode() = default;

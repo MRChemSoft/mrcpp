@@ -87,7 +87,7 @@ void OperatorNode::createChildren(bool coefs) {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) OperatorNode(*this, cIdx);
+        new (child_p) OperatorNode(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;

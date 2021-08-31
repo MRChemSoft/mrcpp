@@ -42,7 +42,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-
 /** Function evaluation.
  * Evaluate all polynomials defined on the node. */
 template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
@@ -50,9 +49,7 @@ template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
 
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
-    if (this->getMWTree().getRootBox().isPeriodic()) {
-        periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic());
-    }
+    if (this->getMWTree().getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic()); }
 
     this->threadSafeGenChildren();
     int cIdx = this->getChildIndex(r);
@@ -216,7 +213,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(*this, cIdx);
+        new (child_p) FunctionNode<D>(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;
@@ -254,11 +251,11 @@ template <int D> void FunctionNode<D>::genChildren() {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(*this, cIdx);
+        new (child_p) FunctionNode<D>(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;
-        child_p->parentSerialIx = (this->isGenNode()) ? this->serialIx: -1;
+        child_p->parentSerialIx = (this->isGenNode()) ? this->serialIx : -1;
         child_p->childSerialIx = -1;
 
         child_p->n_coefs = n_coefs;
@@ -274,6 +271,38 @@ template <int D> void FunctionNode<D>::genChildren() {
         coefs_p += n_coefs;
     }
     this->setIsBranchNode();
+}
+
+template <int D> void FunctionNode<D>::genParent() {
+    if (this->parent != nullptr) MSG_ABORT("Node is not an orphan");
+
+    auto &allocator = this->getFuncTree().getNodeAllocator();
+    int sIdx = allocator.alloc(1, true);
+
+    auto n_coefs = allocator.getNCoefs();
+    auto *coefs_p = allocator.getCoef_p(sIdx);
+    auto *parent_p = allocator.getNode_p(sIdx);
+
+    this->parentSerialIx = sIdx;
+
+    // construct into allocator memory
+    new (parent_p) FunctionNode<D>(this->tree, this->getNodeIndex().parent());
+
+    this->parent = parent_p;
+
+    for (int cIdx = 0; cIdx < this->getTDim(); cIdx++) parent_p->children[cIdx] = this;
+    parent_p->serialIx = sIdx;
+    parent_p->parentSerialIx = -1;
+    parent_p->childSerialIx = this->serialIx;
+
+    parent_p->n_coefs = n_coefs;
+    parent_p->coefs = coefs_p;
+
+    parent_p->setIsBranchNode();
+    parent_p->setIsAllocated();
+    parent_p->clearHasCoefs();
+
+    this->getMWTree().incrementNodeCount(parent_p->getScale());
 }
 
 template <int D> void FunctionNode<D>::deleteChildren() {
@@ -303,7 +332,10 @@ template <int D> void FunctionNode<D>::reCompress() {
 }
 
 template <> void FunctionNode<3>::reCompress() {
-    if (this->isBranchNode()) {
+    if (this->getDepth() < 0) {
+        // This happens for negative scale pbc operators
+        MWNode<3>::reCompress();
+    } else if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
         // can write directly from children coeff into parent coeff
         int stride = this->getMWChild(0).getNCoefs();

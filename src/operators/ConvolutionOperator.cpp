@@ -64,7 +64,7 @@ template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &g
         Gaussian<1> &k_func = *greens_kernel[i];
         auto *k_tree = new FunctionTree<1>(this->kern_mra);
         mrcpp::build_grid(*k_tree, k_func);               // Generate empty grid to hold narrow Gaussian
-        mrcpp::project(this->prec / 10, *k_tree, k_func); // Project Gaussian starting from the empty grid
+        mrcpp::project(this->prec / 100.0, *k_tree, k_func); // Project Gaussian starting from the empty grid
         CrossCorrelationCalculator calculator(*k_tree);
 
         auto *o_tree = new OperatorTree(this->oper_mra, this->prec);
@@ -87,8 +87,7 @@ template <int D> void ConvolutionOperator<D>::clearKernel() {
     mrcpp::clear(this->kern_exp, true);
 }
 
-template <int D>
-double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
+template <int D> double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
     int maxScale = MRA.getMaxScale();
     return std::sqrt(epsilon * std::pow(2.0, -maxScale));
 }
@@ -96,7 +95,14 @@ double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> 
 template <int D> double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
     const Coord<D> &lb = MRA.getWorldBox().getLowerBounds();
     const Coord<D> &ub = MRA.getWorldBox().getUpperBounds();
-    return math_utils::calc_distance<D>(lb, ub);
+    auto max_distance = math_utils::calc_distance<D>(lb, ub);
+    if (MRA.getWorldBox().isPeriodic()) {
+        auto period = MRA.getWorldBox().getScalingFactors();
+        max_distance *= std::pow(2.0, -MRA.getOperatorScale());
+        if (MRA.getOperatorScale() < 0) max_distance *= 2.0;
+        if (MRA.getOperatorScale() == 0) max_distance *= 2.0 * MRA.getPeriodicOperatorReach() + 1.0;
+    }
+    return max_distance;
 }
 
 template class ConvolutionOperator<1>;

@@ -29,8 +29,10 @@
 #include "GaussExp.h"
 #include "Gaussian.h"
 #include "utils/Printer.h"
+#include "utils/math_utils.h"
 
 #include <memory>
+#include <numeric>
 
 namespace mrcpp {
 
@@ -45,10 +47,7 @@ namespace mrcpp {
  * integral is conserved with respect to the integration limits.
  *
  */
-template <int D>
-std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussian<D> &inp,
-                                                                    const std::array<double, D> &period,
-                                                                    double nStdDev) {
+template <int D> std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussian<D> &inp, const std::array<double, D> &period, double nStdDev) {
     auto gauss_exp = std::make_shared<GaussExp<D>>();
     auto pos_vec = std::vector<Coord<D>>();
 
@@ -81,23 +80,19 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussi
     for (auto d = 0; d < D; d++) { startpos[d] -= nr_cells_upp_and_down * period[d]; }
 
     auto tmp_pos = startpos;
-    for (auto x = 0; x < 2 * nr_cells_upp_and_down + 1; x++) {
-        if (D == 2 or D == 3) {
-            for (auto y = 0; y < 2 * nr_cells_upp_and_down + 1; y++) {
-                if (D == 3) {
-                    for (auto z = 0; z < 2 * nr_cells_upp_and_down + 1; z++) {
-                        pos_vec.push_back(tmp_pos);
-                        tmp_pos[2] += period[2];
-                    }
-                }
-                if (D == 2) pos_vec.push_back(tmp_pos);
-                if (D == 3) tmp_pos[2] = startpos[2];
-                tmp_pos[1] += period[1];
-            }
-        }
-        if (D == 1) pos_vec.push_back(tmp_pos);
-        if (D == 2 or D == 3) tmp_pos[1] = startpos[1];
-        tmp_pos[0] += period[0];
+    std::vector<double> v(2 * nr_cells_upp_and_down + 1);
+    std::iota(v.begin(), v.end(), 0.0);
+    auto cart = math_utils::cartesian_product(v, D);
+    for (auto &c : cart) {
+        for (auto i = 0; i < D; i++) c[i] *= period[i];
+    }
+    // Shift coordinates
+    for (auto &c : cart) std::transform(c.begin(), c.end(), tmp_pos.begin(), c.begin(), std::plus<double>());
+    // Go from vector to mrcpp::Coord
+    for (auto &c : cart) {
+        mrcpp::Coord<D> pos;
+        std::copy_n(c.begin(), D, pos.begin());
+        pos_vec.push_back(pos);
     }
 
     for (auto &pos : pos_vec) {
@@ -110,13 +105,7 @@ std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussi
     return gauss_exp;
 }
 
-template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(const Gaussian<1> &inp,
-                                                                                const std::array<double, 1> &period,
-                                                                                double nStdDev);
-template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(const Gaussian<2> &inp,
-                                                                                const std::array<double, 2> &period,
-                                                                                double nStdDev);
-template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(const Gaussian<3> &inp,
-                                                                                const std::array<double, 3> &period,
-                                                                                double nStdDev);
+template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(const Gaussian<1> &inp, const std::array<double, 1> &period, double nStdDev);
+template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(const Gaussian<2> &inp, const std::array<double, 2> &period, double nStdDev);
+template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(const Gaussian<3> &inp, const std::array<double, 3> &period, double nStdDev);
 } // namespace mrcpp

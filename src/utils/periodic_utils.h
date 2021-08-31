@@ -28,7 +28,8 @@
 #include "MRCPP/mrcpp_declarations.h"
 namespace mrcpp {
 namespace periodic {
-template <int D> void indx_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic);
+template <int D> bool in_unit_cell(NodeIndex<D> idx);
+template <int D> void index_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic);
 template <int D> void coord_manipulation(Coord<D> &r, const std::array<bool, D> &periodic);
 } // namespace periodic
 } // namespace mrcpp

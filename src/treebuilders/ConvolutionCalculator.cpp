@@ -31,6 +31,8 @@
 #include "trees/OperatorNode.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include "utils/math_utils.h"
+#include "utils/periodic_utils.h"
 #include "utils/tree_utils.h"
 
 #ifdef HAVE_BLAS
@@ -136,13 +138,17 @@ template <int D> void ConvolutionCalculator<D>::calcBandSizeFactor(MatrixXi &bs,
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */
-template <int D>
-MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
+template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     auto *band = new MWNodeVector<D>;
 
-    int depth = gNode.getDepth();
+    int o_depth = gNode.getScale() - this->oper->getRootScale();
+    int g_depth = gNode.getDepth();
+    int width = this->oper->getMaxBandWidth(o_depth);
+
     bool periodic = gNode.getMWTree().getMRA().getWorldBox().isPeriodic();
-    int width = this->oper->getMaxBandWidth(depth);
+    int cut_off = gNode.getMWTree().getMRA().getPeriodicOperatorCutOff();
+    int reach = gNode.getMWTree().getMRA().getPeriodicOperatorReach();
+
     if (width >= 0) {
         const NodeBox<D> &fWorld = this->fTree->getRootBox();
         const NodeIndex<D> &cIdx = fWorld.getCornerIndex();
@@ -156,10 +162,15 @@ MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, 
             sIdx[i] = gIdx[i] - width;
             eIdx[i] = gIdx[i] + width;
             // We need to consider the world borders
-            int nboxes = fWorld.size(i) * (1 << depth);
-            int c_i = cIdx[i] * (1 << depth);
-            if (sIdx[i] < c_i and !periodic) sIdx[i] = c_i;
-            if (eIdx[i] > c_i + nboxes - 1 and !periodic) eIdx[i] = c_i + nboxes - 1;
+            int nboxes = fWorld.size(i) * (1 << o_depth);
+            int c_i = cIdx[i] * (1 << o_depth);
+            if (not periodic) {
+                if (sIdx[i] < c_i) sIdx[i] = c_i;
+                if (eIdx[i] > c_i + nboxes - 1) eIdx[i] = c_i + nboxes - 1;
+            } else {
+                if (sIdx[i] < c_i * cut_off) sIdx[i] = c_i * cut_off;
+                if (eIdx[i] > (c_i + nboxes) * cut_off - 1) eIdx[i] = (c_i + nboxes) * cut_off - 1;
+            }
             nbox[i] = eIdx[i] - sIdx[i] + 1;
         }
 
@@ -169,12 +180,7 @@ MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const MWNode<D> &gNode, 
 }
 
 /** Recursively retrieve all reachable f-nodes within the bandwidth. */
-template <int D>
-void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
-                                            std::vector<NodeIndex<D>> &idx_band,
-                                            NodeIndex<D> &idx,
-                                            const int *nbox,
-                                            int dim) {
+template <int D> void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim) {
     int l_start = idx[dim];
     for (int j = 0; j < nbox[dim]; j++) {
         // Recurse until dim == 0
@@ -183,9 +189,34 @@ void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *band,
             idx[dim]++;
             continue;
         }
-        MWNode<D> &fNode = this->fTree->getNode(idx);
-        idx_band.push_back(idx);
-        band->push_back(&fNode);
+        if (not manipulateOperator) {
+            MWNode<D> &fNode = this->fTree->getNode(idx);
+            idx_band.push_back(idx);
+            band->push_back(&fNode);
+
+        } else {
+            const auto oper_scale = this->fTree->getMRA().getOperatorScale();
+            if (oper_scale == 0) {
+                if (periodic::in_unit_cell<D>(idx) and onUnitcell) {
+                    MWNode<D> &fNode = this->fTree->getNode(idx);
+                    idx_band.push_back(idx);
+                    band->push_back(&fNode);
+                }
+                if (not periodic::in_unit_cell<D>(idx) and not onUnitcell) {
+                    MWNode<D> &fNode = this->fTree->getNode(idx);
+                    idx_band.push_back(idx);
+                    band->push_back(&fNode);
+                }
+            } else if (oper_scale < 0) {
+                if (periodic::in_unit_cell<D>(idx) and onUnitcell) {
+                    MWNode<D> &fNode = this->fTree->getNode(idx);
+                    idx_band.push_back(idx);
+                    band->push_back(&fNode);
+                }
+                if (not onUnitcell) MSG_ABORT("Cannot do with negative operator scale");
+            } else
+                MSG_ABORT("Cannot manipulate operators with positive operator scale");
+        }
         idx[dim]++;
     }
     idx[dim] = l_start;
@@ -195,7 +226,8 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     auto &gNode = static_cast<FunctionNode<D> &>(node);
     gNode.zeroCoefs();
 
-    int depth = gNode.getDepth();
+    int o_depth = gNode.getScale() - this->oper->getRootScale();
+    if (manipulateOperator and this->oper->getRootScale() < 0) o_depth = gNode.getDepth();
     double tmpCoefs[gNode.getNCoefs()];
     OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
@@ -227,7 +259,7 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
             if (fNorm < MachineZero) { continue; }
             os.setFComponent(ft);
             for (int gt = 0; gt < this->nComp; gt++) {
-                if (depth == 0 or gt != 0 or ft != 0) {
+                if (o_depth == 0 or gt != 0 or ft != 0) {
                     os.setGComponent(gt);
                     applyOperComp(os);
                 }
@@ -244,14 +276,14 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
 
 /** Apply each component (term) of the operator expansion to a node in f */
 template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &os) {
-    int depth = os.gNode->getDepth();
     double fNorm = os.fNode->getComponentNorm(os.ft);
+    int o_depth = os.fNode->getScale() - this->oper->getRootScale();
     for (int i = 0; i < this->oper->size(); i++) {
         const OperatorTree &ot = *(*this->oper)[i];
         const BandWidth &bw = ot.getBandWidth();
-        if (os.getMaxDeltaL() > bw.getMaxWidth(depth)) { continue; }
+        if (os.getMaxDeltaL() > bw.getMaxWidth(o_depth)) { continue; }
         os.oTree = &ot;
-        os.fThreshold = getBandSizeFactor(i, depth, os) * fNorm;
+        os.fThreshold = getBandSizeFactor(i, o_depth, os) * fNorm;
         applyOperator(os);
     }
 }
@@ -264,7 +296,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &
     MWNode<D> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
     const NodeIndex<D> &gIdx = gNode.getNodeIndex();
-    int depth = gNode.getDepth();
+    int o_depth = gNode.getScale() - oTree.getRootScale();
 
     double oNorm = 1.0;
     double **oData = os.getOperData();
@@ -277,10 +309,10 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        int w = oTree.getBandWidth().getWidth(depth, idx);
+        int w = oTree.getBandWidth().getWidth(o_depth, idx);
         if (abs(oTransl) > w) { return; }
 
-        const OperatorNode &oNode = oTree.getNode(depth, oTransl);
+        const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);
         oNorm *= oNode.getComponentNorm(oIdx);
         oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
@@ -306,20 +338,7 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
             }
             const double *f = aux[i];
             double *g = const_cast<double *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor,
-                        CblasTrans,
-                        CblasNoTrans,
-                        os.kp1_dm1,
-                        os.kp1,
-                        os.kp1,
-                        1.0,
-                        f,
-                        os.kp1,
-                        oData[i],
-                        os.kp1,
-                        mult,
-                        g,
-                        os.kp1_dm1);
+            cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, os.kp1_dm1, os.kp1, os.kp1, 1.0, f, os.kp1, oData[i], os.kp1, mult, g, os.kp1_dm1);
         } else {
             // Identity operator in direction i
             Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
@@ -356,8 +375,25 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
 #endif
 }
 
+template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree) const {
+    if (not manipulateOperator) {
+        const auto oper_scale = tree.getMRA().getOperatorScale();
+        auto car_prod = math_utils::cartesian_product(std::vector<int>{-1, 0}, D);
+        for (auto i = -1; i > oper_scale - 1; i--) {
+            for (auto &a : car_prod) {
+                std::array<int, D> l;
+                std::copy_n(a.begin(), D, l.begin());
+                NodeIndex<D> idx(i, l);
+                tree.getNode(idx);
+                this->fTree->getNode(idx);
+            }
+        }
+    }
+}
+
 template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     auto *nodeVec = new MWNodeVector<D>;
+    touchParentNodes(tree);
     tree_utils::make_node_table(tree, *nodeVec);
     return nodeVec;
 }

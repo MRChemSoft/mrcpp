@@ -120,23 +120,24 @@ template <int D> bool Gaussian<D>::checkScreen(int n, const int *l) const {
 }
 
 template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-
+    if (isPeriodic()) return getPeriodicGaussExp().isVisibleAtScale(scale, nQuadPts);
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
         auto visibleScale = static_cast<int>(-std::floor(std::log2(nQuadPts * 0.5 * stdDeviation)));
 
-        if (scale < visibleScale) { return false; }
+        if (scale < visibleScale) return false;
     }
 
     return true;
 }
 
 template <int D> bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
+    if (isPeriodic()) return getPeriodicGaussExp().isZeroOnInterval(a, b);
     for (int i = 0; i < D; i++) {
         double stdDeviation = std::pow(2.0 * this->alpha[i], -0.5);
         double gaussBoxMin = this->pos[i] - 5.0 * stdDeviation;
         double gaussBoxMax = this->pos[i] + 5.0 * stdDeviation;
-        if (a[i] > gaussBoxMax or b[i] < gaussBoxMin) { return true; }
+        if (a[i] > gaussBoxMax or b[i] < gaussBoxMin) return true;
     }
     return false;
 }

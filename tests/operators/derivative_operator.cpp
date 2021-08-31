@@ -64,9 +64,14 @@ template <int D> MultiResolutionAnalysis<D> *initializeMRA() {
 template <int D> MultiResolutionAnalysis<D> *initializePeriodicMRA() {
     // Constructing world box
     std::array<double, D> scaling_factor;
-    scaling_factor.fill(2.0 * pi);
-    auto periodic = true;
-    BoundingBox<D> world(scaling_factor, periodic);
+    std::array<int, D> corner;
+    std::array<int, D> boxes;
+
+    scaling_factor.fill(pi);
+    corner.fill(-1);
+    boxes.fill(2);
+
+    auto world = mrcpp::BoundingBox<D>(0, corner, boxes, scaling_factor, true);
 
     // Constructing scaling basis
     int order = 5;
@@ -132,8 +137,7 @@ template <int D> void testDifferentiationPH(int order) {
     };
     auto df = [r_0, order](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
-        return -(2 - order) * 2 * std::exp(-R * R) * (r[0] - pi) +
-               (order - 1) * (-2 * std::exp(-R * R) + 4 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]));
+        return -(2 - order) * 2 * std::exp(-R * R) * (r[0] - pi) + (order - 1) * (-2 * std::exp(-R * R) + 4 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]));
         // 2-order = 1 and order-1 = 0 in the first order case
         // 2-order = 0 and order-1 = 1 in the second order case
     };
@@ -161,8 +165,10 @@ template <int D> void testDifferentiationPH(int order) {
 
 template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     MultiResolutionAnalysis<D> *mra = initializePeriodicMRA<D>();
+    Printer::init(0);
+    (*mra).print();
 
-    double prec = 1.0e-3;
+    double prec = 1.0e-6;
     ABGVOperator<D> diff(*mra, a, b);
 
     auto g_func = [](const mrcpp::Coord<D> &r) { return cos(r[0]) * cos(r[1]) * cos(r[2]); };
@@ -175,6 +181,8 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
+    std::cout << "dg_tree " << dg_tree.evalf({12.0, 0.0, 0.0}) << "\n";
+    std::cout << "dg_func " << dg_func({12.0, 0.0, 0.0}) << "\n";
 
     REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
     REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
@@ -187,7 +195,7 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
 template <int D> void testDifferentiationPeriodicPH(int order) {
     MultiResolutionAnalysis<D> *mra = initializePeriodicMRA<D>();
 
-    double prec = 1.0e-3;
+    double prec = 1.0e-6;
     PHOperator<D> diff(*mra, order);
 
     auto g_func = [](const mrcpp::Coord<D> &r) { return cos(r[0]) * cos(r[1]) * cos(r[2]); };
@@ -230,8 +238,7 @@ template <int D> void testDifferentiationBS(int order) {
 
         if (order == 1) return -2.0 * std::exp(-R * R) * (r[0] - pi);
         if (order == 2) return -2.0 * std::exp(-R * R) + 4.0 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]);
-        return 12.0 * std::exp(-R * R) * (r[0] - r_0[0]) -
-               8.0 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]) * (r[0] - r_0[0]);
+        return 12.0 * std::exp(-R * R) * (r[0] - r_0[0]) - 8.0 * std::exp(-R * R) * (r[0] - r_0[0]) * (r[0] - r_0[0]) * (r[0] - r_0[0]);
     };
 
     FunctionTree<D> f_tree(*mra);
@@ -281,14 +288,12 @@ TEST_CASE("PH differentiantion second order", "[derivative_operator], [PH_second
     SECTION("3D second order derivative test") { testDifferentiationPH<3>(2); }
 }
 
-TEST_CASE("Periodic ABGV differentiantion central difference",
-          "[periodic_derivative],[derivative_operator], [central_difference], [ABGV_periodic]") {
+TEST_CASE("Periodic ABGV differentiantion central difference", "[periodic_derivative],[derivative_operator], [central_difference], [ABGV_periodic]") {
     // 0.5,0.5 specifies central difference
     SECTION("3D periodic derivative test") { testDifferentiationPeriodicABGV<3>(0.5, 0.5); }
 }
 
 TEST_CASE("Periodic PH differentiantion", "[periodic_derivative], [derivative_operator], [PH_periodic]") {
-    // 0.5,0.5 specifies central difference
     SECTION("3D first order periodic derivative test") { testDifferentiationPeriodicPH<3>(1); }
     SECTION("3D first order periodic derivative test") { testDifferentiationPeriodicPH<3>(2); }
 }

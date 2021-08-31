@@ -42,7 +42,7 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, doub
         : ConvolutionOperator<3>(mra, pr)
         , mu(m) {
     int oldlevel = Printer::setPrintLevel(0);
-    double epsilon = this->prec / 10.0;
+    double epsilon = this->prec / 100.0;
     double r_min = calcMinDistance(mra, epsilon);
     double r_max = calcMaxDistance(mra);
     HelmholtzKernel helmholtz_kernel(this->mu, epsilon, r_min, r_max);

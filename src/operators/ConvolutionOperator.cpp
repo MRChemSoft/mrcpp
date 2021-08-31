@@ -64,7 +64,7 @@ template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &g
         Gaussian<1> &k_func = *greens_kernel[i];
         auto *k_tree = new FunctionTree<1>(this->kern_mra);
         mrcpp::build_grid(*k_tree, k_func);               // Generate empty grid to hold narrow Gaussian
-        mrcpp::project(this->prec / 10, *k_tree, k_func); // Project Gaussian starting from the empty grid
+        mrcpp::project(this->prec / 100.0, *k_tree, k_func); // Project Gaussian starting from the empty grid
         CrossCorrelationCalculator calculator(*k_tree);
 
         auto *o_tree = new OperatorTree(this->oper_mra, this->prec);

@@ -37,7 +37,7 @@
 
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
-#include "trees/HilbertIterator.h"
+#include "trees/TreeIterator.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -297,7 +297,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
 
     MWNodeVector<D> nodeTable;
-    HilbertIterator<D> it(&bra);
+    TreeIterator<D> it(bra);
     it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();

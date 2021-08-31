@@ -32,7 +32,6 @@
 #include "grid.h"
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
-#include "trees/HilbertIterator.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include <Eigen/Core>

@@ -23,9 +23,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTreeVector.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/HilbertIterator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/HilbertPath.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/LebesgueIterator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/MWNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/MWTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/MultiResolutionAnalysis.h

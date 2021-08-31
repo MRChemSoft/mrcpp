@@ -30,7 +30,9 @@
  */
 
 #include "MWTree.h"
-#include "HilbertIterator.h"
+
+#include "MWNode.h"
+#include "TreeIterator.h"
 #include "MultiResolutionAnalysis.h"
 #include "NodeAllocator.h"
 #include "utils/Printer.h"
@@ -152,7 +154,7 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
  * @details Keeps the node structure of the tree, even though the zero function
  * is representable at depth zero. Use cropTree to remove unnecessary nodes.*/
 template <int D> void MWTree<D>::setZero() {
-    HilbertIterator<D> it(this);
+    TreeIterator<D> it(*this);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         node.zeroCoefs();
@@ -342,7 +344,7 @@ template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
 
 template <int D> void MWTree<D>::resetEndNodeTable() {
     clearEndNodeTable();
-    HilbertIterator<D> it(this);
+    TreeIterator<D> it(*this, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
@@ -357,7 +359,7 @@ template <int D> int MWTree<D>::countBranchNodes(int depth) {
 template <int D> int MWTree<D>::countLeafNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
     //    int nNodes = 0;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();
     //        if (node.getDepth() == depth or depth < 0) {
@@ -372,7 +374,7 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
 /** Traverse tree and count nodes belonging to this rank. */
 template <int D> int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    int count = 0;
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();
@@ -389,7 +391,7 @@ template <int D> int MWTree<D>::countNodes(int depth) {
 /** Traverse tree and count nodes with allocated coefficients. */
 template <int D> int MWTree<D>::countAllocNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    int count = 0;
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();

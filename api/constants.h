@@ -49,6 +49,7 @@ enum CV_Transform { Forward, Backward };
 enum MW_Transform { Compression, Reconstruction };
 enum XC_Type { XC_undefined, XC_lda, XC_gga };
 enum Traverse { TopDown, BottomUp };
+enum Iterator { Lebesgue, Hilbert };
 
 // Math constants
 const double pi = 3.1415926535897932384626433832795;

@@ -25,7 +25,7 @@
 
 #include "OperatorTree.h"
 #include "BandWidth.h"
-#include "LebesgueIterator.h"
+#include "TreeIterator.h"
 #include "NodeAllocator.h"
 #include "OperatorNode.h"
 #include "utils/Printer.h"
@@ -129,7 +129,7 @@ void OperatorTree::calcBandWidth(double prec) {
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);
-    LebesgueIterator<2> it(this);
+    TreeIterator<2> it(*this);
     while (it.next()) {
         int n = it.getNode().getDepth();
         const NodeIndex<2> &l = it.getNode().getNodeIndex();

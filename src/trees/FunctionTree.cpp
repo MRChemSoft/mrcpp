@@ -28,7 +28,6 @@
 #include <fstream>
 
 #include "FunctionNode.h"
-#include "HilbertIterator.h"
 #include "NodeAllocator.h"
 
 #include "utils/Printer.h"

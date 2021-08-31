@@ -33,9 +33,9 @@
 #include "Printer.h"
 #include "math_utils.h"
 
-#include "trees/HilbertIterator.h"
 #include "trees/MWNode.h"
 #include "trees/MWTree.h"
+#include "trees/TreeIterator.h"
 
 namespace mrcpp {
 
@@ -67,14 +67,14 @@ template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
  * Returns one nodeVector for the whole tree. GenNodes disregarded. */
 template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<D> &table) {
-    HilbertIterator<D> it(&tree);
+    TreeIterator<D> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.nextParent()) {
         MWNode<D> &node = it.getNode();
         if (node.getDepth() == 0) continue;
         table.push_back(&node);
     }
-    it.init(&tree);
+    it.init(tree);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         table.push_back(&node);
@@ -84,7 +84,7 @@ template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
  * Returns one nodeVector per scale. GenNodes disregarded. */
 template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table) {
-    HilbertIterator<D> it(&tree);
+    TreeIterator<D> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.nextParent()) {
         MWNode<D> &node = it.getNode();
@@ -94,7 +94,7 @@ template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<M
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
         table[depth].push_back(&node);
     }
-    it.init(&tree);
+    it.init(tree);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         int depth = node.getDepth() + tree.getNNegScales();

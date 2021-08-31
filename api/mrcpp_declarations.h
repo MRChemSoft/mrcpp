@@ -95,9 +95,6 @@ template <int D> class WaveletAdaptor;
 template <int D> class CopyAdaptor;
 
 template <int D> class TreeIterator;
-template <int D> class LebesgueIterator;
-template <int D> class HilbertIterator;
-template <int D> class HilbertPath;
 template <int D> class IteratorNode;
 
 class BandWidth;

@@ -29,14 +29,35 @@
 
 namespace mrcpp {
 
-template <int D>
-TreeIterator<D>::TreeIterator(int dir)
-        : mode(dir)
+template <int D> TreeIterator<D>::TreeIterator(int traverse, int iterator)
+        : root(0)
+        , nRoots(0)
+        , mode(traverse)
+        , type(iterator)
+        , maxDepth(-1)
         , state(nullptr)
         , initialState(nullptr) {}
 
+template <int D> TreeIterator<D>::TreeIterator(MWTree<D> &tree, int traverse, int iterator)
+        : root(0)
+        , nRoots(0)
+        , mode(traverse)
+        , type(iterator)
+        , maxDepth(-1)
+        , state(nullptr)
+        , initialState(nullptr) {
+    init(tree);
+}
+
 template <int D> TreeIterator<D>::~TreeIterator() {
     if (this->initialState != nullptr) delete this->initialState;
+}
+
+template<int D> int TreeIterator<D>::getChildIndex(int i) const {
+    const MWNode<D> &node = *this->state->node;
+    const HilbertPath<D> &h = node.getHilbertPath();
+    // Legesgue type returns i, Hilbert type returns Hilbert index
+    return (this->type == Hilbert) ? h.getZIndex(i) : i;
 }
 
 template <int D> bool TreeIterator<D>::next() {
@@ -76,11 +97,11 @@ template <int D> bool TreeIterator<D>::nextParent() {
     return nextParent();
 }
 
-template <int D> void TreeIterator<D>::init(MWTree<D> *tree) {
+template <int D> void TreeIterator<D>::init(MWTree<D> &tree) {
     this->root = 0;
     this->maxDepth = -1;
-    this->nRoots = tree->getRootBox().size();
-    this->state = new IteratorNode<D>(&tree->getRootBox().getNode(this->root));
+    this->nRoots = tree.getRootBox().size();
+    this->state = new IteratorNode<D>(&tree.getRootBox().getNode(this->root));
     // Save the first state so it can be properly deleted later
     this->initialState = this->state;
 }
@@ -142,8 +163,8 @@ template <int D> void TreeIterator<D>::removeState() {
     }
 }
 
-template <int D> void TreeIterator<D>::setDirection(int dir) {
-    switch (dir) {
+template <int D> void TreeIterator<D>::setTraverse(int traverse) {
+    switch (traverse) {
         case TopDown:
             this->mode = TopDown;
             break;
@@ -151,7 +172,21 @@ template <int D> void TreeIterator<D>::setDirection(int dir) {
             this->mode = BottomUp;
             break;
         default:
-            MSG_ABORT("Invalid recursive direction!");
+            MSG_ABORT("Invalid traverse direction!");
+            break;
+    }
+}
+
+template <int D> void TreeIterator<D>::setIterator(int iterator) {
+    switch (iterator) {
+        case Lebesgue:
+            this->type = Lebesgue;
+            break;
+        case Hilbert:
+            this->type = Hilbert;
+            break;
+        default:
+            MSG_ABORT("Invalid iterator type!");
             break;
     }
 }

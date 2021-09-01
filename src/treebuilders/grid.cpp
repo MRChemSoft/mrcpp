@@ -183,6 +183,12 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &in
     print::separator(10, ' ');
 }
 
+template <int D> void build_grid(FunctionTree<D> &out, std::vector<FunctionTree<D> *> &inp, int maxIter) {
+    FunctionTreeVector<D> inp_vec;
+    for (auto *t : inp) inp_vec.push_back({1.0, t});
+    build_grid(out, inp_vec, maxIter);
+}
+
 /** @brief Copy function from one tree onto the grid of another tree, fixed grid
  *
  * @param[out] out: Output function
@@ -312,6 +318,9 @@ template void build_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, int maxI
 template void build_grid<1>(FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
 template void build_grid<2>(FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void build_grid<3>(FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, std::vector<FunctionTree<1> *> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, std::vector<FunctionTree<2> *> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, std::vector<FunctionTree<3> *> &inp, int maxIter);
 template void copy_func<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
 template void copy_func<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
 template void copy_func<3>(FunctionTree<3> &out, FunctionTree<3> &inp);

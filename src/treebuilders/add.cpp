@@ -126,6 +126,12 @@ template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<
     print::separator(10, ' ');
 }
 
+template <int D> void add(double prec, FunctionTree<D> &out, std::vector<FunctionTree<D> *> &inp, int maxIter, bool absPrec) {
+    FunctionTreeVector<D> inp_vec;
+    for (auto &t : inp) inp_vec.push_back({1.0, t});
+    add(prec, out, inp_vec, maxIter, absPrec);
+}
+
 template void add<1>(double prec,
                      FunctionTree<1> &out,
                      double a,
@@ -151,8 +157,36 @@ template void add<3>(double prec,
                      int maxIter,
                      bool absPrec);
 
-template void add<1>(double prec, FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter, bool absPrec);
-template void add<2>(double prec, FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter, bool absPrec);
-template void add<3>(double prec, FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter, bool absPrec);
+template void add<1>(double prec,
+                     FunctionTree<1> &out,
+                     FunctionTreeVector<1> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<2>(double prec,
+                     FunctionTree<2> &out,
+                     FunctionTreeVector<2> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<3>(double prec,
+                     FunctionTree<3> &out,
+                     FunctionTreeVector<3> &inp,
+                     int maxIter,
+                     bool absPrec);
+
+template void add<1>(double prec,
+                     FunctionTree<1> &out,
+                     std::vector<FunctionTree<1> *> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<2>(double prec,
+                     FunctionTree<2> &out,
+                     std::vector<FunctionTree<2> *> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<3>(double prec,
+                     FunctionTree<3> &out,
+                     std::vector<FunctionTree<3> *> &inp,
+                     int maxIter,
+                     bool absPrec);
 
 } // namespace mrcpp

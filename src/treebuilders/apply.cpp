@@ -322,12 +322,12 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
  * @note The length of the output vector will be the template dimension D.
  *
  */
-template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
-    FunctionTreeVector<D> out;
+template <int D> std::vector<FunctionTree<D> *> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
+    std::vector<FunctionTree<D> *> out;
     for (int d = 0; d < D; d++) {
         auto *grad_d = new FunctionTree<D>(inp.getMRA());
         apply(*grad_d, oper, inp, d);
-        out.push_back(std::make_tuple(1.0, grad_d));
+        out.push_back(grad_d);
     }
     return out;
 }
@@ -366,6 +366,12 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
+template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D> *> &inp) {
+    FunctionTreeVector<D> inp_vec;
+    for (auto &t : inp) inp_vec.push_back({1.0, t});
+    divergence(out, oper, inp_vec);
+}
+
 template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
 template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
 template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
@@ -384,8 +390,11 @@ template void apply<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, Functi
 template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
 template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
 template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
-template FunctionTreeVector<1> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
-template FunctionTreeVector<2> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
-template FunctionTreeVector<3> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
+template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1> *> &inp);
+template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2> *> &inp);
+template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3> *> &inp);
+template std::vector<FunctionTree<1> *> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
+template std::vector<FunctionTree<2> *> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
+template std::vector<FunctionTree<3> *> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
 
 } // namespace mrcpp

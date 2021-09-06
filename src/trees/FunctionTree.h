@@ -53,7 +53,8 @@ namespace mrcpp {
 
 template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name) : FunctionTree(mra, nullptr, name) {}
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr, const std::string &name = "nn");
     FunctionTree(const FunctionTree<D> &tree) = delete;
     FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
     ~FunctionTree() override;

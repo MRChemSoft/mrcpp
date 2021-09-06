@@ -50,8 +50,8 @@ namespace mrcpp {
  *  shared memory window, otherwise it will be local to each MPI process.
  */
 template <int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem)
-        : MWTree<D>(mra)
+FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem, const std::string &name)
+        : MWTree<D>(mra, name)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
     int nodesPerChunk = 64;
     int coefsGenNodes = this->getKp1_d();

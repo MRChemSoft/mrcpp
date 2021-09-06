@@ -35,8 +35,8 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
-        : MWTree<2>(mra)
+OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name)
+        : MWTree<2>(mra, name)
         , normPrec(np)
         , bandWidth(nullptr)
         , nodePtrStore(nullptr)

@@ -38,7 +38,7 @@ namespace mrcpp {
 
 template <int D> class MWTree {
 public:
-    MWTree(const MultiResolutionAnalysis<D> &mra);
+    MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n);
     MWTree(const MWTree<D> &tree) = delete;
     MWTree<D> &operator=(const MWTree<D> &tree) = delete;
     virtual ~MWTree();

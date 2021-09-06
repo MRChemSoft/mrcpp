@@ -48,11 +48,11 @@ namespace mrcpp {
  * Creates an empty tree object. Node construction and assignment of most of
  * the parameters are done in derived classes. */
 template <int D>
-MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
+MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
         : MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
-        , name("nn")
+        , name(n)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);

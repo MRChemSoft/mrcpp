@@ -101,8 +101,7 @@ template <int D> double GaussFunc<D>::calcSquareNorm() {
         sq_norm *= std::sqrt(a);
         norm *= sq_norm;
     }
-    this->squareNorm = norm * this->coef * this->coef;
-    return this->squareNorm;
+    return norm * this->coef * this->coef;
 }
 
 template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
@@ -135,8 +134,6 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     this->setCoef(newCoef);
     this->setExp(newExp);
     this->setPow(newPow);
-    //	this->squareNorm = -1.0;
-    this->calcSquareNorm();
 }
 
 /** @brief Multiply two GaussFuncs

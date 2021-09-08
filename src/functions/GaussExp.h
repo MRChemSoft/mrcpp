@@ -97,11 +97,6 @@ public:
     const std::array<int, D> &getPow(int i) const { return this->funcs[i]->getPow(); }
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
-    double getSquareNorm() {
-        if (squareNorm < 0.0) calcSquareNorm();
-        return squareNorm;
-    }
-
     int size() const { return this->funcs.size(); }
     Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
     const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
@@ -131,7 +126,6 @@ protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
     double screening{0.0};
-    double squareNorm{-1.0};
 
     std::ostream &print(std::ostream &o) const;
 

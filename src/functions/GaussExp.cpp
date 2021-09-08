@@ -44,7 +44,6 @@ template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
 }
 
 template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
-    this->squareNorm = gexp.squareNorm;
     screening = gexp.screening;
     for (unsigned int i = 0; i < gexp.size(); i++) {
         Gaussian<D> *gauss = gexp.funcs[i]->copy();
@@ -54,8 +53,7 @@ template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
 
 template <int D>
 GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
-        : screening(0.0)
-        , squareNorm(-1.0) {
+        : screening(0.0) {
     std::array<int, D> pow;
     std::array<double, D> pos;
     auto alpha = gPoly.getExp();
@@ -93,7 +91,6 @@ template <int D> GaussExp<D>::~GaussExp() {
 
 template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
-    squareNorm = gexp.squareNorm;
     // screening = gexp.screening;
     this->funcs.clear();
     for (unsigned int i = 0; i < gexp.size(); i++) {
@@ -152,7 +149,6 @@ template <int D> void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double 
 template <int D> void GaussExp<D>::append(const Gaussian<D> &g) {
     Gaussian<D> *gp = g.copy();
     this->funcs.push_back(gp);
-    this->squareNorm = -1.0;
 }
 
 template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
@@ -160,7 +156,6 @@ template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
         Gaussian<D> *gp = g.getFunc(i).copy();
         this->funcs.push_back(gp);
     }
-    this->squareNorm = -1.0;
 }
 
 template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) {
@@ -183,8 +178,6 @@ template <int D> GaussExp<D> GaussExp<D>::add(GaussExp<D> &g) {
         sum.funcs[n] = g.funcs[i]->copy();
         n++;
     }
-
-    sum.calcSquareNorm();
 
     return sum;
 }
@@ -264,23 +257,19 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
 
 template <int D> GaussExp<D> GaussExp<D>::mult(double d) {
     GaussExp<D> prod = *this;
-
-    for (int i = 0; i < this->size(); i++) { prod.funcs[i]->multConstInPlace(d); }
-    prod.calcSquareNorm();
+    for (int i = 0; i < this->size(); i++) prod.funcs[i]->multConstInPlace(d);
     return prod;
 }
 
 template <int D> void GaussExp<D>::multInPlace(double d) {
-    for (int i = 0; i < this->size(); i++) { this->funcs[i]->multConstInPlace(d); }
-    //	this->squareNorm = -1.0;
-    this->calcSquareNorm();
+    for (int i = 0; i < this->size(); i++) this->funcs[i]->multConstInPlace(d);
 }
 
 template <int D> double GaussExp<D>::calcSquareNorm() {
     /* computing the squares */
     double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
-        double nc = this->funcs[i]->getSquareNorm();
+        double nc = this->funcs[i]->calcSquareNorm();
         norm += nc;
     }
     /* computing the double products */
@@ -297,17 +286,15 @@ template <int D> double GaussExp<D>::calcSquareNorm() {
             norm += 2.0 * overlap;
         }
     }
-    this->squareNorm = norm;
     return norm;
 }
 
 template <int D> void GaussExp<D>::normalize() {
-    double norm = std::sqrt(this->getSquareNorm());
+    double norm = std::sqrt(this->calcSquareNorm());
     for (int i = 0; i < this->size(); i++) {
         double coef = this->funcs[i]->getCoef();
         this->funcs[i]->setCoef(coef / norm);
     }
-    calcSquareNorm();
 }
 
 template <int D> void GaussExp<D>::calcScreening(double nStdDev) {

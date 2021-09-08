@@ -113,8 +113,7 @@ template <int D> double GaussPoly<D>::calcOverlap(GaussFunc<D> &b) {
 }
 
 template <int D> double GaussPoly<D>::calcSquareNorm() {
-    this->squareNorm = this->calcOverlap(*this);
-    return this->squareNorm;
+    return this->calcOverlap(*this);
 }
 
 template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
@@ -251,7 +250,6 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(double c) {
 template <int D> void GaussPoly<D>::setPow(int d, int pow) {
     if (poly[d] != nullptr) { delete poly[d]; }
     poly[d] = new Polynomial(pow);
-    this->squareNorm = -1.0;
 }
 
 template <int D> void GaussPoly<D>::setPow(const std::array<int, D> &pow) {
@@ -259,7 +257,6 @@ template <int D> void GaussPoly<D>::setPow(const std::array<int, D> &pow) {
         if (poly[d] != nullptr) { delete poly[d]; }
         poly[d] = new Polynomial(pow[d]);
     }
-    this->squareNorm = -1.0;
 }
 
 /** @brief Set polynomial in given dimension

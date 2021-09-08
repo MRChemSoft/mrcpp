@@ -47,8 +47,7 @@ Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r, const std::array<in
         : screen(false)
         , coef(c)
         , power(p)
-        , pos(r)
-        , squareNorm(-1.0) {
+        , pos(r) {
     this->alpha.fill(a);
 }
 
@@ -58,8 +57,7 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , coef(c)
         , power(p)
         , alpha(a)
-        , pos(r)
-        , squareNorm(-1.0) {}
+        , pos(r) {}
 
 template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 
@@ -80,7 +78,6 @@ template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const G
     }
     setExp(newAlpha);
     setPos(newPos);
-    this->squareNorm = -1.0;
     setCoef(newCoef);
 }
 

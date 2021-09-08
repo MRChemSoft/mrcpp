@@ -84,14 +84,8 @@ public:
     GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
     GaussFunc<D> operator*(double c) { return this->mult(c); }
 
-    void setPow(int d, int power) override {
-        this->power[d] = power;
-        this->squareNorm = -1.0;
-    }
-    void setPow(const std::array<int, D> &power) override {
-        this->power = power;
-        this->squareNorm = -1.0;
-    }
+    void setPow(int d, int power) override { this->power[d] = power; }
+    void setPow(const std::array<int, D> &power) override { this->power = power; }
 
 private:
     static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);

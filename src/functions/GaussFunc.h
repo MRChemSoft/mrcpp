@@ -68,7 +68,7 @@ public:
     double calcCoulombEnergy(GaussFunc<D> &rhs);
     double calcSquareNorm() override;
 
-    double evalfCore(const Coord<D> &r) const override;
+    double evalf(const Coord<D> &r) const override;
     double evalf1D(double r, int dir) const override;
 
     static double calcOverlap(GaussFunc<D> &lhs, GaussFunc<D> &rhs);

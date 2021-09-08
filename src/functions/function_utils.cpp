@@ -47,8 +47,8 @@ namespace mrcpp {
  * integral is conserved with respect to the integration limits.
  *
  */
-template <int D> std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_periodic(const Gaussian<D> &inp, const std::array<double, D> &period, double nStdDev) {
-    auto gauss_exp = std::make_shared<GaussExp<D>>();
+template <int D> GaussExp<D> function_utils::periodify(const Gaussian<D> &inp, const std::array<double, D> &period, double nStdDev) {
+    GaussExp<D> gauss_exp;
     auto pos_vec = std::vector<Coord<D>>();
 
     auto x_std = nStdDev * inp.getMaximumStandardDiviation();
@@ -98,14 +98,26 @@ template <int D> std::shared_ptr<GaussExp<D>> function_utils::make_gaussian_peri
     for (auto &pos : pos_vec) {
         auto *gauss = inp.copy();
         gauss->setPos(pos);
-        gauss_exp->append(*gauss);
+        gauss_exp.append(*gauss);
         delete gauss;
     }
 
     return gauss_exp;
 }
 
-template std::shared_ptr<GaussExp<1>> function_utils::make_gaussian_periodic<1>(const Gaussian<1> &inp, const std::array<double, 1> &period, double nStdDev);
-template std::shared_ptr<GaussExp<2>> function_utils::make_gaussian_periodic<2>(const Gaussian<2> &inp, const std::array<double, 2> &period, double nStdDev);
-template std::shared_ptr<GaussExp<3>> function_utils::make_gaussian_periodic<3>(const Gaussian<3> &inp, const std::array<double, 3> &period, double nStdDev);
+template <int D> GaussExp<D> function_utils::periodify(const GaussExp<D> &gexp, const std::array<double, D> &period, double nStdDev) {
+    GaussExp<D> out_exp;
+    for (const auto &gauss : gexp) {
+        auto periodic_gauss = periodify<D>(*gauss, period, nStdDev);
+        out_exp.append(periodic_gauss);
+    }
+    return out_exp;
+}
+
+template GaussExp<1> function_utils::periodify<1>(const Gaussian<1> &inp, const std::array<double, 1> &period, double nStdDev);
+template GaussExp<2> function_utils::periodify<2>(const Gaussian<2> &inp, const std::array<double, 2> &period, double nStdDev);
+template GaussExp<3> function_utils::periodify<3>(const Gaussian<3> &inp, const std::array<double, 3> &period, double nStdDev);
+template GaussExp<1> function_utils::periodify<1>(const GaussExp<1> &inp, const std::array<double, 1> &period, double nStdDev);
+template GaussExp<2> function_utils::periodify<2>(const GaussExp<2> &inp, const std::array<double, 2> &period, double nStdDev);
+template GaussExp<3> function_utils::periodify<3>(const GaussExp<3> &inp, const std::array<double, 3> &period, double nStdDev);
 } // namespace mrcpp

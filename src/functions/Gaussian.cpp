@@ -61,13 +61,6 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , pos(r)
         , squareNorm(-1.0) {}
 
-template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period, double nStdDev) {
-    for (auto &x : period)
-        if (x <= 0.0) MSG_ERROR("The period has to be greater than zero in all directions");
-    this->period = period;
-    this->gauss_exp = function_utils::make_gaussian_periodic<D>(*this, this->period, nStdDev);
-}
-
 template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 
     auto newAlpha = std::array<double, D>{};
@@ -120,7 +113,6 @@ template <int D> bool Gaussian<D>::checkScreen(int n, const int *l) const {
 }
 
 template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    if (isPeriodic()) return getPeriodicGaussExp().isVisibleAtScale(scale, nQuadPts);
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
         auto visibleScale = static_cast<int>(-std::floor(std::log2(nQuadPts * 0.5 * stdDeviation)));
@@ -132,7 +124,6 @@ template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) con
 }
 
 template <int D> bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
-    if (isPeriodic()) return getPeriodicGaussExp().isZeroOnInterval(a, b);
     for (int i = 0; i < D; i++) {
         double stdDeviation = std::pow(2.0 * this->alpha[i], -0.5);
         double gaussBoxMin = this->pos[i] - 5.0 * stdDeviation;
@@ -149,11 +140,6 @@ template <int D> void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &value
     for (int d = 0; d < D; d++) {
         for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf1D(points(i, d), d); }
     }
-}
-
-template <int D> double Gaussian<D>::evalf(const Coord<D> &r) const {
-    if (this->period == std::array<double, D>{}) return this->evalfCore(r);
-    return this->gauss_exp->evalf(r);
 }
 
 template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {

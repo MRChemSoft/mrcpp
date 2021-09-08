@@ -125,7 +125,7 @@ void initialize(mrcpp::MultiResolutionAnalysis<D> **mra,
 
 /* Initializing a D-dimensional Gaussian of unit charge */
 template <int D>
-void initialize(mrcpp::GaussFunc<D> **func, bool periodic = false, const std::array<double, D> &period = {}) {
+void initialize(mrcpp::GaussFunc<D> **func) {
     double beta = 1.0e4;
     double alpha = std::pow(beta / mrcpp::pi, D / 2.0);
     double pos_data[3] = {-0.2, 0.5, 1.0};
@@ -134,7 +134,6 @@ void initialize(mrcpp::GaussFunc<D> **func, bool periodic = false, const std::ar
     auto pos = mrcpp::details::convert_to_std_array<double, D>(pos_data);
 
     *func = new mrcpp::GaussFunc<D>(beta, alpha, pos);
-    if (periodic) (*func)->makePeriodic(period);
 }
 
 #endif // FACTORY_FUNCTIONS_H

@@ -25,6 +25,7 @@
 
 #include "catch.hpp"
 
+#include "functions/function_utils.h"
 #include "functions/GaussExp.h"
 #include "functions/GaussFunc.h"
 
@@ -37,13 +38,6 @@ namespace periodify_gaussians {
 template <int D> void testIsNarrowGaussiansMadePeriodic();
 template <int D> void testIsWideGaussiansMadePeriodic();
 template <int D> void testIsGaussExpMadePeriodic();
-
-template <int D> bool isPeriodic(const Gaussian<D> &func) {
-    if (func.getPeriod() == std::array<double, D>{})
-        return false;
-    else
-        return true;
-}
 
 SCENARIO("Given a narrow Gaussian is it periodic?", "[periodic_narrow_gaussian]") {
     GIVEN("Narrow Gaussian in 1D") { testIsNarrowGaussiansMadePeriodic<1>(); }
@@ -78,15 +72,13 @@ template <int D> void testIsNarrowGaussiansMadePeriodic() {
 
     WHEN("The gaussian is generated it is constructed, it is not periodic") {
         auto gauss = GaussFunc<D>(beta, alpha, pos);
-        REQUIRE(not isPeriodic<D>(gauss));
         THEN("The Gaussian should be close to zero at the bondary of the unit cell") {
-            REQUIRE(gauss.evalf(new_pos) == Approx(0.0));
+            REQUIRE(gauss(new_pos) == Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodic, it is periodic") {
-            gauss.makePeriodic(period);
-            REQUIRE(isPeriodic<D>(gauss));
+            auto gexp = function_utils::periodify<D>(gauss, period);
             THEN("The gaussian should have the same value at -0.2 and 1.8") {
-                REQUIRE(gauss.evalf(pos) == gauss.evalf(new_pos));
+                REQUIRE(gexp(pos) == gexp(new_pos));
             }
         }
     }
@@ -107,15 +99,13 @@ template <int D> void testIsWideGaussiansMadePeriodic() {
 
     WHEN("The gaussian is generated it is constructed, it is not periodic") {
         auto gauss = GaussFunc<D>(beta, alpha, pos);
-        REQUIRE(not isPeriodic<D>(gauss));
         THEN("The Gaussian should be close to zero at the bondary of the unit cell") {
-            REQUIRE(gauss.evalf(new_pos) != Approx(0.0));
+            REQUIRE(gauss(new_pos) != Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodc, it is periodic") {
-            gauss.makePeriodic(period);
-            REQUIRE(isPeriodic<D>(gauss));
+            auto gexp = function_utils::periodify<D>(gauss, period);
             THEN("The gaussian should have the same value at -0.2 and 1.8") {
-                REQUIRE(gauss.evalf(pos) == Approx(gauss.evalf(new_pos)));
+                REQUIRE(gexp(pos) == Approx(gexp(new_pos)));
             }
         }
     }
@@ -123,13 +113,17 @@ template <int D> void testIsWideGaussiansMadePeriodic() {
 
 template <int D> void testIsGaussExpMadePeriodic() {
 
-    auto beta = 1.0e4;
+    auto beta = 1.0e1;
     auto alpha = std::pow(beta / mrcpp::pi, D / 2.0);
     double pos_1_data[3] = {-0.2, 0.5, 1.0};
     double pos_2_data[3] = {-0.1, 0.3, 1.2};
 
     auto period = std::array<double, D>{};
+    auto r0 = std::array<double, D>{};
+    auto r1 = std::array<double, D>{};
     period.fill(2.0);
+    r0.fill(0.2);
+    r1.fill(2.2);
 
     auto pos_1 = mrcpp::details::convert_to_std_array<double, D>(pos_1_data);
     auto pos_2 = mrcpp::details::convert_to_std_array<double, D>(pos_2_data);
@@ -140,11 +134,13 @@ template <int D> void testIsGaussExpMadePeriodic() {
     WHEN("The gaussians are added they are non-periodic") {
         gauss_exp.append(gauss_1);
         gauss_exp.append(gauss_2);
-        for (auto &func : gauss_exp) REQUIRE(not isPeriodic<D>(*func));
+        REQUIRE(gauss_exp.size() == 2);
+        REQUIRE(gauss_exp(r0) != Approx(gauss_exp(r1)));
 
         AND_WHEN("The gaussians are make periodic") {
-            gauss_exp.makePeriodic(period);
-            for (auto &func : gauss_exp) REQUIRE(isPeriodic<D>(*func));
+            auto per_exp = function_utils::periodify<D>(gauss_exp, period);
+            REQUIRE(per_exp.size() > 2);
+            REQUIRE(per_exp(r0) == Approx(per_exp(r1)));
         }
     }
 }

@@ -28,9 +28,11 @@
 
 namespace mrcpp {
 namespace function_utils {
-template <int D>
-std::shared_ptr<GaussExp<D>> make_gaussian_periodic(const Gaussian<D> &gauss,
-                                                    const std::array<double, D> &period,
-                                                    double nStdDev = 4.0);
+template <int D> GaussExp<D> periodify(const Gaussian<D> &gauss,
+                                       const std::array<double, D> &period,
+                                       double nStdDev = 4.0);
+template <int D> GaussExp<D> periodify(const GaussExp<D> &gexp,
+                                       const std::array<double, D> &period,
+                                       double nStdDev = 4.0);
 } // namespace function_utils
 } // namespace mrcpp

@@ -93,7 +93,7 @@ public:
     double getScreening() const { return screening; }
     std::array<double, D> getExp(int i) const { return this->funcs[i]->getExp(); }
     double getCoef(int i) const { return this->funcs[i]->getCoef(); }
-    const std::array<int, D> &getPow(int i) const { return this->funcs[i]->getPow(); }
+    const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     int size() const { return this->funcs.size(); }

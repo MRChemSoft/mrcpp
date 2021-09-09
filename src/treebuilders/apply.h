@@ -41,7 +41,7 @@ template <int D> void apply_near_field(double prec, FunctionTree<D> &out, Convol
 template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir = -1);
 template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp);
 template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D> *> &inp);
-template <int D> std::vector<FunctionTree<D> *> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp);
+template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp);
 // clang-format on
 
 } // namespace mrcpp

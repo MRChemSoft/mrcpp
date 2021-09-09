@@ -76,10 +76,10 @@ public:
     bool getScreen() const { return screen; }
     bool checkScreen(int n, const int *l) const;
 
-    int getPow(int i) const { return power[i]; }
+    int getPower(int i) const { return power[i]; }
     double getCoef() const { return coef; }
     double getExp(int i) const { return alpha[i]; }
-    const std::array<int, D> &getPow() const { return power; }
+    const std::array<int, D> &getPower() const { return power; }
     const std::array<double, D> &getPos() const { return pos; }
     std::array<double, D> getExp() const { return alpha; }
 

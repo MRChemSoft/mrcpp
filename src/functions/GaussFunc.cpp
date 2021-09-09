@@ -113,7 +113,7 @@ template<int D> GaussExp<D> GaussFunc<D>::asGaussExp() const {
 
 template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
     GaussPoly<D> result(*this);
-    int oldPow = this->getPow(dir);
+    int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
     newPoly.getCoefs()[oldPow + 1] = -2.0 * this->getExp()[dir];
@@ -137,7 +137,7 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     for (int d = 0; d < D; d++) { newExp[d] = lhsExp[d] + rhsExp[d]; }
 
     std::array<int, D> newPow;
-    for (int d = 0; d < D; d++) { newPow[d] = lhs.getPow(d) + rhs.getPow(d); }
+    for (int d = 0; d < D; d++) { newPow[d] = lhs.getPower(d) + rhs.getPower(d); }
     this->setCoef(newCoef);
     this->setExp(newExp);
     this->setPow(newPow);
@@ -154,8 +154,8 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     result.multPureGauss(lhs, rhs);
     for (int d = 0; d < D; d++) {
         double newPos = result.getPos()[d];
-        Polynomial lhsPoly(newPos - lhs.getPos()[d], lhs.getPow(d));
-        Polynomial rhsPoly(newPos - rhs.getPos()[d], rhs.getPow(d));
+        Polynomial lhsPoly(newPos - lhs.getPos()[d], lhs.getPower(d));
+        Polynomial rhsPoly(newPos - rhs.getPos()[d], rhs.getPower(d));
         Polynomial newPoly = lhsPoly * rhsPoly;
         result.setPoly(d, newPoly);
     }
@@ -190,7 +190,7 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     for (int i = 0; i < D; i++) o << this->getPos()[i] << " ";
     o << std::endl;
     o << "Pow     : ";
-    for (int i = 0; i < D; i++) o << this->getPow()[i] << " ";
+    for (int i = 0; i < D; i++) o << this->getPower()[i] << " ";
     o << std::endl;
     return o;
 }

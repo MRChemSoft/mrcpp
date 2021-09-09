@@ -346,10 +346,10 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     REQUIRE(grad_f.size() == 3);
 
     const Coord<3> r{1.1, 0.4, 0.2};
-    REQUIRE((*grad_f[0])(r) == Approx(fx(r)).epsilon(prec));
-    REQUIRE((*grad_f[1])(r) == Approx(fy(r)).epsilon(prec));
-    REQUIRE((*grad_f[2])(r) == Approx(fz(r)).epsilon(prec));
-    for (auto &t : grad_f) delete t;
+    REQUIRE(mrcpp::get_func(grad_f, 0)(r) == Approx(fx(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 1)(r) == Approx(fy(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 2)(r) == Approx(fz(r)).epsilon(prec));
+    mrcpp::clear(grad_f, true);
 
     delete mra;
 }

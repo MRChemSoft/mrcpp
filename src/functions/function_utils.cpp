@@ -121,7 +121,7 @@ template <int D> GaussExp<D> function_utils::periodify(const GaussExp<D> &gexp, 
 template <int D> double function_utils::calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.getPow()[d], b.getPow()[d], a.getPos()[d], b.getPos()[d], a.getExp()[d], b.getExp()[d]);
+        S *= ObaraSaika_ab(a.getPower()[d], b.getPower()[d], a.getPos()[d], b.getPos()[d], a.getExp()[d], b.getExp()[d]);
     }
     S *= a.getCoef() * b.getCoef();
     return S;

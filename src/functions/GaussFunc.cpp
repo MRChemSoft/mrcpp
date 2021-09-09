@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include "BoysFunction.h"
+#include "function_utils.h"
 #include "GaussExp.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
@@ -84,7 +85,7 @@ template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
     return result;
 }
 
-template <int D> double GaussFunc<D>::calcSquareNorm() {
+template <int D> double GaussFunc<D>::calcSquareNorm() const {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
         double a = 2.0 * this->alpha[d];
@@ -104,7 +105,13 @@ template <int D> double GaussFunc<D>::calcSquareNorm() {
     return norm * this->coef * this->coef;
 }
 
-template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) {
+template<int D> GaussExp<D> GaussFunc<D>::asGaussExp() const {
+    GaussExp<D> gexp;
+    gexp.append(*this);
+    return gexp;
+}
+
+template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
     GaussPoly<D> result(*this);
     int oldPow = this->getPow(dir);
 
@@ -166,109 +173,6 @@ template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
     return g;
 }
 
-template <int D> double GaussFunc<D>::calcOverlap(GaussPoly<D> &b) {
-    GaussExp<D> gExp(b);
-    double overlap = 0.0;
-    for (int i = 0; i < gExp.size(); i++) {
-        auto &gFunc = static_cast<GaussFunc<D> &>(gExp.getFunc(i));
-        overlap += this->calcOverlap(gFunc);
-    }
-    return overlap;
-}
-
-template <int D> double GaussFunc<D>::calcOverlap(GaussFunc<D> &b) {
-    double S = 1.0;
-    for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(this->power[d], b.power[d], this->pos[d], b.pos[d], this->alpha[d], b.alpha[d]);
-    }
-    S *= this->coef * b.coef;
-    return S;
-}
-
-template <int D> double GaussFunc<D>::calcOverlap(GaussFunc<D> &a, GaussFunc<D> &b) {
-    double S = 1.0;
-    for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.power[d], b.power[d], a.pos[d], b.pos[d], a.alpha[d], b.alpha[d]);
-    }
-    S *= a.coef * b.coef;
-    return S;
-}
-
-/**  Compute the monodimensional overlap integral between two
- gaussian distributions by means of the Obara-Saika recursiive
- scheme
-
- \f[ S_{ij} = \int_{-\infty}^{+\infty} \,\mathrm{d} x
- (x-x_a)^{p_a}
- (x-x_b)^{p_b}
- e^{-c_a (x-x_a)^2}
- e^{-c_b (x-x_b)^2}\f]
-
- @param power_a \f$ p_a     \f$
- @param power_b \f$ p_b     \f$
- @param pos_a   \f$ x_a     \f$
- @param pos_b   \f$ x_b     \f$
- @param expo_a  \f$ c_a \f$
- @param expo_b  \f$ c_b \f$
-
- */
-template <int D>
-double GaussFunc<D>::ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b) {
-    int i, j;
-    double expo_p, mu, pos_p, x_ab, x_pa, x_pb, s_00;
-    /* The highest angular momentum combination is l=20 for a and b
-     * simulatnelusly */
-    double s_coeff[64];
-
-    //	if (out_of_bounds(power_a, 0, MAX_GAUSS_POWER) ||
-    //		out_of_bounds(power_b, 0, MAX_GAUSS_POWER)
-    //		) {
-    //		PRINT_FUNC_NAME;
-    //		INVALID_ARG_EXIT;
-    //	}
-
-    /* initialization of a hell of a lot of coefficients.... */
-    expo_p = expo_a + expo_b;                           /* total exponent */
-    mu = expo_a * expo_b / (expo_a + expo_b);           /* reduced exponent */
-    pos_p = (expo_a * pos_a + expo_b * pos_b) / expo_p; /* center of charge */
-    x_ab = pos_a - pos_b;                               /* X_{AB} */
-    x_pa = pos_p - pos_a;                               /* X_{PA} */
-    x_pb = pos_p - pos_b;                               /* X_{PB} */
-    s_00 = pi / expo_p;
-    s_00 = std::sqrt(s_00) * std::exp(-mu * x_ab * x_ab); /* overlap of two spherical gaussians */
-    // int n_0j_coeff = 1 + power_b; /* n. of 0j coefficients needed */
-    // int n_ij_coeff = 2 * power_a; /* n. of ij coefficients needed (i > 0) */
-
-    /* we add 3 coeffs. to avoid a hell of a lot of if statements */
-    /*    n_tot_coeff = n_0j_coeff + n_ij_coeff + 3;	*/
-    /*    s_coeff = (double *) calloc(n_tot_coeff, sizeof(double));*/
-
-    /* generate first two coefficients */
-    s_coeff[0] = s_00;
-    s_coeff[1] = x_pb * s_00;
-    j = 1;
-    /* generate the rest of the first row */
-    while (j < power_b) {
-        s_coeff[j + 1] = x_pb * s_coeff[j] + j * s_coeff[j - 1] / (2.0 * expo_p);
-        j++;
-    }
-    /* generate the first two coefficients with i > 0 */
-    s_coeff[j + 1] = s_coeff[j] - x_ab * s_coeff[j - 1];
-    s_coeff[j + 2] = x_pa * s_coeff[j] + j * s_coeff[j - 1] / (2.0 * expo_p);
-    i = 1;
-    /* generate the remaining coefficients with i > 0 */
-    while (i < power_a) {
-        int i_l = j + 2 * i + 1;
-        int i_r = j + 2 * i + 2;
-        s_coeff[i_l] = s_coeff[i_l - 1] - x_ab * s_coeff[i_l - 2];
-        s_coeff[i_r] = x_pa * s_coeff[i_r - 2] + (j * s_coeff[i_r - 3] + i * s_coeff[i_r - 4]) / (2.0 * expo_p);
-        i++;
-    }
-
-    /*    free(s_coeff);*/
-    return s_coeff[power_b + 2 * power_a];
-}
-
 template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     auto is_array = details::are_all_equal<D>(this->getExp());
 
@@ -299,11 +203,11 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
  *  @note Both Gaussians must be normalized to unit charge
  *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
  */
-template <int D> double GaussFunc<D>::calcCoulombEnergy(GaussFunc<D> &gf) {
+template <int D> double GaussFunc<D>::calcCoulombEnergy(const GaussFunc<D> &gf) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template <> double GaussFunc<3>::calcCoulombEnergy(GaussFunc<3> &gf) {
+template <> double GaussFunc<3>::calcCoulombEnergy(const GaussFunc<3> &gf) const {
 
     // Checking if the elements in each exponent are constant
     if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp())) NOT_IMPLEMENTED_ABORT;

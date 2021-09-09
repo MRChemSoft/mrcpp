@@ -52,27 +52,15 @@ public:
     virtual double evalf1D(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
-    virtual double calcSquareNorm() = 0;
-
-    /** @brief Compute analytic overlap between two Gaussians
-     *  @param[in] this: Left hand Gaussian
-     *  @param[in] rhs: Right hand Gaussian
-     *  @returns Overlap integral
-     */
-    virtual double calcOverlap(GaussFunc<D> &rhs) = 0;
-
-    /** @brief Compute analytic overlap between two Gaussians
-     *  @param[in] this: Left hand Gaussian
-     *  @param[in] rhs: Right hand Gaussian
-     *  @returns Overlap integral
-     */
-    virtual double calcOverlap(GaussPoly<D> &rhs) = 0;
+    double calcOverlap(const Gaussian<D> &inp) const;
+    virtual double calcSquareNorm() const = 0;
+    virtual GaussExp<D> asGaussExp() const = 0;
 
     /** @brief Compute analytic derivative of Gaussian
      *  @param[in] dir: Cartesian direction of derivative
      *  @returns New GaussPoly
      */
-    virtual GaussPoly<D> differentiate(int dir) = 0;
+    virtual GaussPoly<D> differentiate(int dir) const = 0;
 
     void calcScreening(double stdDeviations);
 

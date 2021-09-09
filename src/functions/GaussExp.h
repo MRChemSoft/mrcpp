@@ -55,7 +55,6 @@ template <int D> class GaussExp : public RepresentableFunction<D> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
     GaussExp(const GaussExp<D> &gExp);
-    GaussExp(const GaussPoly<D> &gPoly);
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
 
@@ -65,15 +64,15 @@ public:
     const auto begin() const { return funcs.begin(); }
     const auto end() const { return funcs.end(); }
 
-    double calcCoulombEnergy();
-    double calcSquareNorm();
+    double calcCoulombEnergy() const;
+    double calcSquareNorm() const;
     void normalize();
 
     void calcScreening(double nStdDev = defaultScreening);
 
     double evalf(const Coord<D> &r) const override;
 
-    GaussExp<D> differentiate(int dir);
+    GaussExp<D> differentiate(int dir) const;
 
     GaussExp<D> add(GaussExp<D> &g);
     GaussExp<D> add(Gaussian<D> &g);

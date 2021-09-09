@@ -23,11 +23,13 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "vector"
+#include "GaussPoly.h"
 
+#include <vector>
+
+#include "function_utils.h"
 #include "GaussExp.h"
 #include "GaussFunc.h"
-#include "GaussPoly.h"
 #include "utils/Printer.h"
 #include "utils/details.h"
 
@@ -96,24 +98,17 @@ template <int D> Gaussian<D> *GaussPoly<D>::copy() const {
     return gauss;
 }
 
-template <int D> double GaussPoly<D>::calcOverlap(GaussPoly<D> &b) {
-    GaussExp<D> gExp(*this);
-    GaussExp<D> fExp(b);
-
-    double overlap = 0.0;
-    for (int i = 0; i < fExp.size(); i++) {
-        auto &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
-        for (int j = 0; j < gExp.size(); j++) { overlap += gExp.getFunc(j).calcOverlap(fFunc); }
+template<int D> double GaussPoly<D>::calcSquareNorm() const {
+    GaussExp<D> this_exp = this->asGaussExp();
+    double norm = 0.0;
+    for (int i = 0; i < this_exp.size(); i++) {
+        auto func_i = static_cast<GaussFunc<D> &>(this_exp.getFunc(i));
+        for (int j = 0; j < this_exp.size(); j++) {
+            auto func_j = static_cast<GaussFunc<D> &>(this_exp.getFunc(j));
+            norm += function_utils::calc_overlap(func_i, func_j);
+        }
     }
-    return overlap;
-}
-
-template <int D> double GaussPoly<D>::calcOverlap(GaussFunc<D> &b) {
-    return b.calcOverlap(*this);
-}
-
-template <int D> double GaussPoly<D>::calcSquareNorm() {
-    return this->calcOverlap(*this);
+    return norm;
 }
 
 template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
@@ -151,7 +146,36 @@ template <int D> double GaussPoly<D>::evalf1D(const double r, int d) const {
     return p2 * std::exp(-this->alpha[d] * q2);
 }
 
-template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) {
+template <int D> GaussExp<D> GaussPoly<D>::asGaussExp() const {
+    std::array<int, D> pow;
+    std::array<double, D> pos;
+    auto alpha = this->getExp();
+
+    int nTerms = 1;
+    for (int d = 0; d < D; d++) {
+        nTerms *= (this->getPow(d) + 1);
+        pos[d] = this->getPos()[d];
+    }
+
+    std::vector<double> coefs;
+    std::vector<int *> power;
+
+    fillCoefPowVector(coefs, power, pow, D);
+
+    GaussExp<D> gexp;
+    for (int i = 0; i < nTerms; i++) {
+        double coef = coefs[i];
+        for (int d = 0; d < D; d++) pow[d] = power[i][d];
+        if (coef != 0.0) {
+            GaussFunc<D> gFunc(alpha, coef, pos, pow);
+            gexp.append(gFunc);
+        }
+    }
+    for (auto &i : power) { delete[] i; }
+    return gexp;
+}
+
+template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) const {
     NOT_IMPLEMENTED_ABORT;
 }
 

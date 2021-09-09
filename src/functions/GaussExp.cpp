@@ -23,10 +23,12 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+#include "GaussExp.h"
+
 #include <cstdlib>
 #include <iostream>
 
-#include "GaussExp.h"
+#include "function_utils.h"
 #include "GaussFunc.h"
 #include "GaussPoly.h"
 #include "Gaussian.h"
@@ -49,35 +51,6 @@ template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
         Gaussian<D> *gauss = gexp.funcs[i]->copy();
         this->funcs.push_back(gauss);
     }
-}
-
-template <int D>
-GaussExp<D>::GaussExp(const GaussPoly<D> &gPoly)
-        : screening(0.0) {
-    std::array<int, D> pow;
-    std::array<double, D> pos;
-    auto alpha = gPoly.getExp();
-
-    int nTerms = 1;
-    for (int d = 0; d < D; d++) {
-        nTerms *= (gPoly.getPow(d) + 1);
-        pos[d] = gPoly.getPos()[d];
-    }
-
-    std::vector<double> coefs;
-    std::vector<int *> power;
-
-    gPoly.fillCoefPowVector(coefs, power, pow, D);
-
-    for (int i = 0; i < nTerms; i++) {
-        double coef = coefs[i];
-        for (int d = 0; d < D; d++) { pow[d] = power[i][d]; }
-        if (coef != 0.0) {
-            GaussFunc<D> gFunc(alpha, coef, pos, pow);
-            this->append(gFunc);
-        }
-    }
-    for (auto &i : power) { delete[] i; }
 }
 
 template <int D> GaussExp<D>::~GaussExp() {
@@ -158,10 +131,10 @@ template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
     }
 }
 
-template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) {
+template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) const {
     assert(dir >= 0 and dir < D);
     GaussExp<D> result;
-    for (int i = 0; i < this->size(); i++) { result.append(this->getFunc(i).differentiate(dir)); }
+    for (int i = 0; i < this->size(); i++) result.append(this->getFunc(i).differentiate(dir));
     return result;
 }
 
@@ -265,7 +238,7 @@ template <int D> void GaussExp<D>::multInPlace(double d) {
     for (int i = 0; i < this->size(); i++) this->funcs[i]->multConstInPlace(d);
 }
 
-template <int D> double GaussExp<D>::calcSquareNorm() {
+template <int D> double GaussExp<D>::calcSquareNorm() const {
     /* computing the squares */
     double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
@@ -274,16 +247,17 @@ template <int D> double GaussExp<D>::calcSquareNorm() {
     }
     /* computing the double products */
     for (int i = 0; i < this->size(); i++) {
-        for (int j = i + 1; j < this->size(); j++) {
-            double overlap = 0.0;
-            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[j])) {
-                overlap = this->funcs[i]->calcOverlap(*f);
-            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[j])) {
-                overlap = this->funcs[i]->calcOverlap(*f);
-            } else {
-                MSG_ABORT("Invald argument");
+        GaussExp<D> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
+        for (int fi = 0; fi < funcs_i.size(); fi++) {
+            GaussFunc<D> &func_i = static_cast<GaussFunc<D> &>(funcs_i.getFunc(fi));
+            for (int j = i + 1; j < this->size(); j++) {
+                GaussExp<D> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
+                for (int fj = 0; fj < funcs_j.size(); fj++) {
+                    GaussFunc<D> &func_j = static_cast<GaussFunc<D> &>(funcs_j.getFunc(fj));
+                    double overlap = func_i.calcOverlap(func_j);
+                    norm += 2.0 * overlap;
+                }
             }
-            norm += 2.0 * overlap;
         }
     }
     return norm;
@@ -364,25 +338,25 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
  *  @note Each Gaussian must be normalized to unit charge
  *  \f$ c = (\alpha/\pi)^{D/2} \f$ for this to be correct!
  */
-template <int D> double GaussExp<D>::calcCoulombEnergy() {
+template <int D> double GaussExp<D>::calcCoulombEnergy() const {
     NOT_IMPLEMENTED_ABORT
 }
 
-template <> double GaussExp<3>::calcCoulombEnergy() {
+template <> double GaussExp<3>::calcCoulombEnergy() const {
     double energy = 0.0;
-    for (int i = 0; i < size(); i++) {
-        if (auto *gauss_i = dynamic_cast<GaussFunc<3> *>(&getFunc(i))) {
-            for (int j = i; j < size(); j++) {
-                if (auto *gauss_j = dynamic_cast<GaussFunc<3> *>(&getFunc(j))) {
+    for (int i = 0; i < this->size(); i++) {
+        GaussExp<3> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
+        for (int fi = 0; fi < funcs_i.size(); fi++) {
+            GaussFunc<3> &func_i = static_cast<GaussFunc<3> &>(funcs_i.getFunc(fi));
+            for (int j = i; j < this->size(); j++) {
+                GaussExp<3> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
+                for (int fj = 0; fj < funcs_j.size(); fj++) {
+                    GaussFunc<3> &func_j = static_cast<GaussFunc<3> &>(funcs_j.getFunc(fj));
                     double c = 2.0;
                     if (i == j) c = 1.0;
-                    energy += c * gauss_i->calcCoulombEnergy(*gauss_j);
-                } else {
-                    MSG_ERROR("Can only calculate energy for GaussFunc");
+                    energy += c * func_i.calcCoulombEnergy(func_j);
                 }
             }
-        } else {
-            MSG_ERROR("Can only calculate energy for GaussFunc");
         }
     }
     return energy;

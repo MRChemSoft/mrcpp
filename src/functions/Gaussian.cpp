@@ -152,6 +152,21 @@ template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {
     }
 }
 
+template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
+    const auto &bra_exp = this->asGaussExp(); // Make sure all entries are GaussFunc
+    const auto &ket_exp = inp.asGaussExp();   // Make sure all entries are GaussFunc
+
+    double S = 0.0;
+    for (int i = 0; i < bra_exp.size(); i++) {
+        const auto &bra_i = static_cast<const GaussFunc<D> &>(bra_exp.getFunc(i));
+        for (int j = 0; j < ket_exp.size(); j++) {
+            const auto &ket_j = static_cast<const GaussFunc<D> &>(ket_exp.getFunc(j));
+            S += function_utils::calc_overlap(bra_i, ket_j);
+        }
+    }
+    return S;
+}
+
 template class Gaussian<1>;
 template class Gaussian<2>;
 template class Gaussian<3>;

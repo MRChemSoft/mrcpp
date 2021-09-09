@@ -47,10 +47,14 @@ public:
      *  @details This will project a kernel of a single gaussian with
      *  exponent sqrt(10/build_prec).
      */
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double pr)
-            : ConvolutionOperator<D>(mra, pr) {
-        double epsilon = this->prec / 10.0;
-        IdentityKernel identity_kernel(epsilon);
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
+            : ConvolutionOperator<D>(mra, prec, prec / 10.0) {
+        IdentityKernel identity_kernel(this->kern_prec);
+        this->initializeOperator(identity_kernel);
+    }
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = 1)
+            : ConvolutionOperator<D>(mra, prec, prec / 100.0, root, reach) {
+        IdentityKernel identity_kernel(this->kern_prec);
         this->initializeOperator(identity_kernel);
     }
     IdentityConvolution(const IdentityConvolution &oper) = delete;

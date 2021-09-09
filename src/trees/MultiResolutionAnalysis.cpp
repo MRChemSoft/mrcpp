@@ -35,10 +35,7 @@ template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
         : maxDepth(mra.maxDepth)
         , basis(mra.basis)
-        , world(mra.world)
-        , periodic_operator_reach(mra.periodic_operator_reach)
-        , periodic_cut_off(mra.periodic_cut_off)
-        , operator_scale(mra.operator_scale) {
+        , world(mra.world) {
     if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
     if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
     setupFilter();
@@ -59,7 +56,7 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
     setupFilter();
 }
 
-template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA() const {
+template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA(int root, int reach) const {
     const BoundingBox<D> &box = getWorldBox();
     const ScalingBasis &basis = getScalingBasis();
 
@@ -75,40 +72,39 @@ template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKerne
         MSG_ABORT("Invalid scaling type");
     }
 
-    int max_l = (box.isPeriodic()) ? this->periodic_operator_reach : 0;
-    for (int i = 0; i < D; i++) {
-        if (box.size(i) > max_l) { max_l = box.size(i); }
+    if (reach < 0) {
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > reach) reach = box.size(i);
+        }
     }
-    auto start_l = std::array<int, 1>{-max_l};
-    auto tot_l = std::array<int, 1>{2 * max_l};
+    auto start_l = std::array<int, 1>{-reach};
+    auto tot_l = std::array<int, 1>{2 * reach};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
-    auto oper_scale = (box.isPeriodic()) ? this->operator_scale : box.getScale();
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
-    BoundingBox<1> kern_box(oper_scale, start_l, tot_l, sf);
+    BoundingBox<1> kern_box(root, start_l, tot_l, sf);
     MultiResolutionAnalysis<1> mra(kern_box, *kern_basis);
     delete kern_basis;
     return mra;
 }
 
-template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA() const {
+template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA(int root, int reach) const {
     const BoundingBox<D> &box = getWorldBox();
     const ScalingBasis &basis = getScalingBasis();
 
-    int maxn = (box.isPeriodic()) ? this->periodic_operator_reach : 0;
-    for (int i = 0; i < D; i++) {
-        if (box.size(i) > maxn) { maxn = box.size(i); }
+    if (reach < 0) {
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > reach) reach = box.size(i);
+        }
     }
     auto l = std::array<int, 2>{};
-    auto nbox = std::array<int, 2>{maxn, maxn};
+    auto nbox = std::array<int, 2>{reach, reach};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
     auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};
 
-    auto oper_scale = (box.isPeriodic()) ? this->operator_scale : box.getScale();
-    BoundingBox<2> oper_box(oper_scale, l, nbox, sf);
+    BoundingBox<2> oper_box(root, l, nbox, sf);
     auto oper_mra = MultiResolutionAnalysis<2>(oper_box, basis);
-    oper_mra.setPeriodicOperatorReach(this->getPeriodicOperatorReach());
     return oper_mra;
 }
 

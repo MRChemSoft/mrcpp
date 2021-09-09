@@ -47,10 +47,14 @@ public:
      *  @details This will project a kernel of a single differentiated
      *  gaussian with exponent sqrt(10/build_prec).
      */
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double pr)
-            : ConvolutionOperator<D>(mra, pr) {
-        double epsilon = this->prec / 10.0;
-        DerivativeKernel derivative_kernel(epsilon);
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
+            : ConvolutionOperator<D>(mra, prec, prec / 10.0) {
+        DerivativeKernel derivative_kernel(this->kern_prec);
+        this->initializeOperator(derivative_kernel);
+    }
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
+            : ConvolutionOperator<D>(mra, prec, prec / 100.0, root, reach) {
+        DerivativeKernel derivative_kernel(this->kern_prec);
         this->initializeOperator(derivative_kernel);
     }
     DerivativeConvolution(const DerivativeConvolution &oper) = delete;

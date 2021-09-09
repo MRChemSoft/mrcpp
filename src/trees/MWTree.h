@@ -93,7 +93,7 @@ public:
     const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
     const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
-    int getPeriodicOperatorReach() const { return this->MRA.getPeriodicOperatorReach(); }
+    bool isPeriodic() const { return this->MRA.getWorldBox().isPeriodic(); }
 
     MWNodeVector<D> *copyEndNodeTable();
     MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }

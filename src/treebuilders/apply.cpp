@@ -294,9 +294,7 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     SplitAdaptor<D> apply_adaptor(maxScale, false); // Splits no nodes
     DerivativeCalculator<D> apply_calculator(dir, oper, inp);
     builder.build(out, apply_calculator, apply_adaptor, 0);
-    auto periodic = out.getMRA().getWorldBox().isPeriodic();
-    auto operator_scale = out.getMRA().getOperatorScale();
-    if (periodic) out.rescale(pow(2.0, -operator_scale));
+    if (out.isPeriodic()) out.rescale(std::pow(2.0, -oper.getRootScale()));
 
     Timer post_t;
     oper.clearBandWidths();

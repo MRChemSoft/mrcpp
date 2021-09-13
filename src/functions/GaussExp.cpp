@@ -362,6 +362,15 @@ template <> double GaussExp<3>::calcCoulombEnergy() const {
     return energy;
 }
 
+template <int D> GaussExp<D> GaussExp<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
+    GaussExp<D> out_exp;
+    for (const auto &gauss : *this) {
+        auto periodic_gauss = gauss->periodify(period, nStdDev);
+        out_exp.append(periodic_gauss);
+    }
+    return out_exp;
+}
+
 template class GaussExp<1>;
 template class GaussExp<2>;
 template class GaussExp<3>;

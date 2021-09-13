@@ -28,13 +28,6 @@
 
 namespace mrcpp {
 namespace function_utils {
-template <int D> GaussExp<D> periodify(const Gaussian<D> &gauss,
-                                       const std::array<double, D> &period,
-                                       double nStdDev = 4.0);
-template <int D> GaussExp<D> periodify(const GaussExp<D> &gexp,
-                                       const std::array<double, D> &period,
-                                       double nStdDev = 4.0);
-
 template <int D> double calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b);
 } // namespace function_utils
 } // namespace mrcpp

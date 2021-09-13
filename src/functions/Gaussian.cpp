@@ -32,12 +32,16 @@
  *
  */
 
+#include <numeric>
+
 #include "Gaussian.h"
 #include "GaussExp.h"
 #include "function_utils.h"
 #include "trees/NodeIndex.h"
 #include "utils/Printer.h"
 #include "utils/details.h"
+#include "utils/math_utils.h"
+
 using namespace Eigen;
 
 namespace mrcpp {
@@ -165,6 +169,74 @@ template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
         }
     }
     return S;
+}
+
+/** @brief Generates a GaussExp that is semi-periodic around a unit-cell
+ *
+ * @returns Semi-periodic version of a Gaussian around a unit-cell
+ * @param[in] period: The period of the unit cell
+ * @param[in] nStdDev: Number of standard diviations covered in each direction. Default 4.0
+ *
+ * @details nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
+ * integral is conserved with respect to the integration limits.
+ *
+ */
+template <int D> GaussExp<D> Gaussian<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
+    GaussExp<D> gauss_exp;
+    auto pos_vec = std::vector<Coord<D>>();
+
+    auto x_std = nStdDev * this->getMaximumStandardDiviation();
+
+    // This lambda function  calculates the number of neighbooring cells
+    // requred to keep atleast x_stds of the integral conserved in the
+    // unit-cell.
+    auto neighbooring_cells = [period, x_std](auto pos) {
+        auto needed_cells_vec = std::vector<int>();
+        for (auto i = 0; i < D; i++) {
+            auto upper_bound = pos[i] + x_std;
+            auto lower_bound = pos[i] - x_std;
+            // number of cells upp and down relative to the center of the Gaussian
+            needed_cells_vec.push_back(std::ceil(upper_bound / period[i]));
+        }
+
+        return *std::max_element(needed_cells_vec.begin(), needed_cells_vec.end());
+    };
+
+    // Finding starting position
+    auto startpos = this->getPos();
+
+    for (auto d = 0; d < D; d++) {
+        startpos[d] = std::fmod(startpos[d], period[d]);
+        if (startpos[d] < 0) startpos[d] += period[d];
+    }
+
+    auto nr_cells_upp_and_down = neighbooring_cells(startpos);
+    for (auto d = 0; d < D; d++) { startpos[d] -= nr_cells_upp_and_down * period[d]; }
+
+    auto tmp_pos = startpos;
+    std::vector<double> v(2 * nr_cells_upp_and_down + 1);
+    std::iota(v.begin(), v.end(), 0.0);
+    auto cart = math_utils::cartesian_product(v, D);
+    for (auto &c : cart) {
+        for (auto i = 0; i < D; i++) c[i] *= period[i];
+    }
+    // Shift coordinates
+    for (auto &c : cart) std::transform(c.begin(), c.end(), tmp_pos.begin(), c.begin(), std::plus<double>());
+    // Go from vector to mrcpp::Coord
+    for (auto &c : cart) {
+        mrcpp::Coord<D> pos;
+        std::copy_n(c.begin(), D, pos.begin());
+        pos_vec.push_back(pos);
+    }
+
+    for (auto &pos : pos_vec) {
+        auto *gauss = this->copy();
+        gauss->setPos(pos);
+        gauss_exp.append(*gauss);
+        delete gauss;
+    }
+
+    return gauss_exp;
 }
 
 template class Gaussian<1>;

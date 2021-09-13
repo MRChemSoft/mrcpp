@@ -76,7 +76,7 @@ template <int D> void testIsNarrowGaussiansMadePeriodic() {
             REQUIRE(gauss(new_pos) == Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodic, it is periodic") {
-            auto gexp = function_utils::periodify<D>(gauss, period);
+            auto gexp = gauss.periodify(period);
             THEN("The gaussian should have the same value at -0.2 and 1.8") {
                 REQUIRE(gexp(pos) == gexp(new_pos));
             }
@@ -103,7 +103,7 @@ template <int D> void testIsWideGaussiansMadePeriodic() {
             REQUIRE(gauss(new_pos) != Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodc, it is periodic") {
-            auto gexp = function_utils::periodify<D>(gauss, period);
+            auto gexp = gauss.periodify(period);
             THEN("The gaussian should have the same value at -0.2 and 1.8") {
                 REQUIRE(gexp(pos) == Approx(gexp(new_pos)));
             }
@@ -138,7 +138,7 @@ template <int D> void testIsGaussExpMadePeriodic() {
         REQUIRE(gauss_exp(r0) != Approx(gauss_exp(r1)));
 
         AND_WHEN("The gaussians are make periodic") {
-            auto per_exp = function_utils::periodify<D>(gauss_exp, period);
+            auto per_exp = gauss_exp.periodify(period);
             REQUIRE(per_exp.size() > 2);
             REQUIRE(per_exp(r0) == Approx(per_exp(r1)));
         }

@@ -119,7 +119,7 @@ template <int D> void testProjectNarrowPeriodicGaussian() {
     initialize<D>(&mra, periodic, period);
 
     // Periodify Gaussian
-    auto periodic_func = function_utils::periodify<D>(*func, period);
+    auto periodic_func = func->periodify(period);
 
     FunctionTree<D> f_tree(*mra);
     build_grid<D>(f_tree, periodic_func);
@@ -138,7 +138,7 @@ template <int D> void testProjectWidePeriodicGaussian() {
     auto alpha = 1.0;
     auto beta = std::pow(alpha / pi, static_cast<double>(D) / 2.0);
     auto func = GaussFunc<D>(alpha, beta, pos);
-    auto periodic_func = function_utils::periodify<D>(func, period);
+    auto periodic_func = func.periodify(period);
 
     MultiResolutionAnalysis<D> *mra = nullptr;
     initialize<D>(&mra, true, period);

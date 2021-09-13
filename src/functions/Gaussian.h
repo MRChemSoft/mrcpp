@@ -55,6 +55,7 @@ public:
     double calcOverlap(const Gaussian<D> &inp) const;
     virtual double calcSquareNorm() const = 0;
     virtual GaussExp<D> asGaussExp() const = 0;
+    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
 
     /** @brief Compute analytic derivative of Gaussian
      *  @param[in] dir: Cartesian direction of derivative
@@ -83,8 +84,6 @@ public:
     const std::array<double, D> &getPos() const { return pos; }
     std::array<double, D> getExp() const { return alpha; }
 
-    double getMaximumStandardDiviation() const;
-
     virtual void setPow(const std::array<int, D> &power) = 0;
     virtual void setPow(int d, int power) = 0;
     void setScreen(bool _screen) { this->screen = _screen; }
@@ -106,6 +105,8 @@ protected:
 
     bool isVisibleAtScale(int scale, int nQuadPts) const;
     bool isZeroOnInterval(const double *a, const double *b) const;
+
+    double getMaximumStandardDiviation() const;
 
     virtual std::ostream &print(std::ostream &o) const = 0;
 };

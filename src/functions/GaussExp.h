@@ -72,6 +72,7 @@ public:
 
     double evalf(const Coord<D> &r) const override;
 
+    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
     GaussExp<D> differentiate(int dir) const;
 
     GaussExp<D> add(GaussExp<D> &g);

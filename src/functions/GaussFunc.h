@@ -65,17 +65,14 @@ public:
     GaussFunc<D> &operator=(const GaussFunc<D> &rhs) = delete;
     Gaussian<D> *copy() const override;
 
-    double calcCoulombEnergy(GaussFunc<D> &rhs);
-    double calcSquareNorm() override;
+    double calcCoulombEnergy(const GaussFunc<D> &rhs) const;
+    double calcSquareNorm() const override;
 
-    double evalfCore(const Coord<D> &r) const override;
-    double evalf(double r, int dir) const override;
+    double evalf(const Coord<D> &r) const override;
+    double evalf1D(double r, int dir) const override;
 
-    static double calcOverlap(GaussFunc<D> &lhs, GaussFunc<D> &rhs);
-    double calcOverlap(GaussFunc<D> &rhs) override;
-    double calcOverlap(GaussPoly<D> &rhs) override;
-
-    GaussPoly<D> differentiate(int dir) override;
+    GaussExp<D> asGaussExp() const override;
+    GaussPoly<D> differentiate(int dir) const override;
 
     void multInPlace(const GaussFunc<D> &rhs);
     void operator*=(const GaussFunc<D> &rhs) { multInPlace(rhs); }
@@ -84,20 +81,10 @@ public:
     GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
     GaussFunc<D> operator*(double c) { return this->mult(c); }
 
-    void setPower(int d, int power) override {
-        this->power[d] = power;
-        this->squareNorm = -1.0;
-    }
-    void setPower(const std::array<int, D> &power) override {
-        this->power = power;
-        this->squareNorm = -1.0;
-    }
-
-    using Gaussian<D>::evalf;
+    void setPow(int d, int power) override { this->power[d] = power; }
+    void setPow(const std::array<int, D> &power) override { this->power = power; }
 
 private:
-    static double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
-
     std::ostream &print(std::ostream &o) const override;
 };
 

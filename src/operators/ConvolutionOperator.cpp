@@ -43,11 +43,23 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr)
-        : MWOperator(mra.getOperatorMRA())
-        , kern_mra(mra.getKernelMRA())
-        , prec(pr) {
-    if (this->prec < 0.0) MSG_ERROR("Negative build prec");
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec)
+        : MWOperator(mra.getOperatorMRA(mra.getRootScale()))
+        , kern_prec(kprec)
+        , build_prec(bprec)
+        , kern_mra(mra.getKernelMRA(mra.getRootScale())) {
+    if (this->kern_prec < 0.0) MSG_ERROR("Negative kernel prec");
+    if (this->build_prec < 0.0) MSG_ERROR("Negative build prec");
+}
+
+template <int D>
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec, int root, int reach)
+        : MWOperator(mra.getOperatorMRA(root, reach + 1), reach)
+        , kern_prec(kprec)
+        , build_prec(bprec)
+        , kern_mra(mra.getKernelMRA(root, reach + 1)) {
+    if (this->kern_prec < 0.0) MSG_ERROR("Negative kernel prec");
+    if (this->build_prec < 0.0) MSG_ERROR("Negative build prec");
 }
 
 template <int D> ConvolutionOperator<D>::~ConvolutionOperator() {
@@ -58,16 +70,16 @@ template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &g
     int max_scale = this->oper_mra.getMaxScale();
 
     TreeBuilder<2> builder;
-    OperatorAdaptor adaptor(this->prec, max_scale);
+    OperatorAdaptor adaptor(this->build_prec, max_scale);
 
     for (int i = 0; i < greens_kernel.size(); i++) {
         Gaussian<1> &k_func = *greens_kernel[i];
         auto *k_tree = new FunctionTree<1>(this->kern_mra);
         mrcpp::build_grid(*k_tree, k_func);               // Generate empty grid to hold narrow Gaussian
-        mrcpp::project(this->prec / 100.0, *k_tree, k_func); // Project Gaussian starting from the empty grid
+        mrcpp::project(this->kern_prec, *k_tree, k_func); // Project Gaussian starting from the empty grid
         CrossCorrelationCalculator calculator(*k_tree);
 
-        auto *o_tree = new OperatorTree(this->oper_mra, this->prec);
+        auto *o_tree = new OperatorTree(this->oper_mra, this->build_prec);
         builder.build(*o_tree, calculator, adaptor, -1); // Expand 1D kernel into 2D operator
 
         Timer trans_t;
@@ -96,12 +108,12 @@ template <int D> double ConvolutionOperator<D>::calcMaxDistance(const MultiResol
     const Coord<D> &lb = MRA.getWorldBox().getLowerBounds();
     const Coord<D> &ub = MRA.getWorldBox().getUpperBounds();
     auto max_distance = math_utils::calc_distance<D>(lb, ub);
-    if (MRA.getWorldBox().isPeriodic()) {
-        auto period = MRA.getWorldBox().getScalingFactors();
-        max_distance *= std::pow(2.0, -MRA.getOperatorScale());
-        if (MRA.getOperatorScale() < 0) max_distance *= 2.0;
-        if (MRA.getOperatorScale() == 0) max_distance *= 2.0 * MRA.getPeriodicOperatorReach() + 1.0;
-    }
+
+    // Regular non-periodic operators should have oper_root=0 and oper_reach=0
+    const auto &oper_box = this->oper_mra.getWorldBox();
+    auto rel_root = this->oper_mra.getRootScale() - MRA.getRootScale();
+    max_distance *= std::pow(2.0, -rel_root);
+    //max_distance *= (2.0 * this->oper_reach) + 1.0;
     return max_distance;
 }
 

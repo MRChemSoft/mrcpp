@@ -26,11 +26,11 @@
 #pragma once
 
 #include <Eigen/Core>
-
 #include <vector>
 
-#include "Gaussian.h"
 #include "MRCPP/mrcpp_declarations.h"
+
+#include "Gaussian.h"
 #include "Polynomial.h"
 
 namespace mrcpp {
@@ -61,15 +61,13 @@ public:
     Gaussian<D> *copy() const override;
     ~GaussPoly();
 
-    double calcSquareNorm() override;
+    double calcSquareNorm() const override;
 
-    double evalfCore(const Coord<D> &r) const override;
-    double evalf(double r, int dim) const override;
+    double evalf(const Coord<D> &r) const override;
+    double evalf1D(double r, int dim) const override;
 
-    double calcOverlap(GaussFunc<D> &b) override;
-    double calcOverlap(GaussPoly<D> &b) override;
-
-    GaussPoly differentiate(int dir) override;
+    GaussExp<D> asGaussExp() const override;
+    GaussPoly differentiate(int dir) const override;
 
     void multInPlace(const GaussPoly<D> &rhs);
     void operator*=(const GaussPoly<D> &rhs) { multInPlace(rhs); }
@@ -83,21 +81,19 @@ public:
     const Polynomial &getPoly(int i) const { return *poly[i]; }
     Polynomial &getPoly(int i) { return *poly[i]; }
 
-    void setPower(int d, int pow) override;
-    void setPower(const std::array<int, D> &pow) override;
+    void setPow(int d, int pow) override;
+    void setPow(const std::array<int, D> &pow) override;
     void setPoly(int d, Polynomial &poly);
+
+
+private:
+    Polynomial *poly[D];
 
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
     void fillCoefPowVector(std::vector<double> &coefs,
                            std::vector<int *> &power,
                            std::array<int, D> &pow,
                            int dir) const;
-
-    using Gaussian<D>::evalf;
-
-private:
-    Polynomial *poly[D];
-
     std::ostream &print(std::ostream &o) const override;
 };
 

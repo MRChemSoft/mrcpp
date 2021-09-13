@@ -37,13 +37,24 @@ namespace mrcpp {
  *  application of this operator will apply each of the terms to the input
  *  function in all Cartesian directions.
  */
-PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double build_prec)
-        : ConvolutionOperator<3>(mra, build_prec) {
+PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double prec)
+        : ConvolutionOperator<3>(mra, prec, prec / 10.0) {
     int oldlevel = Printer::setPrintLevel(0);
-    double epsilon = this->prec / 100.0;
-    double r_min = calcMinDistance(mra, epsilon);
+    double r_min = calcMinDistance(mra, this->kern_prec);
     double r_max = calcMaxDistance(mra);
-    PoissonKernel poisson_kernel(epsilon, r_min, r_max);
+    PoissonKernel poisson_kernel(this->kern_prec, r_min, r_max);
+    // Rescale for application in 3D
+    poisson_kernel.rescale(3);
+    initializeOperator(poisson_kernel);
+    Printer::setPrintLevel(oldlevel);
+}
+
+PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double prec, int root, int reach)
+        : ConvolutionOperator<3>(mra, prec, prec / 100.0, root, reach) {
+    int oldlevel = Printer::setPrintLevel(0);
+    double r_min = calcMinDistance(mra, this->kern_prec);
+    double r_max = calcMaxDistance(mra);
+    PoissonKernel poisson_kernel(this->kern_prec, r_min, r_max);
     // Rescale for application in 3D
     poisson_kernel.rescale(3);
     initializeOperator(poisson_kernel);

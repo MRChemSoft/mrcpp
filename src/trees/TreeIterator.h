@@ -32,13 +32,16 @@ namespace mrcpp {
 
 template <int D> class TreeIterator {
 public:
-    TreeIterator(int dir = TopDown);
+    TreeIterator(int traverse = TopDown, int iterator = Lebesgue);
+    TreeIterator(MWTree<D> &tree, int traverse = TopDown, int iterator = Lebesgue);
     virtual ~TreeIterator();
 
     void setReturnGenNodes(bool i = true) { this->returnGenNodes = i; }
     void setMaxDepth(int depth) { this->maxDepth = depth; }
+    void setTraverse(int traverse);
+    void setIterator(int iterator);
 
-    void init(MWTree<D> *tree);
+    void init(MWTree<D> &tree);
     bool next();
     bool nextParent();
     MWNode<D> &getNode() { return *this->state->node; }
@@ -49,12 +52,13 @@ protected:
     int root;
     int nRoots;
     int mode;
+    int type;
     int maxDepth;
     bool returnGenNodes{true};
     IteratorNode<D> *state;
     IteratorNode<D> *initialState;
 
-    virtual int getChildIndex(int i) const = 0;
+    int getChildIndex(int i) const;
 
     bool tryParent();
     bool tryChild(int i);
@@ -62,7 +66,6 @@ protected:
     bool tryNextRoot();
     bool tryNextRootParent();
     void removeState();
-    void setDirection(int dir);
     bool checkDepth(const MWNode<D> &node) const;
     bool checkGenerated(const MWNode<D> &node) const;
 };

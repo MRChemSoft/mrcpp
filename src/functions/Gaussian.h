@@ -48,83 +48,48 @@ public:
     virtual Gaussian<D> *copy() const = 0;
     virtual ~Gaussian() = default;
 
-    void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
-    bool isPeriodic() const { return (gauss_exp != nullptr); }
-    const GaussExp<D> &getPeriodicGaussExp() const { return *this->gauss_exp; }
-
-    virtual double evalfCore(const Coord<D> &r) const = 0;
-
-    double evalf(const Coord<D> &r) const;
-    virtual double evalf(double r, int dim) const = 0;
+    virtual double evalf(const Coord<D> &r) const = 0;
+    virtual double evalf1D(double r, int dim) const = 0;
     void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
 
-    virtual double calcSquareNorm() = 0;
-
-    /** @brief Compute analytic overlap between two Gaussians
-     *  @param[in] this: Left hand Gaussian
-     *  @param[in] rhs: Right hand Gaussian
-     *  @returns Overlap integral
-     */
-    virtual double calcOverlap(GaussFunc<D> &rhs) = 0;
-
-    /** @brief Compute analytic overlap between two Gaussians
-     *  @param[in] this: Left hand Gaussian
-     *  @param[in] rhs: Right hand Gaussian
-     *  @returns Overlap integral
-     */
-    virtual double calcOverlap(GaussPoly<D> &rhs) = 0;
+    double calcOverlap(const Gaussian<D> &inp) const;
+    virtual double calcSquareNorm() const = 0;
+    virtual GaussExp<D> asGaussExp() const = 0;
+    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
 
     /** @brief Compute analytic derivative of Gaussian
      *  @param[in] dir: Cartesian direction of derivative
      *  @returns New GaussPoly
      */
-    virtual GaussPoly<D> differentiate(int dir) = 0;
+    virtual GaussPoly<D> differentiate(int dir) const = 0;
 
     void calcScreening(double stdDeviations);
 
-    /** @returns Squared L2 norm of function \f$ ||f||^2 \f$ */
-    double getSquareNorm() {
-        if (this->squareNorm < 0.0) { calcSquareNorm(); }
-        return this->squareNorm;
-    }
     /** @brief Rescale function by its norm \f$ ||f||^{-1} \f$ */
     void normalize() {
-        double norm = std::sqrt(getSquareNorm());
+        double norm = std::sqrt(calcSquareNorm());
         multConstInPlace(1.0 / norm);
     }
     void multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs);
-    void multConstInPlace(double c) {
-        this->coef *= c;
-        this->calcSquareNorm();
-    }
+    void multConstInPlace(double c) { this->coef *= c; }
     void operator*=(double c) { multConstInPlace(c); }
 
-    bool checkScreen(int n, const int *l) const;
-    int getPower(int i) const { return power[i]; }
     bool getScreen() const { return screen; }
+    bool checkScreen(int n, const int *l) const;
+
+    int getPower(int i) const { return power[i]; }
+    double getCoef() const { return coef; }
+    double getExp(int i) const { return alpha[i]; }
     const std::array<int, D> &getPower() const { return power; }
     const std::array<double, D> &getPos() const { return pos; }
-    double getCoef() const { return coef; }
     std::array<double, D> getExp() const { return alpha; }
-    std::array<double, D> getPeriod() const { return period; }
 
-    double getMaximumStandardDiviation() const;
-
-    virtual void setPower(const std::array<int, D> &power) = 0;
-    virtual void setPower(int d, int power) = 0;
+    virtual void setPow(const std::array<int, D> &power) = 0;
+    virtual void setPow(int d, int power) = 0;
     void setScreen(bool _screen) { this->screen = _screen; }
-    void setCoef(double cf) {
-        this->coef = cf;
-        this->squareNorm = -1.0;
-    }
-    void setExp(double _alpha) {
-        this->alpha.fill(_alpha);
-        this->squareNorm = -1.0;
-    }
-    void setExp(const std::array<double, D> &_alpha) {
-        this->alpha = _alpha;
-        this->squareNorm = -1.0;
-    }
+    void setCoef(double cf) { this->coef = cf; }
+    void setExp(double _alpha) { this->alpha.fill(_alpha); }
+    void setExp(const std::array<double, D> &_alpha) { this->alpha = _alpha; }
     void setPos(const std::array<double, D> &r) { this->pos = r; }
 
     friend std::ostream &operator<<(std::ostream &o, const Gaussian<D> &gauss) { return gauss.print(o); }
@@ -137,13 +102,11 @@ protected:
     std::array<int, D> power;    /**< max power in each dim  */
     std::array<double, D> alpha; /**< exponent  */
     Coord<D> pos;                /**< center  */
-    std::array<double, D> period{};
-    double squareNorm;
-
-    std::shared_ptr<GaussExp<D>> gauss_exp{nullptr};
 
     bool isVisibleAtScale(int scale, int nQuadPts) const;
     bool isZeroOnInterval(const double *a, const double *b) const;
+
+    double getMaximumStandardDiviation() const;
 
     virtual std::ostream &print(std::ostream &o) const = 0;
 };

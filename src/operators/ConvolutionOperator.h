@@ -32,15 +32,17 @@ namespace mrcpp {
 
 template <int D> class ConvolutionOperator : public MWOperator {
 public:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double pr);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec, int root, int reach);
     ConvolutionOperator(const ConvolutionOperator &oper) = delete;
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
     ~ConvolutionOperator() override;
 
 protected:
+    double kern_prec;
+    double build_prec;
     MultiResolutionAnalysis<1> kern_mra;
     FunctionTreeVector<1> kern_exp;
-    double prec;
 
     void initializeOperator(GreensKernel &greens_kernel);
     void clearKernel();

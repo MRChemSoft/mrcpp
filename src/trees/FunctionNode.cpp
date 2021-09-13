@@ -265,6 +265,7 @@ template <int D> void FunctionNode<D>::genChildren() {
         child_p->setIsLeafNode();
         child_p->setIsGenNode();
         child_p->clearHasCoefs();
+        child_p->clearIsEndNode();
 
         sIdx++;
         child_p++;

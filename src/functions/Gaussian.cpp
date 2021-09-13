@@ -32,12 +32,16 @@
  *
  */
 
+#include <numeric>
+
 #include "Gaussian.h"
 #include "GaussExp.h"
 #include "function_utils.h"
 #include "trees/NodeIndex.h"
 #include "utils/Printer.h"
 #include "utils/details.h"
+#include "utils/math_utils.h"
+
 using namespace Eigen;
 
 namespace mrcpp {
@@ -47,8 +51,7 @@ Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r, const std::array<in
         : screen(false)
         , coef(c)
         , power(p)
-        , pos(r)
-        , squareNorm(-1.0) {
+        , pos(r) {
     this->alpha.fill(a);
 }
 
@@ -58,15 +61,7 @@ Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &
         , coef(c)
         , power(p)
         , alpha(a)
-        , pos(r)
-        , squareNorm(-1.0) {}
-
-template <int D> void Gaussian<D>::makePeriodic(const std::array<double, D> &period, double nStdDev) {
-    for (auto &x : period)
-        if (x <= 0.0) MSG_ERROR("The period has to be greater than zero in all directions");
-    this->period = period;
-    this->gauss_exp = function_utils::make_gaussian_periodic<D>(*this, this->period, nStdDev);
-}
+        , pos(r) {}
 
 template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 
@@ -87,7 +82,6 @@ template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const G
     }
     setExp(newAlpha);
     setPos(newPos);
-    this->squareNorm = -1.0;
     setCoef(newCoef);
 }
 
@@ -120,7 +114,6 @@ template <int D> bool Gaussian<D>::checkScreen(int n, const int *l) const {
 }
 
 template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    if (isPeriodic()) return getPeriodicGaussExp().isVisibleAtScale(scale, nQuadPts);
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
         auto visibleScale = static_cast<int>(-std::floor(std::log2(nQuadPts * 0.5 * stdDeviation)));
@@ -132,7 +125,6 @@ template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) con
 }
 
 template <int D> bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
-    if (isPeriodic()) return getPeriodicGaussExp().isZeroOnInterval(a, b);
     for (int i = 0; i < D; i++) {
         double stdDeviation = std::pow(2.0 * this->alpha[i], -0.5);
         double gaussBoxMin = this->pos[i] - 5.0 * stdDeviation;
@@ -147,13 +139,8 @@ template <int D> void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &value
     assert(points.cols() == values.cols());
     assert(points.rows() == values.rows());
     for (int d = 0; d < D; d++) {
-        for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf(points(i, d), d); }
+        for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf1D(points(i, d), d); }
     }
-}
-
-template <int D> double Gaussian<D>::evalf(const Coord<D> &r) const {
-    if (this->period == std::array<double, D>{}) return this->evalfCore(r);
-    return this->gauss_exp->evalf(r);
 }
 
 template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {
@@ -167,6 +154,89 @@ template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {
         for (auto i = 0; i < D; i++) { standard_deviations[i] = 1.0 / std::sqrt(2.0 * exponents[i]); }
         return *std::max_element(standard_deviations.begin(), standard_deviations.end());
     }
+}
+
+template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
+    const auto &bra_exp = this->asGaussExp(); // Make sure all entries are GaussFunc
+    const auto &ket_exp = inp.asGaussExp();   // Make sure all entries are GaussFunc
+
+    double S = 0.0;
+    for (int i = 0; i < bra_exp.size(); i++) {
+        const auto &bra_i = static_cast<const GaussFunc<D> &>(bra_exp.getFunc(i));
+        for (int j = 0; j < ket_exp.size(); j++) {
+            const auto &ket_j = static_cast<const GaussFunc<D> &>(ket_exp.getFunc(j));
+            S += function_utils::calc_overlap(bra_i, ket_j);
+        }
+    }
+    return S;
+}
+
+/** @brief Generates a GaussExp that is semi-periodic around a unit-cell
+ *
+ * @returns Semi-periodic version of a Gaussian around a unit-cell
+ * @param[in] period: The period of the unit cell
+ * @param[in] nStdDev: Number of standard diviations covered in each direction. Default 4.0
+ *
+ * @details nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
+ * integral is conserved with respect to the integration limits.
+ *
+ */
+template <int D> GaussExp<D> Gaussian<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
+    GaussExp<D> gauss_exp;
+    auto pos_vec = std::vector<Coord<D>>();
+
+    auto x_std = nStdDev * this->getMaximumStandardDiviation();
+
+    // This lambda function  calculates the number of neighbooring cells
+    // requred to keep atleast x_stds of the integral conserved in the
+    // unit-cell.
+    auto neighbooring_cells = [period, x_std](auto pos) {
+        auto needed_cells_vec = std::vector<int>();
+        for (auto i = 0; i < D; i++) {
+            auto upper_bound = pos[i] + x_std;
+            auto lower_bound = pos[i] - x_std;
+            // number of cells upp and down relative to the center of the Gaussian
+            needed_cells_vec.push_back(std::ceil(upper_bound / period[i]));
+        }
+
+        return *std::max_element(needed_cells_vec.begin(), needed_cells_vec.end());
+    };
+
+    // Finding starting position
+    auto startpos = this->getPos();
+
+    for (auto d = 0; d < D; d++) {
+        startpos[d] = std::fmod(startpos[d], period[d]);
+        if (startpos[d] < 0) startpos[d] += period[d];
+    }
+
+    auto nr_cells_upp_and_down = neighbooring_cells(startpos);
+    for (auto d = 0; d < D; d++) { startpos[d] -= nr_cells_upp_and_down * period[d]; }
+
+    auto tmp_pos = startpos;
+    std::vector<double> v(2 * nr_cells_upp_and_down + 1);
+    std::iota(v.begin(), v.end(), 0.0);
+    auto cart = math_utils::cartesian_product(v, D);
+    for (auto &c : cart) {
+        for (auto i = 0; i < D; i++) c[i] *= period[i];
+    }
+    // Shift coordinates
+    for (auto &c : cart) std::transform(c.begin(), c.end(), tmp_pos.begin(), c.begin(), std::plus<double>());
+    // Go from vector to mrcpp::Coord
+    for (auto &c : cart) {
+        mrcpp::Coord<D> pos;
+        std::copy_n(c.begin(), D, pos.begin());
+        pos_vec.push_back(pos);
+    }
+
+    for (auto &pos : pos_vec) {
+        auto *gauss = this->copy();
+        gauss->setPos(pos);
+        gauss_exp.append(*gauss);
+        delete gauss;
+    }
+
+    return gauss_exp;
 }
 
 template class Gaussian<1>;

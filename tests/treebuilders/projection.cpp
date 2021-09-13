@@ -27,6 +27,8 @@
 
 #include "factory_functions.h"
 
+#include "functions/function_utils.h"
+
 #include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
 #include "treebuilders/project.h"
@@ -112,13 +114,16 @@ template <int D> void testProjectNarrowPeriodicGaussian() {
     auto periodic = true;
 
     GaussFunc<D> *func = nullptr;
-    initialize<D>(&func, periodic, period);
+    initialize<D>(&func);
     MultiResolutionAnalysis<D> *mra = nullptr;
     initialize<D>(&mra, periodic, period);
 
+    // Periodify Gaussian
+    auto periodic_func = func->periodify(period);
+
     FunctionTree<D> f_tree(*mra);
-    build_grid<D>(f_tree, *func);
-    project<D>(prec, f_tree, *func);
+    build_grid<D>(f_tree, periodic_func);
+    project<D>(prec, f_tree, periodic_func);
     REQUIRE(f_tree.integrate() == Approx(1.0));
 }
 
@@ -133,14 +138,14 @@ template <int D> void testProjectWidePeriodicGaussian() {
     auto alpha = 1.0;
     auto beta = std::pow(alpha / pi, static_cast<double>(D) / 2.0);
     auto func = GaussFunc<D>(alpha, beta, pos);
-    func.makePeriodic(period);
+    auto periodic_func = func.periodify(period);
 
     MultiResolutionAnalysis<D> *mra = nullptr;
     initialize<D>(&mra, true, period);
 
     FunctionTree<D> f_tree(*mra);
-    build_grid<D>(f_tree, func);
-    project<D>(prec, f_tree, func);
+    build_grid<D>(f_tree, periodic_func);
+    project<D>(prec, f_tree, periodic_func);
     REQUIRE(f_tree.integrate() == Approx(1.0));
 }
 

@@ -34,8 +34,9 @@ namespace mrcpp {
 
 class MWOperator {
 public:
-    MWOperator(const MultiResolutionAnalysis<2> &mra)
-            : oper_mra(mra) {}
+    MWOperator(const MultiResolutionAnalysis<2> &mra, int reach = 0)
+            : oper_reach(reach)
+            , oper_mra(mra) {}
     MWOperator(const MWOperator &oper) = delete;
     MWOperator &operator=(const MWOperator &oper) = delete;
     virtual ~MWOperator() { this->clear(true); }
@@ -54,12 +55,13 @@ public:
     const OperatorTree &getComponent(int i) const;
 
     int getRootScale() const { return this->oper_mra.getRootScale(); }
-    int getOperatorScale() const { return this->oper_mra.getOperatorScale(); }
+    int getOperatorReach() const { return this->oper_reach; }
 
     OperatorTree *operator[](int i) { return this->oper_exp[i]; }
     const OperatorTree *operator[](int i) const { return this->oper_exp[i]; }
 
 protected:
+    int oper_reach;
     MultiResolutionAnalysis<2> oper_mra;
     OperatorTreeVector oper_exp;
     Eigen::VectorXi band_max;

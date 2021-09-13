@@ -30,7 +30,9 @@
  */
 
 #include "MWTree.h"
-#include "HilbertIterator.h"
+
+#include "MWNode.h"
+#include "TreeIterator.h"
 #include "MultiResolutionAnalysis.h"
 #include "NodeAllocator.h"
 #include "utils/Printer.h"
@@ -46,11 +48,11 @@ namespace mrcpp {
  * Creates an empty tree object. Node construction and assignment of most of
  * the parameters are done in derived classes. */
 template <int D>
-MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra)
+MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
         : MRA(mra)
         , order(mra.getOrder())
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
-        , name("nn")
+        , name(n)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
     this->nodesAtDepth.push_back(0);
@@ -70,6 +72,24 @@ template <int D> void MWTree<D>::deleteRootNodes() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
+}
+
+/** @brief Remove all nodes in the tree
+ *
+ * @details Leaves the tree inn the same state as after construction, i.e.
+ * undefined function containing only root nodes without coefficients.
+ * The assigned memory (nodeChunks in NodeAllocator) is NOT released,
+ * but is immediately available to the new function.
+ */
+template <int D> void MWTree<D>::clear() {
+    for (int i = 0; i < this->rootBox.size(); i++) {
+        MWNode<D> &root = this->getRootMWNode(i);
+        root.deleteChildren();
+        root.clearHasCoefs();
+        root.clearNorms();
+    }
+    this->resetEndNodeTable();
+    this->clearSquareNorm();
 }
 
 /** Calculate the squared norm of a function represented as a tree.
@@ -152,7 +172,7 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
  * @details Keeps the node structure of the tree, even though the zero function
  * is representable at depth zero. Use cropTree to remove unnecessary nodes.*/
 template <int D> void MWTree<D>::setZero() {
-    HilbertIterator<D> it(this);
+    TreeIterator<D> it(*this);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
         node.zeroCoefs();
@@ -342,7 +362,7 @@ template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
 
 template <int D> void MWTree<D>::resetEndNodeTable() {
     clearEndNodeTable();
-    HilbertIterator<D> it(this);
+    TreeIterator<D> it(*this, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
@@ -357,7 +377,7 @@ template <int D> int MWTree<D>::countBranchNodes(int depth) {
 template <int D> int MWTree<D>::countLeafNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
     //    int nNodes = 0;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();
     //        if (node.getDepth() == depth or depth < 0) {
@@ -372,7 +392,7 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
 /** Traverse tree and count nodes belonging to this rank. */
 template <int D> int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    int count = 0;
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();
@@ -389,7 +409,7 @@ template <int D> int MWTree<D>::countNodes(int depth) {
 /** Traverse tree and count nodes with allocated coefficients. */
 template <int D> int MWTree<D>::countAllocNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    HilbertIterator<D> it(this);
+    //    TreeIterator<D> it(*this);
     //    int count = 0;
     //    while (it.next()) {
     //        MWNode<D> &node = it.getNode();
@@ -403,7 +423,7 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
-template <int D> std::ostream &MWTree<D>::print(std::ostream &o) {
+template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;
     o << "  order: " << this->order << std::endl;

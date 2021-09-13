@@ -172,10 +172,10 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
     int order = 5;
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(world, basis, 25);
-    MRA.setPeriodicOperatorReach(10);
-    MRA.setPeriodicOperatorCutOff(9);
 
-    PoissonOperator P(MRA, build_prec);
+    auto oper_scale = 0;
+    auto oper_reach = 9;
+    PoissonOperator P(MRA, build_prec, oper_scale, oper_reach);
 
     // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
     auto source = [](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };

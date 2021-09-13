@@ -55,26 +55,25 @@ template <int D> class GaussExp : public RepresentableFunction<D> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
     GaussExp(const GaussExp<D> &gExp);
-    GaussExp(const GaussPoly<D> &gPoly);
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
-
-    void makePeriodic(const std::array<double, D> &period, double nStdDev = 4.0);
 
     auto begin() { return funcs.begin(); }
     auto end() { return funcs.end(); }
 
-    double calcCoulombEnergy();
-    double calcSquareNorm();
+    const auto begin() const { return funcs.begin(); }
+    const auto end() const { return funcs.end(); }
+
+    double calcCoulombEnergy() const;
+    double calcSquareNorm() const;
     void normalize();
 
     void calcScreening(double nStdDev = defaultScreening);
-    bool isVisibleAtScale(int scale, int nPts) const override;
-    bool isZeroOnInterval(const double *lb, const double *ub) const override;
 
     double evalf(const Coord<D> &r) const override;
 
-    GaussExp<D> differentiate(int dir);
+    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
+    GaussExp<D> differentiate(int dir) const;
 
     GaussExp<D> add(GaussExp<D> &g);
     GaussExp<D> add(Gaussian<D> &g);
@@ -98,11 +97,6 @@ public:
     const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
-    double getSquareNorm() {
-        if (squareNorm < 0.0) calcSquareNorm();
-        return squareNorm;
-    }
-
     int size() const { return this->funcs.size(); }
     Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
     const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
@@ -117,7 +111,7 @@ public:
     void setScreen(bool screen);
     void setExp(int i, double a) { this->funcs[i]->setExp(a); }
     void setCoef(int i, double b) { this->funcs[i]->setCoef(b); }
-    void setPower(int i, const std::array<int, D> &power) { this->funcs[i]->setPower(power); }
+    void setPow(int i, const std::array<int, D> &power) { this->funcs[i]->setPow(power); }
     void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
     /** @brief Append Gaussian to expansion */
@@ -126,15 +120,17 @@ public:
     void append(const GaussExp<D> &g);
 
     friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
+    friend class Gaussian<D>;
 
 protected:
     std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
     double screening{0.0};
-    double squareNorm{-1.0};
-    bool periodic{false};
 
     std::ostream &print(std::ostream &o) const;
+
+    bool isVisibleAtScale(int scale, int nPts) const override;
+    bool isZeroOnInterval(const double *lb, const double *ub) const override;
 };
 
 } // namespace mrcpp

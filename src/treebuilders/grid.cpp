@@ -38,6 +38,24 @@
 
 namespace mrcpp {
 
+/** @brief Build empty grid by uniform refinement
+ *
+ * @param[in,out] out: Output tree to be built
+ * @param[in] scales: Number of refinement levels
+ *
+ * @details This will split ALL leaf nodes in the tree the given number of times.
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called.
+ */
+template <int D> void build_grid(FunctionTree<D> &out, int scales) {
+    auto maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    DefaultCalculator<D> calculator;
+    SplitAdaptor<D> adaptor(maxScale, true); // Splits all nodes
+    for (auto n = 0; n < scales; n++) builder.build(out, calculator, adaptor, 1);
+}
+
 /** @brief Build empty grid based on info from analytic function
  *
  * @param[out] out: Output tree to be built
@@ -62,16 +80,6 @@ template <int D> void build_grid(FunctionTree<D> &out, const RepresentableFuncti
     TreeBuilder<D> builder;
     AnalyticAdaptor<D> adaptor(inp, maxScale);
     DefaultCalculator<D> calculator;
-    builder.build(out, calculator, adaptor, maxIter);
-    print::separator(10, ' ');
-}
-
-template <int D> void build_grid(FunctionTree<D> &out, const Gaussian<D> &inp, int maxIter) {
-    auto maxScale = out.getMRA().getMaxScale();
-    TreeBuilder<D> builder;
-    DefaultCalculator<D> calculator;
-
-    AnalyticAdaptor<D> adaptor(inp, maxScale);
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
 }
@@ -173,6 +181,12 @@ template <int D> void build_grid(FunctionTree<D> &out, FunctionTreeVector<D> &in
     DefaultCalculator<D> calculator;
     builder.build(out, calculator, adaptor, maxIter);
     print::separator(10, ' ');
+}
+
+template <int D> void build_grid(FunctionTree<D> &out, std::vector<FunctionTree<D> *> &inp, int maxIter) {
+    FunctionTreeVector<D> inp_vec;
+    for (auto *t : inp) inp_vec.push_back({1.0, t});
+    build_grid(out, inp_vec, maxIter);
 }
 
 /** @brief Copy function from one tree onto the grid of another tree, fixed grid
@@ -289,12 +303,12 @@ template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     return nSplit;
 }
 
+template void build_grid<1>(FunctionTree<1> &out, int scales);
+template void build_grid<2>(FunctionTree<2> &out, int scales);
+template void build_grid<3>(FunctionTree<3> &out, int scales);
 template void build_grid<1>(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter);
 template void build_grid<2>(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter);
 template void build_grid<3>(FunctionTree<3> &out, const GaussExp<3> &inp, int maxIter);
-template void build_grid<1>(FunctionTree<1> &out, const Gaussian<1> &inp, int maxIter);
-template void build_grid<2>(FunctionTree<2> &out, const Gaussian<2> &inp, int maxIter);
-template void build_grid<3>(FunctionTree<3> &out, const Gaussian<3> &inp, int maxIter);
 template void build_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp, int maxIter);
 template void build_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp, int maxIter);
 template void build_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp, int maxIter);
@@ -304,6 +318,9 @@ template void build_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, int maxI
 template void build_grid<1>(FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
 template void build_grid<2>(FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
 template void build_grid<3>(FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, std::vector<FunctionTree<1> *> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, std::vector<FunctionTree<2> *> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, std::vector<FunctionTree<3> *> &inp, int maxIter);
 template void copy_func<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
 template void copy_func<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
 template void copy_func<3>(FunctionTree<3> &out, FunctionTree<3> &inp);

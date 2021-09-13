@@ -23,11 +23,13 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "vector"
+#include "GaussPoly.h"
 
+#include <vector>
+
+#include "function_utils.h"
 #include "GaussExp.h"
 #include "GaussFunc.h"
-#include "GaussPoly.h"
 #include "utils/Printer.h"
 #include "utils/details.h"
 
@@ -96,28 +98,20 @@ template <int D> Gaussian<D> *GaussPoly<D>::copy() const {
     return gauss;
 }
 
-template <int D> double GaussPoly<D>::calcOverlap(GaussPoly<D> &b) {
-    GaussExp<D> gExp(*this);
-    GaussExp<D> fExp(b);
-
-    double overlap = 0.0;
-    for (int i = 0; i < fExp.size(); i++) {
-        auto &fFunc = static_cast<GaussFunc<D> &>(fExp.getFunc(i));
-        for (int j = 0; j < gExp.size(); j++) { overlap += gExp.getFunc(j).calcOverlap(fFunc); }
+template<int D> double GaussPoly<D>::calcSquareNorm() const {
+    GaussExp<D> this_exp = this->asGaussExp();
+    double norm = 0.0;
+    for (int i = 0; i < this_exp.size(); i++) {
+        auto func_i = static_cast<GaussFunc<D> &>(this_exp.getFunc(i));
+        for (int j = 0; j < this_exp.size(); j++) {
+            auto func_j = static_cast<GaussFunc<D> &>(this_exp.getFunc(j));
+            norm += function_utils::calc_overlap(func_i, func_j);
+        }
     }
-    return overlap;
+    return norm;
 }
 
-template <int D> double GaussPoly<D>::calcOverlap(GaussFunc<D> &b) {
-    return b.calcOverlap(*this);
-}
-
-template <int D> double GaussPoly<D>::calcSquareNorm() {
-    this->squareNorm = this->calcOverlap(*this);
-    return this->squareNorm;
-}
-
-template <int D> double GaussPoly<D>::evalfCore(const Coord<D> &r) const {
+template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) { return 0.0; }
@@ -133,7 +127,7 @@ template <int D> double GaussPoly<D>::evalfCore(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-template <int D> double GaussPoly<D>::evalf(const double r, int d) const {
+template <int D> double GaussPoly<D>::evalf1D(const double r, int d) const {
     // NOTE!
     //     This function evaluation will give the first dimension the full coef
     //     amplitude, leaving all other directions with amplitude 1.0. This is to
@@ -152,7 +146,36 @@ template <int D> double GaussPoly<D>::evalf(const double r, int d) const {
     return p2 * std::exp(-this->alpha[d] * q2);
 }
 
-template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) {
+template <int D> GaussExp<D> GaussPoly<D>::asGaussExp() const {
+    std::array<int, D> pow;
+    std::array<double, D> pos;
+    auto alpha = this->getExp();
+
+    int nTerms = 1;
+    for (int d = 0; d < D; d++) {
+        nTerms *= (this->getPower(d) + 1);
+        pos[d] = this->getPos()[d];
+    }
+
+    std::vector<double> coefs;
+    std::vector<int *> power;
+
+    fillCoefPowVector(coefs, power, pow, D);
+
+    GaussExp<D> gexp;
+    for (int i = 0; i < nTerms; i++) {
+        double coef = coefs[i];
+        for (int d = 0; d < D; d++) pow[d] = power[i][d];
+        if (coef != 0.0) {
+            GaussFunc<D> gFunc(alpha, coef, pos, pow);
+            gexp.append(gFunc);
+        }
+    }
+    for (auto &i : power) { delete[] i; }
+    return gexp;
+}
+
+template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -248,18 +271,16 @@ template <int D> GaussPoly<D> GaussPoly<D>::mult(double c) {
     return g;
 }
 
-template <int D> void GaussPoly<D>::setPower(int d, int pow) {
+template <int D> void GaussPoly<D>::setPow(int d, int pow) {
     if (poly[d] != nullptr) { delete poly[d]; }
     poly[d] = new Polynomial(pow);
-    this->squareNorm = -1.0;
 }
 
-template <int D> void GaussPoly<D>::setPower(const std::array<int, D> &pow) {
+template <int D> void GaussPoly<D>::setPow(const std::array<int, D> &pow) {
     for (int d = 0; d < D; d++) {
         if (poly[d] != nullptr) { delete poly[d]; }
         poly[d] = new Polynomial(pow[d]);
     }
-    this->squareNorm = -1.0;
 }
 
 /** @brief Set polynomial in given dimension
@@ -274,25 +295,24 @@ template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 }
 
 template <int D> std::ostream &GaussPoly<D>::print(std::ostream &o) const {
-    auto expTmp = this->getExp();
-    auto is_array = details::are_all_equal<D>(expTmp);
+    auto is_array = details::are_all_equal<D>(this->getExp());
 
     // If all of the values in the exponential are the same only
     // one is printed, else, all of them are printed
+    o << "Coef    : " << this->getCoef() << std::endl;
     if (!is_array) {
-        o << "Exp:   ";
-        for (auto &alpha : expTmp) { o << alpha << " "; }
+        o << "Exp     : ";
+        for (auto &alpha : this->getExp()) o << alpha << " ";
     } else {
-        o << "Exp:   " << expTmp[0] << std::endl;
+        o << "Exp     : " << this->getExp(0) << std::endl;
     }
-    o << "Coef: " << this->getCoef() << std::endl;
-    o << "Pos:   ";
-    for (int i = 0; i < D; i++) { o << this->getPos()[i] << " "; }
+    o << "Pos     : ";
+    for (int i = 0; i < D; i++) o << this->getPos()[i] << " ";
     o << std::endl;
-    for (int i = 0; i < D; i++) {
-        o << "Dim " << i << ": order " << this->getPower(i) << std::endl;
-        o << this->getPolyCoefs(i) << std::endl;
-    }
+    o << "Pow     : ";
+    for (int i = 0; i < D; i++) o << this->getPower()[i] << " ";
+    o << std::endl;
+    for (int i = 0; i < D; i++) o << "Poly[" << i << "] : " << this->getPolyCoefs(i).transpose() << std::endl;
     return o;
 }
 

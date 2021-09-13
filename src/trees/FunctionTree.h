@@ -53,12 +53,11 @@ namespace mrcpp {
 
 template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr);
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name) : FunctionTree(mra, nullptr, name) {}
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr, const std::string &name = "nn");
     FunctionTree(const FunctionTree<D> &tree) = delete;
     FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
     ~FunctionTree() override;
-
-    void clear();
 
     double integrate() const;
     double evalf(const Coord<D> &r) const override;
@@ -104,7 +103,7 @@ public:
 
 protected:
     std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
-    std::ostream &print(std::ostream &o) override;
+    std::ostream &print(std::ostream &o) const override;
 
     void allocRootNodes();
 };

@@ -211,11 +211,11 @@ TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [he
 
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(world, basis, 25);
-    MRA.setPeriodicOperatorReach(10);
-    MRA.setPeriodicOperatorCutOff(9);
 
     auto mu = 4.3;
-    HelmholtzOperator H(MRA, mu, build_prec);
+    auto oper_root = 0;
+    auto oper_reach = 9;
+    HelmholtzOperator H(MRA, mu, build_prec, oper_root, oper_reach);
 
     // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
     auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
@@ -254,10 +254,11 @@ TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz
 
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(world, basis, 25);
-    MRA.setOperatorScale(-4);
 
     auto mu = 4.3;
-    HelmholtzOperator H(MRA, mu, build_prec);
+    auto oper_root = -4;
+    auto oper_cutoff = 1;
+    HelmholtzOperator H(MRA, mu, build_prec, oper_root, oper_cutoff);
 
     // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
     auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };

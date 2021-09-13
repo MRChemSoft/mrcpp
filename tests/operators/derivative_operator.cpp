@@ -342,14 +342,14 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     FunctionTree<3> f_tree(*mra);
     project<3>(prec, f_tree, f);
 
-    FunctionTreeVector<3> grad_f = gradient(diff, f_tree);
+    auto grad_f = gradient(diff, f_tree);
     REQUIRE(grad_f.size() == 3);
 
     const Coord<3> r{1.1, 0.4, 0.2};
-    REQUIRE(get_func(grad_f, 0).evalf(r) == Approx(fx(r)).epsilon(prec));
-    REQUIRE(get_func(grad_f, 1).evalf(r) == Approx(fy(r)).epsilon(prec));
-    REQUIRE(get_func(grad_f, 2).evalf(r) == Approx(fz(r)).epsilon(prec));
-    clear(grad_f, true);
+    REQUIRE(mrcpp::get_func(grad_f, 0)(r) == Approx(fx(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 1)(r) == Approx(fy(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 2)(r) == Approx(fz(r)).epsilon(prec));
+    mrcpp::clear(grad_f, true);
 
     delete mra;
 }

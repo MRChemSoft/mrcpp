@@ -37,7 +37,7 @@
 
 #include "trees/FunctionNode.h"
 #include "trees/FunctionTree.h"
-#include "trees/HilbertIterator.h"
+#include "trees/TreeIterator.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -78,8 +78,8 @@ void multiply(double prec,
               bool absPrec,
               bool useMaxNorms) {
     FunctionTreeVector<D> tmp_vec;
-    tmp_vec.push_back(std::make_tuple(c, &inp_a));
-    tmp_vec.push_back(std::make_tuple(1.0, &inp_b));
+    tmp_vec.push_back({c, &inp_a});
+    tmp_vec.push_back({1.0, &inp_b});
     multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms);
 }
 
@@ -144,6 +144,18 @@ void multiply(double prec,
     print::time(10, "Time transform", trans_t);
     print::time(10, "Time cleaning", clean_t);
     print::separator(10, ' ');
+}
+
+template <int D>
+void multiply(double prec,
+              FunctionTree<D> &out,
+              std::vector<FunctionTree<D> *> &inp,
+              int maxIter,
+              bool absPrec,
+              bool useMaxNorms) {
+    FunctionTreeVector<D> inp_vec;
+    for (auto &t : inp) inp_vec.push_back({1.0, t});
+    multiply(prec, out, inp_vec, maxIter, absPrec, useMaxNorms);
 }
 
 /** @brief Out-of-place square of MW function representations, adaptive grid
@@ -273,7 +285,7 @@ void dot(double prec,
         auto *out_d = new FunctionTree<D>(out.getMRA());
         build_grid(*out_d, out);
         multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter, absPrec);
-        tmp_vec.push_back(std::make_tuple(coef_a * coef_b, out_d));
+        tmp_vec.push_back({coef_a * coef_b, out_d});
     }
     build_grid(out, tmp_vec);
     add(-1.0, out, tmp_vec, 0);
@@ -297,7 +309,7 @@ template <int D> double dot(FunctionTree<D> &bra, FunctionTree<D> &ket) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
 
     MWNodeVector<D> nodeTable;
-    HilbertIterator<D> it(&bra);
+    TreeIterator<D> it(bra);
     it.setReturnGenNodes(false);
     while (it.next()) {
         MWNode<D> &node = it.getNode();
@@ -413,12 +425,57 @@ template void multiply<3>(double prec,
                           int maxIter,
                           bool absPrec,
                           bool useMaxNorms);
-template void power<1>(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, double pow, int maxIter, bool absPrec);
-template void power<2>(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, double pow, int maxIter, bool absPrec);
-template void power<3>(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, double pow, int maxIter, bool absPrec);
-template void square<1>(double prec, FunctionTree<1> &out, FunctionTree<1> &tree, int maxIter, bool absPrec);
-template void square<2>(double prec, FunctionTree<2> &out, FunctionTree<2> &tree, int maxIter, bool absPrec);
-template void square<3>(double prec, FunctionTree<3> &out, FunctionTree<3> &tree, int maxIter, bool absPrec);
+template void multiply<1>(double prec,
+                          FunctionTree<1> &out,
+                          std::vector<FunctionTree<1> *> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<2>(double prec,
+                          FunctionTree<2> &out,
+                          std::vector<FunctionTree<2> *> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void multiply<3>(double prec,
+                          FunctionTree<3> &out,
+                          std::vector<FunctionTree<3> *> &inp,
+                          int maxIter,
+                          bool absPrec,
+                          bool useMaxNorms);
+template void power<1>(double prec,
+                       FunctionTree<1> &out,
+                       FunctionTree<1> &tree,
+                       double pow,
+                       int maxIter,
+                       bool absPrec);
+template void power<2>(double prec,
+                       FunctionTree<2> &out,
+                       FunctionTree<2> &tree,
+                       double pow,
+                       int maxIter,
+                       bool absPrec);
+template void power<3>(double prec,
+                       FunctionTree<3> &out,
+                       FunctionTree<3> &tree,
+                       double pow,
+                       int maxIter,
+                       bool absPrec);
+template void square<1>(double prec,
+                        FunctionTree<1> &out,
+                        FunctionTree<1> &tree,
+                        int maxIter,
+                        bool absPrec);
+template void square<2>(double prec,
+                        FunctionTree<2> &out,
+                        FunctionTree<2> &tree,
+                        int maxIter,
+                        bool absPrec);
+template void square<3>(double prec,
+                        FunctionTree<3> &out,
+                        FunctionTree<3> &tree,
+                        int maxIter,
+                        bool absPrec);
 template void dot<1>(double prec,
                      FunctionTree<1> &out,
                      FunctionTreeVector<1> &inp_a,
@@ -437,6 +494,7 @@ template void dot<3>(double prec,
                      FunctionTreeVector<3> &inp_b,
                      int maxIter,
                      bool absPrec);
+
 template double dot<1>(FunctionTree<1> &bra, FunctionTree<1> &ket);
 template double dot<2>(FunctionTree<2> &bra, FunctionTree<2> &ket);
 template double dot<3>(FunctionTree<3> &bra, FunctionTree<3> &ket);

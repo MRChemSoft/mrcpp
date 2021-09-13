@@ -25,7 +25,7 @@
 
 #include "OperatorTree.h"
 #include "BandWidth.h"
-#include "LebesgueIterator.h"
+#include "TreeIterator.h"
 #include "NodeAllocator.h"
 #include "OperatorNode.h"
 #include "utils/Printer.h"
@@ -35,8 +35,8 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np)
-        : MWTree<2>(mra)
+OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name)
+        : MWTree<2>(mra, name)
         , normPrec(np)
         , bandWidth(nullptr)
         , nodePtrStore(nullptr)
@@ -129,7 +129,7 @@ void OperatorTree::calcBandWidth(double prec) {
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);
-    LebesgueIterator<2> it(this);
+    TreeIterator<2> it(*this);
     while (it.next()) {
         int n = it.getNode().getDepth();
         const NodeIndex<2> &l = it.getNode().getNodeIndex();
@@ -229,7 +229,7 @@ void OperatorTree::mwTransformDown(bool overwrite) {
     }
 }
 
-std::ostream &OperatorTree::print(std::ostream &o) {
+std::ostream &OperatorTree::print(std::ostream &o) const {
     o << std::endl << "*OperatorTree: " << this->name << std::endl;
     return MWTree<2>::print(o);
 }

@@ -145,9 +145,8 @@ template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const M
     int g_depth = gNode.getDepth();
     int width = this->oper->getMaxBandWidth(o_depth);
 
-    bool periodic = gNode.getMWTree().getMRA().getWorldBox().isPeriodic();
-    int cut_off = gNode.getMWTree().getMRA().getPeriodicOperatorCutOff();
-    int reach = gNode.getMWTree().getMRA().getPeriodicOperatorReach();
+    bool periodic = gNode.getMWTree().isPeriodic();
+    int reach = this->oper->getOperatorReach();
 
     if (width >= 0) {
         const NodeBox<D> &fWorld = this->fTree->getRootBox();
@@ -168,8 +167,8 @@ template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const M
                 if (sIdx[i] < c_i) sIdx[i] = c_i;
                 if (eIdx[i] > c_i + nboxes - 1) eIdx[i] = c_i + nboxes - 1;
             } else {
-                if (sIdx[i] < c_i * cut_off) sIdx[i] = c_i * cut_off;
-                if (eIdx[i] > (c_i + nboxes) * cut_off - 1) eIdx[i] = (c_i + nboxes) * cut_off - 1;
+                if (sIdx[i] < c_i * reach) sIdx[i] = c_i * reach;
+                if (eIdx[i] > (c_i + nboxes) * reach - 1) eIdx[i] = (c_i + nboxes) * reach - 1;
             }
             nbox[i] = eIdx[i] - sIdx[i] + 1;
         }
@@ -195,7 +194,7 @@ template <int D> void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *ba
             band->push_back(&fNode);
 
         } else {
-            const auto oper_scale = this->fTree->getMRA().getOperatorScale();
+            const auto oper_scale = this->oper->getRootScale();
             if (oper_scale == 0) {
                 if (periodic::in_unit_cell<D>(idx) and onUnitcell) {
                     MWNode<D> &fNode = this->fTree->getNode(idx);
@@ -377,7 +376,7 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
 
 template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree) const {
     if (not manipulateOperator) {
-        const auto oper_scale = tree.getMRA().getOperatorScale();
+        const auto oper_scale = this->oper->getRootScale();
         auto car_prod = math_utils::cartesian_product(std::vector<int>{-1, 0}, D);
         for (auto i = -1; i > oper_scale - 1; i--) {
             for (auto &a : car_prod) {
@@ -393,7 +392,7 @@ template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree
 
 template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
     auto *nodeVec = new MWNodeVector<D>;
-    touchParentNodes(tree);
+    if (tree.isPeriodic()) touchParentNodes(tree);
     tree_utils::make_node_table(tree, *nodeVec);
     return nodeVec;
 }

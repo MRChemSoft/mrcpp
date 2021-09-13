@@ -28,9 +28,6 @@
 
 namespace mrcpp {
 namespace function_utils {
-template <int D>
-std::shared_ptr<GaussExp<D>> make_gaussian_periodic(const Gaussian<D> &gauss,
-                                                    const std::array<double, D> &period,
-                                                    double nStdDev = 4.0);
+template <int D> double calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b);
 } // namespace function_utils
 } // namespace mrcpp

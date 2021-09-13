@@ -49,6 +49,7 @@ public:
     virtual ~RepresentableFunction();
 
     /** @returns Function value in a point @param[in] r: Cartesian coordinate */
+    double operator()(const Coord<D> &r) const { return evalf(r); };
     virtual double evalf(const Coord<D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);
@@ -63,13 +64,15 @@ public:
     const double *getLowerBounds() const { return this->A; }
     const double *getUpperBounds() const { return this->B; }
 
-    virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
-    virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
+    friend class AnalyticAdaptor<D>;
 
 protected:
     bool bounded;
     double *A; ///< Lower bound, NULL if unbounded
     double *B; ///< Upper bound, Null if unbounded
+
+    virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
+    virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
 };
 
 } // namespace mrcpp

@@ -32,7 +32,7 @@ namespace mrcpp {
 
 class OperatorTree final : public MWTree<2> {
 public:
-    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np);
+    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
     OperatorTree(const OperatorTree &tree) = delete;
     OperatorTree &operator=(const OperatorTree &tree) = delete;
     ~OperatorTree() override;
@@ -63,7 +63,7 @@ protected:
     void allocRootNodes();
     void getMaxTranslations(Eigen::VectorXi &maxTransl);
 
-    std::ostream &print(std::ostream &o) override;
+    std::ostream &print(std::ostream &o) const override;
 };
 
 } // namespace mrcpp

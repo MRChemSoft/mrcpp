@@ -251,10 +251,10 @@ template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
 }
 
 template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
-
     if (this->isPeriodic()) { periodic::index_manipulation<1>(nIdx, this->getPeriodic()); };
 
     int n = nIdx.getScale();
+    if (n < 0 and this->isPeriodic()) n = 0;
     int l = nIdx.getTranslation(0);
     int cn = this->cornerIndex.getScale();
     int cl = this->cornerIndex.getTranslation(0);

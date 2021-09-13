@@ -43,6 +43,7 @@ using namespace mrcpp;
 namespace identity_convolution {
 
 template <int D> void applyIdentity();
+template <int D> void applyPeriodicIdentity();
 
 TEST_CASE("Initialize identity convolution operator", "[init_identity], [identity_convolution], [mw_operator]") {
     double exp_prec = 1.0e-6;
@@ -135,4 +136,44 @@ template <int D> void applyIdentity() {
     finalize(&mra);
 }
 
+TEST_CASE("Apply periodic identity convolution operator", "[apply_periodic_identity], [identity_convolution], [mw_operator]") {
+    SECTION("1D") { applyPeriodicIdentity<1>(); }
+    SECTION("2D") { applyPeriodicIdentity<2>(); }
+    SECTION("3D") { applyPeriodicIdentity<3>(); }
+}
+
+template <int D> void applyPeriodicIdentity() {
+    double proj_prec = 1.0e-3;
+    double apply_prec = 1.0e-3;
+    double build_prec = 1.0e-4;
+
+    std::array<double, D> sfac, period;
+    std::array<int, D> nboxes, corner;
+    sfac.fill(1.0);
+    period.fill(2.0);
+    nboxes.fill(2);
+    corner.fill(-1);
+
+    InterpolatingBasis basis(5);
+    BoundingBox<D> world(0, corner, nboxes, sfac, true);
+    MultiResolutionAnalysis<D> mra(world, basis);
+
+    double beta = 10.0;
+    double alpha = std::pow(beta / pi, D / 2.0);
+    Coord<D> pos;
+    pos.fill(0.8);
+    GaussFunc<D> fFunc(beta, alpha, pos);
+    auto pFunc = fFunc.periodify(period);
+
+    IdentityConvolution<D> I(mra, build_prec, -1, 1);
+    FunctionTree<D> fTree(mra);
+    FunctionTree<D> gTree(mra);
+
+    build_grid(fTree, pFunc);
+    project(proj_prec, fTree, pFunc);
+    apply(apply_prec, gTree, I, fTree);
+
+    REQUIRE(fTree.integrate() == Approx(1.0).epsilon(apply_prec));
+    REQUIRE(gTree.integrate() == Approx(1.0).epsilon(apply_prec));
+}
 } // namespace identity_convolution

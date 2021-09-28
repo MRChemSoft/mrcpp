@@ -176,9 +176,9 @@ template <int D> double FunctionTree<D>::integrate() const {
     }
 
     // Handle potential scaling
-    auto sf = this->getMRA().getWorldBox().getScalingFactors();
+    auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto jacobian = 1.0;
-    for (const auto &sf_i : sf) jacobian *= std::sqrt(sf_i);
+    for (const auto &sf_i : scaling_factor) jacobian *= std::sqrt(sf_i);
     // Square root of scaling factor in each diection. The seemingly missing
     // multiplication by the square root of sf_i is included in the basis
 
@@ -201,9 +201,9 @@ template <int D> double FunctionTree<D>::integrate() const {
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 
     // Handle potential scaling
-    const auto sf = this->getMRA().getWorldBox().getScalingFactors();
+    const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto arg = r;
-    for (auto i = 0; i < D; i++) arg[i] = arg[i] / sf[i];
+    for (auto i = 0; i < D; i++) arg[i] = arg[i] / scaling_factor[i];
 
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
@@ -218,7 +218,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
 
     // Adjust for scaling factor included in basis
     auto coef = 1.0;
-    for (const auto &fac : sf) coef /= std::sqrt(fac);
+    for (const auto &fac : scaling_factor) coef /= std::sqrt(fac);
 
     return coef * result;
 }

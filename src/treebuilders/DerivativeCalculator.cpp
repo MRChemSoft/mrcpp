@@ -121,9 +121,9 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
         }
     }
     // Multiply appropriate scaling factor
-    const double sf =
+    const double scaling_factor =
         std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
-    for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= sf;
+    for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= scaling_factor;
     this->calc_t[mrcpp_get_thread_num()].stop();
 
     this->norm_t[mrcpp_get_thread_num()].resume();

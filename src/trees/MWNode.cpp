@@ -317,9 +317,9 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
         out_vec = tmp;
     }
 
-    const auto sf = this->getMWTree().getMRA().getWorldBox().getScalingFactors();
+    const auto scaling_factor = this->getMWTree().getMRA().getWorldBox().getScalingFactors();
     double sf_prod = 1.0;
-    for (const auto &s : sf) sf_prod *= s;
+    for (const auto &s : scaling_factor) sf_prod *= s;
     if (sf_prod <= MachineZero) sf_prod = 1.0; // When there is no scaling factor
 
     int np1 = getScale() + 1; // we're working on scaling coefs on next scale

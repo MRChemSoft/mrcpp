@@ -165,9 +165,6 @@ template <int D> void testDifferentiationPH(int order) {
 
 template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     MultiResolutionAnalysis<D> *mra = initializePeriodicMRA<D>();
-    Printer::init(0);
-    (*mra).print();
-
     double prec = 1.0e-6;
     ABGVOperator<D> diff(*mra, a, b);
 
@@ -181,8 +178,6 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
-    std::cout << "dg_tree " << dg_tree.evalf({12.0, 0.0, 0.0}) << "\n";
-    std::cout << "dg_func " << dg_func({12.0, 0.0, 0.0}) << "\n";
 
     REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
     REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));

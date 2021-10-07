@@ -59,7 +59,8 @@ LegendrePoly::LegendrePoly(int k, double n, double l)
     double a = -1.0;
     double b = 1.0;
     setBounds(&a, &b);
-    rescale(n, l);
+    translate(l);
+    dilate(n);
 }
 
 /** Compute Legendre polynomial coefs on interval [-1,1] */

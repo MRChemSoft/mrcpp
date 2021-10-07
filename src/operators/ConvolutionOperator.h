@@ -38,6 +38,8 @@ public:
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
     ~ConvolutionOperator() override;
 
+    double getBuildPrec() const { return this->build_prec; };
+
 protected:
     double kern_prec;
     double build_prec;

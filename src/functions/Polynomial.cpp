@@ -85,7 +85,10 @@ Polynomial &Polynomial::operator=(const Polynomial &poly) {
 
 /** Evaluate scaled and translated polynomial */
 double Polynomial::evalf(double x) const {
-    if (this->outOfBounds({x})) { return 0.0; }
+    if (isBounded()) {
+        if (x < this->getScaledLowerBound() ) return 0.0;
+        if (x > this->getScaledUpperBound() ) return 0.0;
+    }
     double xp = 1.0;
     double y = 0.0;
     for (int k = 0; k < getOrder() + 1; k++) {
@@ -120,14 +123,6 @@ double Polynomial::calcSquareNorm() {
     double sqNorm = -1.0;
     if (isBounded()) { sqNorm = this->innerProduct(*this); }
     return sqNorm;
-}
-
-/** Dilates and translates the polynomial, keeps the domain [A,B].
- * Transform: P(2^(-n)*x+l)->P(2^(-n')*(2^(-n)x+l)+l') for given
- * arguments n,l. */
-void Polynomial::rescale(double n, double l) {
-    setDilation(this->N * n);
-    setTranslation(this->L + l);
 }
 
 /** Returns the order of the highest non-zero coef.

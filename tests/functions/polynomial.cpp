@@ -100,10 +100,11 @@ SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomials
         double b = 1.0;
         Vector3d c = {0.0, 1.0, 1.0};
         Polynomial P(c, &a, &b);
-        WHEN("P is rescaled") {
+        WHEN("P is translated then dilated") {
             double n = 2.0;
             double l = 1.0;
-            P.rescale(n, l);
+            P.translate(l);
+            P.dilate(n);
             THEN("The dilation changes") { REQUIRE(P.getDilation() == Approx(2.0)); }
             THEN("The translation changes") { REQUIRE(P.getTranslation() == Approx(1.0)); }
             THEN("The scaled bounds change") {
@@ -118,6 +119,28 @@ SCENARIO("Polynomials can be scaled and translated", "[poly_scale], [polynomials
                 Coord<1> x{0.3};
                 double calc_val = P.evalf(x);
                 double ref_val = (2.0 * x[0] - 1.0) + (2.0 * x[0] - 1.0) * (2.0 * x[0] - 1.0);
+                REQUIRE(calc_val == Approx(ref_val));
+            }
+        }
+        WHEN("P is dilated then translated") {
+            double n = 2.0;
+            double l = 1.0;
+            P.dilate(n);
+            P.translate(l);
+            THEN("The dilation changes") { REQUIRE(P.getDilation() == Approx(2.0)); }
+            THEN("The translation changes") { REQUIRE(P.getTranslation() == Approx(2.0)); }
+            THEN("The scaled bounds change") {
+                REQUIRE(P.getScaledLowerBound() == Approx(0.5));
+                REQUIRE(P.getScaledUpperBound() == Approx(1.5));
+            }
+            THEN("The unscaled bounds don't change") {
+                REQUIRE(P.getLowerBound(0) == Approx(-1.0));
+                REQUIRE(P.getUpperBound(0) == Approx(1.0));
+            }
+            THEN("The scaled evaluation is known") {
+                Coord<1> x{0.7};
+                double calc_val = P.evalf(x);
+                double ref_val = (2.0 * x[0] - 2.0) + (2.0 * x[0] - 2.0) * (2.0 * x[0] - 2.0);
                 REQUIRE(calc_val == Approx(ref_val));
             }
         }

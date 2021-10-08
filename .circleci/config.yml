@@ -1,7 +1,7 @@
 version: 2
 
 variables:
-  ubuntu-1804: &ubuntu-1804
+  ubuntu-2004: &ubuntu-2004
     docker:
       - image: ghcr.io/mrchemsoft/metamr/circleci_ubuntu-20.04:sha-343e011
         name: tsubame
@@ -55,31 +55,25 @@ variables:
 
 jobs:
   serial-py3:
-    <<: *ubuntu-1804
+    <<: *ubuntu-2004
     steps:
       - checkout
-      - *setup
-      - *report
       - *configure-serial
       - *build
       - *tests
   omp-py3:
-    <<: *ubuntu-1804
+    <<: *ubuntu-2004
     environment:
       - OMP_NUM_THREADS: '2'
     steps:
       - checkout
-      - *setup
-      - *report
       - *configure-omp
       - *build
       - *tests
   mpi-py3:
-    <<: *ubuntu-1804
+    <<: *ubuntu-2004
     steps:
       - checkout
-      - *setup
-      - *report
       - *configure-mpi
       - *build
       - *tests

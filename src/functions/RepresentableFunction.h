@@ -49,7 +49,6 @@ public:
     virtual ~RepresentableFunction();
 
     /** @returns Function value in a point @param[in] r: Cartesian coordinate */
-    double operator()(const Coord<D> &r) const { return evalf(r); };
     virtual double evalf(const Coord<D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);

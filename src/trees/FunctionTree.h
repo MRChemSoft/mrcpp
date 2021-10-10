@@ -60,6 +60,7 @@ public:
     ~FunctionTree() override;
 
     double integrate() const;
+    double evalf_precise(const Coord<D> &r);
     double evalf(const Coord<D> &r) const override;
 
     int getNGenNodes() const { return getGenNodeAllocator().getNNodes(); }

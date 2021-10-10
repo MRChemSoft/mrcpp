@@ -192,10 +192,16 @@ void MWFilter::setFilterPaths(const std::string &lib) {
         case (Interpol):
             this->H_path = lib + "/I_H0_" + std::to_string(this->order);
             this->G_path = lib + "/I_G0_" + std::to_string(this->order);
+	    std::cout << "Interpol" << std::endl;
+	    std::cout << "this->H_path " << this->H_path << std::endl;
+	    std::cout << "this->G_path " << this->H_path << std::endl;
             break;
         case (Legendre):
             this->H_path = lib + "/L_H0_" + std::to_string(this->order);
             this->G_path = lib + "/L_G0_" + std::to_string(this->order);
+	    std::cout << "Legendre" << std::endl;
+	    std::cout << "this->H_path " << this->H_path << std::endl;
+	    std::cout << "this->G_path " << this->H_path << std::endl;
             break;
         default:
             MSG_ABORT("Invalid filter type " << this->type);

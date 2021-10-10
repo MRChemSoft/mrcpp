@@ -60,8 +60,11 @@ MWFilter::MWFilter(int k, int t)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
+    std::cout << __func__ << std::endl;
     for (auto n : {mwfilters_source_dir(), mwfilters_install_dir()}) {
+	std::cout << "plausible filter dir : " << n << std::endl;
         if (details::directory_exists(n)) {
+	    std::cout << "setting filter dir : " << n << std::endl;
             setFilterPaths(n);
             break;
         }
@@ -188,6 +191,7 @@ void MWFilter::applyInverse(VectorXd &data) const {
 }
 
 void MWFilter::setFilterPaths(const std::string &lib) {
+    std::cout << __func__ << std::endl;
     switch (this->type) {
         case (Interpol):
             this->H_path = lib + "/I_H0_" + std::to_string(this->order);
@@ -215,6 +219,10 @@ void MWFilter::setFilterPaths(const std::string &lib) {
 void MWFilter::generateBlocks() {
     std::ifstream H_fis(this->H_path.c_str(), std::ios::binary);
     std::ifstream G_fis(this->G_path.c_str(), std::ios::binary);
+
+    std::cout << __func__ << std::endl;
+            std::cout << "this->H_path " << this->H_path << std::endl;
+            std::cout << "this->G_path " << this->H_path << std::endl;
 
     if (H_fis.fail()) MSG_ABORT("Could not open filter: " << this->H_path);
     if (G_fis.fail()) MSG_ABORT("Could not open filter: " << this->G_path);

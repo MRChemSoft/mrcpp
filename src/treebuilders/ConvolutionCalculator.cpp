@@ -380,7 +380,7 @@ template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree
         auto car_prod = math_utils::cartesian_product(std::vector<int>{-1, 0}, D);
         for (auto i = -1; i > oper_scale - 1; i--) {
             for (auto &a : car_prod) {
-                std::array<int, D> l;
+                std::array<int, D> l{};
                 std::copy_n(a.begin(), D, l.begin());
                 NodeIndex<D> idx(i, l);
                 tree.getNode(idx);

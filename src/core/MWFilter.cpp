@@ -48,7 +48,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-MWFilter::MWFilter(int k, int t)
+MWFilter::MWFilter(int k, int t, const std::vector<std::string> &mwfilter_dirs)
         : type(t)
         , order(k) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
@@ -62,7 +62,9 @@ MWFilter::MWFilter(int k, int t)
 
     std::cout << __func__ << std::endl;
     bool filters_found = false;
-    for (auto n : {mwfilters_source_dir(), mwfilters_install_dir()}) {
+    auto dirs = std::vector<std::string>{mwfilters_source_dir(), mwfilters_install_dir()};
+    dirs.insert(dirs.begin(), mwfilter_dirs.begin(), mwfilter_dirs.end());
+    for (auto n : dirs) {
 	std::cout << "plausible filter dir : " << n << std::endl;
         if (details::directory_exists(n)) {
 	    std::cout << "setting filter dir : " << n << std::endl;

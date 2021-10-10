@@ -36,7 +36,7 @@ namespace mrcpp {
 
 class MWFilter final {
 public:
-    MWFilter(int k, int t, const std::vector<std::string> & mwfilter_dirs = {});
+    MWFilter(int k, int t);
     MWFilter(int t, const Eigen::MatrixXd &data);
 
     void apply(Eigen::MatrixXd &data) const;

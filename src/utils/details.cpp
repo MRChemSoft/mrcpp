@@ -27,10 +27,12 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdlib>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "MRCPP/config.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
@@ -46,6 +48,27 @@ bool directory_exists(std::string path) {
     }
 
     return (info.st_mode & S_IFDIR) ? true : false;
+}
+
+std::string find_filters() {
+    std::cout << __func__ << std::endl;
+    std::string filters;
+    auto envvar = "";
+    if (const char *env_p = std::getenv("MWFILTERS_DIR")) envvar = env_p;
+    for (auto n : {envvar, mwfilters_source_dir(), mwfilters_install_dir()}) {
+        std::cout << "plausible filter dir : " << n << std::endl;
+        if (details::directory_exists(n)) {
+            std::cout << "setting filter dir : " << n << std::endl;
+            filters = n;
+            break;
+        }
+    }
+    std::cout << "boo " << std::endl;
+    if (filters.empty()) {
+        MSG_ABORT("Could not find a folder containing filters!");
+    } else {
+        return filters;
+    }
 }
 
 // helper function: parse a string and returns the nth integer number

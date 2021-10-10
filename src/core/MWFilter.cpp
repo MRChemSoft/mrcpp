@@ -48,7 +48,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-MWFilter::MWFilter(int k, int t, const std::vector<std::string> &mwfilter_dirs)
+MWFilter::MWFilter(int k, int t)
         : type(t)
         , order(k) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
@@ -60,20 +60,7 @@ MWFilter::MWFilter(int k, int t, const std::vector<std::string> &mwfilter_dirs)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    std::cout << __func__ << std::endl;
-    bool filters_found = false;
-    auto dirs = std::vector<std::string>{mwfilters_source_dir(), mwfilters_install_dir()};
-    dirs.insert(dirs.begin(), mwfilter_dirs.begin(), mwfilter_dirs.end());
-    for (auto n : dirs) {
-	std::cout << "plausible filter dir : " << n << std::endl;
-        if (details::directory_exists(n)) {
-	    std::cout << "setting filter dir : " << n << std::endl;
-            setFilterPaths(n);
-	    filters_found = true;
-            break;
-        }
-    }
-    if (!filters_found) MSG_ABORT("Could not find a folder containing filters!");
+    setFilterPaths(details::find_filters());
 
     generateBlocks();
 
@@ -221,8 +208,8 @@ void MWFilter::generateBlocks() {
     std::ifstream G_fis(this->G_path.c_str(), std::ios::binary);
 
     std::cout << __func__ << std::endl;
-            std::cout << "this->H_path " << this->H_path << std::endl;
-            std::cout << "this->G_path " << this->H_path << std::endl;
+    std::cout << "this->H_path " << this->H_path << std::endl;
+    std::cout << "this->G_path " << this->H_path << std::endl;
 
     if (H_fis.fail()) MSG_ABORT("Could not open filter: " << this->H_path);
     if (G_fis.fail()) MSG_ABORT("Could not open filter: " << this->G_path);

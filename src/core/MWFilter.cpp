@@ -61,14 +61,17 @@ MWFilter::MWFilter(int k, int t)
     }
 
     std::cout << __func__ << std::endl;
+    bool filters_found = false;
     for (auto n : {mwfilters_source_dir(), mwfilters_install_dir()}) {
 	std::cout << "plausible filter dir : " << n << std::endl;
         if (details::directory_exists(n)) {
 	    std::cout << "setting filter dir : " << n << std::endl;
             setFilterPaths(n);
+	    filters_found = true;
             break;
         }
     }
+    if (!filters_found) MSG_ABORT("Could not find a folder containing filters!");
 
     generateBlocks();
 
@@ -191,7 +194,6 @@ void MWFilter::applyInverse(VectorXd &data) const {
 }
 
 void MWFilter::setFilterPaths(const std::string &lib) {
-    std::cout << __func__ << std::endl;
     switch (this->type) {
         case (Interpol):
             this->H_path = lib + "/I_H0_" + std::to_string(this->order);
@@ -210,10 +212,6 @@ void MWFilter::setFilterPaths(const std::string &lib) {
         default:
             MSG_ABORT("Invalid filter type " << this->type);
     }
-
-    if (this->H_path.empty()) { MSG_ABORT("Path to H filters for filter type " << this->type << " is not set!"); }
-
-    if (this->G_path.empty()) { MSG_ABORT("Path to G filters for filter type " << this->type << " is not set!"); }
 }
 
 void MWFilter::generateBlocks() {

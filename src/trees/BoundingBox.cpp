@@ -42,20 +42,20 @@ namespace mrcpp {
  *
  * Limitations: Box must be _either_ [0,L] _or_ [-L,L], with L a positive integer.
  */
-template<int D>
+template <int D>
 BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
     if (box[1] < 1) {
         MSG_ERROR("Invalid upper bound: " << box[1]);
         box[1] = 1;
         MSG_WARN("Setting upper bound: " << box[1]);
     }
-    if (not(box[0] == 0 or box[0] == -box[1])) {
+    if (!(box[0] == 0 or box[0] == -box[1])) {
         MSG_ERROR("Invalid lower bound: " << box[0]);
         box[0] = -box[1];
         MSG_WARN("Setting lower bound: " << box[0]);
     }
     int n = 0;
-    double size = 1.0*box[1];
+    double size = 1.0 * box[1];
     while (size >= 2.0) {
         size /= 2.0;
         n--;
@@ -71,7 +71,7 @@ BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
         nb.fill(2);
     }
     sfac.fill(size);
-    this->cornerIndex = NodeIndex<D>(n,l);
+    this->cornerIndex = NodeIndex<D>(n, l);
     setPeriodic(false);
     setNBoxes(nb);
     setScalingFactors(sfac);
@@ -204,7 +204,7 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
-        if (not this->isPeriodic()) {
+        if (!this->isPeriodic()) {
             if (x < this->lowerBounds[d]) return -1;
             if (x >= this->upperBounds[d]) return -1;
         }

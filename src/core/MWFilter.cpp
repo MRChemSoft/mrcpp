@@ -60,12 +60,7 @@ MWFilter::MWFilter(int k, int t)
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    for (auto n : {mwfilters_source_dir(), mwfilters_install_dir()}) {
-        if (details::directory_exists(n)) {
-            setFilterPaths(n);
-            break;
-        }
-    }
+    setFilterPaths(details::find_filters());
 
     generateBlocks();
 

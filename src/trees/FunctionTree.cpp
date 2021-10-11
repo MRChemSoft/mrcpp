@@ -191,15 +191,15 @@ template <int D> double FunctionTree<D>::integrate() const {
  *
  * @note This will only evaluate the _scaling_ part of the
  *       leaf nodes in the tree, which means that the function
- *       values will not be fully accurate. If you want to include
- *       also the _final_ wavelet part you'll have to manually extend
+ *       values will not be fully accurate.
+ *       This is done to allow a fast and const function evaluation
+ *       that can be done in OMP parallel. If you want to include
+ *       also the _final_ wavelet part you can call the corresponding
+ *       evalf_precise function, _or_ you can manually extend
  *       the MW grid by one level before evaluating, using
  *       `mrcpp::refine_grid(tree, 1)`
- *       This is done to allow a fast and const function evaluation
- *       that can be done in OMP parallel.
  */
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
-
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto arg = r;
@@ -215,6 +215,41 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);
     auto result = f_node.evalScaling(arg);
+
+    // Adjust for scaling factor included in basis
+    auto coef = 1.0;
+    for (const auto &fac : scaling_factor) coef /= std::sqrt(fac);
+
+    return coef * result;
+}
+
+/** @returns Function value in a point, out of bounds returns zero
+ *
+ * @param[in] r: Cartesian coordinate
+ *
+ * @note This will evaluate the _true_ value (scaling + wavelet) of the
+ *       leaf nodes in the tree. This requires an on-the-fly MW transform
+ *       on the node which makes this function slow and non-const. If you
+ *       need fast evaluation, use refine_grid(tree, 1) first, and then
+ *       evalf.
+ */
+template<int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
+    // Handle potential scaling
+    const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
+    auto arg = r;
+    for (auto i = 0; i < D; i++) arg[i] = arg[i] / scaling_factor[i];
+
+    // The 1.0 appearing in the if tests comes from the period is
+    // always 1.0 from the point of view of this function.
+    if (this->getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic()); }
+
+    // Function is zero outside the domain for non-periodic functions
+    if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;
+
+    MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
+    auto &f_node = static_cast<FunctionNode<D> &>(mw_node);
+    auto result = f_node.evalf(arg);
+    this->deleteGenerated();
 
     // Adjust for scaling factor included in basis
     auto coef = 1.0;

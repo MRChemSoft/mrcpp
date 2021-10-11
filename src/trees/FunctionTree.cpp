@@ -231,7 +231,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
  *       leaf nodes in the tree. This requires an on-the-fly MW transform
  *       on the node which makes this function slow and non-const. If you
  *       need fast evaluation, use refine_grid(tree, 1) first, and then
- *       evalf_fast.
+ *       evalf.
  */
 template<int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
     // Handle potential scaling

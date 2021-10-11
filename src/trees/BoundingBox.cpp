@@ -34,6 +34,52 @@ namespace mrcpp {
 
 /** @returns New BoundingBox object
  *
+ * @param[in] box: [lower, upper] bound in all dimensions
+ *
+ * @details Creates a box with appropriate root scale and scaling
+ * factor to fit the given bounds, which applies to _all_ dimensions.
+ * Root scale is chosen such that the scaling factor becomes 1 < sfac < 2.
+ *
+ * Limitations: Box must be _either_ [0,L] _or_ [-L,L], with L a positive integer.
+ */
+template <int D>
+BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
+    if (box[1] < 1) {
+        MSG_ERROR("Invalid upper bound: " << box[1]);
+        box[1] = 1;
+        MSG_WARN("Setting upper bound: " << box[1]);
+    }
+    if (!(box[0] == 0 or box[0] == -box[1])) {
+        MSG_ERROR("Invalid lower bound: " << box[0]);
+        box[0] = -box[1];
+        MSG_WARN("Setting lower bound: " << box[0]);
+    }
+    int n = 0;
+    double size = 1.0 * box[1];
+    while (size >= 2.0) {
+        size /= 2.0;
+        n--;
+    }
+    auto l = std::array<int, D>{};
+    auto nb = std::array<int, D>{};
+    auto sfac = std::array<double, D>{};
+    if (box[0] == 0) {
+        l.fill(0);
+        nb.fill(1);
+    } else {
+        l.fill(-1);
+        nb.fill(2);
+    }
+    sfac.fill(size);
+    this->cornerIndex = NodeIndex<D>(n, l);
+    setPeriodic(false);
+    setNBoxes(nb);
+    setScalingFactors(sfac);
+    setDerivedParameters();
+}
+
+/** @returns New BoundingBox object
+ *
  * @param[in] n: Length scale, default 0
  * @param[in] l: Corner translation, default [0, 0, ...]
  * @param[in] nb: Number of boxes, default [1, 1, ...]
@@ -118,7 +164,7 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
 template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
     for (auto &x : sf)
-        if (x == 0.0 and sf != std::array<double, D>{}) MSG_ABORT("The scaling factor cannot be zero in any of the directions");
+        if (x <= 0.0 and sf != std::array<double, D>{}) MSG_ABORT("Non-positive scaling factor: " << x);
     this->scalingFactor = sf;
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
@@ -158,7 +204,7 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
-        if (not this->isPeriodic()) {
+        if (!this->isPeriodic()) {
             if (x < this->lowerBounds[d]) return -1;
             if (x >= this->upperBounds[d]) return -1;
         }

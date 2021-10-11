@@ -48,6 +48,8 @@ namespace mrcpp {
 
 template <int D> class MultiResolutionAnalysis final {
 public:
+    MultiResolutionAnalysis(std::array<int, 2> bb, int order, int depth = MaxDepth);
+    MultiResolutionAnalysis(const BoundingBox<D> &bb, int order, int depth = MaxDepth);
     MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth = MaxDepth);
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra);
     MultiResolutionAnalysis &operator=(const MultiResolutionAnalysis &mra) = delete;

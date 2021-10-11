@@ -51,19 +51,16 @@ bool directory_exists(std::string path) {
 }
 
 std::string find_filters() {
-    std::cout << __func__ << std::endl;
     std::string filters;
     auto envvar = "";
     if (const char *env_p = std::getenv("MWFILTERS_DIR")) envvar = env_p;
     for (auto n : {envvar, mwfilters_source_dir(), mwfilters_install_dir()}) {
-        std::cout << "plausible filter dir : " << n << std::endl;
         if (details::directory_exists(n)) {
-            std::cout << "setting filter dir : " << n << std::endl;
             filters = n;
             break;
         }
     }
-    std::cout << "boo " << std::endl;
+    
     if (filters.empty()) {
         MSG_ABORT("Could not find a folder containing filters!");
     } else {

@@ -32,6 +32,26 @@
 namespace mrcpp {
 
 template <int D>
+MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int order, int depth)
+        : maxDepth(depth)
+        , basis(InterpolatingBasis(order))
+        , world(bb) {
+    if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
+    if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
+    setupFilter();
+}
+
+template <int D>
+MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, int order, int depth)
+        : maxDepth(depth)
+        , basis(InterpolatingBasis(order))
+        , world(bb) {
+    if (getMaxDepth() > MaxDepth) MSG_ABORT("Beyond MaxDepth");
+    if (getMaxScale() > MaxScale) MSG_ABORT("Beyond MaxScale");
+    setupFilter();
+}
+
+template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
         : maxDepth(mra.maxDepth)
         , basis(mra.basis)

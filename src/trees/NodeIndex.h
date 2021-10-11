@@ -84,8 +84,8 @@ public:
     }
 
 private:
-    short int N;          ///< Length scale index 2^N
-    std::array<int, D> L; ///< Translation index [x,y,z,...]
+    short int N{0};          ///< Length scale index 2^N
+    std::array<int, D> L{}; ///< Translation index [x,y,z,...]
 };
 
 /** @brief ostream printer */

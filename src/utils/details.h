@@ -33,6 +33,7 @@
 namespace mrcpp {
 namespace details {
 bool directory_exists(std::string path);
+std::string find_filters();
 int get_memory_usage();
 template <int D> bool are_all_equal(const std::array<double, D> &exponent);
 template <typename T, size_t D> bool are_any(const std::array<T, D> &col, const T eq) {

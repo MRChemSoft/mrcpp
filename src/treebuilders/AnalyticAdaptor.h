@@ -42,10 +42,10 @@ private:
     bool splitNode(const MWNode<D> &node) const override {
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
-        if (this->func->isVisibleAtScale(scale, nQuadPts)) { return false; }
-        double lb[3], ub[3];
-        node.getBounds(lb, ub);
-        if (this->func->isZeroOnInterval(lb, ub)) { return false; }
+        if (this->func->isVisibleAtScale(scale, nQuadPts)) return false;
+        double *ub = node.getUpperBounds().data();
+        double *lb = node.getLowerBounds().data();
+        if (this->func->isZeroOnInterval(lb, ub)) return false;
         return true;
     }
 };

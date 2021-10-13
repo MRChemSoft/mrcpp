@@ -29,6 +29,7 @@
 
 #include "treebuilders/grid.h"
 #include "treebuilders/project.h"
+#include "trees/MWNode.h"
 
 using namespace mrcpp;
 
@@ -79,7 +80,15 @@ template <int D> void testScaling() {
     build_grid(f_tree, gauss);
     project(prec, f_tree, gauss);
 
+    auto node = f_tree.getEndMWNode(0);
+    auto center = node.getCenter()[0];
+    auto upper_bound = node.getUpperBounds()[0];
+    auto lower_bound = node.getLowerBounds()[0];
+
+
     REQUIRE(Approx(1.0) == f_tree.integrate());
+    REQUIRE(Approx(center) == (upper_bound-lower_bound)/2.0);
+
 }
 
 } // namespace scaling

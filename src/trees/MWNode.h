@@ -60,8 +60,9 @@ public:
     const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
     const HilbertPath<D> &getHilbertPath() const { return this->hilbertPath; }
 
-    void getCenter(double *r) const;
-    void getBounds(double *lb, double *ub) const;
+    Coord<D> getCenter() const;
+    Coord<D> getUpperBounds() const;
+    Coord<D> getLowerBounds() const;
 
     bool hasCoord(const Coord<D> &r) const;
     bool isCompatible(const MWNode<D> &node);

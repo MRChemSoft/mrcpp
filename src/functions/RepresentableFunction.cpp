@@ -104,8 +104,8 @@ template <int D> void RepresentableFunction<D>::setBounds(const double *a, const
 template <int D> bool RepresentableFunction<D>::outOfBounds(const Coord<D> &r) const {
     if (not isBounded()) { return false; }
     for (int d = 0; d < D; d++) {
-        if (r[d] < getLowerBound(d)) { return true; }
-        if (r[d] > getUpperBound(d)) { return true; }
+        if (r[d] < getLowerBound(d)) return true;
+        if (r[d] >= getUpperBound(d)) return true;
     }
     return false;
 }

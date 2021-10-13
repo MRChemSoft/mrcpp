@@ -586,25 +586,31 @@ template <int D> void MWNode<D>::deleteGenerated() {
     }
 }
 
-template <int D> void MWNode<D>::getCenter(double *r) const {
-    NOT_IMPLEMENTED_ABORT;
-    //    assert(r != 0);
-    //    double sFac = std::pow(2.0, -getScale());
-    //    for (int d = 0; d < D; d++) {
-    //        double l = (double) getTranslation()[d];
-    //        r[d] = sFac*(l + 0.5);
-    //    }
+template <int D> Coord<D> MWNode<D>::getCenter() const {
+    auto two_n = std::pow(2.0, -getScale());
+    auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
+    auto &l = getNodeIndex();
+    auto r = Coord<D>{};
+    for (int d = 0; d < D; d++) r[d] = scaling_factor[d]*two_n*(l[d] + 0.5);
+    return r;
 }
 
-template <int D> void MWNode<D>::getBounds(double *lb, double *ub) const {
-    const auto sf = getMWTree().getMRA().getWorldBox().getScalingFactors();
-    int n = getScale();
-    double p = std::pow(2.0, -n);
-    const NodeIndex<D> &l = getNodeIndex();
-    for (int i = 0; i < D; i++) {
-        lb[i] = sf[i] * (p * l[i]);
-        ub[i] = sf[i] * (p * (l[i] + 1));
-    }
+template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
+    auto two_n = std::pow(2.0, -getScale());
+    auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
+    auto &l = getNodeIndex();
+    auto ub = Coord<D>{};
+    for (int i = 0; i < D; i++) ub[i] = scaling_factor[i] * two_n * (l[i] + 1);
+    return ub;
+}
+
+template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
+    auto two_n = std::pow(2.0, -getScale());
+    auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
+    auto &l = getNodeIndex();
+    auto lb = Coord<D>{};
+    for (int i = 0; i < D; i++) lb[i] = scaling_factor[i] * two_n * l[i];
+    return lb;
 }
 
 /** Routine to find the path along the tree.

@@ -43,9 +43,9 @@ private:
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
         if (this->func->isVisibleAtScale(scale, nQuadPts)) return false;
-        double *ub = node.getUpperBounds().data();
-        double *lb = node.getLowerBounds().data();
-        if (this->func->isZeroOnInterval(lb, ub)) return false;
+        auto ub = node.getUpperBounds();
+        auto lb = node.getLowerBounds();
+        if (this->func->isZeroOnInterval(lb.data(), ub.data())) return false;
         return true;
     }
 };

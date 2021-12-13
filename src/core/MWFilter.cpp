@@ -51,7 +51,7 @@ namespace mrcpp {
 MWFilter::MWFilter(int k, int t)
         : type(t)
         , order(k) {
-    if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
+    if (this->order < 0 or this->order > MaxOrder) MSG_ABORT("Invalid filter order: " << this->order);
     switch (this->type) {
         case (Interpol):
         case (Legendre):

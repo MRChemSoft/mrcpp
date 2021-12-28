@@ -32,6 +32,8 @@
  *
  */
 
+#include <cfloat>
+
 #include "Polynomial.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
@@ -264,21 +266,18 @@ void Polynomial::calcAntiDerivativeInPlace() {
 
 /** Integrate the polynomial P on [a,b] analytically */
 double Polynomial::integrate(const double *a, const double *b) const {
-    double lb, ub;
-    if (a == nullptr) {
-        if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
+    double lb = -DBL_MAX, ub = DBL_MAX;
+    if (this->isBounded()) {
         lb = getScaledLowerBound();
-    } else {
-        if (this->outOfBounds({a[0]})) MSG_ERROR("Integration out of bounds");
-        lb = a[0];
-    }
-    if (b == nullptr) {
-        if (not this->isBounded()) MSG_ERROR("Polynomial without bounds");
         ub = getScaledUpperBound();
     } else {
-        if (this->outOfBounds({b[0]})) MSG_ERROR("Integration out of bounds");
-        ub = b[0];
+        if (a == nullptr) MSG_ERROR("Polynomial without bounds");
+        if (b == nullptr) MSG_ERROR("Polynomial without bounds");
     }
+    if (a != nullptr) lb = std::max(a[0], lb);
+    if (b != nullptr) ub = std::min(b[0], ub);
+    if (lb >= ub) return 0.0;
+
     double sfac = 1.0 / this->N;
     Polynomial antidiff = calcAntiDerivative();
     return sfac * (antidiff.evalf(ub) - antidiff.evalf(lb));

@@ -339,10 +339,12 @@ template <int D> int NodeAllocator<D>::findNextOccupied(int sIdx) const {
     assert(sIdx < this->stackStatus.size());
     bool posIsAvailable = (this->stackStatus[sIdx] == 0);
     bool endOfStack = (sIdx >= this->topStack);
-    while (posIsAvailable and not(endOfStack)) {
-        sIdx++;
-        posIsAvailable = (this->stackStatus[sIdx] == 0);
+    while (1) {
         endOfStack = (sIdx >= this->topStack);
+	if(endOfStack) break;
+        posIsAvailable = (this->stackStatus[sIdx] == 0);
+	if(not posIsAvailable) break;
+        sIdx++;
     }
     assert(sIdx >= 0);
     assert(sIdx < this->stackStatus.size());

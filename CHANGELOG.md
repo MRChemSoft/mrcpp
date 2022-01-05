@@ -1,5 +1,17 @@
 # Change log
 
+## Version 1.4.1 2022-01-05
+
+### Changed
+
+- Catch version 2.13.5
+
+### Fixed
+
+- Buffer overflow in NodeAllocator
+- Polynomial integration bound error message
+
+
 ## Version 1.4.0 2021-10-13
 
 ### Added

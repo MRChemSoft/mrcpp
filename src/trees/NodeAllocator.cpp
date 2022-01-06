@@ -320,13 +320,12 @@ template <int D> int NodeAllocator<D>::findNextAvailable(int sIdx, int nNodes) c
     assert(sIdx < this->stackStatus.size());
     assert(nNodes >= 0);
     assert(nNodes < this->maxNodesPerChunk);
-    bool chunkTooSmall = (sIdx + nNodes - 1) / this->maxNodesPerChunk != sIdx / this->maxNodesPerChunk;
-    bool posIsOccupied = (this->stackStatus[sIdx] != 0);
     bool endOfStack = (sIdx >= this->topStack);
-    while ((posIsOccupied or chunkTooSmall) and not(endOfStack)) {
+    while (!endOfStack) {
+        bool chunkTooSmall = (sIdx + nNodes - 1) / this->maxNodesPerChunk != sIdx / this->maxNodesPerChunk;
+        bool posIsAvailable = (this->stackStatus[sIdx] == 0);
+        if (posIsAvailable && !chunkTooSmall) break;
         sIdx++;
-        chunkTooSmall = (sIdx + nNodes - 1) / this->maxNodesPerChunk != sIdx / this->maxNodesPerChunk;
-        posIsOccupied = (this->stackStatus[sIdx] != 0);
         endOfStack = (sIdx >= this->topStack);
     }
     assert(sIdx >= 0);
@@ -337,11 +336,11 @@ template <int D> int NodeAllocator<D>::findNextAvailable(int sIdx, int nNodes) c
 template <int D> int NodeAllocator<D>::findNextOccupied(int sIdx) const {
     assert(sIdx >= 0);
     assert(sIdx < this->stackStatus.size());
-    bool posIsAvailable = (this->stackStatus[sIdx] == 0);
     bool endOfStack = (sIdx >= this->topStack);
-    while (posIsAvailable and not(endOfStack)) {
+    while (!endOfStack) {
+        bool posIsOccupied = (this->stackStatus[sIdx] != 0);
+        if (posIsOccupied) break;
         sIdx++;
-        posIsAvailable = (this->stackStatus[sIdx] == 0);
         endOfStack = (sIdx >= this->topStack);
     }
     assert(sIdx >= 0);

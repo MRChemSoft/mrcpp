@@ -26,6 +26,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include "MWTree.h"
 #include "NodeAllocator.h"

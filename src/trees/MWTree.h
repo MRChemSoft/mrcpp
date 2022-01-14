@@ -26,6 +26,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <memory>
 
 #include "MRCPP/mrcpp_declarations.h"
 #include "utils/omp_utils.h"

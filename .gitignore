@@ -111,3 +111,5 @@ venv
 .direnv/
 .ccls-cache/
 
+#VSCode
+.vscode/

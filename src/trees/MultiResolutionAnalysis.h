@@ -62,8 +62,8 @@ public:
     const ScalingBasis &getScalingBasis() const { return this->basis; }
     const BoundingBox<D> &getWorldBox() const { return this->world; }
 
-    MultiResolutionAnalysis<1> getKernelMRA(int root, int reach = -1) const;
-    MultiResolutionAnalysis<2> getOperatorMRA(int root, int reach = -1) const;
+    double calcMinDistance(double epsilon) const { return std::sqrt(epsilon * std::pow(2.0, -getMaxScale())); }
+    double calcMaxDistance() const;
 
     int getRootScale() const { return this->world.getScale(); }
 

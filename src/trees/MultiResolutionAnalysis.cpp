@@ -28,6 +28,7 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 #include "utils/Printer.h"
+#include "utils/math_utils.h"
 
 namespace mrcpp {
 
@@ -76,58 +77,6 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
     setupFilter();
 }
 
-template <int D> MultiResolutionAnalysis<1> MultiResolutionAnalysis<D>::getKernelMRA(int root, int reach) const {
-    const BoundingBox<D> &box = getWorldBox();
-    const ScalingBasis &basis = getScalingBasis();
-
-    int type = basis.getScalingType();
-    int kern_order = 2 * basis.getScalingOrder() + 1;
-
-    ScalingBasis *kern_basis = nullptr;
-    if (type == Interpol) {
-        kern_basis = new InterpolatingBasis(kern_order);
-    } else if (type == Legendre) {
-        kern_basis = new LegendreBasis(kern_order);
-    } else {
-        MSG_ABORT("Invalid scaling type");
-    }
-
-    if (reach < 0) {
-        for (int i = 0; i < D; i++) {
-            if (box.size(i) > reach) reach = box.size(i);
-        }
-    }
-    auto start_l = std::array<int, 1>{-reach};
-    auto tot_l = std::array<int, 1>{2 * reach};
-    // Zero in argument since operators are only implemented
-    // for uniform scaling factor
-    auto sf = std::array<double, 1>{box.getScalingFactor(0)};
-    BoundingBox<1> kern_box(root, start_l, tot_l, sf);
-    MultiResolutionAnalysis<1> mra(kern_box, *kern_basis);
-    delete kern_basis;
-    return mra;
-}
-
-template <int D> MultiResolutionAnalysis<2> MultiResolutionAnalysis<D>::getOperatorMRA(int root, int reach) const {
-    const BoundingBox<D> &box = getWorldBox();
-    const ScalingBasis &basis = getScalingBasis();
-
-    if (reach < 0) {
-        for (int i = 0; i < D; i++) {
-            if (box.size(i) > reach) reach = box.size(i);
-        }
-    }
-    auto l = std::array<int, 2>{};
-    auto nbox = std::array<int, 2>{reach, reach};
-    // Zero in argument since operators are only implemented
-    // for uniform scaling factor
-    auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};
-
-    BoundingBox<2> oper_box(root, l, nbox, sf);
-    auto oper_mra = MultiResolutionAnalysis<2>(oper_box, basis);
-    return oper_mra;
-}
-
 template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {
     if (this->basis != mra.basis) return false;
     if (this->world != mra.world) return false;
@@ -166,6 +115,12 @@ template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
         default:
             MSG_ERROR("Invalid scaling basis selected.")
     }
+}
+
+template <int D> double MultiResolutionAnalysis<D>::calcMaxDistance() const {
+    const Coord<D> &lb = getWorldBox().getLowerBounds();
+    const Coord<D> &ub = getWorldBox().getUpperBounds();
+    return math_utils::calc_distance<D>(lb, ub);
 }
 
 template class MultiResolutionAnalysis<1>;

@@ -73,9 +73,8 @@ template <int D> class DerivativeOperator;
 template <int D> class ABGVOperator;
 template <int D> class PHOperator;
 
-class GreensKernel;
-class IdentityKernel;
-class DerivativeKernel;
+template <int D> class IdentityKernel;
+template <int D> class DerivativeKernel;
 class PoissonKernel;
 class HelmholtzKernel;
 

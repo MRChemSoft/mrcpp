@@ -42,7 +42,7 @@ public:
     ABGVOperator &operator=(const ABGVOperator &oper) = delete;
 
 protected:
-    void initializeOperator(double a, double b);
+    void initialize(double a, double b);
 };
 
 } // namespace mrcpp

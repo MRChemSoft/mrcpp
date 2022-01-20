@@ -23,52 +23,48 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "PHOperator.h"
-#include "treebuilders/BandWidthAdaptor.h"
-#include "treebuilders/PHCalculator.h"
-#include "treebuilders/TreeBuilder.h"
+#include "IdentityConvolution.h"
+#include "IdentityKernel.h"
 #include "utils/Printer.h"
-#include "utils/Timer.h"
 
 namespace mrcpp {
 
-/** @returns New PHOperator object
+/** @returns New IdentityConvolution object
  *  @param[in] mra: Which MRA the operator is defined
- *  @param[in] order: Derivative order, defined for 1 and 2
+ *  @param[in] pr: Build precision, closeness to delta function
+ *  @details This will project a kernel of a single gaussian with
+ *  exponent sqrt(10/build_prec).
  */
 template <int D>
-PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
-        : DerivativeOperator<D>(mra, mra.getRootScale(), -10) {
-    this->order = order;
-    initialize();
+IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
+        : ConvolutionOperator<D>(mra) {
+    int oldlevel = Printer::setPrintLevel(0);
+
+    double o_prec = prec;
+    double k_prec = prec / 10.0;
+
+    IdentityKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
+
+    Printer::setPrintLevel(oldlevel);
 }
 
-template <int D> void PHOperator<D>::initialize() {
-    auto o_mra = this->getOperatorMRA();
+template <int D>
+IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
+        : ConvolutionOperator<D>(mra, root, reach) {
+    int oldlevel = Printer::setPrintLevel(0);
 
-    TreeBuilder<2> builder;
+    double o_prec = prec;
+    double k_prec = prec / 100.0;
 
-    auto &basis = this->MRA.getScalingBasis();
-    PHCalculator calculator(basis, this->order);
+    IdentityKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
 
-    int bw = 1; // Operator bandwidth
-    int max_scale = this->MRA.getMaxScale();
-    BandWidthAdaptor adaptor(bw, max_scale);
-
-    auto *o_tree = new OperatorTree(o_mra, MachineZero);
-    builder.build(*o_tree, calculator, adaptor, -1);
-
-    Timer trans_t;
-    o_tree->calcSquareNorm();
-    o_tree->setupOperNodeCache();
-    print::time(10, "Time transform", trans_t);
-    print::separator(10, ' ');
-
-    this->oper_exp.push_back(o_tree);
+    Printer::setPrintLevel(oldlevel);
 }
 
-template class PHOperator<1>;
-template class PHOperator<2>;
-template class PHOperator<3>;
+template class IdentityConvolution<1>;
+template class IdentityConvolution<2>;
+template class IdentityConvolution<3>;
 
 } // namespace mrcpp

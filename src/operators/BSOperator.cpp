@@ -38,21 +38,20 @@ namespace mrcpp {
  */
 template <int D>
 BSOperator<D>::BSOperator(const MultiResolutionAnalysis<D> &mra, int order)
-        : DerivativeOperator<D>(mra) {
+        : DerivativeOperator<D>(mra, mra.getRootScale()) {
     this->order = order;
-    initializeOperator();
+    initialize();
 }
 
-template <int D> void BSOperator<D>::initializeOperator() {
+template <int D> void BSOperator<D>::initialize() {
     int bw = 1; // Operator bandwidth
-    int max_scale = this->oper_mra.getMaxScale();
-    const ScalingBasis &basis = this->oper_mra.getScalingBasis();
+    auto oper_mra = this->getOperatorMRA();
 
     TreeBuilder<2> builder;
-    BSCalculator calculator(basis, this->order);
-    BandWidthAdaptor adaptor(bw, max_scale);
+    BSCalculator calculator(oper_mra.getScalingBasis(), this->order);
+    BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
 
-    auto *o_tree = new OperatorTree(this->oper_mra, MachineZero);
+    auto *o_tree = new OperatorTree(oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;

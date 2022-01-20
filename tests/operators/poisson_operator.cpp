@@ -55,6 +55,12 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
     const int n = -3;
     const int k = 5;
 
+    NodeIndex<3> func_idx(n);
+    BoundingBox<3> func_box(func_idx);
+
+    InterpolatingBasis func_basis(k);
+    MultiResolutionAnalysis<3> func_mra(func_box, func_basis);
+
     SECTION("Initialize Poisson's kernel") {
         PoissonKernel poisson(exp_prec, r_min, r_max);
         REQUIRE(poisson.size() == 26);
@@ -65,11 +71,11 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
             x[0] *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
-            NodeIndex<1> idx(n, {-1});
-            BoundingBox<1> box(idx, {2});
+            NodeIndex<1> kern_idx(n, {-1});
+            BoundingBox<1> kern_box(kern_idx, {2});
 
-            InterpolatingBasis basis(2 * k + 1);
-            MultiResolutionAnalysis<1> kern_mra(box, basis);
+            InterpolatingBasis kern_basis(2 * k + 1);
+            MultiResolutionAnalysis<1> kern_mra(kern_box, kern_basis);
 
             FunctionTreeVector<1> kern_vec;
             for (int i = 0; i < poisson.size(); i++) {
@@ -90,7 +96,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                 TreeBuilder<2> builder;
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
 
-                MWOperator O(oper_mra);
+                MWOperator<3> O(func_mra, func_mra.getRootScale(), -10);
                 for (int i = 0; i < kern_vec.size(); i++) {
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
@@ -175,7 +181,16 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
 
     auto oper_scale = 0;
     auto oper_reach = 9;
-    PoissonOperator P(MRA, build_prec, oper_scale, oper_reach);
+    auto r_min = MRA.calcMinDistance(build_prec);
+    auto r_max = MRA.calcMaxDistance();
+
+    // Regular non-periodic operators should have rel_root=0 and oper_reach=0
+    auto rel_root = oper_scale - MRA.getRootScale();
+    r_max *= std::pow(2.0, -rel_root);
+    r_max *= (2.0 * oper_reach) + 1.0;
+
+    PoissonKernel poisson(build_prec, r_min, r_max);
+    ConvolutionOperator<3> P(MRA, poisson, build_prec, oper_scale, oper_reach);
 
     // Source, Poisson applied to this should yield cos(x)cos(y)cos(z)
     auto source = [](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };

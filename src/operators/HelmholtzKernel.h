@@ -25,24 +25,13 @@
 
 #pragma once
 
-#include "GreensKernel.h"
+#include "functions/GaussExp.h"
 
 namespace mrcpp {
 
-class HelmholtzKernel final : public GreensKernel {
+class HelmholtzKernel final : public GaussExp<1> {
 public:
-    HelmholtzKernel(double m, double eps, double r_min, double r_max)
-            : GreensKernel(eps, r_min, r_max)
-            , mu(m) {
-        initializeKernel();
-    }
-    HelmholtzKernel(const HelmholtzKernel &kern) = delete;
-    HelmholtzKernel &operator=(const HelmholtzKernel &kern) = delete;
-
-protected:
-    const double mu; /**< exponent */
-    void initializeKernel() override;
-    std::ostream &print(std::ostream &o) const override;
+    HelmholtzKernel(double mu, double epsilon, double r_min, double r_max);
 };
 
 } // namespace mrcpp

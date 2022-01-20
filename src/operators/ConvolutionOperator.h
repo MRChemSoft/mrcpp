@@ -30,27 +30,23 @@
 
 namespace mrcpp {
 
-template <int D> class ConvolutionOperator : public MWOperator {
+template <int D> class ConvolutionOperator : public MWOperator<D> {
 public:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec);
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec, int root, int reach);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach);
     ConvolutionOperator(const ConvolutionOperator &oper) = delete;
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
-    ~ConvolutionOperator() override;
-
-    double getBuildPrec() const { return this->build_prec; };
+    virtual ~ConvolutionOperator() = default;
 
 protected:
-    double kern_prec;
-    double build_prec;
-    MultiResolutionAnalysis<1> kern_mra;
-    FunctionTreeVector<1> kern_exp;
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
+        : MWOperator<D>(mra, mra.getRootScale(), -10) {}
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
+        : MWOperator<D>(mra, root, reach) {}
 
-    void initializeOperator(GreensKernel &greens_kernel);
-    void clearKernel();
+    void initialize(GaussExp<1> &kernel, double k_prec, double o_prec);
 
-    double calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const;
-    double calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const;
+    MultiResolutionAnalysis<1> getKernelMRA() const;
 };
 
 } // namespace mrcpp

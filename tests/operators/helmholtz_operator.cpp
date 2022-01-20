@@ -57,22 +57,27 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
     const int n = -3;
     const int k = 5;
 
+    NodeIndex<3> func_idx(n);
+    BoundingBox<3> func_box(func_idx);
+
+    InterpolatingBasis func_basis(k);
+    MultiResolutionAnalysis<3> func_mra(func_box, func_basis);
+
     SECTION("Initialize Helmholtz' kernel") {
         HelmholtzKernel helmholtz(mu, exp_prec, r_min, r_max);
         REQUIRE(helmholtz.size() == 33);
 
-        int foo = 0;
         Coord<1> x{r_min};
         while (x[0] < r_max) {
             REQUIRE(helmholtz.evalf(x) == Approx(std::exp(-mu * x[0]) / x[0]).epsilon(2.0 * exp_prec));
             x[0] *= 1.5;
         }
         SECTION("Project Helmholtz' kernel") {
-            NodeIndex<1> idx(n, {-1});
-            BoundingBox<1> box(idx, {2});
+            NodeIndex<1> kern_idx(n, {-1});
+            BoundingBox<1> kern_box(kern_idx, {2});
 
-            InterpolatingBasis basis(2 * k + 1);
-            MultiResolutionAnalysis<1> kern_mra(box, basis);
+            InterpolatingBasis kern_basis(2 * k + 1);
+            MultiResolutionAnalysis<1> kern_mra(kern_box, kern_basis);
 
             FunctionTreeVector<1> K;
             for (int i = 0; i < helmholtz.size(); i++) {
@@ -84,16 +89,16 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
             }
 
             SECTION("Build operator tree by cross correlation") {
-                NodeIndex<2> idx(n);
-                BoundingBox<2> box(idx);
+                NodeIndex<2> oper_idx(n);
+                BoundingBox<2> oper_box(oper_idx);
 
-                InterpolatingBasis basis(k);
-                MultiResolutionAnalysis<2> oper_mra(box, basis);
+                InterpolatingBasis oper_basis(k);
+                MultiResolutionAnalysis<2> oper_mra(oper_box, oper_basis);
 
                 TreeBuilder<2> builder;
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
 
-                MWOperator O(oper_mra);
+                MWOperator<3> O(func_mra, func_mra.getRootScale(), -10);
                 for (int i = 0; i < K.size(); i++) {
                     FunctionTree<1> &kern_tree = get_func(K, i);
                     CrossCorrelationCalculator calculator(kern_tree);
@@ -157,7 +162,12 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     double E = -Z / (2.0 * n * n); // Total energy
 
     double mu = std::sqrt(-2 * E);
-    HelmholtzOperator H(MRA, mu, build_prec);
+
+    double r_min = MRA.calcMinDistance(build_prec);
+    double r_max = MRA.calcMaxDistance();
+
+    HelmholtzKernel helmholtz(mu, build_prec, r_min, r_max);
+    ConvolutionOperator<3> H(MRA, helmholtz, build_prec);
 
     // Defining analytic 1s function
     auto hFunc = [Z](const Coord<3> &r) -> double {

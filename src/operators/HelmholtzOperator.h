@@ -45,11 +45,6 @@ public:
     HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double m, double prec, int root, int reach = 1);
     HelmholtzOperator(const HelmholtzOperator &oper) = delete;
     HelmholtzOperator &operator=(const HelmholtzOperator &oper) = delete;
-
-    double getMu() const { return this->mu; }
-
-protected:
-    const double mu;
 };
 
 } // namespace mrcpp

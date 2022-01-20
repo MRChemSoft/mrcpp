@@ -45,7 +45,7 @@ public:
     PHOperator &operator=(const PHOperator &oper) = delete;
 
 protected:
-    void initializeOperator();
+    void initialize();
 };
 
 } // namespace mrcpp

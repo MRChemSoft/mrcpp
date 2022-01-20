@@ -42,7 +42,7 @@ public:
     BSOperator &operator=(const BSOperator &oper) = delete;
 
 protected:
-    void initializeOperator();
+    void initialize();
 };
 
 } // namespace mrcpp

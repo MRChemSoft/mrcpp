@@ -38,26 +38,37 @@ namespace mrcpp {
  *  function in all Cartesian directions.
  */
 PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double prec)
-        : ConvolutionOperator<3>(mra, prec, prec / 10.0) {
+        : ConvolutionOperator<3>(mra) {
     int oldlevel = Printer::setPrintLevel(0);
-    double r_min = calcMinDistance(mra, this->kern_prec);
-    double r_max = calcMaxDistance(mra);
-    PoissonKernel poisson_kernel(this->kern_prec, r_min, r_max);
-    // Rescale for application in 3D
-    poisson_kernel.rescale(3);
-    initializeOperator(poisson_kernel);
+
+    double o_prec = prec;
+    double k_prec = prec / 10.0;
+    double r_min = this->MRA.calcMinDistance(k_prec);
+    double r_max = this->MRA.calcMaxDistance();
+
+    PoissonKernel kernel(k_prec, r_min, r_max);
+    initialize(kernel, k_prec, o_prec);
+
     Printer::setPrintLevel(oldlevel);
 }
 
 PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double prec, int root, int reach)
-        : ConvolutionOperator<3>(mra, prec, prec / 100.0, root, reach) {
+        : ConvolutionOperator<3>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
-    double r_min = calcMinDistance(mra, this->kern_prec);
-    double r_max = calcMaxDistance(mra);
-    PoissonKernel poisson_kernel(this->kern_prec, r_min, r_max);
-    // Rescale for application in 3D
-    poisson_kernel.rescale(3);
-    initializeOperator(poisson_kernel);
+
+    double o_prec = prec;
+    double k_prec = prec / 100.0;
+    double r_min = this->MRA.calcMinDistance(k_prec);
+    double r_max = this->MRA.calcMaxDistance();
+
+    // Adjust r_max for periodic world
+    auto rel_root = this->oper_root - this->MRA.getRootScale();
+    r_max *= std::pow(2.0, -rel_root);
+    r_max *= (2.0 * this->oper_reach) + 1.0;
+
+    PoissonKernel kernel(k_prec, r_min, r_max);
+    initialize(kernel, k_prec, o_prec);
+
     Printer::setPrintLevel(oldlevel);
 }
 

@@ -101,10 +101,9 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
-                    auto *oper_tree = new OperatorTree(oper_mra, ccc_prec);
+                    auto oper_tree = std::make_unique<OperatorTree>(oper_mra, ccc_prec);
                     builder.build(*oper_tree, calculator, adaptor, -1);
                     oper_tree->setupOperNodeCache();
-                    O.push_back(oper_tree);
 
                     oper_tree->calcBandWidth(1.0);
                     BandWidth bw_1 = oper_tree->getBandWidth();
@@ -122,14 +121,13 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                         REQUIRE(bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i));
                         REQUIRE(bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i));
                     }
+                    O.push_back(std::move(oper_tree));
                 }
                 O.calcBandWidths(band_prec);
                 REQUIRE(O.getMaxBandWidth(3) == 3);
                 REQUIRE(O.getMaxBandWidth(7) == 5);
                 REQUIRE(O.getMaxBandWidth(13) == 9);
                 REQUIRE(O.getMaxBandWidth(19) == -1);
-
-                O.clear(true);
             }
             clear(kern_vec, true);
         }

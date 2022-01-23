@@ -33,16 +33,6 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D>
-void MWOperator<D>::clear(bool dealloc) {
-    if (dealloc) {
-        for (auto &i : this->oper_exp) {
-            if (i != nullptr) delete i;
-        }
-    }
-    this->oper_exp.clear();
-}
-
-template <int D>
 OperatorTree &MWOperator<D>::getComponent(int i) {
     if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
@@ -69,7 +59,7 @@ int MWOperator<D>::getMaxBandWidth(int depth) const {
 
 template <int D>
 void MWOperator<D>::clearBandWidths() {
-    for (auto &i : this->oper_exp) { i->clearBandWidth(); }
+    for (auto &i : this->oper_exp) i->clearBandWidth();
 }
 
 template <int D>

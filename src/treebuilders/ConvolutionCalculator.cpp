@@ -104,7 +104,7 @@ template <int D> void ConvolutionCalculator<D>::printTimers() const {
  operator. The band size is used for thresholding. */
 template <int D> void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &oTree = *(*this->oper)[i];
+        const OperatorTree &oTree = (*this->oper)[i];
         const BandWidth &bw = oTree.getBandWidth();
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
@@ -278,7 +278,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &ot = *(*this->oper)[i];
+        const OperatorTree &ot = (*this->oper)[i];
         const BandWidth &bw = ot.getBandWidth();
         if (os.getMaxDeltaL() > bw.getMaxWidth(o_depth)) { continue; }
         os.oTree = &ot;

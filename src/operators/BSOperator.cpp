@@ -51,7 +51,7 @@ template <int D> void BSOperator<D>::initialize() {
     BSCalculator calculator(oper_mra.getScalingBasis(), this->order);
     BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
 
-    auto *o_tree = new OperatorTree(oper_mra, MachineZero);
+    auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;
@@ -60,7 +60,7 @@ template <int D> void BSOperator<D>::initialize() {
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
-    this->oper_exp.push_back(o_tree);
+    this->oper_exp.push_back(std::move(o_tree));
 }
 
 template class BSOperator<1>;

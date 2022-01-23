@@ -41,11 +41,10 @@ public:
             , MRA(mra) {}
     MWOperator(const MWOperator &oper) = delete;
     MWOperator &operator=(const MWOperator &oper) = delete;
-    virtual ~MWOperator() { this->clear(true); }
+    virtual ~MWOperator() = default;
 
     int size() const { return this->oper_exp.size(); }
-    void push_back(OperatorTree *oper) { this->oper_exp.push_back(oper); }
-    void clear(bool dealloc = false);
+    void push_back(std::unique_ptr<OperatorTree> oper) { this->oper_exp.push_back(std::move(oper)); }
 
     int getMaxBandWidth(int depth = -1) const;
     const Eigen::VectorXi &getMaxBandWidths() const { return this->band_max; }
@@ -53,20 +52,20 @@ public:
     void calcBandWidths(double prec);
     void clearBandWidths();
 
-    OperatorTree &getComponent(int i);
-    const OperatorTree &getComponent(int i) const;
-
     int getOperatorRoot() const { return this->oper_root; }
     int getOperatorReach() const { return this->oper_reach; }
 
-    OperatorTree *operator[](int i) { return this->oper_exp[i]; }
-    const OperatorTree *operator[](int i) const { return this->oper_exp[i]; }
+    OperatorTree &getComponent(int i);
+    const OperatorTree &getComponent(int i) const;
+
+    OperatorTree &operator[](int i) { return *this->oper_exp[i]; }
+    const OperatorTree &operator[](int i) const { return *this->oper_exp[i]; }
 
 protected:
     int oper_root;
     int oper_reach;
     MultiResolutionAnalysis<D> MRA;
-    OperatorTreeVector oper_exp;
+    std::vector<std::unique_ptr<OperatorTree>> oper_exp;
     Eigen::VectorXi band_max;
 
     MultiResolutionAnalysis<2> getOperatorMRA() const;

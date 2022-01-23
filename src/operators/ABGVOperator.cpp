@@ -61,7 +61,7 @@ void ABGVOperator<D>::initialize(double a, double b) {
     ABGVCalculator calculator(oper_mra.getScalingBasis(), a, b);
     BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
 
-    auto *o_tree = new OperatorTree(oper_mra, MachineZero);
+    auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;
@@ -70,7 +70,7 @@ void ABGVOperator<D>::initialize(double a, double b) {
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
-    this->oper_exp.push_back(o_tree);
+    this->oper_exp.push_back(std::move(o_tree));
 }
 
 template class ABGVOperator<1>;

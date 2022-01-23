@@ -90,7 +90,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
         delete k_func;
 
         CrossCorrelationCalculator calculator(k_tree);
-        auto *o_tree = new OperatorTree(o_mra, o_prec);
+        auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
         builder.build(*o_tree, calculator, adaptor, -1); // Expand 1D kernel into 2D operator
 
         Timer trans_t;
@@ -100,7 +100,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
         print::time(10, "Time transform", trans_t);
         print::separator(10, ' ');
 
-        this->oper_exp.push_back(o_tree);
+        this->oper_exp.push_back(std::move(o_tree));
     }
 }
 

@@ -99,7 +99,6 @@ template <int D> class IteratorNode;
 class BandWidth;
 template <int D> class OperatorState;
 
-using OperatorTreeVector = std::vector<OperatorTree *>;
 template <int D> using Coord = std::array<double, D>;
 template <int D> using MWNodeVector = std::vector<MWNode<D> *>;
 

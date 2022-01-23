@@ -47,7 +47,7 @@ public:
     void push_back(std::unique_ptr<OperatorTree> oper) { this->oper_exp.push_back(std::move(oper)); }
 
     int getMaxBandWidth(int depth = -1) const;
-    const Eigen::VectorXi &getMaxBandWidths() const { return this->band_max; }
+    const std::vector<int> &getMaxBandWidths() const { return this->band_max; }
 
     void calcBandWidths(double prec);
     void clearBandWidths();
@@ -66,7 +66,7 @@ protected:
     int oper_reach;
     MultiResolutionAnalysis<D> MRA;
     std::vector<std::unique_ptr<OperatorTree>> oper_exp;
-    Eigen::VectorXi band_max;
+    std::vector<int> band_max;
 
     MultiResolutionAnalysis<2> getOperatorMRA() const;
 };

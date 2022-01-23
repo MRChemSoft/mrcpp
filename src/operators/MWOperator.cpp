@@ -50,9 +50,9 @@ template <int D>
 int MWOperator<D>::getMaxBandWidth(int depth) const {
     int maxWidth = -1;
     if (depth < 0) {
-        maxWidth = this->band_max.maxCoeff();
+        maxWidth = *std::max_element(this->band_max.begin(), this->band_max.end());
     } else if (depth < this->band_max.size()) {
-        maxWidth = this->band_max(depth);
+        maxWidth = this->band_max[depth];
     }
     return maxWidth;
 }
@@ -71,10 +71,10 @@ void MWOperator<D>::calcBandWidths(double prec) {
         oTree.calcBandWidth(prec);
         const BandWidth &bw = oTree.getBandWidth();
         int depth = bw.getDepth();
-        if (depth > maxDepth) { maxDepth = depth; }
+        if (depth > maxDepth) maxDepth = depth;
     }
-    this->band_max = VectorXi(maxDepth + 1);
-    this->band_max.setConstant(-1);
+    this->band_max = std::vector<int>(maxDepth + 1, -1);
+
     // Find the largest effective bandwidth at each scale
     for (auto &i : this->oper_exp) {
         const OperatorTree &oTree = *i;
@@ -82,11 +82,13 @@ void MWOperator<D>::calcBandWidths(double prec) {
         for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
             for (int j = 0; j < 4; j++) {          // component loop
                 int w = bw.getWidth(n, j);
-                if (w > this->band_max(n)) { this->band_max(n) = w; }
+                if (w > this->band_max[n]) this->band_max[n] = w;
             }
         }
     }
-    println(20, "  Maximum bandwidths:\n" << this->band_max << std::endl);
+    println(20, "  Maximum bandwidths:");
+    for (auto bw : this->band_max) println(20, bw);
+    println(20, std::endl);
 }
 
 template <int D>

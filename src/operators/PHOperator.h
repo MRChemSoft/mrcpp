@@ -36,6 +36,10 @@ namespace mrcpp {
  *  href="http://www.holoborodko.com/pavel/numerical-methods/numerical-derivative/smooth-low-noise-differentiators/">
  *  Pavel Holoborodko
  *  </a>.
+ *
+ *  NOTE: This is _not_ the recommended derivative operator for practial calculations, it's
+ *  a proof-of-concept operator. Use the ABGVOperator for "cuspy" functions and the
+ *  BSOperator for smooth functions.
  */
 
 template <int D> class PHOperator final : public DerivativeOperator<D> {

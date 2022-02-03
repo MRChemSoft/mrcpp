@@ -26,7 +26,6 @@
 #pragma once
 
 #include "ConvolutionOperator.h"
-#include "DerivativeKernel.h"
 
 namespace mrcpp {
 
@@ -34,29 +33,19 @@ namespace mrcpp {
  *
  * @brief Convolution with a derivative kernel
  *
- * @details The derivative kernel (derivative of Dirac's delta function) is
- * approximated by the derivative of a narrow Gaussian function:
+ * @details Derivative operator written as a convolution. The derivative kernel (derivative of
+ * Dirac's delta function) is approximated by the derivative of a narrow Gaussian function:
  * \f$ D^x(r-r') = \frac{d}{dx}\delta(r-r') \approx \frac{d}{dx} \alpha e^{-\beta (r-r')^2} \f$
+ *
+ * NOTE: This is _not_ the recommended derivative operator for practial calculations, it's
+ * a proof-of-concept operator. Use the ABGVOperator for "cuspy" functions and the
+ * BSOperator for smooth functions.
  */
 
 template <int D> class DerivativeConvolution final : public ConvolutionOperator<D> {
 public:
-    /** @returns New DerivativeConvolution object
-     *  @param[in] mra: Which MRA the operator is defined
-     *  @param[in] pr: Build precision, closeness to delta function
-     *  @details This will project a kernel of a single differentiated
-     *  gaussian with exponent sqrt(10/build_prec).
-     */
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
-            : ConvolutionOperator<D>(mra, prec, prec / 10.0) {
-        DerivativeKernel derivative_kernel(this->kern_prec);
-        this->initializeOperator(derivative_kernel);
-    }
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
-            : ConvolutionOperator<D>(mra, prec, prec / 100.0, root, reach) {
-        DerivativeKernel derivative_kernel(this->kern_prec);
-        this->initializeOperator(derivative_kernel);
-    }
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec);
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach);
     DerivativeConvolution(const DerivativeConvolution &oper) = delete;
     DerivativeConvolution &operator=(const DerivativeConvolution &oper) = delete;
 };

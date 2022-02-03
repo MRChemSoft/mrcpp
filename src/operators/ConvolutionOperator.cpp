@@ -24,62 +24,73 @@
  */
 
 #include "ConvolutionOperator.h"
-#include "GreensKernel.h"
+
+#include "core/InterpolatingBasis.h"
+#include "core/LegendreBasis.h"
+
 #include "functions/Gaussian.h"
+#include "functions/GaussExp.h"
+
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/project.h"
+
 #include "trees/BandWidth.h"
 #include "trees/FunctionTreeVector.h"
 #include "trees/OperatorTree.h"
+
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
 
-using namespace Eigen;
-
 namespace mrcpp {
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec)
-        : MWOperator(mra.getOperatorMRA(mra.getRootScale()))
-        , kern_prec(kprec)
-        , build_prec(bprec)
-        , kern_mra(mra.getKernelMRA(mra.getRootScale())) {
-    if (this->kern_prec < 0.0) MSG_ERROR("Negative kernel prec");
-    if (this->build_prec < 0.0) MSG_ERROR("Negative build prec");
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
+        : MWOperator<D>(mra, mra.getRootScale(), -10) {
+    int oldlevel = Printer::setPrintLevel(0);
+
+    auto o_prec = prec;
+    auto k_prec = prec / 10.0;
+    initialize(kernel, k_prec, o_prec);
+
+    Printer::setPrintLevel(oldlevel);
 }
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, double bprec, double kprec, int root, int reach)
-        : MWOperator(mra.getOperatorMRA(root, reach + 1), reach)
-        , kern_prec(kprec)
-        , build_prec(bprec)
-        , kern_mra(mra.getKernelMRA(root, reach + 1)) {
-    if (this->kern_prec < 0.0) MSG_ERROR("Negative kernel prec");
-    if (this->build_prec < 0.0) MSG_ERROR("Negative build prec");
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
+        : MWOperator<D>(mra, root, reach) {
+    int oldlevel = Printer::setPrintLevel(0);
+
+    auto o_prec = prec;
+    auto k_prec = prec / 100.0;
+    initialize(kernel, k_prec, o_prec);
+
+    Printer::setPrintLevel(oldlevel);
 }
 
-template <int D> ConvolutionOperator<D>::~ConvolutionOperator() {
-    this->clearKernel();
-}
-
-template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &greens_kernel) {
-    int max_scale = this->oper_mra.getMaxScale();
+template <int D>
+void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
+    auto k_mra = this->getKernelMRA();
+    auto o_mra = this->getOperatorMRA();
 
     TreeBuilder<2> builder;
-    OperatorAdaptor adaptor(this->build_prec, max_scale);
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
-    for (int i = 0; i < greens_kernel.size(); i++) {
-        Gaussian<1> &k_func = *greens_kernel[i];
-        auto *k_tree = new FunctionTree<1>(this->kern_mra);
-        mrcpp::build_grid(*k_tree, k_func);               // Generate empty grid to hold narrow Gaussian
-        mrcpp::project(this->kern_prec, *k_tree, k_func); // Project Gaussian starting from the empty grid
-        CrossCorrelationCalculator calculator(*k_tree);
+    for (int i = 0; i < kernel.size(); i++) {
+        // Rescale Gaussian for D-dim application
+        auto *k_func = kernel.getFunc(i).copy();
+        k_func->setCoef(std::pow(k_func->getCoef(), 1.0/D));
 
-        auto *o_tree = new OperatorTree(this->oper_mra, this->build_prec);
+        FunctionTree<1> k_tree(k_mra);
+        mrcpp::build_grid(k_tree, *k_func);    // Generate empty grid to hold narrow Gaussian
+        mrcpp::project(k_prec, k_tree, *k_func); // Project Gaussian starting from the empty grid
+        delete k_func;
+
+        CrossCorrelationCalculator calculator(k_tree);
+        auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
         builder.build(*o_tree, calculator, adaptor, -1); // Expand 1D kernel into 2D operator
 
         Timer trans_t;
@@ -89,32 +100,43 @@ template <int D> void ConvolutionOperator<D>::initializeOperator(GreensKernel &g
         print::time(10, "Time transform", trans_t);
         print::separator(10, ' ');
 
-        this->kern_exp.push_back(std::make_tuple(1.0, k_tree));
-        this->oper_exp.push_back(o_tree);
+        this->oper_exp.push_back(std::move(o_tree));
     }
 }
 
-template <int D> void ConvolutionOperator<D>::clearKernel() {
-    // namespace explicitly needed to disambiguate...
-    mrcpp::clear(this->kern_exp, true);
-}
+template <int D>
+MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
+    const BoundingBox<D> &box = this->MRA.getWorldBox();
+    const ScalingBasis &basis = this->MRA.getScalingBasis();
 
-template <int D> double ConvolutionOperator<D>::calcMinDistance(const MultiResolutionAnalysis<D> &MRA, double epsilon) const {
-    int maxScale = MRA.getMaxScale();
-    return std::sqrt(epsilon * std::pow(2.0, -maxScale));
-}
+    int type = basis.getScalingType();
+    int kern_order = 2 * basis.getScalingOrder() + 1;
 
-template <int D> double ConvolutionOperator<D>::calcMaxDistance(const MultiResolutionAnalysis<D> &MRA) const {
-    const Coord<D> &lb = MRA.getWorldBox().getLowerBounds();
-    const Coord<D> &ub = MRA.getWorldBox().getUpperBounds();
-    auto max_distance = math_utils::calc_distance<D>(lb, ub);
+    ScalingBasis *kern_basis = nullptr;
+    if (type == Interpol) {
+        kern_basis = new InterpolatingBasis(kern_order);
+    } else if (type == Legendre) {
+        kern_basis = new LegendreBasis(kern_order);
+    } else {
+        MSG_ABORT("Invalid scaling type");
+    }
 
-    // Regular non-periodic operators should have oper_root=0 and oper_reach=0
-    const auto &oper_box = this->oper_mra.getWorldBox();
-    auto rel_root = this->oper_mra.getRootScale() - MRA.getRootScale();
-    max_distance *= std::pow(2.0, -rel_root);
-    //max_distance *= (2.0 * this->oper_reach) + 1.0;
-    return max_distance;
+    int root = this->oper_root;
+    int reach = this->oper_reach + 1;
+    if (reach < 0) {
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > reach) reach = box.size(i);
+        }
+    }
+    auto start_l = std::array<int, 1>{-reach};
+    auto tot_l = std::array<int, 1>{2 * reach};
+    // Zero in argument since operators are only implemented
+    // for uniform scaling factor
+    auto sf = std::array<double, 1>{box.getScalingFactor(0)};
+    BoundingBox<1> kern_box(root, start_l, tot_l, sf);
+    MultiResolutionAnalysis<1> kern_mra(kern_box, *kern_basis);
+    delete kern_basis;
+    return kern_mra;
 }
 
 template class ConvolutionOperator<1>;

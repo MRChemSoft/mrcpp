@@ -26,7 +26,6 @@
 #pragma once
 
 #include "ConvolutionOperator.h"
-#include "IdentityKernel.h"
 
 namespace mrcpp {
 
@@ -41,22 +40,8 @@ namespace mrcpp {
 
 template <int D> class IdentityConvolution final : public ConvolutionOperator<D> {
 public:
-    /** @returns New IdentityConvolution object
-     *  @param[in] mra: Which MRA the operator is defined
-     *  @param[in] pr: Build precision, closeness to delta function
-     *  @details This will project a kernel of a single gaussian with
-     *  exponent sqrt(10/build_prec).
-     */
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
-            : ConvolutionOperator<D>(mra, prec, prec / 10.0) {
-        IdentityKernel identity_kernel(this->kern_prec);
-        this->initializeOperator(identity_kernel);
-    }
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = 1)
-            : ConvolutionOperator<D>(mra, prec, prec / 100.0, root, reach) {
-        IdentityKernel identity_kernel(this->kern_prec);
-        this->initializeOperator(identity_kernel);
-    }
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec);
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = 1);
     IdentityConvolution(const IdentityConvolution &oper) = delete;
     IdentityConvolution &operator=(const IdentityConvolution &oper) = delete;
 };

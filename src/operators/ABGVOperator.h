@@ -33,6 +33,9 @@ namespace mrcpp {
  *
  * @brief Derivative operator as defined by Alpert, Beylkin, Ginez and Vozovoi,
  * J Comp Phys 182, 149-190 (2002).
+ *
+ * NOTE: This is the recommended derivative operator for "cuspy" or discontinuous
+ * functions. The BSOperator is recommended for smooth functions.
  */
 
 template <int D> class ABGVOperator final : public DerivativeOperator<D> {
@@ -42,7 +45,7 @@ public:
     ABGVOperator &operator=(const ABGVOperator &oper) = delete;
 
 protected:
-    void initializeOperator(double a, double b);
+    void initialize(double a, double b);
 };
 
 } // namespace mrcpp

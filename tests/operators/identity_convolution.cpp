@@ -53,8 +53,11 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
     const int n = -6;
     const int k = 5;
 
+    NodeIndex<3> func_idx(n);
+    BoundingBox<3> func_box(func_idx);
+
     SECTION("Initialize identity kernel") {
-        IdentityKernel id_kern(exp_prec);
+        IdentityKernel<1> id_kern(exp_prec);
         REQUIRE(id_kern.size() == 1);
 
         SECTION("Project identity kernel") {

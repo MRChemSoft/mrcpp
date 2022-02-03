@@ -73,9 +73,8 @@ template <int D> class DerivativeOperator;
 template <int D> class ABGVOperator;
 template <int D> class PHOperator;
 
-class GreensKernel;
-class IdentityKernel;
-class DerivativeKernel;
+template <int D> class IdentityKernel;
+template <int D> class DerivativeKernel;
 class PoissonKernel;
 class HelmholtzKernel;
 
@@ -100,7 +99,6 @@ template <int D> class IteratorNode;
 class BandWidth;
 template <int D> class OperatorState;
 
-using OperatorTreeVector = std::vector<OperatorTree *>;
 template <int D> using Coord = std::array<double, D>;
 template <int D> using MWNodeVector = std::vector<MWNode<D> *>;
 

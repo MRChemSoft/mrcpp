@@ -38,21 +38,24 @@ namespace mrcpp {
  */
 template <int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
-        : DerivativeOperator<D>(mra) {
+        : DerivativeOperator<D>(mra, mra.getRootScale(), -10) {
     this->order = order;
-    initializeOperator();
+    initialize();
 }
 
-template <int D> void PHOperator<D>::initializeOperator() {
-    int bw = 1; // Operator bandwidth
-    int max_scale = this->oper_mra.getMaxScale();
-    const ScalingBasis &basis = this->oper_mra.getScalingBasis();
+template <int D> void PHOperator<D>::initialize() {
+    auto o_mra = this->getOperatorMRA();
 
     TreeBuilder<2> builder;
+
+    auto &basis = this->MRA.getScalingBasis();
     PHCalculator calculator(basis, this->order);
+
+    int bw = 1; // Operator bandwidth
+    int max_scale = this->MRA.getMaxScale();
     BandWidthAdaptor adaptor(bw, max_scale);
 
-    auto *o_tree = new OperatorTree(this->oper_mra, MachineZero);
+    auto o_tree = std::make_unique<OperatorTree>(o_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;
@@ -61,7 +64,7 @@ template <int D> void PHOperator<D>::initializeOperator() {
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
-    this->oper_exp.push_back(o_tree);
+    this->oper_exp.push_back(std::move(o_tree));
 }
 
 template class PHOperator<1>;

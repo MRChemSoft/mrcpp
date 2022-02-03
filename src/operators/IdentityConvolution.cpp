@@ -23,48 +23,48 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "BSOperator.h"
-#include "treebuilders/BSCalculator.h"
-#include "treebuilders/BandWidthAdaptor.h"
-#include "treebuilders/TreeBuilder.h"
+#include "IdentityConvolution.h"
+#include "IdentityKernel.h"
 #include "utils/Printer.h"
-#include "utils/Timer.h"
 
 namespace mrcpp {
 
-/** @returns New BSOperator object
+/** @returns New IdentityConvolution object
  *  @param[in] mra: Which MRA the operator is defined
- *  @param[in] order: Derivative order, defined for 1, 2 and 3
+ *  @param[in] pr: Build precision, closeness to delta function
+ *  @details This will project a kernel of a single gaussian with
+ *  exponent sqrt(10/build_prec).
  */
 template <int D>
-BSOperator<D>::BSOperator(const MultiResolutionAnalysis<D> &mra, int order)
-        : DerivativeOperator<D>(mra, mra.getRootScale()) {
-    this->order = order;
-    initialize();
+IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
+        : ConvolutionOperator<D>(mra) {
+    int oldlevel = Printer::setPrintLevel(0);
+
+    double o_prec = prec;
+    double k_prec = prec / 10.0;
+
+    IdentityKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
+
+    Printer::setPrintLevel(oldlevel);
 }
 
-template <int D> void BSOperator<D>::initialize() {
-    int bw = 1; // Operator bandwidth
-    auto oper_mra = this->getOperatorMRA();
+template <int D>
+IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
+        : ConvolutionOperator<D>(mra, root, reach) {
+    int oldlevel = Printer::setPrintLevel(0);
 
-    TreeBuilder<2> builder;
-    BSCalculator calculator(oper_mra.getScalingBasis(), this->order);
-    BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
+    double o_prec = prec;
+    double k_prec = prec / 100.0;
 
-    auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);
-    builder.build(*o_tree, calculator, adaptor, -1);
+    IdentityKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
 
-    Timer trans_t;
-    o_tree->calcSquareNorm();
-    o_tree->setupOperNodeCache();
-    print::time(10, "Time transform", trans_t);
-    print::separator(10, ' ');
-
-    this->oper_exp.push_back(std::move(o_tree));
+    Printer::setPrintLevel(oldlevel);
 }
 
-template class BSOperator<1>;
-template class BSOperator<2>;
-template class BSOperator<3>;
+template class IdentityConvolution<1>;
+template class IdentityConvolution<2>;
+template class IdentityConvolution<3>;
 
 } // namespace mrcpp

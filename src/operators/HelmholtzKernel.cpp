@@ -33,9 +33,10 @@
  * \breif
  */
 
+#include "HelmholtzKernel.h"
+
 #include <cmath>
 
-#include "HelmholtzKernel.h"
 #include "functions/GaussFunc.h"
 #include "utils/Printer.h"
 
@@ -43,22 +44,22 @@ namespace mrcpp {
 
 /** generate an approximation of the 3d helmholtz kernel expanded in gaussian functions
  */
-void HelmholtzKernel::initializeKernel() {
+HelmholtzKernel::HelmholtzKernel(double mu, double epsilon, double r_min, double r_max)
+        : GaussExp<1>() {
     // Constructed on [rMin/rMax, 1.0], and then rescaled to [rMin,rMax]
-    double r0 = this->rMin / this->rMax;
-    double r1 = this->rMax;
-    double mu_tilde = this->mu * r1;
+    double r0 = r_min / r_max;
+    double r1 = r_max;
+    double mu_tilde = mu * r1;
 
     // Set the truncation limits s1,s2 of the integral (integrate over [s1,s2])
     // for achieving relative error epsilon
-    double t = std::max((-2.5L * std::log(this->epsilon)), 5.0L);
+    double t = std::max((-2.5L * std::log(epsilon)), 5.0L);
     double s1 = -std::log(4 * t / (mu_tilde * mu_tilde)) / 2;
     double s2 = std::log(t / (r0 * r0)) / 2;
 
-    // Now, set the proper step size h for use in the trapezoidal rule
-    // for given MU
-    double h = 1.0 / (0.20L - 0.47L * std::log10(this->epsilon));
-    int n_exp = (int)ceil((s2 - s1) / h) + 1;
+    // Now, set the proper step size h for use in the trapezoidal rule for given MU
+    double h = 1.0 / (0.20L - 0.47L * std::log10(epsilon));
+    int n_exp = static_cast<int>(std::ceil((s2 - s1) / h) + 1);
     if (n_exp > MaxSepRank) MSG_ABORT("Maximum separation rank exceeded.");
 
     for (int i = 0; i < n_exp; i++) {
@@ -76,16 +77,6 @@ void HelmholtzKernel::initializeKernel() {
         GaussFunc<1> gFunc(alpha, beta);
         this->append(gFunc);
     }
-    this->calcSquareNorm();
-}
-
-std::ostream &HelmholtzKernel::print(std::ostream &o) const {
-    o << " HelmholtzKernel: " << std::endl;
-    o << " epsilon:  " << this->epsilon << std::endl;
-    o << " rMin:     " << this->rMin << std::endl;
-    o << " rMax:     " << this->rMax << std::endl;
-    o << " mu:       " << this->mu << std::endl;
-    return o;
 }
 
 } // namespace mrcpp

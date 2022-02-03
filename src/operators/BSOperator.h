@@ -33,6 +33,8 @@ namespace mrcpp {
  *
  *  @brief B-spline derivative operator as defined by Anderson etal, J Comp Phys X 4, 100033 (2019).
  *
+ * NOTE: This is the recommended derivative operator only for _smooth_ functions.
+ * Use the ABGVOperator if the function has known cusps or discontinuities.
  */
 
 template <int D> class BSOperator final : public DerivativeOperator<D> {
@@ -42,7 +44,7 @@ public:
     BSOperator &operator=(const BSOperator &oper) = delete;
 
 protected:
-    void initializeOperator();
+    void initialize();
 };
 
 } // namespace mrcpp

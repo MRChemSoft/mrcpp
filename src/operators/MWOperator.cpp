@@ -32,42 +32,38 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-void MWOperator::clear(bool dealloc) {
-    if (dealloc) {
-        for (auto &i : this->oper_exp) {
-            if (i != nullptr) delete i;
-        }
-    }
-    this->oper_exp.clear();
-}
-
-OperatorTree &MWOperator::getComponent(int i) {
+template <int D>
+OperatorTree &MWOperator<D>::getComponent(int i) {
     if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }
 
-const OperatorTree &MWOperator::getComponent(int i) const {
+template <int D>
+const OperatorTree &MWOperator<D>::getComponent(int i) const {
     if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
     return *this->oper_exp[i];
 }
 
-int MWOperator::getMaxBandWidth(int depth) const {
+template <int D>
+int MWOperator<D>::getMaxBandWidth(int depth) const {
     int maxWidth = -1;
     if (depth < 0) {
-        maxWidth = this->band_max.maxCoeff();
+        maxWidth = *std::max_element(this->band_max.begin(), this->band_max.end());
     } else if (depth < this->band_max.size()) {
-        maxWidth = this->band_max(depth);
+        maxWidth = this->band_max[depth];
     }
     return maxWidth;
 }
 
-void MWOperator::clearBandWidths() {
-    for (auto &i : this->oper_exp) { i->clearBandWidth(); }
+template <int D>
+void MWOperator<D>::clearBandWidths() {
+    for (auto &i : this->oper_exp) i->clearBandWidth();
 }
 
-void MWOperator::calcBandWidths(double prec) {
+template <int D>
+void MWOperator<D>::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component
     for (auto &i : this->oper_exp) {
@@ -75,10 +71,10 @@ void MWOperator::calcBandWidths(double prec) {
         oTree.calcBandWidth(prec);
         const BandWidth &bw = oTree.getBandWidth();
         int depth = bw.getDepth();
-        if (depth > maxDepth) { maxDepth = depth; }
+        if (depth > maxDepth) maxDepth = depth;
     }
-    this->band_max = VectorXi(maxDepth + 1);
-    this->band_max.setConstant(-1);
+    this->band_max = std::vector<int>(maxDepth + 1, -1);
+
     // Find the largest effective bandwidth at each scale
     for (auto &i : this->oper_exp) {
         const OperatorTree &oTree = *i;
@@ -86,11 +82,39 @@ void MWOperator::calcBandWidths(double prec) {
         for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
             for (int j = 0; j < 4; j++) {          // component loop
                 int w = bw.getWidth(n, j);
-                if (w > this->band_max(n)) { this->band_max(n) = w; }
+                if (w > this->band_max[n]) this->band_max[n] = w;
             }
         }
     }
-    println(20, "  Maximum bandwidths:\n" << this->band_max << std::endl);
+    println(20, "  Maximum bandwidths:");
+    for (auto bw : this->band_max) println(20, bw);
+    println(20, std::endl);
 }
+
+template <int D>
+MultiResolutionAnalysis<2> MWOperator<D>::getOperatorMRA() const {
+    const BoundingBox<D> &box = this->MRA.getWorldBox();
+    const ScalingBasis &basis = this->MRA.getScalingBasis();
+
+    int reach = this->oper_reach + 1;
+    if (reach < 0) {
+        for (int i = 0; i < D; i++) {
+            if (box.size(i) > reach) reach = box.size(i);
+        }
+    }
+    auto l = std::array<int, 2>{};
+    auto nbox = std::array<int, 2>{reach, reach};
+    // Zero in argument since operators are only implemented
+    // for uniform scaling factor
+    auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};
+
+    BoundingBox<2> oper_box(this->oper_root, l, nbox, sf);
+    auto oper_mra = MultiResolutionAnalysis<2>(oper_box, basis);
+    return oper_mra;
+}
+
+template class MWOperator<1>;
+template class MWOperator<2>;
+template class MWOperator<3>;
 
 } // namespace mrcpp

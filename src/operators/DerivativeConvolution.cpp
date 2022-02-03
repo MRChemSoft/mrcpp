@@ -23,54 +23,48 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "HelmholtzOperator.h"
-#include "HelmholtzKernel.h"
+#include "DerivativeConvolution.h"
+#include "DerivativeKernel.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
 
-/** @returns New HelmholtzOperator object
+/** @returns New DerivativeConvolution object
  *  @param[in] mra: Which MRA the operator is defined
- *  @param[in] m: Exponential parameter of the operator
- *  @param[in] pr: Build precision, closeness to exp(-mu*r)/r
- *  @details This will construct a gaussian expansion to approximate
- *  exp(-mu*r)/r, and project each term into a one-dimensional MW operator.
- *  Subsequent application of this operator will apply each of the terms to
- *  the input function in all Cartesian directions.
+ *  @param[in] pr: Build precision, closeness to delta function
+ *  @details This will project a kernel of a single differentiated
+ *  gaussian with exponent sqrt(10/build_prec).
  */
-HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec)
-        : ConvolutionOperator<3>(mra) {
+template <int D>
+DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
+        : ConvolutionOperator<D>(mra) {
     int oldlevel = Printer::setPrintLevel(0);
 
     double o_prec = prec;
     double k_prec = prec / 10.0;
-    double r_min = this->MRA.calcMinDistance(k_prec);
-    double r_max = this->MRA.calcMaxDistance();
 
-    HelmholtzKernel kernel(mu, k_prec, r_min, r_max);
-    initialize(kernel, k_prec, o_prec);
+    DerivativeKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
 
     Printer::setPrintLevel(oldlevel);
 }
 
-HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec, int root, int reach)
-        : ConvolutionOperator<3>(mra, root, reach) {
+template <int D>
+DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
+        : ConvolutionOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
     double o_prec = prec;
     double k_prec = prec / 100.0;
-    double r_min = this->MRA.calcMinDistance(k_prec);
-    double r_max = this->MRA.calcMaxDistance();
 
-    // Adjust r_max for periodic world
-    auto rel_root = this->oper_root - this->MRA.getRootScale();
-    r_max *= std::pow(2.0, -rel_root);
-    r_max *= (2.0 * this->oper_reach) + 1.0;
-
-    HelmholtzKernel kernel(mu, k_prec, r_min, r_max);
-    initialize(kernel, k_prec, o_prec);
+    DerivativeKernel<D> kernel(k_prec);
+    this->initialize(kernel, k_prec, o_prec);
 
     Printer::setPrintLevel(oldlevel);
 }
+
+template class DerivativeConvolution<1>;
+template class DerivativeConvolution<2>;
+template class DerivativeConvolution<3>;
 
 } // namespace mrcpp

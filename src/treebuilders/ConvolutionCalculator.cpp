@@ -166,9 +166,9 @@ template <int D> MWNodeVector<D> *ConvolutionCalculator<D>::makeOperBand(const M
             if (not periodic) {
                 if (sIdx[i] < c_i) sIdx[i] = c_i;
                 if (eIdx[i] > c_i + nboxes - 1) eIdx[i] = c_i + nboxes - 1;
-            } else {
-                if (sIdx[i] < c_i * reach) sIdx[i] = c_i * reach;
-                if (eIdx[i] > (c_i + nboxes) * reach - 1) eIdx[i] = (c_i + nboxes) * reach - 1;
+            // } else {
+            //     if (sIdx[i] < c_i * reach) sIdx[i] = c_i * reach;
+            //     if (eIdx[i] > (c_i + nboxes) * reach - 1) eIdx[i] = (c_i + nboxes) * reach - 1;
             }
             nbox[i] = eIdx[i] - sIdx[i] + 1;
         }
@@ -379,13 +379,14 @@ template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree
         const auto oper_scale = this->oper->getOperatorRoot();
         auto car_prod = math_utils::cartesian_product(std::vector<int>{-1, 0}, D);
         for (auto i = -1; i > oper_scale - 1; i--) {
-            for (auto &a : car_prod) {
+            //for (auto &a : car_prod) {
+                std::array<int, D> a{};
                 std::array<int, D> l{};
                 std::copy_n(a.begin(), D, l.begin());
                 NodeIndex<D> idx(i, l);
                 tree.getNode(idx);
                 this->fTree->getNode(idx);
-            }
+            //}
         }
     }
 }

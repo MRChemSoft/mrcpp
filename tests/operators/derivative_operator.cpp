@@ -67,9 +67,9 @@ template <int D> MultiResolutionAnalysis<D> *initializePeriodicMRA() {
     std::array<int, D> corner;
     std::array<int, D> boxes;
 
-    scaling_factor.fill(pi);
-    corner.fill(-1);
-    boxes.fill(2);
+    scaling_factor.fill(2.0*pi);
+    corner.fill(0);
+    boxes.fill(1);
 
     auto world = mrcpp::BoundingBox<D>(0, corner, boxes, scaling_factor, true);
 
@@ -179,10 +179,10 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
 
-    REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({20.0, 0.0, 0.0}) == Approx(dg_func({20.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({-5.0, 0.0, 0.0}) == Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({0.0, 1.0, 1.0}) == Approx(dg_func({0.0, 1.0, 1.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({12.0, 1.0, 1.0}) == Approx(dg_func({12.0, 1.0, 1.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({20.0, 1.0, 1.0}) == Approx(dg_func({20.0, 1.0, 1.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({-5.0, 1.0, 1.0}) == Approx(dg_func({-5.0, 1.0, 1.0})).margin(prec));
 
     delete mra;
 }

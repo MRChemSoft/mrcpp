@@ -150,15 +150,14 @@ template <int D> void applyPeriodicIdentity() {
     double apply_prec = 1.0e-3;
     double build_prec = 1.0e-4;
 
-    std::array<double, D> sfac, period;
+    std::array<double, D> period;
     std::array<int, D> nboxes, corner;
-    sfac.fill(1.0);
     period.fill(2.0);
-    nboxes.fill(2);
-    corner.fill(-1);
+    nboxes.fill(1);
+    corner.fill(0);
 
     InterpolatingBasis basis(5);
-    BoundingBox<D> world(0, corner, nboxes, sfac, true);
+    BoundingBox<D> world(0, corner, nboxes, period, true);
     MultiResolutionAnalysis<D> mra(world, basis);
 
     double beta = 10.0;
@@ -168,7 +167,7 @@ template <int D> void applyPeriodicIdentity() {
     GaussFunc<D> fFunc(beta, alpha, pos);
     auto pFunc = fFunc.periodify(period);
 
-    IdentityConvolution<D> I(mra, build_prec, -1, 1);
+    IdentityConvolution<D> I(mra, build_prec, 0, 2);
     FunctionTree<D> fTree(mra);
     FunctionTree<D> gTree(mra);
 
@@ -179,4 +178,5 @@ template <int D> void applyPeriodicIdentity() {
     REQUIRE(fTree.integrate() == Approx(1.0).epsilon(apply_prec));
     REQUIRE(gTree.integrate() == Approx(1.0).epsilon(apply_prec));
 }
+
 } // namespace identity_convolution

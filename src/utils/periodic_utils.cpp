@@ -55,22 +55,22 @@ template <int D> void index_manipulation(NodeIndex<D> &idx, const std::array<boo
     if (scale < 0) {
         std::array<int, D> translation;
         for (auto i = 0; i < D; i++) {
-            if (idx[i] < 0) translation[i] = -1;
+            if (idx[i] < 0) translation[i] = 0;//-1;
             if (idx[i] >= 0) translation[i] = 0;
         }
         idx.setTranslation(translation);
 
     } else {
         std::array<int, D> translation;
-        int two_n = 1 << (scale + 1);
+        int two_n = 1 << (scale);// + 1);
 
         for (auto i = 0; i < D; i++) {
-            translation[i] = idx[i] + two_n / 2;
+            translation[i] = idx[i];// + two_n / 2;
             if (periodic[i]) {
                 if (translation[i] >= two_n) translation[i] = translation[i] % two_n;
                 if (translation[i] < 0) translation[i] = (translation[i] + 1) % two_n + two_n - 1;
             }
-            translation[i] -= two_n / 2;
+            //translation[i] -= two_n / 2;
         }
         idx.setTranslation(translation);
     }
@@ -80,14 +80,10 @@ template <int D> void index_manipulation(NodeIndex<D> &idx, const std::array<boo
 // If r[i] is outside the unit-cell the function value is mapped to the unit-cell.
 template <int D> void coord_manipulation(Coord<D> &r, const std::array<bool, D> &periodic) {
     for (auto i = 0; i < D; i++) {
-        r[i] *= 0.5;
-        r[i] += 0.5;
         if (periodic[i]) {
             if (r[i] >= 1.0) r[i] = std::fmod(r[i], 1.0);
             if (r[i] < 0.0) r[i] = std::fmod(r[i], 1.0) + 1.0;
         }
-        r[i] -= 0.5;
-        r[i] /= 0.5;
     }
 }
 

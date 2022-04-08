@@ -198,18 +198,14 @@ template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 
 // Specialized for D=1 below
 template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
-
-    if (this->isPeriodic()) { periodic::coord_manipulation<D>(r, this->getPeriodic()); }
+    if (this->isPeriodic()) periodic::coord_manipulation<D>(r, this->getPeriodic());
 
     int idx[D];
     for (int d = 0; d < D; d++) {
         double x = r[d];
-        if (!this->isPeriodic()) {
-            if (x < this->lowerBounds[d]) return -1;
-            if (x >= this->upperBounds[d]) return -1;
-        }
+        if (x < this->lowerBounds[d]) return -1;
+        if (x >= this->upperBounds[d]) return -1;
         double div = (x - this->lowerBounds[d]) / this->unitLengths[d];
-        if (this->isPeriodic()) div = (x + 1.0) / 1.0;
         double iint;
         std::modf(div, &iint);
         idx[d] = (int)iint;
@@ -218,7 +214,7 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
     int bIdx = 0;
     for (int i = D - 1; i >= 0; i--) {
         int ncells = 1;
-        for (int j = 0; j < i; j++) { ncells *= this->nBoxes[j]; }
+        for (int j = 0; j < i; j++) ncells *= this->nBoxes[j];
         bIdx += ncells * idx[i];
     }
     return bIdx;
@@ -226,7 +222,7 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
 
 // Specialized for D=1 below
 template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
-    if (this->isPeriodic()) { periodic::index_manipulation<D>(nIdx, this->getPeriodic()); };
+    if (this->isPeriodic()) periodic::index_manipulation<D>(nIdx, this->getPeriodic());
 
     int n = nIdx.getScale();
     if (n < 0 and this->isPeriodic()) n = 0;
@@ -251,7 +247,7 @@ template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
 template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     int oldprec = Printer::setPrecision(5);
     o << std::fixed;
-    if (isPeriodic()) { o << "                   The World is Periodic" << std::endl; }
+    if (isPeriodic()) o << "                   The World is Periodic" << std::endl;
     o << " total boxes           : " << size() << std::endl;
     o << " boxes                 : [";
     for (int i = 0; i < D; i++) { o << std::setw(11) << size(i) << " "; }
@@ -278,7 +274,7 @@ template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
 
 template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
 
-    if (this->isPeriodic()) { periodic::coord_manipulation<1>(r, this->getPeriodic()); }
+    if (this->isPeriodic()) periodic::coord_manipulation<1>(r, this->getPeriodic());
 
     double x = r[0];
     if (x < this->lowerBounds[0]) return -1;
@@ -297,7 +293,7 @@ template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
 }
 
 template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
-    if (this->isPeriodic()) { periodic::index_manipulation<1>(nIdx, this->getPeriodic()); };
+    if (this->isPeriodic()) periodic::index_manipulation<1>(nIdx, this->getPeriodic());
 
     int n = nIdx.getScale();
     if (n < 0 and this->isPeriodic()) n = 0;

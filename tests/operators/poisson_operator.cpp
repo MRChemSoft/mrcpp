@@ -167,11 +167,11 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
     double build_prec = 3.0e-3;
 
     // 2.0*pi periodic in all dirs // UPDATE ME
-    auto scaling_factor = std::array<double, 3>{pi, pi, pi};
+    auto scaling_factor = std::array<double, 3>{2.0*pi, 2.0*pi, 2.0*pi};
     auto periodic = true;
 
-    auto corner = std::array<int, 3>{-1, -1, -1};
-    auto boxes = std::array<int, 3>{2, 2, 2};
+    auto corner = std::array<int, 3>{0, 0, 0};
+    auto boxes = std::array<int, 3>{1, 1, 1};
     auto world = mrcpp::BoundingBox<3>(0, corner, boxes, scaling_factor, true);
     int order = 5;
     InterpolatingBasis basis(order);

@@ -162,11 +162,16 @@ template <int D> void MWNode<D>::freeCoefs() {
 
 template <int D> void MWNode<D>::printCoefs() const {
     if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
-    println(0, "\nMW coefs");
+    println(0, "\n" << *this);
+    int tDim = this->getTDim();
     int kp1_d = this->getKp1_d();
-    for (int i = 0; i < this->n_coefs; i++) {
-        if (i % kp1_d == 0) println(0, "\n");
-        println(0, this->coefs[i]);
+    for (int t = 0; t < tDim; t++) {
+        for (int i = 0; i < kp1_d; i++) {
+            int n = tDim * t + i;
+            printout(0, std::setw(15) << this->coefs[n]);
+        }
+        printout(0, std::setw(25) << this->getComponentNorm(t));
+        printout(0, "\n");
     }
 }
 
@@ -255,7 +260,7 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     if (node.getScale() == 0) {
         NodeBox<D> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
-        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
+        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(0).getCoefs()[0]); }
     } else {
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &node.getCoefs()[0]); }
     }

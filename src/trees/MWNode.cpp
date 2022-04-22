@@ -185,25 +185,24 @@ template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
 
 template <int D> void MWNode<D>::zeroCoefs() {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated " << *this);
-
-    for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
+    std::memset(this->coefs, 0, this->n_coefs * sizeof(double));
     this->zeroNorms();
     this->setHasCoefs();
 }
 
 template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
-    for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = c[i]; }
+    std::memcpy(&this->coefs[block * block_size], c, block_size * sizeof(double));
 }
 
 template <int D> void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
-    for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] += c[i]; }
+    for (int i = 0; i < block_size; i++) this->coefs[block * block_size + i] += c[i];
 }
 
 template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
-    for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = 0.0; }
+    std::memset(&this->coefs[block * block_size], 0, block_size * sizeof(double));
 }
 
 template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
@@ -232,38 +231,33 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 }
 
 template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
-
-    MWNode<D> node_i = *this;
-
-    node_i.mwTransform(Reconstruction);
-
-    int kp1_d = this->getKp1_d();
-    int nChildren = this->getTDim();
-
     if (this->children[cIdx] == nullptr) MSG_ABORT("Child does not exist!");
+
+    int kp1_d = getKp1_d();
     MWNode<D> &child = getMWChild(cIdx);
+    MWNode<D> parent = *this; // deep copy
+    parent.mwTransform(Reconstruction);
+
     if (overwrite) {
-        child.setCoefBlock(0, kp1_d, &node_i.getCoefs()[cIdx * kp1_d]);
+        child.setCoefBlock(0, kp1_d, &parent.getCoefs()[cIdx * kp1_d]);
     } else {
-        child.addCoefBlock(0, kp1_d, &node_i.getCoefs()[cIdx * kp1_d]);
+        child.addCoefBlock(0, kp1_d, &parent.getCoefs()[cIdx * kp1_d]);
     }
     child.setHasCoefs();
     child.calcNorms();
 }
 
-/** Takes a MWParent and generates coefficients, reverse operation from
- * giveChildrenCoefs */
+/** This will periodify the function by copying the scaling coefficients into all blocks
+ *  in the parent node, and then performing a MW transform to obtain s+w coefs in the
+ *  parent. Should *only* be used on negative scales in a periodic setting. */
 template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
-    MWNode<D> node = *this;
+    if (getScale() > 0) NOT_REACHED_ABORT;
+
+    int kp1_d = getKp1_d();
+    int nChildren = getTDim();
+    MWNode<D> child = *this;
     MWNode<D> &parent = getMWParent();
-    int kp1_d = this->getKp1_d();
-    if (node.getScale() == 0) {
-        NodeBox<D> &box = this->getMWTree().getRootBox();
-        auto reverse = getTDim() - 1;
-        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(0).getCoefs()[0]); }
-    } else {
-        for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &node.getCoefs()[0]); }
-    }
+    for (auto i = 0; i < nChildren; i++) parent.setCoefBlock(i, kp1_d, child.getCoefs());
     parent.mwTransform(Compression);
     parent.setHasCoefs();
     parent.calcNorms();
@@ -272,12 +266,13 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
 /** Takes the scaling coefficients of the children and stores them consecutively
  * in the  given vector. */
 template <int D> void MWNode<D>::copyCoefsFromChildren() {
-    int kp1_d = this->getKp1_d();
-    int nChildren = this->getTDim();
+    int kp1_d = getKp1_d();
+    int nChildren = getTDim();
+    MWNode<D> &parent = *this;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         MWNode<D> &child = getMWChild(cIdx);
         if (not child.hasCoefs()) MSG_ABORT("Child has no coefs");
-        setCoefBlock(cIdx, kp1_d, child.getCoefs());
+        parent.setCoefBlock(cIdx, kp1_d, child.getCoefs());
     }
 }
 
@@ -335,9 +330,9 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
         two_fac = std::sqrt(two_fac);
     }
     if (IS_ODD(D)) {
-        for (int i = 0; i < nCoefs; i++) { this->coefs[i] = two_fac * in_vec[i]; }
+        for (int i = 0; i < nCoefs; i++) this->coefs[i] = two_fac * in_vec[i];
     } else {
-        for (int i = 0; i < nCoefs; i++) { this->coefs[i] *= two_fac; }
+        for (int i = 0; i < nCoefs; i++) this->coefs[i] *= two_fac;
     }
 }
 /* Old interpolating version, somewhat faster
@@ -440,21 +435,19 @@ template <int D> void MWNode<D>::mwTransform(int operation) {
         in_vec = out_vec;
         out_vec = tmp;
     }
-    if (IS_ODD(D)) {
-        for (int i = 0; i < nCoefs; i++) { this->coefs[i] = in_vec[i]; }
-    }
+    if (IS_ODD(D)) std::memcpy(this->coefs, in_vec, nCoefs * sizeof(double));
 }
 
 /** Set all norms to Undefined. */
 template <int D> void MWNode<D>::clearNorms() {
     this->squareNorm = -1.0;
-    for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = -1.0; }
+    for (int i = 0; i < this->getTDim(); i++) this->componentNorms[i] = -1.0;
 }
 
 /** Set all norms to zero. */
 template <int D> void MWNode<D>::zeroNorms() {
     this->squareNorm = 0.0;
-    for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = 0.0; }
+    for (int i = 0; i < this->getTDim(); i++) this->componentNorms[i] = 0.0;
 }
 
 /** Calculate and store square norm and component norms, if allocated. */
@@ -470,11 +463,7 @@ template <int D> void MWNode<D>::calcNorms() {
 /** Calculate and return the squared scaling norm. */
 template <int D> double MWNode<D>::getScalingNorm() const {
     double sNorm = this->getComponentNorm(0);
-    if (sNorm >= 0.0) {
-        return sNorm * sNorm;
-    } else {
-        return -1.0;
-    }
+    return (sNorm >= 0.0) ? sNorm * sNorm : -1.0;
 }
 
 /** Calculate and return the squared wavelet norm. */
@@ -505,7 +494,7 @@ template <int D> double MWNode<D>::calcComponentNorm(int i) const {
 #ifdef HAVE_BLAS
     sq_norm = cblas_ddot(size, &c[start], 1, &c[start], 1);
 #else
-    for (int i = start; i < start + size; i++) { sq_norm += c[i] * c[i]; }
+    for (int i = start; i < start + size; i++) sq_norm += c[i] * c[i];
 #endif
     return std::sqrt(sq_norm);
 }
@@ -586,7 +575,7 @@ template <int D> void MWNode<D>::deleteGenerated() {
         if (this->isEndNode()) {
             this->deleteChildren();
         } else {
-            for (int cIdx = 0; cIdx < getTDim(); cIdx++) { this->getMWChild(cIdx).deleteGenerated(); }
+            for (int cIdx = 0; cIdx < getTDim(); cIdx++) this->getMWChild(cIdx).deleteGenerated();
         }
     }
 }
@@ -732,9 +721,8 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
         return this;
     }
     assert(this->isAncestor(idx));
-    if (this->isEndNode()) { // don't return GenNodes
-        return nullptr;
-    }
+    if (this->isEndNode()) return nullptr; // don't return GenNodes
+
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeNoGen(idx);
@@ -752,16 +740,16 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx
         return this;
     }
     assert(this->isAncestor(idx));
-    if (this->isEndNode()) { // don't return GenNodes
-        return nullptr;
-    }
+    if (this->isEndNode()) return nullptr; // don't return GenNodes
+
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
-    if (getDepth() == depth or this->isEndNode()) { return this; }
+    if (getDepth() == depth or this->isEndNode()) return this;
+
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
@@ -775,7 +763,8 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D
  * Recursion starts at at this node and ASSUMES the requested node is in fact
  * decending from this node. */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
-    if (getDepth() == depth or this->isEndNode()) { return this; }
+    if (getDepth() == depth or this->isEndNode()) return this;
+
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
@@ -803,7 +792,8 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
     assert(isAncestor(idx));
     // We should in principle lock before read, but it makes things slower,
     // and the EndNode status does not change (normally ;)
-    if (isEndNode()) { return this; }
+    if (isEndNode()) return this;
+
     int cIdx = getChildIndex(idx);
     assert(children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
@@ -818,7 +808,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
     if (depth < 0) MSG_ABORT("Invalid argument");
 
-    if (getDepth() == depth) { return this; }
+    if (getDepth() == depth) return this;
     assert(hasCoord(r));
     threadSafeGenChildren();
     int cIdx = getChildIndex(r);

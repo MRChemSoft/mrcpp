@@ -167,7 +167,7 @@ template <int D> void applyPeriodicIdentity() {
     GaussFunc<D> fFunc(beta, alpha, pos);
     auto pFunc = fFunc.periodify(period);
 
-    IdentityConvolution<D> I(mra, build_prec, 0, 2);
+    IdentityConvolution<D> I(mra, build_prec, -1, 1);
     FunctionTree<D> fTree(mra);
     FunctionTree<D> gTree(mra);
 

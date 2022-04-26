@@ -36,11 +36,11 @@ namespace periodic {
 template <int D> bool in_unit_cell(NodeIndex<D> idx) {
     auto scale = idx.getScale();
     if (scale < 0) MSG_ABORT("Negative value in bit-shift");
-    int two_n = 1 << (scale + 1);
+    int two_n = 1 << scale; // + 1);
 
     int l[D];
     for (auto i = 0; i < D; i++) {
-        l[i] = idx[i] + two_n / 2;
+        l[i] = idx[i]; // + two_n / 2;
         if (l[i] >= two_n) return false;
         if (l[i] < 0) return false;
     }

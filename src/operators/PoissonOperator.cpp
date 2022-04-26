@@ -62,9 +62,11 @@ PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double p
     double r_max = this->MRA.calcMaxDistance();
 
     // Adjust r_max for periodic world
-    auto rel_root = this->oper_root - this->MRA.getRootScale();
-    r_max *= std::pow(2.0, -rel_root);
-    r_max *= (2.0 * this->oper_reach) + 1.0;
+    if (mra.getWorldBox().isPeriodic()) {
+        auto rel_root = this->oper_root - this->MRA.getRootScale();
+        r_max *= std::pow(2.0, -rel_root);
+        r_max *= (2.0 * this->oper_reach) + 1.0;
+    }
 
     PoissonKernel kernel(k_prec, r_min, r_max);
     initialize(kernel, k_prec, o_prec);

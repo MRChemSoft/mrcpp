@@ -202,12 +202,12 @@ template <int D> double FunctionTree<D>::integrate() const {
 template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
-    auto arg = r;
-    for (auto i = 0; i < D; i++) arg[i] = arg[i] / scaling_factor[i];
+    Coord<D> arg{};
+    for (auto i = 0; i < D; i++) arg[i] = r[i] / scaling_factor[i];
 
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
-    if (this->getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic()); }
+    if (this->getRootBox().isPeriodic()) arg = periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic());
 
     // Function is zero outside the domain for non-periodic functions
     if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;
@@ -241,7 +241,7 @@ template<int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
 
     // The 1.0 appearing in the if tests comes from the period is
     // always 1.0 from the point of view of this function.
-    if (this->getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic()); }
+    if (this->getRootBox().isPeriodic()) arg = periodic::coord_manipulation<D>(arg, this->getRootBox().getPeriodic());
 
     // Function is zero outside the domain for non-periodic functions
     if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;

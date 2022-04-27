@@ -245,13 +245,13 @@ template <int D> int MWTree<D>::getSizeNodes() const {
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
-template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
-    if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
-    int rIdx = getRootBox().getBoxIndex(idx);
+template <int D> const MWNode<D> *MWTree<D>::findNode(const NodeIndex<D> &idx) const {
+    auto nIdx = periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
+    int rIdx = getRootBox().getBoxIndex(nIdx);
     if (rIdx < 0) return nullptr;
     const MWNode<D> &root = this->rootBox.getNode(rIdx);
-    assert(root.isAncestor(idx));
-    return root.retrieveNodeNoGen(idx);
+    assert(root.isAncestor(nIdx));
+    return root.retrieveNodeNoGen(nIdx);
 }
 
 /** Find and return the node with the given NodeIndex.
@@ -260,13 +260,13 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at the
  * appropriate rootNode. */
-template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
-    int rIdx = getRootBox().getBoxIndex(idx);
+template <int D> MWNode<D> *MWTree<D>::findNode(const NodeIndex<D> &idx) {
+    auto nIdx = periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
+    int rIdx = getRootBox().getBoxIndex(nIdx);
     if (rIdx < 0) return nullptr;
     MWNode<D> &root = this->rootBox.getNode(rIdx);
-    assert(root.isAncestor(idx));
-    return root.retrieveNodeNoGen(idx);
+    assert(root.isAncestor(nIdx));
+    return root.retrieveNodeNoGen(nIdx);
 }
 
 /** Find and return the node with the given NodeIndex.
@@ -274,16 +274,16 @@ template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
  * This routine ALWAYS returns the node you ask for, and will generate nodes
  * that does not exist. Recursion starts at the appropriate rootNode and
  * decends from this.*/
-template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
+template <int D> MWNode<D> &MWTree<D>::getNode(const NodeIndex<D> &idx) {
+    auto nIdx = periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
 
     MWNode<D> *out = nullptr;
-    MWNode<D> &root = getRootBox().getNode(idx);
+    MWNode<D> &root = getRootBox().getNode(nIdx);
     if (idx.getScale() < getRootScale()) {
 #pragma omp critical(gen_parent)
-        out = root.retrieveParent(idx);
+        out = root.retrieveParent(nIdx);
     } else {
-        out = root.retrieveNode(idx);
+        out = root.retrieveNode(nIdx);
     }
     return *out;
 }
@@ -293,11 +293,11 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
  * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
-template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
-    if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
-    MWNode<D> &root = getRootBox().getNode(idx);
-    assert(root.isAncestor(idx));
-    return *root.retrieveNodeOrEndNode(idx);
+template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) {
+    auto nIdx = periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
+    MWNode<D> &root = getRootBox().getNode(nIdx);
+    assert(root.isAncestor(nIdx));
+    return *root.retrieveNodeOrEndNode(nIdx);
 }
 
 /** Find and return the node with the given NodeIndex.
@@ -305,11 +305,11 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
  * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
-template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
-    if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
-    const MWNode<D> &root = getRootBox().getNode(idx);
-    assert(root.isAncestor(idx));
-    return *root.retrieveNodeOrEndNode(idx);
+template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(const NodeIndex<D> &idx) const {
+    auto nIdx = periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
+    const MWNode<D> &root = getRootBox().getNode(nIdx);
+    assert(root.isAncestor(nIdx));
+    return *root.retrieveNodeOrEndNode(nIdx);
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.
@@ -317,7 +317,7 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) 
  * This routine ALWAYS returns the node you ask for, and will generate nodes
  * that does not exist. Recursion starts at the appropriate rootNode and
  * decends from this. */
-template <int D> MWNode<D> &MWTree<D>::getNode(Coord<D> r, int depth) {
+template <int D> MWNode<D> &MWTree<D>::getNode(const Coord<D> &r, int depth) {
     MWNode<D> &root = getRootBox().getNode(r);
     if (depth >= 0) {
         return *root.retrieveNode(r, depth);
@@ -331,10 +331,10 @@ template <int D> MWNode<D> &MWTree<D>::getNode(Coord<D> r, int depth) {
  * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
-template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
-    if (getRootBox().isPeriodic()) periodic::coord_manipulation<D>(r, getRootBox().getPeriodic());
-    MWNode<D> &root = getRootBox().getNode(r);
-    return *root.retrieveNodeOrEndNode(r, depth);
+template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) {
+    auto R = periodic::coord_manipulation<D>(r, getRootBox().getPeriodic());
+    MWNode<D> &root = getRootBox().getNode(R);
+    return *root.retrieveNodeOrEndNode(R, depth);
 }
 
 /** Find and return the node at a given depth that contains a given coordinate.
@@ -342,10 +342,10 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
  * This routine returns the Node you ask for, or the EndNode on
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this. */
-template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
-    if (getRootBox().isPeriodic()) periodic::coord_manipulation<D>(r, getRootBox().getPeriodic());
-    const MWNode<D> &root = getRootBox().getNode(r);
-    return *root.retrieveNodeOrEndNode(r, depth);
+template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(const Coord<D> &r, int depth) const {
+    auto R = periodic::coord_manipulation<D>(r, getRootBox().getPeriodic());
+    const MWNode<D> &root = getRootBox().getNode(R);
+    return *root.retrieveNodeOrEndNode(R, depth);
 }
 
 template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {

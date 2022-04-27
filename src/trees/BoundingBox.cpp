@@ -197,12 +197,12 @@ template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
 }
 
 // Specialized for D=1 below
-template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
-    if (this->isPeriodic()) periodic::coord_manipulation<D>(r, this->getPeriodic());
+template <int D> int BoundingBox<D>::getBoxIndex(const Coord<D> &r) const {
+    auto R = periodic::coord_manipulation<D>(r, this->getPeriodic());
 
     int idx[D];
     for (int d = 0; d < D; d++) {
-        double x = r[d];
+        double x = R[d];
         if (x < this->lowerBounds[d]) return -1;
         if (x >= this->upperBounds[d]) return -1;
         double div = (x - this->lowerBounds[d]) / this->unitLengths[d];
@@ -221,8 +221,8 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
 }
 
 // Specialized for D=1 below
-template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
-    if (this->isPeriodic()) periodic::index_manipulation<D>(nIdx, this->getPeriodic());
+template <int D> int BoundingBox<D>::getBoxIndex(const NodeIndex<D> &index) const {
+    auto nIdx = periodic::index_manipulation<D>(index, this->getPeriodic());
 
     int n = nIdx.getScale();
     if (n < 0 and this->isPeriodic()) n = 0;
@@ -272,11 +272,10 @@ template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     return o;
 }
 
-template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
+template <> int BoundingBox<1>::getBoxIndex(const Coord<1> &r) const {
+    auto R = periodic::coord_manipulation<1>(r, this->getPeriodic());
 
-    if (this->isPeriodic()) periodic::coord_manipulation<1>(r, this->getPeriodic());
-
-    double x = r[0];
+    double x = R[0];
     if (x < this->lowerBounds[0]) return -1;
     if (x >= this->upperBounds[0]) return -1;
     double div = (x - this->lowerBounds[0]) / this->unitLengths[0];
@@ -292,8 +291,8 @@ template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
     return NodeIndex<1>(n, {l});
 }
 
-template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
-    if (this->isPeriodic()) periodic::index_manipulation<1>(nIdx, this->getPeriodic());
+template <> int BoundingBox<1>::getBoxIndex(const NodeIndex<1> &index) const {
+    auto nIdx = periodic::index_manipulation<1>(index, this->getPeriodic());
 
     int n = nIdx.getScale();
     if (n < 0 and this->isPeriodic()) n = 0;

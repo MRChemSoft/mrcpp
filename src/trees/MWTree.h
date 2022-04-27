@@ -73,19 +73,19 @@ public:
     void setName(const std::string &n) { this->name = n; }
     const std::string &getName() const { return this->name; }
 
-    int getRootIndex(Coord<D> r) const { return this->rootBox.getBoxIndex(r); }
-    int getRootIndex(NodeIndex<D> nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
+    int getRootIndex(const Coord<D> &r) const { return this->rootBox.getBoxIndex(r); }
+    int getRootIndex(const NodeIndex<D> &nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
-    MWNode<D> *findNode(NodeIndex<D> nIdx);
-    const MWNode<D> *findNode(NodeIndex<D> nIdx) const;
+    MWNode<D> *findNode(const NodeIndex<D> &nIdx);
+    const MWNode<D> *findNode(const NodeIndex<D> &nIdx) const;
 
-    MWNode<D> &getNode(NodeIndex<D> nIdx);
-    MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx);
-    const MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
+    MWNode<D> &getNode(const NodeIndex<D> &nIdx);
+    MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx);
+    const MWNode<D> &getNodeOrEndNode(const NodeIndex<D> &nIdx) const;
 
-    MWNode<D> &getNode(Coord<D> r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
+    MWNode<D> &getNode(const Coord<D> &r, int depth = -1);
+    MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1);
+    const MWNode<D> &getNodeOrEndNode(const Coord<D> &r, int depth = -1) const;
 
     int getNEndNodes() const { return this->endNodeTable.size(); }
     int getNRootNodes() const { return this->rootBox.size(); }

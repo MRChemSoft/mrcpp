@@ -23,81 +23,74 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "MRCPP/Printer"
 
 #include "periodic_utils.h"
-#include "trees/NodeIndex.h"
 
 #include <cmath>
+
+#include "details.h"
+#include "Printer.h"
+#include "trees/NodeIndex.h"
 
 namespace mrcpp {
 namespace periodic {
 
-template <int D> bool in_unit_cell(NodeIndex<D> idx) {
+template <int D> bool in_unit_cell(const NodeIndex<D> &idx) {
     auto scale = idx.getScale();
     if (scale < 0) MSG_ABORT("Negative value in bit-shift");
-    int two_n = 1 << scale; // + 1);
-
-    int l[D];
+    int two_n = 1 << scale;
     for (auto i = 0; i < D; i++) {
-        l[i] = idx[i]; // + two_n / 2;
-        if (l[i] >= two_n) return false;
-        if (l[i] < 0) return false;
+        if (idx[i] >= two_n) return false;
+        if (idx[i] < 0) return false;
     }
-
     return true;
 }
 
-template <int D> void index_manipulation(NodeIndex<D> &idx, const std::array<bool, D> &periodic) {
-    if (not periodic[0]) MSG_ABORT("Only for periodic cases!");
+template <int D> NodeIndex<D> index_manipulation(const NodeIndex<D> &idx, const std::array<bool, D> &periodic) {
+    if (!details::are_any(periodic, true)) return NodeIndex<D>(idx);
 
     auto scale = idx.getScale();
     if (scale < 0) {
-        std::array<int, D> translation;
-        for (auto i = 0; i < D; i++) {
-            if (idx[i] < 0) translation[i] = 0;//-1;
-            if (idx[i] >= 0) translation[i] = 0;
-        }
-        idx.setTranslation(translation);
-
+        return NodeIndex<D>(scale);
     } else {
-        std::array<int, D> translation;
-        int two_n = 1 << (scale);// + 1);
-
-        for (auto i = 0; i < D; i++) {
-            translation[i] = idx[i];// + two_n / 2;
-            if (periodic[i]) {
-                if (translation[i] >= two_n) translation[i] = translation[i] % two_n;
-                if (translation[i] < 0) translation[i] = (translation[i] + 1) % two_n + two_n - 1;
+        int two_n = (1 << scale);
+        std::array<int, D> new_l = idx.getTranslation();
+        for (auto d = 0; d < D; ++d) {
+            if (periodic[d]) {
+                if (idx[d] >= two_n) new_l[d] = idx[d] % two_n;
+                if (idx[d] < 0) new_l[d] = (idx[d] + 1) % two_n + two_n - 1;
             }
-            //translation[i] -= two_n / 2;
         }
-        idx.setTranslation(translation);
+        return NodeIndex<D>(scale, new_l);
     }
 }
 
 // Assumes a coordiate for a function defined on the [-1, 1] periodic cell.
 // If r[i] is outside the unit-cell the function value is mapped to the unit-cell.
-template <int D> void coord_manipulation(Coord<D> &r, const std::array<bool, D> &periodic) {
-    for (auto i = 0; i < D; i++) {
-        if (periodic[i]) {
-            if (r[i] >= 1.0) r[i] = std::fmod(r[i], 1.0);
-            if (r[i] < 0.0) r[i] = std::fmod(r[i], 1.0) + 1.0;
+template <int D> Coord<D> coord_manipulation(const Coord<D> &r, const std::array<bool, D> &periodic) {
+    if (!details::are_any(periodic, true)) return Coord<D>(r);
+
+    Coord<D> new_r = r;
+    for (auto d = 0; d < D; ++d) {
+        if (periodic[d]) {
+            if (r[d] >= 1.0) new_r[d] = std::fmod(r[d], 1.0);
+            if (r[d] < 0.0) new_r[d] = std::fmod(r[d], 1.0) + 1.0;
         }
     }
+    return new_r;
 }
 
-template bool in_unit_cell<1>(NodeIndex<1> idx);
-template bool in_unit_cell<2>(NodeIndex<2> idx);
-template bool in_unit_cell<3>(NodeIndex<3> idx);
+template bool in_unit_cell<1>(const NodeIndex<1> &idx);
+template bool in_unit_cell<2>(const NodeIndex<2> &idx);
+template bool in_unit_cell<3>(const NodeIndex<3> &idx);
 
-template void index_manipulation<1>(NodeIndex<1> &idx, const std::array<bool, 1> &periodic);
-template void index_manipulation<2>(NodeIndex<2> &idx, const std::array<bool, 2> &periodic);
-template void index_manipulation<3>(NodeIndex<3> &idx, const std::array<bool, 3> &periodic);
+template NodeIndex<1> index_manipulation<1>(const NodeIndex<1> &idx, const std::array<bool, 1> &periodic);
+template NodeIndex<2> index_manipulation<2>(const NodeIndex<2> &idx, const std::array<bool, 2> &periodic);
+template NodeIndex<3> index_manipulation<3>(const NodeIndex<3> &idx, const std::array<bool, 3> &periodic);
 
-template void coord_manipulation<1>(Coord<1> &r, const std::array<bool, 1> &periodic);
-template void coord_manipulation<2>(Coord<2> &r, const std::array<bool, 2> &periodic);
-template void coord_manipulation<3>(Coord<3> &r, const std::array<bool, 3> &periodic);
+template Coord<1> coord_manipulation<1>(const Coord<1> &r, const std::array<bool, 1> &periodic);
+template Coord<2> coord_manipulation<2>(const Coord<2> &r, const std::array<bool, 2> &periodic);
+template Coord<3> coord_manipulation<3>(const Coord<3> &r, const std::array<bool, 3> &periodic);
 
 } // namespace periodic
 } // namespace mrcpp

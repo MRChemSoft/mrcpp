@@ -64,8 +64,8 @@ public:
 
     NodeIndex<D> getNodeIndex(int bIdx) const;
 
-    int getBoxIndex(Coord<D> r) const;
-    int getBoxIndex(NodeIndex<D> nIdx) const;
+    int getBoxIndex(const Coord<D> &r) const;
+    int getBoxIndex(const NodeIndex<D> &nIdx) const;
 
     int size() const { return this->totBoxes; }
     int size(int d) const { return this->nBoxes[d]; }

@@ -86,9 +86,9 @@ BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
  * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
  */
 template <int D>
-BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf, bool pbc)
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf)
         : cornerIndex(n, l) {
-    setPeriodic(pbc);
+    setPeriodic(false);
     setNBoxes(nb);
     setScalingFactors(sf);
     setDerivedParameters();

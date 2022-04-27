@@ -64,14 +64,8 @@ template <int D> MultiResolutionAnalysis<D> *initializeMRA() {
 template <int D> MultiResolutionAnalysis<D> *initializePeriodicMRA() {
     // Constructing world box
     std::array<double, D> scaling_factor;
-    std::array<int, D> corner;
-    std::array<int, D> boxes;
-
     scaling_factor.fill(2.0*pi);
-    corner.fill(0);
-    boxes.fill(1);
-
-    auto world = mrcpp::BoundingBox<D>(0, corner, boxes, scaling_factor, true);
+    auto world = mrcpp::BoundingBox<D>(scaling_factor, true);
 
     // Constructing scaling basis
     int order = 5;

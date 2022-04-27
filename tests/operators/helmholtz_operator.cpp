@@ -212,11 +212,9 @@ TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [he
 
     // 2.0*pi periodic in all dirs // UPDATE ME
     auto scaling_factor = std::array<double, 3>{2.0*pi, 2.0*pi, 2.0*pi};
-    auto corner = std::array<int, 3>{0, 0, 0};
-    auto boxes = std::array<int, 3>{1, 1, 1};
-    auto world = mrcpp::BoundingBox<3>(0, corner, boxes, scaling_factor, true);
-    int order = 5;
+    auto world = mrcpp::BoundingBox<3>(scaling_factor, true);
 
+    int order = 5;
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(world, basis, 25);
 
@@ -255,11 +253,9 @@ TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz
 
     // 2.0*pi periodic in all dirs // UPDATE ME
     auto scaling_factor = std::array<double, 3>{2.0*pi, 2.0*pi, 2.0*pi};
-    auto corner = std::array<int, 3>{0, 0, 0};
-    auto boxes = std::array<int, 3>{1, 1, 1};
-    auto world = mrcpp::BoundingBox<3>(0, corner, boxes, scaling_factor, true);
-    int order = 5;
+    auto world = mrcpp::BoundingBox<3>(scaling_factor, true);
 
+    int order = 5;
     InterpolatingBasis basis(order);
     MultiResolutionAnalysis<3> MRA(world, basis, 25);
 

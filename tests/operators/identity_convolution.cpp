@@ -151,13 +151,10 @@ template <int D> void applyPeriodicIdentity() {
     double build_prec = 1.0e-4;
 
     std::array<double, D> period;
-    std::array<int, D> nboxes, corner;
     period.fill(2.0);
-    nboxes.fill(1);
-    corner.fill(0);
 
     InterpolatingBasis basis(5);
-    BoundingBox<D> world(0, corner, nboxes, period, true);
+    BoundingBox<D> world(period, true);
     MultiResolutionAnalysis<D> mra(world, basis);
 
     double beta = 10.0;

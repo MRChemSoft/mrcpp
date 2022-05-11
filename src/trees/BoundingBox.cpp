@@ -25,6 +25,8 @@
 
 #include "MRCPP/constants.h"
 
+#include <algorithm>
+
 #include "BoundingBox.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
@@ -86,9 +88,14 @@ BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
  * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
  */
 template <int D>
-BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf)
+BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf, bool pbc)
         : cornerIndex(n, l) {
-    setPeriodic(false);
+    if (pbc) {
+        if (n != 0) MSG_ABORT("Periodic world must have root scale (n=0)")
+        if (std::any_of(l.begin(), l.end(), [](int i) { return (i != 0); })) MSG_ABORT("Periodic world must start in origo (l=0)")
+        if (std::any_of(nb.begin(), nb.end(), [](int i) { return (i != 1); })) MSG_ABORT("Periodic world must be single root (nb=0)")
+    }
+    setPeriodic(pbc);
     setNBoxes(nb);
     setScalingFactors(sf);
     setDerivedParameters();

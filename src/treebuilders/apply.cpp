@@ -121,7 +121,8 @@ template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<
     int maxScale = out.getMRA().getMaxScale();
     WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
     ConvolutionCalculator<D> calculator(prec, oper, inp);
-    calculator.startManipulateOperator(inside);
+    calculator.setNearField(inside);
+    calculator.setFarField(!inside);
     pre_t.stop();
 
     TreeBuilder<D> builder;

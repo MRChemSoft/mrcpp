@@ -185,33 +185,33 @@ template <int D> void ConvolutionCalculator<D>::fillOperBand(MWNodeVector<D> *ba
             idx[dim]++;
             continue;
         }
-        if (not manipulateOperator) {
+        if (this->nearField && this->farField) {
             MWNode<D> &fNode = this->fTree->getNode(idx);
             idx_band.push_back(idx);
             band->push_back(&fNode);
-
         } else {
             const auto oper_scale = this->oper->getOperatorRoot();
             if (oper_scale == 0) {
-                if (periodic::in_unit_cell<D>(idx) and onUnitcell) {
+                if (periodic::in_unit_cell<D>(idx) && this->nearField) {
                     MWNode<D> &fNode = this->fTree->getNode(idx);
                     idx_band.push_back(idx);
                     band->push_back(&fNode);
                 }
-                if (not periodic::in_unit_cell<D>(idx) and not onUnitcell) {
+                if (!periodic::in_unit_cell<D>(idx) && this->farField) {
                     MWNode<D> &fNode = this->fTree->getNode(idx);
                     idx_band.push_back(idx);
                     band->push_back(&fNode);
                 }
             } else if (oper_scale < 0) {
-                if (periodic::in_unit_cell<D>(idx) and onUnitcell) {
+                if (periodic::in_unit_cell<D>(idx) && this->nearField) {
                     MWNode<D> &fNode = this->fTree->getNode(idx);
                     idx_band.push_back(idx);
                     band->push_back(&fNode);
                 }
-                if (not onUnitcell) MSG_ABORT("Cannot do with negative operator scale");
-            } else
+                if (!this->nearField) MSG_ABORT("Cannot do with negative operator scale");
+            } else {
                 MSG_ABORT("Cannot manipulate operators with positive operator scale");
+            }
         }
         idx[dim]++;
     }
@@ -223,7 +223,7 @@ template <int D> void ConvolutionCalculator<D>::calcNode(MWNode<D> &node) {
     gNode.zeroCoefs();
 
     int o_depth = gNode.getScale() - this->oper->getOperatorRoot();
-    if (manipulateOperator and this->oper->getOperatorRoot() < 0) o_depth = gNode.getDepth();
+    // if (manipulateOperator and this->oper->getOperatorRoot() < 0) o_depth = gNode.getDepth();
     double tmpCoefs[gNode.getNCoefs()];
     OperatorState<D> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
@@ -373,13 +373,12 @@ template <int D> void ConvolutionCalculator<D>::tensorApplyOperComp(OperatorStat
 
 template <int D> void ConvolutionCalculator<D>::touchParentNodes(MWTree<D> &tree) const {
     if (!tree.isPeriodic()) NOT_REACHED_ABORT;
-    if (not manipulateOperator) {
-        auto oper_scale = this->oper->getOperatorRoot();
-        for (auto i = -1; i > oper_scale - 1; i--) {
-            NodeIndex<D> idx(i);
-            tree.getNode(idx);
-            this->fTree->getNode(idx);
-        }
+    auto oper_root = this->oper->getOperatorRoot();
+    auto func_root = tree.getRootScale();
+    for (auto n = func_root - 1; n > oper_root - 1; n--) {
+        NodeIndex<D> idx(n);
+        tree.getNode(idx);
+        this->fTree->getNode(idx);
     }
 }
 

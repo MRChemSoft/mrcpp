@@ -41,16 +41,15 @@ public:
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
 
     void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) { this->precFunc = prec_func; }
-    void startManipulateOperator(bool excUnit) {
-        this->manipulateOperator = true;
-        this->onUnitcell = excUnit;
-    }
+
+    void setNearField(bool toggle) { this->nearField = toggle; }
+    void setFarField(bool toggle) { this->farField = toggle; }
 
 private:
     int maxDepth;
     double prec;
-    bool manipulateOperator{false};
-    bool onUnitcell{false};
+    bool nearField{true};  // Apply the |l_f - l_g| == 0 translation
+    bool farField{true};   // Apply the |l_f - l_g| != 0 translations
     ConvolutionOperator<D> *oper;
     FunctionTree<D> *fTree;
     std::vector<Timer *> band_t;

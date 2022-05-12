@@ -35,10 +35,7 @@ namespace mrcpp {
 template <int D>
 class MWOperator {
 public:
-    MWOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
-            : oper_root(root)
-            , oper_reach(reach)
-            , MRA(mra) {}
+    MWOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach);
     MWOperator(const MWOperator &oper) = delete;
     MWOperator &operator=(const MWOperator &oper) = delete;
     virtual ~MWOperator() = default;

@@ -32,6 +32,20 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+template<int D>
+MWOperator<D>::MWOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
+        : oper_root(root)
+        , oper_reach(reach)
+        , MRA(mra) {
+    const BoundingBox<D> &box = this->MRA.getWorldBox();
+    if (this->oper_root > box.getScale()) MSG_ABORT("Operator root cannot be higher than world root");
+    if (!box.isPeriodic() && this->oper_root != box.getScale()) MSG_ABORT("Operator root must equal world root for non-periodic");
+    if (this->oper_reach <= 0) {
+        // Set default reach based on world size
+        for (int d = 0; d < D; d++) this->oper_reach = std::max(this->oper_reach, box.size(d));
+    }
+}
+
 template <int D>
 OperatorTree &MWOperator<D>::getComponent(int i) {
     if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
@@ -96,14 +110,10 @@ MultiResolutionAnalysis<2> MWOperator<D>::getOperatorMRA() const {
     const BoundingBox<D> &box = this->MRA.getWorldBox();
     const ScalingBasis &basis = this->MRA.getScalingBasis();
 
-    int reach = this->oper_reach + 1;
-    if (reach < 0) {
-        for (int i = 0; i < D; i++) {
-            if (box.size(i) > reach) reach = box.size(i);
-        }
-    }
+    int o_size = this->oper_reach + 1;
+
     auto l = std::array<int, 2>{};
-    auto nbox = std::array<int, 2>{reach, reach};
+    auto nbox = std::array<int, 2>{o_size, o_size};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
     auto sf = std::array<double, 2>{box.getScalingFactor(0), box.getScalingFactor(0)};

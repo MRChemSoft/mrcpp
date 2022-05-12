@@ -44,8 +44,9 @@ namespace mrcpp {
 
 template <int D> class DerivativeConvolution final : public ConvolutionOperator<D> {
 public:
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec);
-    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach);
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec):
+        DerivativeConvolution(mra, mra.getRootScale(), -1) {}
+    DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = -1);
     DerivativeConvolution(const DerivativeConvolution &oper) = delete;
     DerivativeConvolution &operator=(const DerivativeConvolution &oper) = delete;
 };

@@ -32,15 +32,13 @@ namespace mrcpp {
 
 template <int D> class ConvolutionOperator : public MWOperator<D> {
 public:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec);
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach);
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec) : ConvolutionOperator(mra, kernel, prec, mra.getRootScale(), -1) {}
+    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach = -1);
     ConvolutionOperator(const ConvolutionOperator &oper) = delete;
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
     virtual ~ConvolutionOperator() = default;
 
 protected:
-    ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
-        : MWOperator<D>(mra, mra.getRootScale(), -10) {}
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
         : MWOperator<D>(mra, root, reach) {}
 

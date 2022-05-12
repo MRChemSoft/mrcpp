@@ -40,8 +40,8 @@ namespace mrcpp {
 
 template <int D> class IdentityConvolution final : public ConvolutionOperator<D> {
 public:
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec);
-    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = 1);
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec) : IdentityConvolution(mra, prec, mra.getRootScale(), -1) {}
+    IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach = -1);
     IdentityConvolution(const IdentityConvolution &oper) = delete;
     IdentityConvolution &operator=(const IdentityConvolution &oper) = delete;
 };

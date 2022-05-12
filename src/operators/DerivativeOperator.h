@@ -31,9 +31,7 @@ namespace mrcpp {
 
 template <int D> class DerivativeOperator : public MWOperator<D> {
 public:
-    DerivativeOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach = 1)
-            : MWOperator<D>(mra, root, reach) {}
-
+    DerivativeOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach = -1) : MWOperator<D>(mra, root, reach) {}
     DerivativeOperator(const DerivativeOperator &oper) = delete;
     DerivativeOperator &operator=(const DerivativeOperator &oper) = delete;
     ~DerivativeOperator() override = default;

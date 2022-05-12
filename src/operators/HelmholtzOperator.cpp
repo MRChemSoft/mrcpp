@@ -38,27 +38,14 @@ namespace mrcpp {
  *  Subsequent application of this operator will apply each of the terms to
  *  the input function in all Cartesian directions.
  */
-HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec)
-        : ConvolutionOperator<3>(mra) {
-    int oldlevel = Printer::setPrintLevel(0);
-
-    double o_prec = prec;
-    double k_prec = prec / 10.0;
-    double r_min = this->MRA.calcMinDistance(k_prec);
-    double r_max = this->MRA.calcMaxDistance();
-
-    HelmholtzKernel kernel(mu, k_prec, r_min, r_max);
-    initialize(kernel, k_prec, o_prec);
-
-    Printer::setPrintLevel(oldlevel);
-}
-
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec, int root, int reach)
         : ConvolutionOperator<3>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
     double o_prec = prec;
-    double k_prec = prec / 100.0;
+    double k_prec = prec / 10.0;
+    if (mra.getWorldBox().isPeriodic()) k_prec /= 10.0; // Periodic operators needs to be tighter
+
     double r_min = this->MRA.calcMinDistance(k_prec);
     double r_max = this->MRA.calcMaxDistance();
 

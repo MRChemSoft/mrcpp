@@ -48,24 +48,13 @@
 namespace mrcpp {
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
-        : MWOperator<D>(mra, mra.getRootScale(), -10) {
-    int oldlevel = Printer::setPrintLevel(0);
-
-    auto o_prec = prec;
-    auto k_prec = prec / 10.0;
-    initialize(kernel, k_prec, o_prec);
-
-    Printer::setPrintLevel(oldlevel);
-}
-
-template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
         : MWOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
     auto o_prec = prec;
-    auto k_prec = prec / 100.0;
+    auto k_prec = prec / 10.0;
+    if (mra.getWorldBox().isPeriodic()) k_prec /= 10.0; // Periodic operators needs to be tighter
     initialize(kernel, k_prec, o_prec);
 
     Printer::setPrintLevel(oldlevel);
@@ -121,19 +110,13 @@ MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
         MSG_ABORT("Invalid scaling type");
     }
 
-    int root = this->oper_root;
-    int reach = this->oper_reach + 1;
-    if (reach < 0) {
-        for (int i = 0; i < D; i++) {
-            if (box.size(i) > reach) reach = box.size(i);
-        }
-    }
-    auto start_l = std::array<int, 1>{-reach};
-    auto tot_l = std::array<int, 1>{2 * reach};
+    int k_size = this->oper_reach + 1;
+    auto start_l = std::array<int, 1>{-k_size};
+    auto tot_l = std::array<int, 1>{2 * k_size};
     // Zero in argument since operators are only implemented
     // for uniform scaling factor
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
-    BoundingBox<1> kern_box(root, start_l, tot_l, sf);
+    BoundingBox<1> kern_box(this->oper_root, start_l, tot_l, sf);
     MultiResolutionAnalysis<1> kern_mra(kern_box, *kern_basis);
     delete kern_basis;
     return kern_mra;

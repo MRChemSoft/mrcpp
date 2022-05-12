@@ -36,26 +36,13 @@ namespace mrcpp {
  *  gaussian with exponent sqrt(10/build_prec).
  */
 template <int D>
-DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
-        : ConvolutionOperator<D>(mra) {
-    int oldlevel = Printer::setPrintLevel(0);
-
-    double o_prec = prec;
-    double k_prec = prec / 10.0;
-
-    DerivativeKernel<D> kernel(k_prec);
-    this->initialize(kernel, k_prec, o_prec);
-
-    Printer::setPrintLevel(oldlevel);
-}
-
-template <int D>
 DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
         : ConvolutionOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
     double o_prec = prec;
-    double k_prec = prec / 100.0;
+    double k_prec = prec / 10.0;
+    if (mra.getWorldBox().isPeriodic()) k_prec /= 10.0; // Periodic operators needs to be tighter
 
     DerivativeKernel<D> kernel(k_prec);
     this->initialize(kernel, k_prec, o_prec);

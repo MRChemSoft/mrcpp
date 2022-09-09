@@ -31,12 +31,37 @@ namespace mrcpp {
 using mpi_comm = MPI_Comm;
 using mpi_win = MPI_Win;
 using mpi_request = MPI_Request;
+namespace mpi {
+extern bool numerically_exact;
+extern int shared_memory_size;
+
+extern int world_rank;
+extern int world_size;
+extern int orb_rank;
+extern int orb_size;
+extern int share_rank;
+extern int share_size;
+extern int sh_group_rank;
+extern int is_bank;
+extern int is_bankclient;
+extern int bank_size;
+extern int tot_bank_size;
+extern int max_tag;
+extern int task_bank;
+
+extern MPI_Comm comm_orb;
+extern MPI_Comm comm_share;
+extern MPI_Comm comm_sh_group;
+extern MPI_Comm comm_bank;
+
+}// namespace mpi
 } // namespace mrcpp
 #else
 namespace mrcpp {
 using mpi_comm = int;
 using mpi_win = int;
 using mpi_request = int;
+
 } // namespace mrcpp
 #endif
 

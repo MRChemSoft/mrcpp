@@ -226,6 +226,64 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
     }
 }
 
+
+/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix
+ *
+ * @param A: matrix to diagonalize (not modified)
+ * @param b: vector to store eigenvalues
+ *
+ * Returns the matrix of eigenvectors and stores the eigenvalues in the input vector.
+ */
+ComplexMatrix math_utils::diagonalize_hermitian_matrix(const ComplexMatrix &A, DoubleVector &diag) {
+    Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(A.cols());
+    es.compute(A);
+    diag = es.eigenvalues();  // real
+    return es.eigenvectors(); // complex
+}
+
+/** @brief Compute the power of a Hermitian matrix
+ *
+ * @param A: matrix
+ * @param b: exponent
+ *
+ * The matrix is first diagonalized, then the diagonal elements are raised
+ * to the given power, and the diagonalization is reversed. Sanity check for
+ * eigenvalues close to zero, necessary for negative exponents in combination
+ * with slightly negative eigenvalues.
+ */
+ComplexMatrix math_utils::hermitian_matrix_pow(const ComplexMatrix &A, double b) {
+    DoubleVector diag;
+    ComplexMatrix U = diagonalize_hermitian_matrix(A, diag);
+
+    DoubleMatrix B = DoubleMatrix::Zero(A.rows(), A.cols());
+    for (int i = 0; i < diag.size(); i++) {
+        if (std::abs(diag(i)) < mrcpp::MachineZero) {
+            B(i, i) = 0.0;
+        } else {
+            B(i, i) = std::pow(diag(i), b);
+        }
+    }
+    return U * B * U.adjoint();
+}
+
+/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix block
+ *
+ * @param A: matrix to diagonalize (updated in place)
+ * @param U: matrix of eigenvectors
+ * @param nstart: upper left corner of block
+ * @param nsize: size of block
+ *
+ * Assumes that the given block is a proper Hermitian sub matrix.
+ */
+void math_utils::diagonalize_block(ComplexMatrix &A, ComplexMatrix &U, int nstart, int nsize) {
+    Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(nsize);
+    es.compute(A.block(nstart, nstart, nsize, nsize));
+    ComplexMatrix ei_vec = es.eigenvectors();
+    ComplexVector ei_val = es.eigenvalues().cast<ComplexDouble>();
+    U.block(nstart, nstart, nsize, nsize) = ei_vec;
+    A.block(nstart, nstart, nsize, nsize) = ei_val.asDiagonal();
+}
+
 /** Calculate the distance between two points in n-dimensions */
 template <int D> double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
     double r = 0.0;

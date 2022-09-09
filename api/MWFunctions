@@ -27,6 +27,7 @@
 #include "trees/BoundingBox.h"
 #include "trees/FunctionTree.h"
 #include "trees/FunctionTreeVector.h"
+#include "utils/CplxFunc.h"
 
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"

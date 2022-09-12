@@ -2,11 +2,11 @@
 
 #include <Eigen/Core>
 
-#include <vector>
-#include "mpi_utils.h"
-#include <map>
-#include "trees/MultiResolutionAnalysis.h"
 #include "CplxFunc.h"
+#include "mpi_utils.h"
+#include "trees/MultiResolutionAnalysis.h"
+#include <map>
+#include <vector>
 
 #ifdef MRCPP_HAS_MPI
 #include <mpi.h>
@@ -14,7 +14,7 @@
 using MPI_Comm = int;
 #endif
 
-//define a class for things that can be sent with MPI
+// define a class for things that can be sent with MPI
 
 template <int D> class MultiResolutionAnalysis;
 
@@ -27,7 +27,6 @@ using ComplexVector = Eigen::VectorXcd;
 using IntMatrix = Eigen::MatrixXi;
 using DoubleMatrix = Eigen::MatrixXd;
 using ComplexMatrix = Eigen::MatrixXcd;
-
 
 namespace mrcpp {
 
@@ -51,11 +50,11 @@ bool share_master();
 bool my_orb(int j);
 bool my_orb(CplxFunc orbj);
 
-//bool my_unique_orb(const Orbital &orb);
+// bool my_unique_orb(const Orbital &orb);
 void free_foreign(MPI_FuncVector &Phi);
 
-void send_function(CplxFunc &func, int dst, int tag, MPI_Comm comm = mpi::comm_orb);
-void recv_function(CplxFunc &func, int src, int tag, MPI_Comm comm = mpi::comm_orb);
+void send_function(CplxFunc &func, int dst, int tag, MPI_Comm comm = mpi::comm_wrk);
+void recv_function(CplxFunc &func, int src, int tag, MPI_Comm comm = mpi::comm_wrk);
 void share_function(CplxFunc &func, int src, int tag, MPI_Comm comm);
 
 void reduce_function(double prec, CplxFunc &func, MPI_Comm comm);

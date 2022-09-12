@@ -1,13 +1,13 @@
+#include <Eigen/Core>
 #include <MRCPP/Printer>
 #include <MRCPP/Timer>
-#include <Eigen/Core>
 #include <vector>
 
+#include "Bank.h"
 #include "CplxFunc.h"
+#include "omp_utils.h"
 #include "parallel.h"
 #include "trees/FunctionTree.h"
-#include "Bank.h"
-#include "omp_utils.h"
 
 #ifdef MRCPP_HAS_OMP
 #define mrcpp_get_max_threads() omp_get_max_threads()
@@ -41,8 +41,8 @@ int shared_memory_size = 1000;
 // these parameters set by initialize()
 int world_size = 1;
 int world_rank = 0;
-int orb_size = 1;
-int orb_rank = 0;
+int wrk_size = 1;
+int wrk_rank = 0;
 int share_size = 1;
 int share_rank = 0;
 int sh_group_rank = 0;
@@ -56,7 +56,7 @@ int max_tag = 0;       // max value allowed by MPI
 std::vector<int> bankmaster;
 int task_bank = -1; // world rank of the task manager
 
-MPI_Comm comm_orb;
+MPI_Comm comm_wrk;
 MPI_Comm comm_share;
 MPI_Comm comm_sh_group;
 MPI_Comm comm_bank;
@@ -81,7 +81,7 @@ void mpi::initialize() {
     // divide the world into groups
     // each group has its own group communicator definition
 
-    // define independent group of MPI processes, that are not part of comm_orb
+    // define independent group of MPI processes, that are not part of comm_wrk
     // for now the new group does not include comm_share
     mpi::comm_bank = MPI_COMM_WORLD; // clients and master
     MPI_Comm comm_remainder;         // clients only
@@ -128,13 +128,13 @@ void mpi::initialize() {
     // a shared memory group, have consecutive ranks
     MPI_Comm_rank(mpi::comm_sh_group, &mpi::sh_group_rank);
 
-    mpi::orb_rank = mpi::share_rank + mpi::sh_group_rank * mpi::world_size;
-    MPI_Comm_split(comm_remainder, 0, mpi::orb_rank, &mpi::comm_orb);
+    mpi::wrk_rank = mpi::share_rank + mpi::sh_group_rank * mpi::world_size;
+    MPI_Comm_split(comm_remainder, 0, mpi::wrk_rank, &mpi::comm_wrk);
     // 0 is color (same color->in same group)
     // mpiOrbRank is key (orders rank in the group)
 
-    MPI_Comm_rank(mpi::comm_orb, &mpi::orb_rank);
-    MPI_Comm_size(mpi::comm_orb, &mpi::orb_size);
+    MPI_Comm_rank(mpi::comm_wrk, &mpi::wrk_rank);
+    MPI_Comm_size(mpi::comm_wrk, &mpi::wrk_size);
 
     // if bank_size is large enough, we reserve one as "task manager"
     mpi::tot_bank_size = mpi::bank_size;
@@ -196,7 +196,7 @@ bool mpi::share_master() {
 
 /** @brief Test if orbital belongs to this MPI rank (or is common)*/
 bool mpi::my_orb(int j) {
-    return ((j)%mpi::orb_size == mpi::orb_rank) ? true : false;
+    return ((j) % mpi::wrk_size == mpi::wrk_rank) ? true : false;
 }
 
 /** @brief Test if orbital belongs to this MPI rank (or is common)*/
@@ -392,7 +392,6 @@ void mpi::reduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, MPI_Comm comm) {
 #endif
 }
 
-
 /** @brief make union tree without coeff and send to all
  *  Include both real and imaginary parts
  */
@@ -408,8 +407,8 @@ void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, std::vector<CplxF
         if (Phi[j].hasReal()) tree.appendTreeNoCoeff(Phi[j].real());
         if (Phi[j].hasImag()) tree.appendTreeNoCoeff(Phi[j].imag());
     }
-    mpi::reduce_Tree_noCoeff(tree, mpi::comm_orb);
-    mpi::broadcast_Tree_noCoeff(tree, mpi::comm_orb);
+    mpi::reduce_Tree_noCoeff(tree, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff(tree, mpi::comm_wrk);
 }
 
 /** @brief Distribute rank zero function to all ranks */

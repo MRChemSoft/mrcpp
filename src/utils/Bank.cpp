@@ -1,5 +1,5 @@
-#include "Timer.h"
 #include "Printer.h"
+#include "Timer.h"
 
 #include "Bank.h"
 
@@ -45,7 +45,9 @@ void Bank::open() {
     // The bank never goes out of this loop until it receives a close message!
     while (true) {
         MPI_Recv(messages, message_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, comm_bank, &status);
-        if (printinfo) std::cout << world_rank << " got message " << messages[0] << " from " << status.MPI_SOURCE << " account " << messages[1] << " last account " << max_account_id <<" message2 "<<messages[2]<< std::endl;
+        if (printinfo)
+            std::cout << world_rank << " got message " << messages[0] << " from " << status.MPI_SOURCE << " account " << messages[1] << " last account " << max_account_id << " message2 "
+                      << messages[2] << std::endl;
         int message = messages[0];
 
         // can be called directly:
@@ -147,7 +149,7 @@ void Bank::open() {
                 currentsize[account] -= block.second->BlockData.size() / 128; // converted into kB
                 totcurrentsize -= block.second->BlockData.size() / 128;       // converted into kB
                 block.second->BlockData.resize(0, 0);                         // NB: the matrix does not clear itself otherwise
-                //assert(currentsize[account] >= 0);
+                // assert(currentsize[account] >= 0);
                 this->currentsize[account] = std::max(0ll, currentsize[account]);
                 toeraseVec.push_back(block.first);
             }
@@ -202,8 +204,7 @@ void Bank::open() {
                     if (block->data.size() == 0) std::cout << "Zero size blockdata! " << nodeid << " " << block->N_rows.size() << std::endl;
                     block->BlockData.resize(block->N_rows[0], block->data.size());
                     size = block->N_rows[0] * block->data.size();
-                    if (printinfo) std::cout << " rewrite into superblock " <<
-                                       block->data.size() << " " << block->N_rows[0] << " nodeid " << nodeid << std::endl;
+                    if (printinfo) std::cout << " rewrite into superblock " << block->data.size() << " " << block->N_rows[0] << " nodeid " << nodeid << std::endl;
                     for (int j = 0; j < block->data.size(); j++) {
                         for (int i = 0; i < block->N_rows[j]; i++) { block->BlockData(i, j) = block->data[j][i]; }
                     }
@@ -296,7 +297,7 @@ void Bank::open() {
                     MPI_Send(&found, 1, MPI_INT, status.MPI_SOURCE, 117, comm_bank);
                 } else {
                     // the id does not exist. Put in queue and Wait until it is defined
-                    if (printinfo) std::cout << world_rank << " queuing " << id << " " << id2ix.count(id)<< ix<<std::endl;
+                    if (printinfo) std::cout << world_rank << " queuing " << id << " " << id2ix.count(id) << ix << std::endl;
                     if (id2qu[id] == 0) {
                         queue.push_back({id, {status.MPI_SOURCE}});
                         id2qu[id] = queue.size() - 1;
@@ -321,7 +322,7 @@ void Bank::open() {
                         id2ix[id] = 0;
                     }
                 }
-                //if (message == GET_FUNCTION) { send_function(*deposits[ix].orb, status.MPI_SOURCE, 1, comm_bank); }
+                // if (message == GET_FUNCTION) { send_function(*deposits[ix].orb, status.MPI_SOURCE, 1, comm_bank); }
                 if (message == GET_DATA) { MPI_Send(deposits[ix].data, deposits[ix].datasize, MPI_DOUBLE, status.MPI_SOURCE, 1, comm_bank); }
             }
         } else if (message == SAVE_NODEDATA) {
@@ -369,7 +370,7 @@ void Bank::open() {
             int id = messages[2];
             if (id2ix[id]) {
                 std::cout << "WARNING: id " << id << " exists already"
-                          << " " << status.MPI_SOURCE << " " << message << " " << messages[1]<<std::endl;
+                          << " " << status.MPI_SOURCE << " " << message << " " << messages[1] << std::endl;
                 ix = id2ix[id]; // the deposit exist from before. Will be overwritten
                 exist_flag = 1;
                 if (message == SAVE_DATA and !deposits[ix].hasdata) {
@@ -522,7 +523,7 @@ void Bank::remove_account(int account) {
         currentsize[account] -= block.second->BlockData.size() / 128; // converted into kB
         totcurrentsize -= block.second->BlockData.size() / 128;       // converted into kB
         block.second->BlockData.resize(0, 0);                         // NB: the matrix does not clear itself otherwise
-        //assert(currentsize[account] >= 0);
+        // assert(currentsize[account] >= 0);
         toeraseVec.push_back(block.first);
     }
     for (int ierase : toeraseVec) { nodeid2block.erase(ierase); }
@@ -833,7 +834,7 @@ int BankAccount::get_nodeblock(int nodeid, double *data, std::vector<int> &idVec
 int BankAccount::get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
-    int nodeid = orb_rank + bankstart;
+    int nodeid = wrk_rank + bankstart;
     // get the entire superblock and also the nodeid of each column
     int messages[message_size];
     messages[0] = GET_ORBBLOCK;

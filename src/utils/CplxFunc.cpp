@@ -1,13 +1,13 @@
 #include "CplxFunc.h"
-#include "parallel.h"
 #include "Bank.h"
 #include "Printer.h"
-#include "trees/FunctionTree.h"
-#include "trees/MWTree.h"
-#include "trees/MultiResolutionAnalysis.h"
+#include "parallel.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
 #include "treebuilders/project.h"
+#include "trees/FunctionTree.h"
+#include "trees/MWTree.h"
+#include "trees/MultiResolutionAnalysis.h"
 #include "treebuilders/add.h"
 
 namespace mrcpp {
@@ -15,10 +15,13 @@ namespace mrcpp {
 MultiResolutionAnalysis<3> *defaultMRA; // Global MRA
 
 CplxFunc::CplxFunc(std::shared_ptr<ComplexFunction> funcptr)
-    : funcMRA(defaultMRA), func_ptr(funcptr) {}
+        : funcMRA(defaultMRA)
+        , func_ptr(funcptr) {}
 
-CplxFunc::CplxFunc(const CplxFunc &func): funcMRA(func.funcMRA)
-                                        , func_ptr(func.func_ptr), rank(func.rank) {}
+CplxFunc::CplxFunc(const CplxFunc &func)
+        : funcMRA(func.funcMRA)
+        , func_ptr(func.func_ptr)
+        , rank(func.rank) {}
 
 CplxFunc &CplxFunc::operator=(const CplxFunc &func) {
     if (this != &func) {
@@ -37,7 +40,10 @@ CplxFunc &CplxFunc::operator=(const CplxFunc &func) {
  *
  * Initializes the mrcpp::CplxFunc with NULL pointers for both real and imaginary part.
  */
-CplxFunc::CplxFunc(int spin, int occ, int rank, bool share): funcMRA(defaultMRA), func_ptr(std::make_shared<ComplexFunction>(share)), rank(rank) {
+CplxFunc::CplxFunc(int spin, int occ, int rank, bool share)
+        : funcMRA(defaultMRA)
+        , func_ptr(std::make_shared<ComplexFunction>(share))
+        , rank(rank) {
     this->getFunctionData().spin = spin;
     this->getFunctionData().occ = occ;
     if (this->spin() < 0) INVALID_ARG_ABORT;
@@ -56,11 +62,12 @@ CplxFunc CplxFunc::paramCopy() const {
     return CplxFunc(this->spin(), this->occ(), this->rankID());
 }
 
-MPI_FuncVector::MPI_FuncVector(int N) : std::vector<CplxFunc>(N){
+MPI_FuncVector::MPI_FuncVector(int N)
+        : std::vector<CplxFunc>(N) {
     for (int i = 0; i < N; i++) (*this)[i].setRankID(i);
     vecMRA = defaultMRA;
 }
-void MPI_FuncVector::distribute(){
+void MPI_FuncVector::distribute() {
     for (int i = 0; i < this->size(); i++) (*this)[i].setRankID(i);
 }
 
@@ -309,7 +316,9 @@ char CplxFunc::printSpin() const {
     return sp;
 }
 
-    void cplxfunc::SetdefaultMRA(MultiResolutionAnalysis<3> *MRA) {defaultMRA = MRA;}
+void cplxfunc::SetdefaultMRA(MultiResolutionAnalysis<3> *MRA) {
+    defaultMRA = MRA;
+}
 
 /** @brief Compute <bra|ket> = int bra^\dag(r) * ket(r) dr.
  *
@@ -330,7 +339,6 @@ ComplexDouble cplxfunc::dot(CplxFunc bra, CplxFunc ket) {
     double imag_part = ket_conj * ri - bra_conj * ir;
     return ComplexDouble(real_part, imag_part);
 }
-
 
 /** @brief Compute <bra|ket> = int |bra^\dag(r)| * |ket(r)| dr.
  *
@@ -410,17 +418,12 @@ void cplxfunc::project(CplxFunc &out, RepresentableFunction<3> &f, int type, dou
  * Recast into linear_combination.
  *
  */
-void cplxfunc::add(CplxFunc &out,
-                     ComplexDouble a,
-                     CplxFunc inp_a,
-                     ComplexDouble b,
-                     CplxFunc inp_b,
-                     double prec) {
+void cplxfunc::add(CplxFunc &out, ComplexDouble a, CplxFunc inp_a, ComplexDouble b, CplxFunc inp_b, double prec) {
     ComplexVector coefs(2);
     coefs(0) = a;
     coefs(1) = b;
 
-    std::vector<CplxFunc> funcs; //NB: not a CplxFuncVector, because not run in parallel!
+    std::vector<CplxFunc> funcs; // NB: not a CplxFuncVector, because not run in parallel!
     funcs.push_back(inp_a);
     funcs.push_back(inp_b);
 
@@ -430,12 +433,7 @@ void cplxfunc::add(CplxFunc &out,
 /** @brief out = inp_a * inp_b
  *
  */
-void cplxfunc::multiply(CplxFunc &out,
-                          CplxFunc inp_a,
-                          CplxFunc inp_b,
-                          double prec,
-                          bool absPrec,
-                          bool useMaxNorms) {
+void cplxfunc::multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
     multiply_real(out, inp_a, inp_b, prec, absPrec, useMaxNorms);
     multiply_imag(out, inp_a, inp_b, prec, absPrec, useMaxNorms);
 }
@@ -490,16 +488,10 @@ void cplxfunc::linear_combination(CplxFunc &out, const ComplexVector &c, std::ve
     mpi::share_function(out, 0, 9911, mpi::comm_share);
 }
 
-
 /** @brief out = Re(inp_a * inp_b)
  *
  */
-void cplxfunc::multiply_real(CplxFunc &out,
-                               CplxFunc inp_a,
-                               CplxFunc inp_b,
-                               double prec,
-                               bool absPrec,
-                               bool useMaxNorms) {
+void cplxfunc::multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
     double conj_a = (inp_a.conjugate()) ? -1.0 : 1.0;
     double conj_b = (inp_b.conjugate()) ? -1.0 : 1.0;
 
@@ -568,12 +560,7 @@ void cplxfunc::multiply_real(CplxFunc &out,
 /** @brief out = Im(inp_a * inp_b)
  *
  */
-void cplxfunc::multiply_imag(CplxFunc &out,
-                               CplxFunc inp_a,
-                               CplxFunc inp_b,
-                               double prec,
-                               bool absPrec,
-                               bool useMaxNorms) {
+void cplxfunc::multiply_imag(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
     double conj_a = (inp_a.conjugate()) ? -1.0 : 1.0;
     double conj_b = (inp_b.conjugate()) ? -1.0 : 1.0;
 
@@ -639,26 +626,21 @@ void cplxfunc::multiply_imag(CplxFunc &out,
     mpi::share_function(out, 0, 9292, mpi::comm_share);
 }
 
-
-
-
 namespace mpifuncvec {
 
-
-
-void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
+void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
 
     // The principle of this routine is that nodes are rotated one by one using matrix multiplication.
     // The routine does avoid when possible to move data, but uses pointers and indices manipulation.
     // MPI version does not use OMP yet, Serial version uses OMP
 
-    MultiResolutionAnalysis <3> *mra = Phi.vecMRA;
+    MultiResolutionAnalysis<3> *mra = Phi.vecMRA;
 
     int N = Phi.size();
 
     // 1) make union tree without coefficients
     FunctionTree<3> refTree(*mra);
-    mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_orb);
+    mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -687,17 +669,15 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
         PsihasReIm[0] = (Phi[i].hasReal()) ? 1 : 0;
         PsihasReIm[1] = (Phi[i].hasImag()) ? 1 : 0;
     }
-    mpi::allreduce_vector(PsihasReIm, mpi::comm_orb);
+    mpi::allreduce_vector(PsihasReIm, mpi::comm_wrk);
     if (not PsihasReIm[0] and not PsihasReIm[1]) {
-        return;//do nothing
+        return; // do nothing
     }
 
     bool makeReal = (UhasReal and PsihasReIm[0]) or (UhasImag and PsihasReIm[1]);
     bool makeImag = (UhasReal and PsihasReIm[1]) or (UhasImag and PsihasReIm[0]);
 
-    if (not makeReal and not makeImag) {
-        return;
-    }
+    if (not makeReal and not makeImag) { return; }
 
     int Neff = N;               // effective number of orbitals
     if (makeImag) Neff = 2 * N; // Imag and Real treated independently. We always use real part of U
@@ -707,7 +687,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
         if (!mpi::my_orb(i % N)) continue;
         conjMat[i] = (Phi[i % N].conjugate()) ? -1 : 1;
     }
-    mpi::allreduce_vector(conjMat, mpi::comm_orb);
+    mpi::allreduce_vector(conjMat, mpi::comm_wrk);
 
     // we make a real matrix = U,  but organized as one or four real blocks
     // out_r = U_rr*in_r - U_ir*in_i*conjMat
@@ -735,7 +715,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
 
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
 
-    bool serial = mpi::orb_size == 1; // flag for serial/MPI switch
+    bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
     BankAccount nodesPhi;             // to put the original nodes
     BankAccount nodesRotated;         // to put the rotated nodes
 
@@ -777,7 +757,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
 
         // send own nodes to bank, identifying them through the serialIx of refTree
         mpifuncvec::save_nodes(Phi, refTree, nodesPhi);
-        mpi::barrier(mpi::comm_orb); // required for now, as the blockdata functionality has no queue yet.
+        mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
     }
 
     // 4) rotate all the nodes
@@ -886,7 +866,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
         std::vector<double> split(Neff, -1.0);    // which orbitals need splitting (at a given node). For now double for compatibilty with bank
         std::vector<double> needsplit(Neff, 1.0); // which orbitals need splitting
         BankAccount nodeSplits;
-        mpi::barrier(mpi::comm_orb); // required for now, as the blockdata functionality has no queue yet.
+        mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
 
         DoubleMatrix coeffBlock(sizecoeff, Neff);
         max_ix++; // largest node index + 1. to store rotated orbitals with different id
@@ -955,7 +935,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
             }
             nodeSplits.put_data(indexVec_ref[n], Neff, needsplit.data());
         }
-        mpi::barrier(mpi::comm_orb); // wait until all rotated nodes are ready
+        mpi::barrier(mpi::comm_wrk); // wait until all rotated nodes are ready
     }
 
     // 5) reconstruct trees using rotated nodes.
@@ -967,17 +947,17 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
 #pragma omp parallel for schedule(static)
         for (int j = 0; j < Neff; j++) {
             if (j < N) {
-                if(!Phi[j].hasReal())Phi[j].alloc(NUMBER::Real);
+                if (!Phi[j].hasReal()) Phi[j].alloc(NUMBER::Real);
                 Phi[j].real().clear();
                 Phi[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
             } else {
-                if(!Phi[j % N].hasImag())Phi[j % N].alloc(NUMBER::Imag);
+                if (!Phi[j % N].hasImag()) Phi[j % N].alloc(NUMBER::Imag);
                 Phi[j % N].imag().clear();
                 Phi[j % N].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
             }
         }
 
-    }else{ // MPI case
+    } else { // MPI case
 
         for (int j = 0; j < Neff; j++) {
             if (not mpi::my_orb(j % N)) continue;
@@ -1004,12 +984,12 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
             }
             if (j < N) {
                 // Real part
-                if(!Phi[j].hasReal())Phi[j].alloc(NUMBER::Real);
+                if (!Phi[j].hasReal()) Phi[j].alloc(NUMBER::Real);
                 Phi[j].real().clear();
                 Phi[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
             } else {
                 // Imag part
-                if(!Phi[j % N].hasImag())Phi[j % N].alloc(NUMBER::Imag);
+                if (!Phi[j % N].hasImag()) Phi[j % N].alloc(NUMBER::Imag);
                 Phi[j % N].imag().clear();
                 Phi[j % N].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
             }
@@ -1022,7 +1002,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
 /** @brief Save all nodes in bank; identify them using serialIx from refTree
  * shift is a shift applied in the id
  */
-    void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &account) {
+void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &account) {
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
     int max_nNodes = refTree.getNNodes();
@@ -1063,19 +1043,16 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec){
     }
 }
 
-
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int N = Bra.size();
     ComplexVector result = ComplexVector::Zero(N);
     for (int i = 0; i < N; i++) {
         // The bra is sent to the owner of the ket
-        if (my_orb(Bra[i]) != my_orb(Ket[i])) {
-            MSG_ABORT("same indices should have same ownership");
-        }
+        if (my_orb(Bra[i]) != my_orb(Ket[i])) { MSG_ABORT("same indices should have same ownership"); }
         result[i] = cplxfunc::dot(Bra[i], Ket[i]);
         if (not mrcpp::mpi::my_orb(i)) Bra[i].free(NUMBER::Total);
     }
-    mrcpp::mpi::allreduce_vector(result, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(result, mrcpp::mpi::comm_wrk);
     return result;
 }
 
@@ -1100,16 +1077,16 @@ ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi) {
  *
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
-    //NB: must be spinseparated at this point!
+    // NB: must be spinseparated at this point!
 
     int N = BraKet.size();
     ComplexMatrix S = ComplexMatrix::Zero(N, N);
     DoubleMatrix Sreal = DoubleMatrix::Zero(2 * N, 2 * N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
-    MultiResolutionAnalysis <3> *mra = BraKet.vecMRA;
+    MultiResolutionAnalysis<3> *mra = BraKet.vecMRA;
 
     // 1) make union tree without coefficients
     mrcpp::FunctionTree<3> refTree(*mra);
-    mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_orb);
+    mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -1126,11 +1103,11 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
 
     // only used for serial case:
     std::vector<std::vector<double *>> coeffVec(2 * N);
-    std::map<int, std::vector<int>> node2orbVec; // for each node index, gives a vector with the indices of the orbitals using this node
+    std::map<int, std::vector<int>> node2orbVec;     // for each node index, gives a vector with the indices of the orbitals using this node
     std::vector<std::map<int, int>> orb2node(2 * N); // for a given orbital and a given node, gives the node index in
                                                      // the orbital given the node index in the reference tree
 
-    bool serial = mrcpp::mpi::orb_size == 1; // flag for serial/MPI switch
+    bool serial = mrcpp::mpi::wrk_size == 1; // flag for serial/MPI switch
     mrcpp::BankAccount nodesBraKet;
 
     // In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
@@ -1165,7 +1142,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
     } else { // MPI case
         // 2) send own nodes to bank, identifying them through the serialIx of refTree
         save_nodes(BraKet, refTree, nodesBraKet);
-        mrcpp::mpi::barrier(mrcpp::mpi::comm_orb); // wait until everything is stored before fetching!
+        mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
     }
 
     // 3) make dot product for all the nodes and accumulate into S
@@ -1173,7 +1150,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
     int ibank = 0;
 #pragma omp parallel for schedule(dynamic) if (serial)
     for (int n = 0; n < max_n; n++) {
-        if (n % mrcpp::mpi::orb_size != mrcpp::mpi::orb_rank) continue;
+        if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
         int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
         std::vector<int> orbVec;       // identifies which orbitals use this node
@@ -1198,9 +1175,9 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
                         //    continue;
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
                         //    continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
@@ -1219,9 +1196,9 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
                         //    continue;
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
                         //    continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
@@ -1235,7 +1212,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
         if (!mrcpp::mpi::my_orb(BraKet[i])) continue;
         conjMat[i] = (BraKet[i].conjugate()) ? -1 : 1;
     }
-    mrcpp::mpi::allreduce_vector(conjMat, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(conjMat, mrcpp::mpi::comm_wrk);
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j <= i; j++) {
@@ -1246,7 +1223,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
     }
 
     // Assumes linearity: result is sum of all nodes contributions
-    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
     return S;
 }
@@ -1255,9 +1232,9 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
  *
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
-    mrcpp::mpi::barrier(mrcpp::mpi::comm_orb); // for consistent timings
+    mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
 
-    MultiResolutionAnalysis <3> *mra = Bra.vecMRA;
+    MultiResolutionAnalysis<3> *mra = Bra.vecMRA;
 
     int N = Bra.size();
     int M = Ket.size();
@@ -1266,7 +1243,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
 
     // 1) make union tree without coefficients for Bra (supposed smallest)
     mrcpp::FunctionTree<3> refTree(*mra);
-    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_orb);
+    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_wrk);
     // note that Ket is not part of union grid: if a node is in ket but not in Bra, the dot product is zero.
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
@@ -1283,15 +1260,15 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int max_n = indexVec_ref.size();
     max_ix++;
 
-    bool serial = mrcpp::mpi::orb_size == 1; // flag for serial/MPI switch
+    bool serial = mrcpp::mpi::wrk_size == 1; // flag for serial/MPI switch
 
     // only used for serial case:
     std::vector<std::vector<double *>> coeffVecBra(2 * N);
-    std::map<int, std::vector<int>> node2orbVecBra; // for each node index, gives a vector with the indices of the orbitals using this node
+    std::map<int, std::vector<int>> node2orbVecBra;     // for each node index, gives a vector with the indices of the orbitals using this node
     std::vector<std::map<int, int>> orb2nodeBra(2 * N); // for a given orbital and a given node, gives the node index in
                                                         // the orbital given the node index in the reference tree
     std::vector<std::vector<double *>> coeffVecKet(2 * M);
-    std::map<int, std::vector<int>> node2orbVecKet; // for each node index, gives a vector with the indices of the orbitals using this node
+    std::map<int, std::vector<int>> node2orbVecKet;     // for each node index, gives a vector with the indices of the orbitals using this node
     std::vector<std::map<int, int>> orb2nodeKet(2 * M); // for a given orbital and a given node, gives the node index in
                                                         // the orbital given the node index in the reference tree
     mrcpp::BankAccount nodesBra;
@@ -1355,7 +1332,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
         // 2) send own nodes to bank, identifying them through the serialIx of refTree
         save_nodes(Bra, refTree, nodesBra);
         save_nodes(Ket, refTree, nodesKet);
-        mrcpp::mpi::barrier(mrcpp::mpi::comm_orb); // wait until everything is stored before fetching!
+        mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
     }
 
     // 3) make dot product for all the nodes and accumulate into S
@@ -1365,7 +1342,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int ibank = 0;
 #pragma omp parallel for schedule(dynamic) if (serial)
     for (int n = 0; n < max_n; n++) {
-        if (n % mrcpp::mpi::orb_size != mrcpp::mpi::orb_rank) continue;
+        if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
         std::vector<int> orbVecBra; // identifies which Bra orbitals use this node
         std::vector<int> orbVecKet; // identifies which Ket orbitals use this node
@@ -1382,14 +1359,12 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
 
             for (int j : node2orbVecBra[node_ix]) { // loop over indices of the orbitals using this node
                 int orb_node_ix = orb2nodeBra[j][node_ix];
-                for (int k = 0; k < csize; k++)
-                    coeffBlockBra(k, orbVecBra.size()) = coeffVecBra[j][orb_node_ix][k + shift];
+                for (int k = 0; k < csize; k++) coeffBlockBra(k, orbVecBra.size()) = coeffVecBra[j][orb_node_ix][k + shift];
                 orbVecBra.push_back(j);
             }
             for (int j : node2orbVecKet[node_ix]) { // loop over indices of the orbitals using this node
                 int orb_node_ix = orb2nodeKet[j][node_ix];
-                for (int k = 0; k < csize; k++)
-                    coeffBlockKet(k, orbVecKet.size()) = coeffVecKet[j][orb_node_ix][k + shift];
+                for (int k = 0; k < csize; k++) coeffBlockKet(k, orbVecKet.size()) = coeffVecKet[j][orb_node_ix][k + shift];
                 orbVecKet.push_back(j);
             }
 
@@ -1398,9 +1373,9 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        //if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
+                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
                         //    continue;
-                        //if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
+                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
                         //    continue;
                         // must ensure that threads are not competing
                         double &Srealij = Sreal(orbVecBra[i], orbVecKet[j]);
@@ -1417,8 +1392,8 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
             DoubleMatrix coeffBlockKet(csize, 2 * M);
             nodesBra.get_nodeblock(indexVec_ref[n], coeffBlockBra.data(), orbVecBra); // get Bra parts
             nodesKet.get_nodeblock(indexVec_ref[n], coeffBlockKet.data(), orbVecKet); // get Ket parts
-            totsiz += orbVecBra.size()* orbVecKet.size();
-            mxtotsiz += N*M;
+            totsiz += orbVecBra.size() * orbVecKet.size();
+            mxtotsiz += N * M;
             totget += orbVecBra.size() + orbVecKet.size();
             if (orbVecBra.size() > 0 and orbVecKet.size() > 0) {
                 DoubleMatrix S_temp(orbVecBra.size(), orbVecKet.size());
@@ -1427,9 +1402,9 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        //if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
+                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
                         //    continue;
-                        //if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
+                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
                         //    continue;
                         Sreal(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
@@ -1443,13 +1418,13 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
         if (!mrcpp::mpi::my_orb(Bra[i])) continue;
         conjMatBra[i] = (Bra[i].conjugate()) ? -1 : 1;
     }
-    mrcpp::mpi::allreduce_vector(conjMatBra, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(conjMatBra, mrcpp::mpi::comm_wrk);
     IntVector conjMatKet = IntVector::Zero(M);
     for (int i = 0; i < M; i++) {
         if (!mrcpp::mpi::my_orb(Ket[i])) continue;
         conjMatKet[i] = (Ket[i].conjugate()) ? -1 : 1;
     }
-    mrcpp::mpi::allreduce_vector(conjMatKet, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(conjMatKet, mrcpp::mpi::comm_wrk);
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
@@ -1460,13 +1435,13 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
 
     // 4) collect results from all MPI. Linearity: result is sum of all node contributions
 
-    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
-    conjMatKet[0]=totsiz;
-    conjMatKet[1]=mxtotsiz;
-    conjMatKet[2]=totget;
+    conjMatKet[0] = totsiz;
+    conjMatKet[1] = mxtotsiz;
+    conjMatKet[2] = totget;
 
-    mrcpp::mpi::allreduce_vector(conjMatKet, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(conjMatKet, mrcpp::mpi::comm_wrk);
 
     return S;
 }
@@ -1478,11 +1453,11 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
     int N = BraKet.size();
     DoubleMatrix S = DoubleMatrix::Zero(N, N);
     DoubleMatrix Sreal = DoubleMatrix::Zero(2 * N, 2 * N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
-    MultiResolutionAnalysis <3> *mra = BraKet.vecMRA;
+    MultiResolutionAnalysis<3> *mra = BraKet.vecMRA;
 
     // 1) make union tree without coefficients
     mrcpp::FunctionTree<3> refTree(*mra);
-    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_orb);
+    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -1499,11 +1474,11 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
 
     // only used for serial case:
     std::vector<std::vector<double *>> coeffVec(2 * N);
-    std::map<int, std::vector<int>> node2orbVec; // for each node index, gives a vector with the indices of the orbitals using this node
+    std::map<int, std::vector<int>> node2orbVec;     // for each node index, gives a vector with the indices of the orbitals using this node
     std::vector<std::map<int, int>> orb2node(2 * N); // for a given orbital and a given node, gives the node index in
                                                      // the orbital given the node index in the reference tree
 
-    bool serial = mrcpp::mpi::orb_size == 1; // flag for serial/MPI switch
+    bool serial = mrcpp::mpi::wrk_size == 1; // flag for serial/MPI switch
     mrcpp::BankAccount nodesBraKet;
 
     // In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
@@ -1538,7 +1513,7 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
     } else { // MPI case
         // 2) send own nodes to bank, identifying them through the serialIx of refTree
         save_nodes(BraKet, refTree, nodesBraKet);
-        mrcpp::mpi::barrier(mrcpp::mpi::comm_orb); // wait until everything is stored before fetching!
+        mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
     }
 
     // 3) make dot product for all the nodes and accumulate into S
@@ -1546,7 +1521,7 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
     int ibank = 0;
 #pragma omp parallel for schedule(dynamic) if (serial)
     for (int n = 0; n < max_n; n++) {
-        if (n % mrcpp::mpi::orb_size != mrcpp::mpi::orb_rank) continue;
+        if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
         int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
         std::vector<int> orbVec;       // identifies which orbitals use this node
@@ -1571,9 +1546,9 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
                         //    continue;
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
                         //    continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
@@ -1593,9 +1568,9 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
                         //    continue;
-                        //if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
                         //    continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
@@ -1609,21 +1584,20 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
         if (!mrcpp::mpi::my_orb(i)) continue;
         conjMat[i] = (BraKet[i].conjugate()) ? -1 : 1;
     }
-    mrcpp::mpi::allreduce_vector(conjMat, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_vector(conjMat, mrcpp::mpi::comm_wrk);
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j <= i; j++) {
-            S(i, j) = Sreal(i, j) + conjMat[i] * conjMat[j] * Sreal(i + N, j + N) + conjMat[j] * Sreal(i, j + N) -
-                      conjMat[i] * Sreal(i + N, j);
+            S(i, j) = Sreal(i, j) + conjMat[i] * conjMat[j] * Sreal(i + N, j + N) + conjMat[j] * Sreal(i, j + N) - conjMat[i] * Sreal(i + N, j);
             S(j, i) = S(i, j);
         }
     }
 
     // Assumes linearity: result is sum of all nodes contributions
-    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_orb);
+    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
     return S;
 }
 
-} //mpifuncvec
-} //mrcpp
+} // namespace mpifuncvec
+} // namespace mrcpp

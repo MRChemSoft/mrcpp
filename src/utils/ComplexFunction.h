@@ -44,8 +44,7 @@ public:
 
     friend class MPI_Func;
 
-    private:
-
+private:
     FunctionData func_data;
     mrcpp::SharedMemory *shared_mem_re;
     mrcpp::SharedMemory *shared_mem_im;

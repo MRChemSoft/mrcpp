@@ -37,8 +37,8 @@ extern int shared_memory_size;
 
 extern int world_rank;
 extern int world_size;
-extern int orb_rank;
-extern int orb_size;
+extern int wrk_rank;
+extern int wrk_size;
 extern int share_rank;
 extern int share_size;
 extern int sh_group_rank;
@@ -49,7 +49,7 @@ extern int tot_bank_size;
 extern int max_tag;
 extern int task_bank;
 
-extern MPI_Comm comm_orb;
+extern MPI_Comm comm_wrk;
 extern MPI_Comm comm_share;
 extern MPI_Comm comm_sh_group;
 extern MPI_Comm comm_bank;

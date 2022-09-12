@@ -27,6 +27,12 @@
 
 #ifdef MRCPP_HAS_MPI
 #include <mpi.h>
+#else
+using MPI_Comm = int;
+using MPI_Win = int;
+using MPI_Request = int;
+#endif
+
 namespace mrcpp {
 using mpi_comm = MPI_Comm;
 using mpi_win = MPI_Win;
@@ -56,14 +62,6 @@ extern MPI_Comm comm_bank;
 
 }// namespace mpi
 } // namespace mrcpp
-#else
-namespace mrcpp {
-using mpi_comm = int;
-using mpi_win = int;
-using mpi_request = int;
-
-} // namespace mrcpp
-#endif
 
 namespace mrcpp {
 

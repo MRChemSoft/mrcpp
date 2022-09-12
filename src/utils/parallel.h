@@ -8,12 +8,6 @@
 #include <map>
 #include <vector>
 
-#ifdef MRCPP_HAS_MPI
-#include <mpi.h>
-#else
-using MPI_Comm = int;
-#endif
-
 // define a class for things that can be sent with MPI
 
 template <int D> class MultiResolutionAnalysis;

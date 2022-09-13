@@ -42,6 +42,7 @@ public:
 
 protected:
     int order{1};
+    std::vector<std::unique_ptr<OperatorTree>> raw_exp;
 };
 
 } // namespace mrcpp

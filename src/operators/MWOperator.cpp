@@ -33,17 +33,19 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D>
-OperatorTree &MWOperator<D>::getComponent(int i) {
-    if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
-    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
-    return *this->oper_exp[i];
+OperatorTree &MWOperator<D>::getComponent(int i, int d) {
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
+    if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
+    return *this->oper_exp[i][d];
 }
 
 template <int D>
-const OperatorTree &MWOperator<D>::getComponent(int i) const {
-    if (this->oper_exp[i] == nullptr) MSG_ERROR("Invalid component");
-    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Out of bounds");
-    return *this->oper_exp[i];
+const OperatorTree &MWOperator<D>::getComponent(int i, int d) const {
+    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
+    if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
+    return *this->oper_exp[i][d];
 }
 
 template <int D>
@@ -59,7 +61,8 @@ int MWOperator<D>::getMaxBandWidth(int depth) const {
 
 template <int D>
 void MWOperator<D>::clearBandWidths() {
-    for (auto &i : this->oper_exp) i->clearBandWidth();
+    for (auto &i : this->oper_exp)
+        for (int d = 0; d < D; d++) i[d]->clearBandWidth();
 }
 
 template <int D>
@@ -67,22 +70,26 @@ void MWOperator<D>::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component
     for (auto &i : this->oper_exp) {
-        OperatorTree &oTree = *i;
-        oTree.calcBandWidth(prec);
-        const BandWidth &bw = oTree.getBandWidth();
-        int depth = bw.getDepth();
-        if (depth > maxDepth) maxDepth = depth;
+        for (int d = 0; d < D; d++) {
+            OperatorTree &oTree = *i[d];
+            oTree.calcBandWidth(prec);
+            const BandWidth &bw = oTree.getBandWidth();
+            int depth = bw.getDepth();
+            if (depth > maxDepth) maxDepth = depth;
+        }
     }
     this->band_max = std::vector<int>(maxDepth + 1, -1);
 
     // Find the largest effective bandwidth at each scale
     for (auto &i : this->oper_exp) {
-        const OperatorTree &oTree = *i;
-        const BandWidth &bw = oTree.getBandWidth();
-        for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
-            for (int j = 0; j < 4; j++) {          // component loop
-                int w = bw.getWidth(n, j);
-                if (w > this->band_max[n]) this->band_max[n] = w;
+        for (int d = 0; d < D; d++) {
+            const OperatorTree &oTree = *i[d];
+            const BandWidth &bw = oTree.getBandWidth();
+            for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
+                for (int j = 0; j < 4; j++) {          // component loop
+                    int w = bw.getWidth(n, j);
+                    if (w > this->band_max[n]) this->band_max[n] = w;
+                }
             }
         }
     }

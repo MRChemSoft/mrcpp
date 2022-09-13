@@ -98,7 +98,6 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
                 TreeBuilder<2> builder;
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
 
-                MWOperator<3> O(func_mra, func_mra.getRootScale(), -10);
                 for (int i = 0; i < K.size(); i++) {
                     FunctionTree<1> &kern_tree = get_func(K, i);
                     CrossCorrelationCalculator calculator(kern_tree);
@@ -123,13 +122,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
                         REQUIRE(bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i));
                         REQUIRE(bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i));
                     }
-                    O.push_back(std::move(oper_tree));
                 }
-                O.calcBandWidths(band_prec);
-                REQUIRE(O.getMaxBandWidth(3) == 3);
-                REQUIRE(O.getMaxBandWidth(7) == 5);
-                REQUIRE(O.getMaxBandWidth(13) == 9);
-                REQUIRE(O.getMaxBandWidth(20) == -1);
             }
             clear(K, true);
         }

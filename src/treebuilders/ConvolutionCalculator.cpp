@@ -104,7 +104,8 @@ template <int D> void ConvolutionCalculator<D>::printTimers() const {
  operator. The band size is used for thresholding. */
 template <int D> void ConvolutionCalculator<D>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &oTree = (*this->oper)[i];
+        // IMPORTANT: only 0-th dimension!
+        const OperatorTree &oTree = this->oper->getComponent(i, 0);
         const BandWidth &bw = oTree.getBandWidth();
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
@@ -278,19 +279,18 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
     for (int i = 0; i < this->oper->size(); i++) {
-        const OperatorTree &ot = (*this->oper)[i];
+        // IMPORTANT: only 0-th dimension
+        const OperatorTree &ot = this->oper->getComponent(i, 0);
         const BandWidth &bw = ot.getBandWidth();
         if (os.getMaxDeltaL() > bw.getMaxWidth(o_depth)) { continue; }
-        os.oTree = &ot;
         os.fThreshold = getBandSizeFactor(i, o_depth, os) * fNorm;
-        applyOperator(os);
+        applyOperator(i, os);
     }
 }
 
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
-template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &os) {
-    const OperatorTree &oTree = *os.oTree;
+template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorState<D> &os) {
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
@@ -301,6 +301,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(OperatorState<D> &
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
+        const OperatorTree &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.

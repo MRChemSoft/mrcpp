@@ -81,6 +81,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
     TreeBuilder<2> builder;
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
+    this->init(kernel.size());
     for (int i = 0; i < kernel.size(); i++) {
         // Rescale Gaussian for D-dim application
         auto *k_func = kernel.getFunc(i).copy();
@@ -102,7 +103,8 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
         print::time(10, "Time transform", trans_t);
         print::separator(10, ' ');
 
-        this->oper_exp.push_back(std::move(o_tree));
+        this->raw_exp.push_back(std::move(o_tree));
+        for (int d = 0; d < D; d++) this->assign(i, d, this->raw_exp[i].get());
     }
 }
 

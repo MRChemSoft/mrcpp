@@ -41,6 +41,8 @@ public:
     double getBuildPrec() const { return this->build_prec; }
 
 protected:
+    std::vector<std::unique_ptr<OperatorTree>> raw_exp;
+
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {}
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)

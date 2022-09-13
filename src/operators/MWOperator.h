@@ -64,20 +64,13 @@ protected:
     int oper_reach;
     MultiResolutionAnalysis<D> MRA;
     std::vector<std::array<OperatorTree *, D>> oper_exp;
+    std::vector<std::unique_ptr<OperatorTree>> raw_exp;
     std::vector<int> band_max;
 
     MultiResolutionAnalysis<2> getOperatorMRA() const;
 
-    void init(int M) {
-        for (int m = 0; m < M; m++) {
-            std::array<OperatorTree *, D> otrees;
-            otrees.fill(nullptr);
-            this->oper_exp.push_back(otrees);
-        }
-    }
-    void assign(int i, int d, OperatorTree *oper) {
-        this->oper_exp[i][d] = oper;
-    }
+    void initOperExp(int M);
+    void assign(int i, int d, OperatorTree *oper) { this->oper_exp[i][d] = oper; }
 
 };
 

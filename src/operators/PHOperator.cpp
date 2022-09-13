@@ -65,9 +65,7 @@ template <int D> void PHOperator<D>::initialize() {
     print::separator(10, ' ');
 
     this->raw_exp.push_back(std::move(o_tree));
-
-    this->init(1);
-    for (int d = 0; d < D; d++) this->assign(0, d, this->raw_exp[0].get());
+    this->initOperExp(1);
 }
 
 template class PHOperator<1>;

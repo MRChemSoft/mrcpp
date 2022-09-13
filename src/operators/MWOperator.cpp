@@ -32,6 +32,21 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+template<int D>
+void MWOperator<D>::initOperExp(int M) {
+    if (this->raw_exp.size() < M) MSG_ABORT("Incompatible raw expansion");
+    this->oper_exp.clear();
+    for (int m = 0; m < M; m++) {
+        std::array<OperatorTree *, D> otrees;
+        otrees.fill(nullptr);
+        this->oper_exp.push_back(otrees);
+    }
+
+    // Sets up an isotropic operator with the first M raw terms in all direction
+    for (int i = 0; i < M; i++)
+        for (int d = 0; d < D; d++) assign(i, d, this->raw_exp[i].get());
+}
+
 template <int D>
 OperatorTree &MWOperator<D>::getComponent(int i, int d) {
     if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");

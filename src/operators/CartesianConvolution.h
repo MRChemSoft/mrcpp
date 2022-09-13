@@ -25,23 +25,21 @@
 
 #pragma once
 
-#include "MWOperator.h"
+#include "ConvolutionOperator.h"
 
 namespace mrcpp {
 
-template <int D> class DerivativeOperator : public MWOperator<D> {
+class CartesianConvolution : public ConvolutionOperator<3> {
 public:
-    DerivativeOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach = 1)
-            : MWOperator<D>(mra, root, reach) {}
+    CartesianConvolution(const MultiResolutionAnalysis<3> &mra, GaussExp<1> &kernel, double prec);
+    CartesianConvolution(const CartesianConvolution &oper) = delete;
+    CartesianConvolution &operator=(const CartesianConvolution &oper) = delete;
+    virtual ~CartesianConvolution() = default;
 
-    DerivativeOperator(const DerivativeOperator &oper) = delete;
-    DerivativeOperator &operator=(const DerivativeOperator &oper) = delete;
-    ~DerivativeOperator() override = default;
-
-    int getOrder() const { return order; }
+    void setCartesianComponents(int x, int y, int z);
 
 protected:
-    int order{1};
+    int sep_rank;
 };
 
 } // namespace mrcpp

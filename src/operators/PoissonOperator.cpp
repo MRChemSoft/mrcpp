@@ -49,6 +49,7 @@ PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double p
 
     PoissonKernel kernel(k_prec, r_min, r_max);
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
@@ -70,6 +71,7 @@ PoissonOperator::PoissonOperator(const MultiResolutionAnalysis<3> &mra, double p
 
     PoissonKernel kernel(k_prec, r_min, r_max);
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }

@@ -67,6 +67,7 @@ class OperatorNode;
 template <int D> class IdentityConvolution;
 template <int D> class DerivativeConvolution;
 template <int D> class ConvolutionOperator;
+class CartesianConvolution;
 class PoissonOperator;
 class HelmholtzOperator;
 template <int D> class DerivativeOperator;

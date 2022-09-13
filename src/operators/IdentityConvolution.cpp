@@ -46,6 +46,7 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
 
     IdentityKernel<D> kernel(k_prec);
     this->initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
@@ -61,6 +62,7 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
 
     IdentityKernel<D> kernel(k_prec);
     this->initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }

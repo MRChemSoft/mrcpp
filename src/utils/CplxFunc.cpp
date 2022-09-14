@@ -20,11 +20,13 @@ CplxFunc::CplxFunc(std::shared_ptr<ComplexFunction> funcptr)
 
 CplxFunc::CplxFunc(const CplxFunc &func)
         : funcMRA(func.funcMRA)
+        , conj(func.conj)
         , func_ptr(func.func_ptr)
         , rank(func.rank) {}
 
 CplxFunc &CplxFunc::operator=(const CplxFunc &func) {
     if (this != &func) {
+        this->conj = func.conj;
         this->func_ptr = func.func_ptr;
         this->funcMRA = func.funcMRA;
         this->rank = func.rank;
@@ -82,7 +84,7 @@ FunctionData &CplxFunc::getFunctionData() {
 
 CplxFunc CplxFunc::dagger() {
     CplxFunc out(*this);
-    out.func_ptr->func_data.conjug = not(this->func_ptr->func_data.conjug);
+    out.conj = not(this->conj);
     return out; // Return shallow copy
 }
 
@@ -563,7 +565,6 @@ void cplxfunc::multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, doub
 void cplxfunc::multiply_imag(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
     double conj_a = (inp_a.conjugate()) ? -1.0 : 1.0;
     double conj_b = (inp_b.conjugate()) ? -1.0 : 1.0;
-
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
 
     FunctionTreeVector<3> vec;

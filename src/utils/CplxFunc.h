@@ -42,7 +42,6 @@ struct FunctionData {
     int real_size{0};
     int imag_size{0};
     bool is_shared{false};
-    bool conjug{false};
     int spin{0};
     int occ{0};
 };
@@ -126,7 +125,7 @@ public:
     const FunctionTree<3> &real() const { return *this->func_ptr->re; }
     const FunctionTree<3> &imag() const { return *this->func_ptr->im; }
     void release() { this->func_ptr.reset(); }
-    bool conjugate() const { return this->func_ptr->func_data.conjug; }
+    bool conjugate() const { return this->conj; }
     MultiResolutionAnalysis<3> *funcMRA = nullptr;
     int rankID() const { return rank; }
     void setRankID(int rank) { (*this).rank = rank; }
@@ -156,6 +155,7 @@ public:
     char printSpin() const;
 
 protected:
+    bool conj{false};
     std::shared_ptr<mrcpp::ComplexFunction> func_ptr;
     int rank = -1; // index in vector
 };

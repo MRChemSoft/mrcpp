@@ -299,14 +299,14 @@ void mpi::recv_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
 
 /** Update a shared function after it has been changed by one of the MPI ranks. */
 void mpi::share_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
     if (func.isShared()) {
+#ifdef MRCPP_HAS_MPI
         if (func.hasReal()) mrcpp::share_tree(func.real(), src, tag, comm);
         if (func.hasImag()) mrcpp::share_tree(func.imag(), src, 2 * tag, comm);
-    }
 #else
-    MSG_ABORT("MRCPP compiled without MPI support");
+        MSG_ABORT("MRCPP compiled without MPI support");
 #endif
+    }
 }
 
 /** @brief Add all mpi function into rank zero */

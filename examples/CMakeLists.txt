@@ -6,6 +6,7 @@ list(APPEND _examples
     multiplication
     poisson
     scf
+    pbc
     mpi_shared_tree
     mpi_send_tree
     mpi_matrix

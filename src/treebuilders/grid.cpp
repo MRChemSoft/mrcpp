@@ -303,6 +303,27 @@ template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
     return nSplit;
 }
 
+/** @brief Refine the grid of a MW function representation
+ *
+ * @param[in,out] out: Output tree to be refined
+ * @param[in] inp: Input function
+ *
+ * @details This will first perform a split check on the existing leaf nodes
+ * in the output tree based on the structure of the input function (same as
+ * build_grid), then it will compute scaling coefs of the new nodes, thus
+ * leaving the function representation unchanged, but on a larger grid.
+ * It requires that the functions `isVisibleAtScale()` and `isZeroOnInterval()`
+ * is implemented in the particular `RepresentableFunction`.
+ *
+ */
+template <int D> int refine_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp) {
+    auto maxScale = out.getMRA().getMaxScale();
+    TreeBuilder<D> builder;
+    AnalyticAdaptor<D> adaptor(inp, maxScale);
+    int nSplit = builder.split(out, adaptor, true);
+    return nSplit;
+}
+
 template void build_grid<1>(FunctionTree<1> &out, int scales);
 template void build_grid<2>(FunctionTree<2> &out, int scales);
 template void build_grid<3>(FunctionTree<3> &out, int scales);
@@ -339,5 +360,8 @@ template int refine_grid<3>(FunctionTree<3> &out, double prec, bool absPrec);
 template int refine_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
 template int refine_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
 template int refine_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
+template int refine_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp);
+template int refine_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp);
+template int refine_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp);
 
 } // namespace mrcpp

@@ -42,4 +42,5 @@ template <int D> void clear_grid(FunctionTree<D> &out);
 template <int D> int refine_grid(FunctionTree<D> &out, int scales);
 template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec = false);
 template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp);
+template <int D> int refine_grid(FunctionTree<D> &out, const RepresentableFunction<D> &inp);
 } // namespace mrcpp

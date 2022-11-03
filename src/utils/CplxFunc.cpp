@@ -1,14 +1,15 @@
 #include "CplxFunc.h"
 #include "Bank.h"
 #include "Printer.h"
+#include "Timer.h"
 #include "parallel.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/multiply.h"
 #include "treebuilders/project.h"
-#include "trees/FunctionTree.h"
-#include "trees/MWTree.h"
-#include "trees/MultiResolutionAnalysis.h"
+#include "trees/FunctionNode.h"
 #include "treebuilders/add.h"
+
+using mrcpp::Timer;
 
 namespace mrcpp {
 
@@ -634,13 +635,10 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
     // The principle of this routine is that nodes are rotated one by one using matrix multiplication.
     // The routine does avoid when possible to move data, but uses pointers and indices manipulation.
     // MPI version does not use OMP yet, Serial version uses OMP
-
-    MultiResolutionAnalysis<3> *mra = Phi.vecMRA;
-
     int N = Phi.size();
 
     // 1) make union tree without coefficients
-    FunctionTree<3> refTree(*mra);
+    FunctionTree<3> refTree(*Phi.vecMRA);
     mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
@@ -765,7 +763,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
     IntMatrix split_serial;                             // in the serial case all split are store in one array
     std::vector<double> split(Neff, -1.0);              // which orbitals need splitting (at a given node). For now double for compatibilty with bank
     std::vector<double> needsplit(Neff, 1.0);           // which orbitals need splitting
-    std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the rotated coefficient for each orbital
+    std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the rotated coefficient for each orbital in serial case
     std::vector<std::map<int, int>> ix2coef(Neff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
     int csize;                                          // size of the current coefficients (different for roots and branches)
     std::vector<DoubleMatrix> rotatedCoeffVec;          // just to ensure that the data from rotatedCoeff is not deleted, since we point to it.
@@ -940,6 +938,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
     }
 
     // 5) reconstruct trees using rotated nodes.
+
     // only serial case can use OMP, because MPI cannot be used by threads
     if (serial) {
         // OMP parallelized, but does not scale well, because the total memory bandwidth is a bottleneck. (the main
@@ -1003,7 +1002,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
 /** @brief Save all nodes in bank; identify them using serialIx from refTree
  * shift is a shift applied in the id
  */
-void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &account) {
+void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &account, int sizes) {
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
     int max_nNodes = refTree.getNNodes();
@@ -1025,7 +1024,11 @@ void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &acco
                 if (indexVec[i] < 0) continue; // nodes that are not in refOrb
                 int csize = sizecoeffW;
                 if (parindexVec[i] < 0) csize = sizecoeff;
-                account.put_nodedata(j, indexVec[i], csize, &(coeffVec[i][sizecoeff - csize]));
+                if (sizes > 0) { // fixed size
+                    account.put_nodedata(j, indexVec[i], sizes, coeffVec[i]);
+                } else {
+                    account.put_nodedata(j, indexVec[i], csize, &(coeffVec[i][sizecoeff - csize]));
+                }
             }
         }
         // Imaginary parts are considered as orbitals with an orbid shifted by N
@@ -1038,10 +1041,299 @@ void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &acco
                 // NB: the identifier (indexVec[i]) must be shifted for not colliding with the nodes from the real part
                 int csize = sizecoeffW;
                 if (parindexVec[i] < 0) csize = sizecoeff;
-                account.put_nodedata(j + N, indexVec[i], csize, &(coeffVec[i][sizecoeff - csize]));
+                if (sizes > 0) { // fixed size
+                    account.put_nodedata(j + N, indexVec[i], sizes, coeffVec[i]);
+                } else {
+                    account.put_nodedata(j + N, indexVec[i], csize, &(coeffVec[i][sizecoeff - csize]));
+                }
             }
         }
     }
+}
+
+/** @brief Multiply all orbitals with a function
+ *
+ * @param Phi: orbitals to multiply
+ * @param f  : function to multiply
+ *
+ * Computes the product of each orbital with a function
+ * in parallel using a local representation.
+ * Input tress are extended by one scale at most.
+ */
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec) {
+
+    int N = Phi.size();
+    const int D = 3;
+
+    // 1a) extend grid where f is large (around nuclei)
+    // TODO: do it in save_nodes, only saving the extra nodes, without keeping them permanently.
+    for (int i = 0; i < N; i++) {
+        if (!mpi::my_orb(i)) continue;
+        if (Phi[i].hasReal()) refine_grid(Phi[i].real(), f); // NB: only one extra scale!
+        if (Phi[i].hasImag()) refine_grid(Phi[i].imag(), f); // NB: only one extra scale!
+    }
+
+    // 1b) make union tree without coefficients
+    FunctionTree<D> refTree(*Phi.vecMRA);
+    // refine_grid(refTree, f); //to test
+    mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
+
+    int kp1 = refTree.getKp1();
+    int kp1_d = refTree.getKp1_d();
+    int nCoefs = refTree.getTDim() * kp1_d;
+
+    IntVector PsihasReIm = IntVector::Zero(2);
+    for (int i = 0; i < N; i++) {
+        if (!mpi::my_orb(i)) continue;
+        PsihasReIm[0] = (Phi[i].hasReal()) ? 1 : 0;
+        PsihasReIm[1] = (Phi[i].hasImag()) ? 1 : 0;
+    }
+    mpi::allreduce_vector(PsihasReIm, mpi::comm_wrk);
+    MPI_FuncVector out(N);
+    if (not PsihasReIm[0] and not PsihasReIm[1]) {
+        return out; // do nothing
+    }
+
+    int Neff = N;
+    if (PsihasReIm[1]) Neff = 2 * N; // Imag and Real treated independently. We always treat real part of Psi
+
+    std::vector<double> scalefac_ref;
+    std::vector<double *> coeffVec_ref; // not used!
+    std::vector<int> indexVec_ref;      // serialIx of the nodes
+    std::vector<int> parindexVec_ref;   // serialIx of the parent nodes
+    std::vector<MWNode<D> *> refNodes;  // pointers to nodes
+    int max_ix;
+    // get a list of all nodes in union tree, identified by their serialIx indices
+    refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree, &refNodes);
+    int max_n = indexVec_ref.size();
+    std::map<int, int> ix2n; // for a given serialIx, give index in vectors
+    for (int nn = 0; nn < max_n; nn++) ix2n[indexVec_ref[nn]] = nn;
+    bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
+
+    // 2) send own nodes to bank, identifying them through the serialIx of refTree
+    BankAccount nodesPhi;        // to put the original nodes
+    BankAccount nodesMultiplied; // to put the multiplied nodes
+
+    // used for serial only:
+    std::vector<std::vector<double *>> coeffVec(Neff);
+    std::vector<std::vector<int>> indexVec(Neff);   // serialIx of the nodes
+    std::map<int, std::vector<int>> node2orbVec;    // for each node index, gives a vector with the indices of the orbitals using this node
+    std::vector<std::map<int, int>> orb2node(Neff); // for a given orbital and a given node, gives the node index in the
+                                                    // orbital given the node index in the reference tree
+    if (serial) {
+        // make list of all coefficients (coeffVec), and their reference indices (indexVec)
+        std::vector<int> parindexVec; // serialIx of the parent nodes
+        std::vector<double> scalefac;
+        for (int j = 0; j < N; j++) {
+            // make vector with all coef pointers and their indices in the union grid
+            if (Phi[j].hasReal()) {
+                Phi[j].real().makeCoeffVector(coeffVec[j], indexVec[j], parindexVec, scalefac, max_ix, refTree);
+                // make a map that gives j from indexVec
+                int orb_node_ix = 0;
+                for (int ix : indexVec[j]) {
+                    orb2node[j][ix] = orb_node_ix++;
+                    if (ix < 0) continue;
+                    node2orbVec[ix].push_back(j);
+                }
+            }
+            if (Phi[j].hasImag()) {
+                Phi[j].imag().makeCoeffVector(coeffVec[j + N], indexVec[j + N], parindexVec, scalefac, max_ix, refTree);
+                // make a map that gives j from indexVec
+                int orb_node_ix = 0;
+                for (int ix : indexVec[j + N]) {
+                    orb2node[j + N][ix] = orb_node_ix++;
+                    if (ix < 0) continue;
+                    node2orbVec[ix].push_back(j + N);
+                }
+            }
+        }
+    } else {
+
+        mpifuncvec::save_nodes(Phi, refTree, nodesPhi, nCoefs);
+        mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
+    }
+
+    // 3) mutiply for each node
+
+    std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the multiplied coefficient for each orbital in serial case
+    std::vector<DoubleMatrix> multipliedCoeffVec;       // just to ensure that the data from multipliedCoeff is not deleted, since we point to it.
+    std::vector<std::map<int, int>> ix2coef(Neff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
+
+    if (serial) {
+#pragma omp parallel for schedule(dynamic)
+        for (int n = 0; n < max_n; n++) {
+            MWNode<D> node(*(refNodes[n]), false);
+            int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
+
+            // 3a) make values for f at this node
+            // 3a1) get coordinates of quadrature points for this node
+            Eigen::MatrixXd pts;           // Eigen::Zero(D, nCoefs);
+            node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
+            double fval[nCoefs];
+            Coord<D> r;
+            for (int j = 0; j < nCoefs; j++) {
+                for (int d = 0; d < D; d++) r[d] = pts(d, j);
+                fval[j] = f.evalf(r);
+            }
+            DoubleMatrix multipliedCoeff(nCoefs, node2orbVec[node_ix].size());
+            int i = 0;
+            // 3b) fetch all orbitals at this node
+            std::vector<int> orbjVec;            // to remember which orbital correspond to each orbVec.size();
+            for (int j : node2orbVec[node_ix]) { // loop over indices of the orbitals using this node
+                int orb_node_ix = orb2node[j][node_ix];
+                orbjVec.push_back(j);
+                for (int k = 0; k < nCoefs; k++) multipliedCoeff(k, i) = coeffVec[j][orb_node_ix][k];
+                // 3c) transform to grid
+                node.attachCoefs(&(multipliedCoeff(0, i)));
+                node.mwTransform(Reconstruction);
+                node.cvTransform(Forward);
+                // 3d) multiply
+                for (int k = 0; k < nCoefs; k++) multipliedCoeff(k, i) *= fval[k]; // replace by Matrix vector multiplication?
+                // 3e) transform back to mw
+                node.cvTransform(Backward);
+                node.mwTransform(Compression);
+                i++;
+            }
+            // 3f) save multiplied nodes
+            for (int i = 0; i < orbjVec.size(); i++) {
+#pragma omp critical
+                {
+                    ix2coef[orbjVec[i]][node_ix] = coeffpVec[orbjVec[i]].size();
+                    coeffpVec[orbjVec[i]].push_back(&(multipliedCoeff(0, i))); // list of coefficient pointers
+                }
+            }
+#pragma omp critical
+            {
+                // this ensures that multipliedCoeff is not deleted, when getting out of scope
+                multipliedCoeffVec.push_back(std::move(multipliedCoeff));
+            }
+            node.attachCoefs(nullptr); // to avoid deletion of valid multipliedCoeff by destructor
+        }
+    } else {
+        // MPI
+        TaskManager tasks(max_n);
+        for (int nn = 0; nn < max_n; nn++) {
+            int n = tasks.next_task();
+            if (n < 0) break;
+            MWNode<D> node(*(refNodes[n]), false);
+            // 3a) make values for f
+            // 3a1) get coordinates of quadrature points for this node
+            Eigen::MatrixXd pts;           // Eigen::Zero(D, nCoefs);
+            node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
+            double fval[nCoefs];
+            Coord<D> r;
+            for (int j = 0; j < nCoefs; j++) {
+                for (int d = 0; d < D; d++) r[d] = pts(d, j); //*scaling_factor[d]?
+                fval[j] = f.evalf(r);
+                double tt = 0.000001;
+            }
+
+            // 3b) fetch all orbitals at this node
+            DoubleMatrix coeffBlock(nCoefs, Neff); // largest possible used size
+            std::vector<int> orbjVec;
+            nodesPhi.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbjVec);
+            coeffBlock.conservativeResize(Eigen::NoChange, orbjVec.size()); // keep only used part
+            DoubleMatrix MultipliedCoeff(nCoefs, orbjVec.size());
+            // 3c) transform to grid
+            for (int j = 0; j < orbjVec.size(); j++) { // TODO: transform all j at once ?
+                // TODO: select only nodes that are end nodes?
+                node.attachCoefs(coeffBlock.col(j).data());
+                node.mwTransform(Reconstruction);
+                node.cvTransform(Forward);
+                // 3d) multiply
+                double *coefs = node.getCoefs();
+                for (int i = 0; i < nCoefs; i++) coefs[i] *= fval[i];
+                // 3e) transform back to mw
+                node.cvTransform(Backward);
+                node.mwTransform(Compression);
+                // 3f) save multiplied nodes
+                nodesMultiplied.put_nodedata(orbjVec[j], indexVec_ref[n] + max_ix, nCoefs, coefs);
+            }
+            node.attachCoefs(nullptr); // to avoid deletion of valid multipliedCoeff by destructor
+        }
+        mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
+    }
+
+    // 5) reconstruct trees using multiplied nodes.
+
+    // only serial case can use OMP, because MPI cannot be used by threads
+    if (serial) {
+        // OMP parallelized, but does not scale well, because the total memory bandwidth is a bottleneck. (the main
+        // operation is writing the coefficient into the tree)
+
+#pragma omp parallel for schedule(static)
+        for (int j = 0; j < Neff; j++) {
+            if (j < N) {
+                if (Phi[j].hasReal()) {
+                    out[j].alloc(NUMBER::Real);
+                    out[j].real().clear();
+                    out[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
+                    // 6) reconstruct trees from end nodes
+                    out[j].real().mwTransform(BottomUp);
+                    out[j].real().calcSquareNorm();
+                }
+            } else {
+                if (Phi[j % N].hasImag()) {
+                    out[j % N].alloc(NUMBER::Imag);
+                    out[j % N].imag().clear();
+                    out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
+                    out[j].imag().mwTransform(BottomUp);
+                    out[j].imag().calcSquareNorm();
+                }
+            }
+        }
+    } else {
+        for (int j = 0; j < Neff; j++) {
+            if (not mpi::my_orb(j % N)) continue;
+            // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
+            std::vector<double *> coeffpVec; //
+            std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx in refTree
+            int ix = 0;
+            std::vector<double *> pointerstodelete; // list of temporary arrays to clean up
+
+            for (int ibank = 0; ibank < mpi::bank_size; ibank++) {
+                std::vector<int> nodeidVec;
+                double *dataVec; // will be allocated by bank
+                nodesMultiplied.get_orbblock(j, dataVec, nodeidVec, ibank);
+                if (nodeidVec.size() > 0) pointerstodelete.push_back(dataVec);
+                int shift = 0;
+                for (int n = 0; n < nodeidVec.size(); n++) {
+                    assert(nodeidVec[n] - max_ix >= 0);                // unmultiplied nodes have been deleted
+                    assert(ix2coef.count(nodeidVec[n] - max_ix) == 0); // each nodeid treated once
+                    ix2coef[nodeidVec[n] - max_ix] = ix++;
+                    coeffpVec.push_back(&dataVec[shift]); // list of coeff pointers
+                    shift += nCoefs;
+                }
+            }
+            if (j < N) {
+                if (Phi[j].hasReal()) {
+                    out[j].alloc(NUMBER::Real);
+                    out[j].real().clear();
+                    out[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
+
+                    // 6) reconstruct trees from end nodes
+                    out[j].real().mwTransform(BottomUp);
+                    out[j].real().calcSquareNorm();
+                    out[j].real().crop(prec, 1.0, false);
+                    Phi[j].real().crop(prec, 1.0, false);
+                }
+            } else {
+                if (Phi[j % N].hasImag()) {
+                    out[j % N].alloc(NUMBER::Imag);
+                    out[j % N].imag().clear();
+                    out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
+                    out[j % N].imag().mwTransform(BottomUp);
+                    out[j % N].imag().calcSquareNorm();
+                    out[j % N].imag().crop(prec, 1.0, false);
+                    Phi[j % N].imag().crop(prec, 1.0, false);
+                }
+            }
+
+            for (double *p : pointerstodelete) delete[] p;
+            pointerstodelete.clear();
+        }
+    }
+    return out;
 }
 
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {

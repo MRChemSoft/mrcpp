@@ -550,7 +550,7 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
  * values of serialIx in refTree, and an array with the indices of the parent.
  * Set index -1 for nodes that are not present in refTree */
 template <int D>
-void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree) {
+void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree, std::vector<MWNode<D> *> *refNodes) {
     coefs.clear();
     indices.clear();
     parent_indices.clear();
@@ -569,6 +569,7 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<
         MWNode<D> *thisNode = thisstack[stack_p];
         MWNode<D> *refNode = refstack[stack_p++];
         coefs.push_back(thisNode->getCoefs());
+        if (refNodes != nullptr) refNodes->push_back(refNode);
         if (refNode != nullptr) {
             indices.push_back(refNode->getSerialIx());
             max_index = std::max(max_index, refNode->getSerialIx());
@@ -595,30 +596,32 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<
 /** Traverse tree using DFS and reconstruct it using node info from the
  * reference tree and a list of coefficients.
  * It is the reference tree (refTree) which is traversed, but one does not descend
- * into children if the norm of this tree is smaller than absPrec. */
-template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec) {
+ * into children if the norm of the tree is smaller than absPrec. */
+    template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode) {
     std::vector<MWNode<D> *> stack;
     std::map<int, MWNode<D> *> ix2node; // gives the nodes in this tree for a given ix
     int sizecoef = (1 << this->getDim()) * this->getKp1_d();
     int sizecoefW = ((1 << this->getDim()) - 1) * this->getKp1_d();
     this->squareNorm = 0.0;
+    this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < refTree.getRootBox().size(); rIdx++) {
         MWNode<D> *refNode = refTree.getRootBox().getNodes()[rIdx];
         stack.push_back(refNode);
         int ix = ix2coef[refNode->getSerialIx()];
         ix2node[ix] = this->getRootBox().getNodes()[rIdx];
     }
+    int totn=0;
     while (stack.size() > 0) {
         MWNode<D> *refNode = stack.back(); // node in the reference tree refTree
         stack.pop_back();
-        int ix = -1;
-        if (ix2coef.count(refNode->getSerialIx()) > 0) ix = ix2coef[refNode->getSerialIx()];
+        assert(ix2coef.count(refNode->getSerialIx()) > 0);
+        int ix = ix2coef[refNode->getSerialIx()];
         MWNode<D> *node = ix2node[ix]; // corresponding node in this tree
         // copy coefficients into this tree
         int size = sizecoefW;
-        if (refNode->isRootNode()) {
-            size = sizecoef;
-            for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
+        if (refNode->isRootNode() or mode == "copy") {
+            size = sizecoef; // all coeff
+           for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
         } else {
             // only wavelets are defined in coefVec. Scaling part set below, when creating children
             if (ix < coefpVec.size() and ix >= 0) {
@@ -628,10 +631,23 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
                 for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = 0.0;
             }
         }
+
         node->setHasCoefs();
         node->calcNorms();
-        bool need_split = absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true);
-        if (need_split and refNode->getNChildren() > 0) {
+        if ( mode == "copy"){
+            // add children if and only if they exist in the tree
+            if ( refNode->getNChildren() == 0 or ix2coef.count(refNode->children[0]->getSerialIx()) == 0 ) {
+                this->endNodeTable.push_back(node);
+                this->squareNorm += node->getSquareNorm();
+            } else {
+                node->createChildren(true);
+                for (int i = 0; i < refNode->getNChildren(); i++) {
+                    int ixc = ix2coef[refNode->children[i]->getSerialIx()];
+                    ix2node[ixc] = node->children[i]; // corresponding child node in this tree
+                    stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
+                }
+            }
+        } else if ((absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true)) and refNode->getNChildren() > 0) {
             // include children in tree
             node->createChildren(true);
             double *inp = node->getCoefs();
@@ -641,11 +657,12 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
                 stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
                 int ixc = ix2coef[refNode->children[i]->getSerialIx()];
                 ix2node[ixc] = node->children[i]; // corresponding child node in this tree
-                node->children[i]->setHasCoefs();
-            }
+           }
         } else {
+            this->endNodeTable.push_back(node);
             this->squareNorm += node->getSquareNorm();
         }
+
     }
 }
 

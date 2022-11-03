@@ -244,7 +244,7 @@ void Bank::open() {
                     metadata_block[0] = nodeid;
                     metadata_block[1] = 0; // number of columns
                     metadata_block[2] = 0; // total size = rows*columns
-                    MPI_Send(metadata_block, size_metadata, MPI_INT, status.MPI_SOURCE, 3, comm_bank);
+                    MPI_Send(metadata_block, size_metadata, MPI_INT, status.MPI_SOURCE, 1, comm_bank);
                 }
             }
         } else if (message == GET_ORBBLOCK) {

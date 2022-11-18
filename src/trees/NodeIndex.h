@@ -62,6 +62,14 @@ public:
         for (int d = 0; d < D; d++) out &= (this->L[d] == idx.L[d]);
         return out;
     }
+    // defines an order of the nodes (allows to use std::map)
+    bool operator<(const NodeIndex<D> &idy) const {
+        const NodeIndex<D> &idx = *this;
+        if (idx.N != idy.N) return idx.N < idy.N;
+        if (idx.L[0] != idy.L[0] or D < 2) return idx.L[0] < idy.L[0];
+        if (idx.L[1] != idy.L[1] or D < 3) return idx.L[1] < idy.L[1];
+        return idx.L[2] < idy.L[2];
+    }
 
     // setters
     void setScale(int n) { this->N = static_cast<short int>(n); }

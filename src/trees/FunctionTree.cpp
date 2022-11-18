@@ -35,6 +35,7 @@
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
 #include "utils/tree_utils.h"
+#include "utils/Bank.h"
 
 using namespace Eigen;
 
@@ -610,7 +611,7 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<
         int ix = ix2coef[refNode->getSerialIx()];
         ix2node[ix] = this->getRootBox().getNodes()[rIdx];
     }
-    int totn=0;
+
     while (stack.size() > 0) {
         MWNode<D> *refNode = stack.back(); // node in the reference tree refTree
         stack.pop_back();
@@ -620,8 +621,13 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<
         // copy coefficients into this tree
         int size = sizecoefW;
         if (refNode->isRootNode() or mode == "copy") {
-            size = sizecoef; // all coeff
-           for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
+           size = sizecoef; // all coeff
+           if ( (mode != "copy" and refNode->isRootNode()) or refNode->getNChildren() == 0 or ix2coef.count(refNode->children[0]->getSerialIx()) == 0 ) {
+               for (int k = 0; k < size; k++) node->getCoefs()[k] = coefpVec[ix][k];
+
+           }else{
+               for (int k = 0; k < size; k++) node->getCoefs()[k] = 0.0;//coefpVec[ix][k];
+           }
         } else {
             // only wavelets are defined in coefVec. Scaling part set below, when creating children
             if (ix < coefpVec.size() and ix >= 0) {
@@ -636,7 +642,10 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs, std::vector<
         node->calcNorms();
         if ( mode == "copy"){
             // add children if and only if they exist in the tree
+            // refNode->getNChildren() == 0 -> no children in ref tree
+            // ix2coef.count(refNode->children[0]->getSerialIx()) == 0 -> the first child is not found in ix2coef
             if ( refNode->getNChildren() == 0 or ix2coef.count(refNode->children[0]->getSerialIx()) == 0 ) {
+                // no children-> it is an EndNode
                 this->endNodeTable.push_back(node);
                 this->squareNorm += node->getSquareNorm();
             } else {
@@ -711,6 +720,37 @@ template <int D> void FunctionTree<D>::deleteGenerated() {
 
 template <int D> void FunctionTree<D>::deleteGeneratedParents() {
     for (int n = 0; n < this->getRootBox().size(); n++) this->getRootMWNode(n).deleteParent();
+}
+
+template <> int FunctionTree<3>::saveNodesAndRmCoeff() {
+    if (this->isLocal) MSG_INFO("Tree is already in local representation");
+    NodesCoeff = new BankAccount; //NB: must be a collective call!
+    int stack_p = 0;
+    if(mpi::wrk_rank == 0){
+        int sizecoeff = (1 << 3) * this->getKp1_d();
+        std::vector<MWNode<3> *> stack; // nodes from this Tree
+        for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
+            stack.push_back(this->getRootBox().getNodes()[rIdx]);
+        }
+        while (stack.size() > stack_p) {
+            MWNode<3> *Node = stack[stack_p++];
+            this->NodeIndex2serialIx[Node->getNodeIndex()] = Node->serialIx;
+            NodesCoeff->put_data(Node->serialIx, sizecoeff, Node->getCoefs());
+            for (int i = 0; i < Node->getNChildren(); i++) {
+                stack.push_back(Node->children[i]);
+            }
+        }
+    }
+    this->nodeAllocator_p->deallocAllCoeff();
+    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
+    this->isLocal = true;
+    assert(this->NodeIndex2serialIx.size() == getNNodes());
+    return this->NodeIndex2serialIx.size();
+}
+
+template <> void FunctionTree<3>::getNodeCoeff(int id, int size, double *data) {
+    assert(this->isLocal);
+    this->NodesCoeff->get_data(id, size, data);
 }
 
 template class FunctionTree<1>;

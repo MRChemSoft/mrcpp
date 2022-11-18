@@ -128,8 +128,8 @@ public:
     void release() { this->func_ptr.reset(); }
     bool conjugate() const { return this->conj; }
     MultiResolutionAnalysis<3> *funcMRA = nullptr;
-    int rankID() const { return rank; }
-    void setRankID(int rank) { (*this).rank = rank; }
+    int getRank() const { return rank; }
+    void setRank(int rank) { (*this).rank = rank; }
     void setOcc(int occ) { this->getFunctionData().occ = occ; }
     void setSpin(int spin) { this->getFunctionData().spin = spin; }
     CplxFunc dagger();
@@ -170,7 +170,7 @@ void deep_copy(CplxFunc &out, CplxFunc &inp);
 void add(CplxFunc &out, ComplexDouble a, CplxFunc inp_a, ComplexDouble b, CplxFunc inp_b, double prec);
 void project(CplxFunc &out, std::function<double(const Coord<3> &r)> f, int type, double prec);
 void project(CplxFunc &out, RepresentableFunction<3> &f, int type, double prec);
-void multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
+    void multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_imag(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void linear_combination(CplxFunc &out, const ComplexVector &c, std::vector<CplxFunc> &inp, double prec);
@@ -186,7 +186,7 @@ public:
 namespace mpifuncvec {
 void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void save_nodes(MPI_FuncVector &Phi, mrcpp::FunctionTree<3> &refTree, BankAccount &account, int sizes = -1);
-MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0);
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CplxFunc *Func = nullptr, int nrefine = 1);
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi);
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet);

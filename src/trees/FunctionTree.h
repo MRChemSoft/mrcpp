@@ -31,7 +31,10 @@
 #include "MWTree.h"
 #include "NodeAllocator.h"
 
+
 namespace mrcpp {
+
+class BankAccount;
 
 /** @class FunctionTree
  *
@@ -103,9 +106,13 @@ public:
     void makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode = "adaptive");
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
+    // tools for use of local (nodes are stored in Bank) representation
+    int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
+    void getNodeCoeff(int id, int size, double *data); // fetch coefficient from a specific node stored in Bank
 protected:
     std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) const override;
+    BankAccount *NodesCoeff = nullptr;
 
     void allocRootNodes();
 };

@@ -201,7 +201,7 @@ bool mpi::my_orb(int j) {
 
 /** @brief Test if orbital belongs to this MPI rank (or is common)*/
 bool mpi::my_orb(CplxFunc orbj) {
-    return my_orb(orbj.rankID());
+    return my_orb(orbj.getRank());
 }
 
 /** @brief Free all function pointers not belonging to this MPI rank */

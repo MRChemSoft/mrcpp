@@ -1065,14 +1065,14 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
     int N = Phi.size();
     const int D = 3;
     bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
-    if( serial ) nrefine = 2;
+    if (serial) nrefine = 2;
 
     // 1a) extend grid where f is large (around nuclei)
     // TODO: do it in save_nodes + refTree, only saving the extra nodes, without keeping them permanently. Or refine refTree?
 
     for (int i = 0; i < N; i++) {
         if (!mpi::my_orb(i)) continue;
-        if(mrcpp::mpi::wrk_rank==0){
+        if (mrcpp::mpi::wrk_rank == 0) {
             int irefine = 0;
             while (Phi[i].hasReal() and irefine < nrefine and refine_grid(Phi[i].real(), f) > 0) irefine++;
             irefine = 0;
@@ -1161,12 +1161,9 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
 
     // 2b) save Func in bank and remove its coefficients
     if (Func != nullptr and !serial) {
-        //put Func in local representation if not already done
-        if (!Func->real().isLocal) {
-            Func->real().saveNodesAndRmCoeff();
-        }
+        // put Func in local representation if not already done
+        if (!Func->real().isLocal) { Func->real().saveNodesAndRmCoeff(); }
     }
-
 
     // 3) mutiply for each node
     std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the multiplied coefficient for each orbital in serial case
@@ -1183,28 +1180,31 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
 
             // 3a) make values for f at this node
             // 3a1) get coordinates of quadrature points for this node
-            Eigen::MatrixXd pts;           // Eigen::Zero(D, nCoefs);
-            node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
+            Eigen::MatrixXd pts; // Eigen::Zero(D, nCoefs);
             double fval[nCoefs];
             Coord<D> r;
-            double *originalCoef;
-            MWNode<3> *Fnode;
-            if (true or Func == nullptr){
+            double *originalCoef = nullptr;
+            MWNode<3> *Fnode = nullptr;
+            if (Func == nullptr) {
+                node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
                 for (int j = 0; j < nCoefs; j++) {
                     for (int d = 0; d < D; d++) r[d] = pts(d, j); //*scaling_factor[d]?
                     fval[j] = f.evalf(r);
                 }
             } else {
-                // this does not work yet
-                Fnode = &Func->real().getNode(node.getNodeIndex());
-                originalCoef = Fnode->getCoefs();
-                for (int j = 0; j < nCoefs; j++) fval[j] = originalCoef[j];
-                Fnode->attachCoefs(fval); // note that each thread has its own copy
-                Fnode->mwTransform(Reconstruction);
-                Fnode->cvTransform(Forward);
-                for (int j = 0; j < 3; j++) {
-                    for (int d = 0; d < D; d++) r[d] = pts(d, j); //*scaling_factor[d]?
-                    std::cout<<n<<" "<<f.evalf(r)<<" "<<Fnode->getCoefs()[j]<<std::endl;
+                Fnode = Func->real().findNode(node.getNodeIndex());
+                if (Fnode == nullptr) {
+                    node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
+                    for (int j = 0; j < nCoefs; j++) {
+                        for (int d = 0; d < D; d++) r[d] = pts(d, j); //*scaling_factor[d]?
+                        fval[j] = f.evalf(r);
+                    }
+                } else {
+                    originalCoef = Fnode->getCoefs();
+                    for (int j = 0; j < nCoefs; j++) fval[j] = originalCoef[j];
+                    Fnode->attachCoefs(fval); // note that each thread has its own copy
+                    Fnode->mwTransform(Reconstruction);
+                    Fnode->cvTransform(Forward);
                 }
             }
             DoubleMatrix multipliedCoeff(nCoefs, node2orbVec[node_ix].size());
@@ -1226,7 +1226,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                 node.mwTransform(Compression);
                 i++;
             }
-            if (false and Func != nullptr){
+            if (Func != nullptr and originalCoef != nullptr) {
                 // restablish original values
                 Fnode->attachCoefs(originalCoef);
             }
@@ -1248,8 +1248,8 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
         }
     } else {
         // MPI
-        int count1=0;
-        int count2=0;
+        int count1 = 0;
+        int count2 = 0;
         TaskManager tasks(max_n);
         for (int nn = 0; nn < max_n; nn++) {
             int n = tasks.next_task();
@@ -1262,7 +1262,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
             double fval[nCoefs];
             Coord<D> r;
             MWNode<D> Fnode(*(refNodes[n]), false);
-            if (Func == nullptr){
+            if (Func == nullptr) {
                 for (int j = 0; j < nCoefs; j++) {
                     for (int d = 0; d < D; d++) r[d] = pts(d, j); //*scaling_factor[d]?
                     fval[j] = f.evalf(r);
@@ -1273,11 +1273,11 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                 if (nIdx < 0) {
                     // use the function f instead of Func
                     count2++;
-                    for (int j = 0; j < nCoefs; j++){
+                    for (int j = 0; j < nCoefs; j++) {
                         for (int d = 0; d < D; d++) r[d] = pts(d, j);
-                        fval[j] =f.evalf(r);
+                        fval[j] = f.evalf(r);
                     }
-                }else{
+                } else {
                     Func->real().getNodeCoeff(nIdx, nCoefs, fval); // fetch coef from Bank
                     Fnode.attachCoefs(fval);
                     Fnode.mwTransform(Reconstruction);
@@ -1306,11 +1306,11 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                 // 3f) save multiplied nodes
                 nodesMultiplied.put_nodedata(orbjVec[j], indexVec_ref[n] + max_ix, nCoefs, coefs);
             }
-            node.attachCoefs(nullptr); // to avoid deletion of valid multipliedCoeff by destructor
+            node.attachCoefs(nullptr);  // to avoid deletion of valid multipliedCoeff by destructor
             Fnode.attachCoefs(nullptr); // to avoid deletion of valid multipliedCoeff by destructor
         }
         mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
-        //if(mrcpp::mpi::wrk_rank==0){std::cout<<" not found "<<count2<<" of "<<count1<<std::endl;}
+        // if(mrcpp::mpi::wrk_rank==0){std::cout<<" not found "<<count2<<" of "<<count1<<std::endl;}
     }
 
     // 5) reconstruct trees using multiplied nodes.
@@ -1338,7 +1338,6 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                     out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
                     out[j].imag().mwTransform(BottomUp);
                     out[j].imag().calcSquareNorm();
-
                 }
             }
         }
@@ -1374,8 +1373,8 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                     out[j].real().mwTransform(BottomUp);
                     out[j].real().calcSquareNorm();
                     out[j].real().resetEndNodeTable();
-                    //out[j].real().crop(prec, 1.0, false); //bad convergence if out is cropped
-                    Phi[j].real().crop(prec, 1.0, false); //restablishes original Phi
+                    // out[j].real().crop(prec, 1.0, false); //bad convergence if out is cropped
+                    Phi[j].real().crop(prec, 1.0, false); // restablishes original Phi
                 }
             } else {
                 if (Phi[j % N].hasImag()) {

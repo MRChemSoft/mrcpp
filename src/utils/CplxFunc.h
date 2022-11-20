@@ -170,7 +170,7 @@ void deep_copy(CplxFunc &out, CplxFunc &inp);
 void add(CplxFunc &out, ComplexDouble a, CplxFunc inp_a, ComplexDouble b, CplxFunc inp_b, double prec);
 void project(CplxFunc &out, std::function<double(const Coord<3> &r)> f, int type, double prec);
 void project(CplxFunc &out, RepresentableFunction<3> &f, int type, double prec);
-    void multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
+void multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_imag(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void linear_combination(CplxFunc &out, const ComplexVector &c, std::vector<CplxFunc> &inp, double prec);

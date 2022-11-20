@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CplxFunc.h"
+#include "ComplexFunction.h"
 #include "parallel.h"
 
 namespace mrcpp {
@@ -8,7 +8,7 @@ namespace mrcpp {
 using namespace mpi;
 
 struct deposit {
-    CplxFunc *orb;
+    ComplexFunction *orb;
     double *data; // for pure data arrays
     bool hasdata;
     int datasize;
@@ -93,11 +93,11 @@ public:
     ~BankAccount();
     int account_id = -1;
     void clear(int i = wrk_rank, MPI_Comm comm = comm_wrk);
-    //    int put_orb(int id, CplxFunc &orb);
-    //    int get_orb(int id, CplxFunc &orb, int wait = 0);
-    int get_func_del(int id, CplxFunc &orb);
-    int put_func(int id, CplxFunc &func);
-    int get_func(int id, CplxFunc &func, int wait = 0);
+    //    int put_orb(int id, ComplexFunction &orb);
+    //    int get_orb(int id, ComplexFunction &orb, int wait = 0);
+    int get_func_del(int id, ComplexFunction &orb);
+    int put_func(int id, ComplexFunction &func);
+    int get_func(int id, ComplexFunction &func, int wait = 0);
     int put_data(int id, int size, double *data);
     int get_data(int id, int size, double *data);
     int put_nodedata(int id, int nodeid, int size, double *data);

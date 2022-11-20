@@ -31,7 +31,6 @@
 #include "MWTree.h"
 #include "NodeAllocator.h"
 
-
 namespace mrcpp {
 
 class BankAccount;
@@ -57,7 +56,8 @@ class BankAccount;
 
 template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name) : FunctionTree(mra, nullptr, name) {}
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name)
+            : FunctionTree(mra, nullptr, name) {}
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr, const std::string &name = "nn");
     FunctionTree(const FunctionTree<D> &tree) = delete;
     FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
@@ -102,12 +102,18 @@ public:
     void deleteGenerated();
     void deleteGeneratedParents();
 
-    void makeCoeffVector(std::vector<double *> &coefs, std::vector<int> &indices, std::vector<int> &parent_indices, std::vector<double> &scalefac, int &max_index, MWTree<D> &refTree, std::vector<MWNode<D> *> *refNodes = nullptr);
+    void makeCoeffVector(std::vector<double *> &coefs,
+                         std::vector<int> &indices,
+                         std::vector<int> &parent_indices,
+                         std::vector<double> &scalefac,
+                         int &max_index,
+                         MWTree<D> &refTree,
+                         std::vector<MWNode<D> *> *refNodes = nullptr);
     void makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode = "adaptive");
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
     // tools for use of local (nodes are stored in Bank) representation
-    int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
+    int saveNodesAndRmCoeff();                         // put all nodes coefficients in Bank and delete all coefficients
     void getNodeCoeff(int id, int size, double *data); // fetch coefficient from a specific node stored in Bank
 protected:
     std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};

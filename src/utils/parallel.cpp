@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Bank.h"
-#include "CplxFunc.h"
+#include "ComplexFunction.h"
 #include "omp_utils.h"
 #include "parallel.h"
 #include "trees/FunctionTree.h"
@@ -200,13 +200,13 @@ bool mpi::my_orb(int j) {
 }
 
 /** @brief Test if orbital belongs to this MPI rank (or is common)*/
-bool mpi::my_orb(CplxFunc orbj) {
+bool mpi::my_orb(ComplexFunction orbj) {
     return my_orb(orbj.getRank());
 }
 
 /** @brief Free all function pointers not belonging to this MPI rank */
 void mpi::free_foreign(MPI_FuncVector &Phi) {
-    for (CplxFunc &i : Phi) {
+    for (ComplexFunction &i : Phi) {
         if (not mpi::my_orb(i)) i.free(NUMBER::Total);
     }
 }
@@ -260,7 +260,7 @@ void mpi::allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 }
 
 // send a function with MPI
-void mpi::send_function(CplxFunc &func, int dst, int tag, MPI_Comm comm) {
+void mpi::send_function(ComplexFunction &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     if (func.isShared()) MSG_WARN("Sending a shared function is not recommended");
     FunctionData &funcinfo = func.getFunctionData();
@@ -273,7 +273,7 @@ void mpi::send_function(CplxFunc &func, int dst, int tag, MPI_Comm comm) {
 }
 
 // receive a function with MPI
-void mpi::recv_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
+void mpi::recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     if (func.isShared()) MSG_WARN("Receiving a shared function is not recommended");
     MPI_Status status;
@@ -298,7 +298,7 @@ void mpi::recv_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
 }
 
 /** Update a shared function after it has been changed by one of the MPI ranks. */
-void mpi::share_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
+void mpi::share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) {
     if (func.isShared()) {
 #ifdef MRCPP_HAS_MPI
         if (func.hasReal()) mrcpp::share_tree(func.real(), src, tag, comm);
@@ -310,7 +310,7 @@ void mpi::share_function(CplxFunc &func, int src, int tag, MPI_Comm comm) {
 }
 
 /** @brief Add all mpi function into rank zero */
-void mpi::reduce_function(double prec, CplxFunc &func, MPI_Comm comm) {
+void mpi::reduce_function(double prec, ComplexFunction &func, MPI_Comm comm) {
 /* 1) Each odd rank send to the left rank
    2) All odd ranks are "deleted" (can exit routine)
    3) new "effective" ranks are defined within the non-deleted ranks
@@ -329,7 +329,7 @@ void mpi::reduce_function(double prec, CplxFunc &func, MPI_Comm comm) {
             // receive
             int src = comm_rank + fac;
             if (src < comm_size) {
-                CplxFunc func_i(false);
+                ComplexFunction func_i(false);
                 int tag = 3333 + src;
                 mpi::recv_function(func_i, src, tag, comm);
                 func.add(1.0, func_i); // add in place using union grid
@@ -395,7 +395,7 @@ void mpi::reduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, MPI_Comm comm) {
 /** @brief make union tree without coeff and send to all
  *  Include both real and imaginary parts
  */
-void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, std::vector<CplxFunc> &Phi, MPI_Comm comm) {
+void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, std::vector<ComplexFunction> &Phi, MPI_Comm comm) {
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -412,7 +412,7 @@ void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, std::vector<CplxF
 }
 
 /** @brief Distribute rank zero function to all ranks */
-void mpi::broadcast_function(CplxFunc &func, MPI_Comm comm) {
+void mpi::broadcast_function(ComplexFunction &func, MPI_Comm comm) {
 /* use same strategy as a reduce, but in reverse order */
 #ifdef MRCPP_HAS_MPI
     int comm_size, comm_rank;

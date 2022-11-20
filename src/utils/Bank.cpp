@@ -382,7 +382,7 @@ void Bank::open() {
             } else {
                 ix = deposits.size(); // NB: ix is now index of last element + 1
                 deposits.resize(ix + 1);
-                if (message == SAVE_FUNCTION) deposits[ix].orb = new CplxFunc(0);
+                if (message == SAVE_FUNCTION) deposits[ix].orb = new ComplexFunction(0);
                 if (message == SAVE_DATA) {
                     datasize = messages[3];
                     deposits[ix].data = new double[datasize];
@@ -686,7 +686,7 @@ std::vector<int> Bank::get_totalsize() {
 // get orbital with identity id.
 // If wait=0, return immediately with value zero if not available (default)
 // else, wait until available
-int BankAccount::get_func(int id, CplxFunc &func, int wait) {
+int BankAccount::get_func(int id, ComplexFunction &func, int wait) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     int messages[message_size];
@@ -714,7 +714,7 @@ int BankAccount::get_func(int id, CplxFunc &func, int wait) {
 
 // get orbital with identity id, and delete from bank.
 // return immediately with value zero if not available
-int BankAccount::get_func_del(int id, CplxFunc &orb) {
+int BankAccount::get_func_del(int id, ComplexFunction &orb) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     int messages[message_size];
@@ -735,7 +735,7 @@ int BankAccount::get_func_del(int id, CplxFunc &orb) {
 }
 
 // save function in Bank with identity id
-int BankAccount::put_func(int id, CplxFunc &func) {
+int BankAccount::put_func(int id, ComplexFunction &func) {
 #ifdef MRCPP_HAS_MPI
     // for now we distribute according to id
     int messages[message_size];

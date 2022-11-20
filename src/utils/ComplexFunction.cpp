@@ -1,4 +1,4 @@
-#include "CplxFunc.h"
+#include "ComplexFunction.h"
 #include "Bank.h"
 #include "Printer.h"
 #include "Timer.h"
@@ -15,17 +15,17 @@ namespace mrcpp {
 
 MultiResolutionAnalysis<3> *defaultMRA; // Global MRA
 
-CplxFunc::CplxFunc(std::shared_ptr<ComplexFunction> funcptr)
+ComplexFunction::ComplexFunction(std::shared_ptr<TreePtr> funcptr)
         : funcMRA(defaultMRA)
         , func_ptr(funcptr) {}
 
-CplxFunc::CplxFunc(const CplxFunc &func)
+ComplexFunction::ComplexFunction(const ComplexFunction &func)
         : funcMRA(func.funcMRA)
         , conj(func.conj)
         , func_ptr(func.func_ptr)
         , rank(func.rank) {}
 
-CplxFunc &CplxFunc::operator=(const CplxFunc &func) {
+ComplexFunction &ComplexFunction::operator=(const ComplexFunction &func) {
     if (this != &func) {
         this->conj = func.conj;
         this->func_ptr = func.func_ptr;
@@ -41,11 +41,11 @@ CplxFunc &CplxFunc::operator=(const CplxFunc &func) {
  * @param occ: occupation
  * @param rank: MPI ownership (-1 means all MPI ranks)
  *
- * Initializes the mrcpp::CplxFunc with NULL pointers for both real and imaginary part.
+ * Initializes the mrcpp::ComplexFunction with NULL pointers for both real and imaginary part.
  */
-CplxFunc::CplxFunc(int spin, int occ, int rank, bool share)
+ComplexFunction::ComplexFunction(int spin, int occ, int rank, bool share)
         : funcMRA(defaultMRA)
-        , func_ptr(std::make_shared<ComplexFunction>(share))
+        , func_ptr(std::make_shared<TreePtr>(share))
         , rank(rank) {
     this->getFunctionData().spin = spin;
     this->getFunctionData().occ = occ;
@@ -59,14 +59,14 @@ CplxFunc::CplxFunc(int spin, int occ, int rank, bool share)
 
 /** @brief Parameter copy
  *
- * Returns a new CplxFunc with the same spin, occupation and rank_id as *this.
+ * Returns a new ComplexFunction with the same spin, occupation and rank_id as *this.
  */
-CplxFunc CplxFunc::paramCopy() const {
-    return CplxFunc(this->spin(), this->occ(), this->getRank());
+ComplexFunction ComplexFunction::paramCopy() const {
+    return ComplexFunction(this->spin(), this->occ(), this->getRank());
 }
 
 MPI_FuncVector::MPI_FuncVector(int N)
-        : std::vector<CplxFunc>(N) {
+        : std::vector<ComplexFunction>(N) {
     for (int i = 0; i < N; i++) (*this)[i].setRank(i);
     vecMRA = defaultMRA;
 }
@@ -78,28 +78,28 @@ void MPI_FuncVector::distribute() {
  *
  * Tree sizes (nChunks) are flushed before return.
  */
-FunctionData &CplxFunc::getFunctionData() {
+FunctionData &ComplexFunction::getFunctionData() {
     this->func_ptr->flushFuncData();
     return this->func_ptr->func_data;
 }
 
-CplxFunc CplxFunc::dagger() {
-    CplxFunc out(*this);
+ComplexFunction ComplexFunction::dagger() {
+    ComplexFunction out(*this);
     out.conj = not(this->conj);
     return out; // Return shallow copy
 }
 
-void CplxFunc::setReal(FunctionTree<3> *tree) {
+void ComplexFunction::setReal(FunctionTree<3> *tree) {
     if (isShared()) MSG_ABORT("Cannot set in shared function");
     this->func_ptr->re = tree;
 }
 
-void CplxFunc::setImag(FunctionTree<3> *tree) {
+void ComplexFunction::setImag(FunctionTree<3> *tree) {
     if (isShared()) MSG_ABORT("Cannot set in shared function");
     this->func_ptr->im = tree;
 }
 
-void CplxFunc::alloc(int type, MultiResolutionAnalysis<3> *mra) {
+void ComplexFunction::alloc(int type, MultiResolutionAnalysis<3> *mra) {
     if (mra == nullptr) mra = funcMRA;
     if (mra == nullptr) MSG_ABORT("Invalid argument");
     if (type == NUMBER::Real or type == NUMBER::Total) {
@@ -112,7 +112,7 @@ void CplxFunc::alloc(int type, MultiResolutionAnalysis<3> *mra) {
     }
 }
 
-void CplxFunc::free(int type) {
+void ComplexFunction::free(int type) {
     if (type == NUMBER::Real or type == NUMBER::Total) {
         if (hasReal()) delete this->func_ptr->re;
         this->func_ptr->re = nullptr;
@@ -125,7 +125,7 @@ void CplxFunc::free(int type) {
     }
 }
 
-int CplxFunc::getSizeNodes(int type) const {
+int ComplexFunction::getSizeNodes(int type) const {
     int size_mb = 0; // Memory size in kB
     if (type == NUMBER::Real or type == NUMBER::Total) {
         if (hasReal()) size_mb += real().getSizeNodes();
@@ -136,7 +136,7 @@ int CplxFunc::getSizeNodes(int type) const {
     return size_mb;
 }
 
-int CplxFunc::getNNodes(int type) const {
+int ComplexFunction::getNNodes(int type) const {
     int nNodes = 0;
     if (type == NUMBER::Real or type == NUMBER::Total) {
         if (hasReal()) nNodes += real().getNNodes();
@@ -147,7 +147,7 @@ int CplxFunc::getNNodes(int type) const {
     return nNodes;
 }
 
-int CplxFunc::crop(double prec) {
+int ComplexFunction::crop(double prec) {
     if (prec < 0.0) return 0;
     bool need_to_crop = not(isShared()) or mpi::share_master();
     int nChunksremoved = 0;
@@ -159,7 +159,7 @@ int CplxFunc::crop(double prec) {
     return nChunksremoved;
 }
 
-ComplexDouble CplxFunc::integrate() const {
+ComplexDouble ComplexFunction::integrate() const {
     double int_r = 0.0;
     double int_i = 0.0;
     if (hasReal()) int_r = real().integrate();
@@ -168,14 +168,14 @@ ComplexDouble CplxFunc::integrate() const {
 }
 
 /** @brief Returns the norm of the orbital */
-double CplxFunc::norm() const {
+double ComplexFunction::norm() const {
     double norm = squaredNorm();
     if (norm > 0.0) norm = std::sqrt(norm);
     return norm;
 }
 
 /** @brief Returns the squared norm of the orbital */
-double CplxFunc::squaredNorm() const {
+double ComplexFunction::squaredNorm() const {
     double sq_r = -1.0;
     double sq_i = -1.0;
     if (hasReal()) sq_r = real().getSquareNorm();
@@ -196,14 +196,14 @@ double CplxFunc::squaredNorm() const {
  * Output is extended to union grid.
  *
  */
-void CplxFunc::add(ComplexDouble c, CplxFunc inp) {
+void ComplexFunction::add(ComplexDouble c, ComplexFunction inp) {
     double thrs = MachineZero;
     bool cHasReal = (std::abs(c.real()) > thrs);
     bool cHasImag = (std::abs(c.imag()) > thrs);
     bool outNeedsReal = (cHasReal and inp.hasReal()) or (cHasImag and inp.hasImag());
     bool outNeedsImag = (cHasReal and inp.hasImag()) or (cHasImag and inp.hasReal());
 
-    CplxFunc &out = *this;
+    ComplexFunction &out = *this;
     bool clearReal(false), clearImag(false);
     if (outNeedsReal and not(out.hasReal())) {
         out.alloc(NUMBER::Real);
@@ -246,14 +246,14 @@ void CplxFunc::add(ComplexDouble c, CplxFunc inp) {
  * Output is extended to union grid.
  *
  */
-void CplxFunc::absadd(ComplexDouble c, CplxFunc inp) {
+void ComplexFunction::absadd(ComplexDouble c, ComplexFunction inp) {
     double thrs = MachineZero;
     bool cHasReal = (std::abs(c.real()) > thrs);
     bool cHasImag = (std::abs(c.imag()) > thrs);
     bool outNeedsReal = (cHasReal and inp.hasReal()) or (cHasImag and inp.hasImag());
     bool outNeedsImag = (cHasReal and inp.hasImag()) or (cHasImag and inp.hasReal());
 
-    CplxFunc &out = *this;
+    ComplexFunction &out = *this;
     bool clearReal(false), clearImag(false);
     if (outNeedsReal and not(out.hasReal())) {
         out.alloc(NUMBER::Real);
@@ -292,7 +292,7 @@ void CplxFunc::absadd(ComplexDouble c, CplxFunc inp) {
 }
 
 /** @brief In place multiply with real scalar. Fully in-place.*/
-void CplxFunc::rescale(double c) {
+void ComplexFunction::rescale(double c) {
     bool need_to_rescale = not(isShared()) or mpi::share_master();
     if (need_to_rescale) {
         if (hasReal()) real().rescale(c);
@@ -302,16 +302,16 @@ void CplxFunc::rescale(double c) {
 }
 
 /** @brief In place multiply with complex scalar. Involves a deep copy.*/
-void CplxFunc::rescale(ComplexDouble c) {
-    CplxFunc &out = *this;
-    CplxFunc tmp(isShared());
+void ComplexFunction::rescale(ComplexDouble c) {
+    ComplexFunction &out = *this;
+    ComplexFunction tmp(isShared());
     cplxfunc::deep_copy(tmp, out);
     out.free(NUMBER::Total);
     out.add(c, tmp);
 }
 
 /** @brief Returns a character representing the spin (a/b/p) */
-char CplxFunc::printSpin() const {
+char ComplexFunction::printSpin() const {
     char sp = 'u';
     if (this->spin() == SPIN::Paired) sp = 'p';
     if (this->spin() == SPIN::Alpha) sp = 'a';
@@ -328,7 +328,7 @@ void cplxfunc::SetdefaultMRA(MultiResolutionAnalysis<3> *MRA) {
  *  Notice that the <bra| position is already complex conjugated.
  *
  */
-ComplexDouble cplxfunc::dot(CplxFunc bra, CplxFunc ket) {
+ComplexDouble cplxfunc::dot(ComplexFunction bra, ComplexFunction ket) {
     double rr(0.0), ri(0.0), ir(0.0), ii(0.0);
     if (bra.hasReal() and ket.hasReal()) rr = mrcpp::dot(bra.real(), ket.real());
     if (bra.hasReal() and ket.hasImag()) ri = mrcpp::dot(bra.real(), ket.imag());
@@ -346,7 +346,7 @@ ComplexDouble cplxfunc::dot(CplxFunc bra, CplxFunc ket) {
 /** @brief Compute <bra|ket> = int |bra^\dag(r)| * |ket(r)| dr.
  *
  */
-ComplexDouble cplxfunc::node_norm_dot(CplxFunc bra, CplxFunc ket, bool exact) {
+ComplexDouble cplxfunc::node_norm_dot(ComplexFunction bra, ComplexFunction ket, bool exact) {
     double rr(0.0), ri(0.0), ir(0.0), ii(0.0);
     if (bra.hasReal() and ket.hasReal()) rr = mrcpp::node_norm_dot(bra.real(), ket.real(), exact);
     if (bra.hasReal() and ket.hasImag()) ri = mrcpp::node_norm_dot(bra.real(), ket.imag(), exact);
@@ -367,7 +367,7 @@ ComplexDouble cplxfunc::node_norm_dot(CplxFunc bra, CplxFunc ket, bool exact) {
  * This is achieved by building a new grid for the real and imaginary parts and
  * copying.
  */
-void cplxfunc::deep_copy(CplxFunc &out, CplxFunc &inp) {
+void cplxfunc::deep_copy(ComplexFunction &out, ComplexFunction &inp) {
     bool need_to_copy = not(out.isShared()) or mpi::share_master();
     out.funcMRA = inp.funcMRA;
     if (inp.hasReal()) {
@@ -388,7 +388,7 @@ void cplxfunc::deep_copy(CplxFunc &out, CplxFunc &inp) {
     mpi::share_function(out, 0, 1324, mpi::comm_share);
 }
 
-void cplxfunc::project(CplxFunc &out, std::function<double(const Coord<3> &r)> f, int type, double prec) {
+void cplxfunc::project(ComplexFunction &out, std::function<double(const Coord<3> &r)> f, int type, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     if (type == NUMBER::Real or type == NUMBER::Total) {
         if (not out.hasReal()) out.alloc(NUMBER::Real);
@@ -401,7 +401,7 @@ void cplxfunc::project(CplxFunc &out, std::function<double(const Coord<3> &r)> f
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
 
-void cplxfunc::project(CplxFunc &out, RepresentableFunction<3> &f, int type, double prec) {
+void cplxfunc::project(ComplexFunction &out, RepresentableFunction<3> &f, int type, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     if (type == NUMBER::Real or type == NUMBER::Total) {
         if (not out.hasReal()) out.alloc(NUMBER::Real);
@@ -421,12 +421,12 @@ void cplxfunc::project(CplxFunc &out, RepresentableFunction<3> &f, int type, dou
  * Recast into linear_combination.
  *
  */
-void cplxfunc::add(CplxFunc &out, ComplexDouble a, CplxFunc inp_a, ComplexDouble b, CplxFunc inp_b, double prec) {
+void cplxfunc::add(ComplexFunction &out, ComplexDouble a, ComplexFunction inp_a, ComplexDouble b, ComplexFunction inp_b, double prec) {
     ComplexVector coefs(2);
     coefs(0) = a;
     coefs(1) = b;
 
-    std::vector<CplxFunc> funcs; // NB: not a CplxFuncVector, because not run in parallel!
+    std::vector<ComplexFunction> funcs; // NB: not a ComplexFunctionVector, because not run in parallel!
     funcs.push_back(inp_a);
     funcs.push_back(inp_b);
 
@@ -436,7 +436,7 @@ void cplxfunc::add(CplxFunc &out, ComplexDouble a, CplxFunc inp_a, ComplexDouble
 /** @brief out = inp_a * inp_b
  *
  */
-void cplxfunc::multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
+void cplxfunc::multiply(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec, bool useMaxNorms) {
     multiply_real(out, inp_a, inp_b, prec, absPrec, useMaxNorms);
     multiply_imag(out, inp_a, inp_b, prec, absPrec, useMaxNorms);
 }
@@ -444,7 +444,7 @@ void cplxfunc::multiply(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double pr
 /** @brief out = c_0*inp_0 + c_1*inp_1 + ... + c_N*inp_N
  *
  */
-void cplxfunc::linear_combination(CplxFunc &out, const ComplexVector &c, std::vector<CplxFunc> &inp, double prec) {
+void cplxfunc::linear_combination(ComplexFunction &out, const ComplexVector &c, std::vector<ComplexFunction> &inp, double prec) {
     FunctionTreeVector<3> rvec;
     FunctionTreeVector<3> ivec;
 
@@ -494,7 +494,7 @@ void cplxfunc::linear_combination(CplxFunc &out, const ComplexVector &c, std::ve
 /** @brief out = Re(inp_a * inp_b)
  *
  */
-void cplxfunc::multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
+void cplxfunc::multiply_real(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec, bool useMaxNorms) {
     double conj_a = (inp_a.conjugate()) ? -1.0 : 1.0;
     double conj_b = (inp_b.conjugate()) ? -1.0 : 1.0;
 
@@ -563,7 +563,7 @@ void cplxfunc::multiply_real(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, doub
 /** @brief out = Im(inp_a * inp_b)
  *
  */
-void cplxfunc::multiply_imag(CplxFunc &out, CplxFunc inp_a, CplxFunc inp_b, double prec, bool absPrec, bool useMaxNorms) {
+void cplxfunc::multiply_imag(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec, bool useMaxNorms) {
     double conj_a = (inp_a.conjugate()) ? -1.0 : 1.0;
     double conj_b = (inp_b.conjugate()) ? -1.0 : 1.0;
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
@@ -1060,7 +1060,7 @@ void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &acco
  * in parallel using a local representation.
  * Input trees are extended by one scale at most.
  */
-MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, CplxFunc *Func, int nrefine) {
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, ComplexFunction *Func, int nrefine) {
 
     int N = Phi.size();
     const int D = 3;

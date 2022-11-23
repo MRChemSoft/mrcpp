@@ -42,7 +42,7 @@ namespace mrcpp {
 
 template <int D> class MWNode {
 public:
-    MWNode(const MWNode<D> &node);
+    MWNode(const MWNode<D> &node, bool allocCoef = true);
     MWNode<D> &operator=(const MWNode<D> &node) = delete;
     virtual ~MWNode();
 
@@ -101,6 +101,7 @@ public:
     void setCoefBlock(int block, int block_size, const double *c);
     void addCoefBlock(int block, int block_size, const double *c);
     void zeroCoefBlock(int block, int block_size);
+    void attachCoefs(double *coefs);
 
     void calcNorms();
     void zeroNorms();

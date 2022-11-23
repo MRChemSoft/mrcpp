@@ -31,8 +31,19 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 
 #include "MRCPP/mrcpp_declarations.h"
+
+using IntVector = Eigen::VectorXi;
+using DoubleVector = Eigen::VectorXd;
+using ComplexVector = Eigen::VectorXcd;
+
+using IntMatrix = Eigen::MatrixXi;
+using DoubleMatrix = Eigen::MatrixXd;
+using ComplexMatrix = Eigen::MatrixXcd;
+
+using ComplexDouble = std::complex<double>;
 
 namespace mrcpp {
 namespace math_utils {
@@ -61,6 +72,10 @@ void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d, const Eigen::Matr
 
 void tensor_expand_coords_2D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
 void tensor_expand_coords_3D(int kp1, const Eigen::MatrixXd &primitive, Eigen::MatrixXd &expanded);
+
+ComplexMatrix hermitian_matrix_pow(const ComplexMatrix &A, double b);
+ComplexMatrix diagonalize_hermitian_matrix(const ComplexMatrix &A, DoubleVector &diag);
+void diagonalize_block(ComplexMatrix &M, ComplexMatrix &U, int nstart, int nsize);
 
 template <class T> std::vector<std::vector<T>> cartesian_product(std::vector<T> A, std::vector<T> B);
 template <class T> std::vector<std::vector<T>> cartesian_product(std::vector<std::vector<T>> l_A, std::vector<T> B);

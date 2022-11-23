@@ -161,6 +161,15 @@ template <int D> void NodeAllocator<D>::dealloc(int sIdx) {
     MRCPP_UNSET_OMP_LOCK();
 }
 
+template <int D> void NodeAllocator<D>::deallocAllCoeff() {
+    if (not this->isShared())
+        for (auto &chunk : this->coefChunks) delete[] chunk;
+    else delete this->shmem_p;
+    this->shmem_p = nullptr;
+    this->coefChunks.clear();
+
+}
+
 template <int D> void NodeAllocator<D>::init(int nChunks, bool coefs) {
     MRCPP_SET_OMP_LOCK();
     if (nChunks <= 0) MSG_ABORT("Invalid number of chunks: " << nChunks);
@@ -387,6 +396,7 @@ template <int D> void NodeAllocator<D>::reassemble() {
         node_p->tree = this->tree_p;
         node_p->coefs = getCoefNoLock(sIdx);
         node_p->parent = getNodeNoLock(pIdx);
+        getTree().NodeIndex2serialIx[node_p->getNodeIndex()] = sIdx;
 
         stack.pop();
         auto *child_p = getNodeNoLock(cIdx);

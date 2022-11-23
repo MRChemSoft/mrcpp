@@ -27,6 +27,7 @@
 
 #include <Eigen/Core>
 #include <memory>
+#include <map>
 
 #include "MRCPP/mrcpp_declarations.h"
 #include "utils/omp_utils.h"
@@ -107,11 +108,14 @@ public:
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
+    bool isLocal = false; // to know whether the tree coeffcients are stored in the Bank
+    int getIx(NodeIndex<D> nIdx); // gives serialIx of a stored node from its NodeIndex if isLocal
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
     NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
     const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
+    MWNodeVector<D> endNodeTable;          ///< Final projected nodes
 
     friend std::ostream &operator<<(std::ostream &o, const MWTree<D> &tree) { return tree.print(o); }
 
@@ -129,6 +133,8 @@ protected:
     const int order;
     const int kp1_d;
 
+    std::map<NodeIndex<D>, int> NodeIndex2serialIx; // to store nodes serialIx
+
     // Parameters that are dynamic and can be set by user
     std::string name;
 
@@ -137,7 +143,6 @@ protected:
     // Tree data
     double squareNorm;
     NodeBox<D> rootBox;                    ///< The actual container of nodes
-    MWNodeVector<D> endNodeTable;          ///< Final projected nodes
     std::vector<int> nodesAtDepth;         ///< Node counter
     std::vector<int> nodesAtNegativeDepth; ///< Node counter
 

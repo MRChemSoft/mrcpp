@@ -32,6 +32,7 @@
 #include "MWTree.h"
 
 #include "MWNode.h"
+#include "NodeIndex.h"
 #include "TreeIterator.h"
 #include "MultiResolutionAnalysis.h"
 #include "NodeAllocator.h"
@@ -443,6 +444,13 @@ template <int D> void MWTree<D>::makeMaxSquareNorms() {
         // recursively set value of children and descendants
         roots[rIdx]->setMaxSquareNorm();
     }
+}
+
+/** gives serialIx of a node from its NodeIndex */
+template <int D> int MWTree<D>::getIx(NodeIndex<D> nIdx) {
+    if (this->isLocal == false) MSG_ERROR("getIx only implemented in local representation");
+    if(NodeIndex2serialIx.count(nIdx) == 0) return -1;
+    else return NodeIndex2serialIx[nIdx];
 }
 
 template class MWTree<1>;

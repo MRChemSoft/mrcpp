@@ -99,7 +99,7 @@ MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
 /** MWNode copy constructor.
  *  Creates loose nodes and copy coefs */
 template <int D>
-MWNode<D>::MWNode(const MWNode<D> &node)
+MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef)
         : tree(node.tree)
         , parent(nullptr)
         , nodeIndex(node.nodeIndex)
@@ -107,18 +107,22 @@ MWNode<D>::MWNode(const MWNode<D> &node)
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     setIsLeafNode();
     setIsLooseNode();
-
-    allocCoefs(this->getTDim(), this->getKp1_d());
-    if (node.hasCoefs()) {
-        setCoefBlock(0, node.getNCoefs(), node.getCoefs());
-        if (this->getNCoefs() > node.getNCoefs()) {
-            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
+    if (allocCoef) {
+        allocCoefs(this->getTDim(), this->getKp1_d());
+        if (node.hasCoefs()) {
+            setCoefBlock(0, node.getNCoefs(), node.getCoefs());
+            if (this->getNCoefs() > node.getNCoefs()) {
+                for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
+            }
+            this->setHasCoefs();
+            this->calcNorms();
+        } else {
+            this->clearHasCoefs();
+            this->clearNorms();
         }
-        this->setHasCoefs();
-        this->calcNorms();
     } else {
-        this->clearHasCoefs();
-        this->clearNorms();
+        clearHasCoefs();
+        coefs = nullptr;
     }
     MRCPP_INIT_OMP_LOCK();
 }
@@ -183,6 +187,12 @@ template <int D> void MWNode<D>::zeroCoefs() {
 
     for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
     this->zeroNorms();
+    this->setHasCoefs();
+}
+
+/** Attach a set of coefs to this node. Only used locally (the tree is not aware of this). */
+template <int D> void MWNode<D>::attachCoefs(double *coefs) {
+    this->coefs = coefs;
     this->setHasCoefs();
 }
 
@@ -652,7 +662,7 @@ template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
 
 template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
-    pts = MatrixXd::Zero(kp1, D);
+    pts = MatrixXd::Zero(D, kp1);
 
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);

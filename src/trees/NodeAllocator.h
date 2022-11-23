@@ -50,6 +50,7 @@ public:
 
     int alloc(int nNodes, bool coefs = true);
     void dealloc(int sIdx);
+    void deallocAllCoeff();
 
     void init(int nChunks, bool coefs = true);
 

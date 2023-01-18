@@ -38,6 +38,8 @@ public:
     ConvolutionOperator &operator=(const ConvolutionOperator &oper) = delete;
     virtual ~ConvolutionOperator() = default;
 
+    double getBuildPrec() { return this->build_prec; }
+
 protected:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {}
@@ -47,6 +49,8 @@ protected:
     void initialize(GaussExp<1> &kernel, double k_prec, double o_prec);
 
     MultiResolutionAnalysis<1> getKernelMRA() const;
+
+    double build_prec;
 };
 
 } // namespace mrcpp

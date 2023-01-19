@@ -267,8 +267,6 @@ void mpi::send_function(ComplexFunction &func, int dst, int tag, MPI_Comm comm) 
     MPI_Send(&funcinfo, sizeof(FunctionData), MPI_BYTE, dst, 0, comm);
     if (func.hasReal()) mrcpp::send_tree(func.real(), dst, tag, comm, funcinfo.real_size);
     if (func.hasImag()) mrcpp::send_tree(func.imag(), dst, tag + 10000, comm, funcinfo.imag_size);
-#else
-    MSG_ABORT("MRCPP compiled without MPI support");
 #endif
 }
 
@@ -291,9 +289,6 @@ void mpi::recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) 
         if (not func.hasImag()) func.alloc(NUMBER::Imag);
         mrcpp::recv_tree(func.imag(), src, tag + 10000, comm, funcinfo.imag_size);
     }
-
-#else
-    MSG_ABORT("MRCPP compiled without MPI support");
 #endif
 }
 
@@ -303,8 +298,6 @@ void mpi::share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm)
 #ifdef MRCPP_HAS_MPI
         if (func.hasReal()) mrcpp::share_tree(func.real(), src, tag, comm);
         if (func.hasImag()) mrcpp::share_tree(func.imag(), src, 2 * tag, comm);
-#else
-        MSG_ABORT("MRCPP compiled without MPI support");
 #endif
     }
 }

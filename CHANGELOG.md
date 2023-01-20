@@ -1,5 +1,14 @@
 # Change log
 
+## Version 1.4.2 2023-01-20
+
+### Fixed
+
+- Invalid read in coef block for nodes without coefs
+- Node count error for negative scales with PBC
+- Missing includes resulting in compile errors for recent gcc
+
+
 ## Version 1.4.1 2022-01-05
 
 ### Changed
@@ -16,7 +25,7 @@
 
 ### Added
 
-- New constructors for BoundingBox and MRA, accepting box=[-L,L] argument 
+- New constructors for BoundingBox and MRA, accepting box=[-L,L] argument
 - Add FunctionTree::evalf_precise() which evaluates both scaling and wavelet parts
 - Possibility for empty tree skeletons without allocated coefficients
 - Possibility to manually set location of MW filters at configure time
@@ -71,7 +80,7 @@
 
 ### Fixed
 
-- Miscellaneous fixes for building on conda-forge 
+- Miscellaneous fixes for building on conda-forge
 
 
 ## Version 1.3.1 2020-09-02

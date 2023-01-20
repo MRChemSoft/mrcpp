@@ -40,6 +40,7 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
         : ConvolutionOperator<D>(mra) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     double o_prec = prec;
     double k_prec = prec / 10.0;
 
@@ -54,6 +55,7 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
         : ConvolutionOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     double o_prec = prec;
     double k_prec = prec / 100.0;
 

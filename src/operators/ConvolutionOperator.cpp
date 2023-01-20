@@ -52,6 +52,7 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
         : MWOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     auto o_prec = prec;
     auto k_prec = prec / 10.0;
     initialize(kernel, k_prec, o_prec);
@@ -64,6 +65,7 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
         : MWOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     auto o_prec = prec;
     auto k_prec = prec / 100.0;
     initialize(kernel, k_prec, o_prec);

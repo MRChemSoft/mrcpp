@@ -51,7 +51,8 @@ template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
-    this->build_prec = prec;
+
+    this->setBuildPrec(prec);
     auto o_prec = prec;
     auto k_prec = prec / 10.0;
     initialize(kernel, k_prec, o_prec);
@@ -63,8 +64,8 @@ template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
         : MWOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
-    this->build_prec = prec;
 
+    this->setBuildPrec(prec);
     auto o_prec = prec;
     auto k_prec = prec / 100.0;
     initialize(kernel, k_prec, o_prec);

@@ -207,7 +207,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     int sIdx = allocator.alloc(nChildren, coefs);
 
     auto n_coefs = allocator.getNCoefs();
-    auto *coefs_p = allocator.getCoef_p(sIdx);
+    auto *coefs_p = (coefs) ? allocator.getCoef_p(sIdx) : nullptr;
     auto *child_p = allocator.getNode_p(sIdx);
 
     this->childSerialIx = sIdx;

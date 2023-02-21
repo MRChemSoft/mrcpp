@@ -676,6 +676,12 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec) {
     bool makeReal = (UhasReal and PsihasReIm[0]) or (UhasImag and PsihasReIm[1]);
     bool makeImag = (UhasReal and PsihasReIm[1]) or (UhasImag and PsihasReIm[0]);
 
+    for (int i = 0; i < N; i++) {
+        if (!mpi::my_orb(i)) continue;
+        if (not makeReal and Phi[i].hasReal()) Phi[i].free(NUMBER::Real);
+        if (not makeImag and Phi[i].hasImag()) Phi[i].free(NUMBER::Imag);
+    }
+
     if (not makeReal and not makeImag) { return; }
 
     int Neff = N;               // effective number of orbitals

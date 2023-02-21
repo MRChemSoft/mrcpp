@@ -40,6 +40,7 @@ DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D>
         : ConvolutionOperator<D>(mra) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     double o_prec = prec;
     double k_prec = prec / 10.0;
 
@@ -54,6 +55,7 @@ DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D>
         : ConvolutionOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
+    this->setBuildPrec(prec);
     double o_prec = prec;
     double k_prec = prec / 100.0;
 

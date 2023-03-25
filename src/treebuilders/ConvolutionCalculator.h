@@ -87,7 +87,7 @@ private:
     }
 
     void applyOperComp(OperatorState<D> &os);
-    void applyOperator(OperatorState<D> &os);
+    void applyOperator(int i, OperatorState<D> &os);
     void tensorApplyOperComp(OperatorState<D> &os);
 
     void touchParentNodes(MWTree<D> &tree) const;

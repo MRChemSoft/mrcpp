@@ -99,7 +99,7 @@ void OperatorTree::clearBandWidth() {
 }
 
 void OperatorTree::calcBandWidth(double prec) {
-    if (this->bandWidth != nullptr) MSG_ERROR("Band width not properly cleared");
+    if (this->bandWidth == nullptr) clearBandWidth();
     this->bandWidth = new BandWidth(getDepth());
 
     VectorXi max_transl;

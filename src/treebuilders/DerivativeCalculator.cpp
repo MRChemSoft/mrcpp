@@ -100,10 +100,6 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     MWNodeVector<D> fBand = makeOperBand(gNode, idx_band);
     this->band_t[mrcpp_get_thread_num()].stop();
 
-    assert(this->oper->size() == 1);
-    const OperatorTree &oTree = this->oper->getComponent(0);
-    os.oTree = &oTree;
-
     this->calc_t[mrcpp_get_thread_num()].resume();
     for (int n = 0; n < fBand.size(); n++) {
         MWNode<D> &fNode = *fBand[n];
@@ -159,7 +155,6 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
 template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
-    const OperatorTree &oTree = *os.oTree;
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
@@ -170,6 +165,8 @@ template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &o
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
+        const OperatorTree &oTree = this->oper->getComponent(0, d);
+
         int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.

@@ -104,7 +104,6 @@ private:
     int kp1_d;
     int kp1_dm1;
 
-    const OperatorTree *oTree;
     MWNode<D> *gNode;
     MWNode<D> *fNode;
     NodeIndex<D> *fIdx;

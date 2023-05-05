@@ -56,6 +56,7 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     auto o_prec = prec;
     auto k_prec = prec / 10.0;
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
@@ -69,6 +70,7 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     auto o_prec = prec;
     auto k_prec = prec / 100.0;
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
@@ -102,7 +104,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
         print::time(10, "Time transform", trans_t);
         print::separator(10, ' ');
 
-        this->oper_exp.push_back(std::move(o_tree));
+        this->raw_exp.push_back(std::move(o_tree));
     }
 }
 

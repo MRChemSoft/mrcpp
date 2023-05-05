@@ -50,6 +50,7 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, doub
 
     HelmholtzKernel kernel(mu, k_prec, r_min, r_max);
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
@@ -71,6 +72,7 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, doub
 
     HelmholtzKernel kernel(mu, k_prec, r_min, r_max);
     initialize(kernel, k_prec, o_prec);
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }

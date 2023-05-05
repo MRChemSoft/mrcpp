@@ -23,18 +23,23 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "operators/PoissonKernel.h"
-#include "operators/IdentityKernel.h"
-#include "operators/HelmholtzKernel.h"
+#pragma once
 
-#include "operators/PoissonOperator.h"
-#include "operators/HelmholtzOperator.h"
-#include "operators/ConvolutionOperator.h"
-#include "operators/CartesianConvolution.h"
-#include "operators/DerivativeConvolution.h"
-#include "operators/IdentityConvolution.h"
-#include "operators/ABGVOperator.h"
-#include "operators/PHOperator.h"
-#include "operators/BSOperator.h"
+#include "ConvolutionOperator.h"
 
-#include "treebuilders/apply.h"
+namespace mrcpp {
+
+class CartesianConvolution : public ConvolutionOperator<3> {
+public:
+    CartesianConvolution(const MultiResolutionAnalysis<3> &mra, GaussExp<1> &kernel, double prec);
+    CartesianConvolution(const CartesianConvolution &oper) = delete;
+    CartesianConvolution &operator=(const CartesianConvolution &oper) = delete;
+    virtual ~CartesianConvolution() = default;
+
+    void setCartesianComponents(int x, int y, int z);
+
+protected:
+    int sep_rank;
+};
+
+} // namespace mrcpp

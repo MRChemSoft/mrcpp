@@ -70,7 +70,8 @@ void ABGVOperator<D>::initialize(double a, double b) {
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
-    this->oper_exp.push_back(std::move(o_tree));
+    this->raw_exp.push_back(std::move(o_tree));
+    this->initOperExp(1);
 }
 
 template class ABGVOperator<1>;

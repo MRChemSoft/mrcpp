@@ -672,6 +672,21 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     for (int d = 0; d < D; d++) pts.row(d) = sFac * (roots.array() + static_cast<double>(l[d]));
 }
 
+template <int D> std::vector<std::vector<double>> MWNode<D>::getQuadPts() const {
+    MatrixXd pts;
+    getPrimitiveQuadPts(pts);
+
+    std::vector<std::vector<double>> ptsVec;
+
+    for (int d = 0; d < D; d++) {
+        std::vector<double> ptsVecD;
+        for (int i = 0; i < pts.cols(); i++) ptsVecD.push_back(pts(d, i));
+        ptsVec.push_back(ptsVecD);
+    }
+
+    return ptsVec;
+}
+
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
     pts = MatrixXd::Zero(D, 2 * kp1);
@@ -685,6 +700,22 @@ template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
         pts.row(d).segment(0, kp1) = sFac * (roots.array() + 2.0 * static_cast<double>(l[d]));
         pts.row(d).segment(kp1, kp1) = sFac * (roots.array() + 2.0 * static_cast<double>(l[d]) + 1.0);
     }
+}
+
+template <int D>
+std::vector<std::vector<double>> MWNode<D>::getChildPts() const {
+    MatrixXd pts;
+    getPrimitiveChildPts(pts);
+
+    std::vector<std::vector<double>> ptsVec;
+
+    for (int d = 0; d < D; d++) {
+        std::vector<double> ptsVecD;
+        for (int i = 0; i < pts.cols(); i++) ptsVecD.push_back(pts(d, i));
+        ptsVec.push_back(ptsVecD);
+    }
+
+    return ptsVec;
 }
 
 template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {

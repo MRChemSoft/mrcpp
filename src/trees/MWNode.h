@@ -89,6 +89,9 @@ public:
     void getExpandedQuadPts(Eigen::MatrixXd &pts) const;
     void getExpandedChildPts(Eigen::MatrixXd &pts) const;
 
+    std::vector<std::vector<double>> getQuadPts() const;
+    std::vector<std::vector<double>> getChildPts() const;
+
     MWTree<D> &getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
     MWNode<D> &getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
     MWNode<D> &getMWChild(int i) { return static_cast<MWNode<D> &>(*this->children[i]); }

@@ -162,7 +162,6 @@ protected:
 };
 
 namespace cplxfunc {
-
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
 ComplexDouble dot(ComplexFunction bra, ComplexFunction ket);
 ComplexDouble node_norm_dot(ComplexFunction bra, ComplexFunction ket, bool exact);
@@ -173,6 +172,8 @@ void project(ComplexFunction &out, RepresentableFunction<3> &f, int type, double
 void multiply(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_real(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_imag(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
+void multiply(ComplexFunction &out, ComplexFunction &inp_a, RepresentableFunction<3> &f, double prec, int nrefine = 0);
+void multiply(ComplexFunction &out, FunctionTree<3> &inp_a, RepresentableFunction<3> &f, double prec, int nrefine = 0);
 void linear_combination(ComplexFunction &out, const ComplexVector &c, std::vector<ComplexFunction> &inp, double prec);
 } // namespace cplxfunc
 
@@ -186,7 +187,7 @@ public:
 namespace mpifuncvec {
 void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void save_nodes(MPI_FuncVector &Phi, mrcpp::FunctionTree<3> &refTree, BankAccount &account, int sizes = -1);
-    MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi);
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet);

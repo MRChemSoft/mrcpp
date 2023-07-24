@@ -36,6 +36,7 @@
 #include "TreeIterator.h"
 #include "MultiResolutionAnalysis.h"
 #include "NodeAllocator.h"
+#include "utils/Bank.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
 #include "utils/periodic_utils.h"
@@ -451,6 +452,14 @@ template <int D> int MWTree<D>::getIx(NodeIndex<D> nIdx) {
     if (this->isLocal == false) MSG_ERROR("getIx only implemented in local representation");
     if(NodeIndex2serialIx.count(nIdx) == 0) return -1;
     else return NodeIndex2serialIx[nIdx];
+}
+
+template <int D> void MWTree<D>::getNodeCoeff(NodeIndex<D> nIdx, double *data) {
+    assert(this->isLocal);
+    int size = (1 << D) * kp1_d;
+    int id = 0;
+    for (int i = 0; i < D; i++) id += std::abs(nIdx.getTranslation(i));
+    this->NodesCoeff->get_data(id, size, data);
 }
 
 template class MWTree<1>;

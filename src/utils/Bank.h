@@ -2,6 +2,7 @@
 
 #include "ComplexFunction.h"
 #include "parallel.h"
+#include "trees/NodeIndex.h"
 
 namespace mrcpp {
 
@@ -100,6 +101,8 @@ public:
     int get_func(int id, ComplexFunction &func, int wait = 0);
     int put_data(int id, int size, double *data);
     int get_data(int id, int size, double *data);
+    int put_data(NodeIndex<3> nIdx, int size, double *data);
+    int get_data(NodeIndex<3> nIdx, int size, double *data);
     int put_nodedata(int id, int nodeid, int size, double *data);
     int get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec);
     int get_nodeblock(int nodeid, double *data, std::vector<int> &idVec);
@@ -120,6 +123,6 @@ public:
     int n_tasks = 0; // used in serial case only
 };
 
-int const message_size = 5;
+int const message_size = 7;
 
 } // namespace mrcpp

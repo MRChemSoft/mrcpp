@@ -38,6 +38,8 @@
 
 namespace mrcpp {
 
+class BankAccount;
+
 template <int D> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n);
@@ -117,6 +119,8 @@ public:
     const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
     MWNodeVector<D> endNodeTable;          ///< Final projected nodes
 
+    void getNodeCoeff(NodeIndex<D> nIdx, double *data); // fetch coefficient from a specific node stored in Bank
+
     friend std::ostream &operator<<(std::ostream &o, const MWTree<D> &tree) { return tree.print(o); }
 
     friend class MWNode<D>;
@@ -151,6 +155,8 @@ protected:
 
     void incrementNodeCount(int scale);
     void decrementNodeCount(int scale);
+
+    BankAccount *NodesCoeff = nullptr;
 
     virtual std::ostream &print(std::ostream &o) const;
 };

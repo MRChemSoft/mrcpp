@@ -1066,7 +1066,7 @@ void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &acco
  * in parallel using a local representation.
  * Input trees are extended by one scale at most.
  */
-MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, ComplexFunction *Func, int nrefine) {
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, ComplexFunction *Func, int nrefine, bool all) {
 
     int N = Phi.size();
     const int D = 3;
@@ -1284,7 +1284,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                         fval[j] = f.evalf(r);
                     }
                 } else {
-                    Func->real().getNodeCoeff(nIdx, nCoefs, fval); // fetch coef from Bank
+                    Func->real().getNodeCoeff(nIdx, fval); // fetch coef from Bank
                     Fnode.attachCoefs(fval);
                     Fnode.mwTransform(Reconstruction);
                     Fnode.cvTransform(Forward);
@@ -1349,7 +1349,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
         }
     } else {
         for (int j = 0; j < Neff; j++) {
-            if (not mpi::my_orb(j % N)) continue;
+            if (not mpi::my_orb(j % N) and not all) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
             std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx in refTree

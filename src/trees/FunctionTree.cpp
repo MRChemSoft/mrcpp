@@ -737,8 +737,8 @@ template <> int FunctionTree<3>::saveNodesAndRmCoeff() {
         for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
         while (stack.size() > stack_p) {
             MWNode<3> *Node = stack[stack_p++];
-            this->NodeIndex2serialIx[Node->getNodeIndex()] = Node->serialIx;
-            NodesCoeff->put_data(Node->serialIx, sizecoeff, Node->getCoefs());
+            int id = 0;
+            NodesCoeff->put_data(Node->getNodeIndex(), sizecoeff, Node->getCoefs());
             for (int i = 0; i < Node->getNChildren(); i++) { stack.push_back(Node->children[i]); }
         }
     }
@@ -747,11 +747,6 @@ template <> int FunctionTree<3>::saveNodesAndRmCoeff() {
     this->isLocal = true;
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();
-}
-
-template <> void FunctionTree<3>::getNodeCoeff(int id, int size, double *data) {
-    assert(this->isLocal);
-    this->NodesCoeff->get_data(id, size, data);
 }
 
 template class FunctionTree<1>;

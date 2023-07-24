@@ -186,7 +186,7 @@ public:
 namespace mpifuncvec {
 void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void save_nodes(MPI_FuncVector &Phi, mrcpp::FunctionTree<3> &refTree, BankAccount &account, int sizes = -1);
-MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1);
+    MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi);
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet);

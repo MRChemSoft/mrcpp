@@ -27,6 +27,8 @@ struct Blockdata_struct {
 std::map<int, std::map<int, Blockdata_struct *> *> get_nodeid2block; // to get block from its nodeid (all coeff for one node)
 std::map<int, std::map<int, Blockdata_struct *> *> get_orbid2block;  // to get block from its orbid
 
+int const MIN_SCALE = -999; // Smaller than smallest scale
+
 void Bank::open() {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
@@ -36,7 +38,7 @@ void Bank::open() {
     int messages[message_size];
     int datasize = -1;
     std::map<int, int> get_numberofclients;
-
+    std::map<NodeIndex<3>, int> nIdx2id;
     bool printinfo = false;
     int max_account_id = -1;
     int next_task = 0;
@@ -287,6 +289,18 @@ void Bank::open() {
         else if (message == GET_FUNCTION or message == GET_FUNCTION_AND_WAIT or message == GET_FUNCTION_AND_DELETE or message == GET_FUNCTION or message == GET_DATA) {
             // withdrawal
             int id = messages[2];
+            if (message == GET_DATA and messages[3] > MIN_SCALE) {
+                NodeIndex<3> nIdx;
+                nIdx.setScale(messages[4]);
+                nIdx.setTranslation({messages[2], messages[5], messages[6]});
+                if (nIdx2id.count(nIdx) == 0) {
+                    // data is not yet saved, but one can hope it will be created at some stage
+                    id = nIdx2id.size();
+                    nIdx2id[nIdx] = id;
+                } else {
+                    id = nIdx2id[nIdx];
+                }
+            }
             int ix = id2ix[id];
             if (id2ix.count(id) == 0 or ix == 0) {
                 if (printinfo) std::cout << world_rank << " not found " << id << " " << message << std::endl;
@@ -366,8 +380,20 @@ void Bank::open() {
             if (printinfo) std::cout << " written block " << nodeid << " id " << orbid << " subblocks " << nodeid2block[nodeid]->data.size() << std::endl;
         } else if (message == SAVE_FUNCTION or message == SAVE_DATA) {
             // make a new deposit
-            int exist_flag = 0;
             int id = messages[2];
+            if (message == SAVE_DATA and messages[4] > MIN_SCALE) {
+                // has to find or create unique id from NodeIndex. Use the same internal mapping for all trees
+                NodeIndex<3> nIdx;
+                nIdx.setScale(messages[4]);
+                nIdx.setTranslation({messages[2], messages[5], messages[6]});
+                if (nIdx2id.count(nIdx) == 0) {
+                    id = nIdx2id.size();
+                    nIdx2id[nIdx] = id;
+                } else {
+                    id = nIdx2id[nIdx];
+                }
+            }
+            int exist_flag = 0;
             if (id2ix[id]) {
                 std::cout << "WARNING: id " << id << " exists already"
                           << " " << status.MPI_SOURCE << " " << message << " " << messages[1] << std::endl;
@@ -753,11 +779,33 @@ int BankAccount::put_data(int id, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
     // for now we distribute according to id
     int messages[message_size];
+
     messages[0] = SAVE_DATA;
     messages[1] = account_id;
     messages[2] = id;
     messages[3] = size;
-    MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    messages[4] = MIN_SCALE; // to indicate that it is defined by id
+    MPI_Send(messages, 5, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
+// save data in Bank with identity nIdx. datasize MUST have been set already. NB:not tested
+int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to id
+    int messages[message_size];
+    messages[0] = SAVE_DATA;
+    messages[1] = account_id;
+    messages[2] = nIdx.getTranslation(0);
+    messages[3] = size;
+    messages[4] = nIdx.getScale();
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    //    std::cout<<mpi::wrk_rank<<" bankidx "<<bank_size<<" ID "<<messages[4]<<" "<<messages[2]<<" "<<messages[5]<<" "<<messages[6]<<std::endl;
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
 #endif
     return 1;
@@ -771,7 +819,27 @@ int BankAccount::get_data(int id, int size, double *data) {
     messages[0] = GET_DATA;
     messages[1] = account_id;
     messages[2] = id;
-    MPI_Send(messages, 3, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    messages[3] = MIN_SCALE;
+    MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#endif
+    return 1;
+}
+
+// get data with identity id
+int BankAccount::get_data(NodeIndex<3> nIdx, int size, double *data) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int messages[message_size];
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    messages[0] = GET_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = nIdx.getScale();
+    messages[4] = nIdx.getTranslation(0);
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
 #endif
     return 1;

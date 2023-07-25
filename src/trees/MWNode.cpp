@@ -671,7 +671,7 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
 
     double sFac = std::pow(2.0, -getScale());
     const NodeIndex<D> &l = getNodeIndex();
-    for (int d = 0; d < D; d++) pts.col(d) = sFac * (roots.array() + static_cast<double>(l[d]));
+    for (int d = 0; d < D; d++) pts.row(d) = sFac * (roots.array() + static_cast<double>(l[d]));
 }
 
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {

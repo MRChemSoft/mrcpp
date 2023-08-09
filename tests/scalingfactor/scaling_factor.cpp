@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -86,8 +86,8 @@ template <int D> void testScaling() {
     auto lower_bound = node.getLowerBounds()[0];
 
 
-    REQUIRE(Approx(1.0) == f_tree.integrate());
-    REQUIRE(Approx(center) == (upper_bound-lower_bound)/2.0);
+    REQUIRE(Catch::Approx(1.0) == f_tree.integrate());
+    REQUIRE(Catch::Approx(center) == (upper_bound-lower_bound)/2.0);
 
 }
 

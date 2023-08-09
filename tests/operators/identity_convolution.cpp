@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -70,7 +70,7 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
             FunctionTree<1> kern_tree(kern_mra);
             build_grid(kern_tree, id_kern);
             project(proj_prec, kern_tree, id_kern);
-            REQUIRE(kern_tree.integrate() == Approx(1.0).epsilon(proj_prec));
+            REQUIRE(kern_tree.integrate() == Catch::Approx(1.0).epsilon(proj_prec));
 
             SECTION("Build operator tree by cross correlation") {
                 NodeIndex<2> idx(n);
@@ -133,7 +133,7 @@ template <int D> void applyIdentity() {
 
     REQUIRE(gTree.getDepth() <= fTree.getDepth());
     REQUIRE(gTree.getNNodes() <= fTree.getNNodes());
-    REQUIRE(gTree.integrate() == Approx(fTree.integrate()).epsilon(apply_prec));
+    REQUIRE(gTree.integrate() == Catch::Approx(fTree.integrate()).epsilon(apply_prec));
 
     finalize(&fFunc);
     finalize(&mra);
@@ -176,7 +176,7 @@ template <int D> void applyPeriodicIdentity() {
     project(proj_prec, fTree, pFunc);
     apply(apply_prec, gTree, I, fTree);
 
-    REQUIRE(fTree.integrate() == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(gTree.integrate() == Approx(1.0).epsilon(apply_prec));
+    REQUIRE(fTree.integrate() == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(gTree.integrate() == Catch::Approx(1.0).epsilon(apply_prec));
 }
 } // namespace identity_convolution

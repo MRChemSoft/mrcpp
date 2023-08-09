@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -67,7 +67,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
 
         Coord<1> x{r_min};
         while (x[0] < r_max) {
-            REQUIRE(poisson.evalf(x) == Approx(1.0 / x[0]).epsilon(2.0 * exp_prec));
+            REQUIRE(poisson.evalf(x) == Catch::Approx(1.0 / x[0]).epsilon(2.0 * exp_prec));
             x[0] *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
@@ -148,7 +148,7 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     double E_num = dot(gTree, fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);
 
-    REQUIRE(E_num == Approx(E_ana).epsilon(apply_prec));
+    REQUIRE(E_num == Catch::Approx(E_ana).epsilon(apply_prec));
 
     finalize(&fFunc);
     finalize(&mra);
@@ -193,8 +193,8 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
 
     apply(apply_prec, sol_tree, P, source_tree);
 
-    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
 }
 
 } // namespace poisson_operator

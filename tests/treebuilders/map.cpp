@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -87,9 +87,9 @@ template <int D> void testMapping() {
         THEN("the MW map equals the analytic map") {
             double out_int = out_tree.integrate();
             double out_norm = out_tree.getSquareNorm();
-            REQUIRE(out_int == Approx(ref_int));
-            REQUIRE(out_norm == Approx(ref_norm));
-            REQUIRE(inp_norm == Approx(out_int));
+            REQUIRE(out_int == Catch::Approx(ref_int));
+            REQUIRE(out_norm == Catch::Approx(ref_norm));
+            REQUIRE(inp_norm == Catch::Approx(out_int));
         }
     }
     WHEN("the functions is mapped in-place") {
@@ -97,8 +97,8 @@ template <int D> void testMapping() {
         THEN("the first function equals the analytic product") {
             double inp_int = inp_tree.integrate();
             double inp_norm = inp_tree.getSquareNorm();
-            REQUIRE(inp_int == Approx(ref_int));
-            REQUIRE(inp_norm == Approx(ref_norm));
+            REQUIRE(inp_int == Catch::Approx(ref_int));
+            REQUIRE(inp_norm == Catch::Approx(ref_norm));
         }
     }
     finalize(&mra);

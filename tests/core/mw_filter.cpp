@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "MRCPP/constants.h"
 #include "core/FilterCache.h"
@@ -47,8 +47,8 @@ TEST_CASE("Interpolating filters", "[mw_filter]") {
                     double sc = F.col(i).dot(F.col(j));
                     double sr = F.row(i).dot(F.row(j));
                     if (i == j) {
-                        REQUIRE(sc == Approx(1.0));
-                        REQUIRE(sr == Approx(1.0));
+                        REQUIRE(sc == Catch::Approx(1.0));
+                        REQUIRE(sr == Catch::Approx(1.0));
                     } else {
                         off_diag_col += std::abs(sc);
                         off_diag_row += std::abs(sr);
@@ -56,8 +56,8 @@ TEST_CASE("Interpolating filters", "[mw_filter]") {
                 }
             }
         }
-        REQUIRE(off_diag_col == Approx(0.0).margin(1.0e-12));
-        REQUIRE(off_diag_row == Approx(0.0).margin(1.0e-12));
+        REQUIRE(off_diag_col == Catch::Approx(0.0).margin(1.0e-12));
+        REQUIRE(off_diag_row == Catch::Approx(0.0).margin(1.0e-12));
     }
 }
 

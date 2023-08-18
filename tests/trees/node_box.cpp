@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 #include "trees/MWNode.h"

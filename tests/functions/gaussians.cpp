@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -77,9 +77,9 @@ SCENARIO("Gaussians", "[gaussians]") {
     project(prec, f_tree, gauss);
 
     WHEN("Gaussians are projected") {
-        THEN("The gaussian can be evaluated") { REQUIRE(gauss.evalf(r_ref) == Approx(ref_val)); }
+        THEN("The gaussian can be evaluated") { REQUIRE(gauss.evalf(r_ref) == Catch::Approx(ref_val)); }
 
-        THEN("the integral is normalized") { REQUIRE(f_tree.integrate() == Approx(1.0)); }
+        THEN("the integral is normalized") { REQUIRE(f_tree.integrate() == Catch::Approx(1.0)); }
 
         THEN("multiply") {
             auto prod_gauss = gauss.mult(gauss);

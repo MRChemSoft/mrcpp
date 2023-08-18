@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -53,11 +53,11 @@ template <int D> void testZeroFunction() {
             if (r.size() >= 1) r[0] = -0.20;
             if (r.size() >= 2) r[1] = 0.60;
             if (r.size() >= 3) r[2] = 0.76;
-            REQUIRE(tree.evalf(r) == Approx(0.0));
+            REQUIRE(tree.evalf(r) == Catch::Approx(0.0));
         }
-        THEN("its squared norm is zero") { REQUIRE(tree.getSquareNorm() == Approx(0.0)); }
-        THEN("it integrates to zero") { REQUIRE(tree.integrate() == Approx(0.0)); }
-        THEN("the dot product with itself is zero") { REQUIRE(dot(tree, tree) == Approx(0.0)); }
+        THEN("its squared norm is zero") { REQUIRE(tree.getSquareNorm() == Catch::Approx(0.0)); }
+        THEN("it integrates to zero") { REQUIRE(tree.integrate() == Catch::Approx(0.0)); }
+        THEN("the dot product with itself is zero") { REQUIRE(dot(tree, tree) == Catch::Approx(0.0)); }
     }
     finalize(&mra);
 }

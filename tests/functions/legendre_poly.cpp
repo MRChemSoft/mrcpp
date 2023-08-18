@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "functions/LegendrePoly.h"
 
@@ -42,12 +42,12 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
     SECTION("LegendrePoly constructor") {
         for (int k = 0; k < nLeg; k++) {
             LegendrePoly &L_k = *L[k];
-            REQUIRE(L_k.getScaledLowerBound() == Approx(0.0));
-            REQUIRE(L_k.getScaledUpperBound() == Approx(1.0));
+            REQUIRE(L_k.getScaledLowerBound() == Catch::Approx(0.0));
+            REQUIRE(L_k.getScaledUpperBound() == Catch::Approx(1.0));
             REQUIRE(L_k.getOrder() == k);
             // Legendre polynomials are normalized so that L_k(1.0) = 1.0
             Coord<1> one{1.0};
-            REQUIRE(L_k.evalf(one) == Approx(1.0));
+            REQUIRE(L_k.evalf(one) == Catch::Approx(1.0));
         }
     }
 
@@ -59,7 +59,7 @@ TEST_CASE("Legendre polynomials", "[legendre_poly], [polynomials]") {
             for (int j = 0; j < i; j++) {
                 LegendrePoly &L_j = *L[j];
                 double S_ij = L_i.innerProduct(L_j);
-                REQUIRE(S_ij == Approx(0.0).margin(1.0e-12));
+                REQUIRE(S_ij == Catch::Approx(0.0).margin(1.0e-12));
             }
         }
     }

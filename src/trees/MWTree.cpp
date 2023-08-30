@@ -126,8 +126,8 @@ template <int D> void MWTree<D>::calcSquareNorm() {
  * @details It performs a Multiwavlet transform of the whole tree. The
  * input parameters will specify the direction (upwards or downwards)
  * and whether the result is added to the coefficients or it
- * overwrites them. See the documentation for the MWTree::mwTransformUp
- * and \ref MWTree::mwTransformDown for details.
+ * overwrites them. See the documentation for the mwTransformUp 
+ * and mwTransformDown for details.
  * \f[ 
  * \pmatrix{
  * s_{nl}\\

@@ -18,6 +18,7 @@ import pathlib
 import shutil
 import re
 
+
 # -- Project information -----------------------------------------------------
 
 project = 'MRCPP'

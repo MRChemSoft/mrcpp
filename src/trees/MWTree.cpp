@@ -126,9 +126,9 @@ template <int D> void MWTree<D>::calcSquareNorm() {
  * @details It performs a Multiwavlet transform of the whole tree. The
  * input parameters will specify the direction (upwards or downwards)
  * and whether the result is added to the coefficients or it
- * overwrites them. See the documentation for the \ref mwTransformUp
- * and \ref mwTransformDown for details.
- * \f[
+ * overwrites them. See the documentation for the MWTree::mwTransformUp
+ * and \ref MWTree::mwTransformDown for details.
+ * \f[ 
  * \pmatrix{
  * s_{nl}\\
  * d_{nl}
@@ -296,7 +296,7 @@ template <int D> int MWTree<D>::getSizeNodes() const {
     return sizeof(double) * nCoefs / 1024;
 }
 
-/** @brief Finds and returns the node with the given \ref NodeIndex, const version.
+/** @brief Finds and returns the node pointer with the given \ref NodeIndex, const version.
  *
  * @details Recursive routine to find and return the node with a given
  * NodeIndex.  This routine returns the appropriate Node, or a NULL

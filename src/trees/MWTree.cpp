@@ -23,12 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *  \date April 20, 2010
- *  CTCC, University of Troms
- *
- */
-
 #include "MWTree.h"
 
 #include "MWNode.h"
@@ -45,14 +39,20 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** MWTree constructor with SerialTree storage for nodes.
- * Creates an empty tree object. Node construction and assignment of most of
- * the parameters are done in derived classes. */
+/** @brief MWTree constructor.
+ *
+ * @param[in] mra: the multiresolution analysis object
+ * @param[in] n: the name of the tree (only for printing purposes)
+ *
+ * @details Creates an empty tree object, containing only the set of
+ * root nodes. The information for the root node configuration to use
+ * is in the mra object which is passed to the constructor.
+ */
 template <int D>
 MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
         : MRA(mra)
-        , order(mra.getOrder())
-        , kp1_d(math_utils::ipow(mra.getOrder() + 1, D))
+        , order(mra.getOrder()) /// polynomial order
+        , kp1_d(math_utils::ipow(mra.getOrder() + 1, D)) ///nr of scaling coefficients \f$ (k+1)^D \f$
         , name(n)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {

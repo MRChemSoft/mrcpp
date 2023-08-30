@@ -23,9 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *  Simple n-dimensional node
- */
 
 #pragma once
 
@@ -40,6 +37,13 @@
 
 namespace mrcpp {
 
+/** @class MWNode
+ *
+ * @brief Base class for Multiwavelet nodes
+ *
+ * @details A MWNode will contain the scaling and wavelet coefficients to reprent functions or operators within a Multiwavelt framework. 
+ * 
+ */
 template <int D> class MWNode {
 public:
     MWNode(const MWNode<D> &node, bool allocCoef = true);

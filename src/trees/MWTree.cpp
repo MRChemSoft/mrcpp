@@ -179,7 +179,7 @@ template <int D> void MWTree<D>::mwTransformUp() {
 }
 
 /** @brief Regenerates all scaling coeffs by MW transformation of existing s/w-coeffs
- * on coarser scales,
+ * on coarser scales
  *
  * @param[in] overwrite: if true the preexisting coefficients are overwritten
  *

@@ -47,9 +47,15 @@ namespace mrcpp {
  * set thoucgh the template parameter D=1,2,3. In addition to the
  * coefficients the node contains metadata such as the scale, the
  * translation index, the norm, pointers to parent node and child
+<<<<<<< HEAD
  * nodes, pointer to the corresponding MWTree etc... See member and
  * data descriptions for details.
  *
+=======
+ * nodes, pointer to the corresponding MWTree etc... See memeber and
+ * data descriptions for details.
+ * 
+>>>>>>> 1affe59 (Documenting MWNode)
  */
 template <int D> class MWNode {
 public:

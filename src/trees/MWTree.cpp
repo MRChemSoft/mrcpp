@@ -125,8 +125,8 @@ template <int D> void MWTree<D>::calcSquareNorm() {
  * @details It performs a Multiwavlet transform of the whole tree. The
  * input parameters will specify the direction (upwards or downwards)
  * and whether the result is added to the coefficients or it
- * overwrites them. See the documentation for the MWTree::mwTransformUp
- * and \ref MWTree::mwTransformDown for details.
+ * overwrites them. See the documentation for the mwTransformUp 
+ * and mwTransformDown for details.
  * \f[ 
  * \pmatrix{
  * s_{nl}\\
@@ -153,7 +153,7 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
 }
 
 /** @brief Regenerates all s/d-coeffs by backtransformation
-
+ *
  * @details It starts at the bottom of the tree (scaling coefficients
  * of the leaf nodes) and it generates the scaling and wavelet
  * coefficients if the parent node. It then proceeds recursively all the

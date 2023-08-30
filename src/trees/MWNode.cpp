@@ -40,8 +40,9 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** MWNode default constructor.
- *  Should be used only by NodeAllocator to obtain
+/** @brief MWNode default constructor.
+ *
+ * @details Should be used only by NodeAllocator to obtain
  *  virtual table pointers for the derived classes. */
 template <int D>
 MWNode<D>::MWNode()
@@ -57,6 +58,13 @@ MWNode<D>::MWNode()
     MRCPP_INIT_OMP_LOCK();
 }
 
+/** @brief MWNode constructor.
+ *
+ * @param[in] tree: the MWTree the root node belongs to
+ * @param[in] idx: the NodeIndex defining scale and translation of the node
+ *
+ * @details Constructor for an empty node, given the corresponding MWTree and NodeIndex
+ */
 template <int D>
 MWNode<D>::MWNode(MWTree<D> *tree, const NodeIndex<D> &idx)
         : tree(tree)
@@ -70,6 +78,14 @@ MWNode<D>::MWNode(MWTree<D> *tree, const NodeIndex<D> &idx)
     MRCPP_INIT_OMP_LOCK();
 }
 
+/** @brief MWNode constructor.
+ *
+ * @param[in] tree: the MWTree the root node belongs to
+ * @param[in] rIdx: the integer specifying the corresponding root node
+ *
+ * @details Constructor for root nodes. It requires the corresponding
+ * MWTree and an integer to fetch the right NodeIndex
+ */
 template <int D>
 MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
         : tree(tree)
@@ -83,6 +99,14 @@ MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
     MRCPP_INIT_OMP_LOCK();
 }
 
+/** @brief MWNode constructor.
+ *
+ * @param[in] parent: parent node
+ * @param[in] cIdx: child index of the current node 
+ *
+ * @details Constructor for leaf nodes. It requires the corresponding
+ * parent and an integer to identify the correct child.
+ */
 template <int D>
 MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
         : tree(parent->tree)
@@ -96,8 +120,15 @@ MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
     MRCPP_INIT_OMP_LOCK();
 }
 
-/** MWNode copy constructor.
- *  Creates loose nodes and copy coefs */
+/** @brief MWNode copy constructor.
+ *
+ * @param[in] node: the original node
+ * @param[in] allocCoef: if true MW coefficients are allocated and copied from the original node
+ *
+ * @details Creates loose nodes and optionally copy coefs. The node
+ * does not "belong" to the tree: it cannot be accessed by traversing
+ * the tree.
+ */
 template <int D>
 MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef)
         : tree(node.tree)
@@ -127,18 +158,31 @@ MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef)
     MRCPP_INIT_OMP_LOCK();
 }
 
-/** MWNode destructor.
- * Recursive deallocation of a node and all its decendants */
+/** @brief MWNode destructor.
+ *
+ * @details Recursive deallocation of a node and all its decendants
+ */
 template <int D> MWNode<D>::~MWNode() {
     if (this->isLooseNode()) this->freeCoefs();
     MRCPP_DESTROY_OMP_LOCK();
 }
 
+/** @brief Dummy deallocation of MWNode coefficients.
+ *
+ * @details This is just to make sure this method never really gets
+ * called (derived classes must implement their own version). This was
+ * to avoid having pure virtual methods in the base class.
+ */
 template <int D> void MWNode<D>::dealloc() {
     NOT_REACHED_ABORT;
 }
 
-/** Allocate the coefs vector. Only used by loose nodes. */
+/** @brief Allocate the coefs vector.
+ *
+ * @details This is only used by loose nodes, because the loose nodes
+ * are not treated by the NodeAllocator class.
+ *
+ */
 template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
     if (this->n_coefs != 0) MSG_ABORT("n_coefs should be zero");
     if (this->isAllocated()) MSG_ABORT("Coefs already allocated");
@@ -151,7 +195,12 @@ template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
     this->setIsAllocated();
 }
 
-/** Deallocation of coefficients. Only used by loose nodes. */
+/** @brief Deallocate the coefs vector.
+ *
+ * @details This is only used by loose nodes, because the loose nodes
+ * are not treated by the NodeAllocator class.
+ *
+ */
 template <int D> void MWNode<D>::freeCoefs() {
     if (not this->isLooseNode()) MSG_ABORT("Only loose nodes here!");
 
@@ -164,6 +213,8 @@ template <int D> void MWNode<D>::freeCoefs() {
     this->clearIsAllocated();
 }
 
+/** @brief Printout of node coefficients
+ */
 template <int D> void MWNode<D>::printCoefs() const {
     if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
     println(0, "\nMW coefs");
@@ -174,6 +225,8 @@ template <int D> void MWNode<D>::printCoefs() const {
     }
 }
 
+/** @brief wraps the MW coefficients into an eigen vector object
+ */
 template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
     if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
     if (not this->hasCoefs()) MSG_ABORT("Node has no coefs");
@@ -182,6 +235,9 @@ template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
     c = VectorXd::Map(this->coefs, this->n_coefs);
 }
 
+/** @brief sets all MW coefficients and the norms to zero 
+ *
+ */
 template <int D> void MWNode<D>::zeroCoefs() {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated " << *this);
 
@@ -190,27 +246,68 @@ template <int D> void MWNode<D>::zeroCoefs() {
     this->setHasCoefs();
 }
 
-/** Attach a set of coefs to this node. Only used locally (the tree is not aware of this). */
+/** @brief Attach a set of coefs to this node. Only used locally (the tree is not aware of this).
+ */
 template <int D> void MWNode<D>::attachCoefs(double *coefs) {
     this->coefs = coefs;
     this->setHasCoefs();
 }
 
+/** @brief assigns values to a block of coefficients
+ *
+ * @param[in] c: the input coefficients
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @detail a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
 template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = c[i]; }
 }
 
+/** @brief adds values to a block of coefficients
+ *
+ * @param[in] c: the input coefficients
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @detail a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
 template <int D> void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] += c[i]; }
 }
 
+/** @brief sets values of a block of coefficients to zero
+ *
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @detail a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
 template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = 0.0; }
 }
 
+/** @brief forward MW transform from this node to its children
+ *
+ * @param[in] overwrite: if true the coefficients of the children are
+ * overwritten. If false the values are summed to the already present
+ * ones.
+ *
+ * @details it performs forward MW transform inserting the result
+ * directly in the right place for each child node. The children must
+ * already be present and its memory allocated for this to work
+ * properly.
+ */
 template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->isAllocated()) MSG_ABORT("Not allocated!");
@@ -236,6 +333,17 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     }
 }
 
+/** @brief forward MW transform to compute scaling coefficients of a single child
+ *
+ * @param[in] cIdx: child index
+ * @param[in] overwrite: if true the coefficients of the children are
+ * overwritten. If false the values are summed to the already present
+ * ones.
+ *
+ * @details it performs forward MW transform in plce on a loose
+ * node. The scaling coefficients of the selected child are then
+ * copied/summed in the correct child node.
+ */
 template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
 
     MWNode<D> node_i = *this;

@@ -428,6 +428,11 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int de
     return *root.retrieveNodeOrEndNode(r, depth);
 }
 
+/** @brief Returns the list of all EndNodes
+ *
+ * @details copies the list of all EndNode pointers into a new vector
+ * and retunrs it.
+ */
 template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
     auto *nVec = new MWNodeVector<D>;
     for (int n = 0; n < getNEndNodes(); n++) {
@@ -437,6 +442,12 @@ template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
     return nVec;
 }
 
+/** @brief Recreate the endNodeTable
+ *
+ * @details the endNodeTable is first deleted and then rebuilt from
+ * scratch. It makes use of the TreeIterator to traverse the tree.
+ * 
+ */
 template <int D> void MWTree<D>::resetEndNodeTable() {
     clearEndNodeTable();
     TreeIterator<D> it(*this, TopDown, Hilbert);
@@ -446,6 +457,7 @@ template <int D> void MWTree<D>::resetEndNodeTable() {
         if (node.isEndNode()) { this->endNodeTable.push_back(&node); }
     }
 }
+
 
 template <int D> int MWTree<D>::countBranchNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
@@ -466,7 +478,7 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
     //    return nNodes;
 }
 
-/** Traverse tree and count nodes belonging to this rank. */
+/* Traverse tree and count nodes belonging to this rank. */
 template <int D> int MWTree<D>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D> it(*this);
@@ -483,7 +495,7 @@ template <int D> int MWTree<D>::countNodes(int depth) {
     //    return count;
 }
 
-/** Traverse tree and count nodes with allocated coefficients. */
+/* Traverse tree and count nodes with allocated coefficients. */
 template <int D> int MWTree<D>::countAllocNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D> it(*this);
@@ -500,6 +512,8 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
     //    return count;
 }
 
+/** @brief Prints a summary of the tree structure on the output file
+ */
 template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;
@@ -512,7 +526,11 @@ template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
     return o;
 }
 
-/** set values for maxSquareNorm in all nodes  */
+/** @brief sets values for maxSquareNorm in all nodes
+ *
+ * @details it defines the upper bound of the squared norm \f$
+ * ||f||^2_{\ldots} \f$ in this node or its descendents
+ */
 template <int D> void MWTree<D>::makeMaxSquareNorms() {
     NodeBox<D> &rBox = this->getRootBox();
     MWNode<D> **roots = rBox.getNodes();
@@ -522,7 +540,10 @@ template <int D> void MWTree<D>::makeMaxSquareNorms() {
     }
 }
 
-/** gives serialIx of a node from its NodeIndex */
+/** @brief gives serialIx of a node from its NodeIndex
+ *
+ * @details Peter will document this!
+ */
 template <int D> int MWTree<D>::getIx(NodeIndex<D> nIdx) {
     if (this->isLocal == false) MSG_ERROR("getIx only implemented in local representation");
     if(NodeIndex2serialIx.count(nIdx) == 0) return -1;

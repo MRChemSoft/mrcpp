@@ -13,4 +13,7 @@ Classes documentation
 
 .. doxygenclass:: mrcpp::MWTree
    :members:
+   :protected-members:
+   :private-members:
+   :undoc-members:
 

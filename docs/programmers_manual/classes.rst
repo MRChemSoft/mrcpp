@@ -16,3 +16,8 @@ Classes documentation
    :protected-members:
    :private-members:
 
+.. doxygenclass:: mrcpp::MWNode
+   :members:
+   :protected-members:
+   :private-members:
+

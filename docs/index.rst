@@ -31,17 +31,10 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    :maxdepth: 2
    :caption: Application Program Interface
 
-   mrcpp_api/introduction
-   mrcpp_api/mwfunctions
-   mrcpp_api/mwoperators
-   mrcpp_api/gaussians
-   mrcpp_api/parallel
-   mrcpp_api/printer
-   mrcpp_api/plotter
-   mrcpp_api/timer
+   mrcpp_api/manual.rst
 
 .. toctree::
    :maxdepth: 2
    :caption: Programmers Manual
-   
+
    programmers_manual/manual

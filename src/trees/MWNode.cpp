@@ -340,7 +340,7 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
  * overwritten. If false the values are summed to the already present
  * ones.
  *
- * @details it performs forward MW transform in plce on a loose
+ * @details it performs forward MW transform in place on a loose
  * node. The scaling coefficients of the selected child are then
  * copied/summed in the correct child node.
  */
@@ -366,12 +366,16 @@ template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
 
 /** Takes a MWParent and generates coefficients, reverse operation from
  * giveChildrenCoefs */
+/** @brief backward MW transform to compute scaling/wavelet coefficients of a parent
+ *
+ * \warning This routine is only used in connection with Periodic Boundary Conditions
+ */
 template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     MWNode<D> node = *this;
     MWNode<D> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
     if (node.getScale() == 0) {
-        NodeBox<D> &box = this->getMWTree().getRootBox();
+        Nodebox<D> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
     } else {
@@ -382,8 +386,12 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     parent.calcNorms();
 }
 
-/** Takes the scaling coefficients of the children and stores them consecutively
- * in the  given vector. */
+/** @brief Copy scaling coefficients from children to parent
+ * 
+ * @details Takes the scaling coefficients of the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
+ */
 template <int D> void MWNode<D>::copyCoefsFromChildren() {
     int kp1_d = this->getKp1_d();
     int nChildren = this->getTDim();
@@ -394,6 +402,12 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
     }
 }
 
+/** @brief Generates scaling cofficients of children
+ * 
+ * @details If the node is a Leaf Node Takes the scaling&wavelet coefficients of the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
+ */
 template <int D> void MWNode<D>::threadSafeGenChildren() {
     MRCPP_SET_OMP_LOCK();
     if (isLeafNode()) {
@@ -403,15 +417,15 @@ template <int D> void MWNode<D>::threadSafeGenChildren() {
     MRCPP_UNSET_OMP_LOCK();
 }
 
-/** Coefficient-Value transform
+/** @brief Coefficient-Value transform
  *
- * This routine transforms the scaling coefficients of the node to the
+ * @details This routine transforms the scaling coefficients of the node to the
  * function values in the corresponding quadrature roots (of its children).
- * Input parameter = forward: coef->value.
- * Input parameter = backward: value->coef.
+ *
+ * @param[in] operation: forward (coef->value) or backward (value->coef).
  *
  * NOTE: this routine assumes a 0/1 (scaling on children 0 and 1)
- *       representation, in oppose to s/d (scaling and wavelet). */
+ *       representation, instead of s/d (scaling and wavelet). */
 template <int D> void MWNode<D>::cvTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
@@ -500,9 +514,9 @@ void MWNode<D>::cvTransform(int operation) {
 }
 */
 
-/** Multiwavelet transform: fast version
+/** @brief Multiwavelet transform
   *
-  * Application of the filters on one node to pass from a 0/1 (scaling
+  * @details Application of the filters on one node to pass from a 0/1 (scaling
   * on children 0 and 1) representation to an s/d (scaling and
   * wavelet) representation. Bit manipulation is used in order to
   * determine the correct filters and whether to apply them or just
@@ -516,9 +530,9 @@ void MWNode<D>::cvTransform(int operation) {
   * is formally faster than the other algorithm, the separation of the
   * three dimensions prevent the possibility to use the norm of the
   * operator in order to discard a priori negligible contributions.
-
-  * Luca Frediani, August 2006
-  * C++ version: Jonas Juselius, September 2009 */
+  *
+  *  * @param[in] operation: compression (s0,s1->s,d) or reconstruction (s,d->s0,s1).
+  */
 template <int D> void MWNode<D>::mwTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
@@ -558,7 +572,7 @@ template <int D> void MWNode<D>::mwTransform(int operation) {
     }
 }
 
-/** Set all norms to Undefined. */
+/** @brief Set all norms to Undefined. */
 template <int D> void MWNode<D>::clearNorms() {
     this->squareNorm = -1.0;
     for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = -1.0; }

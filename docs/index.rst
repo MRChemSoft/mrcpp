@@ -43,6 +43,5 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
 .. toctree::
    :maxdepth: 2
    :caption: Programmers Manual
-
-   programmers_manual/classes
-   programmers_manual/clang_tidy
+   
+   programmers_manual/manual

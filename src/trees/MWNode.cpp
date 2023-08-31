@@ -377,7 +377,7 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     MWNode<D> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
     if (node.getScale() == 0) {
-        NodeBox<D> &box = this->getMWTree().getRootBox();
+        Nodebox<D> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
     } else {
@@ -408,7 +408,9 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
  *
  * @details If the node is a leafNode, it takes the scaling&wavelet
  * coefficients of the parent and it generates the scaling
- * coefficients for the children
+ * coefficients for the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
  */
 template <int D> void MWNode<D>::threadSafeGenChildren() {
     if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }

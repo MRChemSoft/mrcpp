@@ -28,7 +28,9 @@
 #include "MWOperator.h"
 
 namespace mrcpp {
-
+/**
+ * @brief time evolition operator
+*/
 template <int D> class TimeEvolutionOperator : public MWOperator<D> {
 public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec);

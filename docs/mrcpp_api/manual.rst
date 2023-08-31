@@ -7,6 +7,11 @@ The following sections show detailed documentation about the classes in MRCPP fo
 .. toctree::
     :maxdepth: 2
 
-    classes.rst
-    clang_tidy.rst
-
+   mrcpp_api/introduction
+   mrcpp_api/mwfunctions
+   mrcpp_api/mwoperators
+   mrcpp_api/gaussians
+   mrcpp_api/parallel
+   mrcpp_api/printer
+   mrcpp_api/plotter
+   mrcpp_api/timer

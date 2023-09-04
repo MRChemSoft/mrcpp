@@ -41,9 +41,8 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    mrcpp_api/timer
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Programmer's Manual 
 
    programmers_manual/overview
-   programmers_manual/classes.rst
    programmers_manual/clang_tidy.rst

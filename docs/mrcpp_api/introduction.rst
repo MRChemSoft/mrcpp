@@ -98,3 +98,5 @@ the capture list (square brackets), see e.g. `cppreference.com
 <http://en.cppreference.com/w/cpp/language/lambda>`_ for more
 details on lambda functions and how to use the capture list.
 
+
+

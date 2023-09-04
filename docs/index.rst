@@ -22,7 +22,7 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Installation
 
    install.rst
@@ -31,7 +31,7 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    :maxdepth: 1
    :caption: Application Program Interface
 
-   mrcpp_api/introduction.rst
+   mrcpp_api/introduction
    mrcpp_api/mwfunctions
    mrcpp_api/mwoperators
    mrcpp_api/gaussians

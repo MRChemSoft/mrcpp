@@ -8,6 +8,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PHCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectionCalculator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolution_CrossCorrelationCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeBuilder.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/add.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/apply.cpp
@@ -38,6 +39,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/ProjectionCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/SplitAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/SquareCalculator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolution_CrossCorrelationCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeBuilder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeCalculator.h

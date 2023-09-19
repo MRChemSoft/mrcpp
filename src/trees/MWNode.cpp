@@ -801,7 +801,7 @@ template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
  * dilated and translated. For each cartesian direction \f$ \alpha =
  * x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i =
  * 2^{-n} (x_i + l^\alpha \f$. By taking all possible
- * \f$(k+1)^d\combinations f$, they will then define a d-dimensional
+ * \f$(k+1)^d\f$ combinations, they will then define a d-dimensional
  * grid of quadrature points.
  *
  */

@@ -259,7 +259,7 @@ template <int D> void MWNode<D>::attachCoefs(double *coefs) {
  * @param[in] block: the block index
  * @param[in] block_size: size of the block
  *
- * @detail a block is typically containing one kind of coefficients
+ * @details a block is typically containing one kind of coefficients
  * (given scaling/wavelet in each direction). Its size is then \f$
  * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
  */
@@ -274,7 +274,7 @@ template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const d
  * @param[in] block: the block index
  * @param[in] block_size: size of the block
  *
- * @detail a block is typically containing one kind of coefficients
+ * @details a block is typically containing one kind of coefficients
  * (given scaling/wavelet in each direction). Its size is then \f$
  * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
  */
@@ -288,7 +288,7 @@ template <int D> void MWNode<D>::addCoefBlock(int block, int block_size, const d
  * @param[in] block: the block index
  * @param[in] block_size: size of the block
  *
- * @detail a block is typically containing one kind of coefficients
+ * @details a block is typically containing one kind of coefficients
  * (given scaling/wavelet in each direction). Its size is then \f$
  * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
  */
@@ -578,13 +578,13 @@ template <int D> void MWNode<D>::clearNorms() {
     for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = -1.0; }
 }
 
-/** Set all norms to zero. */
+/** @brief Set all norms to zero. */
 template <int D> void MWNode<D>::zeroNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = 0.0; }
 }
 
-/** Calculate and store square norm and component norms, if allocated. */
+/** @brief Calculate and store square norm and component norms, if allocated. */
 template <int D> void MWNode<D>::calcNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
@@ -594,7 +594,7 @@ template <int D> void MWNode<D>::calcNorms() {
     }
 }
 
-/** Calculate and return the squared scaling norm. */
+/** @brief Calculate and return the squared scaling norm. */
 template <int D> double MWNode<D>::getScalingNorm() const {
     double sNorm = this->getComponentNorm(0);
     if (sNorm >= 0.0) {
@@ -604,7 +604,7 @@ template <int D> double MWNode<D>::getScalingNorm() const {
     }
 }
 
-/** Calculate and return the squared wavelet norm. */
+/** @brief Calculate and return the squared wavelet norm. */
 template <int D> double MWNode<D>::getWaveletNorm() const {
     double wNorm = 0.0;
     for (int i = 1; i < this->getTDim(); i++) {
@@ -618,7 +618,7 @@ template <int D> double MWNode<D>::getWaveletNorm() const {
     return wNorm;
 }
 
-/** Calculate the norm of one component (NOT the squared norm!). */
+/** @brief Calculate the norm of one component (NOT the squared norm!). */
 template <int D> double MWNode<D>::calcComponentNorm(int i) const {
     if (this->isGenNode() and i != 0) return 0.0;
     assert(this->isAllocated());
@@ -637,9 +637,9 @@ template <int D> double MWNode<D>::calcComponentNorm(int i) const {
     return std::sqrt(sq_norm);
 }
 
-/** Update the coefficients of the node by a mw transform of the scaling
- * coefficients of the children. Option to overwrite or add up existing
- * coefficients. */
+/** @brief Update the coefficients of the node by a mw transform of the scaling
+ * coefficients of the children.
+ */
 template <int D> void MWNode<D>::reCompress() {
     if (this->isGenNode()) NOT_IMPLEMENTED_ABORT;
     if (this->isBranchNode()) {
@@ -651,7 +651,7 @@ template <int D> void MWNode<D>::reCompress() {
     }
 }
 
-/** Recurse down until an EndNode is found, and then crop children with
+/** @brief Recurse down until an EndNode is found, and then crop children with
  * too high precision. */
 template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec) {
     if (this->isEndNode()) {
@@ -682,7 +682,9 @@ template <int D> void MWNode<D>::genParent() {
     NOT_REACHED_ABORT;
 }
 
-/** Recursive deallocation of children and all their descendants.
+/** @brief Recursive deallocation of children and all their descendants.
+ *
+ * @details
  * Leaves node as LeafNode and children[] as null pointer. */
 template <int D> void MWNode<D>::deleteChildren() {
     if (this->isLeafNode()) return;
@@ -698,7 +700,7 @@ template <int D> void MWNode<D>::deleteChildren() {
     this->setIsLeafNode();
 }
 
-/** Recursive deallocation of parent and all their forefathers. */
+/** @brief Recursive deallocation of parent and all their forefathers. */
 template <int D> void MWNode<D>::deleteParent() {
     if (this->parent == nullptr) return;
     MWNode<D> &parent = getMWParent();
@@ -708,6 +710,8 @@ template <int D> void MWNode<D>::deleteParent() {
     this->parent = nullptr;
 }
 
+
+/** @brief Deallocation of all generated nodes . */
 template <int D> void MWNode<D>::deleteGenerated() {
     if (this->isBranchNode()) {
         if (this->isEndNode()) {
@@ -718,6 +722,7 @@ template <int D> void MWNode<D>::deleteGenerated() {
     }
 }
 
+/** @brief returns the coordinates of the centre of the node */''
 template <int D> Coord<D> MWNode<D>::getCenter() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -727,6 +732,7 @@ template <int D> Coord<D> MWNode<D>::getCenter() const {
     return r;
 }
 
+/** @brief returns the upper bounds of the D-interval defining the node  */''
 template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -736,6 +742,7 @@ template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
     return ub;
 }
 
+/** @brief returns the lower bounds of the D-interval defining the node  */''
 template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -745,9 +752,11 @@ template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
     return lb;
 }
 
-/** Routine to find the path along the tree.
+/** @brief Routine to find the path along the tree.
  *
- * Given the translation indices at the final scale, computes the child m
+ * @param[in] nIdx: the sought after node through its NodeIndex
+ *
+ * @details Given the translation indices at the final scale, computes the child m
  * to be followed at the current scale in oder to get to the requested
  * node at the final scale. The result is the index of the child needed.
  * The index is obtained by bit manipulation of of the translation indices. */
@@ -765,9 +774,11 @@ template <int D> int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
     return cIdx;
 }
 
-/** Routine to find the path along the tree.
+/** @brief Routine to find the path along the tree.
  *
- * Given a point in space, determines which child should be followed
+ * @param[in] r: the sought after node through the coordinates of a point in space
+ *
+ * @detailsGiven a point in space, determines which child should be followed
  * to get to the corresponding terminal node. */
 template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     assert(hasCoord(r));
@@ -782,6 +793,18 @@ template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     return cIdx;
 }
 
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+ *
+ * @details The original quadrature points are fetched and then
+ * dilated and translated. For each cartesian direction \f $\alpha =
+ * x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i =
+ * 2^{-n} (x_i + l^\alpha \f$. By taking all possible
+ * \f$(k+1)^d\combinations f$, they will then define a d-dimensional
+ * grid of quadrature points.
+ *
+ */
 template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
     pts = MatrixXd::Zero(D, kp1);
@@ -794,6 +817,20 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
     for (int d = 0; d < D; d++) pts.row(d) = sFac * (roots.array() + static_cast<double>(l[d]));
 }
 
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+ *
+ * @details The original quadrature points are fetched and then
+ * dilated and translated to match the quadrature points in the
+ * children of the given node. For each cartesian direction \f $\alpha
+ * = x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i
+ * = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha \f$, where \f$ t^\alpha =
+ * 0,1$. By taking all possible \f$(k+1)^d\combinations f$, they will
+ * then define a d-dimensional grid of quadrature points for the child
+ * nodes. 
+ *
+ */
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
     pts = MatrixXd::Zero(D, 2 * kp1);
@@ -809,6 +846,16 @@ template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     }
 }
 
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times
+ * (k+1)^d \f$ matrix form.
+ *
+ * @details The primitive quadrature points are used to obtain a
+ * tensor-product representation collecting all \f$ (k+1)^d \f$
+ * vectors of quadrature points.
+ *
+ */
 template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
     MatrixXd prim_pts;
     getPrimitiveQuadPts(prim_pts);
@@ -823,6 +870,16 @@ template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const 
     if (D >= 4) NOT_IMPLEMENTED_ABORT;
 }
 
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times 
+ * 2^d(k+1)^d \f$ matrix form.
+ *
+ * @details The primitive quadrature points of the children are used to obtain a
+ * tensor-product representation collecting all \f$ 2^d (k+1)^d \f$
+ * vectors of quadrature points.
+ *
+ */
 template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
     MatrixXd prim_pts;
     getPrimitiveChildPts(prim_pts);

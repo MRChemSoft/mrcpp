@@ -822,11 +822,12 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
  * @param[in,out] pts: quadrature points in a \f$ d \times (k+1) \f$ matrix form.
  *
  * @details The original quadrature points are fetched and then
- * dilated and translated. For each cartesian direction \f$ \alpha =
- * x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i =
- * 2^{-n} (x_i + l^\alpha \f$. By taking all possible
- * \f$(k+1)^d\f$ combinations, they will then define a d-dimensional
- * grid of quadrature points.
+ * dilated and translated to match the quadrature points in the
+ * children of the given node. For each cartesian direction \f$ \alpha = x,y,z... \f$
+ * the set of quadrature points becomes \f$ x^\alpha_i = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha) \f$, where \f$ t^\alpha =
+ * 0,1$. By taking all possible \f$(k+1)^d\combinations \f$, they will
+ * then define a d-dimensional grid of quadrature points for the child
+ * nodes. 
  *
  */
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {

@@ -276,7 +276,6 @@ template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const d
  * @param[in] block_size: size of the block
  *
  * @details a block is typically containing one kind of coefficients
->>>>>>> 1affe59 (Documenting MWNode)
  * (given scaling/wavelet in each direction). Its size is then \f$
  * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
  */
@@ -882,7 +881,7 @@ template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const 
 
 /** @brief Returns the quadrature points in a given node
  *
- * @param[in,out] pts: expanded quadrature points in a \f$ d \times
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times 
  * 2^d(k+1)^d \f$ matrix form.
  *
  * @details The primitive quadrature points of the children are used to obtain a

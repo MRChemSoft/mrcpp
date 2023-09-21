@@ -33,7 +33,8 @@ JpowerIntegrals::JpowerIntegrals(double a, int N, int M, double treshold)
 {
     for(int l = 0; l < N; l++  )
         integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
-    //TODO: loop over negative indices
+    for(int l = 1 - N; l < 0; l++  )
+        integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
 }
 
 JpowerIntegrals::~JpowerIntegrals()

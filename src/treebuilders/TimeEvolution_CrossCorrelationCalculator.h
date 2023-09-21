@@ -27,6 +27,8 @@
 
 #include "TreeCalculator.h"
 #include "core/CrossCorrelationCache.h"
+#include "functions/JpowerIntegrals.h"
+
 
 namespace mrcpp {
 
@@ -43,11 +45,17 @@ namespace mrcpp {
  */
 class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2> {
 public:
+    //TODO: remove this
     TimeEvolution_CrossCorrelationCalculator(FunctionTree<1> &k)
             : kernel(&k) {}
 
+    TimeEvolution_CrossCorrelationCalculator(JpowerIntegrals &J)
+            : J_power_inetgarls(&J) {}
 //private:
+    //TODO: remove this
     FunctionTree<1> *kernel;
+    
+    JpowerIntegrals *J_power_inetgarls;
 
     void calcNode(MWNode<2> &node) override;
 

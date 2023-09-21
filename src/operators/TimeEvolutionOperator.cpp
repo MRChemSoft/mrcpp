@@ -147,6 +147,15 @@ MultiResolutionAnalysis<1> TimeEvolutionOperator<D>::getKernelMRA() const {
     return kern_mra;
 }
 
+template <int D>
+std::vector<std::complex<double>> TimeEvolutionOperator<D>::calculate_J_power_inetgarls(int l, double a, int M)
+{}
+
+template <int D>
+void TimeEvolutionOperator<D>::set_J_power_inetgarls()
+{}
+
+
 template class TimeEvolutionOperator<1>;
 template class TimeEvolutionOperator<2>;
 template class TimeEvolutionOperator<3>;

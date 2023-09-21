@@ -41,7 +41,7 @@ public:
 
     double getBuildPrec() const { return this->build_prec; }
 
-protected:
+//protected:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {}
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
@@ -53,6 +53,12 @@ protected:
     MultiResolutionAnalysis<1> getKernelMRA() const;
 
     double build_prec{-1.0};
+
+//code here
+    static std::vector<std::complex<double>> *pJ_power_inetgarls;
+
+    std::vector<std::complex<double>> calculate_J_power_inetgarls(int l, double a, int M);
+    void set_J_power_inetgarls();
 };
 
 } // namespace mrcpp

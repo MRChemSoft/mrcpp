@@ -26,27 +26,31 @@
 #pragma once
 
 #include "MWOperator.h"
+#include "ConvolutionOperator.h"
+#include "IdentityConvolution.h"
 
 namespace mrcpp {
 /**
  * @brief time evolition operator
 */
-template <int D> class TimeEvolutionOperator : public MWOperator<D> {
+template <int D> class TimeEvolutionOperator : public MWOperator<D>   //One can use ConvolutionOperator instead as well
+{
 public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec);
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach);
-    TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
-    TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
+    //TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach);
+    //TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
+    //TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
 
     double getBuildPrec() const { return this->build_prec; }
 
 //protected:
+/*
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {}
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
         : MWOperator<D>(mra, root, reach) {}
-
+*/
     void initialize(double o_prec);
     void setBuildPrec(double prec) { this->build_prec = prec; }
 
@@ -55,10 +59,10 @@ public:
     double build_prec{-1.0};
 
 //code here
-    static std::vector<std::complex<double>> *pJ_power_inetgarls;
+    //static std::vector<std::complex<double>> *pJ_power_inetgarls;
 
-    std::vector<std::complex<double>> calculate_J_power_inetgarls(int l, double a, int M);
-    void set_J_power_inetgarls();
+    //std::vector<std::complex<double>> calculate_J_power_inetgarls(int l, double a, int M);
+    //void set_J_power_inetgarls();
 };
 
 } // namespace mrcpp

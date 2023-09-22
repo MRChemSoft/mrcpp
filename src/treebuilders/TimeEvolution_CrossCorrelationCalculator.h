@@ -43,19 +43,22 @@ namespace mrcpp {
  * 
  * 
  */
-class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2> {
+class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2>
+{
 public:
     //TODO: remove this
     TimeEvolution_CrossCorrelationCalculator(FunctionTree<1> &k)
             : kernel(&k) {}
 
-    TimeEvolution_CrossCorrelationCalculator(JpowerIntegrals &J)
-            : J_power_inetgarls(&J) {}
+    TimeEvolution_CrossCorrelationCalculator(JpowerIntegrals &J, bool imaginary)
+            : J_power_inetgarls(&J), imaginary(imaginary) {}
 //private:
     //TODO: remove this
     FunctionTree<1> *kernel;
     
     JpowerIntegrals *J_power_inetgarls;
+    /// @brief If False then the calculator is using th real part of integrals, otherwise - the imaginary part.
+    bool imaginary;
 
     void calcNode(MWNode<2> &node) override;
 

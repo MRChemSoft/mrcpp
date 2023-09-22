@@ -107,13 +107,13 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node, CrossCo
     for (int i = 0; i < t_dim; i++)
     {
         NodeIndex<2> l = idx.child(i);
-        std::cout<< "idx.child(i) = " << idx.child(i) << std::endl;
+        //std::cout<< "idx.child(i) = " << idx.child(i) << std::endl;
         int l_a = l[1] - l[0] - 1;
         int l_b = l[1] - l[0];
-        std::cout<< "l[0] = " << l[0] << std::endl;
-        std::cout<< "l[1] = " << l[1] << std::endl;
-        std::cout<< "l_a = " << l_a << std::endl;
-        std::cout<< "l_b = " << l_b << std::endl;
+        //std::cout<< "l[0] = " << l[0] << std::endl;
+        //std::cout<< "l[1] = " << l[1] << std::endl;
+        //std::cout<< "l_a = " << l_a << std::endl;
+        //std::cout<< "l_b = " << l_b << std::endl;
 
         NodeIndex<1> idx_a(scale, {l_a});
         NodeIndex<1> idx_b(scale, {l_b});

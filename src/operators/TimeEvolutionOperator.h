@@ -28,6 +28,7 @@
 #include "MWOperator.h"
 #include "ConvolutionOperator.h"
 #include "IdentityConvolution.h"
+#include "core/SchrodingerEvolution_CrossCorrelation.h"
 
 namespace mrcpp {
 /**
@@ -57,12 +58,8 @@ public:
     MultiResolutionAnalysis<1> getKernelMRA() const;
 
     double build_prec{-1.0};
+    SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
 
-//code here
-    //static std::vector<std::complex<double>> *pJ_power_inetgarls;
-
-    //std::vector<std::complex<double>> calculate_J_power_inetgarls(int l, double a, int M);
-    //void set_J_power_inetgarls();
 };
 
 } // namespace mrcpp

@@ -34,29 +34,29 @@
 
 namespace mrcpp {
 
-class SchrodingerEvolution_CrossCorrelation final {
+class SchrodingerEvolution_CrossCorrelation final
+{
 public:
-    SchrodingerEvolution_CrossCorrelation(int k, int t);
-    SchrodingerEvolution_CrossCorrelation(int t, const Eigen::MatrixXd &ldata, const Eigen::MatrixXd &rdata);
+    SchrodingerEvolution_CrossCorrelation(int amount, int k, int t);
+    //SchrodingerEvolution_CrossCorrelation(int t, const Eigen::MatrixXd &ldata, const Eigen::MatrixXd &rdata);
 
     int getType() const { return this->type; }
     int getOrder() const { return this->order; }
-    const Eigen::MatrixXd &getLMatrix() const { return this->Left; }
-    const Eigen::MatrixXd &getRMatrix() const { return this->Right; }
-
-protected:
+    int getAmount() const { return this->amount; }
+    const std::vector<Eigen::MatrixXd> &getMatrix() const { return this->Matrix; }
+    
+//protected:
     int type;
     int order;
+    int amount;
 
-    Eigen::MatrixXd Left;
-    Eigen::MatrixXd Right;
+    std::vector<Eigen::MatrixXd> Matrix;
 
-private:
-    void setCCCPaths(const std::string &lib);
+//private:
+    void setCCCPath(const std::string &lib);
     void readCCCBin();
 
-    std::string L_path;
-    std::string R_path;
+    std::string path;
 };
 
 } // namespace mrcpp

@@ -47,26 +47,28 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int k, int t)
-        : type(t)
-        , order(k) {
+SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int amount, int k, int t)
+    : type(t), order(k), amount(amount)
+{
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order: " << this->order);
     switch (this->type) {
         case (Interpol):
+            MSG_ERROR("Not implemented yet filter type: " << this->type);
         case (Legendre):
             break;
         default:
             MSG_ERROR("Unknown filter type: " << this->type);
     }
 
-    setCCCPaths(details::find_filters());
+    setCCCPath(details::find_filters());
 
     readCCCBin();
 }
 
+/*
 SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int t, const MatrixXd &L, const MatrixXd &R)
-        : type(t)
-        , order(L.cols() / 2 - 1) {
+    : type(t), order(L.cols() / 2 - 1)
+{
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order, " << this->order);
     if (R.cols() != L.cols()) MSG_ABORT("Right and Left cross correlation have different order!");
     switch (this->type) {
@@ -80,29 +82,73 @@ SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int
     this->Left = L;
     this->Right = R;
 }
+*/
 
-void SchrodingerEvolution_CrossCorrelation::setCCCPaths(const std::string &lib) {
+void SchrodingerEvolution_CrossCorrelation::setCCCPath(const std::string &lib) {
     switch (this->type) {
         case (Interpol):
-            this->L_path = lib + "/I_c_left_" + std::to_string(this->order);
-            this->R_path = lib + "/I_c_right_" + std::to_string(this->order);
+            MSG_ERROR("Not implemented yet filter type: " << this->type);
             break;
         case (Legendre):
-            this->L_path = lib + "/L_c_left_" + std::to_string(this->order);
-            this->R_path = lib + "/L_c_right_" + std::to_string(this->order);
+            this->path = lib + "/Schrodinger_evolution_cross_correlation_coefficients_Legendre_scaling_type.bin";
             break;
         default:
             MSG_ERROR("Invalid CrossCorrelation type");
     }
 }
 
-void SchrodingerEvolution_CrossCorrelation::readCCCBin() {
-    std::ifstream L_fis(this->L_path.c_str(), std::ios::binary);
-    std::ifstream R_fis(this->R_path.c_str(), std::ios::binary);
+void SchrodingerEvolution_CrossCorrelation::readCCCBin()
+{
+    std::ifstream input_file(this->path.c_str(), std::ios::binary);
 
-    if (not L_fis) MSG_ABORT("Could not open cross correlation: " << this->L_path);
-    if (not R_fis) MSG_ABORT("Could not open cross correlation: " << this->R_path);
+    if (not input_file) MSG_ABORT("Could not open cross correlation: " << this->path);
 
+    // Read the text length
+    int text_length;
+    input_file.read(reinterpret_cast<char*>(&text_length), sizeof(text_length));
+
+    // Read the Unicode characters
+    std::vector<char32_t> unicode_chars(text_length);
+    input_file.read(reinterpret_cast<char*>(unicode_chars.data()), sizeof(char32_t) * text_length);
+
+    // Read the amount of matrices
+    int K;
+    input_file.read(reinterpret_cast<char*>(&K), sizeof(K));
+
+    // Read the size/order of each matrix
+    int order;
+    input_file.read(reinterpret_cast<char*>(&order), sizeof(order));
+
+    // Read the matrices
+    std::vector<Eigen::MatrixXd> C_even(K, Eigen::MatrixXd(order, order));
+    auto data_amount = order * order * sizeof(double);
+    for (auto& matrix : C_even) input_file.read(reinterpret_cast<char*>(matrix.data()), data_amount);
+
+    // Print the text length
+    std::cout << text_length << std::endl;
+    
+    // Print the text
+    for (char32_t c : unicode_chars) {
+        std::wcout << static_cast<wchar_t>(c);
+    }
+
+    // Print the matrices
+    std::cout << std::endl;
+    std::cout << "----------------------------------" << std::endl;
+    for (auto& matrix : C_even)
+    {
+        std::cout << matrix  << std::endl;
+        std::cout << "----------------------------------" << std::endl;
+    }
+
+    //TODO: create matrix containing the appropriate amount of coefficients
+
+    for (int k = 0; k < this->amount; k++)
+    {
+        Matrix.push_back( C_even[k].block(0, 0, this->order + 1, this->order + 1).eval() );
+    }
+
+/*
     int K = this->order + 1;
     this->Left = MatrixXd::Zero(K * K, 2 * K);
     this->Right = MatrixXd::Zero(K * K, 2 * K);
@@ -118,9 +164,9 @@ void SchrodingerEvolution_CrossCorrelation::readCCCBin() {
             this->Right(i, j) = dR[j];
         }
     }
-
-    L_fis.close();
-    R_fis.close();
+*/
+    C_even.clear();
+    input_file.close();
 }
 
 } // namespace mrcpp

@@ -61,6 +61,8 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 {
     int oldlevel = Printer::setPrintLevel(0);
 
+//    std::cout << (this->cross_correlation == nullptr) << std::endl;
+
     this->setBuildPrec(prec);
     auto o_prec = prec;
     //auto k_prec = prec / 10.0;
@@ -136,8 +138,8 @@ void TimeEvolutionOperator<D>::initialize(double o_prec)
     double a = 0.5;
     double treshold = 1.0e-15;
     mrcpp::JpowerIntegrals J(a, N, M, treshold);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator Re_calculator(J, false);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, true);
+    mrcpp::TimeEvolution_CrossCorrelationCalculator Re_calculator(J, this->cross_correlation, false);
+    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
     
     // Builds a uniform output tree up to scale N using the given calculator

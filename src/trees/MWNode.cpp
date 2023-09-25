@@ -1080,7 +1080,11 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
+<<<<<<< HEAD
  * node is in fact descending from this node.
+=======
+ * node is in fact decending from this node.
+>>>>>>> 9af383a (MWNode documented)
  */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done

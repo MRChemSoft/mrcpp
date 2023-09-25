@@ -404,9 +404,9 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
 
 /** @brief Generates scaling cofficients of children
  * 
- * @details If the node is a Leaf Node Takes the scaling&wavelet coefficients of the children and stores
- * them consecutively in the corresponding block of the parent,
- * following the usual bitwise notation.
+ * @details If the node is a leafNode, it takes the scaling&wavelet
+ * coefficients of the parent and it generates the scaling
+ * coefficients for the children
  */
 template <int D> void MWNode<D>::threadSafeGenChildren() {
     MRCPP_SET_OMP_LOCK();
@@ -424,8 +424,9 @@ template <int D> void MWNode<D>::threadSafeGenChildren() {
  *
  * @param[in] operation: forward (coef->value) or backward (value->coef).
  *
- * NOTE: this routine assumes a 0/1 (scaling on children 0 and 1)
- *       representation, instead of s/d (scaling and wavelet). */
+ * NOTE: this routine assumes a 0/1 (scaling on child 0 and 1)
+ *       representation, instead of s/d (scaling and wavelet).
+ */
 template <int D> void MWNode<D>::cvTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
@@ -517,7 +518,7 @@ void MWNode<D>::cvTransform(int operation) {
 /** @brief Multiwavelet transform
   *
   * @details Application of the filters on one node to pass from a 0/1 (scaling
-  * on children 0 and 1) representation to an s/d (scaling and
+  * on child 0 and 1) representation to an s/d (scaling and
   * wavelet) representation. Bit manipulation is used in order to
   * determine the correct filters and whether to apply them or just
   * pass to the next couple of indexes. The starting coefficients are
@@ -651,8 +652,12 @@ template <int D> void MWNode<D>::reCompress() {
     }
 }
 
-/** @brief Recurse down until an EndNode is found, and then crop children with
- * too high precision. */
+/** @brief Recurse down until an EndNode is found, and then crop children below the given precision threshold
+ *
+ * @param[in] prec: precision required
+ * @param[in] splitFac: factor used in the split check (larger factor means tighter threshold for finer nodes)
+ * @param[in] absPrec: flag to switch from relative (false) to absolute (true) precision.
+ */
 template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec) {
     if (this->isEndNode()) {
         return true;
@@ -685,7 +690,8 @@ template <int D> void MWNode<D>::genParent() {
 /** @brief Recursive deallocation of children and all their descendants.
  *
  * @details
- * Leaves node as LeafNode and children[] as null pointer. */
+ * Leaves node as LeafNode and children[] as null pointer.
+ */
 template <int D> void MWNode<D>::deleteChildren() {
     if (this->isLeafNode()) return;
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
@@ -722,7 +728,7 @@ template <int D> void MWNode<D>::deleteGenerated() {
     }
 }
 
-/** @brief returns the coordinates of the centre of the node */''
+/** @brief returns the coordinates of the centre of the node */
 template <int D> Coord<D> MWNode<D>::getCenter() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -732,7 +738,7 @@ template <int D> Coord<D> MWNode<D>::getCenter() const {
     return r;
 }
 
-/** @brief returns the upper bounds of the D-interval defining the node  */''
+/** @brief returns the upper bounds of the D-interval defining the node  */
 template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -742,7 +748,7 @@ template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
     return ub;
 }
 
-/** @brief returns the lower bounds of the D-interval defining the node  */''
+/** @brief returns the lower bounds of the D-interval defining the node  */
 template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
@@ -825,7 +831,7 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
  * dilated and translated to match the quadrature points in the
  * children of the given node. For each cartesian direction \f$ \alpha = x,y,z... \f$
  * the set of quadrature points becomes \f$ x^\alpha_i = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha) \f$, where \f$ t^\alpha =
- * 0,1$. By taking all possible \f$(k+1)^d\combinations \f$, they will
+ * 0,1 \f$. By taking all possible \f$(k+1)^d\combinations \f$, they will
  * then define a d-dimensional grid of quadrature points for the child
  * nodes. 
  *
@@ -903,12 +909,16 @@ template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
     }
 }
 
-/** Const version of node retriever that NEVER generates.
+/** @brief Const version of node retriever that NEVER generates.
  *
+ * @param[in] idx: the requested NodeIndex
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
- * node and ASSUMES the requested node is in fact decending from this node. */
+ * node and ASSUMES the requested node is in fact decending from this node.
+ */
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) const {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -923,12 +933,16 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
-/** Node retriever that NEVER generates.
+/** @brief Node retriever that NEVER generates.
  *
+ * @param[in] idx: the requested NodeIndex
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
- * node and ASSUMES the requested node is in fact decending from this node. */
+ * node and ASSUMES the requested node is in fact decending from this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -943,6 +957,18 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
+/** @brief Node retriever that returns requested Node or EndNode (const version).
+ *
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
     if (getDepth() == depth or this->isEndNode()) { return this; }
     int cIdx = getChildIndex(r);
@@ -950,13 +976,18 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
-/** Node retriever that return requested Node or EndNode.
+/** @brief Node retriever that returns requested Node or EndNode.
  *
- * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate Node, or the EndNode on the
- * path to the requested node, and will never create or return GenNodes.
- * Recursion starts at at this node and ASSUMES the requested node is in fact
- * decending from this node. */
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
     if (getDepth() == depth or this->isEndNode()) { return this; }
     int cIdx = getChildIndex(r);
@@ -964,6 +995,17 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, 
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
+/** @brief Node retriever that returns requested Node or EndNode (const version).
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
 template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) const {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -978,6 +1020,18 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeInd
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
+/** @brief Node retriever that returns requested Node or EndNode.
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
+ * Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -992,12 +1046,17 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
-/** Node retriever that ALWAYS returns the requested node.
+/** @brief Node retriever that ALWAYS returns the requested node.
  *
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine always returns the appropriate node, and will generate nodes
  * that does not exist. Recursion starts at this node and ASSUMES the
- * requested node is in fact decending from this node. */
+ * requested node is in fact decending from this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
     if (depth < 0) MSG_ABORT("Invalid argument");
 
@@ -1009,12 +1068,16 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
     return this->children[cIdx]->retrieveNode(r, depth);
 }
 
-/** Node retriever that ALWAYS returns the requested node, possibly without coefs.
+/** @brief Node retriever that ALWAYS returns the requested node, possibly without coefs.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
- * node is in fact decending from this node. */
+ * node is in fact decending from this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -1032,10 +1095,14 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
  *
  * WARNING: This routine is NOT thread safe! Must be used within omp critical.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
- * node is in fact related to this node. */
+ * node is in fact related to this node.
+ */
 template <int D> MWNode<D> *MWNode<D>::retrieveParent(const NodeIndex<D> &idx) {
     if (getScale() < idx.getScale()) MSG_ABORT("Scale error")
     if (getScale() == idx.getScale()) return this;
@@ -1046,11 +1113,15 @@ template <int D> MWNode<D> *MWNode<D>::retrieveParent(const NodeIndex<D> &idx) {
     return this->parent->retrieveParent(idx);
 }
 
-/** Gives the norm (absolute value) of the node at the given NodeIndex.
+/** @brief Gives the norm (absolute value) of the node at the given NodeIndex.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find the node with a given NodeIndex. When an EndNode is
  * found, do not generate any new node, but rather give the value of the norm
- * assuming the function is uniformly distributed within the node. */
+ * assuming the function is uniformly distributed within the node.
+ */
 template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
     if (this->getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
@@ -1065,7 +1136,10 @@ template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
     return this->children[cIdx]->getNodeNorm(idx);
 }
 
-/** Test if a given coordinate is within the boundaries of the node. */
+/** @brief Test if a given coordinate is within the boundaries of the node.
+ *
+ * @param[in] r: point coordinates
+ */
 template <int D> bool MWNode<D>::hasCoord(const Coord<D> &r) const {
     double sFac = std::pow(2.0, -getScale());
     const NodeIndex<D> &l = getNodeIndex();
@@ -1097,8 +1171,11 @@ template <int D> bool MWNode<D>::isCompatible(const MWNode<D> &node) {
     //    return true;
 }
 
-/** Test if the node is decending from a given NodeIndex, that is, if they have
- * overlapping support. */
+/** @brief Test if the node is decending from a given NodeIndex, that is, if they have
+ * overlapping support.
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ */
 template <int D> bool MWNode<D>::isAncestor(const NodeIndex<D> &idx) const {
     int relScale = idx.getScale() - getScale();
     if (relScale < 0) return false;
@@ -1114,6 +1191,10 @@ template <int D> bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
+/** @brief printout ofm the node content.
+ *
+ * @param[in] o: the output stream
+ */
 template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
     std::string flags = "       ";
     o << getNodeIndex();
@@ -1141,7 +1222,8 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
 
 /** @brief recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
  *
- * @details normalization is such that a constant function gives constant value,
+ * @details
+ * normalization is such that a constant function gives constant value,
  * i.e. *not* same normalization as a squareNorm
  */
 template <int D> void MWNode<D>::setMaxSquareNorm() {
@@ -1158,7 +1240,8 @@ template <int D> void MWNode<D>::setMaxSquareNorm() {
         }
     }
 }
-/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1 */
+/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1
+ */
 template <int D> void MWNode<D>::resetMaxSquareNorm() {
     auto n = this->getScale();
     this->maxSquareNorm = -1.0;

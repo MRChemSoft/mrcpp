@@ -132,14 +132,16 @@ class JpowerIntegrals
 public:
     /// @brief creates an array of power integrals
     /// @param a : parameter a
-    /// @param N : 2^n
+    /// @param scaling : scaling level
     /// @param M : maximum amount of integrals for each l
     /// @param treshold : lower limit for neglecting the integrals
     /// @details The array is orginised as a vector ordered as \f$l = 0, 1, 2, \ldots, 2^n - 1, 1 - 2^n, 2 - 2^n, \ldots, -2, -1 \f$.
-    JpowerIntegrals(double a, int N, int M, double treshold = 1.0e-15);
+    JpowerIntegrals(double a, int scaling, int M, double treshold = 1.0e-15);
+    JpowerIntegrals(const JpowerIntegrals& other);
 
     ~JpowerIntegrals();
 
+    int scaling;  //it is probably not used
     std::vector<std::vector<std::complex<double>>> integrals;
 
     std::vector<std::complex<double>> & operator[](int index);

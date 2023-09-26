@@ -29,12 +29,27 @@
 namespace mrcpp {
 
 
-JpowerIntegrals::JpowerIntegrals(double a, int N, int M, double treshold)
+JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double treshold)
 {
+    this->scaling = scaling;
+    int N = 1 << scaling;
     for(int l = 0; l < N; l++  )
         integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
     for(int l = 1 - N; l < 0; l++  )
         integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
+}
+
+JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
+{
+    scaling = other.scaling;
+
+    // Copy integrals (deep copy)
+    integrals.clear();
+    for (const auto& row : other.integrals)
+    {
+        std::vector<std::complex<double>> newRow(row);
+        integrals.push_back(newRow);
+    }    
 }
 
 JpowerIntegrals::~JpowerIntegrals()

@@ -31,9 +31,15 @@
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
 
 namespace mrcpp {
+
+
 /**
  * @brief time evolition operator
-*/
+ * 
+ * 
+ * 
+ * 
+ */
 template <int D> class TimeEvolutionOperator : public MWOperator<D>   //One can use ConvolutionOperator instead as well
 {
 public:
@@ -52,7 +58,7 @@ public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
         : MWOperator<D>(mra, root, reach) {}
 */
-    void initialize(double o_prec);
+    void initialize(double o_prec, int finest_scale);
     void setBuildPrec(double prec) { this->build_prec = prec; }
 
     MultiResolutionAnalysis<1> getKernelMRA() const;

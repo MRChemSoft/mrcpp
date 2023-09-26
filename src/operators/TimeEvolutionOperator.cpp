@@ -66,7 +66,12 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
     this->setBuildPrec(prec);
     auto o_prec = prec;
     //auto k_prec = prec / 10.0;
-    initialize(o_prec);
+
+    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
+    this->cross_correlation = &cross_correlation;
+
+
+    initialize(o_prec, 4);     //will go outside of the constructor
     this->initOperExp(1);   //this turns out to be important 
 
     Printer::setPrintLevel(oldlevel);
@@ -96,7 +101,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
  * 
  */
 template <int D>
-void TimeEvolutionOperator<D>::initialize(double o_prec)
+void TimeEvolutionOperator<D>::initialize(double o_prec, int finest_scale)
 {
 
 
@@ -132,12 +137,12 @@ void TimeEvolutionOperator<D>::initialize(double o_prec)
     // Project dummy 1D kernel K(x-y) = 0 and pass it to the CC calculator
     auto kFunc = [] (const mrcpp::Coord<1> &r) { return 0.0; };
     mrcpp::project<1>(o_prec/10, kTree, kFunc);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(kTree);
+    mrcpp::CrossCorrelationCalculator calculator(kTree);
 
-    int N = 3, M = 10;
+    int N = finest_scale, M = 10;
     double a = 0.5;
     double treshold = 1.0e-15;
-    mrcpp::JpowerIntegrals J(a, N, M, treshold);
+    mrcpp::JpowerIntegrals J(a, N+1, M, treshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator Re_calculator(J, this->cross_correlation, false);
     mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
@@ -146,7 +151,7 @@ void TimeEvolutionOperator<D>::initialize(double o_prec)
     //builder.build(oTree, calculator, uniform, N);
     //or like this:
     auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
-    builder.build(*o_tree, calculator, uniform, N); // Expand 1D kernel into 2D operator
+    builder.build(*o_tree, Re_calculator, uniform, N ); // Expand 1D kernel into 2D operator
 
 
     // Postprocess to make the operator functional

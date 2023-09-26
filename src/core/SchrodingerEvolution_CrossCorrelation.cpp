@@ -123,6 +123,7 @@ void SchrodingerEvolution_CrossCorrelation::readCCCBin()
     std::vector<Eigen::MatrixXd> C_even(K, Eigen::MatrixXd(order, order));
     auto data_amount = order * order * sizeof(double);
     for (auto& matrix : C_even) input_file.read(reinterpret_cast<char*>(matrix.data()), data_amount);
+/*
 
     // Print the text length
     std::cout << text_length << std::endl;
@@ -131,7 +132,6 @@ void SchrodingerEvolution_CrossCorrelation::readCCCBin()
     for (char32_t c : unicode_chars) {
         std::wcout << static_cast<wchar_t>(c);
     }
-
     // Print the matrices
     std::cout << std::endl;
     std::cout << "----------------------------------" << std::endl;
@@ -140,31 +140,14 @@ void SchrodingerEvolution_CrossCorrelation::readCCCBin()
         std::cout << matrix  << std::endl;
         std::cout << "----------------------------------" << std::endl;
     }
-
-    //TODO: create matrix containing the appropriate amount of coefficients
-
+*/
+    // Create matrix containing the appropriate amount of coefficients
+    int Order = this->order + 1;
     for (int k = 0; k < this->amount; k++)
     {
-        Matrix.push_back( C_even[k].block(0, 0, this->order + 1, this->order + 1).eval() );
+        this->Matrix.push_back( C_even[k].block(0, 0, Order, Order).eval() );
     }
 
-/*
-    int K = this->order + 1;
-    this->Left = MatrixXd::Zero(K * K, 2 * K);
-    this->Right = MatrixXd::Zero(K * K, 2 * K);
-    double dL[2 * K];
-    double dR[2 * K];
-    for (int i = 0; i < K * K; i++) {
-        L_fis.read((char *)dL, sizeof(double) * 2 * K);
-        R_fis.read((char *)dR, sizeof(double) * 2 * K);
-        for (int j = 0; j < 2 * K; j++) {
-            if (std::abs(dL[j]) < MachinePrec) dL[j] = 0.0;
-            if (std::abs(dR[j]) < MachinePrec) dR[j] = 0.0;
-            this->Left(i, j) = dL[j];
-            this->Right(i, j) = dR[j];
-        }
-    }
-*/
     C_even.clear();
     input_file.close();
 }

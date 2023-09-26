@@ -38,6 +38,27 @@
 
 namespace mrcpp {
 
+/** @class MWTree
+ *
+ * @brief Base class for Multiwavelet tree structures, such as FunctionTree and OperatorTree
+ *
+ * @details The MWTree class is the base class for all tree structures
+ * needed for Multiwavelet calculations. The MWTree is a D-dimensional
+ * tree structure of MWNodes. The tree starts from a set of root nodes
+ * at a common given scale, defining the world box. The most common
+ * settings are either a single root node or \f$ 2^D \f$ root
+ * nodes. Other configurations are however allowed. For example, in 3D
+ * one could have a total of 12 root nodes (a 2x2x3 set of root
+ * nodes). Once the tree structure is generated, each node will have a
+ * parent node (except for the root nodes) and \f$ 2^D \f$ child nodes
+ * (except for leaf nodes). Most of the methods deal with traversing
+ * the tree structure in different ways to fetch specific nodes. Some
+ * of them will return a node present in the tree; some other methods
+ * will generate the required node on the fly using the MW transform;
+ * some methods will return an empty pointer if the node is not
+ * present. See specific methods for details.
+ *
+ */
 template <int D> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n);
@@ -58,6 +79,7 @@ public:
     int getKp1_d() const { return this->kp1_d; }
     int getDim() const { return D; }
     int getTDim() const { return (1 << D); }
+    /** @returns the total number of nodes in the tree */
     int getNNodes() const { return getNodeAllocator().getNNodes(); }
     int getNNegScales() const { return this->nodesAtNegativeDepth.size(); }
     int getRootScale() const { return this->rootBox.getScale(); }
@@ -65,6 +87,7 @@ public:
     int getNNodesAtDepth(int i) const;
     int getSizeNodes() const;
 
+    /** @returns */
     NodeBox<D> &getRootBox() { return this->rootBox; }
     const NodeBox<D> &getRootBox() const { return this->rootBox; }
     const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }

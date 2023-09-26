@@ -11,6 +11,8 @@ program by including:
 
     #include "MRCPP/MWOperators"
 
+.. doxygenclass:: mrcpp::MWOperator
+   :members:
 
 ConvolutionOperator
 -------------------

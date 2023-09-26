@@ -41,6 +41,7 @@ namespace mrcpp {
 
 /** @brief MWTree constructor.
  *
+ *TEST
  * @param[in] mra: the multiresolution analysis object
  * @param[in] n: the name of the tree (only for printing purposes)
  *

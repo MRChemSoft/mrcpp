@@ -43,10 +43,9 @@ namespace mrcpp {
 template <int D> class TimeEvolutionOperator : public MWOperator<D>   //One can use ConvolutionOperator instead as well
 {
 public:
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec);
-    //TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach);
-    //TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
-    //TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower = 20);
+    TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
+    TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
 
     double getBuildPrec() const { return this->build_prec; }
@@ -58,14 +57,12 @@ public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
         : MWOperator<D>(mra, root, reach) {}
 */
-    void initialize(double o_prec, int finest_scale);
-    void setBuildPrec(double prec) { this->build_prec = prec; }
 
-    MultiResolutionAnalysis<1> getKernelMRA() const;
+    void initialize(double time, int finest_scale, int max_Jpower);
+    void setBuildPrec(double prec) { this->build_prec = prec; }
 
     double build_prec{-1.0};
     SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
-
 };
 
 } // namespace mrcpp

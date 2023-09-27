@@ -57,7 +57,7 @@ namespace mrcpp {
 
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator
-(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower)
+(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)
     : MWOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
@@ -66,7 +66,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
     SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, finest_scale, max_Jpower);     //will go outside of the constructor
+    initialize(time, finest_scale, imaginary, max_Jpower);     //will go outside of the constructor
 
     this->initOperExp(1);   //this turns out to be important 
     Printer::setPrintLevel(oldlevel);
@@ -87,7 +87,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  *  
  */
 template <int D>
-void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, int max_Jpower)
+void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower)
 {
     double o_prec = this->build_prec;
     auto o_mra = this->getOperatorMRA();
@@ -100,11 +100,11 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, int max
     double a = time * std::pow(4, N + 1);
     double treshold = o_prec / 100.0;
     mrcpp::JpowerIntegrals J(a, N + 1, max_Jpower, treshold);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator Re_calculator(J, this->cross_correlation, false);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
+    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
+//    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
     auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
-    builder.build(*o_tree, Re_calculator, uniform, N ); // Expand 1D kernel into 2D operator
+    builder.build(*o_tree, calculator, uniform, N ); // Expand 1D kernel into 2D operator
 
     // Postprocess to make the operator functional
     Timer trans_t;

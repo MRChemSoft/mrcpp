@@ -43,7 +43,7 @@ namespace mrcpp {
 template <int D> class TimeEvolutionOperator : public MWOperator<D>   //One can use ConvolutionOperator instead as well
 {
 public:
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower = 20);
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 20);
     TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
     TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
@@ -58,7 +58,7 @@ public:
         : MWOperator<D>(mra, root, reach) {}
 */
 
-    void initialize(double time, int finest_scale, int max_Jpower);
+    void initialize(double time, int finest_scale, bool imaginary, int max_Jpower);
     void setBuildPrec(double prec) { this->build_prec = prec; }
 
     double build_prec{-1.0};

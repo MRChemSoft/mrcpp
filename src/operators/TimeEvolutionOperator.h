@@ -40,7 +40,7 @@ namespace mrcpp {
  * 
  * 
  */
-template <int D> class TimeEvolutionOperator : public MWOperator<D>   //One can use ConvolutionOperator instead as well
+template <int D> class TimeEvolutionOperator : public ConvolutionOperator<D>   //One can use ConvolutionOperator instead as well
 {
 public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 20);

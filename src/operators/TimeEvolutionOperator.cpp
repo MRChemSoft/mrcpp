@@ -58,7 +58,7 @@ namespace mrcpp {
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator
 (const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)
-    : MWOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
+    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);

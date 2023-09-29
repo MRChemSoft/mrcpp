@@ -63,6 +63,9 @@ public:
 
     double build_prec{-1.0};
     SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
+    
+    //Difficult to impliment:
+    //int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 };
 
 } // namespace mrcpp

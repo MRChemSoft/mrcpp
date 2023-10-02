@@ -156,6 +156,12 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D>
     setDerivedParameters();
 }
 
+/** @returns New BoundingBox object
+ *
+ * @param[in] box: Other BoundingBox object
+ * @details Creates a box identical to the input box paramter.
+ * This constructor uses all parameters from the other bounding box to create a new one.
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {

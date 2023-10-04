@@ -41,6 +41,7 @@ namespace mrcpp {
  * Root scale is chosen such that the scaling factor becomes 1 < sfac < 2.
  *
  * Limitations: Box must be _either_ [0,L] _or_ [-L,L], with L a positive integer.
+ * This is the most general constructor, which will create a world with no periodic boundary conditions.
  */
 template <int D> BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
     if (box[1] < 1) {
@@ -84,12 +85,13 @@ template <int D> BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
  * @param[in] nb: Number of boxes, default [1, 1, ...]
  * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
  * @param[in] pbc: Periodic boundary conditions, default false
- * @details Creates a box with given parameters. The parameter n defines the unit scale, which will be used for the length of the boxes and their positions respective to each other.
+ * @details Creates a box with given parameters. The parameter n defines the length scale, which, together with sf, determines the unit length of each side of the boxes by \f$ [2^{-n}]^D \f$.
  * The parameter l defines the corner translation of the lower corner of the box relative to the world origin.
  * The parameter nb defines the number of boxes in each dimension.
- * The parameter sf defines the scaling factor, that is, the length of each box relative to the length of the unit box.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
  * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
- *  This is used for work in periodic systems.
+ * This constructor is used for work in periodic systems.
+ *
  */
 template <int D>
 BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf, bool pbc)
@@ -108,8 +110,8 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
  * @details Creates a box with given parameters.
  * The parameter idx defines the index of the lower corner of the box relative to the world origin.
  * The parameter nb defines the number of boxes in each dimension.
- * The parameter sf defines the scaling factor, that is, the length of each box relative to the length of the unit box.
- * This creates a world with no periodic boundary conditions.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * This constructor creates a world with no periodic boundary conditions.
  */
 template <int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb, const std::array<double, D> &sf)
@@ -125,9 +127,9 @@ BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &n
  * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
  * @param[in] pbc: Periodic boundary conditions, default true
  * @details Creates a box with given parameters.
- * The parameter sf defines the scaling factor, that is, the length of each box relative to the length of the unit box.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
  * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
- * This is used for work in periodic systems.
+ * This construtor is used for work in periodic systems.
  */
 template <int D>
 BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
@@ -143,8 +145,8 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
  * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
  * @param[in] pbc: Periodic boundary conditions, default true
  * @details Creates a box with given parameters.
- * The parameter sf defines the scaling factor, that is, the length of each box relative to the length of the unit box.
- * The parameter pbc defines whether the world is periodic or not. In this constructor this value specific dimensions periodic.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes specific dimensions periodic.
  * This is used for work in periodic systems.
  */
 template <int D>
@@ -160,7 +162,7 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D>
  *
  * @param[in] box: Other BoundingBox object
  * @details Creates a box identical to the input box paramter.
- * This constructor uses all parameters from the other bounding box to create a new one.
+ * This constructor uses all parameters from the other BoundingBox to create a new one.
  */
 template <int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
@@ -171,6 +173,11 @@ BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
     setDerivedParameters();
 }
 
+/** @returns New BoundingBox object
+ *
+ * @param[in] box: Other BoundingBox object
+ * @details Allocates all parameters in this BoundingBox to be that of the other BoundingBox.
+ */
 template <int D> BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> &box) {
     if (&box != this) {
         this->cornerIndex = box.cornerIndex;
@@ -182,6 +189,12 @@ template <int D> BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> 
     return *this;
 }
 
+/** @brief Sets the number of boxes in each dimension
+ *
+ * @param[in] nb: Number of boxes, default [1, 1, ...]
+ * @details For each dimentions D it sets the number of boxes in that dimension in the nBoxes array and the total amount of boxes in the world in the totBoxes variable.
+ * This just sets counters for the number of boxes in each dimension.
+ */
 template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
     this->totBoxes = 1;
     for (int d = 0; d < D; d++) {
@@ -190,6 +203,16 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
     }
 }
 
+/** @brief Computes and sets all derived parameters
+ *
+ * @details For all parameters that have been initialized in the constructor,
+ * this function will compute the necessary derived parameters in each dimension.
+ * The unit length is set to \f$ sfac 2^{-n} \f$ where \f$ sfac \f$ is the scaling factor (default 1.0) and n is the length scale.
+ * The unit length is the base unit which is used for the size and positioning of the boxes around origin.
+ * The boxLength is the total length of the box in each dimension, which is the unit length times the number of boxes in that dimension.
+ * The lowerBound is computed from the index of the lower corner of the box and the unit length.
+ * The upperBound is computed to be the lower corner plus the total length in that dimension.
+ */
 template <int D> void BoundingBox<D>::setDerivedParameters() {
     assert(this->totBoxes > 0);
     const NodeIndex<D> &cIdx = this->cornerIndex;
@@ -202,6 +225,11 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
     }
 }
 
+/** @brief Sets the number of boxes in each dimension
+ *
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
+ * @details This checks that the sf variable has sane values before assigning it to the member variable scalingFactor.
+ */
 template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
     for (auto &x : sf)

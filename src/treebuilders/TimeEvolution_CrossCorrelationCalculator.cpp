@@ -90,8 +90,8 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node)
         int l_b = l[1] - l[0];
 
         int vec_o_segment_index = 0;
-        for( int p = 0; p < node.getOrder(); p++ )
-            for( int j = 0; j < node.getOrder(); j++ )
+        for( int p = 0; p <= node.getOrder(); p++ )
+            for( int j = 0; j <= node.getOrder(); j++ )
             {
                 //std::min(M, N)  could be used for breaking the following loop
                 //this->cross_correlation->Matrix.size() should be big enough a priori

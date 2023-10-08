@@ -3,10 +3,11 @@
 #include <MRCPP/Printer>
 #include <MRCPP/Timer>
 #include "operators/TimeEvolutionOperator.h"
+#include "functions/special_functions.h"
 
 
 
-std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma);
+//std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma);
 
 const auto min_scale = 0;
 const auto max_depth = 25;
@@ -51,22 +52,22 @@ int main(int argc, char **argv)
     double x0 = 0.5;
     auto Re_f = [sigma, x0, t=0](const mrcpp::Coord<1> &r) -> double
     {
-        return free_particle_analytical_solution(r[0], x0, t, sigma).real();
+        return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).real();
     };
     /*
     auto Im_f = [sigma, x0, t=0](const mrcpp::Coord<1> &r) -> double
     {
-        return free_particle_analytical_solution(r[0], x0, t, sigma).imag();
+        return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).imag();
     };
     */
 //    std::cout << "t = " << t << std::endl;
     auto Re_g = [sigma, x0, t](const mrcpp::Coord<1> &r) -> double
     {
-        return free_particle_analytical_solution(r[0], x0, t, sigma).real();
+        return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).real();
     };
     auto Im_g = [sigma, x0, t](const mrcpp::Coord<1> &r) -> double
     {
-        return free_particle_analytical_solution(r[0], x0, t, sigma).imag();
+        return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).imag();
     };
     // Test the functions
     /*
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-
+/*
 std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma)
 {
     std::complex<double> i(0.0, 1.0);  // Imaginary unit
@@ -142,3 +143,4 @@ std::complex<double> free_particle_analytical_solution(double x, double x0, doub
 
     return std::sqrt(sigma) / sqrt_denom * std::exp(exponent);
 }
+*/

@@ -55,6 +55,21 @@
 
 namespace mrcpp {
 
+
+/** @brief A constructor for TimeEvolutionOperator class.
+ *
+ * @param[in] mra: MRA.
+ * @param[in] prec: precision.
+ * @param[in] time: the time moment (step).
+ * @param[in] finest_scale: the operator constructed down to this scale.
+ * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
+ * @param[in] max_Jpower: maximum amount of power integrals used.
+ *
+ * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
+ * 
+ * 
+ * 
+ */
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator
 (const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)

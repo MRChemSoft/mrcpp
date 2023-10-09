@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- *
- *  \date Jul 18, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
- *
- * \breif
- */
 
 #include "SchrodingerEvolution_CrossCorrelation.h"
 

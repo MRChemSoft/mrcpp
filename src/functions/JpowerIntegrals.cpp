@@ -62,6 +62,9 @@ JpowerIntegrals::~JpowerIntegrals()
     integrals.clear();
 }
 
+/// @brief in progress
+/// @param index - in progress
+/// @return in progress
 std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
 {
     if( index < 0 ) index += integrals.size();
@@ -70,9 +73,9 @@ std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
 
 std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_inetgarls(int l, double a, int M, double treshold)
 {
-    const double pi = 3.1415926535897932384626433832795;
+    //const double pi = 3.1415926535897932384626433832795;
     const std::complex<double> I(0.0, 1.0);  // Imaginary unit
-    const std::complex<double> J_0 = 0.25 * std::exp(-0.25 * I * pi) / std::sqrt(pi * a) * std::exp(0.25 * I * static_cast<double>(l * l) / a);
+    const std::complex<double> J_0 = 0.25 * std::exp(-0.25 * I * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25 * I * static_cast<double>(l * l) / a);
     const std::complex<double> beta(0, 0.5 / a);
     const std::complex<double> alpha = static_cast<double>(l) * beta;
 

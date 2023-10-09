@@ -238,15 +238,33 @@ template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double,
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
+/** @brief Sets which dimensions are periodic
+ *
+ * @param[in] pbc: Boolean which is used to set all dimension to either periodic or not
+ * @details this fills in the periodic array with the values from the input.
+ */
 template <int D> void BoundingBox<D>::setPeriodic(bool pbc) {
     this->periodic.fill(pbc);
 }
 
+/** @brief Sets which dimensions are periodic
+ *
+ * @param[in] pbs: D-dimensional array holding boolean values for each dimension.
+ * @details This fills in the periodic array with the values from the input array.
+ */
 template <int D> void BoundingBox<D>::setPeriodic(std::array<bool, D> pbc) {
     this->periodic = pbc;
 }
 
-// Specialized for D=1 below
+/** @brief Fetches a NodeIndex object from a given box index
+ *
+ * @param[in] bIdx: Box index, the index of the box we want to fetch the cell index from.
+ * @returns The NodeIndex object of the index given as it is in the Multiresolutoin analysis.
+ * @details During the adaptive refinement, each original box will contain an increasing number of smaller cells,
+ * each of which will be part of a specific node in the tree. These cells are divided adaptivelly. This function returns the NodeIndex
+ * object of the cell at the lower back corner of the box object indexed by bIdx.
+ * Specialized for D=1 below
+ */
 template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     assert(bIdx >= 0 and bIdx <= this->totBoxes);
     std::array<int, D> l;
@@ -265,7 +283,12 @@ template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     return NodeIndex<D>(getScale(), l);
 }
 
-// Specialized for D=1 below
+/** @brief Fetches the index of a box from a given coordinate
+ *
+ * @param[in] r: D-dimensional array representaing a coordinate in the simulation box
+ * @returns The index value of the boxes in the position given as it is in the generated world.
+ * @detailsSpecialized for D=1 below
+ */
 template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
 
     if (this->isPeriodic()) { periodic::coord_manipulation<D>(r, this->getPeriodic()); }
@@ -293,7 +316,14 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
     return bIdx;
 }
 
-// Specialized for D=1 below
+/** @brief Fetches the index of a box from a given NodeIndex
+ *
+ * @param[in] nIdx: NodeIndex object, representing the node and its index in the adaptive tree.
+ * @returns The index value of the boxes in which the NodeIndex object is mapping to.
+ * @details During the multiresolution analysis the boxes will be divided into smaller boxes, which means that each individual box will be part of a specific node in the tree.
+ * Each node will get its own index value, but will still be part of one of the original boxes of the world.
+ * Specialized for D=1 below
+ */
 template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
     if (this->isPeriodic()) { periodic::index_manipulation<D>(nIdx, this->getPeriodic()); };
 
@@ -317,6 +347,12 @@ template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
     return bIdx;
 }
 
+/** @brief Prints information about the BoundinBox object
+ *
+ * @param[in] o: Output stream variable which will be used to print the information
+ * @returns The output stream variable.
+ * @details A function which prints information about the BoundingBox object.
+ */
 template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     int oldprec = Printer::setPrecision(5);
     o << std::fixed;
@@ -345,6 +381,26 @@ template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     return o;
 }
 
+/** @brief Fetches a NodeIndex object from a given box index, specialiced for 1-D
+ *
+ * @param[in] bIdx: Box index, the index of the box we want to fetch the cell index from.
+ * @returns Return the NodeIndex object of the index given as it is in the Multiresolutoin analysis.
+ * @details During the adaptive refinement, each original box will contain an increasing number of smaller cells,
+ * each of which will be part of a specific node in the tree. These cells are divided adaptivelly. This function returns the NodeIndex
+ * object of the cell at the lower back corner of the box object indexed by bIdx.
+ */
+template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
+    const NodeIndex<1> &cIdx = this->cornerIndex;
+    int n = cIdx.getScale();
+    int l = bIdx + cIdx[0];
+    return NodeIndex<1>(n, {l});
+}
+
+/** @brief Fetches the index of a box from a given coordinate, specialized for 1D
+ *
+ * @param[in] r: 1-dimensional array representaing a coordinate in the simulation box
+ * @returns Return the index value of the boxes in the position given as it is in the generated world.
+ */
 template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
 
     if (this->isPeriodic()) { periodic::coord_manipulation<1>(r, this->getPeriodic()); }
@@ -358,13 +414,13 @@ template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
     return static_cast<int>(iint);
 }
 
-template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
-    const NodeIndex<1> &cIdx = this->cornerIndex;
-    int n = cIdx.getScale();
-    int l = bIdx + cIdx[0];
-    return NodeIndex<1>(n, {l});
-}
-
+/** @brief Fetches the index of a box from a given NodeIndex specialized for 1-D
+ *
+ * @param[in] nIdx: NodeIndex object, representing the node and its index in the adaptive tree.
+ * @returns The index value of the boxes in which the NodeIndex object is mapping to.
+ * @details During the multiresolution analysis the boxes will be divided into smaller boxes, which means that each individual box will be part of a specific node in the tree.
+ * Each node will get its own index value, but will still be part of one of the original boxes of the world.
+ */
 template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
     if (this->isPeriodic()) { periodic::index_manipulation<1>(nIdx, this->getPeriodic()); };
 

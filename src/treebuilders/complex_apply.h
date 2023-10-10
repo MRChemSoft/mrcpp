@@ -29,6 +29,8 @@
 
 namespace mrcpp {
 
+/// @brief Stores pointers to real and imaginary parts of tree objects.
+/// @tparam MWClass 
 template <typename MWClass>
 struct ComplexObject
 {
@@ -50,7 +52,7 @@ void apply
     ComplexObject< ConvolutionOperator<D> > &oper, ComplexObject< FunctionTree<D> > &inp,
     int maxIter = -1, bool absPrec = false
 );
-//template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, FunctionTreeVector<D> &precTrees, int maxIter = -1, bool absPrec = false);
 // clang-format on
+
 
 } // namespace mrcpp

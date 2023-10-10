@@ -43,7 +43,7 @@
 namespace mrcpp {
 
 
-/** @brief Application of MW integral convolution operator
+/** @brief Application of MW integral convolution operator (complex version)
  *
  * @param[in] prec: Build precision of output function
  * @param[out] out: Output function to be built
@@ -62,40 +62,42 @@ namespace mrcpp {
  * @note This algorithm will start at whatever grid is present in the `out`
  * tree when the function is called (this grid should however be EMPTY, e.i.
  * no coefs).
+ * 
  *
  */
+template <int D>
+void apply
+(
+    double prec, ComplexObject< FunctionTree<D> > &out,
+    ComplexObject< ConvolutionOperator<D> > &oper, ComplexObject< FunctionTree<D> > &inp,
+    int maxIter, bool absPrec
+)
+{
+    FunctionTree<D> temp_out( inp.real->getMRA() );
 
-/*
-template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
-    if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+    apply(prec, *out.real, *oper.real, *inp.real, maxIter, absPrec);
+    apply(prec, temp_out, *oper.imaginary, *inp.imaginary, maxIter, absPrec);
 
-    Timer pre_t;
-    oper.calcBandWidths(prec);
-    int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
-    pre_t.stop();
-    TreeBuilder<D> builder;
-    builder.build(out, calculator, adaptor, maxIter);
+    auto Re_f_vec = FunctionTreeVector<D>();
+    Re_f_vec.push_back(std::make_tuple(1.0, out.real));
+    Re_f_vec.push_back(std::make_tuple(-1.0, &temp_out));
+    mrcpp::add(prec, *out.real, Re_f_vec);
 
-    Timer post_t;
-    oper.clearBandWidths();
-    out.mwTransform(TopDown, false); // add coarse scale contributions
-    out.mwTransform(BottomUp);
-    out.calcSquareNorm();
-    out.deleteGeneratedParents();
-    inp.deleteGenerated();
-    inp.deleteGeneratedParents();
-    post_t.stop();
 
-    print::time(10, "Time pre operator", pre_t);
-    print::time(10, "Time post operator", post_t);
-    print::separator(10, ' ');
+    //... in progress ...
 }
-*/
 
 
-//template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-//template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, FunctionTreeVector<1> &precTrees, int maxIter, bool absPrec);
+
+
+
+template
+void apply <1>
+(
+    double prec, ComplexObject< FunctionTree<1> > &out,
+    ComplexObject< ConvolutionOperator<1> > &oper, ComplexObject< FunctionTree<1> > &inp,
+    int maxIter, bool absPrec
+);
+
 
 } // namespace mrcpp

@@ -73,18 +73,24 @@ void apply
     int maxIter, bool absPrec
 )
 {
-    FunctionTree<D> temp_out( inp.real->getMRA() );
+    FunctionTree<D> temp1( inp.real->getMRA() );
+    FunctionTree<D> temp2( inp.real->getMRA() );
 
-    apply(prec, *out.real, *oper.real, *inp.real, maxIter, absPrec);
-    apply(prec, temp_out, *oper.imaginary, *inp.imaginary, maxIter, absPrec);
+    apply(prec, temp1, *oper.real, *inp.real, maxIter, absPrec);
+    apply(prec, temp2, *oper.imaginary, *inp.imaginary, maxIter, absPrec);
 
     auto Re_f_vec = FunctionTreeVector<D>();
-    Re_f_vec.push_back(std::make_tuple(1.0, out.real));
-    Re_f_vec.push_back(std::make_tuple(-1.0, &temp_out));
-    mrcpp::add(prec, *out.real, Re_f_vec);
+    Re_f_vec.push_back(std::make_tuple(1.0,  &temp1));
+    Re_f_vec.push_back(std::make_tuple(-1.0, &temp2));
+    add(prec, *out.real, Re_f_vec);
 
+    apply(prec, temp1, *oper.imaginary, *inp.real, maxIter, absPrec);
+    apply(prec, temp2, *oper.real, *inp.imaginary, maxIter, absPrec);
 
-    //... in progress ...
+    Re_f_vec.clear();
+    Re_f_vec.push_back(std::make_tuple(1.0, &temp1));
+    Re_f_vec.push_back(std::make_tuple(1.0, &temp2));
+    add(prec, *out.imaginary, Re_f_vec);
 }
 
 

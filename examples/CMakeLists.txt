@@ -9,7 +9,7 @@ list(APPEND _examples
     mpi_shared_tree
     mpi_send_tree
     mpi_matrix
-	schrodinger_semigroup1d
+    schrodinger_semigroup1d
     )
 
 foreach(_example IN LISTS _examples)

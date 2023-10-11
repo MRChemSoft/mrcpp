@@ -38,7 +38,7 @@ JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double treshold)
     for(int l = 1 - N; l < 0; l++  )
         integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
 }
-
+/*
 JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
 {
     scaling = other.scaling;
@@ -51,7 +51,6 @@ JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
         integrals.push_back(newRow);
     }    
 }
-
 JpowerIntegrals::~JpowerIntegrals()
 {
     //for (auto& integral : integrals) 
@@ -61,6 +60,7 @@ JpowerIntegrals::~JpowerIntegrals()
     // The loop is probably not needed for the complete memory deallocation
     integrals.clear();
 }
+*/
 
 /// @brief in progress
 /// @param index - in progress
@@ -73,12 +73,12 @@ std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
 
 std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_inetgarls(int l, double a, int M, double treshold)
 {
-    //const double pi = 3.1415926535897932384626433832795;
-    const std::complex<double> I(0.0, 1.0);  // Imaginary unit
-    const std::complex<double> J_0 = 0.25 * std::exp(-0.25 * I * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25 * I * static_cast<double>(l * l) / a);
-    const std::complex<double> beta(0, 0.5 / a);
-    const std::complex<double> alpha = static_cast<double>(l) * beta;
+    using namespace std::complex_literals;
 
+    std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
+    std::complex<double> beta(0, 0.5 / a);
+    auto alpha = static_cast<double>(l) * beta;
+    
     std::vector<std::complex<double>> J = {0.0, J_0};
 
     for (int m = 0; m < M; m++)

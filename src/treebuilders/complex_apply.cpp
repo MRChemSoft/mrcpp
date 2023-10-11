@@ -58,10 +58,22 @@ namespace mrcpp {
  * - Repeat until convergence or `maxIter` is reached
  * - `prec < 0` or `maxIter = 0` means NO refinement
  * - `maxIter < 0` means no bound
+ * 
+ * The default is to work with relative precision
+ * (stop when the wavelet coefficients are below a given (small) fraction of
+ * function norm.
+ * Sometimes it is better to use absolute precision (e.g. a contribution in a sum)
+ * which means stop once wavelet coefficients are below a certain (absoute) value
+ * Rel prec ∣d∣<ϵ/∣f∣
+ * Abs prec ∣d∣<ϵ
+ * The two ϵ are not necessarily the same.
+ * The first one is (in general) the overall precision of the calculation (not always...)
+ * The second one depends on the particular operation which you are performing.
  *
  * @note This algorithm will start at whatever grid is present in the `out`
  * tree when the function is called (this grid should however be EMPTY, e.i.
  * no coefs).
+ * \todo !!! Here should be given a method for greed cleaning !!!
  * 
  *
  */

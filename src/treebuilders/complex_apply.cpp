@@ -90,19 +90,14 @@ void apply
 
     apply(prec, temp1, *oper.real, *inp.real, maxIter, absPrec);
     apply(prec, temp2, *oper.imaginary, *inp.imaginary, maxIter, absPrec);
+    add(prec, *out.real, 1.0, temp1, -1.0, temp2);
 
-    auto Re_f_vec = FunctionTreeVector<D>();
-    Re_f_vec.push_back(std::make_tuple(1.0,  &temp1));
-    Re_f_vec.push_back(std::make_tuple(-1.0, &temp2));
-    add(prec, *out.real, Re_f_vec);
+    //temp1.setZero();
+    //temp2.setZero();
 
     apply(prec, temp1, *oper.imaginary, *inp.real, maxIter, absPrec);
     apply(prec, temp2, *oper.real, *inp.imaginary, maxIter, absPrec);
-
-    Re_f_vec.clear();
-    Re_f_vec.push_back(std::make_tuple(1.0, &temp1));
-    Re_f_vec.push_back(std::make_tuple(1.0, &temp2));
-    add(prec, *out.imaginary, Re_f_vec);
+    add(prec, *out.imaginary, 1.0, temp1, 1.0, temp2);
 }
 
 

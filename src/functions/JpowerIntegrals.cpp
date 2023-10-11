@@ -29,14 +29,14 @@
 namespace mrcpp {
 
 
-JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double treshold)
+JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double threshold)
 {
     this->scaling = scaling;
     int N = 1 << scaling;
     for(int l = 0; l < N; l++  )
-        integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
+        integrals.push_back( calculate_J_power_integrals(l, a, M, threshold) );
     for(int l = 1 - N; l < 0; l++  )
-        integrals.push_back( calculate_J_power_inetgarls(l, a, M, treshold) );
+        integrals.push_back( calculate_J_power_integrals(l, a, M, threshold) );
 }
 /*
 JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
@@ -71,7 +71,7 @@ std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
     return integrals[index];
 }
 
-std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_inetgarls(int l, double a, int M, double treshold)
+std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M, double threshold)
 {
     using namespace std::complex_literals;
 
@@ -87,7 +87,7 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_inetgarls(i
         std::complex<double> term2
         = J[J.size() - 2] * beta * static_cast<double>(m) / static_cast<double>(m + 2);
         std::complex<double> last = (term1 + term2) / static_cast<double>(m + 3);
-        if ( last.real() <  treshold && last.imag() <  treshold && last.real() > -treshold && last.imag() > -treshold ) break;
+        if ( last.real() <  threshold && last.imag() <  threshold && last.real() > -threshold && last.imag() > -threshold ) break;
         J.push_back(last);
     }
 

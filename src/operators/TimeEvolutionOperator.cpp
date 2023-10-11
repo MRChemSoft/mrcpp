@@ -113,8 +113,8 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
 
     int N = finest_scale;
     double a = time * std::pow(4, N + 1);
-    double treshold = o_prec / 100.0;
-    mrcpp::JpowerIntegrals J(a, N + 1, max_Jpower, treshold);
+    double threshold = o_prec / 100.0;
+    mrcpp::JpowerIntegrals J(a, N + 1, max_Jpower, threshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 //    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 

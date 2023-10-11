@@ -134,9 +134,9 @@ public:
     /// @param a : parameter a
     /// @param scaling : scaling level
     /// @param M : maximum amount of integrals for each l
-    /// @param treshold : lower limit for neglecting the integrals
+    /// @param threshold : lower limit for neglecting the integrals
     /// @details The array is orginised as a vector ordered as \f$l = 0, 1, 2, \ldots, 2^n - 1, 1 - 2^n, 2 - 2^n, \ldots, -2, -1 \f$.
-    JpowerIntegrals(double a, int scaling, int M, double treshold = 1.0e-15);
+    JpowerIntegrals(double a, int scaling, int M, double threshold = 1.0e-15);
     //JpowerIntegrals(const JpowerIntegrals& other);
 
     //~JpowerIntegrals();
@@ -145,7 +145,8 @@ public:
     std::vector<std::vector<std::complex<double>>> integrals;
 
     std::vector<std::complex<double>> & operator[](int index);
-    std::vector<std::complex<double>> calculate_J_power_inetgarls(int l, double a, int M, double treshold);
+private:
+    std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold);
 };
 
 } // namespace mrcpp

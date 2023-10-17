@@ -220,7 +220,7 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
  *
  * @details For all parameters that have been initialized in the constructor,
  * this function will compute the necessary derived parameters in each dimension.
- * The unit length is set to \textit{sfac} \f$ \cdot 2^{-n} \f$ where \textit{sfac} is the scaling factor (default 1.0) and n is the length scale.
+ * The unit length is set to \a sfac \f$ \cdot 2^{-n} \f$ where \a sfac is the scaling factor (default 1.0) and n is the length scale.
  * The unit length is the base unit which is used for the size and positioning of the boxes around origin.
  * The boxLength is the total length of the box in each dimension, which is the unit length times the number of boxes in that dimension.
  * The lowerBound is computed from the index of the lower corner of the box and the unit length.

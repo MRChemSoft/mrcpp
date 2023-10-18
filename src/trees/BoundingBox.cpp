@@ -32,18 +32,19 @@
 
 namespace mrcpp {
 
-/** @returns New BoundingBox object
+/** @brief Constructor for BoundingBox object.
  *
- * @param[in] box: [lower, upper] bound in all dimensions
+ * @param[in] box: [lower, upper] bound in all dimensions.
+ * @returns New BoundingBox object.
  *
  * @details Creates a box with appropriate root scale and scaling
  * factor to fit the given bounds, which applies to _all_ dimensions.
  * Root scale is chosen such that the scaling factor becomes 1 < sfac < 2.
  *
  * Limitations: Box must be _either_ [0,L] _or_ [-L,L], with L a positive integer.
+ * This is the most general constructor, which will create a world with no periodic boundary conditions.
  */
-template <int D>
-BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
+template <int D> BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
     if (box[1] < 1) {
         MSG_ERROR("Invalid upper bound: " << box[1]);
         box[1] = 1;
@@ -78,12 +79,22 @@ BoundingBox<D>::BoundingBox(std::array<int, 2> box) {
     setDerivedParameters();
 }
 
-/** @returns New BoundingBox object
+/** @brief Constructor for BoundingBox object.
  *
- * @param[in] n: Length scale, default 0
- * @param[in] l: Corner translation, default [0, 0, ...]
- * @param[in] nb: Number of boxes, default [1, 1, ...]
- * @param[in] sf: Scaling factor, default [1.0, 1.0, ...]
+ * @param[in] n: Length scale, default 0.
+ * @param[in] l: Corner translation, default [0, 0, ...].
+ * @param[in] nb: Number of boxes, default [1, 1, ...].
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...].
+ * @param[in] pbc: Periodic boundary conditions, default false.
+ * @returns New BoundingBox object.
+ *
+ * @details Creates a box with given parameters. The parameter n defines the length scale, which, together with sf, determines the unit length of each side of the boxes by \f$ [2^{-n}]^D \f$.
+ * The parameter l defines the corner translation of the lower corner of the box relative to the world origin.
+ * The parameter nb defines the number of boxes in each dimension.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
+ * This constructor is used for work in periodic systems.
+ *
  */
 template <int D>
 BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array<int, D> &nb, const std::array<double, D> &sf, bool pbc)
@@ -94,6 +105,19 @@ BoundingBox<D>::BoundingBox(int n, const std::array<int, D> &l, const std::array
     setDerivedParameters();
 }
 
+/** @brief Constructor for BoundingBox object.
+ *
+ * @param[in] idx: index of the lower corner of the box.
+ * @param[in] nb: Number of boxes, default [1, 1, ...].
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...].
+ * @returns New BoundingBox object.
+ *
+ * @details Creates a box with given parameters.
+ * The parameter idx defines the index of the lower corner of the box relative to the world origin.
+ * The parameter nb defines the number of boxes in each dimension.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * This constructor creates a world with no periodic boundary conditions.
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &nb, const std::array<double, D> &sf)
         : cornerIndex(idx) {
@@ -103,6 +127,16 @@ BoundingBox<D>::BoundingBox(const NodeIndex<D> &idx, const std::array<int, D> &n
     setDerivedParameters();
 }
 
+/** @brief Constructor for BoundingBox object.
+ *
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...].
+ * @param[in] pbc: Periodic boundary conditions, default true.
+ *
+ * @details Creates a box with given parameters.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
+ * This construtor is used for work in periodic systems.
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
         : cornerIndex() {
@@ -112,6 +146,17 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, bool pbc)
     setDerivedParameters();
 }
 
+/** @brief Constructor for BoundingBox object.
+ *
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...].
+ * @param[in] pbc: Periodic boundary conditions, default true.
+ * @returns New BoundingBox object.
+ *
+ * @details Creates a box with given parameters.
+ * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+ * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes specific dimensions periodic.
+ * This is used for work in periodic systems.
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc)
         : cornerIndex() {
@@ -121,6 +166,14 @@ BoundingBox<D>::BoundingBox(const std::array<double, D> &sf, std::array<bool, D>
     setDerivedParameters();
 }
 
+/** @brief Constructor for BoundingBox object.
+ *
+ * @param[in] box: Other BoundingBox object.
+ * @returns New BoundingBox object.
+ *
+ * @details Creates a box identical to the input box paramter.
+ * This constructor uses all parameters from the other BoundingBox to create a new one.
+ */
 template <int D>
 BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
         : cornerIndex(box.cornerIndex) {
@@ -130,6 +183,13 @@ BoundingBox<D>::BoundingBox(const BoundingBox<D> &box)
     setDerivedParameters();
 }
 
+/** @brief Assignment operator overload for BoundingBox object.
+ *
+ * @returns New BoundingBox object.
+ * @param[in] box: Other BoundingBox object.
+ *
+ * @details Allocates all parameters in this BoundingBox to be that of the other BoundingBox.
+ */
 template <int D> BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> &box) {
     if (&box != this) {
         this->cornerIndex = box.cornerIndex;
@@ -141,6 +201,13 @@ template <int D> BoundingBox<D> &BoundingBox<D>::operator=(const BoundingBox<D> 
     return *this;
 }
 
+/** @brief Sets the number of boxes in each dimension.
+ *
+ * @param[in] nb: Number of boxes, default [1, 1, ...].
+ *
+ * @details For each dimentions D it sets the number of boxes in that dimension in the nBoxes array and the total amount of boxes in the world in the totBoxes variable.
+ * This just sets counters for the number of boxes in each dimension.
+ */
 template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
     this->totBoxes = 1;
     for (int d = 0; d < D; d++) {
@@ -149,6 +216,16 @@ template <int D> void BoundingBox<D>::setNBoxes(const std::array<int, D> &nb) {
     }
 }
 
+/** @brief Computes and sets all derived parameters.
+ *
+ * @details For all parameters that have been initialized in the constructor,
+ * this function will compute the necessary derived parameters in each dimension.
+ * The unit length is set to \a sfac \f$ \cdot 2^{-n} \f$ where \a sfac is the scaling factor (default 1.0) and n is the length scale.
+ * The unit length is the base unit which is used for the size and positioning of the boxes around origin.
+ * The boxLength is the total length of the box in each dimension, which is the unit length times the number of boxes in that dimension.
+ * The lowerBound is computed from the index of the lower corner of the box and the unit length.
+ * The upperBound is computed to be the lower corner plus the total length in that dimension.
+ */
 template <int D> void BoundingBox<D>::setDerivedParameters() {
     assert(this->totBoxes > 0);
     const NodeIndex<D> &cIdx = this->cornerIndex;
@@ -161,6 +238,12 @@ template <int D> void BoundingBox<D>::setDerivedParameters() {
     }
 }
 
+/** @brief Sets the number of boxes in each dimension.
+ *
+ * @param[in] sf: Scaling factor, default [1.0, 1.0, ...].
+ *
+ * @details This checks that the sf variable has sane values before assigning it to the member variable scalingFactor.
+ */
 template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double, D> &sf) {
     assert(this->totBoxes > 0);
     for (auto &x : sf)
@@ -169,15 +252,36 @@ template <int D> void BoundingBox<D>::setScalingFactors(const std::array<double,
     if (scalingFactor == std::array<double, D>{}) scalingFactor.fill(1.0);
 }
 
+/** @brief Sets which dimensions are periodic.
+ *
+ * @param[in] pbc: Boolean which is used to set all dimension to either periodic or not
+ *
+ * @details this fills in the periodic array with the values from the input.
+ */
 template <int D> void BoundingBox<D>::setPeriodic(bool pbc) {
     this->periodic.fill(pbc);
 }
 
+/** @brief Sets which dimensions are periodic.
+ *
+ * @param[in] pbs: D-dimensional array holding boolean values for each dimension.
+ *
+ * @details This fills in the periodic array with the values from the input array.
+ */
 template <int D> void BoundingBox<D>::setPeriodic(std::array<bool, D> pbc) {
     this->periodic = pbc;
 }
 
-// Specialized for D=1 below
+/** @brief Fetches a NodeIndex object from a given box index.
+ *
+ * @param[in] bIdx: Box index, the index of the box we want to fetch the cell index from.
+ * @returns The NodeIndex object of the index given as it is in the Multiresolutoin analysis.
+ *
+ * @details During the adaptive refinement, each original box will contain an increasing number of smaller cells,
+ * each of which will be part of a specific node in the tree. These cells are divided adaptivelly. This function returns the NodeIndex
+ * object of the cell at the lower back corner of the box object indexed by bIdx.
+ * Specialized for D=1 below
+ */
 template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     assert(bIdx >= 0 and bIdx <= this->totBoxes);
     std::array<int, D> l;
@@ -196,7 +300,13 @@ template <int D> NodeIndex<D> BoundingBox<D>::getNodeIndex(int bIdx) const {
     return NodeIndex<D>(getScale(), l);
 }
 
-// Specialized for D=1 below
+/** @brief Fetches the index of a box from a given coordinate.
+ *
+ * @param[in] r: D-dimensional array representaing a coordinate in the simulation box
+ * @returns The index value of the boxes in the position given as it is in the generated world.
+ *
+ * @details Specialized for D=1 below
+ */
 template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
 
     if (this->isPeriodic()) { periodic::coord_manipulation<D>(r, this->getPeriodic()); }
@@ -224,7 +334,15 @@ template <int D> int BoundingBox<D>::getBoxIndex(Coord<D> r) const {
     return bIdx;
 }
 
-// Specialized for D=1 below
+/** @brief Fetches the index of a box from a given NodeIndex.
+ *
+ * @param[in] nIdx: NodeIndex object, representing the node and its index in the adaptive tree.
+ * @returns The index value of the boxes in which the NodeIndex object is mapping to.
+ *
+ * @details During the multiresolution analysis the boxes will be divided into smaller boxes, which means that each individual box will be part of a specific node in the tree.
+ * Each node will get its own index value, but will still be part of one of the original boxes of the world.
+ * Specialized for D=1 below
+ */
 template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
     if (this->isPeriodic()) { periodic::index_manipulation<D>(nIdx, this->getPeriodic()); };
 
@@ -248,6 +366,13 @@ template <int D> int BoundingBox<D>::getBoxIndex(NodeIndex<D> nIdx) const {
     return bIdx;
 }
 
+/** @brief Prints information about the BoundinBox object.
+ *
+ * @param[in] o: Output stream variable which will be used to print the information
+ * @returns The output stream variable.
+ *
+ * @details A function which prints information about the BoundingBox object.
+ */
 template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     int oldprec = Printer::setPrecision(5);
     o << std::fixed;
@@ -276,6 +401,27 @@ template <int D> std::ostream &BoundingBox<D>::print(std::ostream &o) const {
     return o;
 }
 
+/** @brief Fetches a NodeIndex object from a given box index, specialiced for 1-D.
+ *
+ * @param[in] bIdx: Box index, the index of the box we want to fetch the cell index from.
+ * @returns The NodeIndex object of the index given as it is in the Multiresolutoin analysis.
+ *
+ * @details During the adaptive refinement, each original box will contain an increasing number of smaller cells,
+ * each of which will be part of a specific node in the tree. These cells are divided adaptivelly. This function returns the NodeIndex
+ * object of the cell at the lower back corner of the box object indexed by bIdx.
+ */
+template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
+    const NodeIndex<1> &cIdx = this->cornerIndex;
+    int n = cIdx.getScale();
+    int l = bIdx + cIdx[0];
+    return NodeIndex<1>(n, {l});
+}
+
+/** @brief Fetches the index of a box from a given coordinate, specialized for 1D.
+ *
+ * @param[in] r: 1-dimensional array representaing a coordinate in the simulation box
+ * @returns The index value of the boxes in the position given as it is in the generated world.
+ */
 template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
 
     if (this->isPeriodic()) { periodic::coord_manipulation<1>(r, this->getPeriodic()); }
@@ -289,13 +435,14 @@ template <> int BoundingBox<1>::getBoxIndex(Coord<1> r) const {
     return static_cast<int>(iint);
 }
 
-template <> NodeIndex<1> BoundingBox<1>::getNodeIndex(int bIdx) const {
-    const NodeIndex<1> &cIdx = this->cornerIndex;
-    int n = cIdx.getScale();
-    int l = bIdx + cIdx[0];
-    return NodeIndex<1>(n, {l});
-}
-
+/** @brief Fetches the index of a box from a given NodeIndex specialized for 1-D.
+ *
+ * @param[in] nIdx: NodeIndex object, representing the node and its index in the adaptive tree.
+ * @returns The index value of the boxes in which the NodeIndex object is mapping to.
+ *
+ * @details During the multiresolution analysis the boxes will be divided into smaller boxes, which means that each individual box will be part of a specific node in the tree.
+ * Each node will get its own index value, but will still be part of one of the original boxes of the world.
+ */
 template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
     if (this->isPeriodic()) { periodic::index_manipulation<1>(nIdx, this->getPeriodic()); };
 

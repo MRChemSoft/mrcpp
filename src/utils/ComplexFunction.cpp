@@ -441,6 +441,28 @@ void cplxfunc::multiply(ComplexFunction &out, ComplexFunction inp_a, ComplexFunc
     multiply_imag(out, inp_a, inp_b, prec, absPrec, useMaxNorms);
 }
 
+/** @brief out = inp_a * f
+ *
+ */
+void cplxfunc::multiply(ComplexFunction &out, ComplexFunction &inp_a, RepresentableFunction<3> &f, double prec, int nrefine) {
+    // uses the mpifuncvec multiply
+    MPI_FuncVector mpi_funcvec_a;
+    mpi_funcvec_a.push_back(inp_a);
+    MPI_FuncVector mpi_funcvec_out;
+    mpi_funcvec_out = mpifuncvec::multiply(mpi_funcvec_a, f, prec, nullptr, nrefine, true);
+    out = mpi_funcvec_out[0];
+}
+
+/** @brief out = inp_a * f
+ *
+ */
+void cplxfunc::multiply(ComplexFunction &out, FunctionTree<3> &inp_a, RepresentableFunction<3> &f, double prec, int nrefine) {
+    ComplexFunction cplxfunc_a;
+    cplxfunc_a.setReal(&inp_a);
+    cplxfunc::multiply(out, cplxfunc_a, f, prec, nrefine);
+    cplxfunc_a.setReal(nullptr); // otherwise inp_a is deleted by cplxfunc_a destructor
+}
+
 /** @brief out = c_0*inp_0 + c_1*inp_1 + ... + c_N*inp_N
  *
  */
@@ -1066,24 +1088,21 @@ void save_nodes(MPI_FuncVector &Phi, FunctionTree<3> &refTree, BankAccount &acco
  * in parallel using a local representation.
  * Input trees are extended by one scale at most.
  */
-MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, ComplexFunction *Func, int nrefine) {
+MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec, ComplexFunction *Func, int nrefine, bool all) {
 
     int N = Phi.size();
     const int D = 3;
     bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
-    if (serial) nrefine = 2;
 
     // 1a) extend grid where f is large (around nuclei)
     // TODO: do it in save_nodes + refTree, only saving the extra nodes, without keeping them permanently. Or refine refTree?
 
     for (int i = 0; i < N; i++) {
         if (!mpi::my_orb(i)) continue;
-        if (mrcpp::mpi::wrk_rank == 0) {
-            int irefine = 0;
-            while (Phi[i].hasReal() and irefine < nrefine and refine_grid(Phi[i].real(), f) > 0) irefine++;
-            irefine = 0;
-            while (Phi[i].hasImag() and irefine < nrefine and refine_grid(Phi[i].imag(), f) > 0) irefine++;
-        }
+        int irefine = 0;
+        while (Phi[i].hasReal() and irefine < nrefine and refine_grid(Phi[i].real(), f) > 0) irefine++;
+        irefine = 0;
+        while (Phi[i].hasImag() and irefine < nrefine and refine_grid(Phi[i].imag(), f) > 0) irefine++;
     }
 
     // 1b) make union tree without coefficients
@@ -1284,7 +1303,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                         fval[j] = f.evalf(r);
                     }
                 } else {
-                    Func->real().getNodeCoeff(nIdx, nCoefs, fval); // fetch coef from Bank
+                    Func->real().getNodeCoeff(nIdx, fval); // fetch coef from Bank
                     Fnode.attachCoefs(fval);
                     Fnode.mwTransform(Reconstruction);
                     Fnode.cvTransform(Forward);
@@ -1316,7 +1335,6 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
             Fnode.attachCoefs(nullptr); // to avoid deletion of valid multipliedCoeff by destructor
         }
         mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
-        // if(mrcpp::mpi::wrk_rank==0){std::cout<<" not found "<<count2<<" of "<<count1<<std::endl;}
     }
 
     // 5) reconstruct trees using multiplied nodes.
@@ -1349,7 +1367,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
         }
     } else {
         for (int j = 0; j < Neff; j++) {
-            if (not mpi::my_orb(j % N)) continue;
+            if (not mpi::my_orb(j % N) and not all) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
             std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx in refTree
@@ -1380,7 +1398,7 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                     out[j].real().calcSquareNorm();
                     out[j].real().resetEndNodeTable();
                     // out[j].real().crop(prec, 1.0, false); //bad convergence if out is cropped
-                    Phi[j].real().crop(prec, 1.0, false); // restablishes original Phi
+                    if (nrefine > 0) Phi[j].real().crop(prec, 1.0, false); // restablishes original Phi
                 }
             } else {
                 if (Phi[j % N].hasImag()) {
@@ -1389,8 +1407,8 @@ MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double
                     out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
                     out[j % N].imag().mwTransform(BottomUp);
                     out[j % N].imag().calcSquareNorm();
-                    out[j % N].imag().crop(prec, 1.0, false);
-                    Phi[j % N].imag().crop(prec, 1.0, false);
+                    // out[j % N].imag().crop(prec, 1.0, false);
+                    if (nrefine > 0) Phi[j % N].imag().crop(prec, 1.0, false);
                 }
             }
 

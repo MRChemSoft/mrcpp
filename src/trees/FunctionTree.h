@@ -33,8 +33,6 @@
 
 namespace mrcpp {
 
-class BankAccount;
-
 /** @class FunctionTree
  *
  * @brief Function representation in MW basis
@@ -113,12 +111,10 @@ public:
     void appendTreeNoCoeff(MWTree<D> &inTree);
 
     // tools for use of local (nodes are stored in Bank) representation
-    int saveNodesAndRmCoeff();                         // put all nodes coefficients in Bank and delete all coefficients
-    void getNodeCoeff(int id, int size, double *data); // fetch coefficient from a specific node stored in Bank
+    int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
 protected:
     std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) const override;
-    BankAccount *NodesCoeff = nullptr;
 
     void allocRootNodes();
 };

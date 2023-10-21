@@ -34,6 +34,7 @@
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
+#include "utils/parallel.h"
 #include "utils/tree_utils.h"
 
 using namespace Eigen;
@@ -409,6 +410,7 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
  * coefficients for the children
  */
 template <int D> void MWNode<D>::threadSafeGenChildren() {
+    if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }
     MRCPP_SET_OMP_LOCK();
     if (isLeafNode()) {
         genChildren();
@@ -734,7 +736,7 @@ template <int D> Coord<D> MWNode<D>::getCenter() const {
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
     auto &l = getNodeIndex();
     auto r = Coord<D>{};
-    for (int d = 0; d < D; d++) r[d] = scaling_factor[d]*two_n*(l[d] + 0.5);
+    for (int d = 0; d < D; d++) r[d] = scaling_factor[d] * two_n * (l[d] + 0.5);
     return r;
 }
 
@@ -1076,10 +1078,16 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
- * node is in fact decending from this node.
+ * node is in fact descending from this node.
  */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
+        if (tree->isLocal) {
+            // has to fetch coeff in Bank. NOT USED YET
+            int ncoefs = (1 << D) * this->getKp1_d();
+            coefs = new double[ncoefs]; // TODO must be cleaned at some stage
+            tree->getNodeCoeff(idx, coefs);
+        }
         assert(getNodeIndex() == idx);
         return this;
     }

@@ -32,6 +32,13 @@
 
 namespace mrcpp {
 
+/** @class MWOperator
+ *
+ * @brief Fixme
+ *
+ * @details Fixme
+ *
+ */
 template <int D>
 class MWOperator {
 public:

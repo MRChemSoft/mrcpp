@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -69,7 +69,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
 
         Coord<1> x{r_min};
         while (x[0] < r_max) {
-            REQUIRE(helmholtz.evalf(x) == Approx(std::exp(-mu * x[0]) / x[0]).epsilon(2.0 * exp_prec));
+            REQUIRE(helmholtz.evalf(x) == Catch::Approx(std::exp(-mu * x[0]) / x[0]).epsilon(2.0 * exp_prec));
             x[0] *= 1.5;
         }
         SECTION("Project Helmholtz' kernel") {
@@ -188,14 +188,14 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
     psi_np1.rescale(-1.0 / (2.0 * pi));
 
     double norm = std::sqrt(psi_np1.getSquareNorm());
-    REQUIRE(norm == Approx(1.0).epsilon(apply_prec));
+    REQUIRE(norm == Catch::Approx(1.0).epsilon(apply_prec));
 
     FunctionTree<3> d_psi(MRA);
     copy_grid(d_psi, psi_np1);
     add(-1.0, d_psi, 1.0, psi_np1, -1.0, psi_n);
 
     double error = std::sqrt(d_psi.getSquareNorm());
-    REQUIRE(error == Approx(0.0).margin(apply_prec));
+    REQUIRE(error == Catch::Approx(0.0).margin(apply_prec));
 }
 
 TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [helmholtz_operator], [mw_operator]") {
@@ -235,10 +235,10 @@ TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [he
 
     add(apply_prec, in_out_tree, 1.0, in_tree, 1.0, out_tree);
 
-    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
-    REQUIRE(in_out_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(in_out_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(in_out_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(in_out_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
 }
 
 TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz], [helmholtz_operator], [mw_operator]. [negative_scale]") {
@@ -271,7 +271,7 @@ TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz
 
     apply(apply_prec, sol_tree, H, source_tree);
 
-    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
 }
 } // namespace helmholtz_operator

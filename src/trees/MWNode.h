@@ -23,9 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *  Simple n-dimensional node
- */
 
 #pragma once
 
@@ -40,6 +37,20 @@
 
 namespace mrcpp {
 
+/** @class MWNode
+ *
+ * @brief Base class for Multiwavelet nodes
+ *
+ * @details A MWNode will contain the scaling and wavelet coefficients
+ * to represent functions or operators within a Multiwavelet
+ * framework. The nodes are in multidimensional. The dimensionality is
+ * set thoucgh the template parameter D=1,2,3. In addition to the
+ * coefficients the node contains metadata such as the scale, the
+ * translation index, the norm, pointers to parent node and child
+ * nodes, pointer to the corresponding MWTree etc... See memeber and
+ * data descriptions for details.
+ * 
+ */
 template <int D> class MWNode {
 public:
     MWNode(const MWNode<D> &node, bool allocCoef = true);
@@ -155,24 +166,24 @@ public:
     friend class OperatorNode;
 
 protected:
-    MWTree<D> *tree{nullptr};
+    MWTree<D> *tree{nullptr};    ///< Tree the node belongs to
     MWNode<D> *parent{nullptr};  ///< Parent node
     MWNode<D> *children[1 << D]; ///< 2^D children
 
-    double squareNorm{-1.0};
-    double componentNorms[1 << D]; ///< 2^D components
-    double maxSquareNorm{-1.0};    // Largest squared norm among itself and descendants.
-    double maxWSquareNorm{-1.0};   // Largest wavelet squared norm among itself and descendants.
+    double squareNorm{-1.0};       ///< Squared norm of all 2^D (k+1)^D coefficients
+    double componentNorms[1 << D]; ///< Squared norms of the separeted 2^D components 
+    double maxSquareNorm{-1.0};    ///< Largest squared norm among itself and descendants.
+    double maxWSquareNorm{-1.0};   ///< Largest wavelet squared norm among itself and descendants.
                                    // NB: must be set before used.
-    double *coefs{nullptr};
+    double *coefs{nullptr};        ///< the 2^D (k+1)^D MW coefficients
     int n_coefs{0};
 
-    int serialIx{-1};       // index in serial Tree
-    int parentSerialIx{-1}; // index of parent in serial Tree, or -1 for roots
-    int childSerialIx{-1};  // index of first child in serial Tree, or -1 for leafnodes/endnodes
+    int serialIx{-1};       ///< index in serial Tree
+    int parentSerialIx{-1}; ///< index of parent in serial Tree, or -1 for roots
+    int childSerialIx{-1};  ///< index of first child in serial Tree, or -1 for leafnodes/endnodes
 
-    NodeIndex<D> nodeIndex;
-    HilbertPath<D> hilbertPath;
+    NodeIndex<D> nodeIndex;     ///< Scale and translation of the node
+    HilbertPath<D> hilbertPath; ///< To be documented
 
     MWNode();
     MWNode(MWTree<D> *tree, int rIdx);

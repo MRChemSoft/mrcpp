@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -117,7 +117,7 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     double abs_err = std::sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err / df_norm;
 
-    REQUIRE(rel_err == Approx(0.0).margin(prec));
+    REQUIRE(rel_err == Catch::Approx(0.0).margin(prec));
 
     delete mra;
 }
@@ -158,7 +158,7 @@ template <int D> void testDifferentiationPH(int order) {
     double abs_err = std::sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err / df_norm;
 
-    REQUIRE(rel_err == Approx(0.0).margin(prec));
+    REQUIRE(rel_err == Catch::Approx(0.0).margin(prec));
 
     delete mra;
 }
@@ -179,10 +179,10 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
 
-    REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({20.0, 0.0, 0.0}) == Approx(dg_func({20.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({-5.0, 0.0, 0.0}) == Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Catch::Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({20.0, 0.0, 0.0}) == Catch::Approx(dg_func({20.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({-5.0, 0.0, 0.0}) == Catch::Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec));
 
     delete mra;
 }
@@ -207,10 +207,10 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
 
-    REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({20.0, 0.0, 0.0}) == Approx(dg_func({20.0, 0.0, 0.0})).margin(prec));
-    REQUIRE(dg_tree.evalf({-5.0, 0.0, 0.0}) == Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(dg_func({0.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({12.0, 0.0, 0.0}) == Catch::Approx(dg_func({12.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({20.0, 0.0, 0.0}) == Catch::Approx(dg_func({20.0, 0.0, 0.0})).margin(prec));
+    REQUIRE(dg_tree.evalf({-5.0, 0.0, 0.0}) == Catch::Approx(dg_func({-5.0, 0.0, 0.0})).margin(prec));
 
     delete mra;
 }
@@ -252,7 +252,7 @@ template <int D> void testDifferentiationBS(int order) {
     double abs_err = std::sqrt(err_tree.getSquareNorm());
     double rel_err = abs_err / df_norm;
 
-    REQUIRE(rel_err == Approx(0.0).margin(prec * 10.0));
+    REQUIRE(rel_err == Catch::Approx(0.0).margin(prec * 10.0));
     // Multiplying prec by 10.0 to make the less accurate 3rd order pass.
     delete mra;
 }
@@ -341,9 +341,9 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     REQUIRE(grad_f.size() == 3);
 
     const Coord<3> r{1.1, 0.4, 0.2};
-    REQUIRE(mrcpp::get_func(grad_f, 0).evalf_precise(r) == Approx(fx(r)).epsilon(prec));
-    REQUIRE(mrcpp::get_func(grad_f, 1).evalf_precise(r) == Approx(fy(r)).epsilon(prec));
-    REQUIRE(mrcpp::get_func(grad_f, 2).evalf_precise(r) == Approx(fz(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 0).evalf_precise(r) == Catch::Approx(fx(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 1).evalf_precise(r) == Catch::Approx(fy(r)).epsilon(prec));
+    REQUIRE(mrcpp::get_func(grad_f, 2).evalf_precise(r) == Catch::Approx(fz(r)).epsilon(prec));
     mrcpp::clear(grad_f, true);
 
     delete mra;
@@ -385,7 +385,7 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     for (int i = 0; i < 10; i++) {
         const Coord<3> r{-0.8 + 0.3 * i, 0.4 - 0.1 * i, 0.2 + 0.01 * i};
         const double ref = 1.0 * fx(r) + 2.0 * fy(r) + 3.0 * fz(r);
-        REQUIRE(div_f.evalf(r) == Approx(ref).epsilon(prec));
+        REQUIRE(div_f.evalf(r) == Catch::Approx(ref).epsilon(prec));
     }
 
     delete mra;

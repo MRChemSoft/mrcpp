@@ -131,20 +131,8 @@ TEST_CASE("Apply Schrodinger's evolution operator", "[apply_schrodinger_evolutio
     
     double tolerance = prec * prec / 10.0;         //1.0e-15
     
-    REQUIRE( Re_sq_norm < tolerance );
-    REQUIRE( Re_sq_norm > -tolerance );
-    REQUIRE( Im_sq_norm < tolerance );
-    REQUIRE( Im_sq_norm > -tolerance );
-    
-    //The following gives rise to FAILED
-    /*
-    std::cout << "Re_sq_norm : " << Re_sq_norm << std::endl;
-    std::cout << "Im_sq_norm : " << Im_sq_norm << std::endl;
-    std::cout << "prec^2 / 100.0 : " << prec * prec / 10.0 << std::endl;
-    
-    REQUIRE(Re_sq_norm == Catch::Approx(0.0).epsilon(tolerance));
-    REQUIRE(Im_sq_norm == Catch::Approx(0.0).epsilon(tolerance));
-    */
+    REQUIRE(Re_sq_norm == Catch::Approx(0.0).margin(tolerance));
+    REQUIRE(Im_sq_norm == Catch::Approx(0.0).margin(tolerance));
 }
 
 

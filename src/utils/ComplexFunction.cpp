@@ -367,7 +367,7 @@ ComplexDouble cplxfunc::node_norm_dot(ComplexFunction bra, ComplexFunction ket, 
  * This is achieved by building a new grid for the real and imaginary parts and
  * copying.
  */
-void cplxfunc::deep_copy(ComplexFunction &out, ComplexFunction &inp) {
+void cplxfunc::deep_copy(ComplexFunction &out, const ComplexFunction &inp) {
     bool need_to_copy = not(out.isShared()) or mpi::share_master();
     out.funcMRA = inp.funcMRA;
     if (inp.hasReal()) {

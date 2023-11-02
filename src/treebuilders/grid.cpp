@@ -294,7 +294,7 @@ template <int D> int refine_grid(FunctionTree<D> &out, double prec, bool absPrec
  * leaving the function representation unchanged, but on a larger grid.
  *
  */
-template <int D> int refine_grid(FunctionTree<D> &out, FunctionTree<D> &inp) {
+template <int D> int refine_grid(FunctionTree<D> &out, const FunctionTree<D> &inp) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D> builder;
@@ -333,21 +333,21 @@ template void build_grid<3>(FunctionTree<3> &out, const GaussExp<3> &inp, int ma
 template void build_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp, int maxIter);
 template void build_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp, int maxIter);
 template void build_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp, int maxIter);
-template void build_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp, int maxIter);
-template void build_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp, int maxIter);
-template void build_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp, int maxIter);
-template void build_grid<1>(FunctionTree<1> &out, FunctionTreeVector<1> &inp, int maxIter);
-template void build_grid<2>(FunctionTree<2> &out, FunctionTreeVector<2> &inp, int maxIter);
-template void build_grid<3>(FunctionTree<3> &out, FunctionTreeVector<3> &inp, int maxIter);
-template void build_grid<1>(FunctionTree<1> &out, std::vector<FunctionTree<1> *> &inp, int maxIter);
-template void build_grid<2>(FunctionTree<2> &out, std::vector<FunctionTree<2> *> &inp, int maxIter);
-template void build_grid<3>(FunctionTree<3> &out, std::vector<FunctionTree<3> *> &inp, int maxIter);
-template void copy_func<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
-template void copy_func<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
-template void copy_func<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
-template void copy_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
-template void copy_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
-template void copy_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
+template void build_grid<1>(FunctionTree<1> &out, const FunctionTree<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const FunctionTree<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const FunctionTree<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, const FunctionTreeVector<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const FunctionTreeVector<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const FunctionTreeVector<3> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, const std::vector<FunctionTree<1> *> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const std::vector<FunctionTree<2> *> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const std::vector<FunctionTree<3> *> &inp, int maxIter);
+template void copy_func<1>(FunctionTree<1> &out, const FunctionTree<1> &inp);
+template void copy_func<2>(FunctionTree<2> &out, const FunctionTree<2> &inp);
+template void copy_func<3>(FunctionTree<3> &out, const FunctionTree<3> &inp);
+template void copy_grid<1>(FunctionTree<1> &out, const FunctionTree<1> &inp);
+template void copy_grid<2>(FunctionTree<2> &out, const FunctionTree<2> &inp);
+template void copy_grid<3>(FunctionTree<3> &out, const FunctionTree<3> &inp);
 template void clear_grid<1>(FunctionTree<1> &out);
 template void clear_grid<2>(FunctionTree<2> &out);
 template void clear_grid<3>(FunctionTree<3> &out);
@@ -357,9 +357,9 @@ template int refine_grid<3>(FunctionTree<3> &out, int scales);
 template int refine_grid<1>(FunctionTree<1> &out, double prec, bool absPrec);
 template int refine_grid<2>(FunctionTree<2> &out, double prec, bool absPrec);
 template int refine_grid<3>(FunctionTree<3> &out, double prec, bool absPrec);
-template int refine_grid<1>(FunctionTree<1> &out, FunctionTree<1> &inp);
-template int refine_grid<2>(FunctionTree<2> &out, FunctionTree<2> &inp);
-template int refine_grid<3>(FunctionTree<3> &out, FunctionTree<3> &inp);
+template int refine_grid<1>(FunctionTree<1> &out, const FunctionTree<1> &inp);
+template int refine_grid<2>(FunctionTree<2> &out, const FunctionTree<2> &inp);
+template int refine_grid<3>(FunctionTree<3> &out, const FunctionTree<3> &inp);
 template int refine_grid<1>(FunctionTree<1> &out, const RepresentableFunction<1> &inp);
 template int refine_grid<2>(FunctionTree<2> &out, const RepresentableFunction<2> &inp);
 template int refine_grid<3>(FunctionTree<3> &out, const RepresentableFunction<3> &inp);

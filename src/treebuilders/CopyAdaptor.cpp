@@ -30,14 +30,14 @@
 namespace mrcpp {
 
 template <int D>
-CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
+CopyAdaptor<D>::CopyAdaptor(const FunctionTree<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms) {
     setBandWidth(bw);
     tree_vec.push_back(std::make_tuple(1.0, &t));
 }
 
 template <int D>
-CopyAdaptor<D>::CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw)
+CopyAdaptor<D>::CopyAdaptor(const FunctionTreeVector<D> &t, int ms, int *bw)
         : TreeAdaptor<D>(ms)
         , tree_vec(t) {
     setBandWidth(bw);

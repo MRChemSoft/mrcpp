@@ -11,3 +11,4 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    MWTree
    MWNode
    BoundingBox
+   CrossCorrelationCache

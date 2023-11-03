@@ -15,3 +15,4 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    LegendreBasis
    InterpolatingBasis
    TimeEvolutionOperator
+   JpowerIntegrals

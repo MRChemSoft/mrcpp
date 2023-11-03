@@ -79,7 +79,7 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
 /** @brief Fetches the cross correlation coefficients.
  *
  * @param[in] order: Dimension of \f$ V_0 \subset L^2(\mathbb R) \f$ minus one,
- * that is the maximum degree @f( k @f) of polynomials in \f$ V_0 \subset L^2(0, 1) \f$.
+ * that is the maximum degree \f$ k \f$ of polynomials in \f$ V_0 \subset L^2(0, 1) \f$.
  * @returns The right matrix of cross correlation coefficients.
  *
  * @details The cross correlation coefficients
@@ -92,7 +92,7 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
  *   \phi_j(x - z)
  *   \phi_p(z)
  * \f]
- * with $i, j = 0, \ldots, k$ and $p = 0, \ldots, 2k + 1$.
+ * with \f$ i, j = 0, \ldots, k \f$ and \f$ p = 0, \ldots, 2k + 1 \f$.
  * They are grouped in the so called right matrix
  * \f[
  *   \begin{pmatrix}

@@ -32,9 +32,9 @@ namespace mrcpp {
 /** @brief Free-particle time evolution on real line.
  *
  * @param[in] x: space coordinate in \f$ \mathbb R \f$.
- * @param[in] x0: center of gaussian function at zero time moment.
+ * @param[in] x0: \f$ x_0 \f$ center of gaussian function at zero time moment.
  * @param[in] t: time moment.
- * @param[in] sigma: width of the initial gaussian wave.
+ * @param[in] sigma: \f$ \sigma \f$ width of the initial gaussian wave.
  *
  * @details Analytical solution of a one dimensional free-particle
  * movement
@@ -49,7 +49,7 @@ namespace mrcpp {
  * where \f$ t, \sigma > 0 \f$.
  * 
  * @returns The complex-valued wave function
- * \f( \psi(x, t) \f)
+ * \f$ \psi(x, t) \f$
  * at the specified space coordinate and time.
  * 
  * 
@@ -82,7 +82,7 @@ std::complex<double> free_particle_analytical_solution(double x, double x0, doub
  * and \f$ g_{a,b} (x) = 0 \f$ elsewhere.
  * 
  * @returns The non-negative value
- * \f( g_{a,b} (x) \f)
+ * \f$ g_{a,b} (x) \f$
  * at the specified space coordinate \f$ x \in \mathbb R \f$.
  * 
  * 

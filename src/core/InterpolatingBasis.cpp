@@ -43,6 +43,11 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void InterpolatingBasis::initScalingBasis() {
     int qOrder = getQuadratureOrder();
     int sOrder = getScalingOrder();
@@ -69,11 +74,23 @@ void InterpolatingBasis::initScalingBasis() {
     }
 }
 
+
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
     for (int k = 0; k < q_order; k++) { this->quadVals(k, k) = 1.0; }
 }
 
+
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void InterpolatingBasis::calcCVMaps() {
     int q_order = getQuadratureOrder();
     getQuadratureCache(qc);

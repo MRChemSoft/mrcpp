@@ -78,8 +78,8 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
 
 /** @brief Fetches the cross correlation coefficients.
  *
- * @param[in] order: Dimension of \f( V_0 \subset L^2(\mathbb R) \f) minus one,
- * that is the maximum degree \f( k \f) of polynomials in \f( V_0 \subset L^2(0, 1) \f).
+ * @param[in] order: Dimension of \f$ V_0 \subset L^2(\mathbb R) \f$ minus one,
+ * that is the maximum degree @f( k @f) of polynomials in \f$ V_0 \subset L^2(0, 1) \f$.
  * @returns The right matrix of cross correlation coefficients.
  *
  * @details The cross correlation coefficients

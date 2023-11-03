@@ -39,7 +39,6 @@ namespace mrcpp {
  * @details A two dimensional array consisting of integrals $J_m$ as follows.
  * Our main operator has the following expansion
 \begin{equation}
-\label{operator_correlation_expansion}
     \left[ \sigma_l^{\mathfrak n} \right]_{pj}
     (a)
     =
@@ -48,10 +47,9 @@ namespace mrcpp {
     \widetilde J_{2k + j + p}(l, a)
     ,
 \end{equation}
-where $a = t \mathfrak N^2 = t 4^{\mathfrak n}$
+where \f$a = t \mathfrak N^2 = t 4^{\mathfrak n}\f$
 and
 \begin{equation}
-\label{power_integral}
     \widetilde J_m
     =
     \frac
@@ -78,10 +76,9 @@ and
     \rho^m
     d \rho
 \end{equation}
-satisfying the following relation
-\begin{equation}
-\label{power_integral_recursion}
-    \widetilde J_{m+1}
+ * satisfying the following relation
+ * \begin{equation}
+ *     \widetilde J_{m+1}
     =
     \frac
     {
@@ -111,19 +108,19 @@ satisfying the following relation
     \right)
     , \quad
     m = 0, 1, 2, \ldots,
-\end{equation}
-with $\widetilde J_{-1} = 0$ and
-\begin{equation}
-\label{power_integral_0}
-    \widetilde J_0
-    =
-    \frac{ e^{ -i \frac{\pi}4 } }{ 4 \sqrt{ \pi a } }
-    \exp
-    \left(
-        \frac{il^2}{4a}
-    \right)
-    .
-\end{equation}
+ * \end{equation}
+ * with \f$\widetilde J_{-1} = 0 \f$ and
+ * \begin{equation}
+ * \label{power_integral_0}
+ *     \widetilde J_0
+ *     =
+ *     \frac{ e^{ -i \frac{\pi}4 } }{ 4 \sqrt{ \pi a } }
+ *     \exp
+ *     \left(
+ *         \frac{il^2}{4a}
+ *     \right)
+ *     .
+ * \end{equation}
  *
  *  
  */

@@ -12,3 +12,6 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    MWNode
    BoundingBox
    CrossCorrelationCache
+   LegendreBasis
+   InterpolatingBasis
+

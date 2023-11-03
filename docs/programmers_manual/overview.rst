@@ -14,7 +14,12 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    CrossCorrelationCache
    LegendreBasis
    InterpolatingBasis
+   
    TimeEvolutionOperator
    JpowerIntegrals
    special_functions
+   SchrodingerEvolution_CrossCorrelation
+   TimeEvolution_CrossCorrelationCalculator
+   complex_apply
+
 

@@ -16,3 +16,5 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    InterpolatingBasis
    TimeEvolutionOperator
    JpowerIntegrals
+   special_functions
+

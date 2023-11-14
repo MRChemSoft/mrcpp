@@ -40,6 +40,12 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
         LegendrePoly L_k(k, 2.0, 1.0);
@@ -48,6 +54,12 @@ void LegendreBasis::initScalingBasis() {
     }
 }
 
+
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void LegendreBasis::calcQuadratureValues() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
@@ -59,6 +71,12 @@ void LegendreBasis::calcQuadratureValues() {
     }
 }
 
+
+/** @brief In Progress by Evgueni...
+ * 
+ *
+ * 
+ */
 void LegendreBasis::calcCVMaps() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();

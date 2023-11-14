@@ -59,6 +59,7 @@ namespace mrcpp {
  *    ,
  * \f]
  * where \f$ P_j \f$ are standard Legendre polynomials.
+ * Here \f$ k \f$ is \b order declared in the base class.
  * 
  */
 void LegendreBasis::initScalingBasis() {

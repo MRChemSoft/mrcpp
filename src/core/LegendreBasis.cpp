@@ -61,6 +61,8 @@ namespace mrcpp {
  * where \f$ P_j \f$ are standard Legendre polynomials.
  * Here \f$ k \f$ is \b order declared in the base class.
  * 
+ * @note These Legendre scaling functions are defined on the unit interval \f$ (0, 1) \f$.
+ * 
  */
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {

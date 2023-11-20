@@ -25,41 +25,43 @@
 
 #pragma once
 
-#include "functions/GaussExp.h"
-#include "functions/GaussFunc.h"
+#include "ConvolutionOperator.h"
 
 namespace mrcpp {
 
-/** @class HeatKernel.
+/** @class HeatOperator semigroup
  *
- * @brief Heat kernel in \f$ \mathbb R^D \f$.
+ * @brief Convolution with a heat kernel
  *
- * @details In $\mathbb R^D$ the heat kernel has the form
- * \f[
- *  K_t(x)
- *  =
- *   \frac 1{ (4 \pi t)^{D/2} }
+ * @details The exponential heat operator
+ * \f$
+ *   \exp \left( t \partial_x^2 \right)
+ * \f$
+ * can be regarded as a convolution operator in $L^2(\mathbb R)$
+ * of the form
+ * \[
+ *   \exp \left( t \partial_x^2 \right)
+ *   f(x)
+ *   =
+ *   \frac 1{ \sqrt{4 \pi t} }
+ *   \int_\R
  *   \exp
  *   \left(
- *       - \frac{ |x|^2 }{4t}
+ *       - \frac{ (x - y)^2 }{4t}
  *   \right)
+ *   f(y) dy
  *   , \quad
- *   x \in \mathbb R^D
- *   \text{ and }
  *   t > 0
  *   .
- * \f]
+ * \]
  * 
  */
-template <int D> class HeatKernel final : public GaussExp<1> {
+template <int D> class HeatOperator final : public ConvolutionOperator<D> {
 public:
-    HeatKernel(double t)
-            : GaussExp<1>() {
-        double expo = 0.25 / t;
-        double coef = std::pow(expo / mrcpp::pi, D / 2.0);
-        GaussFunc<1> gFunc(expo, coef);
-        this->append(gFunc);
-    }
+    HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec);
+    HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec, int root, int reach = 1);
+    HeatOperator(const HeatOperator &oper) = delete;
+    HeatOperator &operator=(const HeatOperator &oper) = delete;
 };
 
 } // namespace mrcpp

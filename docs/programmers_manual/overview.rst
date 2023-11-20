@@ -22,4 +22,5 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    TimeEvolution_CrossCorrelationCalculator
    complex_apply
 
-
+   HeatOperator
+   HeatKernel

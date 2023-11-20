@@ -5,9 +5,9 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConvolutionOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CartesianConvolution.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/HeatOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/HeatConvolution.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IdentityConvolution.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MWOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/OperatorStatistics.cpp
@@ -27,10 +27,11 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeConvolution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeOperator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/HeatKernel.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/HeatOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/HelmholtzOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/IdentityConvolution.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/HeatKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/IdentityKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/MWOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/OperatorState.h

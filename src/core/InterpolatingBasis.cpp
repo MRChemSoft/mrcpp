@@ -61,7 +61,7 @@ namespace mrcpp {
  *    j = 0, \ldots, k
  *    ,
  * \f]
- * where $\phi_m$ are the Legendre scaling functions.
+ * where \f$ \phi_m \f$ are the Legendre scaling functions.
  * Here \f$ k \f$ is \b order declared in the base class.
  * 
  * @note These interpolating scaling functions are defined on the unit interval \f$ (0, 1) \f$.

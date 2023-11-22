@@ -8,6 +8,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DerivativeCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PHCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ProjectionCalculator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolution_CrossCorrelationCalculator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TreeBuilder.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/add.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/apply.cpp
@@ -15,6 +16,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/multiply.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/project.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/complex_apply.cpp
   )
 
 get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
@@ -38,6 +40,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/ProjectionCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/SplitAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/SquareCalculator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolution_CrossCorrelationCalculator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeAdaptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeBuilder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TreeCalculator.h
@@ -48,6 +51,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/map.h
   ${CMAKE_CURRENT_SOURCE_DIR}/multiply.h
   ${CMAKE_CURRENT_SOURCE_DIR}/project.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/complex_apply.h
   )
 
 # Sets install directory for all the headers in the list

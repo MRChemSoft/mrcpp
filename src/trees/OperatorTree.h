@@ -48,7 +48,8 @@ public:
     BandWidth &getBandWidth() { return *this->bandWidth; }
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
-    OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }
+    OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }        ///< TODO: It has to be specified more.
+                                                                                ///< \b l is distance to the diagonal. 
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
     void mwTransformDown(bool overwrite) override;

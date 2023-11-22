@@ -174,8 +174,13 @@ protected:
     double componentNorms[1 << D]; ///< Squared norms of the separeted 2^D components 
     double maxSquareNorm{-1.0};    ///< Largest squared norm among itself and descendants.
     double maxWSquareNorm{-1.0};   ///< Largest wavelet squared norm among itself and descendants.
-                                   // NB: must be set before used.
-    double *coefs{nullptr};        ///< the 2^D (k+1)^D MW coefficients
+                                   ///< NB: must be set before used.
+    double *coefs{nullptr};     ///< the 2^D (k+1)^D MW coefficients
+                                ///< For example, in case of a one dimensional function \f$ f \f$
+                                ///< this array equals \f$ s_0, \ldots, s_k, d_0, \ldots, d_k \f$,
+                                ///< where scaling coefficients \f$ s_j = s_{jl}^n(f) \f$
+                                ///< and wavelet coefficients \f$ d_j = d_{jl}^n(f) \f$.
+                                ///< Here \f$ n, l \f$ are unique for every node.
     int n_coefs{0};
 
     int serialIx{-1};       ///< index in serial Tree

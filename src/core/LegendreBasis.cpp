@@ -41,9 +41,27 @@ using namespace Eigen;
 namespace mrcpp {
 
 
-/** @brief In Progress by Evgueni...
+/** @brief Initialise Legendre scaling basis.
  * 
- *
+ * @details Fills
+ * std::vector<Polynomial> \b funcs
+ * declared in the base class
+ * @ref ScalingBasis
+ * with the Legendre scaling functions
+ * \f[
+ *    \phi_j(x)
+ *    =
+ *    \sqrt{ 2j + 1 } P_j(2x - 1)
+ *    , \quad
+ *    x \in (0, 1)
+ *    , \quad
+ *    j = 0, \ldots, k
+ *    ,
+ * \f]
+ * where \f$ P_j \f$ are standard Legendre polynomials.
+ * Here \f$ k \f$ is \b order declared in the base class.
+ * 
+ * @note These Legendre scaling functions are defined on the unit interval \f$ (0, 1) \f$.
  * 
  */
 void LegendreBasis::initScalingBasis() {

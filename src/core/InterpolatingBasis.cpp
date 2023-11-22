@@ -43,14 +43,35 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** @brief In Progress by Evgueni...
+
+/** @brief Initialise interpolating scaling basis.
+ * 
+ * @details Fills
+ * std::vector<Polynomial> \b funcs
+ * declared in the base class
+ * @ref ScalingBasis
+ * with the interpolating scaling functions
+ * \f[
+ *    \varphi_j(x)
+ *    =
+ *    \sqrt{ w_j } \sum_{m = 0}^k \phi_m(x_j) \phi_m(x)
+ *    , \quad
+ *    x \in (0, 1)
+ *    , \quad
+ *    j = 0, \ldots, k
+ *    ,
+ * \f]
+ * where \f$ \phi_m \f$ are the Legendre scaling functions.
+ * Here \f$ k \f$ is \b order declared in the base class.
+ * 
+ * @note These interpolating scaling functions are defined on the unit interval \f$ (0, 1) \f$.
  * 
  *
  * 
  */
 void InterpolatingBasis::initScalingBasis() {
     int qOrder = getQuadratureOrder();
-    int sOrder = getScalingOrder();
+    int sOrder = getScalingOrder();     // sOrder = qOrder - 1
 
     getQuadratureCache(qc);
     const VectorXd roots = qc.getRoots(qOrder);

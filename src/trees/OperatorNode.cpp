@@ -42,11 +42,17 @@ void OperatorNode::dealloc() {
     this->tree->getNodeAllocator().dealloc(sIdx);
 }
 
-/** Calculate one specific component norm of the OperatorNode.
+/** 
+ * @brief Calculate one specific component norm of the OperatorNode (TODO: needs to be specified more).
+ * 
+ * @param[in] i: TODO: deens to be specified
  *
- * OperatorNorms are defined as matrix 2-norms that are expensive to calculate.
+ * @details OperatorNorms are defined as matrix 2-norms that are expensive to calculate.
  * Thus we calculate some cheaper upper bounds for this norm for thresholding.
- * First a simple vector norm, then a product of the 1- and infinity-norm. */
+ * First a simple vector norm, then a product of the 1- and infinity-norm.
+ * (TODO: needs to be more presiced).
+ * 
+ */
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();

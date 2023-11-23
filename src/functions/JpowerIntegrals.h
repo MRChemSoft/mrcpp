@@ -49,7 +49,7 @@ namespace mrcpp {
  * \end{equation}
  * where \f$a = t \mathfrak N^2 = t 4^{\mathfrak n}\f$
  * and
- * \begin{equation}
+ * \f\begin{equation}
  *     \widetilde J_m
  *     =
  *     \frac
@@ -75,9 +75,9 @@ namespace mrcpp {
  *     \right)
  *     \rho^m
  *     d \rho
- * \end{equation}
+ * \f\end{equation}
  * satisfying the following relation
- * \begin{equation}
+ * \f\begin{equation}
  *     \widetilde J_{m+1}
  *     =
  *     \frac
@@ -108,9 +108,9 @@ namespace mrcpp {
  *     \right)
  *     , \quad
  *     m = 0, 1, 2, \ldots,
- * \end{equation}
+ * \f\end{equation}
  * with \f$\widetilde J_{-1} = 0 \f$ and
- * \begin{equation}
+ * \f\begin{equation}
  * \label{power_integral_0}
  *     \widetilde J_0
  *     =
@@ -120,7 +120,7 @@ namespace mrcpp {
  *         \frac{il^2}{4a}
  *     \right)
  *     .
- * \end{equation}
+ * \f\end{equation}
  *
  *  
  */

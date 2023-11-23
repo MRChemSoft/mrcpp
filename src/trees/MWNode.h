@@ -47,13 +47,13 @@ namespace mrcpp {
  * set thoucgh the template parameter D=1,2,3. In addition to the
  * coefficients the node contains metadata such as the scale, the
  * translation index, the norm, pointers to parent node and child
- * nodes, pointer to the corresponding MWTree etc... See memeber and
+ * nodes, pointer to the corresponding MWTree etc... See member and
  * data descriptions for details.
- * 
+ *
  */
 template <int D> class MWNode {
 public:
-    MWNode(const MWNode<D> &node, bool allocCoef = true);
+    MWNode(const MWNode<D> &node, bool allocCoef = true, bool SetCoef = true);
     MWNode<D> &operator=(const MWNode<D> &node) = delete;
     virtual ~MWNode();
 
@@ -164,6 +164,7 @@ public:
     friend class OperatorTree;
     friend class FunctionNode<D>;
     friend class OperatorNode;
+    friend class DerivativeCalculator<D>;
 
 protected:
     MWTree<D> *tree{nullptr};    ///< Tree the node belongs to
@@ -171,7 +172,7 @@ protected:
     MWNode<D> *children[1 << D]; ///< 2^D children
 
     double squareNorm{-1.0};       ///< Squared norm of all 2^D (k+1)^D coefficients
-    double componentNorms[1 << D]; ///< Squared norms of the separeted 2^D components 
+    double componentNorms[1 << D]; ///< Squared norms of the separeted 2^D components
     double maxSquareNorm{-1.0};    ///< Largest squared norm among itself and descendants.
     double maxWSquareNorm{-1.0};   ///< Largest wavelet squared norm among itself and descendants.
                                    ///< NB: must be set before used.

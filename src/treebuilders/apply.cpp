@@ -256,6 +256,7 @@ template <int D> void apply_far_field(double prec, FunctionTree<D> &out, Convolu
 template <int D> void apply_near_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
     apply_on_unit_cell<D>(true, prec, out, oper, inp, maxIter, absPrec);
 }
+
 /** @brief Application of MW derivative operator
  *
  * @param[out] out: Output function to be built
@@ -274,7 +275,6 @@ template <int D> void apply_near_field(double prec, FunctionTree<D> &out, Convol
  */
 template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
-
     TreeBuilder<D> builder;
     int maxScale = out.getMRA().getMaxScale();
 

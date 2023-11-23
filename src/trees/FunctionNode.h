@@ -77,6 +77,7 @@ protected:
 
     double integrateLegendre() const;
     double integrateInterpolating() const;
+    double integrateValues() const;
 };
 
 template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);

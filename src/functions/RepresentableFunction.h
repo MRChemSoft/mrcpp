@@ -31,11 +31,13 @@
 
 #pragma once
 
+#include <Eigen/Core>
 #include <iostream>
 #include <vector>
 
 #include "MRCPP/constants.h"
 #include "MRCPP/mrcpp_declarations.h"
+#include "trees/NodeIndex.h"
 
 namespace mrcpp {
 
@@ -72,6 +74,17 @@ protected:
 
     virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
     virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
+};
+
+/*
+ * Same as RepresentableFunction, but output a matrix of values
+ * for all points in a node, given its NodeIndex.
+ *
+ */
+class RepresentableFunction_M {
+public:
+    RepresentableFunction_M() {}
+    virtual Eigen::MatrixXd evalf(mrcpp::NodeIndex<3> nIdx) const = 0;
 };
 
 } // namespace mrcpp

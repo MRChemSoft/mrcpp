@@ -51,15 +51,6 @@ JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
         integrals.push_back(newRow);
     }    
 }
-JpowerIntegrals::~JpowerIntegrals()
-{
-    //for (auto& integral : integrals) 
-    //{
-    //    integral.clear();  
-    //}
-    // The loop is probably not needed for the complete memory deallocation
-    integrals.clear();
-}
 */
 
 /// @brief in progress
@@ -87,12 +78,24 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
         std::complex<double> term2
         = J[J.size() - 2] * beta * static_cast<double>(m) / static_cast<double>(m + 2);
         std::complex<double> last = (term1 + term2) / static_cast<double>(m + 3);
-        if ( last.real() <  threshold && last.imag() <  threshold && last.real() > -threshold && last.imag() > -threshold ) break;
         J.push_back(last);
     }
 
     J.erase(J.begin());
+    crop(J, threshold);
     return J;
+}
+
+
+/// @details Removes negligible elements in \b J until it reaches a considerable value.
+void JpowerIntegrals::crop(std::vector<std::complex<double>> & J, double threshold)
+{
+    // Lambda function to check if an element is negligible
+    auto isNegligible = [threshold](const std::complex<double>& c) {
+        return std::abs(c.real()) < threshold && std::abs(c.imag()) < threshold;
+    };
+    // Remove negligible elements from the end of the vector
+    J.erase(std::find_if_not(J.rbegin(), J.rend(), isNegligible).base(), J.end());
 }
 
 } // namespace mrcpp

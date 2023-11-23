@@ -36,78 +36,78 @@ namespace mrcpp {
  *
  * @brief A class needed for construction Schrodinger time evolution operator
  *
- * @details A two dimensional array consisting of integrals $J_m$ as follows.
+ * @details A two dimensional array consisting of integrals \f$J_m\f$ as follows.
  * Our main operator has the following expansion
-\begin{equation}
-    \left[ \sigma_l^{\mathfrak n} \right]_{pj}
-    (a)
-    =
-    \sum_{k = 0}^{\infty}
-    C_{jp}^{2k}
-    \widetilde J_{2k + j + p}(l, a)
-    ,
-\end{equation}
-where \f$a = t \mathfrak N^2 = t 4^{\mathfrak n}\f$
-and
-\begin{equation}
-    \widetilde J_m
-    =
-    \frac
-    {
-        I_m
-        e^{ i \frac {\pi}4 (m - 1) }
-    }
-    {
-        2 \pi ( m + 2 )!
-    }
-    =
-    \frac
-    {
-        e^{ i \frac {\pi}4 (m - 1) }
-    }
-    {
-        2 \pi ( m + 2 )!
-    }
-    \int_{\mathbb R}
-    \exp
-    \left(
-        \rho l \exp \left( i \frac \pi 4 \right) - a \rho^2
-    \right)
-    \rho^m
-    d \rho
-\end{equation}
+ * \begin{equation}
+ *   \left[ \sigma_l^{\mathfrak n} \right]_{pj}
+ *   (a)
+ *   =
+ *   \sum_{k = 0}^{\infty}
+ *   C_{jp}^{2k}
+ *   \widetilde J_{2k + j + p}(l, a)
+ *   ,
+ * \end{equation}
+ * where \f$a = t \mathfrak N^2 = t 4^{\mathfrak n}\f$
+ * and
+ * \begin{equation}
+ *     \widetilde J_m
+ *     =
+ *     \frac
+ *     {
+ *         I_m
+ *         e^{ i \frac {\pi}4 (m - 1) }
+ *     }
+ *     {
+ *         2 \pi ( m + 2 )!
+ *     }
+ *     =
+ *     \frac
+ *     {
+ *         e^{ i \frac {\pi}4 (m - 1) }
+ *     }
+ *     {
+ *         2 \pi ( m + 2 )!
+ *     }
+ *     \int_{\mathbb R}
+ *     \exp
+ *     \left(
+ *         \rho l \exp \left( i \frac \pi 4 \right) - a \rho^2
+ *     \right)
+ *     \rho^m
+ *     d \rho
+ * \end{equation}
  * satisfying the following relation
  * \begin{equation}
  *     \widetilde J_{m+1}
-    =
-    \frac
-    {
-        il
-    }
-    {
-        2a (m + 3)
-    }
-    \widetilde J_m
-    +
-    \frac {im}{2a(m + 2)(m + 3)}
-    \widetilde J_{m-1}
-    =
-    \frac
-    {
-        i
-    }
-    {
-        2a (m + 3)
-    }
-    \left(
-        l
-        \widetilde J_m
-        +
-        \frac {m}{(m + 2)}
-        \widetilde J_{m-1}
-    \right)
-    , \quad
-    m = 0, 1, 2, \ldots,
+ *     =
+ *     \frac
+ *     {
+ *         il
+ *     }
+ *     {
+ *         2a (m + 3)
+ *     }
+ *     \widetilde J_m
+ *     +
+ *     \frac {im}{2a(m + 2)(m + 3)}
+ *     \widetilde J_{m-1}
+ *     =
+ *     \frac
+ *     {
+ *         i
+ *     }
+ *     {
+ *         2a (m + 3)
+ *     }
+ *     \left(
+ *         l
+ *         \widetilde J_m
+ *         +
+ *         \frac {m}{(m + 2)}
+ *         \widetilde J_{m-1}
+ *     \right)
+ *     , \quad
+ *     m = 0, 1, 2, \ldots,
  * \end{equation}
  * with \f$\widetilde J_{-1} = 0 \f$ and
  * \begin{equation}
@@ -136,14 +136,14 @@ public:
     JpowerIntegrals(double a, int scaling, int M, double threshold = 1.0e-15);
     //JpowerIntegrals(const JpowerIntegrals& other);
 
-    //~JpowerIntegrals();
-
+    
     int scaling;  //it is probably not used
     std::vector<std::vector<std::complex<double>>> integrals;
 
     std::vector<std::complex<double>> & operator[](int index);
 private:
     std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold);
+    void crop(std::vector<std::complex<double>> & J, double threshold);
 };
 
 } // namespace mrcpp

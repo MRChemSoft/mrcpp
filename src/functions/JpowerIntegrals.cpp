@@ -24,6 +24,7 @@
  */
 
 #include "JpowerIntegrals.h"
+#include <algorithm>    // std::find_if_not
 
 
 namespace mrcpp {

@@ -103,7 +103,7 @@ MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
 /** @brief MWNode constructor.
  *
  * @param[in] parent: parent node
- * @param[in] cIdx: child index of the current node 
+ * @param[in] cIdx: child index of the current node
  *
  * @details Constructor for leaf nodes. It requires the corresponding
  * parent and an integer to identify the correct child.
@@ -131,7 +131,7 @@ MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
  * the tree.
  */
 template <int D>
-MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef)
+MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef, bool SetCoef)
         : tree(node.tree)
         , parent(nullptr)
         , nodeIndex(node.nodeIndex)
@@ -141,7 +141,7 @@ MWNode<D>::MWNode(const MWNode<D> &node, bool allocCoef)
     setIsLooseNode();
     if (allocCoef) {
         allocCoefs(this->getTDim(), this->getKp1_d());
-        if (node.hasCoefs()) {
+        if (node.hasCoefs() and SetCoef) {
             setCoefBlock(0, node.getNCoefs(), node.getCoefs());
             if (this->getNCoefs() > node.getNCoefs()) {
                 for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
@@ -236,7 +236,7 @@ template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
     c = VectorXd::Map(this->coefs, this->n_coefs);
 }
 
-/** @brief sets all MW coefficients and the norms to zero 
+/** @brief sets all MW coefficients and the norms to zero
  *
  */
 template <int D> void MWNode<D>::zeroCoefs() {
@@ -388,7 +388,7 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
 }
 
 /** @brief Copy scaling coefficients from children to parent
- * 
+ *
  * @details Takes the scaling coefficients of the children and stores
  * them consecutively in the corresponding block of the parent,
  * following the usual bitwise notation.
@@ -404,7 +404,7 @@ template <int D> void MWNode<D>::copyCoefsFromChildren() {
 }
 
 /** @brief Generates scaling cofficients of children
- * 
+ *
  * @details If the node is a leafNode, it takes the scaling&wavelet
  * coefficients of the parent and it generates the scaling
  * coefficients for the children
@@ -835,7 +835,7 @@ template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
  * the set of quadrature points becomes \f$ x^\alpha_i = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha) \f$, where \f$ t^\alpha =
  * 0,1 \f$. By taking all possible \f$(k+1)^d\combinations \f$, they will
  * then define a d-dimensional grid of quadrature points for the child
- * nodes. 
+ * nodes.
  *
  */
 template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
@@ -879,7 +879,7 @@ template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const 
 
 /** @brief Returns the quadrature points in a given node
  *
- * @param[in,out] pts: expanded quadrature points in a \f$ d \times 
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times
  * 2^d(k+1)^d \f$ matrix form.
  *
  * @details The primitive quadrature points of the children are used to obtain a

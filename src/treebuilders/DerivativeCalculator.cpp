@@ -86,6 +86,34 @@ template <int D> void DerivativeCalculator<D>::printTimers() const {
     Printer::setPrecision(oldprec);
 }
 
+template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &inpNode, MWNode<D> &outNode) {
+    //if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
+    outNode.zeroCoefs();
+    int nComp = (1 << D);
+    double tmpCoefs[outNode.getNCoefs()];
+    OperatorState<D> os(outNode, tmpCoefs);
+
+    os.setFNode(inpNode);
+    os.setFIndex(inpNode.nodeIndex);
+    for (int ft = 0; ft < nComp; ft++) {
+        double fNorm = inpNode.getComponentNorm(ft);
+        if (fNorm < MachineZero) { continue; } // Could this be used outside the loop?
+        os.setFComponent(ft);
+        for (int gt = 0; gt < nComp; gt++) {
+            os.setGComponent(gt);
+            applyOperator_bw0(os);
+       }
+    }
+   // Multiply appropriate scaling factor. TODO: Could be included elsewhere
+    const double scaling_factor =
+        1.0/std::pow(outNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    if(abs(scaling_factor-1.0)>MachineZero){
+        for (int i = 0; i < outNode.getNCoefs(); i++) outNode.getCoefs()[i] *= scaling_factor;
+    }
+    outNode.calcNorms(); //TODO:required? norms are not used for now
+}
+
+
 template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     gNode.zeroCoefs();
 
@@ -101,6 +129,7 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
     this->band_t[mrcpp_get_thread_num()].stop();
 
     this->calc_t[mrcpp_get_thread_num()].resume();
+
     for (int n = 0; n < fBand.size(); n++) {
         MWNode<D> &fNode = *fBand[n];
         NodeIndex<D> &fIdx = idx_band[n];
@@ -152,6 +181,39 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
     return band;
 }
 
+/** Apply a single operator component (term) to a single f-node assuming zero bandwidth */
+template <int D> void DerivativeCalculator<D>::applyOperator_bw0(OperatorState<D> &os) {
+    //cout<<" applyOperator "<<endl;
+    MWNode<D> &gNode = *os.gNode;
+    MWNode<D> &fNode = *os.fNode;
+    const NodeIndex<D> &fIdx = *os.fIdx;
+    const NodeIndex<D> &gIdx = gNode.getNodeIndex();
+    int depth = gNode.getDepth();
+
+    double oNorm = 1.0;
+    double **oData = os.getOperData();
+
+    for (int d = 0; d < D; d++) {
+        const OperatorTree &oTree = this->oper->getComponent(0, d);
+        const OperatorNode &oNode = oTree.getNode(depth, 0);
+        int oIdx = os.getOperIndex(d);
+        if (this->applyDir == d) {
+            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
+        } else {
+            if (oIdx == 0 or oIdx == 3) {
+                // This will activate the identity operator in direction i
+                oData[d] = nullptr;
+            } else {
+                // This means that we are in a zero part of the identity operator
+                return;
+            }
+        }
+    }
+    this->operStat.incrementFNodeCounters(fNode, os.ft, os.gt);
+    tensorApplyOperComp(os);
+}
+
+
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
 template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
@@ -197,8 +259,8 @@ template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &o
     tensorApplyOperComp(os);
 }
 
-/** Perorm the required linear algebra operations in order to apply an
-operator component to a f-node in a n-dimensional tesor space. */
+/** Perform the required linear algebra operations in order to apply an
+operator component to a f-node in a n-dimensional tensor space. */
 template <int D> void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
     double **aux = os.getAuxData();
     double **oData = os.getOperData();

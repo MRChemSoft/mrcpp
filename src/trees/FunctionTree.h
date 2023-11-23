@@ -62,6 +62,7 @@ public:
     ~FunctionTree() override;
 
     double integrate() const;
+    double integrateEndNodes(RepresentableFunction_M &f);
     double evalf_precise(const Coord<D> &r);
     double evalf(const Coord<D> &r) const override;
 

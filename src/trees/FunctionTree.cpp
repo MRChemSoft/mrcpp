@@ -186,6 +186,42 @@ template <int D> double FunctionTree<D>::integrate() const {
     return jacobian * result;
 }
 
+
+/** @returns Integral of a representable function over the grid given by the tree */
+template <> double FunctionTree<3>::integrateEndNodes(RepresentableFunction_M &f) {
+    //traverse tree, and treat end nodes only
+    std::vector<FunctionNode<3> *> stack;   // node from this
+    for (int i = 0; i < this->getRootBox().size(); i++) stack.push_back(&(this->getRootFuncNode(i)));
+    int basis = getMRA().getScalingBasis().getScalingType();
+    double result = 0.0;
+    while (stack.size() > 0) {
+        FunctionNode<3> *Node = stack.back();
+        stack.pop_back();
+        if (Node->getNChildren() > 0) {
+            for (int i = 0; i < Node->getNChildren(); i++) stack.push_back(&(Node->getFuncChild(i)));
+        } else {
+            //end nodes
+            Eigen::MatrixXd fmat = f.evalf(Node->nodeIndex);
+            double *coefs = Node->getCoefs(); // save position of coeff, but do not use them!
+            // The data in fmat is not organized so that two consecutive points are stored after each other in memory, so needs to copy before mwtransform, cannot use memory adress directly.
+            int nc=fmat.cols();
+            double cc[nc];
+            for (int i = 0; i < nc; i++)cc[i]=fmat(0,i);
+            Node->attachCoefs(cc);
+            result += Node->integrateValues();
+            Node->attachCoefs(coefs); // put back original coeff
+        }
+    }
+
+    // Handle potential scaling
+    auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
+    auto jacobian = 1.0;
+    for (const auto &sf_i : scaling_factor) jacobian *= std::sqrt(sf_i);
+    // Square root of scaling factor in each diection. The seemingly missing
+    // multiplication by the square root of sf_i is included in the basis
+    return jacobian * result;
+}
+
 /** @returns Function value in a point, out of bounds returns zero
  *
  * @param[in] r: Cartesian coordinate

@@ -36,6 +36,7 @@ public:
     ~DerivativeCalculator() override;
 
     MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
+    void calcNode(MWNode<D> &fNode, MWNode<D> &gNode);
 
 private:
     int applyDir;
@@ -61,6 +62,7 @@ private:
     }
 
     void applyOperator(OperatorState<D> &os);
+    void applyOperator_bw0(OperatorState<D> &os);
     void tensorApplyOperComp(OperatorState<D> &os);
 };
 

@@ -158,6 +158,52 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
     return two_n * sum;
 }
 
+/** Function integration, Interpolating basis.
+ *
+ * Integrates the function represented on the node on the full support of the
+ * node. A bit more involved than in the Legendre basis, as is requires some
+ * coupling of quadrature weights. */
+template <int D> double FunctionNode<D>::integrateValues() const {
+    int qOrder = this->getKp1();
+    getQuadratureCache(qc);
+    const VectorXd &weights = qc.getWeights(qOrder);
+    VectorXd coefs;
+    this->getCoefs(coefs);
+    int ncoefs = coefs.size();
+    int ncoefChild = ncoefs/(1<<D);
+    double cc[ncoefChild];
+    // factorize out the children
+    for (int i = 0; i < ncoefChild; i++)cc[i]=coefs[i];
+    for (int j = 1; j < (1<<D); j++) for (int i = 0; i < ncoefChild; i++)cc[i]+=coefs[j*ncoefChild+i];
+
+    int nc = 0;
+    double sum = 0.0;
+    if (D > 3) MSG_ABORT("Not Implemented")
+    else if (D == 3) {
+        for (int i = 0; i < qOrder; i++) {
+            double sumj = 0.0;
+            for (int j = 0; j < qOrder; j++) {
+                double sumk = 0.0;
+                for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
+                sumj += sumk * weights[j];
+            }
+            sum += sumj * weights[i];
+        }
+    } else if (D==2) {
+        for (int j = 0; j < qOrder; j++) {
+                double sumk = 0.0;
+                for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
+                sum += sumk * weights[j];
+        }
+    } else if (D==1) for (int k = 0; k < qOrder; k++) sum += cc[nc++] * weights[k];
+
+    int n = D * (this->getScale() + 1) ; // NB: one extra scale
+    int two_n = (1<<abs(n)); // 2**n;
+    if(n>0)sum/=two_n;
+    else sum*=two_n;
+    return sum;
+}
+
 template <int D> void FunctionNode<D>::setValues(const VectorXd &vec) {
     this->zeroCoefs();
     this->setCoefBlock(0, vec.size(), vec.data());

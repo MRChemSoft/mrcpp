@@ -36,9 +36,9 @@ namespace mrcpp {
  *
  * @brief A class needed for construction Schrodinger time evolution operator
  *
- * @details A two dimensional array consisting of integrals \f$J_m\f$ as follows.
+ * @details A two dimensional array consisting of integrals \f$ J_m \f$ as follows.
  * Our main operator has the following expansion
- * \begin{equation}
+ * \f[
  *   \left[ \sigma_l^{\mathfrak n} \right]_{pj}
  *   (a)
  *   =
@@ -46,10 +46,10 @@ namespace mrcpp {
  *   C_{jp}^{2k}
  *   \widetilde J_{2k + j + p}(l, a)
  *   ,
- * \end{equation}
- * where \f$a = t \mathfrak N^2 = t 4^{\mathfrak n}\f$
+ * \f]
+ * where \f$ a = t \mathfrak N^2 = t 4^{\mathfrak n} \f$
  * and
- * \f\begin{equation}
+ * \f[
  *     \widetilde J_m
  *     =
  *     \frac
@@ -75,9 +75,9 @@ namespace mrcpp {
  *     \right)
  *     \rho^m
  *     d \rho
- * \f\end{equation}
+ * \f]
  * satisfying the following relation
- * \f\begin{equation}
+ * \f[
  *     \widetilde J_{m+1}
  *     =
  *     \frac
@@ -108,9 +108,9 @@ namespace mrcpp {
  *     \right)
  *     , \quad
  *     m = 0, 1, 2, \ldots,
- * \f\end{equation}
- * with \f$\widetilde J_{-1} = 0 \f$ and
- * \f\begin{equation}
+ * \f]
+ * with \f$ \widetilde J_{-1} = 0 \f$ and
+ * \f[
  * \label{power_integral_0}
  *     \widetilde J_0
  *     =
@@ -120,7 +120,7 @@ namespace mrcpp {
  *         \frac{il^2}{4a}
  *     \right)
  *     .
- * \f\end{equation}
+ * \f]
  *
  *  
  */

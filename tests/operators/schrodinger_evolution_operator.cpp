@@ -29,22 +29,12 @@
 
 #include "functions/GaussFunc.h"
 #include "operators/MWOperator.h"
-#include "operators/PoissonKernel.h"
-#include "operators/PoissonOperator.h"
-#include "treebuilders/CrossCorrelationCalculator.h"
-#include "treebuilders/OperatorAdaptor.h"
-#include "treebuilders/TreeBuilder.h"
-#include "treebuilders/apply.h"
-#include "treebuilders/grid.h"
-#include "treebuilders/multiply.h"
 #include "treebuilders/project.h"
-#include "trees/BandWidth.h"
 #include "operators/TimeEvolutionOperator.h"
 #include "functions/special_functions.h"
 #include "treebuilders/complex_apply.h"
 #include "treebuilders/add.h"
 
-//using namespace mrcpp;
 
 namespace schrodinger_evolution_operator {
 
@@ -123,13 +113,17 @@ TEST_CASE("Apply Schrodinger's evolution operator", "[apply_schrodinger_evolutio
     
     // Re_error = Re_fout_tree - Re_g_tree
     mrcpp::add(prec, Re_error, 1.0, Re_fout_tree, -1.0, Re_g_tree);
-    auto Re_sq_norm = Re_error.getSquareNorm();    //6.2e-16
+    auto Re_sq_norm = Re_error.getSquareNorm();    //1.7e-16
     
     // Im_error = Im_fout_tree - Im_g_tree
     mrcpp::add(prec, Im_error, 1.0, Im_fout_tree, -1.0, Im_g_tree);
-    auto Im_sq_norm = Im_error.getSquareNorm();    //2.7e-16
+    auto Im_sq_norm = Im_error.getSquareNorm();    //1.7e-17
     
-    double tolerance = prec * prec / 10.0;         //1.0e-15
+    double tolerance = prec * prec / 50.0;         //2.0e-16
+    
+    //std::cout << "Re_sq_norm = " << Re_sq_norm << std::endl;
+    //std::cout << "Im_sq_norm = " << Im_sq_norm << std::endl;
+    //std::cout << "tolerance = " << tolerance << std::endl;
     
     REQUIRE(Re_sq_norm == Catch::Approx(0.0).margin(tolerance));
     REQUIRE(Im_sq_norm == Catch::Approx(0.0).margin(tolerance));

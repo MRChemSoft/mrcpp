@@ -38,3 +38,4 @@
 #include "operators/BSOperator.h"
 
 #include "treebuilders/apply.h"
+#include "treebuilders/DerivativeCalculator.h"

@@ -193,5 +193,6 @@ ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi);
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet);
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet);
+void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 } // namespace mpifuncvec
 } // namespace mrcpp

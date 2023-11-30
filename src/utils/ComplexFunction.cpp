@@ -1975,5 +1975,22 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
     return S;
 }
 
+/** @brief Orthogonalize the functions in Bra against all orbitals in Ket
+ *
+ */
+void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
+    ComplexMatrix S = mpifuncvec::calc_overlap_matrix(Bra, Ket);
+    // TODO: generalize for cases where Bra functions are not orthogonal to each other?
+    int N = Bra.size();
+    int M = Ket.size();
+    ComplexMatrix two =  ComplexMatrix::Zero(N, M);
+    for (int j = 0; j < N; j++) {
+        for (int i = 0; i < M; i++) {
+            if(i==j) S(i,j) = 1.0;
+            else S(i,j) = 0.0 - S(i,j);
+        }
+    }
+    mpifuncvec::rotate(Bra, S, prec / M);
+}
 } // namespace mpifuncvec
 } // namespace mrcpp

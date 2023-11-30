@@ -130,7 +130,6 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
     const VectorXd &weights = qc.getWeights(qOrder);
-
     double sqWeights[qOrder];
     for (int i = 0; i < qOrder; i++) sqWeights[i] = std::sqrt(weights[i]);
 

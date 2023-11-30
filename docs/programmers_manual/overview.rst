@@ -10,4 +10,19 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
 
    MWTree
    MWNode
+   OperatorNode
+   OperatorTree
    BoundingBox
+   CrossCorrelationCache
+   LegendreBasis
+   InterpolatingBasis
+   
+   TimeEvolutionOperator
+   JpowerIntegrals
+   special_functions
+   SchrodingerEvolution_CrossCorrelation
+   TimeEvolution_CrossCorrelationCalculator
+   complex_apply
+
+   HeatOperator
+   HeatKernel

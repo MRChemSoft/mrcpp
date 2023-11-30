@@ -75,6 +75,72 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
     return ObjectCache<CrossCorrelation>::get(order).getLMatrix();
 }
 
+
+/** @brief Fetches the cross correlation coefficients.
+ *
+ * @param[in] order: Dimension of \f$ V_0 \subset L^2(\mathbb R) \f$ minus one,
+ * that is the maximum degree \f$ k \f$ of polynomials in \f$ V_0 \subset L^2(0, 1) \f$.
+ * @returns The right matrix of cross correlation coefficients.
+ *
+ * @details The cross correlation coefficients
+ * \f[
+ *   C^{(+)}_{ijp}
+ *   =
+ *   \int_0^1 dz
+ *   \int_0^1 dx
+ *   \phi_i(x)
+ *   \phi_j(x - z)
+ *   \phi_p(z)
+ * \f]
+ * with \f$ i, j = 0, \ldots, k \f$ and \f$ p = 0, \ldots, 2k + 1 \f$.
+ * They are grouped in the so called right matrix
+ * \f[
+ *   \begin{pmatrix}
+ *       C^{(+)}_{000}
+ *       &
+ *       C^{(+)}_{001}
+ *       &
+ *       \ldots
+ *       &
+ *       C^{(+)}_{00,2k+1}
+ *       \\
+ *       C^{(+)}_{010}
+ *       &
+ *       C^{(+)}_{011}
+ *       &
+ *       \ldots
+ *       &
+ *       C^{(+)}_{01,2k+1}
+ *       \\
+ *       \ldots
+ *       &
+ *       \ldots
+ *       &
+ *       \ldots
+ *       &
+ *       \ldots
+ *       \\
+ *       C^{(+)}_{k, k - 1, 0}
+ *       &
+ *       C^{(+)}_{k, k - 1, 1}
+ *       &
+ *       \ldots
+ *       &
+ *       C^{(+)}_{k, k - 1, 2k+1}
+ *       \\
+ *       C^{(+)}_{kk0}
+ *       &
+ *       C^{(+)}_{kk1}
+ *       &
+ *       \ldots
+ *       &
+ *       C^{(+)}_{kk,2k+1}
+ *   \end{pmatrix}
+ * \f]
+ * that is returned by the method.
+ * 
+ *
+ */
 template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
     if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order).getRMatrix();

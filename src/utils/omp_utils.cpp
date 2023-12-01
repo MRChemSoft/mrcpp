@@ -31,7 +31,11 @@ namespace mrcpp {
 int max_threads = mrcpp_get_max_threads();
 
 void set_max_threads(int threads) {
+    threads = std::max(1, threads);
     mrcpp::max_threads = threads;
+#ifdef MRCPP_HAS_OMP
+    omp_set_num_threads(threads);
+#endif
 }
 
 } // namespace mrcpp

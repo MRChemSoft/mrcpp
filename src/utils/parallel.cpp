@@ -210,6 +210,7 @@ void mpi::initialize() {
     }
 #else
     mpi::bank_size = 0;
+    mrcpp::set_max_threads(omp::n_threads);
 #endif
 }
 

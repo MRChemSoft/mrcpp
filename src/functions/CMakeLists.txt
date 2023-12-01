@@ -2,6 +2,7 @@ target_sources(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/BoysFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/function_utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/JpowerIntegrals.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LegendrePoly.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RepresentableFunction.cpp
@@ -9,6 +10,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GaussFunc.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GaussPoly.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Gaussian.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/special_functions.cpp
   )
 
 get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
@@ -17,6 +19,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/AnalyticFunction.h
   ${CMAKE_CURRENT_SOURCE_DIR}/BoysFunction.h
   ${CMAKE_CURRENT_SOURCE_DIR}/function_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/JpowerIntegrals.h
   ${CMAKE_CURRENT_SOURCE_DIR}/LegendrePoly.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/RepresentableFunction.h
@@ -24,6 +27,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/GaussFunc.h
   ${CMAKE_CURRENT_SOURCE_DIR}/GaussPoly.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Gaussian.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/special_functions.h
   )
 
 # Sets install directory for all the headers in the list

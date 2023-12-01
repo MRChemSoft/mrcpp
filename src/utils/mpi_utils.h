@@ -51,6 +51,7 @@ extern int sh_group_rank;
 extern int is_bank;
 extern int is_bankclient;
 extern int bank_size;
+extern int omp_threads;
 extern int tot_bank_size;
 extern int max_tag;
 extern int task_bank;

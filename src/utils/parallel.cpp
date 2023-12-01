@@ -2,6 +2,7 @@
 #include <MRCPP/Printer>
 #include <MRCPP/Timer>
 #include <vector>
+#include <thread>
 
 #include "Bank.h"
 #include "ComplexFunction.h"
@@ -11,15 +12,18 @@
 
 #ifdef MRCPP_HAS_OMP
 #define mrcpp_get_max_threads() omp_get_max_threads()
+#define mrcpp_get_num_procs() omp_get_num_procs()
 #define mrcpp_set_dynamic(n) omp_set_dynamic(n)
 #else
 #define mrcpp_get_max_threads() 1
+#define mrcpp_get_num_procs() 1
 #define mrcpp_get_num_threads() 1
 #define mrcpp_get_thread_num() 0
 #define mrcpp_set_dynamic(n)
 #endif
 
 using mrcpp::Printer;
+using namespace std;
 
 namespace mrcpp {
 
@@ -51,9 +55,10 @@ int is_centralbank = 0;
 int is_bankclient = 1;
 int is_bankmaster = 0; // only one bankmaster is_bankmaster
 int bank_size = 0;
+int omp_threads = -1; // can be set to force number of threads
 int tot_bank_size = 0; // size of bank, including the task manager
 int max_tag = 0;       // max value allowed by MPI
-std::vector<int> bankmaster;
+vector<int> bankmaster;
 int task_bank = -1; // world rank of the task manager
 
 MPI_Comm comm_wrk;
@@ -71,7 +76,6 @@ extern int const size_metadata = 3;
 void mpi::initialize() {
     Eigen::setNbThreads(1);
     mrcpp_set_dynamic(0);
-    mrcpp::set_max_threads(omp::n_threads);
 
 #ifdef MRCPP_HAS_MPI
     MPI_Init(nullptr, nullptr);
@@ -90,7 +94,7 @@ void mpi::initialize() {
     if (mpi::world_size < 2) {
         mpi::bank_size = 0;
     } else if (mpi::bank_size < 0) {
-        mpi::bank_size = std::max(mpi::world_size / 3, 1);
+        mpi::bank_size = max(mpi::world_size / 3, 1);
     }
     if (mpi::world_size - mpi::bank_size < 1) MSG_ABORT("No MPI ranks left for working!");
     if (mpi::bank_size < 1 and mpi::world_size > 1) MSG_ABORT("Bank size must be at least one when using MPI!");
@@ -153,6 +157,50 @@ void mpi::initialize() {
     MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &val, &flag); // max value allowed by MPI for tags
     max_tag = *(int *)val / 2;
     id_shift = max_tag / 2; // half is reserved for non orbital.
+
+    // determine the number of threads we can assign to each mpi worker.
+    // mrcpp_get_num_procs is total number of hardware logical threads accessible by this mpi
+    // We assume that half of them are physical cores.
+    // mrcpp_get_max_threads is OMP_NUM_THREADS (environment variable).
+    // omp_threads_available is the total number of logical threads available on this compute-node
+    // We assume that half of them are physical cores.
+    //
+    // six conditions should be satisfied:
+    // 1) no one use more than mrcpp_get_num_procs()/2
+    // 2) no one use more than mrcpp_get_max_threads
+    // 3) the total number of threads used on the compute-node must not exceed omp_threads_available/2
+    // 4) Bank needs only one thread
+    // 5) workers need as many threads as possible
+    // 6) at least one thread
+
+    MPI_Comm comm_share_world;//all that share the memory
+    MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &comm_share_world);
+
+    int n_bank_thisnode; //number of banks on this node
+    MPI_Allreduce(&is_bank, &n_bank_thisnode, 1, MPI_INT, MPI_SUM, comm_share_world);
+    int n_wrk_thisnode; //number of workers on this node
+    MPI_Allreduce(&is_bankclient, &n_wrk_thisnode, 1, MPI_INT, MPI_SUM, comm_share_world);
+
+    int omp_threads_available = thread::hardware_concurrency();
+    int nthreads;
+    if (is_bank) nthreads = 1; // 4)
+    if (is_bankclient) nthreads = (omp_threads_available/2-n_bank_thisnode)/n_wrk_thisnode; // 3) and 5)
+
+    // do not exceed total number of hardware logical threads accessible
+    nthreads = min(nthreads, mrcpp_get_num_procs()/2); // 1)
+
+    // if OMP_NUM_THREADS is set, do not exceed
+    if ( mrcpp_get_max_threads() > 0) nthreads = min(nthreads, mrcpp_get_max_threads()); // 2)
+    nthreads = max(1, nthreads); // 6)
+    omp::n_threads = nthreads;
+
+    //cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp:"<<omp_get_num_procs()<<" "<<omp_get_max_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<endl;
+
+    if (omp_threads > 0) {
+        if (omp_threads != nthreads) cout<<"Warning: recommended number of threads is "<<nthreads<<endl;
+        nthreads = omp_threads;
+    }
+    mrcpp::set_max_threads(nthreads);
 
     if (mpi::is_bank) {
         // bank is open until end of program
@@ -388,7 +436,7 @@ void mpi::reduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, MPI_Comm comm) {
 /** @brief make union tree without coeff and send to all
  *  Include both real and imaginary parts
  */
-void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, std::vector<ComplexFunction> &Phi, MPI_Comm comm) {
+void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3> &tree, vector<ComplexFunction> &Phi, MPI_Comm comm) {
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody

@@ -12,7 +12,7 @@
 
 #ifdef MRCPP_HAS_OMP
 #define mrcpp_get_max_threads() omp_get_max_threads()
-#define mrcpp_get_num_procs() omp_get_num_procs()
+#define mrcpp_get_num_procs() omp_get_num_procs()/2
 #define mrcpp_set_dynamic(n) omp_set_dynamic(n)
 #else
 #define mrcpp_get_max_threads() 1
@@ -167,7 +167,7 @@ void mpi::initialize() {
     //
     // six conditions should be satisfied:
     // 1) no one use more than mrcpp_get_num_procs()/2
-    // 2) no one use more than mrcpp_get_max_threads
+    // 2) no one use more than mrcpp_get_max_threads, as defined by rank 0
     // 3) the total number of threads used on the compute-node must not exceed omp_threads_available/2
     // 4) Bank needs only one thread
     // 5) workers need as many threads as possible
@@ -182,24 +182,34 @@ void mpi::initialize() {
     MPI_Allreduce(&is_bankclient, &n_wrk_thisnode, 1, MPI_INT, MPI_SUM, comm_share_world);
 
     int omp_threads_available = thread::hardware_concurrency();
-    int nthreads;
-    if (is_bank) nthreads = 1; // 4)
+    int nthreads = 1;
     if (is_bankclient) nthreads = (omp_threads_available/2-n_bank_thisnode)/n_wrk_thisnode; // 3) and 5)
 
-    // do not exceed total number of hardware logical threads accessible
-    nthreads = min(nthreads, mrcpp_get_num_procs()/2); // 1)
+    // do not exceed total number of cores accessible (assumed to be half the number of logical threads)
+    nthreads = min(nthreads, mrcpp_get_num_procs()); // 1)
 
     // if OMP_NUM_THREADS is set, do not exceed
-    if ( mrcpp_get_max_threads() > 0) nthreads = min(nthreads, mrcpp_get_max_threads()); // 2)
-    nthreads = max(1, nthreads); // 6)
-    omp::n_threads = nthreads;
+    // we enforce that all compute nodes use the same OMP_NUM_THREADS. Rank 0 decides.
+    int my_OMP_NUM_THREADS = mrcpp_get_max_threads();
+    MPI_Bcast(&my_OMP_NUM_THREADS, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    //cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp:"<<omp_get_num_procs()<<" "<<omp_get_max_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<endl;
+    if (my_OMP_NUM_THREADS > 0) nthreads = min(nthreads, my_OMP_NUM_THREADS); // 2)
+
+    nthreads = max(1, nthreads); // 6)
+
+    if (is_bank) nthreads = 1; // 4)
+
+    //cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp:"<<omp_get_num_procs()<<" "<<omp_get_max_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<endl;
 
     if (omp_threads > 0) {
-        if (omp_threads != nthreads) cout<<"Warning: recommended number of threads is "<<nthreads<<endl;
+        if (omp_threads != nthreads and world_rank == 0) {
+            cout<<"Warning: recommended number of threads is "<<nthreads<<endl;
+            cout<<"setting number of threads to omp_threads, "<<omp_threads<<endl;
+        }
         nthreads = omp_threads;
     }
+
+    omp::n_threads = nthreads;
     mrcpp::set_max_threads(nthreads);
 
     if (mpi::is_bank) {

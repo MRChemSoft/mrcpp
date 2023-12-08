@@ -56,6 +56,7 @@ public:
 
     int compress();
     void reassemble();
+    int deleteUnusedChunks();
 
     int getNNodes() const { return this->nNodes; }
     int getNCoefs() const { return this->coefsPerNode; }
@@ -97,7 +98,6 @@ protected:
 
     void moveNodes(int nNodes, int srcIdx, int dstIdx);
     void appendChunk(bool coefs);
-    int deleteUnusedChunks();
 
     int findNextAvailable(int sIdx, int nNodes) const;
     int findNextOccupied(int sIdx) const;

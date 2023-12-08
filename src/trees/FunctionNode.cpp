@@ -364,6 +364,9 @@ template <int D> void FunctionNode<D>::dealloc() {
     auto &ftree = this->getFuncTree();
     if (this->isGenNode()) {
         ftree.getGenNodeAllocator().dealloc(sIdx);
+        // for GenNodes we clean unused chunks carefully, as they can become
+        // very large and occupy space long after used.
+        ftree.getGenNodeAllocator().deleteUnusedChunks();
     } else {
         ftree.decrementNodeCount(this->getScale());
         ftree.getNodeAllocator().dealloc(sIdx);

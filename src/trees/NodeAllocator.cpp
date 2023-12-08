@@ -253,6 +253,7 @@ template <int D> int NodeAllocator<D>::deleteUnusedChunks() {
     // number of occupied chunks
     int nChunksTotal = getNChunks();
     int nChunksUsed = getNChunksUsed();
+    if(nChunksTotal == nChunksUsed) return 0; // no unused chunks
     assert(nChunksTotal >= nChunksUsed);
     for (int i = nChunksUsed; i < nChunksTotal; i++) delete[](char *)(this->nodeChunks[i]);
 

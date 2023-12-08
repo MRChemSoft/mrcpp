@@ -304,7 +304,7 @@ void ComplexFunction::rescale(double c) {
 /** @brief In place multiply with complex scalar. Involves a deep copy.*/
 void ComplexFunction::rescale(ComplexDouble c) {
     ComplexFunction &out = *this;
-    ComplexFunction tmp(isShared());
+    ComplexFunction tmp(spin(), occ(), rank, isShared());
     cplxfunc::deep_copy(tmp, out);
     out.free(NUMBER::Total);
     out.add(c, tmp);
@@ -370,6 +370,7 @@ ComplexDouble cplxfunc::node_norm_dot(ComplexFunction bra, ComplexFunction ket, 
 void cplxfunc::deep_copy(ComplexFunction &out, ComplexFunction &inp) {
     bool need_to_copy = not(out.isShared()) or mpi::share_master();
     out.funcMRA = inp.funcMRA;
+    out.setRank(inp.getRank());
     if (inp.hasReal()) {
         if (not out.hasReal()) out.alloc(NUMBER::Real);
         if (need_to_copy) {

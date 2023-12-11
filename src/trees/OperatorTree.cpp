@@ -98,6 +98,14 @@ void OperatorTree::clearBandWidth() {
     this->bandWidth = nullptr;
 }
 
+
+/** @brief Being modified by Evgueni...
+ *
+ * @param[in] prec: Precision used for thresholding
+ * 
+ * @details We need to upgrade the algorithm so --l during time evolution simulations
+ * 
+ */ 
 void OperatorTree::calcBandWidth(double prec) {
     if (this->bandWidth == nullptr) clearBandWidth();
     this->bandWidth = new BandWidth(getDepth());

@@ -55,6 +55,8 @@ public:
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;
 
+    using MWTree<2>::getNode;
+
 protected:
     const double normPrec;
     BandWidth *bandWidth;

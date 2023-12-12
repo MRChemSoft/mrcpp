@@ -44,6 +44,11 @@ void BandWidth::setWidth(int depth, int index, int wd) {
     if (wd > this->widths(depth, 4)) { this->widths(depth, 4) = wd; }
 }
 
+bool BandWidth::isOutsideBand(int oTransl, int o_depth, int idx) const
+{
+    return abs(oTransl) > getWidth(o_depth, idx);
+}
+
 std::ostream &BandWidth::print(std::ostream &o) const {
     o << "  *BandWidths:" << std::endl;
     o << "   n      T   C   B   A  |  max " << std::endl;

@@ -309,8 +309,9 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorSta
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        int w = oTree.getBandWidth().getWidth(o_depth, idx);
-        if (abs(oTransl) > w) { return; }
+        //int w = oTree.getBandWidth().getWidth(o_depth, idx);
+        //if (abs(oTransl) > w) { return; }
+        if ( oTree.getBandWidth().isOutsideBand(oTransl, o_depth, idx) ) { return; }
 
         const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);

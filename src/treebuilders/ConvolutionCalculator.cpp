@@ -289,10 +289,11 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
 }
 
 
-/** Apply a single operator component (term) to a single f-node.
- * Whether the operator actualy is applied is determined by a screening threshold.
+/** @brief Apply a single operator component (term) to a single f-node.
  * 
  * @details Apply a single operator component (term) to a single f-node.
+ * Whether the operator actualy is applied is determined by a screening threshold.
+ * Here we make use of the sparcity of matrices \f$ A, B, C \f$.
  * 
  */
 template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorState<D> &os) {

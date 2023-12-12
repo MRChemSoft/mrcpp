@@ -34,6 +34,7 @@
 #include "functions/GaussExp.h"
 
 #include "treebuilders/CrossCorrelationCalculator.h"
+#include "treebuilders/DefaultCalculator.h"
 #include "treebuilders/OperatorAdaptor.h"
 #include "treebuilders/SplitAdaptor.h"
 #include "treebuilders/TreeBuilder.h"
@@ -66,9 +67,9 @@ namespace mrcpp {
  * @param[in] max_Jpower: maximum amount of power integrals used.
  *
  * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator
@@ -77,13 +78,13 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
 {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
-    
+
     SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
     this->cross_correlation = &cross_correlation;
 
     initialize(time, finest_scale, imaginary, max_Jpower);     //will go outside of the constructor
 
-    this->initOperExp(1);   //this turns out to be important 
+    this->initOperExp(1);   //this turns out to be important
     Printer::setPrintLevel(oldlevel);
 }
 
@@ -95,11 +96,11 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  *
  * @details Uniform down to finest scale so far... (in progress)
  *
- * 
- * 
- * 
- * 
- *  
+ *
+ *
+ *
+ *
+ *
  */
 template <int D>
 void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower)
@@ -111,15 +112,21 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     mrcpp::TreeBuilder<2> builder;
     mrcpp::SplitAdaptor<2> uniform(o_mra.getMaxScale(), true);
 
-    int N = finest_scale;
-    double a = time * std::pow(4, N + 1);
+    int N = 19;
+
+    auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
+    DefaultCalculator<2> intitial_calculator;
+    for (auto n = 0; n < 6; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
+
     double threshold = o_prec / 100.0;
-    mrcpp::JpowerIntegrals J(a, N + 1, max_Jpower, threshold);
+    std::map<int, mrcpp::JpowerIntegrals *> J;
+    for( int n = 0; n <= N+1; n ++ )
+        J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 //    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
-    auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
-    builder.build(*o_tree, calculator, uniform, N ); // Expand 1D kernel into 2D operator
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale()); // Splits all nodes
+    builder.build(*o_tree, calculator, adaptor, 12); // Expand 1D kernel into 2D operator
 
     // Postprocess to make the operator functional
     Timer trans_t;
@@ -131,6 +138,9 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     print::separator(10, ' ');
 
     this->raw_exp.push_back(std::move(o_tree));
+
+    for( int n = 0; n <= N+1; n ++ )
+        delete J[n];
 }
 
 /** @brief SHOULD Reduce the precision of the tree by deleting nodes
@@ -147,8 +157,8 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
  * @note The splitting factor appears in the threshold for the wavelet norm as
  * \f$ ||w|| < 2^{-sn/2} ||f|| \epsilon \f$. In principal, `s` should be equal
  * to the dimension; in practice, it is set to `s=1`.
- * 
- * 
+ *
+ *
  */
 /*
 template <int D> int TimeEvolutionOperator<D>::crop(double prec, double splitFac, bool absPrec) {

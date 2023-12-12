@@ -50,14 +50,14 @@ public:
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
     OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }        ///< TODO: It has to be specified more.
-                                                                                ///< \b l is distance to the diagonal. 
+                                                                                ///< \b l is distance to the diagonal.
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;
 
     using MWTree<2>::getNode;
-    
+
 protected:
     const double normPrec;
     BandWidth *bandWidth;

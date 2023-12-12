@@ -288,8 +288,13 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
     }
 }
 
-/** Apply a single operator component (term) to a single f-node. Whether the
-operator actualy is applied is determined by a screening threshold. */
+
+/** Apply a single operator component (term) to a single f-node.
+ * Whether the operator actualy is applied is determined by a screening threshold.
+ * 
+ * @details Apply a single operator component (term) to a single f-node.
+ * 
+ */
 template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorState<D> &os) {
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
@@ -309,8 +314,6 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorSta
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        //int w = oTree.getBandWidth().getWidth(o_depth, idx);
-        //if (abs(oTransl) > w) { return; }
         if ( oTree.getBandWidth().isOutsideBand(oTransl, o_depth, idx) ) { return; }
 
         const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);

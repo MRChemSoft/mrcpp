@@ -44,6 +44,16 @@ void BandWidth::setWidth(int depth, int index, int wd) {
     if (wd > this->widths(depth, 4)) { this->widths(depth, 4) = wd; }
 }
 
+
+/** @brief Checks if the distance to diagonal is bigger than the operator band width.
+ *
+ * @param[in] oTransl: distance to diagonal
+ * @param[in] o_depth: scaling order
+ * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
+ * 
+ * @returns True if \b oTransl is outside of the band and False otherwise. 
+ * 
+ */ 
 bool BandWidth::isOutsideBand(int oTransl, int o_depth, int idx) const
 {
     return abs(oTransl) > getWidth(o_depth, idx);

@@ -67,7 +67,7 @@ void Bank::open() {
             continue;
         } else if (message == NEW_ACCOUNT) {
             // we just have to pick out a number that is not already assigned
-            int account = (max_account_id + 1) % 1000000000 + 1;
+            int account = (max_account_id + 1) % 1000000000;
             while (get_deposits.count(account)) account = (account + 1) % 1000000000; // improbable this is used
             max_account_id = account;
             // create default content
@@ -111,7 +111,6 @@ void Bank::open() {
             get_numberofclients[account]--;
             if (get_numberofclients[account] == 0) {
                 // all clients have closed the account. We remove the account.
-                totcurrentsize -= currentsize[account];
                 remove_account(account);
             }
         }
@@ -148,11 +147,14 @@ void Bank::open() {
                         delete[] block.second->data[i];
                     }
                 }
-                currentsize[account] -= block.second->BlockData.size() / 128; // converted into kB
-                totcurrentsize -= block.second->BlockData.size() / 128;       // converted into kB
+                // We want consistent rounding errors:
+                int roundedsizekb =  (block.second->BlockData.rows() / 128) * block.second->BlockData.cols();
+                currentsize[account] -= roundedsizekb; // converted into kB
+                totcurrentsize -= roundedsizekb;       // converted into kB
+
                 block.second->BlockData.resize(0, 0);                         // NB: the matrix does not clear itself otherwise
                 // assert(currentsize[account] >= 0);
-                this->currentsize[account] = std::max(0ll, currentsize[account]);
+                //this->currentsize[account] = std::max(0ll, currentsize[account]);
                 toeraseVec.push_back(block.first);
             }
             for (int ierase : toeraseVec) { nodeid2block.erase(ierase); }
@@ -516,9 +518,14 @@ void Bank::remove_account(int account) {
     }
     std::vector<deposit> &deposits = *get_deposits[account];
     for (int ix = 1; ix < deposits.size(); ix++) {
-        if (deposits[ix].orb != nullptr) deposits[ix].orb->free(NUMBER::Total);
-        if (deposits[ix].hasdata) delete deposits[ix].data;
-        deposits[ix].hasdata = false;
+       if (deposits[ix].orb != nullptr) deposits[ix].orb->free(NUMBER::Total);
+       if (deposits[ix].hasdata) {
+           currentsize[account] -= deposits[ix].datasize / 128;
+           totcurrentsize -= deposits[ix].datasize / 128;
+           delete deposits[ix].data;
+       }
+       if (deposits[ix].hasdata) (*get_id2ix[account])[deposits[ix].id] = 0; // indicate that it does not exist
+       deposits[ix].hasdata = false;
     }
     deposits.clear();
     delete get_queue[account];
@@ -529,7 +536,6 @@ void Bank::remove_account(int account) {
     get_id2ix.erase(account);
     get_id2qu.erase(account);
     get_deposits.erase(account);
-    currentsize.erase(account);
     get_readytasks.erase(account);
 
     std::map<int, Blockdata_struct *> &nodeid2block = *get_nodeid2block[account];
@@ -546,9 +552,11 @@ void Bank::remove_account(int account) {
                 delete[] block.second->data[i];
             }
         }
-        currentsize[account] -= block.second->BlockData.size() / 128; // converted into kB
-        totcurrentsize -= block.second->BlockData.size() / 128;       // converted into kB
-        block.second->BlockData.resize(0, 0);                         // NB: the matrix does not clear itself otherwise
+        // We want consistent rounding errors:
+        int roundedsizekb =  (block.second->BlockData.rows() / 128) * block.second->BlockData.cols();
+        currentsize[account] -= roundedsizekb; // converted into kB
+        totcurrentsize -= roundedsizekb;       // converted into kB
+        block.second->BlockData.resize(0, 0);  // NB: the matrix does not clear itself otherwise
         // assert(currentsize[account] >= 0);
         toeraseVec.push_back(block.first);
     }
@@ -575,16 +583,11 @@ void Bank::remove_account(int account) {
     for (int ierase : toeraseVec) { orbid2block.erase(ierase); }
 
     orbid2block.clear();
-    for (int ix = 1; ix < deposits.size(); ix++) {
-        if (deposits[ix].hasdata) delete deposits[ix].data;
-        if (deposits[ix].hasdata) (*get_id2ix[account])[deposits[ix].id] = 0; // indicate that it does not exist
-        deposits[ix].hasdata = false;
-    }
     delete get_nodeid2block[account];
     delete get_orbid2block[account];
     get_nodeid2block.erase(account);
     get_orbid2block.erase(account);
-
+    currentsize.erase(account);
 #endif
 }
 

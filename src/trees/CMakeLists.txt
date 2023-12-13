@@ -2,6 +2,8 @@ target_sources(mrcpp
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CornerBandWidth.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CornerOperatorTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HilbertPath.cpp
@@ -20,6 +22,8 @@ get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
 list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/BandWidth.h
   ${CMAKE_CURRENT_SOURCE_DIR}/BoundingBox.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/CornerBandWidth.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/CornerOperatorTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionNode.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTree.h
   ${CMAKE_CURRENT_SOURCE_DIR}/FunctionTreeVector.h

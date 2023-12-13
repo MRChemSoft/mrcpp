@@ -30,7 +30,7 @@
 
 namespace mrcpp {
 
-class OperatorTree final : public MWTree<2> {
+class OperatorTree : public MWTree<2> {
 public:
     OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
     OperatorTree(const OperatorTree &tree) = delete;

@@ -42,7 +42,7 @@
 
 #include "trees/BandWidth.h"
 #include "trees/FunctionTreeVector.h"
-#include "trees/OperatorTree.h"
+#include "trees/CornerOperatorTree.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"

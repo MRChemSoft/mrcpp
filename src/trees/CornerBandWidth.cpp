@@ -23,42 +23,24 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- * BandWidth.h
- */
-
-#pragma once
-
-#include <Eigen/Core>
-#include <iomanip>
+#include "CornerBandWidth.h"
 
 namespace mrcpp {
 
-class BandWidth {
-public:
-    BandWidth(int depth = 0)
-            : widths(depth + 1, 5) {
-        this->clear();
-    }
-    BandWidth(const BandWidth &bw)
-            : widths(bw.widths) {}
-    BandWidth &operator=(const BandWidth &bw);
 
-    void clear() { this->widths.setConstant(-1); }
+/** @brief Checks if the distance to diagonal is lesser than the operator band width.
+ *
+ * @param[in] oTransl: distance to diagonal
+ * @param[in] o_depth: scaling order
+ * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
+ * 
+ * @returns True if \b oTransl is outside of the corner band (close to diagonal) and False otherwise. 
+ * 
+ */ 
+bool CornerBandWidth::isOutsideBand(int oTransl, int o_depth, int idx) const
+{
+    return abs(oTransl) < getWidth(o_depth, idx);
+}
 
-    bool isEmpty(int depth) const;
-    int getDepth() const { return this->widths.rows() - 1; }
-    int getMaxWidth(int depth) const { return (depth > getDepth()) ? -1 : this->widths(depth, 4); }
-    int getWidth(int depth, int index) const { return (depth > getDepth()) ? -1 : this->widths(depth, index); }
-    void setWidth(int depth, int index, int wd);
-    bool isOutsideBand(int oTransl, int o_depth, int idx) const;
-
-    friend std::ostream &operator<<(std::ostream &o, const BandWidth &bw) { return bw.print(o); }
-
-private:
-    Eigen::MatrixXi widths; /// column 5 stores max width at depth
-
-    std::ostream &print(std::ostream &o) const;
-};
 
 } // namespace mrcpp

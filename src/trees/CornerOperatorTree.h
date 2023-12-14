@@ -37,8 +37,8 @@ public:
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
     //~CornerOperatorTree() override;
 
-    void calcBandWidth(double prec = -1.0);
-    bool isOutsideBand(int oTransl, int o_depth, int idx) const;
+    void calcBandWidth(double prec = -1.0) override;
+    bool isOutsideBand(int oTransl, int o_depth, int idx) override;
 
 //    BandWidth &getBandWidth() { return *this->bandWidth; }
 //    const BandWidth &getBandWidth() const { return *this->bandWidth; }

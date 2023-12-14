@@ -34,7 +34,7 @@
 
 namespace mrcpp {
 
-class BandWidth {
+class BandWidth final {
 public:
     BandWidth(int depth = 0)
             : widths(depth + 1, 5) {
@@ -51,8 +51,7 @@ public:
     int getMaxWidth(int depth) const { return (depth > getDepth()) ? -1 : this->widths(depth, 4); }
     int getWidth(int depth, int index) const { return (depth > getDepth()) ? -1 : this->widths(depth, index); }
     void setWidth(int depth, int index, int wd);
-    bool isOutsideBand(int oTransl, int o_depth, int idx) const;
-
+    
     friend std::ostream &operator<<(std::ostream &o, const BandWidth &bw) { return bw.print(o); }
 
 private:

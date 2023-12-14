@@ -24,12 +24,9 @@
  */
 
 #include "CornerOperatorTree.h"
-//#include "BandWidth.h"
-#include "TreeIterator.h"
-#include "NodeAllocator.h"
 #include "OperatorNode.h"
 #include "utils/Printer.h"
-#include "utils/tree_utils.h"
+#include "BandWidth.h"
 
 using namespace Eigen;
 
@@ -43,17 +40,16 @@ CornerOperatorTree::~CornerOperatorTree() {
 }
 */
 
-/** @brief Being modified by Evgueni...
+
+/** @brief Calculates band widths of the non-standard form matrices.
  *
  * @param[in] prec: Precision used for thresholding
  * 
- * @details We need to upgrade the algorithm so --l during time evolution simulations
+ * @details It is starting from \f$ l = 2^n \f$ and updating the band width value each time we encounter
+ * considerable value while keeping decreasing down to \f$ l = 0 \f$, that stands for the distance to the diagonal.
  * 
  */ 
 void CornerOperatorTree::calcBandWidth(double prec) {
-
-    std::cout << "Checking 01" << std::endl;
-
     if (this->bandWidth == nullptr) clearBandWidth();
     this->bandWidth = new BandWidth(getDepth());
 
@@ -79,8 +75,6 @@ void CornerOperatorTree::calcBandWidth(double prec) {
         }
     }
     println(100, "\nOperator BandWidth" << *this->bandWidth);
-
-    std::cout << "Checking 02" << std::endl;
 }
 
 
@@ -95,8 +89,6 @@ void CornerOperatorTree::calcBandWidth(double prec) {
  */ 
 bool CornerOperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 {
-    //std::cout << "Checking CornerOperatorTree::isOutsideBand()" << std::endl;
-
     return abs(oTransl) < this->bandWidth->getWidth(o_depth, idx);
 }
 

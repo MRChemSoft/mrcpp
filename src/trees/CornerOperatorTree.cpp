@@ -93,8 +93,10 @@ void CornerOperatorTree::calcBandWidth(double prec) {
  * @returns True if \b oTransl is outside of the corner band (close to diagonal) and False otherwise. 
  * 
  */ 
-bool CornerOperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) const
+bool CornerOperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 {
+    //std::cout << "Checking CornerOperatorTree::isOutsideBand()" << std::endl;
+
     return abs(oTransl) < this->bandWidth->getWidth(o_depth, idx);
 }
 

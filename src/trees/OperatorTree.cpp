@@ -144,8 +144,10 @@ void OperatorTree::calcBandWidth(double prec) {
  * @returns True if \b oTransl is outside of the band and False otherwise. 
  * 
  */ 
-bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) const
+bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 {
+    //std::cout << "Checking OperatorTree::isOutsideBand()" << std::endl;
+
     return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
 }
 

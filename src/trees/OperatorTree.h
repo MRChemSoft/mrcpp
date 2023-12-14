@@ -39,9 +39,9 @@ public:
 
     double getNormPrecision() const { return this->normPrec; }
 
-    void calcBandWidth(double prec = -1.0);
     void clearBandWidth();
-    bool isOutsideBand(int oTransl, int o_depth, int idx) const;
+    virtual void calcBandWidth(double prec = -1.0);
+    virtual bool isOutsideBand(int oTransl, int o_depth, int idx);
 
     void setupOperNodeCache();
     void clearOperNodeCache();

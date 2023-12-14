@@ -307,7 +307,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorSta
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        const OperatorTree &oTree = this->oper->getComponent(i, d);
+        auto &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.

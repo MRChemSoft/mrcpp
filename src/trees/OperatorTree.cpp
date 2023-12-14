@@ -99,11 +99,12 @@ void OperatorTree::clearBandWidth() {
 }
 
 
-/** @brief Being modified by Evgueni...
+/** @brief Calculates band widths of the non-standard form matrices.
  *
  * @param[in] prec: Precision used for thresholding
  * 
- * @details We need to upgrade the algorithm so --l during time evolution simulations
+ * @details It is starting from \f$ l = 0 \f$ and updating the band width value each time we encounter
+ * considerable value while keeping increasing \f$ l \f$, that stands for the distance to the diagonal. 
  * 
  */ 
 void OperatorTree::calcBandWidth(double prec) {
@@ -115,7 +116,7 @@ void OperatorTree::calcBandWidth(double prec) {
 
     if (prec < 0.0) prec = this->normPrec;
     for (int depth = 0; depth < this->getDepth(); depth++) {
-        int n = getRootScale() + depth;
+        //int n = getRootScale() + depth;     //not in use?!
         int l = 0;
         bool done = false;
         while (not done) {
@@ -146,8 +147,6 @@ void OperatorTree::calcBandWidth(double prec) {
  */ 
 bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 {
-    //std::cout << "Checking OperatorTree::isOutsideBand()" << std::endl;
-
     return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
 }
 

@@ -45,20 +45,6 @@ void BandWidth::setWidth(int depth, int index, int wd) {
 }
 
 
-/** @brief Checks if the distance to diagonal is bigger than the operator band width.
- *
- * @param[in] oTransl: distance to diagonal
- * @param[in] o_depth: scaling order
- * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
- * 
- * @returns True if \b oTransl is outside of the band and False otherwise. 
- * 
- */ 
-bool BandWidth::isOutsideBand(int oTransl, int o_depth, int idx) const
-{
-    return abs(oTransl) > getWidth(o_depth, idx);
-}
-
 std::ostream &BandWidth::print(std::ostream &o) const {
     o << "  *BandWidths:" << std::endl;
     o << "   n      T   C   B   A  |  max " << std::endl;

@@ -26,7 +26,6 @@
 #pragma once
 
 #include "OperatorTree.h"
-#include "BandWidth.h"
 
 namespace mrcpp {
 
@@ -35,17 +34,10 @@ public:
     using OperatorTree::OperatorTree;
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
-    //~CornerOperatorTree() override;
+    //~CornerOperatorTree() override;  //causing memory problems ?!
 
     void calcBandWidth(double prec = -1.0) override;
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;
-
-//    BandWidth &getBandWidth() { return *this->bandWidth; }
-//    const BandWidth &getBandWidth() const { return *this->bandWidth; }
-
-
-//protected:
-//    CornerBandWidth *bandWidth;
 };
 
 } // namespace mrcpp

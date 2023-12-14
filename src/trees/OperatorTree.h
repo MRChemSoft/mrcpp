@@ -41,6 +41,7 @@ public:
 
     void calcBandWidth(double prec = -1.0);
     void clearBandWidth();
+    bool isOutsideBand(int oTransl, int o_depth, int idx) const;
 
     void setupOperNodeCache();
     void clearOperNodeCache();
@@ -55,6 +56,8 @@ public:
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;
 
+    using MWTree<2>::getNode;
+    
 protected:
     const double normPrec;
     BandWidth *bandWidth;

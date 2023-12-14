@@ -134,6 +134,22 @@ void OperatorTree::calcBandWidth(double prec) {
     println(100, "\nOperator BandWidth" << *this->bandWidth);
 }
 
+
+/** @brief Checks if the distance to diagonal is bigger than the operator band width.
+ *
+ * @param[in] oTransl: distance to diagonal
+ * @param[in] o_depth: scaling order
+ * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
+ * 
+ * @returns True if \b oTransl is outside of the band and False otherwise. 
+ * 
+ */ 
+bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) const
+{
+    return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
+}
+
+
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);

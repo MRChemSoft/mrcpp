@@ -35,13 +35,13 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-
+/*
 CornerOperatorTree::~CornerOperatorTree() {
     clearOperNodeCache();
     clearBandWidth();
     this->deleteRootNodes();
 }
-
+*/
 
 /** @brief Being modified by Evgueni...
  *
@@ -51,8 +51,11 @@ CornerOperatorTree::~CornerOperatorTree() {
  * 
  */ 
 void CornerOperatorTree::calcBandWidth(double prec) {
+
+    std::cout << "Checking 01" << std::endl;
+
     if (this->bandWidth == nullptr) clearBandWidth();
-    this->bandWidth = new CornerBandWidth(getDepth());
+    this->bandWidth = new BandWidth(getDepth());
 
     VectorXi max_transl;
     getMaxTranslations(max_transl);
@@ -76,6 +79,23 @@ void CornerOperatorTree::calcBandWidth(double prec) {
         }
     }
     println(100, "\nOperator BandWidth" << *this->bandWidth);
+
+    std::cout << "Checking 02" << std::endl;
+}
+
+
+/** @brief Checks if the distance to diagonal is lesser than the operator band width.
+ *
+ * @param[in] oTransl: distance to diagonal
+ * @param[in] o_depth: scaling order
+ * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
+ * 
+ * @returns True if \b oTransl is outside of the corner band (close to diagonal) and False otherwise. 
+ * 
+ */ 
+bool CornerOperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) const
+{
+    return abs(oTransl) < this->bandWidth->getWidth(o_depth, idx);
 }
 
 

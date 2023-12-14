@@ -118,7 +118,7 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 //    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
-    auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
+    auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
     builder.build(*o_tree, calculator, uniform, N ); // Expand 1D kernel into 2D operator
 
     // Postprocess to make the operator functional

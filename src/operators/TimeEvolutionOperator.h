@@ -59,6 +59,7 @@ public:
 */
 
     void initialize(double time, int finest_scale, bool imaginary, int max_Jpower);
+    void initialize(double time, bool imaginary, int max_Jpower);
     void setBuildPrec(double prec) { this->build_prec = prec; }
 
     double build_prec{-1.0};

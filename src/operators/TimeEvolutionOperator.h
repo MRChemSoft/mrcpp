@@ -44,19 +44,13 @@ template <int D> class TimeEvolutionOperator : public ConvolutionOperator<D>   /
 {
 public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 20);
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 20);
     TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
     TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
 
     double getBuildPrec() const { return this->build_prec; }
 
-//protected:
-/*
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra)
-        : MWOperator<D>(mra, mra.getRootScale(), -10) {}
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
-        : MWOperator<D>(mra, root, reach) {}
-*/
 
     void initialize(double time, int finest_scale, bool imaginary, int max_Jpower);
     void initialize(double time, bool imaginary, int max_Jpower);

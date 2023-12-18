@@ -89,6 +89,35 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
 }
 
 
+/** @brief A constructor for TimeEvolutionOperator class.
+ *
+ * @param[in] mra: MRA.
+ * @param[in] prec: precision.
+ * @param[in] time: the time moment (step).
+ * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
+ * @param[in] max_Jpower: maximum amount of power integrals used.
+ *
+ * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
+ * 
+ * 
+ * 
+ */
+template <int D>
+TimeEvolutionOperator<D>::TimeEvolutionOperator
+(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower)
+    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
+{
+    int oldlevel = Printer::setPrintLevel(0);
+    this->setBuildPrec(prec);
+    
+    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
+    this->cross_correlation = &cross_correlation;
+
+    initialize(time, imaginary, max_Jpower);     //will go outside of the constructor
+
+    this->initOperExp(1);   //this turns out to be important 
+    Printer::setPrintLevel(oldlevel);
+}
 
 
 

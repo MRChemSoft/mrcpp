@@ -66,7 +66,7 @@ void CornerOperatorTree::calcBandWidth(double prec) {
         while (not done) {
             done = true;
             MWNode<2> &node = getNode(depth, l);
-            double thrs = std::max(MachinePrec, prec / ( (1 << depth))); //2.0 * (1 << depth)
+            double thrs = std::max(MachinePrec, prec / 10.0); //(2.0 * (1 << depth))
             //for (int k = 0; k < 4; k++) {
             for (int k = 1; k < 4; k++) {
                 if (node.getComponentNorm(k) > thrs) {

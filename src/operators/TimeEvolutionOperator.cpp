@@ -118,7 +118,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     DefaultCalculator<2> intitial_calculator;
     for (auto n = 0; n < 6; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
 
-    double threshold = o_prec / 100.0;
+    double threshold = o_prec / 1000.0;
     std::map<int, mrcpp::JpowerIntegrals *> J;
     for( int n = 0; n <= N+1; n ++ )
         J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
@@ -165,7 +165,7 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
 
     int N = finest_scale;
     double a = time * std::pow(4, N + 1);
-    double threshold = o_prec / 100.0;
+    double threshold = o_prec / 1000.0;
     std::map<int, mrcpp::JpowerIntegrals *> J;
     for( int n = 0; n <= N+1; n ++ )
         J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);

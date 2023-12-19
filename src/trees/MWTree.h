@@ -174,7 +174,6 @@ protected:
     std::vector<int> nodesAtNegativeDepth; ///< Node counter
 
     virtual void mwTransformDown(bool overwrite);
-public:  //Evgueni
     virtual void mwTransformUp();
 
     void incrementNodeCount(int scale);

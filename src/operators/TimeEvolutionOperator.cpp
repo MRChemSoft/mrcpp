@@ -144,8 +144,8 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     int N = 19;
 
     auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
-    DefaultCalculator<2> intitial_calculator;
-    for (auto n = 0; n < 6; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
+    //DefaultCalculator<2> intitial_calculator;
+    //for (auto n = 0; n < 6; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
 
     double threshold = o_prec / 1000.0;
     std::map<int, mrcpp::JpowerIntegrals *> J;
@@ -153,12 +153,15 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
         J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
-    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale()); // Splits all nodes
-    builder.build(*o_tree, calculator, adaptor, 12); // Expand 1D kernel into 2D operator
-
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true); // Splits all nodes
+    builder.build(*o_tree, calculator, adaptor, 9); // Expand 1D kernel into 2D operator
+    o_tree->setZero();
+    builder.build(*o_tree, calculator, adaptor, 1); // Expand 1D kernel into 2D operator
     // Postprocess to make the operator functional
     Timer trans_t;
-    o_tree->mwTransform(mrcpp::BottomUp);
+//    o_tree->mwTransform(BottomUp, true);
+//    o_tree->mwTransform(TopDown, true);
+    o_tree->mwTransform(BottomUp);
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
     print::time(10, "Time transform", trans_t);

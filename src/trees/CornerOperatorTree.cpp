@@ -66,21 +66,22 @@ void CornerOperatorTree::calcBandWidth(double prec) {
         this->bandWidth->setWidth(depth, 0, l);
         bool done = false;
 
-    std::cout << "Checking depth = "<< depth << std::endl;
+    //std::cout << "Checking depth = "<< depth << std::endl;
         while (not done) {
             done = true;
-    std::cout << "Checking 01 l = "<< l << std::endl;
-            MWNode<2> &node = getNode(depth, l);
-    std::cout << "Checking 02 l = "<< l << std::endl;
+    //std::cout << "Checking 01 l = "<< l << std::endl;
+            //MWNode<2> &node = getNode(depth, l);
+            MWNode<2> *node = findNode(NodeIndex<2>(depth, {l, 0}));
+    //std::cout << "Checking 02 l = "<< l << std::endl;
             double thrs = std::max(MachinePrec, prec / 10.0); //(2.0 * (1 << depth))
             //for (int k = 0; k < 4; k++) {
             for (int k = 1; k < 4; k++) {
-    std::cout << "Checking 03 l = "<< l << std::endl;
-                if (node.getComponentNorm(k) > thrs) {
+    //std::cout << "Checking 03 l = "<< l << std::endl;
+                if ( (node != nullptr) && (node->getComponentNorm(k) > thrs)) {
                     this->bandWidth->setWidth(depth, k, l);
                     done = false;
                 }
-    std::cout << "Checking 04 l = "<< l << std::endl;
+    //std::cout << "Checking 04 l = "<< l << std::endl;
             }
             if (--l < 0) break;
         }

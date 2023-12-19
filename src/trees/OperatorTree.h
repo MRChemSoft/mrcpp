@@ -57,6 +57,7 @@ public:
     void mwTransformUp() override;
 
     using MWTree<2>::getNode;
+    using MWTree<2>::findNode;
 
 protected:
     const double normPrec;

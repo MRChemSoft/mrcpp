@@ -152,7 +152,6 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     for( int n = 0; n <= N+1; n ++ )
         J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
-//    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
 
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale()); // Splits all nodes
     builder.build(*o_tree, calculator, adaptor, 12); // Expand 1D kernel into 2D operator
@@ -160,9 +159,9 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     // Postprocess to make the operator functional
     Timer trans_t;
     o_tree->mwTransform(mrcpp::BottomUp);
+    //o_tree->MWTree<2>::mwTransformUp();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-    //o_tree->cropTree(o_prec); //there is no method 'crop' in 'mrcpp::OperatorTree'
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 

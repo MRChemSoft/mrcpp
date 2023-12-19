@@ -83,7 +83,7 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
     }
 
     J.erase(J.begin());
-    crop(J, threshold);
+    //crop(J, threshold);
     return J;
 }
 

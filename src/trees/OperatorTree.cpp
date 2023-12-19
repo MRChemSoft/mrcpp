@@ -232,6 +232,7 @@ void OperatorTree::mwTransformUp() {
         for (int i = 0; i < nNodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
             if (node.isBranchNode()) { node.reCompress(); }
+            std::cout << node << std::endl;   //Evgueni
         }
     }
 }

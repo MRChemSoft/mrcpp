@@ -54,7 +54,7 @@ template <int D>
 FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem, const std::string &name)
         : MWTree<D>(mra, name)
         , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
-    int nodesPerChunk = 64;
+    int nodesPerChunk = 2048; // Large chunks are required for not leading to memory fragmentation (32 MB on "Betzy" 2023)
     int coefsGenNodes = this->getKp1_d();
     int coefsRegNodes = this->getTDim() * this->getKp1_d();
     this->nodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, sh_mem, coefsRegNodes, nodesPerChunk);

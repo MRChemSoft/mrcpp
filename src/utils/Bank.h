@@ -107,7 +107,6 @@ public:
     int get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec);
     int get_nodeblock(int nodeid, double *data, std::vector<int> &idVec);
     int get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart);
-    void clear_blockdata(int i = wrk_rank, int nodeidmax = 0, MPI_Comm comm = comm_wrk);
 };
 
 class TaskManager {

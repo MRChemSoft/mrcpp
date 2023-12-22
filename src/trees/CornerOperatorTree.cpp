@@ -56,7 +56,7 @@ void CornerOperatorTree::calcBandWidth(double prec) {
     VectorXi max_transl;
     getMaxTranslations(max_transl);
 
-    std::cout << "Checking 01" << std::endl;
+    //std::cout << "Checking 01" << std::endl;
 
     if (prec < 0.0) prec = this->normPrec;
     for (int depth = 0; depth < this->getDepth(); depth++) {

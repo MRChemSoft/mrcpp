@@ -42,6 +42,7 @@ public:
     void clearBandWidth();
     virtual void calcBandWidth(double prec = -1.0);
     virtual bool isOutsideBand(int oTransl, int o_depth, int idx);
+    void removeRubbish();
 
     void setupOperNodeCache();
     void clearOperNodeCache();

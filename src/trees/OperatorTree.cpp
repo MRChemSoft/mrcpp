@@ -151,6 +151,23 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 }
 
 
+/** @brief Cleans up end nodes.
+ *
+ * @details Traverses the tree 
+ * 
+ */ 
+void OperatorTree::removeRubbish()
+{
+    std::cout << "Hello from Evgueni" << std::endl;
+        
+    std::cout << "this->getRootScale() = " << this->getRootScale() << std::endl;
+    std::cout << "this->getDepth() = " << this->getDepth() << std::endl;
+    for( int n = this->getDepth() - 2; n > this->getRootScale(); n--)
+        std::cout << "n = " << n << std::endl;
+}
+
+
+
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);
@@ -232,7 +249,7 @@ void OperatorTree::mwTransformUp() {
         for (int i = 0; i < nNodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
             if (node.isBranchNode()) { node.reCompress(); }
-            std::cout << node << std::endl;   //Evgueni
+            //std::cout << node << std::endl;   //Evgueni
         }
     }
 }

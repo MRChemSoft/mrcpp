@@ -667,7 +667,6 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     // The principle of this routine is that nodes are rotated one by one using matrix multiplication.
     // The routine does avoid when possible to move data, but uses pointers and indices manipulation.
     // MPI version does not use OMP yet, Serial version uses OMP
-
     // size of input is N, size of output is M
     int N = Phi.size();
     int M = Psi.size();
@@ -760,6 +759,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
 
     bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
+
     BankAccount nodesPhi;             // to put the original nodes
     BankAccount nodesRotated;         // to put the rotated nodes
 
@@ -1002,7 +1002,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
 
     } else { // MPI case
 
-        for (int j = 0; j < Meff; j++) {
+       for (int j = 0; j < Meff; j++) {
             if (not mpi::my_orb(j % M)) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
@@ -1475,7 +1475,6 @@ ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi) {
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
     // NB: must be spinseparated at this point!
-
     int N = BraKet.size();
     ComplexMatrix S = ComplexMatrix::Zero(N, N);
     DoubleMatrix Sreal = DoubleMatrix::Zero(2 * N, 2 * N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
@@ -1629,7 +1628,6 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
  *
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
-    mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
 
     MultiResolutionAnalysis<3> *mra = Bra.vecMRA;
 

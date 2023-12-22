@@ -167,7 +167,7 @@ void mpi::initialize() {
     //
     // six conditions should be satisfied:
     // 1) no one use more than mrcpp_get_num_procs()/2
-    // 2) no one use more than mrcpp_get_max_threads, as defined by rank 0
+    // 2) NOT ENFORCED: no one use more than mrcpp_get_max_threads, as defined by rank 0
     // 3) the total number of threads used on the compute-node must not exceed omp_threads_available/2
     // 4) Bank needs only one thread
     // 5) workers need as many threads as possible
@@ -188,12 +188,14 @@ void mpi::initialize() {
     // do not exceed total number of cores accessible (assumed to be half the number of logical threads)
     nthreads = min(nthreads, mrcpp_get_num_procs()); // 1)
 
+    // NB: we do not use OMP_NUM_THREADS. Use all cores accessible. Could change this in the future
     // if OMP_NUM_THREADS is set, do not exceed
     // we enforce that all compute nodes use the same OMP_NUM_THREADS. Rank 0 decides.
-    int my_OMP_NUM_THREADS = mrcpp_get_max_threads();
+    /* int my_OMP_NUM_THREADS = mrcpp_get_max_threads();
     MPI_Bcast(&my_OMP_NUM_THREADS, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (my_OMP_NUM_THREADS > 0) nthreads = min(nthreads, my_OMP_NUM_THREADS); // 2)
+    */
 
     nthreads = max(1, nthreads); // 6)
 

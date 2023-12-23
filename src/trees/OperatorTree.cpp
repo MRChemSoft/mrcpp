@@ -153,7 +153,13 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 
 /** @brief Cleans up end nodes.
  *
- * @details Traverses the tree 
+ * @details Traverses the tree and rewrites end nodes having branch node twins,
+ * i. e. identical with respect to scale and translation.
+ * This method is very handy, when an adaptive operator construction
+ * can make a significunt noise at low scaling depth.
+ * Its need comes from the fact that mwTransform up cannot override
+ * rubbish that can potentially stick to end nodes at a particular level,
+ * and as a result spread further up to the root with mwTransform. 
  * 
  */
 void OperatorTree::removeRubbish()
@@ -271,7 +277,6 @@ void OperatorTree::mwTransformUp() {
         for (int i = 0; i < nNodes; i++) {
             MWNode<2> &node = *nodeTable[n][i];
             if (node.isBranchNode()) { node.reCompress(); }
-            //std::cout << node << std::endl;   //Evgueni
         }
     }
 }

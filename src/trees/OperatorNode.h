@@ -58,7 +58,6 @@ protected:
     OperatorNode &operator=(const OperatorNode &node) = delete;
     ~OperatorNode() = default;
 
-public:  //Evgueni
     void dealloc() override;
     double calcComponentNorm(int i) const override;
     Eigen::MatrixXd getComponent(int i);

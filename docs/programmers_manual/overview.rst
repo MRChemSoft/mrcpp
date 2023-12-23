@@ -19,6 +19,7 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
 
    ConvolutionCalculator
    
+   CornerOperatorTree
    TimeEvolutionOperator
    JpowerIntegrals
    special_functions

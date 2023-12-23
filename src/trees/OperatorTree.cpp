@@ -155,15 +155,37 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
  *
  * @details Traverses the tree 
  * 
- */ 
+ */
 void OperatorTree::removeRubbish()
 {
-    std::cout << "Hello from Evgueni" << std::endl;
-        
-    std::cout << "this->getRootScale() = " << this->getRootScale() << std::endl;
-    std::cout << "this->getDepth() = " << this->getDepth() << std::endl;
+    MWNode<2> *p_rubbish;     //possibly inexact end node
+    MWNode<2> *p_counterpart; //exact branch node
     for( int n = this->getDepth() - 2; n > this->getRootScale(); n--)
-        std::cout << "n = " << n << std::endl;
+    { 
+        for( int m = 0; m < (1<<n); m++ )
+            for( int l = 0; l < (1<<n); l++ )
+            {
+                p_rubbish = this->findNode( NodeIndex<2>(n, {m, l}) );
+                if( p_rubbish != nullptr && p_rubbish->isEndNode() )
+                {
+                    for( int m1 = 0; m1 < (1<<n); m1++ )
+                        for( int l1 = 0; l1 < (1<<n); l1++ )
+                            if
+                            (
+                                (m1 - l1 == m - l)
+                                &&
+                                ( p_counterpart = this->findNode( NodeIndex<2>(n, {m1, l1}) ) ) != nullptr
+                                &&
+                                p_counterpart->isBranchNode()
+                            )
+                            {
+                                for(int i = 0; i < p_counterpart->n_coefs; i++)
+                                    p_rubbish->coefs[i] = p_counterpart->coefs[i];
+                            }
+                }
+            }
+        this->mwTransform(BottomUp);
+    }
 }
 
 

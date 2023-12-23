@@ -157,38 +157,21 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true); // Splits all nodes
-    builder.build(*o_tree, calculator, adaptor, 11); // Expand 1D kernel into 2D operator
+    builder.build(*o_tree, calculator, adaptor, 12); // Expand 1D kernel into 2D operator
 //    builder.build(*o_tree, calculator, adaptor, 1); // Expand 1D kernel into 2D operator
     // Postprocess to make the operator functional
     Timer trans_t;
-//    o_tree->mwTransform(BottomUp, true);
-//    o_tree->mwTransform(TopDown, true);
     o_tree->mwTransform(BottomUp);
+
+    std::cout << "Removing rubbish" << std::endl;
+        
+    o_tree->removeRubbish();
+
+    o_tree->mwTransform(BottomUp);
+    o_tree->clearSquareNorm();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-/*
 
-    MWNodeVector<2> & end_nodes = o_tree->endNodeTable;
-    std::cout << "Size of end_nodes = " << end_nodes.size() << std::endl;
-    MWNode<2> *p_rubbish;
-    
-    p_rubbish = o_tree->findNode( NodeIndex<2>(2, {1, 3}) );
-    p_rubbish = o_tree->findNode( NodeIndex<2>(2, {3, 1}) );
-    p_rubbish = o_tree->findNode( NodeIndex<2>(3, {1, 7}) );
-    p_rubbish->deleteChildren();
-    static_cast<OperatorNode *>(p_rubbish)->dealloc();
-
-    //std::cout << "Size of end_nodes = " << end_nodes.size() << std::endl;
-
-
-
-    o_tree->mwTransform(mrcpp::BottomUp);
-    o_tree->calcSquareNorm();
-    o_tree->setupOperNodeCache();
-    o_tree->resetEndNodeTable();
-
-    std::cout << "Size of end_nodes = " << end_nodes.size() << std::endl;
-*/
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 

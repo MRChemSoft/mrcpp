@@ -27,24 +27,32 @@
 
 #include "MWOperator.h"
 #include "ConvolutionOperator.h"
-#include "IdentityConvolution.h"
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
 
 namespace mrcpp {
 
 
-/**
- * @brief time evolition operator
+/** @class TimeEvolutionOperator
+ *
+ * @brief Semigroup of the free-particle Schrodinger equation
  * 
+ * @details Represents the semigroup
+ * \f$
+ *      \exp \left( i t \partial_x^2 \right)
+ *      .
+ * \f$
+ * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponent(0, 0).
+ *  
+ * @note So far implementation is done for Legendre scaling functions in 1d.
  * 
- * 
+ * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
  * 
  */
 template <int D> class TimeEvolutionOperator : public ConvolutionOperator<D>   //One can use ConvolutionOperator instead as well
 {
 public:
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 20);
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 20);
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30);
     TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
     TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
@@ -58,9 +66,7 @@ public:
 
     double build_prec{-1.0};
     SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
-    
-    //Difficult to impliment:
-    //int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 };
+
 
 } // namespace mrcpp

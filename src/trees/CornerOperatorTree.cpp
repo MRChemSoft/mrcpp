@@ -47,6 +47,7 @@ CornerOperatorTree::~CornerOperatorTree() {
  * 
  * @details It is starting from \f$ l = 2^n \f$ and updating the band width value each time we encounter
  * considerable value while keeping decreasing down to \f$ l = 0 \f$, that stands for the distance to the diagonal.
+ * This procedure is repeated for each matrix \f$ A, B \f$ and \f$ C \f$.
  * 
  */ 
 void CornerOperatorTree::calcBandWidth(double prec) {

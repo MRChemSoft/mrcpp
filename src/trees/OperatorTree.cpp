@@ -167,15 +167,16 @@ void OperatorTree::removeRubbish()
     MWNode<2> *p_rubbish;     //possibly inexact end node
     MWNode<2> *p_counterpart; //exact branch node
     for( int n = this->getDepth() - 2; n > this->getRootScale(); n--)
-    { 
-        for( int m = 0; m < (1<<n); m++ )
-            for( int l = 0; l < (1<<n); l++ )
+    {
+        int N =  1<<n;
+        for( int m = 0; m < N; m++ )
+            for( int l = 0; l < N; l++ )
             {
                 p_rubbish = this->findNode( NodeIndex<2>(n, {m, l}) );
                 if( p_rubbish != nullptr && p_rubbish->isEndNode() )
                 {
-                    for( int m1 = 0; m1 < (1<<n); m1++ )
-                        for( int l1 = 0; l1 < (1<<n); l1++ )
+                    for( int m1 = 0; m1 < N; m1++ )
+                        for( int l1 = 0; l1 < N; l1++ )
                             if
                             (
                                 (m1 - l1 == m - l)

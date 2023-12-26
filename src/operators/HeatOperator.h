@@ -44,7 +44,7 @@ namespace mrcpp {
  *   f(x)
  *   =
  *   \frac 1{ \sqrt{4 \pi t} }
- *   \int_\R
+ *   \int_{ \mathbb R }
  *   \exp
  *   \left(
  *       - \frac{ (x - y)^2 }{4t}

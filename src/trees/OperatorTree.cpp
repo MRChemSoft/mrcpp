@@ -153,6 +153,8 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
 
 /** @brief Cleans up end nodes.
  *
+ * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building).
+ * 
  * @details Traverses the tree and rewrites end nodes having branch node twins,
  * i. e. identical with respect to scale and translation.
  * This method is very handy, when an adaptive operator construction
@@ -162,11 +164,11 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
  * and as a result spread further up to the root with mwTransform. 
  * 
  */
-void OperatorTree::removeRubbish()
+void OperatorTree::removeRubbish(int trust_scale)
 {
     MWNode<2> *p_rubbish;     //possibly inexact end node
     MWNode<2> *p_counterpart; //exact branch node
-    for( int n = this->getDepth() - 2; n > this->getRootScale(); n--)
+    for( int n = (this->getDepth() - 2 < trust_scale) ? this->getDepth() - 2 : trust_scale; n > this->getRootScale(); n--)
     {
         int N =  1<<n;
         for( int m = 0; m < N; m++ )

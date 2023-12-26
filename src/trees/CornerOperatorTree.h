@@ -29,6 +29,15 @@
 
 namespace mrcpp {
 
+
+/** @class CornerOperatorTree
+ *
+ * @brief Special case of OperatorTree class
+ *
+ * @details Tree structure of operators having corner matrices
+ * \f$ A, B, C \f$ in the non-standard form.
+ *
+ */
 class CornerOperatorTree final : public OperatorTree {
 public:
     using OperatorTree::OperatorTree;

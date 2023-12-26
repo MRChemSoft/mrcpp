@@ -39,23 +39,10 @@ JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double threshold)
     for(int l = 1 - N; l < 0; l++  )
         integrals.push_back( calculate_J_power_integrals(l, a, M, threshold) );
 }
-/*
-JpowerIntegrals::JpowerIntegrals(const JpowerIntegrals &other)
-{
-    scaling = other.scaling;
 
-    // Copy integrals (deep copy)
-    integrals.clear();
-    for (const auto& row : other.integrals)
-    {
-        std::vector<std::complex<double>> newRow(row);
-        integrals.push_back(newRow);
-    }    
-}
-*/
 
 /// @brief in progress
-/// @param index - in progress
+/// @param index - interger lying in the interval \f$ [ -2^n + 1, \ldots, 2^n - 1 ] \f$.
 /// @return in progress
 std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
 {
@@ -83,7 +70,7 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
     }
 
     J.erase(J.begin());
-    //crop(J, threshold);
+    //crop(J, threshold); //there is a problem here
     return J;
 }
 

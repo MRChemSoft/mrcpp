@@ -64,13 +64,11 @@ namespace mrcpp {
  * @param[in] mra: MRA.
  * @param[in] prec: precision.
  * @param[in] time: the time moment (step).
- * @param[in] finest_scale: the operator constructed down to this scale.
+ * @param[in] finest_scale: the operator tree is constructed uniformly down to this scale.
  * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
  * @param[in] max_Jpower: maximum amount of power integrals used.
  *
  * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
- *
- *
  *
  */
 template <int D>
@@ -84,7 +82,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
     SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, finest_scale, imaginary, max_Jpower);     //will go outside of the constructor
+    initialize(time, finest_scale, imaginary, max_Jpower);     //will go outside of the constructor in future
 
     this->initOperExp(1);   //this turns out to be important
     Printer::setPrintLevel(oldlevel);
@@ -99,9 +97,10 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
  * @param[in] max_Jpower: maximum amount of power integrals used.
  *
- * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
+ * @details Adaptively constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
  *
- *
+ * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
+ * This should be weakened in future.
  *
  */
 template <int D>
@@ -130,10 +129,6 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  * to be calculated.
  * @note In future work we plan to optimize calculation of JpowerIntegrals so that we calculate
  * only needed ones, while building the tree (in progress).
- *
- *
- *
- *
  *
  */
 template <int D>
@@ -176,11 +171,6 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
  *
  * @details Uniform down to finest scale.
  *
- *
- *
- *
- *
- *
  */
 template <int D>
 void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower)
@@ -193,7 +183,6 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     SplitAdaptor<2> uniform(o_mra.getMaxScale(), true);
 
     int N = finest_scale;
-    double a = time * std::pow(4, N + 1);
     double threshold = o_prec / 1000.0;
     std::map<int, JpowerIntegrals *> J;
     for( int n = 0; n <= N+1; n ++ )
@@ -227,38 +216,6 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     for( int n = 0; n <= N+1; n ++ )
         delete J[n];
 }
-
-/** @brief SHOULD Reduce the precision of the tree by deleting nodes
- *
- * @param prec: New precision criterion
- * @param splitFac: Splitting factor: 1, 2 or 3
- * @param absPrec: Use absolute precision
- *
- * @details NOT implemented
- * This will run the tree building algorithm in "reverse", starting
- * from the leaf nodes, and perform split checks on each node based on the given
- * precision and the local wavelet norm.
- *
- * @note The splitting factor appears in the threshold for the wavelet norm as
- * \f$ ||w|| < 2^{-sn/2} ||f|| \epsilon \f$. In principal, `s` should be equal
- * to the dimension; in practice, it is set to `s=1`.
- *
- *
- */
-/*
-template <int D> int TimeEvolutionOperator<D>::crop(double prec, double splitFac, bool absPrec) {
-    for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
-        root.crop(prec, splitFac, absPrec);
-    }
-    int nChunks = this->getNodeAllocator().compress();
-    this->resetEndNodeTable();
-    this->calcSquareNorm();
-    return nChunks;
-}
-*/
-
-
 
 
 template class TimeEvolutionOperator<1>;

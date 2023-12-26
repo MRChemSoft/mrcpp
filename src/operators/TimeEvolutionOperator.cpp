@@ -59,7 +59,7 @@
 namespace mrcpp {
 
 
-/** @brief A constructor for TimeEvolutionOperator class.
+/** @brief A uniform constructor for TimeEvolutionOperator class.
  *
  * @param[in] mra: MRA.
  * @param[in] prec: precision.
@@ -89,7 +89,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
 }
 
 
-/** @brief A constructor for TimeEvolutionOperator class.
+/** @brief An adaptive constructor for TimeEvolutionOperator class.
  *
  * @param[in] mra: MRA.
  * @param[in] prec: precision.
@@ -98,6 +98,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  * @param[in] max_Jpower: maximum amount of power integrals used.
  *
  * @details Adaptively constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
+ * It is recommended for use in case of high polynomial order in use of the scaling basis.
  *
  * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
  * This should be weakened in future.
@@ -114,7 +115,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
     SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, imaginary, max_Jpower);     //will go outside of the constructor
+    initialize(time, imaginary, max_Jpower);     //will go outside of the constructor in future
 
     this->initOperExp(1);   //this turns out to be important
     Printer::setPrintLevel(oldlevel);
@@ -206,6 +207,55 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     // Postprocess to make the operator functional
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
+    o_tree->calcSquareNorm();
+    o_tree->setupOperNodeCache();
+    print::time(10, "Time transform", trans_t);
+    print::separator(10, ' ');
+
+    this->raw_exp.push_back(std::move(o_tree));
+
+    for( int n = 0; n <= N+1; n ++ )
+        delete J[n];
+}
+
+
+/** @brief Creates Re or Im of operator (in progress)
+ *
+ * @details Tree construction starts uniformly and then continues adaptively down to scale \f$ N = 18 \f$.
+ * This scale limit bounds the amount of JpowerIntegrals
+ * to be calculated.
+ * @note This method is not ready for use and should not be used (in progress).
+ *
+ */
+template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower)
+{
+    MSG_ERROR("Not implemented yet method.");
+
+    double o_prec = this->build_prec;
+    auto o_mra = this->getOperatorMRA();
+
+    mrcpp::TreeBuilder<2> builder;
+    mrcpp::SplitAdaptor<2> uniform(o_mra.getMaxScale(), true);
+
+    int N = 18;
+
+    auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
+    DefaultCalculator<2> intitial_calculator;
+    for (auto n = 0; n < 4; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
+
+    double threshold = o_prec / 1000.0;
+    std::map<int, mrcpp::JpowerIntegrals *> J;
+    for( int n = 0; n <= N+1; n ++ )
+        J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
+    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
+
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
+    builder.build(*o_tree, calculator, adaptor, 13);
+
+    // Postprocess to make the operator functional
+    Timer trans_t;
+    o_tree->mwTransform(mrcpp::BottomUp);
+    o_tree->removeRubbish();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
     print::time(10, "Time transform", trans_t);

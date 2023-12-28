@@ -37,7 +37,7 @@ namespace tree_io {
 template <int D> void testProjectFunction();
 
 SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
-    const double prec = 1.0e-4;
+    const double prec = 1.0e-6;
 
     GaussFunc<3> *func = nullptr;
     initialize(&func);

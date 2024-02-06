@@ -13,7 +13,7 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    OperatorNode
    OperatorTree
    BoundingBox
-   mra
+   MultiResolutionAnalysis
    CrossCorrelationCache
    LegendreBasis
    InterpolatingBasis

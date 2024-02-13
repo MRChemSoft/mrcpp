@@ -34,15 +34,15 @@ namespace mrcpp {
 
 /** @returns New MultiResolutionAnalysis (MRA) object
  *
- *  @brief Contructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets)
+ *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets)
  *
  *  @param[in] bb: 2-element integer array [Lower, Upper] defining the bounds for a BoundingBox object representing the computational domain
- *  @param[in] order: (integer) Maximum polynomial order of the multiwavelet basis, 
+ *  @param[in] order: Maximum polynomial order of the multiwavelet basis, 
  *  immediately used in the constructor of an InterPolatingBasis object which becomes an attribute of the MRA
- *  @param[in] maxDepth: (integer) Exponent of the node refinement in base 2, relative to root scale. 
+ *  @param[in] maxDepth: Exponent of the node refinement in base 2, relative to root scale. 
  *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
  *
- *  @details Contructor of the MultiResolutionAnalysis class from scratch, without requiring any pre-existing complex structure. 
+ *  @details Constructor of the MultiResolutionAnalysis class from scratch, without requiring any pre-existing complex structure. 
  *  The constructor calls the InterpolatingBasis basis constructor to generate the MultiWavelets basis of functions,
  *  then the BoundingBox constructor to create the computational domain. The constructor then checks if the generated node depth, or
  *  node refinement is beyond the root scale or the maximum depth allowed, in which case it will abort the process.
@@ -60,7 +60,7 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int o
 
 /** @returns New MultiResolutionAnalysis (MRA) object
  *
- *  @brief Contructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets) from a pre-existing BoundingBox object
+ *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets) from a pre-existing BoundingBox object
  *
  *  @param[in] bb: BoundingBox object representing the computational domain
  *  @param[in] order: (integer) Maximum polynomial order of the multiwavelet basis, 
@@ -68,7 +68,7 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int o
  *  @param[in] maxDepth: (integer) Exponent of the node refinement in base 2, relative to root scale. 
  *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
  *
- *  @details Contructor of the MultiResolutionAnalysis class from a BoundingBox object. For more details see the first constructor.
+ *  @details Constructor of the MultiResolutionAnalysis class from a BoundingBox object. For more details see the first constructor.
  */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, int order, int depth)
@@ -118,7 +118,7 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
     setupFilter();
 }
 
-/** @returns Boolean value
+/** @returns Whether the two MRA objects are equal.
  *
  *  @brief Equality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis, computational domain and maximum depth, and false otherwise
  *
@@ -152,7 +152,7 @@ template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResoluti
     return false;
 }
 
-/** @returns void
+/**
  *
  *  @brief Displays the MRA's attributes in the outstream defined in the Printer class
  *
@@ -169,7 +169,7 @@ template <int D> void MultiResolutionAnalysis<D>::print() const {
     print::separator(0, '=', 2);
 }
 
-/** @returns void
+/**
  *
  *  @brief TODO: Sets up the filters
  *

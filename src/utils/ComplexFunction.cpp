@@ -759,7 +759,6 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
 
     bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
-
     BankAccount nodesPhi;             // to put the original nodes
     BankAccount nodesRotated;         // to put the rotated nodes
 
@@ -1002,7 +1001,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
 
     } else { // MPI case
 
-       for (int j = 0; j < Meff; j++) {
+        for (int j = 0; j < Meff; j++) {
             if (not mpi::my_orb(j % M)) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
@@ -1475,6 +1474,7 @@ ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi) {
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
     // NB: must be spinseparated at this point!
+
     int N = BraKet.size();
     ComplexMatrix S = ComplexMatrix::Zero(N, N);
     DoubleMatrix Sreal = DoubleMatrix::Zero(2 * N, 2 * N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
@@ -1571,10 +1571,10 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                            continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                            continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
 #pragma omp atomic
@@ -1592,10 +1592,10 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                            continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                            continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -1628,6 +1628,7 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
  *
  */
 ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
+    mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
 
     MultiResolutionAnalysis<3> *mra = Bra.vecMRA;
 
@@ -1768,10 +1769,10 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
+                            continue;
+                        if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
+                            continue;
                         // must ensure that threads are not competing
                         double &Srealij = Sreal(orbVecBra[i], orbVecKet[j]);
                         double &Stempij = S_temp(i, j);
@@ -1797,10 +1798,10 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (Bra[orbVecBra[i] % N].spin() == SPIN::Alpha and Ket[orbVecKet[j] % M].spin() == SPIN::Beta)
+                            continue;
+                        if (Bra[orbVecBra[i] % N].spin() == SPIN::Beta and Ket[orbVecKet[j] % M].spin() == SPIN::Alpha)
+                            continue;
                         Sreal(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
                 }
@@ -1941,10 +1942,10 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                            continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                            continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
 #pragma omp atomic
@@ -1963,10 +1964,10 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
-                        //    continue;
-                        // if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
-                        //    continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Alpha and BraKet[orbVec[j] % N].spin() == SPIN::Beta)
+                            continue;
+                        if (BraKet[orbVec[i] % N].spin() == SPIN::Beta and BraKet[orbVec[j] % N].spin() == SPIN::Alpha)
+                            continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -1998,18 +1999,26 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
  *
  */
 void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
-    ComplexMatrix S = mpifuncvec::calc_overlap_matrix(Bra, Ket);
     // TODO: generalize for cases where Bra functions are not orthogonal to each other?
+    ComplexMatrix S = mpifuncvec::calc_overlap_matrix(Bra, Ket);
     int N = Bra.size();
     int M = Ket.size();
-    ComplexMatrix two =  ComplexMatrix::Zero(N, M);
+    DoubleVector Ketnorms = DoubleVector::Zero(M);
+    for (int i = 0; i < M; i++) {
+        Ketnorms(i)  = Ket[i].squaredNorm();
+    }
+    mrcpp::mpi::allreduce_vector(Ketnorms, mrcpp::mpi::comm_wrk);
+    ComplexMatrix rmat =  ComplexMatrix::Zero(M, N);
     for (int j = 0; j < N; j++) {
         for (int i = 0; i < M; i++) {
-            if(i==j) S(i,j) = 1.0;
-            else S(i,j) = 0.0 - S(i,j);
+            rmat(i,j) = 0.0 - S(j,i)/Ketnorms(i);
         }
     }
-    mpifuncvec::rotate(Bra, S, prec / M);
+    MPI_FuncVector rotatedKet(N);
+    mpifuncvec::rotate(Ket, rmat, rotatedKet, prec / M);
+    for (int j = 0; j < N; j++) {
+        if(my_orb(Bra[j]))Bra[j].add(1.0,rotatedKet[j]);
+    }
 }
 } // namespace mpifuncvec
 } // namespace mrcpp

@@ -292,7 +292,7 @@ void mpi::allreduce_vector(DoubleVector &vec, MPI_Comm comm) {
 void mpi::allreduce_vector(ComplexVector &vec, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = vec.size();
-    MPI_Allreduce(MPI_IN_PLACE, vec.data(), N, MPI_CXX_DOUBLE_COMPLEX, MPI_SUM, comm);
+    MPI_Allreduce(MPI_IN_PLACE, vec.data(), N, MPI_C_DOUBLE_COMPLEX, MPI_SUM, comm);
 #endif
 }
 
@@ -316,7 +316,7 @@ void mpi::allreduce_matrix(DoubleMatrix &mat, MPI_Comm comm) {
 void mpi::allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = mat.size();
-    MPI_Allreduce(MPI_IN_PLACE, mat.data(), N, MPI_CXX_DOUBLE_COMPLEX, MPI_SUM, comm);
+    MPI_Allreduce(MPI_IN_PLACE, mat.data(), N, MPI_C_DOUBLE_COMPLEX, MPI_SUM, comm);
 #endif
 }
 

@@ -693,8 +693,8 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     bool UhasImag = false;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            if (std::abs(U(i, j).real()) > MachineZero) UhasReal = true;
-            if (std::abs(U(i, j).imag()) > MachineZero) UhasImag = true;
+            if (std::abs(U(i, j).real()) > 10*MachineZero) UhasReal = true;
+            if (std::abs(U(i, j).imag()) > 10*MachineZero) UhasImag = true;
         }
     }
 
@@ -804,19 +804,19 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     }
 
     // 4) rotate all the nodes
-    IntMatrix split_serial;                             // in the serial case all split are store in one array
-    std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the rotated coefficient for each orbital in serial case
-    std::vector<std::map<int, int>> ix2coef(Neff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
+    IntMatrix split_serial;                             // in the serial case all split are stored in one array
+    std::vector<std::vector<double *>> coeffpVec(Meff); // to put pointers to the rotated coefficient for each orbital in serial case
+    std::vector<std::map<int, int>> ix2coef(Meff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
     int csize;                                          // size of the current coefficients (different for roots and branches)
     std::vector<DoubleMatrix> rotatedCoeffVec;          // just to ensure that the data from rotatedCoeff is not deleted, since we point to it.
     // j indices are for unrotated orbitals, i indices are for rotated orbitals
     if (serial) {
         std::map<int, int> ix2coef_ref;   // to find the index n corresponding to a serialIx
-        split_serial.resize(Neff, max_n); // not use in the MPI case
+        split_serial.resize(Meff, max_n); // not use in the MPI case
         for (int n = 0; n < max_n; n++) {
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             ix2coef_ref[node_ix] = n;
-            for (int i = 0; i < Neff; i++) split_serial(i, n) = 1;
+            for (int i = 0; i < Meff; i++) split_serial(i, n) = 1;
         }
 
         std::vector<int> nodeReady(max_n, 0); // To indicate to OMP threads that the parent is ready (for splits)
@@ -987,6 +987,7 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
 
 #pragma omp parallel for schedule(static)
         for (int j = 0; j < Meff; j++) {
+            if (coeffpVec[j].size()==0) continue;
             if (j < M) {
                 if (!Psi[j].hasReal()) Psi[j].alloc(NUMBER::Real);
                 Psi[j].real().clear();

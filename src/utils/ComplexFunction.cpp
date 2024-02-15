@@ -900,7 +900,6 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
                 rotatedCoeffVec.push_back(std::move(rotatedCoeff));
             }
         }
-
     } else { // MPI case
 
         // TODO? rotate in bank, so that we do not get and put. Requires clever handling of splits.
@@ -1602,7 +1601,6 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &BraKet) {
             }
         }
     }
-
     IntVector conjMat = IntVector::Zero(N);
     for (int i = 0; i < N; i++) {
         if (!mrcpp::mpi::my_orb(BraKet[i])) continue;
@@ -1736,7 +1734,8 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int totget = 0;
     int mxtotsiz = 0;
     int ibank = 0;
-#pragma omp parallel for schedule(dynamic) if (serial)
+    //For some unknown reason the h2_mag_lda test sometimes fails when schedule(dynamic) is chosen
+#pragma omp parallel for schedule(static) if (serial)
     for (int n = 0; n < max_n; n++) {
         if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
@@ -1781,7 +1780,6 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
                     }
                 }
             }
-
         } else {
 
             DoubleMatrix coeffBlockBra(csize, 2 * N);
@@ -1832,12 +1830,6 @@ ComplexMatrix calc_overlap_matrix(MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     // 4) collect results from all MPI. Linearity: result is sum of all node contributions
 
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
-
-    conjMatKet[0] = totsiz;
-    conjMatKet[1] = mxtotsiz;
-    conjMatKet[2] = totget;
-
-    mrcpp::mpi::allreduce_vector(conjMatKet, mrcpp::mpi::comm_wrk);
 
     return S;
 }
@@ -1991,7 +1983,6 @@ DoubleMatrix calc_norm_overlap_matrix(MPI_FuncVector &BraKet) {
 
     // Assumes linearity: result is sum of all nodes contributions
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
-
     return S;
 }
 
@@ -2005,7 +1996,7 @@ void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int M = Ket.size();
     DoubleVector Ketnorms = DoubleVector::Zero(M);
     for (int i = 0; i < M; i++) {
-        Ketnorms(i)  = Ket[i].squaredNorm();
+        if (mpi::my_orb(Ket[i])) Ketnorms(i)  = Ket[i].squaredNorm();
     }
     mrcpp::mpi::allreduce_vector(Ketnorms, mrcpp::mpi::comm_wrk);
     ComplexMatrix rmat =  ComplexMatrix::Zero(M, N);

@@ -288,8 +288,14 @@ template <int D> void ConvolutionCalculator<D>::applyOperComp(OperatorState<D> &
     }
 }
 
-/** Apply a single operator component (term) to a single f-node. Whether the
-operator actualy is applied is determined by a screening threshold. */
+
+/** @brief Apply a single operator component (term) to a single f-node.
+ * 
+ * @details Apply a single operator component (term) to a single f-node.
+ * Whether the operator actualy is applied is determined by a screening threshold.
+ * Here we make use of the sparcity of matrices \f$ A, B, C \f$.
+ * 
+ */
 template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorState<D> &os) {
     MWNode<D> &gNode = *os.gNode;
     MWNode<D> &fNode = *os.fNode;
@@ -301,7 +307,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorSta
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        const OperatorTree &oTree = this->oper->getComponent(i, d);
+        auto &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.
@@ -309,8 +315,7 @@ template <int D> void ConvolutionCalculator<D>::applyOperator(int i, OperatorSta
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        int w = oTree.getBandWidth().getWidth(o_depth, idx);
-        if (abs(oTransl) > w) { return; }
+        if ( oTree.isOutsideBand(oTransl, o_depth, idx) ) { return; }
 
         const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);

@@ -37,14 +37,14 @@ namespace mrcpp {
  * \f$
  *   \exp \left( t \partial_x^2 \right)
  * \f$
- * can be regarded as a convolution operator in $L^2(\mathbb R)$
+ * can be regarded as a convolution operator in \f$ L^2(\mathbb R) \f$
  * of the form
- * \[
+ * \f[
  *   \exp \left( t \partial_x^2 \right)
  *   f(x)
  *   =
  *   \frac 1{ \sqrt{4 \pi t} }
- *   \int_\R
+ *   \int_{ \mathbb R }
  *   \exp
  *   \left(
  *       - \frac{ (x - y)^2 }{4t}
@@ -53,7 +53,7 @@ namespace mrcpp {
  *   , \quad
  *   t > 0
  *   .
- * \]
+ * \f]
  * 
  */
 template <int D> class HeatOperator final : public ConvolutionOperator<D> {

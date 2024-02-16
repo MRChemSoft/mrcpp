@@ -48,10 +48,10 @@ class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2>
 {
 public:
     TimeEvolution_CrossCorrelationCalculator
-    (JpowerIntegrals &J, SchrodingerEvolution_CrossCorrelation *cross_correlation, bool imaginary)
-        : J_power_inetgarls(&J), cross_correlation(cross_correlation), imaginary(imaginary){}
+    (std::map<int, JpowerIntegrals *> &  J, SchrodingerEvolution_CrossCorrelation *cross_correlation, bool imaginary)
+        : J_power_inetgarls(J), cross_correlation(cross_correlation), imaginary(imaginary){}
 //private:
-    JpowerIntegrals *J_power_inetgarls;
+    std::map<int, JpowerIntegrals *> J_power_inetgarls;
     SchrodingerEvolution_CrossCorrelation *cross_correlation;
     
     /// @brief If False then the calculator is using th real part of integrals, otherwise - the imaginary part.

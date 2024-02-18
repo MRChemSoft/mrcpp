@@ -38,35 +38,32 @@ namespace mrcpp {
 
 template <int D>
 Slater<D>::Slater(double a, double c, const Coord<D> &r)
-        : screen(false)
-        , coef(c)
+        : coef(c)
+        , alpha(a)
         , pos(r) {
-        , alpha(a);
 }
 
-template <int D> void Slater<D>::calcScreening(double nStdDev) {
-    MSG_ABORT("Not Implemented")
+template<> double Slater<1>::calcSquareNorm() const {
+    double c2 = this->coef * this->coef;
+    return c2 / this->alpha;
 }
 
-template <int D> bool Slater<D>::checkScreen(int n, const int *l) const {
-    MSG_ABORT("Not Implemented")
+template<> double Slater<2>::calcSquareNorm() const {
+    double c2 = this->coef * this->coef;
+    double k2 = this->alpha * this->alpha;
+    return 0.5 * pi * c2 / k2;
 }
-
-template <int D> bool Slater<D>::isVisibleAtScale(int scale, int nQuadPts) const {
-    MSG_ABORT("Not Implemented")
+    
+template<> double Slater<3>::calcSquareNorm() const {
+    double c2 = this->coef * this->coef;
+    double k3 = this->alpha * this->alpha * this->alpha;
+    return pi * c2 / k3;
 }
-
-template <int D> bool Slater<D>::isZeroOnInterval(const double *a, const double *b) const {
-    MSG_ABORT("Not Implemented")
-}
-
-template <int D> void Slater<D>::evalf(const MatrixXd &points, MatrixXd &values) const {
-    assert(points.cols() == D);
-    assert(points.cols() == values.cols());
-    assert(points.rows() == values.rows());
-    for (int d = 0; d < D; d++) {
-        for (int i = 0; i < points.rows(); i++) { values(i, d) = evalf1D(points(i, d), d); }
-    }
+    
+template <int D> double Slater<D>::evalf(const Coord<D> &r) const {
+    auto dist = math_utils::calc_distance<D>(r , pos);
+    double exp_val = std::exp(-this->alpha * dist);
+    return this->coef * exp_val;
 }
 
 template class Slater<1>;

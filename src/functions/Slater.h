@@ -77,10 +77,10 @@ protected:
     double alpha;                /**< exponent  */
     Coord<D> pos;                /**< center  */
 
-    bool isVisibleAtScale(int scale, int nQuadPts) const;
-    bool isZeroOnInterval(const double *a, const double *b) const;
+    bool isVisibleAtScale(int scale, int nQuadPts) const {return true;}
+    bool isZeroOnInterval(const double *a, const double *b) const {return false;}
 
-    virtual std::ostream &print(std::ostream &o) const = 0;
+    //    virtual std::ostream &print(std::ostream &o) const = 0;
 };
 
 } // namespace mrcpp

@@ -45,7 +45,8 @@ Slater<D>::Slater(double a, double c, const Coord<D> &r)
 
 template<> double Slater<1>::calcSquareNorm() const {
     double c2 = this->coef * this->coef;
-    return c2 / this->alpha;
+    double square_norm = c2 / this->alpha;
+    return square_norm;
 }
 
 template<> double Slater<2>::calcSquareNorm() const {

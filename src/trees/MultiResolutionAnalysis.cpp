@@ -37,12 +37,12 @@ namespace mrcpp {
  *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets)
  *
  *  @param[in] bb: 2-element integer array [Lower, Upper] defining the bounds for a BoundingBox object representing the computational domain
- *  @param[in] order: Maximum polynomial order of the multiwavelet basis, 
+ *  @param[in] order: Maximum polynomial order of the multiwavelet basis,
  *  immediately used in the constructor of an InterPolatingBasis object which becomes an attribute of the MRA
- *  @param[in] maxDepth: Exponent of the node refinement in base 2, relative to root scale. 
+ *  @param[in] maxDepth: Exponent of the node refinement in base 2, relative to root scale.
  *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
  *
- *  @details Constructor of the MultiResolutionAnalysis class from scratch, without requiring any pre-existing complex structure. 
+ *  @details Constructor of the MultiResolutionAnalysis class from scratch, without requiring any pre-existing complex structure.
  *  The constructor calls the InterpolatingBasis basis constructor to generate the MultiWavelets basis of functions,
  *  then the BoundingBox constructor to create the computational domain. The constructor then checks if the generated node depth, or
  *  node refinement is beyond the root scale or the maximum depth allowed, in which case it will abort the process.
@@ -63,9 +63,9 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int o
  *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets) from a pre-existing BoundingBox object
  *
  *  @param[in] bb: BoundingBox object representing the computational domain
- *  @param[in] order: (integer) Maximum polynomial order of the multiwavelet basis, 
+ *  @param[in] order: (integer) Maximum polynomial order of the multiwavelet basis,
  *  immediately used in the constructor of an InterPolatingBasis object which becomes an attribute of the MRA
- *  @param[in] maxDepth: (integer) Exponent of the node refinement in base 2, relative to root scale. 
+ *  @param[in] maxDepth: (integer) Exponent of the node refinement in base 2, relative to root scale.
  *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
  *
  *  @details Constructor of the MultiResolutionAnalysis class from a BoundingBox object. For more details see the first constructor.
@@ -135,7 +135,7 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
     return true;
 }
 
-/** @returns Boolean value
+/** @returns Whether the two MRA objects are not equal.
  *
  *  @brief Inequality operator for the MultiResolutionAnalysis class, returns false if both MRAs have the same polynomial basis, computational domain and maximum depth, and true otherwise
  *
@@ -146,19 +146,16 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
  *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
  */
 template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
-    if (this->basis != mra.basis) return true;
-    if (this->world != mra.world) return true;
-    if (this->maxDepth != mra.maxDepth) return true;
-    return false;
+    return !(*this == mra);
 }
 
 /**
  *
  *  @brief Displays the MRA's attributes in the outstream defined in the Printer class
  *
- *  @details This function displays the attributes of the MRA in the using the Printer class. 
+ *  @details This function displays the attributes of the MRA in the using the Printer class.
  *  By default, the Printer class writes all information in the output file, not the terminal.
- *  
+ *
  */
 template <int D> void MultiResolutionAnalysis<D>::print() const {
     print::separator(0, ' ');
@@ -171,10 +168,12 @@ template <int D> void MultiResolutionAnalysis<D>::print() const {
 
 /**
  *
- *  @brief TODO: Sets up the filters
+ *  @brief Initializes the MW filters for the given MW basis.
  *
- *  @details TBD
- *  
+ *  @details By calling the get() function for the appropriate MW basis, the global
+ *  FilterCache Singleton object is initialized. Any subsequent reference to this
+ *  particular filter will point to the same unique global object.
+ *
  */
 template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
     getLegendreFilterCache(lfilters);
@@ -193,13 +192,10 @@ template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
     }
 }
 
-/** @returns double (double-precision floating point number) 
+/** @returns Maximum possible distance between two points in the MRA domain
  *
- *  @brief Computes the difference between the lower and upper bounds of the computational domain 
+ *  @brief Computes the difference between the lower and upper bounds of the computational domain
  *
- *  @details This function displays the attributes of the MRA in the using the Printer class. 
- *  By default, the Printer class writes all information in the output file, not the terminal.
- *  
  */
 template <int D> double MultiResolutionAnalysis<D>::calcMaxDistance() const {
     const Coord<D> &lb = getWorldBox().getLowerBounds();

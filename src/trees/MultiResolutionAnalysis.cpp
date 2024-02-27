@@ -32,6 +32,22 @@
 
 namespace mrcpp {
 
+/** @returns New MultiResolutionAnalysis (MRA) object
+ *
+ *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets)
+ *
+ *  @param[in] bb: 2-element integer array [Lower, Upper] defining the bounds for a BoundingBox object representing the computational domain
+ *  @param[in] order: Maximum polynomial order of the multiwavelet basis,
+ *  immediately used in the constructor of an InterPolatingBasis object which becomes an attribute of the MRA
+ *  @param[in] maxDepth: Exponent of the node refinement in base 2, relative to root scale.
+ *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
+ *
+ *  @details Constructor of the MultiResolutionAnalysis class from scratch, without requiring any pre-existing complex structure.
+ *  The constructor calls the InterpolatingBasis basis constructor to generate the MultiWavelets basis of functions,
+ *  then the BoundingBox constructor to create the computational domain. The constructor then checks if the generated node depth, or
+ *  node refinement is beyond the root scale or the maximum depth allowed, in which case it will abort the process.
+ *  Otherwise, the process goes on to setup the filters with the class' setupFilter method.
+ */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int order, int depth)
         : maxDepth(depth)
@@ -42,6 +58,18 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(std::array<int, 2> bb, int o
     setupFilter();
 }
 
+/** @returns New MultiResolutionAnalysis (MRA) object
+ *
+ *  @brief Constructs a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets) from a pre-existing BoundingBox object
+ *
+ *  @param[in] bb: BoundingBox object representing the computational domain
+ *  @param[in] order: (integer) Maximum polynomial order of the multiwavelet basis,
+ *  immediately used in the constructor of an InterPolatingBasis object which becomes an attribute of the MRA
+ *  @param[in] maxDepth: (integer) Exponent of the node refinement in base 2, relative to root scale.
+ *  In other words, it is the maximum amount of refinement that we allow in a node, in other to avoid overflow of values.
+ *
+ *  @details Constructor of the MultiResolutionAnalysis class from a BoundingBox object. For more details see the first constructor.
+ */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, int order, int depth)
         : maxDepth(depth)
@@ -52,6 +80,14 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, in
     setupFilter();
 }
 
+/** @returns New MultiResolutionAnalysis (MRA) object
+ *
+ *  @brief Copy constructor for a MultiResolutionAnalysis object composed of computational domain (world) and a polynomial basis (Multiwavelets)
+ *
+ *  @param[in] mra: Pre-existing MRA object
+ *
+ *  @details Copy a MultiResolutionAnalysis object without modifying the original. For more details see the first constructor.
+ */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra)
         : maxDepth(mra.maxDepth)
@@ -63,9 +99,14 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysi
 }
 
 /** @returns New MultiResolutionAnalysis object
- * @param[in] bb: Computational domain
- * @param[in] sb: Polynomial basis
+ *
+ *  @brief Constructor for a MultiResolutionAnalysis object from a pre-existing BoundingBox (computational domain) and a ScalingBasis (Multiwavelet basis) objects
+ *
+ * @param[in] bb: Computational domain as a BoundingBox object, taken by constant reference
+ * @param[in] sb: Polynomial basis (MW) as a ScalingBasis object
  * @param[in] depth: Maximum allowed resolution depth, relative to root scale
+ *
+ *  @details Creates a MRA object from pre-existing BoundingBox and ScalingBasis objects. These objects are taken as reference. For more details about the constructor itself, see the first constructor.
  */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth)
@@ -77,6 +118,16 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
     setupFilter();
 }
 
+/** @returns Whether the two MRA objects are equal.
+ *
+ *  @brief Equality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis, computational domain and maximum depth, and false otherwise
+ *
+ * @param[in] mra: MRA object, taken by constant reference
+ *
+ *  @details Equality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis object) and maximum depth (integer), and false otherwise.
+ *  Computations on different MRA cannot be combined, this operator can be used to make sure that the multiple MRAs are compatible.
+ *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
+ */
 template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {
     if (this->basis != mra.basis) return false;
     if (this->world != mra.world) return false;
@@ -84,13 +135,28 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
     return true;
 }
 
+/** @returns Whether the two MRA objects are not equal.
+ *
+ *  @brief Inequality operator for the MultiResolutionAnalysis class, returns false if both MRAs have the same polynomial basis, computational domain and maximum depth, and true otherwise
+ *
+ * @param[in] mra: MRA object, taken by constant reference
+ *
+ *  @details Inequality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis object) and maximum depth (integer), and false otherwise.
+ *  Opposite of the == operator.
+ *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
+ */
 template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
-    if (this->basis != mra.basis) return true;
-    if (this->world != mra.world) return true;
-    if (this->maxDepth != mra.maxDepth) return true;
-    return false;
+    return !(*this == mra);
 }
 
+/**
+ *
+ *  @brief Displays the MRA's attributes in the outstream defined in the Printer class
+ *
+ *  @details This function displays the attributes of the MRA in the using the Printer class.
+ *  By default, the Printer class writes all information in the output file, not the terminal.
+ *
+ */
 template <int D> void MultiResolutionAnalysis<D>::print() const {
     print::separator(0, ' ');
     print::header(0, "MultiResolution Analysis");
@@ -100,6 +166,15 @@ template <int D> void MultiResolutionAnalysis<D>::print() const {
     print::separator(0, '=', 2);
 }
 
+/**
+ *
+ *  @brief Initializes the MW filters for the given MW basis.
+ *
+ *  @details By calling the get() function for the appropriate MW basis, the global
+ *  FilterCache Singleton object is initialized. Any subsequent reference to this
+ *  particular filter will point to the same unique global object.
+ *
+ */
 template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
     getLegendreFilterCache(lfilters);
     getInterpolatingFilterCache(ifilters);
@@ -117,6 +192,11 @@ template <int D> void MultiResolutionAnalysis<D>::setupFilter() {
     }
 }
 
+/** @returns Maximum possible distance between two points in the MRA domain
+ *
+ *  @brief Computes the difference between the lower and upper bounds of the computational domain
+ *
+ */
 template <int D> double MultiResolutionAnalysis<D>::calcMaxDistance() const {
     const Coord<D> &lb = getWorldBox().getLowerBounds();
     const Coord<D> &ub = getWorldBox().getUpperBounds();

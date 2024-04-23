@@ -376,7 +376,7 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     MWNode<D> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
     if (node.getScale() == 0) {
-        Nodebox<D> &box = this->getMWTree().getRootBox();
+        NodeBox<D> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
     } else {
@@ -1080,11 +1080,7 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
-<<<<<<< HEAD
  * node is in fact descending from this node.
-=======
- * node is in fact decending from this node.
->>>>>>> 9af383a (MWNode documented)
  */
 template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done

@@ -36,7 +36,7 @@ namespace mrcpp {
  *  @details This will project a kernel of a single gaussian with
  *  exponent sqrt(10/build_prec).
  */
-Template <int D>
+template <int D>
 IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
         : ConvolutionOperator<D>(mra) {
     int oldlevel = Printer::setPrintLevel(0);

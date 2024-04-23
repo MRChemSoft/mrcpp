@@ -376,7 +376,7 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     MWNode<D> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
     if (node.getScale() == 0) {
-        Nodebox<D> &box = this->getMWTree().getRootBox();
+        NodeBox<D> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
     } else {

@@ -47,4 +47,3 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    programmers_manual/overview
    programmers_manual/clang_tidy.rst
    programmers_manual/manual
-

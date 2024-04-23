@@ -16,4 +16,3 @@ algorithm/equation/structure reasoning for having this class or where it fits wi
    :members:
    :protected-members:
    :private-members:
-

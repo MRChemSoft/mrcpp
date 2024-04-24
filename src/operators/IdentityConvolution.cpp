@@ -29,7 +29,7 @@
 
 namespace mrcpp {
 
-/** @brief Constructor  of the IdentityConvolution object
+/** @brief Constructor of the IdentityConvolution object
  *  @returns New IdentityConvolution object
  *  @param[in] mra: Which MRA the operator is defined
  *  @param[in] prec: Build precision, closeness to delta function

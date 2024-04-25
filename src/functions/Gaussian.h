@@ -40,28 +40,28 @@
 
 namespace mrcpp {
 
-template <int D> class Gaussian : public RepresentableFunction<D> {
+template <int D, typename T> class Gaussian : public RepresentableFunction<D, T> {
 public:
     Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p);
     Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p);
-    Gaussian<D> &operator=(const Gaussian<D> &gp) = delete;
-    virtual Gaussian<D> *copy() const = 0;
+    Gaussian<D, T> &operator=(const Gaussian<D, T> &gp) = delete;
+    virtual Gaussian<D, T> *copy() const = 0;
     virtual ~Gaussian() = default;
 
-    virtual double evalf(const Coord<D> &r) const = 0;
-    virtual double evalf1D(double r, int dim) const = 0;
-    void evalf(const Eigen::MatrixXd &points, Eigen::MatrixXd &values) const;
-
-    double calcOverlap(const Gaussian<D> &inp) const;
+    virtual T evalf(const Coord<D> &r) const = 0;
+    virtual T evalf1D(double r, int dim) const = 0;
+    void evalf(const Eigen::MatrixXd &points, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &values) const;
+ 
+    double calcOverlap(const Gaussian<D, T> &inp) const;
     virtual double calcSquareNorm() const = 0;
-    virtual GaussExp<D> asGaussExp() const = 0;
-    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
+    virtual GaussExp<D, T> asGaussExp() const = 0;
+    GaussExp<D, T> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
 
     /** @brief Compute analytic derivative of Gaussian
      *  @param[in] dir: Cartesian direction of derivative
      *  @returns New GaussPoly
      */
-    virtual GaussPoly<D> differentiate(int dir) const = 0;
+    virtual GaussPoly<D, T> differentiate(int dir) const = 0;
 
     void calcScreening(double stdDeviations);
 
@@ -70,7 +70,7 @@ public:
         double norm = std::sqrt(calcSquareNorm());
         multConstInPlace(1.0 / norm);
     }
-    void multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs);
+    void multPureGauss(const Gaussian<D, T> &lhs, const Gaussian<D, T> &rhs);
     void multConstInPlace(double c) { this->coef *= c; }
     void operator*=(double c) { multConstInPlace(c); }
 
@@ -92,9 +92,9 @@ public:
     void setExp(const std::array<double, D> &_alpha) { this->alpha = _alpha; }
     void setPos(const std::array<double, D> &r) { this->pos = r; }
 
-    friend std::ostream &operator<<(std::ostream &o, const Gaussian<D> &gauss) { return gauss.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const Gaussian<D, T> &gauss) { return gauss.print(o); }
 
-    friend class GaussExp<D>;
+    friend class GaussExp<D, T>;
 
 protected:
     bool screen;

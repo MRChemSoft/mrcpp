@@ -30,16 +30,16 @@
 
 namespace mrcpp {
 
-template <int D> class AnalyticAdaptor final : public TreeAdaptor<D> {
+  template <int D, typename T> class AnalyticAdaptor final : public TreeAdaptor<D, T> {
 public:
-    AnalyticAdaptor(const RepresentableFunction<D> &f, int ms)
-            : TreeAdaptor<D>(ms)
+    AnalyticAdaptor(const RepresentableFunction<D, T> &f, int ms)
+      : TreeAdaptor<D, T>(ms)
             , func(&f) {}
 
 private:
-    const RepresentableFunction<D> *func;
+    const RepresentableFunction<D, T> *func;
 
-    bool splitNode(const MWNode<D> &node) const override {
+    bool splitNode(const MWNode<D, T> &node) const override {
         int scale = node.getScale();
         int nQuadPts = node.getKp1();
         if (this->func->isVisibleAtScale(scale, nQuadPts)) return false;

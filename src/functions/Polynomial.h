@@ -44,7 +44,7 @@
 
 namespace mrcpp {
 
-class Polynomial : public RepresentableFunction<1> {
+  class Polynomial : public RepresentableFunction<1, double> {
 public:
     Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
     Polynomial(int k, const std::vector<double> &a, const std::vector<double> &b)

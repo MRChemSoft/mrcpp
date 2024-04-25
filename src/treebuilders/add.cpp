@@ -61,16 +61,16 @@ namespace mrcpp {
  * no coefs).
  *
  */
-template <int D>
+template <int D, typename T>
 void add(double prec,
-         FunctionTree<D> &out,
+         FunctionTree<D, T> &out,
          double a,
-         FunctionTree<D> &inp_a,
+         FunctionTree<D, T> &inp_a,
          double b,
-         FunctionTree<D> &inp_b,
+         FunctionTree<D, T> &inp_b,
          int maxIter,
          bool absPrec) {
-    FunctionTreeVector<D> tmp_vec;
+    FunctionTreeVector<D, T> tmp_vec;
     tmp_vec.push_back(std::make_tuple(a, &inp_a));
     tmp_vec.push_back(std::make_tuple(b, &inp_b));
     add(prec, out, tmp_vec, maxIter, absPrec);
@@ -98,14 +98,14 @@ void add(double prec,
  * no coefs).
  *
  */
-template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
-    TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    AdditionCalculator<D> calculator(inp);
+    TreeBuilder<D, T> builder;
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
+    AdditionCalculator<D, T> calculator(inp);
 
     builder.build(out, calculator, adaptor, maxIter);
 
@@ -116,7 +116,7 @@ template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<
 
     Timer clean_t;
     for (int i = 0; i < inp.size(); i++) {
-        FunctionTree<D> &tree = get_func(inp, i);
+        FunctionTree<D, T> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
     clean_t.stop();
@@ -126,66 +126,126 @@ template <int D> void add(double prec, FunctionTree<D> &out, FunctionTreeVector<
     print::separator(10, ' ');
 }
 
-template <int D> void add(double prec, FunctionTree<D> &out, std::vector<FunctionTree<D> *> &inp, int maxIter, bool absPrec) {
-    FunctionTreeVector<D> inp_vec;
+template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec) {
+    FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     add(prec, out, inp_vec, maxIter, absPrec);
 }
 
-template void add<1>(double prec,
-                     FunctionTree<1> &out,
+template void add<1, double>(double prec,
+                     FunctionTree<1, double> &out,
                      double a,
-                     FunctionTree<1> &tree_a,
+                     FunctionTree<1, double> &tree_a,
                      double b,
-                     FunctionTree<1> &tree_b,
+                     FunctionTree<1, double> &tree_b,
                      int maxIter,
                      bool absPrec);
-template void add<2>(double prec,
-                     FunctionTree<2> &out,
+template void add<2, double>(double prec,
+                     FunctionTree<2, double> &out,
                      double a,
-                     FunctionTree<2> &tree_a,
+                     FunctionTree<2, double> &tree_a,
                      double b,
-                     FunctionTree<2> &tree_b,
+                     FunctionTree<2, double> &tree_b,
                      int maxIter,
                      bool absPrec);
-template void add<3>(double prec,
-                     FunctionTree<3> &out,
+template void add<3, double>(double prec,
+                     FunctionTree<3, double> &out,
                      double a,
-                     FunctionTree<3> &tree_a,
+                     FunctionTree<3, double> &tree_a,
                      double b,
-                     FunctionTree<3> &tree_b,
+                     FunctionTree<3, double> &tree_b,
                      int maxIter,
                      bool absPrec);
 
-template void add<1>(double prec,
-                     FunctionTree<1> &out,
-                     FunctionTreeVector<1> &inp,
+template void add<1, double>(double prec,
+                     FunctionTree<1, double> &out,
+                     FunctionTreeVector<1, double> &inp,
                      int maxIter,
                      bool absPrec);
-template void add<2>(double prec,
-                     FunctionTree<2> &out,
-                     FunctionTreeVector<2> &inp,
+template void add<2, double>(double prec,
+                     FunctionTree<2, double> &out,
+                     FunctionTreeVector<2, double> &inp,
                      int maxIter,
                      bool absPrec);
-template void add<3>(double prec,
-                     FunctionTree<3> &out,
-                     FunctionTreeVector<3> &inp,
+template void add<3, double>(double prec,
+                     FunctionTree<3, double> &out,
+		     FunctionTreeVector<3, double> &inp,
                      int maxIter,
                      bool absPrec);
 
-template void add<1>(double prec,
-                     FunctionTree<1> &out,
-                     std::vector<FunctionTree<1> *> &inp,
+template void add<1, double>(double prec,
+                     FunctionTree<1, double> &out,
+                     std::vector<FunctionTree<1, double> *> &inp,
                      int maxIter,
                      bool absPrec);
-template void add<2>(double prec,
-                     FunctionTree<2> &out,
-                     std::vector<FunctionTree<2> *> &inp,
+template void add<2, double>(double prec,
+                     FunctionTree<2, double> &out,
+                     std::vector<FunctionTree<2, double> *> &inp,
                      int maxIter,
                      bool absPrec);
-template void add<3>(double prec,
-                     FunctionTree<3> &out,
-                     std::vector<FunctionTree<3> *> &inp,
+template void add<3, double>(double prec,
+                     FunctionTree<3, double> &out,
+                     std::vector<FunctionTree<3, double> *> &inp,
+                     int maxIter,
+                     bool absPrec);
+
+
+
+  
+template void add<1, ComplexDouble>(double prec,
+                     FunctionTree<1, ComplexDouble> &out,
+                     double a,
+                     FunctionTree<1, ComplexDouble> &tree_a,
+                     double b,
+                     FunctionTree<1, ComplexDouble> &tree_b,
+                     int maxIter,
+                     bool absPrec);
+template void add<2, ComplexDouble>(double prec,
+                     FunctionTree<2, ComplexDouble> &out,
+                     double a,
+                     FunctionTree<2, ComplexDouble> &tree_a,
+                     double b,
+                     FunctionTree<2, ComplexDouble> &tree_b,
+                     int maxIter,
+                     bool absPrec);
+template void add<3, ComplexDouble>(double prec,
+                     FunctionTree<3, ComplexDouble> &out,
+                     double a,
+                     FunctionTree<3, ComplexDouble> &tree_a,
+                     double b,
+                     FunctionTree<3, ComplexDouble> &tree_b,
+                     int maxIter,
+                     bool absPrec);
+
+template void add<1, ComplexDouble>(double prec,
+                     FunctionTree<1, ComplexDouble> &out,
+                     FunctionTreeVector<1, ComplexDouble> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<2, ComplexDouble>(double prec,
+                     FunctionTree<2, ComplexDouble> &out,
+                     FunctionTreeVector<2, ComplexDouble> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<3, ComplexDouble>(double prec,
+                     FunctionTree<3, ComplexDouble> &out,
+                     FunctionTreeVector<3, ComplexDouble> &inp,
+                     int maxIter,
+                     bool absPrec);
+
+template void add<1, ComplexDouble>(double prec,
+                     FunctionTree<1, ComplexDouble> &out,
+                     std::vector<FunctionTree<1, ComplexDouble> *> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<2, ComplexDouble>(double prec,
+                     FunctionTree<2, ComplexDouble> &out,
+                     std::vector<FunctionTree<2, ComplexDouble> *> &inp,
+                     int maxIter,
+                     bool absPrec);
+template void add<3, ComplexDouble>(double prec,
+                     FunctionTree<3, ComplexDouble> &out,
+                     std::vector<FunctionTree<3, ComplexDouble> *> &inp,
                      int maxIter,
                      bool absPrec);
 

@@ -32,29 +32,29 @@
 
 namespace mrcpp {
 
-template <int D> class AnalyticFunction : public RepresentableFunction<D> {
+template <int D, typename T> class AnalyticFunction : public RepresentableFunction<D, T> {
 public:
     AnalyticFunction() = default;
     ~AnalyticFunction() override = default;
 
-    AnalyticFunction(std::function<double(const Coord<D> &r)> f, const double *a = nullptr, const double *b = nullptr)
-            : RepresentableFunction<D>(a, b)
+    AnalyticFunction(std::function<T(const Coord<D> &r)> f, const double *a = nullptr, const double *b = nullptr)
+            : RepresentableFunction<D, T>(a, b)
             , func(f) {}
-    AnalyticFunction(std::function<double(const Coord<D> &r)> f,
+    AnalyticFunction(std::function<T(const Coord<D> &r)> f,
                      const std::vector<double> &a,
                      const std::vector<double> &b)
             : AnalyticFunction(f, a.data(), b.data()) {}
 
-    void set(std::function<double(const Coord<D> &r)> f) { this->func = f; }
+    void set(std::function<T(const Coord<D> &r)> f) { this->func = f; }
 
-    double evalf(const Coord<D> &r) const override {
-        double val = 0.0;
+    T evalf(const Coord<D> &r) const override {
+        T val = 0.0;
         if (not this->outOfBounds(r)) val = this->func(r);
         return val;
     }
 
 protected:
-    std::function<double(const Coord<D> &r)> func;
+    std::function<T(const Coord<D> &r)> func;
 };
 
 } // namespace mrcpp

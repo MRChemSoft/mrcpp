@@ -22,7 +22,7 @@ class MPI_FuncVector;
 namespace mrcpp {
 
 class BankAccount;
-template <int D> class FunctionTree;
+  template <int D, typename T> class FunctionTree;
 template <int D> class MultiResolutionAnalysis;
 
 using ComplexDouble = std::complex<double>;
@@ -58,8 +58,8 @@ public:
         if (this->func_data.is_shared and mpi::share_size > 1) {
             // Memory size in MB defined in input. Virtual memory, does not cost anything if not used.
 #ifdef MRCPP_HAS_MPI
-            this->shared_mem_re = new mrcpp::SharedMemory(mpi::comm_share, mpi::shared_memory_size);
-            this->shared_mem_im = new mrcpp::SharedMemory(mpi::comm_share, mpi::shared_memory_size);
+            this->shared_mem_re = new mrcpp::SharedMemory<double>(mpi::comm_share, mpi::shared_memory_size);
+            this->shared_mem_im = new mrcpp::SharedMemory<double>(mpi::comm_share, mpi::shared_memory_size);
 #endif
         }
     }
@@ -75,8 +75,8 @@ public:
 
 private:
     FunctionData func_data;
-    mrcpp::SharedMemory *shared_mem_re;
-    mrcpp::SharedMemory *shared_mem_im;
+    mrcpp::SharedMemory<double> *shared_mem_re;
+    mrcpp::SharedMemory<double> *shared_mem_im;
     mrcpp::FunctionTree<3> *re; ///< Real part of function
     mrcpp::FunctionTree<3> *im; ///< Imaginary part of function
 

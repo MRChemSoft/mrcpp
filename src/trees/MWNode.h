@@ -30,6 +30,7 @@
 
 #include "MRCPP/macros.h"
 #include "utils/omp_utils.h"
+#include "utils/math_utils.h"
 
 #include "HilbertPath.h"
 #include "MWTree.h"
@@ -51,10 +52,10 @@ namespace mrcpp {
  * data descriptions for details.
  *
  */
-template <int D> class MWNode {
+  template <int D, typename T> class MWNode {
 public:
-    MWNode(const MWNode<D> &node, bool allocCoef = true, bool SetCoef = true);
-    MWNode<D> &operator=(const MWNode<D> &node) = delete;
+    MWNode(const MWNode<D, T> &node, bool allocCoef = true, bool SetCoef = true);
+    MWNode<D , T> &operator=(const MWNode<D , T> &node) = delete;
     virtual ~MWNode();
 
     int getKp1() const { return getMWTree().getKp1(); }
@@ -76,7 +77,7 @@ public:
     Coord<D> getLowerBounds() const;
 
     bool hasCoord(const Coord<D> &r) const;
-    bool isCompatible(const MWNode<D> &node);
+    bool isCompatible(const MWNode<D, T> &node);
     bool isAncestor(const NodeIndex<D> &idx) const;
     bool isDecendant(const NodeIndex<D> &idx) const;
 
@@ -89,30 +90,30 @@ public:
     double getComponentNorm(int i) const { return this->componentNorms[i]; }
 
     int getNCoefs() const { return this->n_coefs; }
-    void getCoefs(Eigen::VectorXd &c) const;
+    void getCoefs(Eigen::Matrix<T, Eigen::Dynamic, 1> &c) const;
     void printCoefs() const;
 
-    double *getCoefs() { return this->coefs; }
-    const double *getCoefs() const { return this->coefs; }
+    T *getCoefs() { return this->coefs; }
+    const T *getCoefs() const { return this->coefs; }
 
     void getPrimitiveQuadPts(Eigen::MatrixXd &pts) const;
     void getPrimitiveChildPts(Eigen::MatrixXd &pts) const;
     void getExpandedQuadPts(Eigen::MatrixXd &pts) const;
     void getExpandedChildPts(Eigen::MatrixXd &pts) const;
 
-    MWTree<D> &getMWTree() { return static_cast<MWTree<D> &>(*this->tree); }
-    MWNode<D> &getMWParent() { return static_cast<MWNode<D> &>(*this->parent); }
-    MWNode<D> &getMWChild(int i) { return static_cast<MWNode<D> &>(*this->children[i]); }
+    MWTree<D, T> &getMWTree() { return static_cast<MWTree<D, T> &>(*this->tree); }
+    MWNode<D , T> &getMWParent() { return static_cast<MWNode<D , T> &>(*this->parent); }
+    MWNode<D , T> &getMWChild(int i) { return static_cast<MWNode<D , T> &>(*this->children[i]); }
 
-    const MWTree<D> &getMWTree() const { return static_cast<const MWTree<D> &>(*this->tree); }
-    const MWNode<D> &getMWParent() const { return static_cast<const MWNode<D> &>(*this->parent); }
-    const MWNode<D> &getMWChild(int i) const { return static_cast<const MWNode<D> &>(*this->children[i]); }
+    const MWTree<D, T> &getMWTree() const { return static_cast<const MWTree<D, T> &>(*this->tree); }
+    const MWNode<D , T> &getMWParent() const { return static_cast<const MWNode<D , T> &>(*this->parent); }
+    const MWNode<D , T> &getMWChild(int i) const { return static_cast<const MWNode<D , T> &>(*this->children[i]); }
 
     void zeroCoefs();
-    void setCoefBlock(int block, int block_size, const double *c);
-    void addCoefBlock(int block, int block_size, const double *c);
+    void setCoefBlock(int block, int block_size, const T *c);
+    void addCoefBlock(int block, int block_size, const T *c);
     void zeroCoefBlock(int block, int block_size);
-    void attachCoefs(double *coefs);
+    void attachCoefs(T *coefs);
 
     void calcNorms();
     void zeroNorms();
@@ -154,34 +155,35 @@ public:
     void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
     void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
 
-    friend std::ostream &operator<<(std::ostream &o, const MWNode<D> &nd) { return nd.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const MWNode<D , T> &nd) { return nd.print(o); }
 
-    friend class TreeBuilder<D>;
-    friend class MultiplicationCalculator<D>;
-    friend class NodeAllocator<D>;
-    friend class MWTree<D>;
-    friend class FunctionTree<D>;
+    friend class TreeBuilder<D, T>;
+    friend class MultiplicationCalculator<D, T>;
+    friend class NodeAllocator<D, T>;
+    friend class MWTree<D, T>;
+    friend class FunctionTree<D, T>;
     friend class OperatorTree;
-    friend class FunctionNode<D>;
+    friend class FunctionNode<D, T>;
     friend class OperatorNode;
-    friend class DerivativeCalculator<D>;
+    friend class DerivativeCalculator<D, T>;
+    bool isComplex = false; //TODO put as one of the flags
 
 protected:
-    MWTree<D> *tree{nullptr};    ///< Tree the node belongs to
-    MWNode<D> *parent{nullptr};  ///< Parent node
-    MWNode<D> *children[1 << D]; ///< 2^D children
+    MWTree<D, T> *tree{nullptr};    ///< Tree the node belongs to
+    MWNode<D , T> *parent{nullptr};  ///< Parent node
+    MWNode<D , T> *children[1 << D]; ///< 2^D children
 
     double squareNorm{-1.0};       ///< Squared norm of all 2^D (k+1)^D coefficients
     double componentNorms[1 << D]; ///< Squared norms of the separeted 2^D components
     double maxSquareNorm{-1.0};    ///< Largest squared norm among itself and descendants.
     double maxWSquareNorm{-1.0};   ///< Largest wavelet squared norm among itself and descendants.
                                    ///< NB: must be set before used.
-    double *coefs{nullptr};     ///< the 2^D (k+1)^D MW coefficients
-                                ///< For example, in case of a one dimensional function \f$ f \f$
-                                ///< this array equals \f$ s_0, \ldots, s_k, d_0, \ldots, d_k \f$,
-                                ///< where scaling coefficients \f$ s_j = s_{jl}^n(f) \f$
-                                ///< and wavelet coefficients \f$ d_j = d_{jl}^n(f) \f$.
-                                ///< Here \f$ n, l \f$ are unique for every node.
+    T *coefs{nullptr};     ///< the 2^D (k+1)^D MW coefficients
+                           ///< For example, in case of a one dimensional function \f$ f \f$
+                           ///< this array equals \f$ s_0, \ldots, s_k, d_0, \ldots, d_k \f$,
+                           ///< where scaling coefficients \f$ s_j = s_{jl}^n(f) \f$
+                           ///< and wavelet coefficients \f$ d_j = d_{jl}^n(f) \f$.
+                           ///< Here \f$ n, l \f$ are unique for every node.
     int n_coefs{0};
 
     int serialIx{-1};       ///< index in serial Tree
@@ -192,9 +194,9 @@ protected:
     HilbertPath<D> hilbertPath; ///< To be documented
 
     MWNode();
-    MWNode(MWTree<D> *tree, int rIdx);
-    MWNode(MWTree<D> *tree, const NodeIndex<D> &idx);
-    MWNode(MWNode<D> *parent, int cIdx);
+    MWNode(MWTree<D, T> *tree, int rIdx);
+    MWNode(MWTree<D, T> *tree, const NodeIndex<D> &idx);
+    MWNode(MWNode<D , T> *parent, int cIdx);
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);
@@ -218,20 +220,20 @@ protected:
     int getChildIndex(const NodeIndex<D> &nIdx) const;
     int getChildIndex(const Coord<D> &r) const;
 
-    bool diffBranch(const MWNode<D> &rhs) const;
+    bool diffBranch(const MWNode<D , T> &rhs) const;
 
-    MWNode<D> *retrieveNode(const Coord<D> &r, int depth);
-    MWNode<D> *retrieveNode(const NodeIndex<D> &idx);
-    MWNode<D> *retrieveParent(const NodeIndex<D> &idx);
+    MWNode<D , T> *retrieveNode(const Coord<D> &r, int depth);
+    MWNode<D , T> *retrieveNode(const NodeIndex<D> &idx);
+    MWNode<D , T> *retrieveParent(const NodeIndex<D> &idx);
 
-    const MWNode<D> *retrieveNodeNoGen(const NodeIndex<D> &idx) const;
-    MWNode<D> *retrieveNodeNoGen(const NodeIndex<D> &idx);
+    const MWNode<D , T> *retrieveNodeNoGen(const NodeIndex<D> &idx) const;
+    MWNode<D , T> *retrieveNodeNoGen(const NodeIndex<D> &idx);
 
-    const MWNode<D> *retrieveNodeOrEndNode(const Coord<D> &r, int depth) const;
-    MWNode<D> *retrieveNodeOrEndNode(const Coord<D> &r, int depth);
+    const MWNode<D , T> *retrieveNodeOrEndNode(const Coord<D> &r, int depth) const;
+    MWNode<D , T> *retrieveNodeOrEndNode(const Coord<D> &r, int depth);
 
-    const MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
-    MWNode<D> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
+    const MWNode<D , T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
+    MWNode<D , T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
     void threadSafeGenChildren();
     void deleteGenerated();

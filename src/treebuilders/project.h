@@ -30,7 +30,7 @@
 #include <functional>
 
 namespace mrcpp {
-template <int D> void project(double prec, FunctionTree<D> &out, RepresentableFunction<D> &inp, int maxIter = -1, bool absPrec = false);
-template <int D> void project(double prec, FunctionTree<D> &out, std::function<double(const Coord<D> &r)> func, int maxIter = -1, bool absPrec = false);
-template <int D> void project(double prec, FunctionTreeVector<D> &out, std::vector<std::function<double(const Coord<D> &r)>> func, int maxIter = -1, bool absPrec = false);
+template <int D, typename T = double> void project(double prec, FunctionTree<D, T> &out, RepresentableFunction<D, T> &inp, int maxIter = -1, bool absPrec = false);
+template <int D, typename T = double> void project(double prec, FunctionTree<D, T> &out, std::function<T(const Coord<D> &r)> func, int maxIter = -1, bool absPrec = false);
+template <int D, typename T = double> void project(double prec, FunctionTreeVector<D, T> &out, std::vector<std::function<T(const Coord<D> &r)>> func, int maxIter = -1, bool absPrec = false);
 } // namespace mrcpp

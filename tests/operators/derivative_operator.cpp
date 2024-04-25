@@ -102,10 +102,10 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -143,10 +143,10 @@ template <int D> void testDifferentiationPH(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -174,7 +174,7 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     FunctionTree<D> g_tree(*mra);
     FunctionTree<D> dg_tree(*mra);
 
-    project<D>(prec, g_tree, g_func);
+    project<D, double>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
@@ -202,7 +202,7 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     FunctionTree<D> g_tree(*mra);
     FunctionTree<D> dg_tree(*mra);
 
-    project<D>(prec, g_tree, g_func);
+    project<D, double>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
@@ -237,10 +237,10 @@ template <int D> void testDifferentiationBS(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -335,7 +335,7 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     };
 
     FunctionTree<3> f_tree(*mra);
-    project<3>(prec, f_tree, f);
+    project<3, double>(prec, f_tree, f);
 
     auto grad_f = gradient(diff, f_tree);
     REQUIRE(grad_f.size() == 3);
@@ -373,7 +373,7 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     };
 
     FunctionTree<3> f_tree(*mra);
-    project<3>(prec, f_tree, f);
+    project<3, double>(prec, f_tree, f);
     FunctionTreeVector<3> f_vec;
     f_vec.push_back(std::make_tuple(1.0, &f_tree));
     f_vec.push_back(std::make_tuple(2.0, &f_tree));
@@ -389,6 +389,6 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     }
 
     delete mra;
-}
+    }
 
 } // namespace derivative_operator

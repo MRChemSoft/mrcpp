@@ -32,7 +32,7 @@
 namespace mrcpp {
 
 BoysFunction::BoysFunction(int n, double p)
-        : RepresentableFunction<1>()
+  : RepresentableFunction<1, double>()
         , order(n)
         , prec(p)
         , MRA(BoundingBox<1>(), InterpolatingBasis(13)) {}
@@ -50,8 +50,8 @@ double BoysFunction::evalf(const Coord<1> &r) const {
         return std::exp(-xt_2) * t_2n;
     };
 
-    FunctionTree<1> tree(this->MRA);
-    mrcpp::project<1>(this->prec, tree, f);
+    FunctionTree<1, double> tree(this->MRA);
+    mrcpp::project<1, double>(this->prec, tree, f);
     double result = tree.integrate();
 
     Printer::setPrintLevel(oldlevel);

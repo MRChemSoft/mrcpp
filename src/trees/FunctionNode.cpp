@@ -44,7 +44,7 @@ namespace mrcpp {
 
 /** Function evaluation.
  * Evaluate all polynomials defined on the node. */
-template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
+template <int D, typename T> T FunctionNode<D, T>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     // The 1.0 appearing in the if tests comes from the period is always 1.0
@@ -57,7 +57,7 @@ template <int D> double FunctionNode<D>::evalf(Coord<D> r) {
     return getFuncChild(cIdx).evalScaling(r);
 }
 
-template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
+template <int D, typename T> T FunctionNode<D, T>::evalScaling(const Coord<D> &r) const {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     double arg[D];
@@ -72,10 +72,10 @@ template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
     const ScalingBasis &basis = this->getMWTree().getMRA().getScalingBasis();
     basis.evalf(arg, val);
 
-    double result = 0.0;
+    T result = 0.0;
     //#pragma omp parallel for shared(fact) reduction(+:result) num_threads(mrcpp_get_num_threads())
     for (int i = 0; i < this->getKp1_d(); i++) {
-        double temp = this->coefs[i];
+        T temp = this->coefs[i];
         for (int j = 0; j < D; j++) {
             int k = (i % fact[j + 1]) / fact[j];
             temp *= val(k, j);
@@ -92,7 +92,7 @@ template <int D> double FunctionNode<D>::evalScaling(const Coord<D> &r) const {
  * Wrapper for function integration, that requires different methods depending
  * on scaling type. Integrates the function represented on the node on the
  * full support of the node. */
-template <int D> double FunctionNode<D>::integrate() const {
+template <int D, typename T> T FunctionNode<D, T>::integrate() const {
     if (not this->hasCoefs()) { return 0.0; }
     switch (this->getScalingType()) {
         case Legendre:
@@ -115,7 +115,7 @@ template <int D> double FunctionNode<D>::integrate() const {
  *          s_i = int f(x)phi_i(x)dx
  * and since the first Legendre function is the constant 1, the first
  * coefficient is simply the integral of f(x). */
-template <int D> double FunctionNode<D>::integrateLegendre() const {
+template <int D, typename T> T FunctionNode<D, T>::integrateLegendre() const {
     double n = (D * this->getScale()) / 2.0;
     double two_n = std::pow(2.0, -n);
     return two_n * this->getCoefs()[0];
@@ -126,7 +126,7 @@ template <int D> double FunctionNode<D>::integrateLegendre() const {
  * Integrates the function represented on the node on the full support of the
  * node. A bit more involved than in the Legendre basis, as is requires some
  * coupling of quadrature weights. */
-template <int D> double FunctionNode<D>::integrateInterpolating() const {
+template <int D, typename T> T FunctionNode<D, T>::integrateInterpolating() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
     const VectorXd &weights = qc.getWeights(qOrder);
@@ -136,7 +136,7 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
     int kp1_p[D];
     for (int i = 0; i < D; i++) kp1_p[i] = math_utils::ipow(qOrder, i);
 
-    VectorXd coefs;
+    Eigen::Matrix<T, Eigen::Dynamic, 1> coefs;
     this->getCoefs(coefs);
     for (int p = 0; p < D; p++) {
 
@@ -152,7 +152,7 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
     }
     double n = (D * this->getScale()) / 2.0;
     double two_n = std::pow(2.0, -n);
-    double sum = coefs.segment(0, this->getKp1_d()).sum();
+    T sum = coefs.segment(0, this->getKp1_d()).sum();
 
     return two_n * sum;
 }
@@ -162,27 +162,27 @@ template <int D> double FunctionNode<D>::integrateInterpolating() const {
  * Integrates the function represented on the node on the full support of the
  * node. A bit more involved than in the Legendre basis, as is requires some
  * coupling of quadrature weights. */
-template <int D> double FunctionNode<D>::integrateValues() const {
+template <int D, typename T> T FunctionNode<D, T>::integrateValues() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
     const VectorXd &weights = qc.getWeights(qOrder);
-    VectorXd coefs;
+    Eigen::Matrix<T, Eigen::Dynamic, 1> coefs;
     this->getCoefs(coefs);
     int ncoefs = coefs.size();
     int ncoefChild = ncoefs/(1<<D);
-    double cc[ncoefChild];
+    T cc[ncoefChild];
     // factorize out the children
     for (int i = 0; i < ncoefChild; i++)cc[i]=coefs[i];
     for (int j = 1; j < (1<<D); j++) for (int i = 0; i < ncoefChild; i++)cc[i]+=coefs[j*ncoefChild+i];
 
     int nc = 0;
-    double sum = 0.0;
+    T sum = 0.0;
     if (D > 3) MSG_ABORT("Not Implemented")
     else if (D == 3) {
         for (int i = 0; i < qOrder; i++) {
-            double sumj = 0.0;
+            T sumj = 0.0;
             for (int j = 0; j < qOrder; j++) {
-                double sumk = 0.0;
+                T sumk = 0.0;
                 for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
                 sumj += sumk * weights[j];
             }
@@ -190,7 +190,7 @@ template <int D> double FunctionNode<D>::integrateValues() const {
         }
     } else if (D==2) {
         for (int j = 0; j < qOrder; j++) {
-                double sumk = 0.0;
+                T sumk = 0.0;
                 for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
                 sum += sumk * weights[j];
         }
@@ -203,7 +203,7 @@ template <int D> double FunctionNode<D>::integrateValues() const {
     return sum;
 }
 
-template <int D> void FunctionNode<D>::setValues(const VectorXd &vec) {
+template <int D, typename T> void FunctionNode<D, T>::setValues(const Matrix<T, Eigen::Dynamic, 1> &vec) {
     this->zeroCoefs();
     this->setCoefBlock(0, vec.size(), vec.data());
     this->cvTransform(Backward);
@@ -212,15 +212,15 @@ template <int D> void FunctionNode<D>::setValues(const VectorXd &vec) {
     this->calcNorms();
 }
 
-template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
+  template <int D, typename T> void FunctionNode<D, T>::getValues(Matrix<T , Eigen::Dynamic, 1 > &vec) {
     if (this->isGenNode()) {
-        MWNode<D> copy(*this);
-        vec = Eigen::VectorXd::Zero(copy.getNCoefs());
+        MWNode<D, T> copy(*this);
+        vec = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(copy.getNCoefs());
         copy.mwTransform(Reconstruction);
         copy.cvTransform(Forward);
         for (int i = 0; i < this->n_coefs; i++) vec(i) = copy.getCoefs()[i];
     } else {
-        vec = VectorXd::Zero(this->n_coefs);
+        vec = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(this->n_coefs);
         this->mwTransform(Reconstruction);
         this->cvTransform(Forward);
         for (int i = 0; i < this->n_coefs; i++) vec(i) = this->coefs[i];
@@ -232,8 +232,8 @@ template <int D> void FunctionNode<D>::getValues(VectorXd &vec) {
 /** get coefficients corresponding to absolute value of function
  *
  * Leaves the original coefficients unchanged. */
-template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
-    double *coefsTmp = this->coefs;
+template <int D, typename T> void FunctionNode<D, T>::getAbsCoefs(T *absCoefs) {
+    T *coefsTmp = this->coefs;
     for (int i = 0; i < this->n_coefs; i++) absCoefs[i] = coefsTmp[i]; // copy
     this->coefs = absCoefs;                                            // swap coefs
     this->mwTransform(Reconstruction);
@@ -244,7 +244,7 @@ template <int D> void FunctionNode<D>::getAbsCoefs(double *absCoefs) {
     this->coefs = coefsTmp; // restore original array (same address)
 }
 
-template <int D> void FunctionNode<D>::createChildren(bool coefs) {
+template <int D, typename T> void FunctionNode<D, T>::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
     auto &allocator = this->getFuncTree().getNodeAllocator();
 
@@ -258,7 +258,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(this, cIdx);
+        new (child_p) FunctionNode<D, T>(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;
@@ -282,7 +282,7 @@ template <int D> void FunctionNode<D>::createChildren(bool coefs) {
     this->clearIsEndNode();
 }
 
-template <int D> void FunctionNode<D>::genChildren() {
+template <int D, typename T> void FunctionNode<D, T>::genChildren() {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
     auto &allocator = this->getFuncTree().getGenNodeAllocator();
 
@@ -296,7 +296,7 @@ template <int D> void FunctionNode<D>::genChildren() {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) FunctionNode<D>(this, cIdx);
+        new (child_p) FunctionNode<D, T>(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;
@@ -319,7 +319,7 @@ template <int D> void FunctionNode<D>::genChildren() {
     this->setIsBranchNode();
 }
 
-template <int D> void FunctionNode<D>::genParent() {
+template <int D, typename T> void FunctionNode<D, T>::genParent() {
     if (this->parent != nullptr) MSG_ABORT("Node is not an orphan");
 
     auto &allocator = this->getFuncTree().getNodeAllocator();
@@ -332,7 +332,7 @@ template <int D> void FunctionNode<D>::genParent() {
     this->parentSerialIx = sIdx;
 
     // construct into allocator memory
-    new (parent_p) FunctionNode<D>(this->tree, this->getNodeIndex().parent());
+    new (parent_p) FunctionNode<D, T>(this->tree, this->getNodeIndex().parent());
 
     this->parent = parent_p;
 
@@ -351,12 +351,12 @@ template <int D> void FunctionNode<D>::genParent() {
     this->getMWTree().incrementNodeCount(parent_p->getScale());
 }
 
-template <int D> void FunctionNode<D>::deleteChildren() {
-    MWNode<D>::deleteChildren();
+template <int D, typename T> void FunctionNode<D, T>::deleteChildren() {
+    MWNode<D, T>::deleteChildren();
     this->setIsEndNode();
 }
 
-template <int D> void FunctionNode<D>::dealloc() {
+template <int D, typename T> void FunctionNode<D, T>::dealloc() {
     int sIdx = this->serialIx;
     this->serialIx = -1;
     this->parentSerialIx = -1;
@@ -376,8 +376,8 @@ template <int D> void FunctionNode<D>::dealloc() {
 /** Update the coefficients of the node by a mw transform of the scaling
  * coefficients of the children. Option to overwrite or add up existing
  * coefficients. Specialized for D=3 below. */
-template <int D> void FunctionNode<D>::reCompress() {
-    MWNode<D>::reCompress();
+template <int D, typename T> void FunctionNode<D, T>::reCompress() {
+    MWNode<D, T>::reCompress();
 }
 
 template <> void FunctionNode<3>::reCompress() {
@@ -406,18 +406,18 @@ template <> void FunctionNode<3>::reCompress() {
  * the node on the full support of the nodes. The scaling basis is fully
  * orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support. */
-template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+template <int D, typename T> T dot_scaling(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const double *a = bra.getCoefs();
-    const double *b = ket.getCoefs();
+    const T *a = bra.getCoefs();
+    const T *b = ket.getCoefs();
 
     int size = bra.getKp1_d();
 #ifdef HAVE_BLAS
     return cblas_ddot(size, a, 1, b, 1);
 #else
-    double result = 0.0;
+    T result = 0.0;
     for (int i = 0; i < size; i++) result += a[i] * b[i];
     return result;
 #endif
@@ -429,35 +429,46 @@ template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNo
  * the node on the full support of the nodes. The wavelet basis is fully
  * orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support. */
-template <int D> double dot_wavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket) {
+template <int D, typename T> T dot_wavelet(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const double *a = bra.getCoefs();
-    const double *b = ket.getCoefs();
+    const T *a = bra.getCoefs();
+    const T *b = ket.getCoefs();
 
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
 #ifdef HAVE_BLAS
     return cblas_ddot(size, &a[start], 1, &b[start], 1);
 #else
-    double result = 0.0;
+    T result = 0.0;
     for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
     return result;
 #endif
 }
 
-template double dot_scaling(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double dot_scaling(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double dot_scaling(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
-template double dot_wavelet(const FunctionNode<1> &bra, const FunctionNode<1> &ket);
-template double dot_wavelet(const FunctionNode<2> &bra, const FunctionNode<2> &ket);
-template double dot_wavelet(const FunctionNode<3> &bra, const FunctionNode<3> &ket);
+template double dot_scaling(const FunctionNode<1, double> &bra, const FunctionNode<1, double> &ket);
+template double dot_scaling(const FunctionNode<2, double> &bra, const FunctionNode<2, double> &ket);
+template double dot_scaling(const FunctionNode<3, double> &bra, const FunctionNode<3, double> &ket);
+template double dot_wavelet(const FunctionNode<1, double> &bra, const FunctionNode<1, double> &ket);
+template double dot_wavelet(const FunctionNode<2, double> &bra, const FunctionNode<2, double> &ket);
+template double dot_wavelet(const FunctionNode<3, double> &bra, const FunctionNode<3, double> &ket);
 
-template class FunctionNode<1>;
-template class FunctionNode<2>;
-template class FunctionNode<3>;
+template class FunctionNode<1, double>;
+template class FunctionNode<2, double>;
+template class FunctionNode<3, double>;
+
+template class FunctionNode<1, ComplexDouble>;
+template class FunctionNode<2, ComplexDouble>;
+template class FunctionNode<3, ComplexDouble>;
+
+template ComplexDouble dot_scaling(const FunctionNode<1, ComplexDouble> &bra, const FunctionNode<1, ComplexDouble> &ket);
+template ComplexDouble dot_scaling(const FunctionNode<2, ComplexDouble> &bra, const FunctionNode<2, ComplexDouble> &ket);
+template ComplexDouble dot_scaling(const FunctionNode<3, ComplexDouble> &bra, const FunctionNode<3, ComplexDouble> &ket);
+template ComplexDouble dot_wavelet(const FunctionNode<1, ComplexDouble> &bra, const FunctionNode<1, ComplexDouble> &ket);
+template ComplexDouble dot_wavelet(const FunctionNode<2, ComplexDouble> &bra, const FunctionNode<2, ComplexDouble> &ket);
+template ComplexDouble dot_wavelet(const FunctionNode<3, ComplexDouble> &bra, const FunctionNode<3, ComplexDouble> &ket);
 
 } // namespace mrcpp

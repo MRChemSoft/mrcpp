@@ -101,9 +101,6 @@ void apply
 }
 
 
-
-
-
 template
 void apply <1>
 (

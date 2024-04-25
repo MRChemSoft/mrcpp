@@ -74,26 +74,26 @@ namespace mrcpp {
  *  communicator. In order to allocate a FunctionTree in shared memory,
  *  simply pass a SharedMemory object to the FunctionTree constructor.
  */
-class SharedMemory {
+template <typename T> class SharedMemory {
 public:
     SharedMemory(mrcpp::mpi_comm comm, int sh_size);
     SharedMemory(const SharedMemory &mem) = delete;
-    SharedMemory &operator=(const SharedMemory &mem) = delete;
+    SharedMemory<T> &operator=(const SharedMemory<T> &mem) = delete;
     ~SharedMemory();
 
     void clear(); // show shared memory as entirely available
 
-    double *sh_start_ptr;  // start of shared block
-    double *sh_end_ptr;    // end of used part
-    double *sh_max_ptr;    // end of shared block
+    T *sh_start_ptr;  // start of shared block
+    T *sh_end_ptr;    // end of used part
+    T *sh_max_ptr;    // end of shared block
     mrcpp::mpi_win sh_win; // MPI window object
     int rank;              // rank among shared group
 };
 
-template <int D> class FunctionTree;
+template <int D, typename T> class FunctionTree;
 
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
-template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
+template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
+template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

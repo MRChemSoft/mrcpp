@@ -50,20 +50,20 @@ namespace mrcpp {
  *  If a shared memory pointer is provided the tree will be allocated in this
  *  shared memory window, otherwise it will be local to each MPI process.
  */
-template <int D>
-FunctionTree<D>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem, const std::string &name)
-        : MWTree<D>(mra, name)
-        , RepresentableFunction<D>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
+template <int D, typename T>
+FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem, const std::string &name)
+        : MWTree<D, T>(mra, name)
+        , RepresentableFunction<D, T>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
     int nodesPerChunk = 2048; // Large chunks are required for not leading to memory fragmentation (32 MB on "Betzy" 2023)
     int coefsGenNodes = this->getKp1_d();
     int coefsRegNodes = this->getTDim() * this->getKp1_d();
-    this->nodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, sh_mem, coefsRegNodes, nodesPerChunk);
-    this->genNodeAllocator_p = std::make_unique<NodeAllocator<D>>(this, nullptr, coefsGenNodes, nodesPerChunk);
+    this->nodeAllocator_p = std::make_unique<NodeAllocator<D, T>>(this, sh_mem, coefsRegNodes, nodesPerChunk);
+    this->genNodeAllocator_p = std::make_unique<NodeAllocator<D, T>>(this, nullptr, coefsGenNodes, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
 
-template <int D> void FunctionTree<D>::allocRootNodes() {
+template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
 
@@ -74,10 +74,10 @@ template <int D> void FunctionTree<D>::allocRootNodes() {
     auto *coef_p = allocator.getCoef_p(sIdx);
     auto *root_p = allocator.getNode_p(sIdx);
 
-    MWNode<D> **roots = rootbox.getNodes();
+    MWNode<D, T> **roots = rootbox.getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
         // construct into allocator memory
-        new (root_p) FunctionNode<D>(this, rIdx);
+        new (root_p) FunctionNode<D, T>(this, rIdx);
         roots[rIdx] = root_p;
 
         root_p->serialIx = sIdx;
@@ -101,14 +101,14 @@ template <int D> void FunctionTree<D>::allocRootNodes() {
 }
 
 // FunctionTree destructor
-template <int D> FunctionTree<D>::~FunctionTree() {
+template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
     this->deleteRootNodes();
 }
 
 /** @brief Write the tree structure to disk, for later use
  * @param[in] file: File name, will get ".tree" extension
  */
-template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
+template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string &file) {
     Timer t1;
     this->deleteGenerated();
     auto &allocator = this->getNodeAllocator();
@@ -137,7 +137,7 @@ template <int D> void FunctionTree<D>::saveTree(const std::string &file) {
  * @param[in] file: File name, will get ".tree" extension
  * @note This tree must have the exact same MRA the one that was saved
  */
-template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
+template <int D, typename T> void FunctionTree<D, T>::loadTree(const std::string &file) {
     Timer t1;
     std::stringstream fname;
     fname << file << ".tree";
@@ -168,11 +168,11 @@ template <int D> void FunctionTree<D>::loadTree(const std::string &file) {
 }
 
 /** @returns Integral of the function over the entire computational domain */
-template <int D> double FunctionTree<D>::integrate() const {
+template <int D, typename T> T FunctionTree<D, T>::integrate() const {
 
-    double result = 0.0;
+    T result = 0.0;
     for (int i = 0; i < this->rootBox.size(); i++) {
-        const FunctionNode<D> &fNode = getRootFuncNode(i);
+        const FunctionNode<D, T> &fNode = getRootFuncNode(i);
         result += fNode.integrate();
     }
 
@@ -188,7 +188,7 @@ template <int D> double FunctionTree<D>::integrate() const {
 
 
 /** @returns Integral of a representable function over the grid given by the tree */
-template <> double FunctionTree<3>::integrateEndNodes(RepresentableFunction_M &f) {
+  template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunction_M &f) {
     //traverse tree, and treat end nodes only
     std::vector<FunctionNode<3> *> stack;   // node from this
     for (int i = 0; i < this->getRootBox().size(); i++) stack.push_back(&(this->getRootFuncNode(i)));
@@ -236,7 +236,7 @@ template <> double FunctionTree<3>::integrateEndNodes(RepresentableFunction_M &f
  *       the MW grid by one level before evaluating, using
  *       `mrcpp::refine_grid(tree, 1)`
  */
-template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
+template <int D, typename T> T FunctionTree<D, T>::evalf(const Coord<D> &r) const {
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto arg = r;
@@ -249,8 +249,8 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
     // Function is zero outside the domain for non-periodic functions
     if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;
 
-    const MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
-    auto &f_node = static_cast<const FunctionNode<D> &>(mw_node);
+    const MWNode<D, T> &mw_node = this->getNodeOrEndNode(arg);
+    auto &f_node = static_cast<const FunctionNode<D, T> &>(mw_node);
     auto result = f_node.evalScaling(arg);
 
     // Adjust for scaling factor included in basis
@@ -270,7 +270,7 @@ template <int D> double FunctionTree<D>::evalf(const Coord<D> &r) const {
  *       need fast evaluation, use refine_grid(tree, 1) first, and then
  *       evalf.
  */
-template <int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
+template <int D, typename T> T FunctionTree<D, T>::evalf_precise(const Coord<D> &r) {
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto arg = r;
@@ -283,8 +283,8 @@ template <int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
     // Function is zero outside the domain for non-periodic functions
     if (this->outOfBounds(arg) and not this->getRootBox().isPeriodic()) return 0.0;
 
-    MWNode<D> &mw_node = this->getNodeOrEndNode(arg);
-    auto &f_node = static_cast<FunctionNode<D> &>(mw_node);
+    MWNode<D, T> &mw_node = this->getNodeOrEndNode(arg);
+    auto &f_node = static_cast<FunctionNode<D, T> &>(mw_node);
     auto result = f_node.evalf(arg);
     this->deleteGenerated();
 
@@ -301,7 +301,7 @@ template <int D> double FunctionTree<D>::evalf_precise(const Coord<D> &r) {
  * squared, no grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::square() {
+template <int D, typename T> void FunctionTree<D, T>::square() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
 #pragma omp parallel num_threads(mrcpp_get_num_threads())
@@ -310,10 +310,10 @@ template <int D> void FunctionTree<D>::square() {
         int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &node = *this->endNodeTable[n];
+            MWNode<D, T> &node = *this->endNodeTable[n];
             node.mwTransform(Reconstruction);
             node.cvTransform(Forward);
-            double *coefs = node.getCoefs();
+            T *coefs = node.getCoefs();
             for (int i = 0; i < nCoefs; i++) { coefs[i] *= coefs[i]; }
             node.cvTransform(Backward);
             node.mwTransform(Compression);
@@ -332,7 +332,7 @@ template <int D> void FunctionTree<D>::square() {
  * to the given power, no grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::power(double p) {
+template <int D, typename T> void FunctionTree<D, T>::power(double p) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
 #pragma omp parallel num_threads(mrcpp_get_num_threads())
@@ -341,10 +341,10 @@ template <int D> void FunctionTree<D>::power(double p) {
         int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &node = *this->endNodeTable[n];
+            MWNode<D, T> &node = *this->endNodeTable[n];
             node.mwTransform(Reconstruction);
             node.cvTransform(Forward);
-            double *coefs = node.getCoefs();
+            T *coefs = node.getCoefs();
             for (int i = 0; i < nCoefs; i++) { coefs[i] = std::pow(coefs[i], p); }
             node.cvTransform(Backward);
             node.mwTransform(Compression);
@@ -363,7 +363,7 @@ template <int D> void FunctionTree<D>::power(double p) {
  * in-place multiplied by the given coefficient, no grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::rescale(double c) {
+template <int D, typename T> void FunctionTree<D, T>::rescale(double c) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) num_threads(mrcpp_get_num_threads())
     {
@@ -371,9 +371,9 @@ template <int D> void FunctionTree<D>::rescale(double c) {
         int nCoefs = this->getTDim() * this->getKp1_d();
 #pragma omp for schedule(guided)
         for (int i = 0; i < nNodes; i++) {
-            MWNode<D> &node = *this->endNodeTable[i];
+            MWNode<D, T> &node = *this->endNodeTable[i];
             if (not node.hasCoefs()) MSG_ABORT("No coefs");
-            double *coefs = node.getCoefs();
+            T *coefs = node.getCoefs();
             for (int j = 0; j < nCoefs; j++) { coefs[j] *= c; }
             node.calcNorms();
         }
@@ -383,7 +383,7 @@ template <int D> void FunctionTree<D>::rescale(double c) {
 }
 
 /** @brief In-place rescaling by a function norm \f$ ||f||^{-1} \f$, fixed grid */
-template <int D> void FunctionTree<D>::normalize() {
+template <int D, typename T> void FunctionTree<D, T>::normalize() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
     if (sq_norm < 0.0) MSG_ERROR("Normalizing uninitialized function");
@@ -399,7 +399,7 @@ template <int D> void FunctionTree<D>::normalize() {
  * the function, i.e. no further grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::add(double c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
@@ -407,10 +407,10 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &out_node = *this->endNodeTable[n];
-            MWNode<D> &inp_node = inp.getNode(out_node.getNodeIndex());
-            double *out_coefs = out_node.getCoefs();
-            const double *inp_coefs = inp_node.getCoefs();
+            MWNode<D, T> &out_node = *this->endNodeTable[n];
+            MWNode<D, T> &inp_node = inp.getNode(out_node.getNodeIndex());
+            T *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
             for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] += c * inp_coefs[i]; }
             out_node.calcNorms();
         }
@@ -428,21 +428,21 @@ template <int D> void FunctionTree<D>::add(double c, FunctionTree<D> &inp) {
  * function, i.e. no further grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::absadd(double c, FunctionTree<D, T> &inp) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &out_node = *this->endNodeTable[n];
-            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
+            MWNode<D, T> &out_node = *this->endNodeTable[n];
+            MWNode<D, T> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
             out_node.mwTransform(Reconstruction);
             out_node.cvTransform(Forward);
             inp_node.mwTransform(Reconstruction);
             inp_node.cvTransform(Forward);
-            double *out_coefs = out_node.getCoefs();
-            const double *inp_coefs = inp_node.getCoefs();
+            T *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
             for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = abs(out_coefs[i]) + c * abs(inp_coefs[i]); }
             out_node.cvTransform(Backward);
             out_node.mwTransform(Compression);
@@ -463,7 +463,7 @@ template <int D> void FunctionTree<D>::absadd(double c, FunctionTree<D> &inp) {
  * of the function, i.e. no further grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::multiply(double c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
@@ -471,14 +471,14 @@ template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) 
         int nNodes = this->getNEndNodes();
 #pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &out_node = *this->endNodeTable[n];
-            MWNode<D> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
+            MWNode<D, T> &out_node = *this->endNodeTable[n];
+            MWNode<D, T> inp_node = inp.getNode(out_node.getNodeIndex()); // Full copy
             out_node.mwTransform(Reconstruction);
             out_node.cvTransform(Forward);
             inp_node.mwTransform(Reconstruction);
             inp_node.cvTransform(Forward);
-            double *out_coefs = out_node.getCoefs();
-            const double *inp_coefs = inp_node.getCoefs();
+            T *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
             for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] *= c * inp_coefs[i]; }
             out_node.cvTransform(Backward);
             out_node.mwTransform(Compression);
@@ -498,16 +498,16 @@ template <int D> void FunctionTree<D>::multiply(double c, FunctionTree<D> &inp) 
  * of the function, i.e. no further grid refinement.
  *
  */
-template <int D> void FunctionTree<D>::map(FMap fmap) {
+template <int D, typename T> void FunctionTree<D, T>::map(FMap<T, T> fmap) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     {
         int nNodes = this->getNEndNodes();
 #pragma omp parallel for schedule(guided) num_threads(mrcpp_get_num_threads())
         for (int n = 0; n < nNodes; n++) {
-            MWNode<D> &node = *this->endNodeTable[n];
+            MWNode<D, T> &node = *this->endNodeTable[n];
             node.mwTransform(Reconstruction);
             node.cvTransform(Forward);
-            double *coefs = node.getCoefs();
+            T *coefs = node.getCoefs();
             for (int i = 0; i < node.getNCoefs(); i++) { coefs[i] = fmap(coefs[i]); }
             node.cvTransform(Backward);
             node.mwTransform(Compression);
@@ -518,29 +518,29 @@ template <int D> void FunctionTree<D>::map(FMap fmap) {
     this->calcSquareNorm();
 }
 
-template <int D> void FunctionTree<D>::getEndValues(VectorXd &data) {
+template <int D, typename T> void FunctionTree<D, T>::getEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim() * this->getKp1_d();
     data = VectorXd::Zero(nNodes * nCoefs);
     for (int n = 0; n < nNodes; n++) {
-        MWNode<D> &node = getEndFuncNode(n);
+        MWNode<D, T> &node = getEndFuncNode(n);
         node.mwTransform(Reconstruction);
         node.cvTransform(Forward);
-        const double *c = node.getCoefs();
+        const T *c = node.getCoefs();
         for (int i = 0; i < nCoefs; i++) { data(n * nCoefs + i) = c[i]; }
         node.cvTransform(Backward);
         node.mwTransform(Compression);
     }
 }
 
-template <int D> void FunctionTree<D>::setEndValues(VectorXd &data) {
+template <int D, typename T> void FunctionTree<D, T>::setEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim() * this->getKp1_d();
     for (int i = 0; i < nNodes; i++) {
-        MWNode<D> &node = getEndFuncNode(i);
-        const double *c = data.segment(i * nCoefs, nCoefs).data();
+        MWNode<D, T> &node = getEndFuncNode(i);
+        const T *c = data.segment(i * nCoefs, nCoefs).data();
         node.setCoefBlock(0, nCoefs, c);
         node.cvTransform(Backward);
         node.mwTransform(Compression);
@@ -551,10 +551,10 @@ template <int D> void FunctionTree<D>::setEndValues(VectorXd &data) {
     this->calcSquareNorm();
 }
 
-template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) const {
+template <int D, typename T> std::ostream &FunctionTree<D, T>::print(std::ostream &o) const {
     o << std::endl << "*FunctionTree: " << this->name << std::endl;
     o << "  genNodes: " << getNGenNodes() << std::endl;
-    return MWTree<D>::print(o);
+    return MWTree<D, T>::print(o);
 }
 
 /** @brief Reduce the precision of the tree by deleting nodes
@@ -571,9 +571,9 @@ template <int D> std::ostream &FunctionTree<D>::print(std::ostream &o) const {
  * \f$ ||w|| < 2^{-sn/2} ||f|| \epsilon \f$. In principal, `s` should be equal
  * to the dimension; in practice, it is set to `s=1`.
  */
-template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool absPrec) {
+template <int D, typename T> int FunctionTree<D, T>::crop(double prec, double splitFac, bool absPrec) {
     for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
+        MWNode<D, T> &root = this->getRootMWNode(i);
         root.crop(prec, splitFac, absPrec);
     }
     int nChunks = this->getNodeAllocator().compress();
@@ -586,22 +586,22 @@ template <int D> int FunctionTree<D>::crop(double prec, double splitFac, bool ab
  * Also returns an array with the corresponding indices defined as the
  * values of serialIx in refTree, and an array with the indices of the parent.
  * Set index -1 for nodes that are not present in refTree */
-template <int D>
-void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
+template <int D, typename T>
+void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
                                       std::vector<int> &indices,
                                       std::vector<int> &parent_indices,
                                       std::vector<double> &scalefac,
                                       int &max_index,
-                                      MWTree<D> &refTree,
-                                      std::vector<MWNode<D> *> *refNodes) {
+                                      MWTree<D, T> &refTree,
+                                      std::vector<MWNode<D, T> *> *refNodes) {
     coefs.clear();
     indices.clear();
     parent_indices.clear();
     max_index = 0;
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
-    std::vector<MWNode<D> *> refstack;  // nodes from refTree
-    std::vector<MWNode<D> *> thisstack; // nodes from this Tree
+    std::vector<MWNode<D, T> *> refstack;  // nodes from refTree
+    std::vector<MWNode<D, T> *> thisstack; // nodes from this Tree
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
         refstack.push_back(refTree.getRootBox().getNodes()[rIdx]);
         thisstack.push_back(this->getRootBox().getNodes()[rIdx]);
@@ -609,8 +609,8 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
     int stack_p = 0;
     while (thisstack.size() > stack_p) {
         // refNode and thisNode are the same node in space, but on different trees
-        MWNode<D> *thisNode = thisstack[stack_p];
-        MWNode<D> *refNode = refstack[stack_p++];
+        MWNode<D, T> *thisNode = thisstack[stack_p];
+        MWNode<D, T> *refNode = refstack[stack_p++];
         coefs.push_back(thisNode->getCoefs());
         if (refNodes != nullptr) refNodes->push_back(refNode);
         if (refNode != nullptr) {
@@ -640,26 +640,26 @@ void FunctionTree<D>::makeCoeffVector(std::vector<double *> &coefs,
  * reference tree and a list of coefficients.
  * It is the reference tree (refTree) which is traversed, but one does not descend
  * into children if the norm of the tree is smaller than absPrec. */
-template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode) {
-    std::vector<MWNode<D> *> stack;
-    std::map<int, MWNode<D> *> ix2node; // gives the nodes in this tree for a given ix
+template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D, T> &refTree, std::vector<T *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode) {
+    std::vector<MWNode<D, T> *> stack;
+    std::map<int, MWNode<D, T> *> ix2node; // gives the nodes in this tree for a given ix
     int sizecoef = (1 << this->getDim()) * this->getKp1_d();
     int sizecoefW = ((1 << this->getDim()) - 1) * this->getKp1_d();
     this->squareNorm = 0.0;
     this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < refTree.getRootBox().size(); rIdx++) {
-        MWNode<D> *refNode = refTree.getRootBox().getNodes()[rIdx];
+        MWNode<D, T> *refNode = refTree.getRootBox().getNodes()[rIdx];
         stack.push_back(refNode);
         int ix = ix2coef[refNode->getSerialIx()];
         ix2node[ix] = this->getRootBox().getNodes()[rIdx];
     }
 
     while (stack.size() > 0) {
-        MWNode<D> *refNode = stack.back(); // node in the reference tree refTree
+        MWNode<D, T> *refNode = stack.back(); // node in the reference tree refTree
         stack.pop_back();
         assert(ix2coef.count(refNode->getSerialIx()) > 0);
         int ix = ix2coef[refNode->getSerialIx()];
-        MWNode<D> *node = ix2node[ix]; // corresponding node in this tree
+        MWNode<D, T> *node = ix2node[ix]; // corresponding node in this tree
         // copy coefficients into this tree
         int size = sizecoefW;
         if (refNode->isRootNode() or mode == "copy") {
@@ -701,8 +701,8 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
         } else if ((absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true)) and refNode->getNChildren() > 0) {
             // include children in tree
             node->createChildren(true);
-            double *inp = node->getCoefs();
-            double *out = node->getMWChild(0).getCoefs();
+            T *inp = node->getCoefs();
+            T *out = node->getMWChild(0).getCoefs();
             tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
             for (int i = 0; i < refNode->getNChildren(); i++) {
                 stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
@@ -717,9 +717,9 @@ template <int D> void FunctionTree<D>::makeTreefromCoeff(MWTree<D> &refTree, std
 }
 
 /** Traverse tree using DFS and append same nodes as another tree, without coefficients */
-template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
-    std::vector<MWNode<D> *> instack;   // node from inTree
-    std::vector<MWNode<D> *> thisstack; // node from this Tree
+template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D, T> &inTree) {
+    std::vector<MWNode<D, T> *> instack;   // node from inTree
+    std::vector<MWNode<D, T> *> thisstack; // node from this Tree
     this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < inTree.getRootBox().size(); rIdx++) {
         instack.push_back(inTree.getRootBox().getNodes()[rIdx]);
@@ -727,9 +727,9 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
     }
     while (thisstack.size() > 0) {
         // inNode and thisNode are the same node in space, but on different trees
-        MWNode<D> *thisNode = thisstack.back();
+        MWNode<D, T> *thisNode = thisstack.back();
         thisstack.pop_back();
-        MWNode<D> *inNode = instack.back();
+        MWNode<D, T> *inNode = instack.back();
         instack.pop_back();
         if (inNode->getNChildren() > 0) {
             thisNode->clearIsEndNode();
@@ -741,10 +741,10 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
         } else {
             // construct EndNodeTable for "This", starting from this branch
             // This could be done more efficiently, if it proves to be time consuming
-            std::vector<MWNode<D> *> branchstack; // local stack starting from this branch
+            std::vector<MWNode<D, T> *> branchstack; // local stack starting from this branch
             branchstack.push_back(thisNode);
             while (branchstack.size() > 0) {
-                MWNode<D> *branchNode = branchstack.back();
+                MWNode<D, T> *branchNode = branchstack.back();
                 branchstack.pop_back();
                 if (branchNode->getNChildren() > 0) {
                     for (int i = 0; i < branchNode->getNChildren(); i++) { branchstack.push_back(branchNode->children[i]); }
@@ -755,11 +755,11 @@ template <int D> void FunctionTree<D>::appendTreeNoCoeff(MWTree<D> &inTree) {
     }
 }
 
-template <int D> void FunctionTree<D>::deleteGenerated() {
+template <int D, typename T> void FunctionTree<D, T>::deleteGenerated() {
     for (int n = 0; n < this->getNEndNodes(); n++) this->getEndMWNode(n).deleteGenerated();
 }
 
-template <int D> void FunctionTree<D>::deleteGeneratedParents() {
+template <int D, typename T> void FunctionTree<D, T>::deleteGeneratedParents() {
     for (int n = 0; n < this->getRootBox().size(); n++) this->getRootMWNode(n).deleteParent();
 }
 
@@ -785,8 +785,12 @@ template <> int FunctionTree<3>::saveNodesAndRmCoeff() {
     return this->NodeIndex2serialIx.size();
 }
 
-template class FunctionTree<1>;
-template class FunctionTree<2>;
-template class FunctionTree<3>;
+template class FunctionTree<1, double>;
+template class FunctionTree<2, double>;
+template class FunctionTree<3, double>;
+
+template class FunctionTree<1, ComplexDouble>;
+template class FunctionTree<2, ComplexDouble>;
+template class FunctionTree<3, ComplexDouble>;
 
 } // namespace mrcpp

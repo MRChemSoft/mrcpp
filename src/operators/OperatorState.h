@@ -42,9 +42,9 @@ namespace mrcpp {
 
 #define GET_OP_IDX(FT, GT, ID) (2 * ((GT >> ID) & 1) + ((FT >> ID) & 1))
 
-template <int D> class OperatorState final {
+template <int D, typename T> class OperatorState final {
 public:
-    OperatorState(MWNode<D> &gn, double *scr1)
+  OperatorState(MWNode<D, T> &gn, T *scr1)
             : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
@@ -53,7 +53,7 @@ public:
         this->gData = this->gNode->getCoefs();
         this->maxDeltaL = -1;
 
-        double *scr2 = scr1 + this->kp1_d;
+        T *scr2 = scr1 + this->kp1_d;
 
         for (int i = 1; i < D; i++) {
             if (IS_ODD(i)) {
@@ -64,9 +64,9 @@ public:
         }
     }
 
-    OperatorState(MWNode<D> &gn, std::vector<double> scr1)
+  OperatorState(MWNode<D, T> &gn, std::vector<T> scr1)
             : OperatorState(gn, scr1.data()) {}
-    void setFNode(MWNode<D> &fn) {
+  void setFNode(MWNode<D, T> &fn) {
         this->fNode = &fn;
         this->fData = this->fNode->getCoefs();
     }
@@ -86,15 +86,16 @@ public:
     int getMaxDeltaL() const { return this->maxDeltaL; }
     int getOperIndex(int i) const { return GET_OP_IDX(this->ft, this->gt, i); }
 
-    double **getAuxData() { return this->aux; }
+    T **getAuxData() { return this->aux; }
     double **getOperData() { return this->oData; }
 
-    friend class ConvolutionCalculator<D>;
-    friend class DerivativeCalculator<D>;
+  friend class ConvolutionCalculator<D, T>;
+  friend class DerivativeCalculator<D, T>;
 
 private:
     int ft;
     int gt;
+
     int maxDeltaL;
     double fThreshold;
     double gThreshold;
@@ -104,13 +105,13 @@ private:
     int kp1_d;
     int kp1_dm1;
 
-    MWNode<D> *gNode;
-    MWNode<D> *fNode;
+    MWNode<D, T> *gNode;
+    MWNode<D, T> *fNode;
     NodeIndex<D> *fIdx;
 
-    double *aux[D + 1];
-    double *gData;
-    double *fData;
+    T *aux[D + 1];
+    T *gData;
+    T *fData;
     double *oData[D];
 
     void calcMaxDeltaL() {

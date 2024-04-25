@@ -44,7 +44,7 @@ namespace mrcpp {
  * Calculates the threshold that has to be met in the wavelet norm in order to
  * guarantee the precision in the function representation. Depends on the
  * square norm of the function and the requested relative accuracy. */
-template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec) {
+template <int D, typename T> bool tree_utils::split_check(const MWNode<D, T> &node, double prec, double split_fac, bool abs_prec) {
     bool split = false;
     if (prec > 0.0) {
         double t_norm = 1.0;
@@ -66,40 +66,40 @@ template <int D> bool tree_utils::split_check(const MWNode<D> &node, double prec
 
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
  * Returns one nodeVector for the whole tree. GenNodes disregarded. */
-template <int D> void tree_utils::make_node_table(MWTree<D> &tree, MWNodeVector<D> &table) {
-    TreeIterator<D> it(tree, TopDown, Hilbert);
+template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree, MWNodeVector<D, T> &table) {
+    TreeIterator<D, T> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.nextParent()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         if (node.getDepth() == 0) continue;
         table.push_back(&node);
     }
     it.init(tree);
     while (it.next()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         table.push_back(&node);
     }
 }
 
 /** Traverse tree along the Hilbert path and find nodes of any rankId.
  * Returns one nodeVector per scale. GenNodes disregarded. */
-template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table) {
-    TreeIterator<D> it(tree, TopDown, Hilbert);
+template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree, std::vector<MWNodeVector<D, T>> &table) {
+    TreeIterator<D, T> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.nextParent()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         if (node.getDepth() == 0) continue;
         int depth = node.getDepth() + tree.getNNegScales();
         // Add one more element
-        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
+        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);
     }
     it.init(tree);
     while (it.next()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         int depth = node.getDepth() + tree.getNNegScales();
         // Add one more element
-        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D>());
+        if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);
     }
 }
@@ -110,7 +110,7 @@ template <int D> void tree_utils::make_node_table(MWTree<D> &tree, std::vector<M
  * The output is written directly into the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite) {
+template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &tree, T *coeff_in, T *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite) {
     int operation = Reconstruction;
     int kp1 = tree.getKp1();
     int kp1_d = tree.getKp1_d();
@@ -118,8 +118,8 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
-    double tmpcoeff[kp1_d * tDim];
-    double tmpcoeff2[kp1_d * tDim];
+    T tmpcoeff[kp1_d * tDim];
+    T tmpcoeff2[kp1_d * tDim];
     int ftlim = tDim;
     int ftlim2 = tDim;
     int ftlim3 = tDim;
@@ -135,13 +135,13 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
     int i = 0;
     int mask = 1;
     for (int gt = 0; gt < tDim; gt++) {
-        double *out = tmpcoeff + gt * kp1_d;
+        T *out = tmpcoeff + gt * kp1_d;
         for (int ft = 0; ft < ftlim; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
             // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
-                double *in = coeff_in + ft * kp1_d;
+                T *in = coeff_in + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                 const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -155,13 +155,13 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
         i++;
         mask = 2; // 1 << i;
         for (int gt = 0; gt < tDim; gt++) {
-            double *out = tmpcoeff2 + gt * kp1_d;
+            T *out = tmpcoeff2 + gt * kp1_d;
             for (int ft = 0; ft < ftlim2; ft++) {
                 // Operate in direction i only if the bits along other
                 // directions are identical. The bit of the direction we
                 // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
-                    double *in = tmpcoeff + ft * kp1_d;
+                    T *in = tmpcoeff + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -178,13 +178,13 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
         i++;
         mask = 4; // 1 << i;
         for (int gt = 0; gt < tDim; gt++) {
-            double *out = coeff_out + gt * stride; // write right into children
+            T *out = coeff_out + gt * stride; // write right into children
             for (int ft = 0; ft < ftlim3; ft++) {
                 // Operate in direction i only if the bits along other
                 // directions are identical. The bit of the direction we
                 // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
-                    double *in = tmpcoeff2 + ft * kp1_d;
+                    T *in = tmpcoeff2 + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -200,7 +200,7 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
     if (D > 3) MSG_ABORT("D>3 NOT IMPLEMENTED for S_mwtransform");
 
     if (D < 3) {
-        double *out;
+        T *out;
         if (D == 1) out = tmpcoeff;
         if (D == 2) out = tmpcoeff2;
         if (b_overwrite) {
@@ -216,9 +216,9 @@ template <int D> void tree_utils::mw_transform(const MWTree<D> &tree, double *co
 }
 
 // Specialized for D=3 below.
-template <int D> void tree_utils::mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride) {
-    NOT_IMPLEMENTED_ABORT;
-}
+//template <int D, typename T> void tree_utils::mw_transform_back(MWTree<D, T> &tree, double *coeff_in, double *coeff_out, int stride) {
+//    NOT_IMPLEMENTED_ABORT;
+//}
 
 /** Make parent from children scaling coefficients
  * Other node info are not used/set
@@ -226,7 +226,7 @@ template <int D> void tree_utils::mw_transform_back(MWTree<D> &tree, double *coe
  * The output is read directly from the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff_in, double *coeff_out, int stride) {
+template <typename T>  void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride) {
     int operation = Compression;
     int kp1 = tree.getKp1();
     int kp1_d = tree.getKp1_d();
@@ -234,7 +234,7 @@ template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff
     int kp1_dm1 = math_utils::ipow(kp1, 2);
     const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
-    double tmpcoeff[kp1_d * tDim];
+    T tmpcoeff[kp1_d * tDim];
 
     int ftlim = tDim;
     int ftlim2 = tDim;
@@ -243,13 +243,13 @@ template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff
     int i = 0;
     int mask = 1;
     for (int gt = 0; gt < tDim; gt++) {
-        double *out = coeff_out + gt * kp1_d;
+        T *out = coeff_out + gt * kp1_d;
         for (int ft = 0; ft < ftlim; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
             // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
-                double *in = coeff_in + ft * stride;
+                T *in = coeff_in + ft * stride;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                 const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -262,13 +262,13 @@ template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff
     i++;
     mask = 2; // 1 << i;
     for (int gt = 0; gt < tDim; gt++) {
-        double *out = tmpcoeff + gt * kp1_d;
+        T *out = tmpcoeff + gt * kp1_d;
         for (int ft = 0; ft < ftlim2; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
             // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
-                double *in = coeff_out + ft * kp1_d;
+                T *in = coeff_out + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                 const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -281,14 +281,14 @@ template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff
     i++;
     mask = 4; // 1 << i;
     for (int gt = 0; gt < tDim; gt++) {
-        double *out = coeff_out + gt * kp1_d;
-        // double *out = coeff_out + gt * N_coeff;
+        T *out = coeff_out + gt * kp1_d;
+        // T *out = coeff_out + gt * N_coeff;
         for (int ft = 0; ft < ftlim3; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
             // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
-                double *in = tmpcoeff + ft * kp1_d;
+                T *in = tmpcoeff + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                 const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -300,24 +300,46 @@ template <> void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff
     }
 }
 
-template bool tree_utils::split_check<1>(const MWNode<1> &node, double prec, double split_fac, bool abs_prec);
-template bool tree_utils::split_check<2>(const MWNode<2> &node, double prec, double split_fac, bool abs_prec);
-template bool tree_utils::split_check<3>(const MWNode<3> &node, double prec, double split_fac, bool abs_prec);
 
-template void tree_utils::make_node_table<1>(MWTree<1> &tree, MWNodeVector<1> &table);
-template void tree_utils::make_node_table<2>(MWTree<2> &tree, MWNodeVector<2> &table);
-template void tree_utils::make_node_table<3>(MWTree<3> &tree, MWNodeVector<3> &table);
+template void tree_utils::make_node_table<1, double>(MWTree<1, double> &tree, MWNodeVector<1, double> &table);
+template void tree_utils::make_node_table<2, double>(MWTree<2, double> &tree, MWNodeVector<2, double> &table);
+template void tree_utils::make_node_table<3, double>(MWTree<3, double> &tree, MWNodeVector<3, double> &table);
 
-template void tree_utils::make_node_table<1>(MWTree<1> &tree, std::vector<MWNodeVector<1>> &table);
-template void tree_utils::make_node_table<2>(MWTree<2> &tree, std::vector<MWNodeVector<2>> &table);
-template void tree_utils::make_node_table<3>(MWTree<3> &tree, std::vector<MWNodeVector<3>> &table);
+template void tree_utils::make_node_table<1, double>(MWTree<1, double> &tree, std::vector<MWNodeVector<1, double>> &table);
+template void tree_utils::make_node_table<2, double>(MWTree<2, double> &tree, std::vector<MWNodeVector<2, double>> &table);
+template void tree_utils::make_node_table<3, double>(MWTree<3, double> &tree, std::vector<MWNodeVector<3, double>> &table);
 
-template void tree_utils::mw_transform<1>(const MWTree<1> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
-template void tree_utils::mw_transform<2>(const MWTree<2> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
-template void tree_utils::mw_transform<3>(const MWTree<3> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template bool tree_utils::split_check<1, double>(const MWNode<1, double> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<2, double>(const MWNode<2, double> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<3, double>(const MWNode<3, double> &node, double prec, double split_fac, bool abs_prec);
 
-template void tree_utils::mw_transform_back<1>(MWTree<1> &tree, double *coeff_in, double *coeff_out, int stride);
-template void tree_utils::mw_transform_back<2>(MWTree<2> &tree, double *coeff_in, double *coeff_out, int stride);
-template void tree_utils::mw_transform_back<3>(MWTree<3> &tree, double *coeff_in, double *coeff_out, int stride);
+template void tree_utils::mw_transform<1, double>(const MWTree<1, double> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<2, double>(const MWTree<2, double> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<3, double>(const MWTree<3, double> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+
+//template void tree_utils::mw_transform_back<1, double>(MWTree<1, double> &tree, double *coeff_in, double *coeff_out, int stride);
+//template void tree_utils::mw_transform_back<2, double>(MWTree<2, double> &tree, double *coeff_in, double *coeff_out, int stride);
+template void tree_utils::mw_transform_back<double>(MWTree<3, double> &tree, double *coeff_in, double *coeff_out, int stride);
+
+  
+template void tree_utils::make_node_table<1, ComplexDouble>(MWTree<1, ComplexDouble> &tree, MWNodeVector<1, ComplexDouble> &table);
+template void tree_utils::make_node_table<2, ComplexDouble>(MWTree<2, ComplexDouble> &tree, MWNodeVector<2, ComplexDouble> &table);
+template void tree_utils::make_node_table<3, ComplexDouble>(MWTree<3, ComplexDouble> &tree, MWNodeVector<3, ComplexDouble> &table);
+
+template void tree_utils::make_node_table<1, ComplexDouble>(MWTree<1, ComplexDouble> &tree, std::vector<MWNodeVector<1, ComplexDouble>> &table);
+template void tree_utils::make_node_table<2, ComplexDouble>(MWTree<2, ComplexDouble> &tree, std::vector<MWNodeVector<2, ComplexDouble>> &table);
+template void tree_utils::make_node_table<3, ComplexDouble>(MWTree<3, ComplexDouble> &tree, std::vector<MWNodeVector<3, ComplexDouble>> &table);
+
+template bool tree_utils::split_check<1, ComplexDouble>(const MWNode<1, ComplexDouble> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<2, ComplexDouble>(const MWNode<2, ComplexDouble> &node, double prec, double split_fac, bool abs_prec);
+template bool tree_utils::split_check<3, ComplexDouble>(const MWNode<3, ComplexDouble> &node, double prec, double split_fac, bool abs_prec);
+
+template void tree_utils::mw_transform<1, ComplexDouble>(const MWTree<1, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<2, ComplexDouble>(const MWTree<2, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+template void tree_utils::mw_transform<3, ComplexDouble>(const MWTree<3, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
+
+//template void tree_utils::mw_transform_back<1, ComplexDouble>(MWTree<1, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
+//template void tree_utils::mw_transform_back<2, ComplexDouble>(MWTree<2, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
+template void tree_utils::mw_transform_back<ComplexDouble>(MWTree<3, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
 
 } // namespace mrcpp

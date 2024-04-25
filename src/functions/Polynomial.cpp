@@ -45,7 +45,7 @@ namespace mrcpp {
 /** Construct polynomial of order zero with given size and bounds.
  * Includes default constructor. */
 Polynomial::Polynomial(int k, const double *a, const double *b)
-        : RepresentableFunction<1>(a, b) {
+  : RepresentableFunction<1, double>(a, b) {
     assert(k >= 0);
     this->N = 1.0;
     this->L = 0.0;

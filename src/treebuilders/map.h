@@ -28,10 +28,10 @@
 #include "trees/FunctionTreeVector.h"
 
 namespace mrcpp {
-template <int D> class RepresentableFunction;
-template <int D> class FunctionTree;
+template <int D, typename T> class RepresentableFunction;
+template <int D, typename T> class FunctionTree;
 
-template <int D>
-void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int maxIter = -1, bool absPrec = false);
+template <int D, typename T>
+void map(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, FMap<T, T> fmap, int maxIter = -1, bool absPrec = false);
 
 } // namespace mrcpp

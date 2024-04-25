@@ -34,34 +34,34 @@ namespace mrcpp {
 
 class Timer;
 class Printer;
-template <int D> class Plotter;
+template <int D, typename T = double> class Plotter;
 
-template <int D> class Gaussian;
-template <int D> class GaussFunc;
-template <int D> class GaussPoly;
-template <int D> class GaussExp;
+template <int D, typename T = double> class Gaussian;
+template <int D, typename T = double> class GaussFunc;
+template <int D, typename T = double> class GaussPoly;
+template <int D, typename T = double> class GaussExp;
 
 template <int D> class BoundingBox;
-template <int D> class NodeBox;
+template <int D, typename T = double> class NodeBox;
 template <int D> class NodeIndex;
 template <int D> class NodeIndexComp;
 
-class SharedMemory;
+template <typename T = double> class SharedMemory;
 class ScalingBasis;
 class LegendreBasis;
 class InterpolatingBasis;
 
-template <int D> class RepresentableFunction;
+template <int D, typename T = double> class RepresentableFunction;
 template <int D> class MultiResolutionAnalysis;
 
-template <int D> class MWTree;
-template <int D> class FunctionTree;
+template <int D, typename T = double> class MWTree;
+template <int D, typename T = double> class FunctionTree;
 class OperatorTree;
 
-template <int D> class NodeAllocator;
+template <int D, typename T = double> class NodeAllocator;
 
-template <int D> class MWNode;
-template <int D> class FunctionNode;
+template <int D, typename T = double> class MWNode;
+template <int D, typename T = double> class FunctionNode;
 class OperatorNode;
 
 template <int D> class IdentityConvolution;
@@ -79,31 +79,30 @@ template <int D> class DerivativeKernel;
 class PoissonKernel;
 class HelmholtzKernel;
 
-template <int D> class TreeBuilder;
-template <int D> class TreeCalculator;
-template <int D> class DefaultCalculator;
-template <int D> class ProjectionCalculator;
-template <int D> class AdditionCalculator;
-template <int D> class MultiplicationCalculator;
-template <int D> class ConvolutionCalculator;
-template <int D> class DerivativeCalculator;
+template <int D, typename T = double> class TreeBuilder;
+template <int D, typename T = double> class TreeCalculator;
+template <int D, typename T = double> class DefaultCalculator;
+template <int D, typename T = double> class ProjectionCalculator;
+template <int D, typename T = double> class AdditionCalculator;
+template <int D, typename T = double> class MultiplicationCalculator;
+template <int D, typename T = double> class ConvolutionCalculator;
+template <int D, typename T = double> class DerivativeCalculator;
 class CrossCorrelationCalculator;
 
-template <int D> class TreeAdaptor;
-template <int D> class AnalyticAdaptor;
-template <int D> class WaveletAdaptor;
-template <int D> class CopyAdaptor;
+template <int D, typename T = double> class TreeAdaptor;
+template <int D, typename T = double> class AnalyticAdaptor;
+template <int D, typename T = double> class WaveletAdaptor;
+template <int D, typename T = double> class CopyAdaptor;
 
-template <int D> class TreeIterator;
-template <int D> class IteratorNode;
+template <int D, typename T = double> class TreeIterator;
+template <int D, typename T = double> class IteratorNode;
 
 class BandWidth;
-template <int D> class OperatorState;
+template <int D, typename T = double> class OperatorState;
 
 template <int D> using Coord = std::array<double, D>;
-template <int D> using MWNodeVector = std::vector<MWNode<D> *>;
+template <int D, typename T = double> using MWNodeVector = std::vector<MWNode<D, T> *>;
 
-template <typename T, typename U> using FMap_ = std::function<T(U)>;
-typedef FMap_<double, double> FMap;
+template <typename T = double, typename U = double> using FMap = std::function<T(U)>;
 
 } // namespace mrcpp

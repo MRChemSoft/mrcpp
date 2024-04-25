@@ -187,7 +187,7 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
     auto source = [](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
 
     FunctionTree<3> source_tree(MRA);
-    project<3>(proj_prec, source_tree, source);
+    project<3, double>(proj_prec, source_tree, source);
 
     FunctionTree<3> sol_tree(MRA);
 
@@ -195,6 +195,6 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
 
     REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
     REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
-}
+    }
 
 } // namespace poisson_operator

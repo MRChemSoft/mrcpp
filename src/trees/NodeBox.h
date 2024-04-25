@@ -30,31 +30,31 @@
 
 namespace mrcpp {
 
-template <int D> class NodeBox final : public BoundingBox<D> {
+  template <int D, typename T> class NodeBox final : public BoundingBox<D> {
 public:
     NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb = {});
-    NodeBox(const NodeBox<D> &box);
+    NodeBox(const NodeBox<D, T> &box);
     NodeBox(const BoundingBox<D> &box);
-    NodeBox<D> &operator=(const NodeBox<D> &box) = delete;
+    NodeBox<D, T> &operator=(const NodeBox<D, T> &box) = delete;
     ~NodeBox() override;
 
-    void setNode(int idx, MWNode<D> **node);
+    void setNode(int idx, MWNode<D, T> **node);
     void clearNode(int idx) { this->nodes[idx] = nullptr; }
 
-    MWNode<D> &getNode(NodeIndex<D> idx);
-    MWNode<D> &getNode(Coord<D> r);
-    MWNode<D> &getNode(int i = 0);
+    MWNode<D, T> &getNode(NodeIndex<D> idx);
+    MWNode<D, T> &getNode(Coord<D> r);
+    MWNode<D, T> &getNode(int i = 0);
 
-    const MWNode<D> &getNode(NodeIndex<D> idx) const;
-    const MWNode<D> &getNode(Coord<D> r) const;
-    const MWNode<D> &getNode(int i = 0) const;
+    const MWNode<D, T> &getNode(NodeIndex<D> idx) const;
+    const MWNode<D, T> &getNode(Coord<D> r) const;
+    const MWNode<D, T> &getNode(int i = 0) const;
 
     int getNOccupied() const { return this->nOccupied; }
-    MWNode<D> **getNodes() { return this->nodes; }
+    MWNode<D, T> **getNodes() { return this->nodes; }
 
 protected:
     int nOccupied;     ///< Number of non-zero pointers in box
-    MWNode<D> **nodes; ///< Container of nodes
+    MWNode<D, T> **nodes; ///< Container of nodes
 
     void allocNodePointers();
     void deleteNodes();

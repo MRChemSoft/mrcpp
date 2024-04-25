@@ -265,7 +265,7 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
  * @param[in] tree: Tree to be printed
  * @param[in] timer: Timer to be evaluated
  */
-template <int D> void print::tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer) {
+  template <int D, typename T> void print::tree(int level, const std::string &txt, const MWTree<D, T> &tree, const Timer &timer) {
     if (level > Printer::getPrintLevel()) return;
 
     auto n = tree.getNNodes();

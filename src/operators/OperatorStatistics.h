@@ -32,14 +32,14 @@
 
 namespace mrcpp {
 
-template <int D> class OperatorStatistics final {
+  template <int D, typename T> class OperatorStatistics final {
 public:
     OperatorStatistics();
     ~OperatorStatistics();
 
     void flushNodeCounters();
-    void incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt);
-    void incrementGNodeCounters(const MWNode<D> &gNode);
+    void incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt);
+    void incrementGNodeCounters(const MWNode<D, T> &gNode);
 
     friend std::ostream &operator<<(std::ostream &o, const OperatorStatistics &os) { return os.print(o); }
 

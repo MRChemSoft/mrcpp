@@ -38,7 +38,6 @@
 
 namespace schrodinger_evolution_operator {
 
-
 TEST_CASE("Apply Schrodinger's evolution operator", "[apply_schrodinger_evolution], [schrodinger_evolution_operator], [mw_operator]") {
     const auto min_scale = 0;
     const auto max_depth = 25;
@@ -87,13 +86,13 @@ TEST_CASE("Apply Schrodinger's evolution operator", "[apply_schrodinger_evolutio
 
     // Projecting functions
     mrcpp::FunctionTree<1> Re_f_tree(MRA);
-    mrcpp::project<1>(prec, Re_f_tree, Re_f);
+    mrcpp::project<1, double>(prec, Re_f_tree, Re_f);
     mrcpp::FunctionTree<1> Im_f_tree(MRA);
-    mrcpp::project<1>(prec, Im_f_tree, Im_f);
+    mrcpp::project<1, double>(prec, Im_f_tree, Im_f);
     mrcpp::FunctionTree<1> Re_g_tree(MRA);
-    mrcpp::project<1>(prec, Re_g_tree, Re_g);
+    mrcpp::project<1, double>(prec, Re_g_tree, Re_g);
     mrcpp::FunctionTree<1> Im_g_tree(MRA);
-    mrcpp::project<1>(prec, Im_g_tree, Im_g);
+    mrcpp::project<1, double>(prec, Im_g_tree, Im_g);
 
     // Output function trees
     mrcpp::FunctionTree<1> Re_fout_tree(MRA);
@@ -128,6 +127,5 @@ TEST_CASE("Apply Schrodinger's evolution operator", "[apply_schrodinger_evolutio
     REQUIRE(Re_sq_norm == Catch::Approx(0.0).margin(tolerance));
     REQUIRE(Im_sq_norm == Catch::Approx(0.0).margin(tolerance));
 }
-
 
 } // namespace schrodinger_evolution_operator

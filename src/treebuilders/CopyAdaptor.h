@@ -30,17 +30,17 @@
 
 namespace mrcpp {
 
-template <int D> class CopyAdaptor final : public TreeAdaptor<D> {
+  template <int D, typename T> class CopyAdaptor final : public TreeAdaptor<D, T> {
 public:
-    CopyAdaptor(FunctionTree<D> &t, int ms, int *bw);
-    CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw);
+    CopyAdaptor(FunctionTree<D, T> &t, int ms, int *bw);
+    CopyAdaptor(FunctionTreeVector<D, T> &t, int ms, int *bw);
 
 private:
     int bandWidth[D];
-    FunctionTreeVector<D> tree_vec;
+    FunctionTreeVector<D, T> tree_vec;
 
     void setBandWidth(int *bw);
-    bool splitNode(const MWNode<D> &node) const override;
+    bool splitNode(const MWNode<D, T> &node) const override;
 };
 
 } // namespace mrcpp

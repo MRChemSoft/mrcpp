@@ -39,12 +39,12 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D> Gaussian<D> *GaussFunc<D>::copy() const {
-    auto *gauss = new GaussFunc<D>(*this);
+template <int D, typename T> Gaussian<D, T> *GaussFunc<D, T>::copy() const {
+    auto *gauss = new GaussFunc<D, T>(*this);
     return gauss;
 }
 
-template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
+template <int D, typename T> T GaussFunc<D, T>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
             if (r[d] < this->A[d] or r[d] > this->B[d]) { return 0.0; }
@@ -65,7 +65,7 @@ template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
-template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
+template <int D, typename T> T GaussFunc<D, T>::evalf1D(double r, int d) const {
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
@@ -85,7 +85,7 @@ template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
     return result;
 }
 
-template <int D> double GaussFunc<D>::calcSquareNorm() const {
+template <int D, typename T> double GaussFunc<D, T>::calcSquareNorm() const {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
         double a = 2.0 * this->alpha[d];
@@ -105,14 +105,14 @@ template <int D> double GaussFunc<D>::calcSquareNorm() const {
     return norm * this->coef * this->coef;
 }
 
-template<int D> GaussExp<D> GaussFunc<D>::asGaussExp() const {
-    GaussExp<D> gexp;
+template<int D, typename T> GaussExp<D, T> GaussFunc<D, T>::asGaussExp() const {
+    GaussExp<D, T> gexp;
     gexp.append(*this);
     return gexp;
 }
 
-template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
-    GaussPoly<D> result(*this);
+template <int D, typename T> GaussPoly<D, T> GaussFunc<D, T>::differentiate(int dir) const {
+    GaussPoly<D, T> result(*this);
     int oldPow = this->getPower(dir);
 
     Polynomial newPoly(oldPow + 1);
@@ -123,8 +123,8 @@ template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
     return result;
 }
 
-template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
-    GaussFunc<D> &lhs = *this;
+template <int D, typename T> void GaussFunc<D, T>::multInPlace(const GaussFunc<D, T> &rhs) {
+    GaussFunc<D, T> &lhs = *this;
     for (int d = 0; d < D; d++) {
         if (lhs.getPos()[d] != rhs.getPos()[d]) {
             MSG_ABORT("Cannot multiply GaussFuncs of different center in-place");
@@ -148,9 +148,9 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
  *  @param[in] rhs: Right hand side of multiply
  *  @returns New GaussPoly
  */
-template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
-    GaussFunc<D> &lhs = *this;
-    GaussPoly<D> result;
+template <int D, typename T> GaussPoly<D, T> GaussFunc<D, T>::mult(const GaussFunc<D, T> &rhs) {
+    GaussFunc<D, T> &lhs = *this;
+    GaussPoly<D, T> result;
     result.multPureGauss(lhs, rhs);
     for (int d = 0; d < D; d++) {
         double newPos = result.getPos()[d];
@@ -167,13 +167,13 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
  *  @param[in] c: Scalar to multiply
  *  @returns New GaussFunc
  */
-template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
-    GaussFunc<D> g = *this;
+template <int D, typename T> GaussFunc<D, T> GaussFunc<D, T>::mult(double c) {
+    GaussFunc<D, T> g = *this;
     g.coef *= c;
     return g;
 }
 
-template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
+template <int D, typename T> std::ostream &GaussFunc<D, T>::print(std::ostream &o) const {
     auto is_array = details::are_all_equal<D>(this->getExp());
 
     // If all of the values in the exponential are the same only
@@ -203,7 +203,7 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
  *  @note Both Gaussians must be normalized to unit charge
  *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
  */
-template <int D> double GaussFunc<D>::calcCoulombEnergy(const GaussFunc<D> &gf) const {
+template <int D, typename T> double GaussFunc<D, T>::calcCoulombEnergy(const GaussFunc<D, T> &gf) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -236,7 +236,12 @@ template <> double GaussFunc<3>::calcCoulombEnergy(const GaussFunc<3> &gf) const
     return std::sqrt(4.0 * alpha / pi) * boysFac;
 }
 
-template class GaussFunc<1>;
-template class GaussFunc<2>;
-template class GaussFunc<3>;
+template class GaussFunc<1, double>;
+template class GaussFunc<2, double>;
+template class GaussFunc<3, double>;
+
+template class GaussFunc<1, ComplexDouble>;
+template class GaussFunc<2, ComplexDouble>;
+template class GaussFunc<3, ComplexDouble>;
+
 } // namespace mrcpp

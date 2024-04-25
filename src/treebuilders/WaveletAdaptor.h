@@ -31,10 +31,10 @@
 
 namespace mrcpp {
 
-template <int D> class WaveletAdaptor : public TreeAdaptor<D> {
+  template <int D, typename T> class WaveletAdaptor : public TreeAdaptor<D, T> {
 public:
     WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
-            : TreeAdaptor<D>(ms)
+      : TreeAdaptor<D, T>(ms)
             , absPrec(ap)
             , prec(pr)
             , splitFac(sf) {}
@@ -50,7 +50,7 @@ protected:
     double splitFac;
     std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 
-    bool splitNode(const MWNode<D> &node) const override {
+    bool splitNode(const MWNode<D, T> &node) const override {
         auto precFac = this->precFunc(node.getNodeIndex()); // returns 1.0 by default
         return tree_utils::split_check(node, this->prec * precFac, this->splitFac, this->absPrec);
     }

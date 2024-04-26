@@ -50,7 +50,7 @@ namespace mrcpp {
  * translation index, the norm, pointers to parent node and child
  * nodes, pointer to the corresponding MWTree etc... See member and
  * data descriptions for details.
- *
+ * 
  */
   template <int D, typename T> class MWNode {
 public:

@@ -39,7 +39,7 @@
 namespace mrcpp {
 
 class BankAccount;
-  
+
 /** @class MWTree
  *
  * @brief Base class for Multiwavelet tree structures, such as FunctionTree and OperatorTree

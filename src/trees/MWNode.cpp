@@ -407,7 +407,9 @@ MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
  *
  * @details If the node is a leafNode, it takes the scaling&wavelet
  * coefficients of the parent and it generates the scaling
- * coefficients for the children
+ * coefficients for the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
  */
   template <int D, typename T> void MWNode<D, T>::threadSafeGenChildren() {
     if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }
@@ -879,7 +881,7 @@ void MWNode<D, T>::cvTransform(int operation) {
 
 /** @brief Returns the quadrature points in a given node
  *
- * @param[in,out] pts: expanded quadrature points in a \f$ d \times
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times 
  * 2^d(k+1)^d \f$ matrix form.
  *
  * @details The primitive quadrature points of the children are used to obtain a

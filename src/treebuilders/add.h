@@ -28,22 +28,22 @@
 
 namespace mrcpp {
 
-template <int D> void add(double prec,
-                          FunctionTree<D> &out,
+template <int D, typename T> void add(double prec,
+                          FunctionTree<D, T> &out,
                           double a,
-                          FunctionTree<D> &tree_a,
+                          FunctionTree<D, T> &tree_a,
                           double b,
-                          FunctionTree<D> &tree_b,
+                          FunctionTree<D, T> &tree_b,
                           int maxIter = -1,
                           bool absPrec = false);
-template <int D> void add(double prec,
-                          FunctionTree<D> &out,
-                          FunctionTreeVector<D> &inp,
+template <int D, typename T> void add(double prec,
+                          FunctionTree<D, T> &out,
+                          FunctionTreeVector<D, T> &inp,
                           int maxIter = -1,
                           bool absPrec = false);
-template <int D> void add(double prec,
-                          FunctionTree<D> &out,
-                          std::vector<FunctionTree<D> *> &inp,
+template <int D, typename T> void add(double prec,
+                          FunctionTree<D, T> &out,
+                          std::vector<FunctionTree<D, T> *> &inp,
                           int maxIter = -1,
                           bool absPrec = false);
 

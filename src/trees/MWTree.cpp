@@ -49,8 +49,8 @@ namespace mrcpp {
  * root nodes. The information for the root node configuration to use
  * is in the mra object which is passed to the constructor.
  */
-template <int D>
-MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
+  template <int D, typename T>
+MWTree<D, T>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
         : MRA(mra)
         , order(mra.getOrder()) /// polynomial order
         , kp1_d(math_utils::ipow(mra.getOrder() + 1, D)) ///nr of scaling coefficients \f$ (k+1)^D \f$
@@ -61,7 +61,7 @@ MWTree<D>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
 }
 
 /** @brief MWTree destructor. */
-template <int D> MWTree<D>::~MWTree() {
+template <int D, typename T> MWTree<D, T>::~MWTree() {
     this->endNodeTable.clear();
     if (this->nodesAtDepth.size() != 1) MSG_ERROR("Nodes at depth != 1 -> " << this->nodesAtDepth.size());
     if (this->nodesAtDepth[0] != 0) MSG_ERROR("Nodes at depth 0 != 0 -> " << this->nodesAtDepth[0]);
@@ -73,9 +73,9 @@ template <int D> MWTree<D>::~MWTree() {
   * including the root nodes. Derived classes will call this method
   * when the object is deleted.
   */
-template <int D> void MWTree<D>::deleteRootNodes() {
+template <int D, typename T> void MWTree<D, T>::deleteRootNodes() {
     for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
+        MWNode<D, T> &root = this->getRootMWNode(i);
         root.deleteChildren();
         root.dealloc();
         this->rootBox.clearNode(i);
@@ -90,9 +90,9 @@ template <int D> void MWTree<D>::deleteRootNodes() {
  * nodes, (nodeChunks in NodeAllocator) is NOT released, but is
  * immediately available to the new function.
  */
-template <int D> void MWTree<D>::clear() {
+template <int D, typename T> void MWTree<D, T>::clear() {
     for (int i = 0; i < this->rootBox.size(); i++) {
-        MWNode<D> &root = this->getRootMWNode(i);
+        MWNode<D, T> &root = this->getRootMWNode(i);
         root.deleteChildren();
         root.clearHasCoefs();
         root.clearNorms();
@@ -106,10 +106,10 @@ template <int D> void MWTree<D>::clear() {
  * @details The norm is calculated using endNodes only. The specific
  * type of norm which is computed will depend on the derived class
  */
-template <int D> void MWTree<D>::calcSquareNorm() {
+template <int D, typename T> void MWTree<D, T>::calcSquareNorm() {
     double treeNorm = 0.0;
     for (int n = 0; n < this->getNEndNodes(); n++) {
-        const MWNode<D> &node = getEndMWNode(n);
+        const MWNode<D, T> &node = getEndMWNode(n);
         assert(node.hasCoefs());
         treeNorm += node.getSquareNorm();
     }
@@ -139,7 +139,7 @@ template <int D> void MWTree<D>::calcSquareNorm() {
  * }
  * \f]
  */
-template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
+template <int D, typename T> void MWTree<D, T>::mwTransform(int type, bool overwrite) {
     switch (type) {
         case TopDown:
             mwTransformDown(overwrite);
@@ -162,8 +162,8 @@ template <int D> void MWTree<D>::mwTransform(int type, bool overwrite) {
  * projection to purify the coefficients obtained by quadrature at
  * coarser scales which are therefore not precise enough.
  */
-template <int D> void MWTree<D>::mwTransformUp() {
-    std::vector<MWNodeVector<D>> nodeTable;
+template <int D, typename T> void MWTree<D, T>::mwTransformUp() {
+    std::vector<MWNodeVector<D, T>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);
 #pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
@@ -172,7 +172,7 @@ template <int D> void MWTree<D>::mwTransformUp() {
             int nNodes = nodeTable[n].size();
 #pragma omp for schedule(guided)
             for (int i = 0; i < nNodes; i++) {
-                MWNode<D> &node = *nodeTable[n][i];
+                MWNode<D, T> &node = *nodeTable[n][i];
                 if (node.isBranchNode()) { node.reCompress(); }
             }
         }
@@ -190,8 +190,8 @@ template <int D> void MWTree<D>::mwTransformUp() {
  * operation is generally used after the operator application.
  *
  */
-template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
-    std::vector<MWNodeVector<D>> nodeTable;
+template <int D, typename T> void MWTree<D, T>::mwTransformDown(bool overwrite) {
+    std::vector<MWNodeVector<D, T>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);
 #pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
@@ -199,7 +199,7 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
             int n_nodes = nodeTable[n].size();
 #pragma omp for schedule(guided)
             for (int i = 0; i < n_nodes; i++) {
-                MWNode<D> &node = *nodeTable[n][i];
+                MWNode<D, T> &node = *nodeTable[n][i];
                 if (node.isBranchNode()) {
                     if (this->getRootScale() > node.getScale()) {
                         int reverse = n_nodes - 1;
@@ -220,10 +220,10 @@ template <int D> void MWTree<D>::mwTransformDown(bool overwrite) {
  * function is representable at depth zero. One should then use \ref cropTree to remove
  * unnecessary nodes.
  */
-template <int D> void MWTree<D>::setZero() {
-    TreeIterator<D> it(*this);
+template <int D, typename T> void MWTree<D, T>::setZero() {
+    TreeIterator<D, T> it(*this);
     while (it.next()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         node.zeroCoefs();
     }
     this->squareNorm = 0.0;
@@ -236,7 +236,7 @@ template <int D> void MWTree<D>::setZero() {
  * safe, and must NEVER be called outside a critical region in parallel.
  * It's way. way too expensive to lock the tree, so don't even think
  * about it. */
-template <int D> void MWTree<D>::incrementNodeCount(int scale) {
+template <int D, typename T> void MWTree<D, T>::incrementNodeCount(int scale) {
     int depth = scale - getRootScale();
     if (depth < 0) {
         int n = this->nodesAtNegativeDepth.size();
@@ -261,7 +261,7 @@ template <int D> void MWTree<D>::incrementNodeCount(int scale) {
  * It's way. way too expensive to lock the tree, so don't even think
  * about it.
  */
-template <int D> void MWTree<D>::decrementNodeCount(int scale) {
+template <int D, typename T> void MWTree<D, T>::decrementNodeCount(int scale) {
     int depth = scale - getRootScale();
     if (depth < 0) {
         assert(-depth - 1 < this->nodesAtNegativeDepth.size());
@@ -280,7 +280,7 @@ template <int D> void MWTree<D>::decrementNodeCount(int scale) {
  *
  * @param[in] depth: Tree depth (0 depth is the coarsest scale) to count.
  */
-template <int D> int MWTree<D>::getNNodesAtDepth(int depth) const {
+template <int D, typename T> int MWTree<D, T>::getNNodesAtDepth(int depth) const {
     int N = 0;
     if (depth < 0) {
         if (this->nodesAtNegativeDepth.size() >= -depth) N = this->nodesAtNegativeDepth[-depth];
@@ -291,9 +291,9 @@ template <int D> int MWTree<D>::getNNodesAtDepth(int depth) const {
 }
 
 /** @returns Size of all MW coefs in the tree, in kB */
-template <int D> int MWTree<D>::getSizeNodes() const {
+template <int D, typename T> int MWTree<D, T>::getSizeNodes() const {
     auto nCoefs = 1ll * getNNodes() * getTDim() * getKp1_d();
-    return sizeof(double) * nCoefs / 1024;
+    return sizeof(T) * nCoefs / 1024;
 }
 
 /** @brief Finds and returns the node pointer with the given \ref NodeIndex, const version.
@@ -303,11 +303,11 @@ template <int D> int MWTree<D>::getSizeNodes() const {
  * pointer if the node does not exist, or if it is a
  * GenNode. Recursion starts at the appropriate rootNode.
  */
-template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
+template <int D, typename T> const MWNode<D, T> *MWTree<D, T>::findNode(NodeIndex<D> idx) const {
     if (getRootBox().isPeriodic()) { periodic::index_manipulation<D>(idx, getRootBox().getPeriodic()); }
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return nullptr;
-    const MWNode<D> &root = this->rootBox.getNode(rIdx);
+    const MWNode<D, T> &root = this->rootBox.getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);
 }
@@ -319,11 +319,11 @@ template <int D> const MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) const {
  * pointer if the node does not exist, or if it is a
  * GenNode. Recursion starts at the appropriate rootNode.
  */
-template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
+template <int D, typename T> MWNode<D, T> *MWTree<D, T>::findNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) { periodic::index_manipulation<D>(idx, getRootBox().getPeriodic()); }
     int rIdx = getRootBox().getBoxIndex(idx);
     if (rIdx < 0) return nullptr;
-    MWNode<D> &root = this->rootBox.getNode(rIdx);
+    MWNode<D, T> &root = this->rootBox.getNode(rIdx);
     assert(root.isAncestor(idx));
     return root.retrieveNodeNoGen(idx);
 }
@@ -335,11 +335,11 @@ template <int D> MWNode<D> *MWTree<D>::findNode(NodeIndex<D> idx) {
  * transform. Recursion starts at the appropriate rootNode and descends
  * from this.
  */
-template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
+template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
 
-    MWNode<D> *out = nullptr;
-    MWNode<D> &root = getRootBox().getNode(idx);
+    MWNode<D, T> *out = nullptr;
+    MWNode<D, T> &root = getRootBox().getNode(idx);
     if (idx.getScale() < getRootScale()) {
 #pragma omp critical(gen_parent)
         out = root.retrieveParent(idx);
@@ -357,9 +357,9 @@ template <int D> MWNode<D> &MWTree<D>::getNode(NodeIndex<D> idx) {
  * GenNodes.  Recursion starts at the appropriate rootNode and decends
  * from this.
  */
-template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
+template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNodeOrEndNode(NodeIndex<D> idx) {
     if (getRootBox().isPeriodic()) { periodic::index_manipulation<D>(idx, getRootBox().getPeriodic()); }
-    MWNode<D> &root = getRootBox().getNode(idx);
+    MWNode<D, T> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
 }
@@ -371,9 +371,9 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) {
  * transform. Recursion starts at the appropriate rootNode and decends
  * from this.
  */
-template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) const {
+template <int D, typename T> const MWNode<D, T> &MWTree<D, T>::getNodeOrEndNode(NodeIndex<D> idx) const {
     if (getRootBox().isPeriodic()) { periodic::index_manipulation<D>(idx, getRootBox().getPeriodic()); }
-    const MWNode<D> &root = getRootBox().getNode(idx);
+    const MWNode<D, T> &root = getRootBox().getNode(idx);
     assert(root.isAncestor(idx));
     return *root.retrieveNodeOrEndNode(idx);
 }
@@ -387,8 +387,8 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(NodeIndex<D> idx) 
  * generate nodes that do not exist. Recursion starts at the
  * appropriate rootNode and decends from this.
  */
-template <int D> MWNode<D> &MWTree<D>::getNode(Coord<D> r, int depth) {
-    MWNode<D> &root = getRootBox().getNode(r);
+template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNode(Coord<D> r, int depth) {
+    MWNode<D, T> &root = getRootBox().getNode(r);
     if (depth >= 0) {
         return *root.retrieveNode(r, depth);
     } else {
@@ -405,11 +405,11 @@ template <int D> MWNode<D> &MWTree<D>::getNode(Coord<D> r, int depth) {
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this.
  */
-template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
+template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNodeOrEndNode(Coord<D> r, int depth) {
 
     if (getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, getRootBox().getPeriodic()); }
 
-    MWNode<D> &root = getRootBox().getNode(r);
+    MWNode<D, T> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }
 
@@ -422,10 +422,10 @@ template <int D> MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) {
  * the path to the requested node, and will never create or return GenNodes.
  * Recursion starts at the appropriate rootNode and decends from this.
  */
-template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int depth) const {
+template <int D, typename T> const MWNode<D, T> &MWTree<D, T>::getNodeOrEndNode(Coord<D> r, int depth) const {
 
     if (getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, getRootBox().getPeriodic()); }
-    const MWNode<D> &root = getRootBox().getNode(r);
+    const MWNode<D, T> &root = getRootBox().getNode(r);
     return *root.retrieveNodeOrEndNode(r, depth);
 }
 
@@ -434,10 +434,10 @@ template <int D> const MWNode<D> &MWTree<D>::getNodeOrEndNode(Coord<D> r, int de
  * @details copies the list of all EndNode pointers into a new vector
  * and retunrs it.
  */
-template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
-    auto *nVec = new MWNodeVector<D>;
+template <int D, typename T> MWNodeVector<D, T> *MWTree<D, T>::copyEndNodeTable() {
+    auto *nVec = new MWNodeVector<D, T>;
     for (int n = 0; n < getNEndNodes(); n++) {
-        MWNode<D> &node = getEndMWNode(n);
+        MWNode<D, T> &node = getEndMWNode(n);
         nVec->push_back(&node);
     }
     return nVec;
@@ -449,27 +449,27 @@ template <int D> MWNodeVector<D> *MWTree<D>::copyEndNodeTable() {
  * scratch. It makes use of the TreeIterator to traverse the tree.
  * 
  */
-template <int D> void MWTree<D>::resetEndNodeTable() {
+template <int D, typename T> void MWTree<D, T>::resetEndNodeTable() {
     clearEndNodeTable();
-    TreeIterator<D> it(*this, TopDown, Hilbert);
+    TreeIterator<D, T> it(*this, TopDown, Hilbert);
     it.setReturnGenNodes(false);
     while (it.next()) {
-        MWNode<D> &node = it.getNode();
+        MWNode<D, T> &node = it.getNode();
         if (node.isEndNode()) { this->endNodeTable.push_back(&node); }
     }
 }
 
 
-template <int D> int MWTree<D>::countBranchNodes(int depth) {
+template <int D, typename T> int MWTree<D, T>::countBranchNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template <int D> int MWTree<D>::countLeafNodes(int depth) {
+template <int D, typename T> int MWTree<D, T>::countLeafNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
     //    int nNodes = 0;
-    //    TreeIterator<D> it(*this);
+    //    TreeIterator<D, T> it(*this);
     //    while (it.next()) {
-    //        MWNode<D> &node = it.getNode();
+    //        MWNode<D, T> &node = it.getNode();
     //        if (node.getDepth() == depth or depth < 0) {
     //            if (node.isLeafNode()) {
     //                nNodes++;
@@ -480,12 +480,12 @@ template <int D> int MWTree<D>::countLeafNodes(int depth) {
 }
 
 /* Traverse tree and count nodes belonging to this rank. */
-template <int D> int MWTree<D>::countNodes(int depth) {
+template <int D, typename T> int MWTree<D, T>::countNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    TreeIterator<D> it(*this);
+    //    TreeIterator<D, T> it(*this);
     //    int count = 0;
     //    while (it.next()) {
-    //        MWNode<D> &node = it.getNode();
+    //        MWNode<D, T> &node = it.getNode();
     //        if (node.isGenNode()) {
     //            continue;
     //        }
@@ -497,12 +497,12 @@ template <int D> int MWTree<D>::countNodes(int depth) {
 }
 
 /* Traverse tree and count nodes with allocated coefficients. */
-template <int D> int MWTree<D>::countAllocNodes(int depth) {
+template <int D, typename T> int MWTree<D, T>::countAllocNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
-    //    TreeIterator<D> it(*this);
+    //    TreeIterator<D, T> it(*this);
     //    int count = 0;
     //    while (it.next()) {
-    //        MWNode<D> &node = it.getNode();
+    //        MWNode<D, T> &node = it.getNode();
     //        if (node.isGenNode()) {
     //            continue;
     //        }
@@ -515,7 +515,7 @@ template <int D> int MWTree<D>::countAllocNodes(int depth) {
 
 /** @brief Prints a summary of the tree structure on the output file
  */
-template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
+template <int D, typename T> std::ostream &MWTree<D, T>::print(std::ostream &o) const {
     o << "  square norm: " << this->squareNorm << std::endl;
     o << "  root scale: " << this->getRootScale() << std::endl;
     o << "  order: " << this->order << std::endl;
@@ -532,9 +532,9 @@ template <int D> std::ostream &MWTree<D>::print(std::ostream &o) const {
  * @details it defines the upper bound of the squared norm \f$
  * ||f||^2_{\ldots} \f$ in this node or its descendents
  */
-template <int D> void MWTree<D>::makeMaxSquareNorms() {
-    NodeBox<D> &rBox = this->getRootBox();
-    MWNode<D> **roots = rBox.getNodes();
+template <int D, typename T> void MWTree<D, T>::makeMaxSquareNorms() {
+    NodeBox<D, T> &rBox = this->getRootBox();
+    MWNode<D, T> **roots = rBox.getNodes();
     for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
         // recursively set value of children and descendants
         roots[rIdx]->setMaxSquareNorm();
@@ -543,15 +543,16 @@ template <int D> void MWTree<D>::makeMaxSquareNorms() {
 
 /** @brief gives serialIx of a node from its NodeIndex
  *
- * @details Peter will document this!
+ * @details gives a unique integer for each nodes corresponding to the position
+ * of the node in the serialized representation
  */
-template <int D> int MWTree<D>::getIx(NodeIndex<D> nIdx) {
+template <int D, typename T> int MWTree<D, T>::getIx(NodeIndex<D> nIdx) {
     if (this->isLocal == false) MSG_ERROR("getIx only implemented in local representation");
     if(NodeIndex2serialIx.count(nIdx) == 0) return -1;
     else return NodeIndex2serialIx[nIdx];
 }
 
-template <int D> void MWTree<D>::getNodeCoeff(NodeIndex<D> nIdx, double *data) {
+template <int D, typename T> void MWTree<D, T>::getNodeCoeff(NodeIndex<D> nIdx, double *data) {
     assert(this->isLocal);
     int size = (1 << D) * kp1_d;
     int id = 0;
@@ -559,8 +560,13 @@ template <int D> void MWTree<D>::getNodeCoeff(NodeIndex<D> nIdx, double *data) {
     this->NodesCoeff->get_data(id, size, data);
 }
 
-template class MWTree<1>;
-template class MWTree<2>;
-template class MWTree<3>;
+template class MWTree<1, double>;
+template class MWTree<2, double>;
+template class MWTree<3, double>;
+
+
+template class MWTree<1, ComplexDouble>;
+template class MWTree<2, ComplexDouble>;
+template class MWTree<3, ComplexDouble>;
 
 } // namespace mrcpp

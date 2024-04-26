@@ -38,20 +38,21 @@
 #include "MRCPP/constants.h"
 #include "MRCPP/mrcpp_declarations.h"
 #include "trees/NodeIndex.h"
+#include "utils/math_utils.h"
 
 namespace mrcpp {
 
-template <int D> class RepresentableFunction {
+template <int D, typename T> class RepresentableFunction {
 public:
     RepresentableFunction(const double *a = nullptr, const double *b = nullptr);
     RepresentableFunction(const std::vector<double> &a, const std::vector<double> &b)
             : RepresentableFunction(a.data(), b.data()) {}
-    RepresentableFunction(const RepresentableFunction<D> &func);
-    RepresentableFunction<D> &operator=(const RepresentableFunction<D> &func);
+    RepresentableFunction(const RepresentableFunction<D, T> &func);
+    RepresentableFunction<D, T> &operator=(const RepresentableFunction<D, T> &func);
     virtual ~RepresentableFunction();
 
     /** @returns Function value in a point @param[in] r: Cartesian coordinate */
-    virtual double evalf(const Coord<D> &r) const = 0;
+    virtual T evalf(const Coord<D> &r) const = 0;
 
     void setBounds(const double *a, const double *b);
     void clearBounds();
@@ -65,7 +66,7 @@ public:
     const double *getLowerBounds() const { return this->A; }
     const double *getUpperBounds() const { return this->B; }
 
-    friend class AnalyticAdaptor<D>;
+    friend class AnalyticAdaptor<D, T>;
 
 protected:
     bool bounded;

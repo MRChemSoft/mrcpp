@@ -41,7 +41,7 @@
 
 namespace mrcpp {
 
-template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec);
+template <int D, typename T> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec);
 
 /** @brief Application of MW integral convolution operator
  *
@@ -64,16 +64,16 @@ template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<
  * no coefs).
  *
  */
-template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     pre_t.stop();
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -113,18 +113,18 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
  * no coefs).
  *
  */
-template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     calculator.startManipulateOperator(inside);
     pre_t.stop();
 
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -166,7 +166,7 @@ template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<
  * no coefs).
  *
  */
-template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, FunctionTreeVector<D> &precTrees, int maxIter, bool absPrec) {
+template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, FunctionTreeVector<D, T> &precTrees, int maxIter, bool absPrec) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -183,13 +183,13 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
         return 1.0 / maxNorm;
     };
 
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
     adaptor.setPrecFunction(precFunc);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     calculator.setPrecFunction(precFunc);
     pre_t.stop();
 
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -227,7 +227,7 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
  * no coefs).
  *
  */
-template <int D> void apply_far_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     apply_on_unit_cell<D>(false, prec, out, oper, inp, maxIter, absPrec);
 }
 
@@ -253,7 +253,7 @@ template <int D> void apply_far_field(double prec, FunctionTree<D> &out, Convolu
  * no coefs).
  *
  */
-template <int D> void apply_near_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     apply_on_unit_cell<D>(true, prec, out, oper, inp, maxIter, absPrec);
 }
 
@@ -273,9 +273,9 @@ template <int D> void apply_near_field(double prec, FunctionTree<D> &out, Convol
  * @note The output function should contain only empty root nodes at entry.
  *
  */
-template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
+template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTree<D, T> &inp, int dir) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     int maxScale = out.getMRA().getMaxScale();
 
     int bw[D]; // Operator bandwidth in [x,y,z]
@@ -285,14 +285,14 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     Timer pre_t;
     oper.calcBandWidths(1.0); // Fixed 0 or 1 for derivatives
     bw[dir] = oper.getMaxBandWidth();
-    CopyAdaptor<D> pre_adaptor(inp, maxScale, bw);
-    DefaultCalculator<D> pre_calculator;
+    CopyAdaptor<D, T> pre_adaptor(inp, maxScale, bw);
+    DefaultCalculator<D, T> pre_calculator;
     builder.build(out, pre_calculator, pre_adaptor, -1);
     pre_t.stop();
 
     // Apply operator on fixed expanded grid
-    SplitAdaptor<D> apply_adaptor(maxScale, false); // Splits no nodes
-    DerivativeCalculator<D> apply_calculator(dir, oper, inp);
+    SplitAdaptor<D, T> apply_adaptor(maxScale, false); // Splits no nodes
+    DerivativeCalculator<D, T> apply_calculator(dir, oper, inp);
     builder.build(out, apply_calculator, apply_adaptor, 0);
     if (out.isPeriodic()) out.rescale(std::pow(2.0, -oper.getOperatorRoot()));
 
@@ -320,10 +320,10 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
  * @note The length of the output vector will be the template dimension D.
  *
  */
-template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
-    FunctionTreeVector<D> out;
+template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperator<D> &oper, FunctionTree<D, T> &inp) {
+    FunctionTreeVector<D, T> out;
     for (int d = 0; d < D; d++) {
-        auto *grad_d = new FunctionTree<D>(inp.getMRA());
+        auto *grad_d = new FunctionTree<D, T>(inp.getMRA());
         apply(*grad_d, oper, inp, d);
         out.push_back({1.0, grad_d});
     }
@@ -346,16 +346,16 @@ template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, Fun
  * - The output function should contain only empty root nodes at entry.
  *
  */
-template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
+template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> &inp) {
     if (inp.size() != D) MSG_ABORT("Dimension mismatch");
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
-    FunctionTreeVector<D> tmp_vec;
+    FunctionTreeVector<D, T> tmp_vec;
     for (int d = 0; d < D; d++) {
         double coef_d = get_coef(inp, d);
-        FunctionTree<D> &func_d = get_func(inp, d);
-        auto *out_d = new FunctionTree<D>(func_d.getMRA());
+        FunctionTree<D, T> &func_d = get_func(inp, d);
+        auto *out_d = new FunctionTree<D, T>(func_d.getMRA());
         apply(*out_d, oper, func_d, d);
         tmp_vec.push_back(std::make_tuple(coef_d, out_d));
     }
@@ -364,35 +364,62 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
-template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D> *> &inp) {
-    FunctionTreeVector<D> inp_vec;
+template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> &inp) {
+    FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     divergence(out, oper, inp_vec);
 }
 
-template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, FunctionTreeVector<1> &precTrees, int maxIter, bool absPrec);
-template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, FunctionTreeVector<2> &precTrees, int maxIter, bool absPrec);
-template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, FunctionTreeVector<3> &precTrees, int maxIter, bool absPrec);
-template void apply_far_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply_far_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply_far_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply_near_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply_near_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply_near_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
-template void apply<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
-template void apply<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
-template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
-template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
-template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
-template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1> *> &inp);
-template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2> *> &inp);
-template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3> *> &inp);
-template FunctionTreeVector<1> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
-template FunctionTreeVector<2> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
-template FunctionTreeVector<3> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
+template void apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, FunctionTreeVector<1, double> &precTrees, int maxIter, bool absPrec);
+template void apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, FunctionTreeVector<2, double> &precTrees, int maxIter, bool absPrec);
+template void apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, FunctionTreeVector<3, double> &precTrees, int maxIter, bool absPrec);
+template void apply_far_field<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply_far_field<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply_far_field<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, FunctionTree<1, double> &inp, int dir);
+template void apply<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, FunctionTree<2, double> &inp, int dir);
+template void apply<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, FunctionTree<3, double> &inp, int dir);
+template void divergence<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1, double> &inp);
+template void divergence<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2, double> &inp);
+template void divergence<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3, double> &inp);
+template void divergence<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1, double> *> &inp);
+template void divergence<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2, double> *> &inp);
+template void divergence<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3, double> *> &inp);
+template FunctionTreeVector<1, double> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, double> &inp);
+template FunctionTreeVector<2, double> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, double> &inp);
+template FunctionTreeVector<3, double> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, double> &inp);
+
+
+
+template void apply<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, FunctionTreeVector<1, ComplexDouble> &precTrees, int maxIter, bool absPrec);
+template void apply<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, FunctionTreeVector<2, ComplexDouble> &precTrees, int maxIter, bool absPrec);
+template void apply<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, FunctionTreeVector<3, ComplexDouble> &precTrees, int maxIter, bool absPrec);
+template void apply_far_field<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_far_field<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_far_field<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int dir);
+template void apply<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int dir);
+template void apply<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int dir);
+template void divergence<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1, ComplexDouble> &inp);
+template void divergence<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2, ComplexDouble> &inp);
+template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3, ComplexDouble> &inp);
+template void divergence<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1, ComplexDouble> *> &inp);
+template void divergence<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2, ComplexDouble> *> &inp);
+template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3, ComplexDouble> *> &inp);
+template FunctionTreeVector<1, ComplexDouble> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp);
+template FunctionTreeVector<2, ComplexDouble> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp);
+template FunctionTreeVector<3, ComplexDouble> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp);
 
 } // namespace mrcpp

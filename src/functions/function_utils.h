@@ -28,6 +28,6 @@
 
 namespace mrcpp {
 namespace function_utils {
-template <int D> double calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b);
+template <int D, typename T> double calc_overlap(const GaussFunc<D, T> &a, const GaussFunc<D, T> &b);
 } // namespace function_utils
 } // namespace mrcpp

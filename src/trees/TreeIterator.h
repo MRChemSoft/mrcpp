@@ -30,10 +30,10 @@
 
 namespace mrcpp {
 
-template <int D> class TreeIterator {
+template <int D, typename T> class TreeIterator {
 public:
     TreeIterator(int traverse = TopDown, int iterator = Lebesgue);
-    TreeIterator(MWTree<D> &tree, int traverse = TopDown, int iterator = Lebesgue);
+    TreeIterator(MWTree<D, T> &tree, int traverse = TopDown, int iterator = Lebesgue);
     virtual ~TreeIterator();
 
     void setReturnGenNodes(bool i = true) { this->returnGenNodes = i; }
@@ -41,12 +41,12 @@ public:
     void setTraverse(int traverse);
     void setIterator(int iterator);
 
-    void init(MWTree<D> &tree);
+    void init(MWTree<D, T> &tree);
     bool next();
     bool nextParent();
-    MWNode<D> &getNode() { return *this->state->node; }
+    MWNode<D, T> &getNode() { return *this->state->node; }
 
-    friend class IteratorNode<D>;
+  friend class IteratorNode<D, T>;
 
 protected:
     int root;
@@ -55,8 +55,8 @@ protected:
     int type;
     int maxDepth;
     bool returnGenNodes{true};
-    IteratorNode<D> *state;
-    IteratorNode<D> *initialState;
+    IteratorNode<D, T> *state;
+    IteratorNode<D, T> *initialState;
 
     int getChildIndex(int i) const;
 
@@ -66,19 +66,19 @@ protected:
     bool tryNextRoot();
     bool tryNextRootParent();
     void removeState();
-    bool checkDepth(const MWNode<D> &node) const;
-    bool checkGenerated(const MWNode<D> &node) const;
+    bool checkDepth(const MWNode<D, T> &node) const;
+    bool checkGenerated(const MWNode<D, T> &node) const;
 };
 
-template <int D> class IteratorNode final {
+template <int D, typename T> class IteratorNode final {
 public:
-    MWNode<D> *node;
-    IteratorNode<D> *next;
+    MWNode<D, T> *node;
+    IteratorNode<D, T> *next;
     bool doneNode;
     bool doneParent;
     bool doneChild[1 << D];
 
-    IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx = nullptr);
+    IteratorNode(MWNode<D, T> *nd, IteratorNode<D, T> *nx = nullptr);
     ~IteratorNode() { delete this->next; }
 };
 

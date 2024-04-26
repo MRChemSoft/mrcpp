@@ -77,7 +77,7 @@ template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, Cros
         const MWNode<1> &node_a = this->kernel->getNode(idx_a);
         const MWNode<1> &node_b = this->kernel->getNode(idx_b);
 
-        VectorXd vec_a;
+        Eigen::Matrix<double, Eigen::Dynamic, 1> vec_a;
         VectorXd vec_b;
         node_a.getCoefs(vec_a);
         node_b.getCoefs(vec_b);

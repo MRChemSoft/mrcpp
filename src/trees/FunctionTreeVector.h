@@ -32,14 +32,14 @@
 
 namespace mrcpp {
 
-template <int D> using CoefsFunctionTree = std::tuple<double, FunctionTree<D> *>;
-template <int D> using FunctionTreeVector = std::vector<CoefsFunctionTree<D>>;
+template <int D, typename T = double> using CoefsFunctionTree = std::tuple<double, FunctionTree<D, T> *>;
+template <int D, typename T = double> using FunctionTreeVector = std::vector<CoefsFunctionTree<D, T>>;
 
 /** @brief Remove all entries in the vector
  *  @param[in] fs: Vector to clear
  *  @param[in] dealloc: Option to free FunctionTree pointer before clearing
  */
-template <int D> void clear(FunctionTreeVector<D> &fs, bool dealloc = false) {
+  template <int D, typename T> void clear(FunctionTreeVector<D, T> &fs, bool dealloc = false) {
     if (dealloc) {
         for (auto &t : fs) {
             auto f = std::get<1>(t);
@@ -52,7 +52,7 @@ template <int D> void clear(FunctionTreeVector<D> &fs, bool dealloc = false) {
 /** @returns Total number of nodes of all trees in the vector
  *  @param[in] fs: Vector to fetch from
  */
-template <int D> int get_n_nodes(const FunctionTreeVector<D> &fs) {
+template <int D, typename T> int get_n_nodes(const FunctionTreeVector<D, T> &fs) {
     int nNodes = 0;
     for (const auto &t : fs) {
         auto f = std::get<1>(t);
@@ -64,7 +64,7 @@ template <int D> int get_n_nodes(const FunctionTreeVector<D> &fs) {
 /** @returns Total size of all trees in the vector, in kB
  *  @param[in] fs: Vector to fetch from
  */
-template <int D> int get_size_nodes(const FunctionTreeVector<D> &fs) {
+template <int D, typename T> int get_size_nodes(const FunctionTreeVector<D, T> &fs) {
     int sNodes = 0;
     for (const auto &t : fs) {
         auto f = std::get<1>(t);
@@ -77,7 +77,7 @@ template <int D> int get_size_nodes(const FunctionTreeVector<D> &fs) {
  *  @param[in] fs: Vector to fetch from
  *  @param[in] i: Position in vector
  */
-template <int D> double get_coef(const FunctionTreeVector<D> &fs, int i) {
+template <int D, typename T> double get_coef(const FunctionTreeVector<D, T> &fs, int i) {
     return std::get<0>(fs[i]);
 }
 
@@ -85,7 +85,7 @@ template <int D> double get_coef(const FunctionTreeVector<D> &fs, int i) {
  *  @param[in] fs: Vector to fetch from
  *  @param[in] i: Position in vector
  */
-template <int D> FunctionTree<D> &get_func(FunctionTreeVector<D> &fs, int i) {
+template <int D, typename T> FunctionTree<D, T> &get_func(FunctionTreeVector<D, T> &fs, int i) {
     return *(std::get<1>(fs[i]));
 }
 
@@ -93,7 +93,7 @@ template <int D> FunctionTree<D> &get_func(FunctionTreeVector<D> &fs, int i) {
  *  @param[in] fs: Vector to fetch from
  *  @param[in] i: Position in vector
  */
-template <int D> const FunctionTree<D> &get_func(const FunctionTreeVector<D> &fs, int i) {
+template <int D, typename T> const FunctionTree<D, T> &get_func(const FunctionTreeVector<D, T> &fs, int i) {
     return *(std::get<1>(fs[i]));
 }
 } // namespace mrcpp

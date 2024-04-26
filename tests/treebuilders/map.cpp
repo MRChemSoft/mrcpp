@@ -77,7 +77,7 @@ template <int D> void testMapping() {
     const double inp_int = inp_tree.integrate();
     const double inp_norm = inp_tree.getSquareNorm();
 
-    auto fmap = [](double val) { return val * val; };
+    FMap<double,double> fmap = [](double val) { return val * val; };
 
     WHEN("the function is mapped") {
         FunctionTree<D> out_tree(*mra);

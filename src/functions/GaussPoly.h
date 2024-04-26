@@ -43,38 +43,38 @@ namespace mrcpp {
  *
  * \f$ g(x) = \alpha P(x-x_0) e^{-\beta (x-x_0)^2} \f$
  *
- * - Multidimensional Gaussian (GaussFunc<D>):
+ * - Multidimensional Gaussian (GaussFunc<D, T>):
  *
  * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 
-template <int D> class GaussPoly : public Gaussian<D> {
+template <int D, typename T> class GaussPoly : public Gaussian<D, T> {
 public:
     GaussPoly(double alpha = 0.0, double coef = 1.0, const Coord<D> &pos = {}, const std::array<int, D> &power = {});
     GaussPoly(const std::array<double, D> &alpha,
               double coef,
               const Coord<D> &pos = {},
               const std::array<int, D> &power = {});
-    GaussPoly(const GaussPoly<D> &gp);
-    GaussPoly(const GaussFunc<D> &gf);
-    GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
-    Gaussian<D> *copy() const override;
+    GaussPoly(const GaussPoly<D, T> &gp);
+    GaussPoly(const GaussFunc<D, T> &gf);
+    GaussPoly<D, T> &operator=(const GaussPoly<D, T> &gp) = delete;
+    Gaussian<D, T> *copy() const override;
     ~GaussPoly();
 
     double calcSquareNorm() const override;
 
-    double evalf(const Coord<D> &r) const override;
-    double evalf1D(double r, int dim) const override;
+    T evalf(const Coord<D> &r) const override;
+    T evalf1D(double r, int dim) const override;
 
-    GaussExp<D> asGaussExp() const override;
+    GaussExp<D, T> asGaussExp() const override;
     GaussPoly differentiate(int dir) const override;
 
-    void multInPlace(const GaussPoly<D> &rhs);
-    void operator*=(const GaussPoly<D> &rhs) { multInPlace(rhs); }
-    GaussPoly<D> mult(const GaussPoly<D> &rhs);
-    GaussPoly<D> mult(double c);
-    GaussPoly<D> operator*(const GaussPoly<D> &rhs) { return mult(rhs); }
-    GaussPoly<D> operator*(double c) { return mult(c); }
+    void multInPlace(const GaussPoly<D, T> &rhs);
+    void operator*=(const GaussPoly<D, T> &rhs) { multInPlace(rhs); }
+    GaussPoly<D, T> mult(const GaussPoly<D, T> &rhs);
+    GaussPoly<D, T> mult(double c);
+    GaussPoly<D, T> operator*(const GaussPoly<D, T> &rhs) { return mult(rhs); }
+    GaussPoly<D, T> operator*(double c) { return mult(c); }
 
     const Eigen::VectorXd &getPolyCoefs(int i) const { return poly[i]->getCoefs(); }
     Eigen::VectorXd &getPolyCoefs(int i) { return poly[i]->getCoefs(); }

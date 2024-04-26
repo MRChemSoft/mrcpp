@@ -93,13 +93,13 @@ int main(int argc, char **argv)
 
     // Projecting functions
     mrcpp::FunctionTree<1> Re_f_tree(MRA);
-    mrcpp::project<1>(prec, Re_f_tree, Re_f);
+    mrcpp::project<1, double>(prec, Re_f_tree, Re_f);
     mrcpp::FunctionTree<1> Im_f_tree(MRA);
-    mrcpp::project<1>(prec, Im_f_tree, Im_f);
+    mrcpp::project<1, double>(prec, Im_f_tree, Im_f);
     mrcpp::FunctionTree<1> Re_g_tree(MRA);
-    mrcpp::project<1>(prec, Re_g_tree, Re_g);
+    mrcpp::project<1, double>(prec, Re_g_tree, Re_g);
     mrcpp::FunctionTree<1> Im_g_tree(MRA);
-    mrcpp::project<1>(prec, Im_g_tree, Im_g);
+    mrcpp::project<1, double>(prec, Im_g_tree, Im_g);
 
     // Output function trees
     mrcpp::FunctionTree<1> Re_fout_tree(MRA);

@@ -41,9 +41,10 @@ namespace mrcpp {
 class CornerOperatorTree final : public OperatorTree {
 public:
     using OperatorTree::OperatorTree;
+    CornerOperatorTree() = default;
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
-    //~CornerOperatorTree() override;  //causing memory problems ?!
+    ~CornerOperatorTree() = default;
 
     void calcBandWidth(double prec = -1.0) override;
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;

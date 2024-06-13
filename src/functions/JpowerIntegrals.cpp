@@ -70,7 +70,6 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
     }
 
     J.erase(J.begin());
-    //crop(J, threshold); //there is a problem here
     return J;
 }
 

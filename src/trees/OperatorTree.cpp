@@ -164,7 +164,7 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx)
  * and as a result spread further up to the root with mwTransform. 
  * 
  */
-void OperatorTree::removeRubbish(int trust_scale)
+void OperatorTree::removeRoughScaleNoise(int trust_scale)
 {
     MWNode<2> *p_rubbish;     //possibly inexact end node
     MWNode<2> *p_counterpart; //exact branch node

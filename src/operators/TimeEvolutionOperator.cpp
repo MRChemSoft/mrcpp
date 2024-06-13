@@ -154,7 +154,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     // Postprocess to make the operator functional
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
-    o_tree->removeRubbish();
+    o_tree->removeRoughScaleNoise();
     //o_tree->clearSquareNorm(); //does not affect printing
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
@@ -255,7 +255,7 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
     // Postprocess to make the operator functional
     Timer trans_t;
     o_tree->mwTransform(mrcpp::BottomUp);
-    o_tree->removeRubbish();
+    o_tree->removeRoughScaleNoise();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
     print::time(10, "Time transform", trans_t);

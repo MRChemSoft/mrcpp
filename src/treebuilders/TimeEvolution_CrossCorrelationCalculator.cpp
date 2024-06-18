@@ -75,6 +75,7 @@ void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node)
 //template <int T>
 void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node)
 {
+    //std::cout << node;
     // The scale of J power integrals:
     //int scale = node.getScale() + 1;  //scale = n = (n - 1) + 1
     
@@ -83,6 +84,8 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node)
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
+
+    auto & J_power_inetgarls = *this->J_power_inetgarls[node.getScale() + 1];
     
     for (int i = 0; i < t_dim; i++)
     {
@@ -95,11 +98,11 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node)
             {
                 //std::min(M, N)  could be used for breaking the following loop
                 //this->cross_correlation->Matrix.size() should be big enough a priori
-                for( int k = 0; 2*k + p + j < (*this->J_power_inetgarls)[l_b].size(); k++ )
+                for( int k = 0; 2*k + p + j < J_power_inetgarls[l_b].size(); k++ )
                 {
                     double J;
-                    if( this->imaginary ) J = (*this->J_power_inetgarls)[l_b][2*k + p + j].imag();
-                    else J = (*this->J_power_inetgarls)[l_b][2*k + p + j].real();
+                    if( this->imaginary ) J = J_power_inetgarls[l_b][2*k + p + j].imag();
+                    else J = J_power_inetgarls[l_b][2*k + p + j].real();
                     vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index)
                     +=
                     J * cross_correlation->Matrix[k](p, j); //by default eigen library reads a transpose matrix from a file

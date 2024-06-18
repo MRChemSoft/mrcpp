@@ -195,6 +195,7 @@ protected:
     MWNode(MWTree<D> *tree, int rIdx);
     MWNode(MWTree<D> *tree, const NodeIndex<D> &idx);
     MWNode(MWNode<D> *parent, int cIdx);
+
     virtual void dealloc();
 
     bool crop(double prec, double splitFac, bool absPrec);

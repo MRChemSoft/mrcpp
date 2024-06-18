@@ -30,17 +30,19 @@
 
 namespace mrcpp {
 
-class OperatorTree final : public MWTree<2> {
+class OperatorTree : public MWTree<2> {
 public:
     OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
     OperatorTree(const OperatorTree &tree) = delete;
     OperatorTree &operator=(const OperatorTree &tree) = delete;
-    ~OperatorTree() override;
+    virtual ~OperatorTree() override;
 
     double getNormPrecision() const { return this->normPrec; }
 
-    void calcBandWidth(double prec = -1.0);
     void clearBandWidth();
+    virtual void calcBandWidth(double prec = -1.0);
+    virtual bool isOutsideBand(int oTransl, int o_depth, int idx);
+    void removeRoughScaleNoise(int trust_scale = 10);
 
     void setupOperNodeCache();
     void clearOperNodeCache();
@@ -49,11 +51,14 @@ public:
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
     OperatorNode &getNode(int n, int l) { return *nodePtrAccess[n][l]; }        ///< TODO: It has to be specified more.
-                                                                                ///< \b l is distance to the diagonal. 
+                                                                                ///< \b l is distance to the diagonal.
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;
+
+    using MWTree<2>::getNode;
+    using MWTree<2>::findNode;
 
 protected:
     const double normPrec;

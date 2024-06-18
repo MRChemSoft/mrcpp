@@ -34,7 +34,7 @@ namespace mrcpp {
  *
  * @brief Heat kernel in \f$ \mathbb R^D \f$.
  *
- * @details In $\mathbb R^D$ the heat kernel has the form
+ * @details In \f$ \mathbb R^D \f$ the heat kernel has the form
  * \f[
  *  K_t(x)
  *  =

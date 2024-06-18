@@ -59,7 +59,6 @@ protected:
     ~OperatorNode() = default;
 
     void dealloc() override;
-public:
     double calcComponentNorm(int i) const override;
     Eigen::MatrixXd getComponent(int i);
 };

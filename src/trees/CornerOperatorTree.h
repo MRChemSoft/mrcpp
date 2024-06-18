@@ -40,11 +40,10 @@ namespace mrcpp {
  */
 class CornerOperatorTree final : public OperatorTree {
 public:
-    using OperatorTree::OperatorTree;
-    CornerOperatorTree() = default;
+    using OperatorTree::OperatorTree; // Import the single valid constructor from OperatorTree
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
-    ~CornerOperatorTree() = default;
+    ~CornerOperatorTree() override = default;
 
     void calcBandWidth(double prec = -1.0) override;
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;

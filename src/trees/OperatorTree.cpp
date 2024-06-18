@@ -116,7 +116,6 @@ void OperatorTree::calcBandWidth(double prec) {
 
     if (prec < 0.0) prec = this->normPrec;
     for (int depth = 0; depth < this->getDepth(); depth++) {
-        //int n = getRootScale() + depth;     //not in use?!
         int l = 0;
         bool done = false;
         while (not done) {

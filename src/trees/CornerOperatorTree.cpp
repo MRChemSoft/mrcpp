@@ -32,14 +32,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/*
-CornerOperatorTree::~CornerOperatorTree() {
-    clearOperNodeCache();
-    clearBandWidth();
-    this->deleteRootNodes();
-}
-*/
-
 
 /** @brief Calculates band widths of the non-standard form matrices.
  *

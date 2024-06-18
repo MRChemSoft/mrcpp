@@ -190,19 +190,8 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
         J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
-    auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
-    DefaultCalculator<2> intitial_calculator;
-    for (auto n = 0; n < 6; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
-
-    double threshold = o_prec / 100.0;
-    std::map<int, mrcpp::JpowerIntegrals *> J;
-    for( int n = 0; n <= N+1; n ++ )
-        J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
-//    mrcpp::TimeEvolution_CrossCorrelationCalculator Im_calculator(J, this->cross_correlation, true);
-
-    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale()); // Splits all nodes
-    builder.build(*o_tree, calculator, adaptor, 12); // Expand 1D kernel into 2D operator
+    auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
+    builder.build(*o_tree, calculator, uniform, N ); // Expand 1D kernel into 2D operator
 
     // Postprocess to make the operator functional
     Timer trans_t;

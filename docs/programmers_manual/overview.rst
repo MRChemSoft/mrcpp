@@ -17,6 +17,8 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    CrossCorrelationCache
    LegendreBasis
    InterpolatingBasis
+   ConvolutionCalculator
+   CornerOperatorTree
    TimeEvolutionOperator
    JpowerIntegrals
    special_functions

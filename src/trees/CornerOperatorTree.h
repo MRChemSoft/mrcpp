@@ -23,41 +23,30 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- * BandWidth.h
- */
-
 #pragma once
 
-#include <Eigen/Core>
-#include <iomanip>
+#include "OperatorTree.h"
 
 namespace mrcpp {
 
-class BandWidth final {
+
+/** @class CornerOperatorTree
+ *
+ * @brief Special case of OperatorTree class
+ *
+ * @details Tree structure of operators having corner matrices
+ * \f$ A, B, C \f$ in the non-standard form.
+ *
+ */
+class CornerOperatorTree final : public OperatorTree {
 public:
-    BandWidth(int depth = 0)
-            : widths(depth + 1, 5) {
-        this->clear();
-    }
-    BandWidth(const BandWidth &bw)
-            : widths(bw.widths) {}
-    BandWidth &operator=(const BandWidth &bw);
+    using OperatorTree::OperatorTree; // Import the single valid constructor from OperatorTree
+    CornerOperatorTree(const CornerOperatorTree &tree) = delete;
+    CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
+    ~CornerOperatorTree() override = default;
 
-    void clear() { this->widths.setConstant(-1); }
-
-    bool isEmpty(int depth) const;
-    int getDepth() const { return this->widths.rows() - 1; }
-    int getMaxWidth(int depth) const { return (depth > getDepth()) ? -1 : this->widths(depth, 4); }
-    int getWidth(int depth, int index) const { return (depth > getDepth()) ? -1 : this->widths(depth, index); }
-    void setWidth(int depth, int index, int wd);
-    
-    friend std::ostream &operator<<(std::ostream &o, const BandWidth &bw) { return bw.print(o); }
-
-private:
-    Eigen::MatrixXi widths; /// column 5 stores max width at depth
-
-    std::ostream &print(std::ostream &o) const;
+    void calcBandWidth(double prec = -1.0) override;
+    bool isOutsideBand(int oTransl, int o_depth, int idx) override;
 };
 
 } // namespace mrcpp

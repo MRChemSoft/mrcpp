@@ -31,7 +31,7 @@
 
 namespace mrcpp {
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, int scales);
-template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const GaussExp<D, T> &inp, int maxIter = -1);
+template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter = -1);
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const RepresentableFunction<D, T> &inp, int maxIter = -1);
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter = -1);
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter = -1);

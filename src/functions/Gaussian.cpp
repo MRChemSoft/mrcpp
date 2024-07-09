@@ -46,8 +46,8 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D, typename T>
-Gaussian<D, T>::Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p)
+template <int D>
+Gaussian<D>::Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p)
         : screen(false)
         , coef(c)
         , power(p)
@@ -55,15 +55,15 @@ Gaussian<D, T>::Gaussian(double a, double c, const Coord<D> &r, const std::array
     this->alpha.fill(a);
 }
 
-template <int D, typename T>
-Gaussian<D, T>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p)
+template <int D>
+Gaussian<D>::Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p)
         : screen(false)
         , coef(c)
         , power(p)
         , alpha(a)
         , pos(r) {}
 
-template <int D, typename T> void Gaussian<D, T>::multPureGauss(const Gaussian<D, T> &lhs, const Gaussian<D, T> &rhs) {
+template <int D> void Gaussian<D>::multPureGauss(const Gaussian<D> &lhs, const Gaussian<D> &rhs) {
 
     auto newAlpha = std::array<double, D>{};
     auto mju = std::array<double, D>{};
@@ -85,7 +85,7 @@ template <int D, typename T> void Gaussian<D, T>::multPureGauss(const Gaussian<D
     setCoef(newCoef);
 }
 
-template <int D, typename T> void Gaussian<D, T>::calcScreening(double nStdDev) {
+template <int D> void Gaussian<D>::calcScreening(double nStdDev) {
     assert(nStdDev > 0);
     if (not this->isBounded()) {
         this->bounded = true;
@@ -100,7 +100,7 @@ template <int D, typename T> void Gaussian<D, T>::calcScreening(double nStdDev) 
     screen = true;
 }
 
-template <int D, typename T> bool Gaussian<D, T>::checkScreen(int n, const int *l) const {
+template <int D> bool Gaussian<D>::checkScreen(int n, const int *l) const {
     if (not getScreen()) { return false; }
     double length = std::pow(2.0, -n);
     const double *A = this->getLowerBounds();
@@ -113,7 +113,7 @@ template <int D, typename T> bool Gaussian<D, T>::checkScreen(int n, const int *
     return false;
 }
 
-template <int D, typename T> bool Gaussian<D, T>::isVisibleAtScale(int scale, int nQuadPts) const {
+template <int D> bool Gaussian<D>::isVisibleAtScale(int scale, int nQuadPts) const {
     for (auto &alp : this->alpha) {
         double stdDeviation = std::pow(2.0 * alp, -0.5);
         auto visibleScale = static_cast<int>(-std::floor(std::log2(nQuadPts * 0.5 * stdDeviation)));
@@ -124,7 +124,7 @@ template <int D, typename T> bool Gaussian<D, T>::isVisibleAtScale(int scale, in
     return true;
 }
 
-template <int D, typename T> bool Gaussian<D, T>::isZeroOnInterval(const double *a, const double *b) const {
+template <int D> bool Gaussian<D>::isZeroOnInterval(const double *a, const double *b) const {
     for (int i = 0; i < D; i++) {
         double stdDeviation = std::pow(2.0 * this->alpha[i], -0.5);
         double gaussBoxMin = this->pos[i] - 5.0 * stdDeviation;
@@ -134,7 +134,7 @@ template <int D, typename T> bool Gaussian<D, T>::isZeroOnInterval(const double 
     return false;
 }
 
-template <int D, typename T> void Gaussian<D, T>::evalf(const MatrixXd &points, Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &values) const {
+template <int D> void Gaussian<D>::evalf(const MatrixXd &points, MatrixXd &values) const {
     assert(points.cols() == D);
     assert(points.cols() == values.cols());
     assert(points.rows() == values.rows());
@@ -143,7 +143,7 @@ template <int D, typename T> void Gaussian<D, T>::evalf(const MatrixXd &points, 
     }
 }
 
-template <int D, typename T> double Gaussian<D, T>::getMaximumStandardDiviation() const {
+template <int D> double Gaussian<D>::getMaximumStandardDiviation() const {
 
     if (details::are_all_equal<D>(this->getExp())) {
         auto exponent = this->getExp()[0];
@@ -156,15 +156,15 @@ template <int D, typename T> double Gaussian<D, T>::getMaximumStandardDiviation(
     }
 }
 
-template <int D, typename T> double Gaussian<D, T>::calcOverlap(const Gaussian<D, T> &inp) const {
+template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
     const auto &bra_exp = this->asGaussExp(); // Make sure all entries are GaussFunc
     const auto &ket_exp = inp.asGaussExp();   // Make sure all entries are GaussFunc
 
     double S = 0.0;
     for (int i = 0; i < bra_exp.size(); i++) {
-        const auto &bra_i = static_cast<const GaussFunc<D, T> &>(bra_exp.getFunc(i));
+        const auto &bra_i = static_cast<const GaussFunc<D> &>(bra_exp.getFunc(i));
         for (int j = 0; j < ket_exp.size(); j++) {
-            const auto &ket_j = static_cast<const GaussFunc<D, T> &>(ket_exp.getFunc(j));
+            const auto &ket_j = static_cast<const GaussFunc<D> &>(ket_exp.getFunc(j));
             S += function_utils::calc_overlap(bra_i, ket_j);
         }
     }
@@ -181,8 +181,8 @@ template <int D, typename T> double Gaussian<D, T>::calcOverlap(const Gaussian<D
  * integral is conserved with respect to the integration limits.
  *
  */
-template <int D, typename T> GaussExp<D, T> Gaussian<D, T>::periodify(const std::array<double, D> &period, double nStdDev) const {
-    GaussExp<D, T> gauss_exp;
+template <int D> GaussExp<D> Gaussian<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
+    GaussExp<D> gauss_exp;
     auto pos_vec = std::vector<Coord<D>>();
 
     auto x_std = nStdDev * this->getMaximumStandardDiviation();
@@ -239,12 +239,8 @@ template <int D, typename T> GaussExp<D, T> Gaussian<D, T>::periodify(const std:
     return gauss_exp;
 }
 
-template class Gaussian<1, double>;
-template class Gaussian<2, double>;
-template class Gaussian<3, double>;
-
-template class Gaussian<1, ComplexDouble>;
-template class Gaussian<2, ComplexDouble>;
-template class Gaussian<3, ComplexDouble>;
+template class Gaussian<1>;
+template class Gaussian<2>;
+template class Gaussian<3>;
 
 } // namespace mrcpp

@@ -103,13 +103,13 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const Repr
  * term. Higher exponent means finer resolution.
  *
  */
-template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const GaussExp<D, T> &inp, int maxIter) {
+template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
     if (!out.getMRA().getWorldBox().isPeriodic()) {
         auto maxScale = out.getMRA().getMaxScale();
-        TreeBuilder<D, T> builder;
-        DefaultCalculator<D, T> calculator;
+        TreeBuilder<D> builder;
+        DefaultCalculator<D> calculator;
         for (auto i = 0; i < inp.size(); i++) {
-	  AnalyticAdaptor<D, T> adaptor(inp.getFunc(i), maxScale);
+	  AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
@@ -327,9 +327,9 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, const Repr
 template void build_grid<1, double>(FunctionTree<1, double> &out, int scales);
 template void build_grid<2, double>(FunctionTree<2, double> &out, int scales);
 template void build_grid<3, double>(FunctionTree<3, double> &out, int scales);
-template void build_grid<1, double>(FunctionTree<1, double> &out, const GaussExp<1, double> &inp, int maxIter);
-template void build_grid<2, double>(FunctionTree<2, double> &out, const GaussExp<2, double> &inp, int maxIter);
-template void build_grid<3, double>(FunctionTree<3, double> &out, const GaussExp<3, double> &inp, int maxIter);
+template void build_grid<1>(FunctionTree<1> &out, const GaussExp<1> &inp, int maxIter);
+template void build_grid<2>(FunctionTree<2> &out, const GaussExp<2> &inp, int maxIter);
+template void build_grid<3>(FunctionTree<3> &out, const GaussExp<3> &inp, int maxIter);
 template void build_grid<1, double>(FunctionTree<1, double> &out, const RepresentableFunction<1, double> &inp, int maxIter);
 template void build_grid<2, double>(FunctionTree<2, double> &out, const RepresentableFunction<2, double> &inp, int maxIter);
 template void build_grid<3, double>(FunctionTree<3, double> &out, const RepresentableFunction<3, double> &inp, int maxIter);
@@ -368,9 +368,6 @@ template int refine_grid<3, double>(FunctionTree<3, double> &out, const Represen
 template void build_grid<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, int scales);
 template void build_grid<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, int scales);
 template void build_grid<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, int scales);
-template void build_grid<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, const GaussExp<1, ComplexDouble> &inp, int maxIter);
-template void build_grid<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, const GaussExp<2, ComplexDouble> &inp, int maxIter);
-template void build_grid<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, const GaussExp<3, ComplexDouble> &inp, int maxIter);
 template void build_grid<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, const RepresentableFunction<1, ComplexDouble> &inp, int maxIter);
 template void build_grid<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, const RepresentableFunction<2, ComplexDouble> &inp, int maxIter);
 template void build_grid<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, const RepresentableFunction<3, ComplexDouble> &inp, int maxIter);
@@ -404,5 +401,5 @@ template int refine_grid<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, 
 template int refine_grid<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, const RepresentableFunction<1, ComplexDouble> &inp);
 template int refine_grid<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, const RepresentableFunction<2, ComplexDouble> &inp);
 template int refine_grid<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, const RepresentableFunction<3, ComplexDouble> &inp);
-  
+
 } // namespace mrcpp

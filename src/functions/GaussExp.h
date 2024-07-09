@@ -51,11 +51,11 @@ namespace mrcpp {
  *
  */
 
-template <int D, typename T> class GaussExp : public RepresentableFunction<D, T> {
+    template <int D> class GaussExp : public RepresentableFunction<D, double> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
-    GaussExp(const GaussExp<D, T> &gExp);
-    GaussExp &operator=(const GaussExp<D, T> &gExp);
+    GaussExp(const GaussExp<D> &gExp);
+    GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;
 
     auto begin() { return funcs.begin(); }
@@ -70,25 +70,25 @@ public:
 
     void calcScreening(double nStdDev = defaultScreening);
 
-    T evalf(const Coord<D> &r) const override;
+    double evalf(const Coord<D> &r) const override;
 
-    GaussExp<D, T> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
-    GaussExp<D, T> differentiate(int dir) const;
+    GaussExp<D> periodify(const std::array<double, D> &period, double nStdDev = 4.0) const;
+    GaussExp<D> differentiate(int dir) const;
 
-    GaussExp<D, T> add(GaussExp<D, T> &g);
-    GaussExp<D, T> add(Gaussian<D, T> &g);
-    GaussExp<D, T> mult(GaussExp<D, T> &g);
-    GaussExp<D, T> mult(GaussFunc<D, T> &g);
-    GaussExp<D, T> mult(GaussPoly<D, T> &g);
-    GaussExp<D, T> mult(double d);
+    GaussExp<D> add(GaussExp<D> &g);
+    GaussExp<D> add(Gaussian<D> &g);
+    GaussExp<D> mult(GaussExp<D> &g);
+    GaussExp<D> mult(GaussFunc<D> &g);
+    GaussExp<D> mult(GaussPoly<D> &g);
+    GaussExp<D> mult(double d);
     void multInPlace(double d);
 
-    GaussExp<D, T> operator+(GaussExp<D, T> &g) { return this->add(g); }
-    GaussExp<D, T> operator+(Gaussian<D, T> &g) { return this->add(g); }
-    GaussExp<D, T> operator*(GaussExp<D, T> &g) { return this->mult(g); }
-    GaussExp<D, T> operator*(GaussFunc<D, T> &g) { return this->mult(g); }
-    GaussExp<D, T> operator*(GaussPoly<D, T> &g) { return this->mult(g); }
-    GaussExp<D, T> operator*(double d) { return this->mult(d); }
+    GaussExp<D> operator+(GaussExp<D> &g) { return this->add(g); }
+    GaussExp<D> operator+(Gaussian<D> &g) { return this->add(g); }
+    GaussExp<D> operator*(GaussExp<D> &g) { return this->mult(g); }
+    GaussExp<D> operator*(GaussFunc<D> &g) { return this->mult(g); }
+    GaussExp<D> operator*(GaussPoly<D> &g) { return this->mult(g); }
+    GaussExp<D> operator*(double d) { return this->mult(d); }
     void operator*=(double d) { this->multInPlace(d); }
 
     double getScreening() const { return screening; }
@@ -98,14 +98,14 @@ public:
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
     int size() const { return this->funcs.size(); }
-    Gaussian<D, T> &getFunc(int i) { return *this->funcs[i]; }
-    const Gaussian<D, T> &getFunc(int i) const { return *this->funcs[i]; }
+    Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
+    const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
 
-    Gaussian<D, T> *operator[](int i) { return this->funcs[i]; }
-    const Gaussian<D, T> *operator[](int i) const { return this->funcs[i]; }
+    Gaussian<D> *operator[](int i) { return this->funcs[i]; }
+    const Gaussian<D> *operator[](int i) const { return this->funcs[i]; }
 
-    void setFunc(int i, const GaussPoly<D, T> &g, double c = 1.0);
-    void setFunc(int i, const GaussFunc<D, T> &g, double c = 1.0);
+    void setFunc(int i, const GaussPoly<D> &g, double c = 1.0);
+    void setFunc(int i, const GaussFunc<D> &g, double c = 1.0);
 
     void setDefaultScreening(double screen);
     void setScreen(bool screen);
@@ -115,15 +115,15 @@ public:
     void setPos(int i, const std::array<double, D> &pos) { this->funcs[i]->setPos(pos); }
 
     /** @brief Append Gaussian to expansion */
-    void append(const Gaussian<D, T> &g);
+    void append(const Gaussian<D> &g);
     /** @brief Append GaussExp to expansion */
-    void append(const GaussExp<D, T> &g);
+    void append(const GaussExp<D> &g);
 
-    friend std::ostream &operator<<(std::ostream &o, const GaussExp<D, T> &gExp) { return gExp.print(o); }
-    friend class Gaussian<D, T>;
+    friend std::ostream &operator<<(std::ostream &o, const GaussExp<D> &gExp) { return gExp.print(o); }
+    friend class Gaussian<D>;
 
 protected:
-    std::vector<Gaussian<D, T> *> funcs;
+    std::vector<Gaussian<D> *> funcs;
     static double defaultScreening;
     double screening{0.0};
 

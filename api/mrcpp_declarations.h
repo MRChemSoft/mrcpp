@@ -36,10 +36,10 @@ class Timer;
 class Printer;
 template <int D, typename T = double> class Plotter;
 
-template <int D, typename T = double> class Gaussian;
-template <int D, typename T = double> class GaussFunc;
-template <int D, typename T = double> class GaussPoly;
-template <int D, typename T = double> class GaussExp;
+template <int D> class Gaussian;
+template <int D> class GaussFunc;
+template <int D> class GaussPoly;
+template <int D> class GaussExp;
 
 template <int D> class BoundingBox;
 template <int D, typename T = double> class NodeBox;

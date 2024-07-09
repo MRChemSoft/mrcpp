@@ -39,21 +39,21 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D, typename T> double GaussExp<D, T>::defaultScreening = 10.0;
+template <int D> double GaussExp<D>::defaultScreening = 10.0;
 
-template <int D, typename T> GaussExp<D, T>::GaussExp(int nTerms, double prec) {
+template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
     for (int i = 0; i < nTerms; i++) { this->funcs.push_back(nullptr); }
 }
 
-template <int D, typename T> GaussExp<D, T>::GaussExp(const GaussExp<D, T> &gexp) {
+template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
     screening = gexp.screening;
     for (unsigned int i = 0; i < gexp.size(); i++) {
-        Gaussian<D, T> *gauss = gexp.funcs[i]->copy();
+        Gaussian<D> *gauss = gexp.funcs[i]->copy();
         this->funcs.push_back(gauss);
     }
 }
 
-template <int D, typename T> GaussExp<D, T>::~GaussExp() {
+template <int D> GaussExp<D>::~GaussExp() {
     for (int i = 0; i < size(); i++) {
         if (this->funcs[i] != nullptr) {
             delete this->funcs[i];
@@ -62,7 +62,7 @@ template <int D, typename T> GaussExp<D, T>::~GaussExp() {
     }
 }
 
-template <int D, typename T> GaussExp<D, T> &GaussExp<D, T>::operator=(const GaussExp<D, T> &gexp) {
+template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
     // screening = gexp.screening;
     this->funcs.clear();
@@ -70,77 +70,77 @@ template <int D, typename T> GaussExp<D, T> &GaussExp<D, T>::operator=(const Gau
         if (gexp.funcs[i] == nullptr) {
             this->funcs.push_back(nullptr);
         } else {
-            Gaussian<D, T> *gauss = gexp.getFunc(i).copy();
+            Gaussian<D> *gauss = gexp.getFunc(i).copy();
             this->funcs.push_back(gauss);
         }
     }
     return *this;
 }
 
-template <int D, typename T> T GaussExp<D, T>::evalf(const Coord<D> &r) const {
-    T val = 0.0;
+template <int D> double GaussExp<D>::evalf(const Coord<D> &r) const {
+    double val = 0.0;
     for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalf(r); }
     return val;
 }
 
-template <int D, typename T> bool GaussExp<D, T>::isVisibleAtScale(int scale, int nPts) const {
+template <int D> bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
     for (unsigned int i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) { return false; }
     }
     return true;
 }
 
-template <int D, typename T> bool GaussExp<D, T>::isZeroOnInterval(const double *lb, const double *ub) const {
+template <int D> bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
     for (unsigned int i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isZeroOnInterval(lb, ub)) { return false; }
     }
     return true;
 }
 
-template <int D, typename T> void GaussExp<D, T>::setFunc(int i, const GaussPoly<D, T> &g, double c) {
+template <int D> void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double c) {
     if (i < 0 or i > (this->size() - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
     if (this->funcs[i] != nullptr) { delete this->funcs[i]; }
-    this->funcs[i] = new GaussPoly<D, T>(g);
+    this->funcs[i] = new GaussPoly<D>(g);
     double coef = this->funcs[i]->getCoef();
     this->funcs[i]->setCoef(c * coef);
 }
 
-template <int D, typename T> void GaussExp<D, T>::setFunc(int i, const GaussFunc<D, T> &g, double c) {
+template <int D> void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double c) {
     if (i < 0 or i > (this->size() - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
     if (this->funcs[i] != nullptr) { delete this->funcs[i]; }
-    this->funcs[i] = new GaussFunc<D, T>(g);
+    this->funcs[i] = new GaussFunc<D>(g);
     double coef = this->funcs[i]->getCoef();
     this->funcs[i]->setCoef(c * coef);
 }
 
-template <int D, typename T> void GaussExp<D, T>::append(const Gaussian<D, T> &g) {
-    Gaussian<D, T> *gp = g.copy();
+template <int D> void GaussExp<D>::append(const Gaussian<D> &g) {
+    Gaussian<D> *gp = g.copy();
     this->funcs.push_back(gp);
 }
 
-template <int D, typename T> void GaussExp<D, T>::append(const GaussExp<D, T> &g) {
+template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
     for (int i = 0; i < g.size(); i++) {
-        Gaussian<D, T> *gp = g.getFunc(i).copy();
+        Gaussian<D> *gp = g.getFunc(i).copy();
         this->funcs.push_back(gp);
     }
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::differentiate(int dir) const {
+template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) const {
     assert(dir >= 0 and dir < D);
-    GaussExp<D, T> result;
+    GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) result.append(this->getFunc(i).differentiate(dir));
     return result;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::add(GaussExp<D, T> &g) {
+template <int D> GaussExp<D> GaussExp<D>::add(GaussExp<D> &g) {
     int nsum = this->size() + g.size();
-    GaussExp<D, T> sum = GaussExp<D, T>(nsum);
+    GaussExp<D> sum = GaussExp<D>(nsum);
 
     int n = 0;
     for (int i = 0; i < this->size(); i++) {
@@ -155,34 +155,34 @@ template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::add(GaussExp<D, T> &
     return sum;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::add(Gaussian<D, T> &g) {
+template <int D> GaussExp<D> GaussExp<D>::add(Gaussian<D> &g) {
     int nsum = this->size() + 1;
-    GaussExp<D, T> sum = GaussExp<D, T>(nsum);
+    GaussExp<D> sum = GaussExp<D>(nsum);
     for (int n = 0; n < this->size(); n++) { sum.funcs[n] = this->getFunc(n).copy(); }
     sum.funcs[this->size()] = g.copy();
     return sum;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussExp<D, T> &gexp) {
-    GaussExp<D, T> result;
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
+    GaussExp<D> result;
     for (int i = 0; i < this->size(); i++) {
         for (int j = 0; j < gexp.size(); j++) {
-            if (auto *f = dynamic_cast<GaussFunc<D, T> *>(this->funcs[i])) {
-                if (auto *g = dynamic_cast<GaussFunc<D, T> *>(gexp.funcs[j])) {
-                    GaussPoly<D, T> newTerm = (*g) * (*f);
+            if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+                    GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
-                } else if (auto *g = dynamic_cast<GaussPoly<D, T> *>(gexp.funcs[j])) {
-                    GaussPoly<D, T> newTerm = (*g) * (*f);
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                    GaussPoly<D> newTerm = (*g) * (*f);
                     result.append(newTerm);
                 } else {
                     MSG_ABORT("Invalid Gaussian type!");
                 }
-            } else if (auto *f = dynamic_cast<GaussPoly<D, T> *>(this->funcs[i])) {
-                if (auto *g = dynamic_cast<GaussFunc<D, T> *>(gexp.funcs[j])) {
-                    GaussPoly<D, T> newTerm = (*f) * (*g);
+            } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[i])) {
+                if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
+                    GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
-                } else if (auto *g = dynamic_cast<GaussPoly<D, T> *>(gexp.funcs[j])) {
-                    GaussPoly<D, T> newTerm = (*f) * (*g);
+                } else if (auto *g = dynamic_cast<GaussPoly<D> *>(gexp.funcs[j])) {
+                    GaussPoly<D> newTerm = (*f) * (*g);
                     result.append(newTerm);
                 } else {
                     MSG_ABORT("Invalid Gaussian type!");
@@ -195,15 +195,15 @@ template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussExp<D, T> 
     return result;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussFunc<D, T> &g) {
-    GaussExp<D, T> result;
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
+    GaussExp<D> result;
     int nTerms = this->size();
     for (int n = 0; n < nTerms; n++) {
-        if (auto *f = dynamic_cast<GaussFunc<D, T> *>(this->funcs[n])) {
-            GaussPoly<D, T> newTerm = *f * g;
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+            GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
-        } else if (auto *f = dynamic_cast<GaussPoly<D, T> *>(this->funcs[n])) {
-            GaussPoly<D, T> newTerm = *f * g;
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+            GaussPoly<D> newTerm = *f * g;
             result.append(newTerm);
         } else {
             MSG_ABORT("Invalid Gaussian type!");
@@ -211,15 +211,15 @@ template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussFunc<D, T>
     }
     return result;
 }
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussPoly<D, T> &g) {
+template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     int nTerms = this->size();
-    GaussExp<D, T> result(nTerms);
+    GaussExp<D> result(nTerms);
     for (int n = 0; n < nTerms; n++) {
-        if (auto *f = dynamic_cast<GaussFunc<D, T> *>(this->funcs[n])) {
-            GaussPoly<D, T> newTerm(g * *f);
+        if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[n])) {
+            GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
-        } else if (auto *f = dynamic_cast<GaussPoly<D, T> *>(this->funcs[n])) {
-            GaussPoly<D, T> newTerm(g * *f);
+        } else if (auto *f = dynamic_cast<GaussPoly<D> *>(this->funcs[n])) {
+            GaussPoly<D> newTerm(g * *f);
             result.append(newTerm);
         } else {
             MSG_ABORT("Invalid Gaussian type!");
@@ -228,17 +228,17 @@ template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(GaussPoly<D, T>
     return result;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::mult(double d) {
-    GaussExp<D, T> prod = *this;
+template <int D> GaussExp<D> GaussExp<D>::mult(double d) {
+    GaussExp<D> prod = *this;
     for (int i = 0; i < this->size(); i++) prod.funcs[i]->multConstInPlace(d);
     return prod;
 }
 
-template <int D, typename T> void GaussExp<D, T>::multInPlace(double d) {
+template <int D> void GaussExp<D>::multInPlace(double d) {
     for (int i = 0; i < this->size(); i++) this->funcs[i]->multConstInPlace(d);
 }
 
-template <int D, typename T> double GaussExp<D, T>::calcSquareNorm() const {
+template <int D> double GaussExp<D>::calcSquareNorm() const {
     /* computing the squares */
     double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
@@ -247,13 +247,13 @@ template <int D, typename T> double GaussExp<D, T>::calcSquareNorm() const {
     }
     /* computing the double products */
     for (int i = 0; i < this->size(); i++) {
-        GaussExp<D, T> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
+        GaussExp<D> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
         for (int fi = 0; fi < funcs_i.size(); fi++) {
-            GaussFunc<D, T> &func_i = static_cast<GaussFunc<D, T> &>(funcs_i.getFunc(fi));
+            GaussFunc<D> &func_i = static_cast<GaussFunc<D> &>(funcs_i.getFunc(fi));
             for (int j = i + 1; j < this->size(); j++) {
-                GaussExp<D, T> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
+                GaussExp<D> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
                 for (int fj = 0; fj < funcs_j.size(); fj++) {
-                    GaussFunc<D, T> &func_j = static_cast<GaussFunc<D, T> &>(funcs_j.getFunc(fj));
+                    GaussFunc<D> &func_j = static_cast<GaussFunc<D> &>(funcs_j.getFunc(fj));
                     double overlap = func_i.calcOverlap(func_j);
                     norm += 2.0 * overlap;
                 }
@@ -263,7 +263,7 @@ template <int D, typename T> double GaussExp<D, T>::calcSquareNorm() const {
     return norm;
 }
 
-template <int D, typename T> void GaussExp<D, T>::normalize() {
+template <int D> void GaussExp<D>::normalize() {
     double norm = std::sqrt(this->calcSquareNorm());
     for (int i = 0; i < this->size(); i++) {
         double coef = this->funcs[i]->getCoef();
@@ -271,12 +271,12 @@ template <int D, typename T> void GaussExp<D, T>::normalize() {
     }
 }
 
-template <int D, typename T> void GaussExp<D, T>::calcScreening(double nStdDev) {
+template <int D> void GaussExp<D>::calcScreening(double nStdDev) {
     screening = nStdDev;
     for (int i = 0; i < this->size(); i++) { this->funcs[i]->calcScreening(nStdDev); }
 }
 
-template <int D, typename T> void GaussExp<D, T>::setScreen(bool screen) {
+template <int D> void GaussExp<D>::setScreen(bool screen) {
     if (screen) {
         this->screening = std::abs(this->screening);
     } else {
@@ -290,7 +290,7 @@ template <int D, typename T> void GaussExp<D, T>::setScreen(bool screen) {
 // is not separable, we have to do the projection term by term.
 /*
 template<int D>
-void GaussExp<D, T>::calcWaveletCoefs(MWNode<D, T> &node) {
+void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
     static const int tDim = 1 << D;
     const ScalingBasis &sf = node.getMWTree().getScalingFunctions();
     MatrixXd &scaling = node.getMWTree().getTmpScalingCoefs();
@@ -319,12 +319,12 @@ void GaussExp<D, T>::calcWaveletCoefs(MWNode<D, T> &node) {
 }
 */
 
-template <int D, typename T> void GaussExp<D, T>::setDefaultScreening(double screen) {
+template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
     if (screen < 0) { MSG_ERROR("Screening constant cannot be negative!"); }
     defaultScreening = screen;
 }
 
-template <int D, typename T> std::ostream &GaussExp<D, T>::print(std::ostream &o) const {
+template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
     o << "Gaussian expansion: " << size() << " terms" << std::endl;
     for (int i = 0; i < size(); i++) {
         o << "Term" << std::setw(3) << i << " :" << std::endl;
@@ -338,7 +338,7 @@ template <int D, typename T> std::ostream &GaussExp<D, T>::print(std::ostream &o
  *  @note Each Gaussian must be normalized to unit charge
  *  \f$ c = (\alpha/\pi)^{D/2} \f$ for this to be correct!
  */
-template <int D, typename T> double GaussExp<D, T>::calcCoulombEnergy() const {
+template <int D> double GaussExp<D>::calcCoulombEnergy() const {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -362,8 +362,8 @@ template <> double GaussExp<3>::calcCoulombEnergy() const {
     return energy;
 }
 
-template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::periodify(const std::array<double, D> &period, double nStdDev) const {
-    GaussExp<D, T> out_exp;
+template <int D> GaussExp<D> GaussExp<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
+    GaussExp<D> out_exp;
     for (const auto &gauss : *this) {
         auto periodic_gauss = gauss->periodify(period, nStdDev);
         out_exp.append(periodic_gauss);
@@ -371,12 +371,8 @@ template <int D, typename T> GaussExp<D, T> GaussExp<D, T>::periodify(const std:
     return out_exp;
 }
 
-template class GaussExp<1, double>;
-template class GaussExp<2, double>;
-template class GaussExp<3, double>;
-
-template class GaussExp<1, ComplexDouble>;
-template class GaussExp<2, ComplexDouble>;
-template class GaussExp<3, ComplexDouble>;
+template class GaussExp<1>;
+template class GaussExp<2>;
+template class GaussExp<3>;
 
 } // namespace mrcpp

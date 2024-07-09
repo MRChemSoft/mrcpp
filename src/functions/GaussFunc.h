@@ -40,12 +40,12 @@ namespace mrcpp {
  *
  * \f$ g(x) = \alpha (x-x_0)^a e^{-\beta (x-x_0)^2} \f$
  *
- * - Multidimensional Gaussian (GaussFunc<D, T>):
+ * - Multidimensional Gaussian (GaussFunc<D>):
  *
  * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 
-template <int D, typename T> class GaussFunc : public Gaussian<D, T> {
+template <int D> class GaussFunc : public Gaussian<D> {
 public:
     /** @returns New GaussFunc object
      *  @param[in] beta: Exponent, \f$ e^{-\beta r^2} \f$
@@ -54,32 +54,32 @@ public:
      *  @param[in] pow: Monomial power, \f$ x^{pow[0]}, y^{pow[1]}, ... \f$
      */
     GaussFunc(double beta, double alpha, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
-            : Gaussian<D, T>(beta, alpha, pos, pow) {}
+            : Gaussian<D>(beta, alpha, pos, pow) {}
     GaussFunc(const std::array<double, D> &beta,
               double alpha,
               const Coord<D> &pos = {},
               const std::array<int, D> &pow = {})
-            : Gaussian<D, T>(beta, alpha, pos, pow) {}
-    GaussFunc(const GaussFunc<D, T> &gf)
-            : Gaussian<D, T>(gf) {}
-    GaussFunc<D, T> &operator=(const GaussFunc<D, T> &rhs) = delete;
-    Gaussian<D, T> *copy() const override;
+            : Gaussian<D>(beta, alpha, pos, pow) {}
+    GaussFunc(const GaussFunc<D> &gf)
+            : Gaussian<D>(gf) {}
+    GaussFunc<D> &operator=(const GaussFunc<D> &rhs) = delete;
+    Gaussian<D> *copy() const override;
 
-    double calcCoulombEnergy(const GaussFunc<D, T> &rhs) const;
+    double calcCoulombEnergy(const GaussFunc<D> &rhs) const;
     double calcSquareNorm() const override;
 
-    T evalf(const Coord<D> &r) const override;
-    T evalf1D(double r, int dir) const override;
+    double evalf(const Coord<D> &r) const override;
+    double evalf1D(double r, int dir) const override;
 
-    GaussExp<D, T> asGaussExp() const override;
-    GaussPoly<D, T> differentiate(int dir) const override;
+    GaussExp<D> asGaussExp() const override;
+    GaussPoly<D> differentiate(int dir) const override;
 
-    void multInPlace(const GaussFunc<D, T> &rhs);
-    void operator*=(const GaussFunc<D, T> &rhs) { multInPlace(rhs); }
-    GaussPoly<D, T> mult(const GaussFunc<D, T> &rhs);
-    GaussFunc<D, T> mult(double c);
-    GaussPoly<D, T> operator*(const GaussFunc<D, T> &rhs) { return this->mult(rhs); }
-    GaussFunc<D, T> operator*(double c) { return this->mult(c); }
+    void multInPlace(const GaussFunc<D> &rhs);
+    void operator*=(const GaussFunc<D> &rhs) { multInPlace(rhs); }
+    GaussPoly<D> mult(const GaussFunc<D> &rhs);
+    GaussFunc<D> mult(double c);
+    GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
+    GaussFunc<D> operator*(double c) { return this->mult(c); }
 
     void setPow(int d, int power) override { this->power[d] = power; }
     void setPow(const std::array<int, D> &power) override { this->power = power; }

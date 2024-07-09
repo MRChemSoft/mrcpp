@@ -31,7 +31,7 @@ namespace function_utils {
 double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
 } // namespace function_utils
 
-template <int D, typename T> double function_utils::calc_overlap(const GaussFunc<D, T> &a, const GaussFunc<D, T> &b) {
+template <int D> double function_utils::calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b) {
     double S = 1.0;
     for (int d = 0; d < D; d++) {
         S *= ObaraSaika_ab(a.getPower()[d], b.getPower()[d], a.getPos()[d], b.getPos()[d], a.getExp()[d], b.getExp()[d]);
@@ -114,13 +114,8 @@ double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, dou
     return s_coeff[power_b + 2 * power_a];
 }
 
-template double function_utils::calc_overlap<1, double>(const GaussFunc<1, double> &a, const GaussFunc<1, double> &b);
-template double function_utils::calc_overlap<2, double>(const GaussFunc<2, double> &a, const GaussFunc<2, double> &b);
-template double function_utils::calc_overlap<3, double>(const GaussFunc<3, double> &a, const GaussFunc<3, double> &b);
-
-template double function_utils::calc_overlap<1, ComplexDouble>(const GaussFunc<1, ComplexDouble> &a, const GaussFunc<1, ComplexDouble> &b);
-template double function_utils::calc_overlap<2, ComplexDouble>(const GaussFunc<2, ComplexDouble> &a, const GaussFunc<2, ComplexDouble> &b);
-template double function_utils::calc_overlap<3, ComplexDouble>(const GaussFunc<3, ComplexDouble> &a, const GaussFunc<3, ComplexDouble> &b);
-
+template double function_utils::calc_overlap<1>(const GaussFunc<1> &a, const GaussFunc<1> &b);
+template double function_utils::calc_overlap<2>(const GaussFunc<2> &a, const GaussFunc<2> &b);
+template double function_utils::calc_overlap<3>(const GaussFunc<3> &a, const GaussFunc<3> &b);
 
 } // namespace mrcpp

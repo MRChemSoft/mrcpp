@@ -122,6 +122,48 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     delete mra;
 }
 
+template <int D> void testDifferentiationCplxABGV(double a, double b) {
+    MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
+
+    double prec = 1.0e-3;
+    ABGVOperator<D> diff(*mra, a, b);
+
+    Coord<D> r_0;
+    for (auto &x : r_0) x = pi;
+
+    auto f = [r_0](const Coord<D> &r) {
+        ComplexDouble s = {1.1, 1.3};
+        double R = math_utils::calc_distance<D>(r, r_0);
+        return std::exp(-R * R * s);
+    };
+
+    auto df = [r_0](const Coord<D> &r) {
+        ComplexDouble s = {1.1, 1.3};
+        double R = math_utils::calc_distance<D>(r, r_0);
+        return -2.0 * s * std::exp(-R * R * s) * (r[0] - r_0[0]);
+    };
+
+    FunctionTree<D, ComplexDouble> f_tree(*mra);
+    project<D, ComplexDouble>(prec / 10, f_tree, f);
+
+    FunctionTree<D, ComplexDouble> df_tree(*mra);
+    project<D, ComplexDouble>(prec / 10, df_tree, df);
+
+    FunctionTree<D, ComplexDouble> dg_tree(*mra);
+    apply(dg_tree, diff, f_tree, 0);
+
+    FunctionTree<D, ComplexDouble> err_tree(*mra);
+    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+
+    double df_norm = std::sqrt(df_tree.getSquareNorm());
+    double abs_err = std::sqrt(err_tree.getSquareNorm());
+    double rel_err = abs_err / df_norm;
+
+    REQUIRE(rel_err == Catch::Approx(0.0).margin(prec));
+
+    delete mra;
+}
+
 template <int D> void testDifferentiationPH(int order) {
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
@@ -269,6 +311,14 @@ TEST_CASE("ABGV differentiantion center difference", "[derivative_operator], [ce
     SECTION("1D derivative test") { testDifferentiationABGV<1>(0, 0); }
     SECTION("2D derivative test") { testDifferentiationABGV<2>(0, 0); }
     SECTION("3D derivative test") { testDifferentiationABGV<3>(0, 0); }
+}
+
+
+TEST_CASE("ABGV differentiantion of Complex function", "[derivative_operator], [Complex]") {
+    // 0.5,0.5 specifies central difference
+    SECTION("1D derivative test") { testDifferentiationCplxABGV<1>(0.5, 0.5); }
+    SECTION("2D derivative test") { testDifferentiationCplxABGV<2>(0.5, 0.5); }
+    SECTION("3D derivative test") { testDifferentiationCplxABGV<3>(0.5, 0.5); }
 }
 
 TEST_CASE("PH differentiantion first order", "[derivative_operator], [PH_first_order]") {

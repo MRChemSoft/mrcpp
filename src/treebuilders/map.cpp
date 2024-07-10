@@ -65,13 +65,13 @@ namespace mrcpp {
  * no coefs).
  *
  */
-template <int D, typename T>
-void map(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, FMap<T, T> fmap, int maxIter, bool absPrec) {
+template <int D>
+void map(double prec, FunctionTree<D, double> &out, FunctionTree<D, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec) {
 
     int maxScale = out.getMRA().getMaxScale();
-    TreeBuilder<D, T> builder;
-    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
-    MapCalculator<D, T> calculator(fmap, inp);
+    TreeBuilder<D, double> builder;
+    WaveletAdaptor<D, double> adaptor(prec, maxScale, absPrec);
+    MapCalculator<D, double> calculator(fmap, inp);
 
     builder.build(out, calculator, adaptor, maxIter);
 
@@ -89,12 +89,8 @@ void map(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, FMap<T, 
     print::separator(10, ' ');
 }
 
-template void map<1, double>(double prec, FunctionTree<1, double> &out, FunctionTree<1, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
-template void map<2, double>(double prec, FunctionTree<2, double> &out, FunctionTree<2, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
-template void map<3, double>(double prec, FunctionTree<3, double> &out, FunctionTree<3, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
-
-template void map<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, FunctionTree<1, ComplexDouble> &inp, FMap<ComplexDouble, ComplexDouble> fmap, int maxIter, bool absPrec);
-template void map<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, FunctionTree<2, ComplexDouble> &inp, FMap<ComplexDouble, ComplexDouble> fmap, int maxIter, bool absPrec);
-template void map<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, FunctionTree<3, ComplexDouble> &inp, FMap<ComplexDouble, ComplexDouble> fmap, int maxIter, bool absPrec);
+template void map<1>(double prec, FunctionTree<1, double> &out, FunctionTree<1, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
+template void map<2>(double prec, FunctionTree<2, double> &out, FunctionTree<2, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
+template void map<3>(double prec, FunctionTree<3, double> &out, FunctionTree<3, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
 
 } // Namespace mrcpp

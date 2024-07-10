@@ -38,7 +38,7 @@
 #include "MRCPP/constants.h"
 #include "MRCPP/mrcpp_declarations.h"
 #include "trees/NodeIndex.h"
-#include "utils/math_utils.h"
+#include "MRCPP/utils/math_utils.h"
 
 namespace mrcpp {
 

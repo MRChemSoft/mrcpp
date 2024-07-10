@@ -127,18 +127,17 @@ template <int D> void testDifferentiationCplxABGV(double a, double b) {
 
     double prec = 1.0e-3;
     ABGVOperator<D> diff(*mra, a, b);
+    ComplexDouble s = {1.1, 1.3};
 
     Coord<D> r_0;
     for (auto &x : r_0) x = pi;
 
-    auto f = [r_0](const Coord<D> &r) {
-        ComplexDouble s = {1.1, 1.3};
+    auto f = [r_0, s](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return std::exp(-R * R * s);
     };
 
-    auto df = [r_0](const Coord<D> &r) {
-        ComplexDouble s = {1.1, 1.3};
+    auto df = [r_0, s](const Coord<D> &r) {
         double R = math_utils::calc_distance<D>(r, r_0);
         return -2.0 * s * std::exp(-R * R * s) * (r[0] - r_0[0]);
     };

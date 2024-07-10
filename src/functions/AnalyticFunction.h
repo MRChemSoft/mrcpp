@@ -32,7 +32,7 @@
 
 namespace mrcpp {
 
-template <int D, typename T> class AnalyticFunction : public RepresentableFunction<D, T> {
+template <int D, typename T = double> class AnalyticFunction : public RepresentableFunction<D, T> {
 public:
     AnalyticFunction() = default;
     ~AnalyticFunction() override = default;

@@ -77,8 +77,8 @@ private:
     FunctionData func_data;
     mrcpp::SharedMemory<double> *shared_mem_re;
     mrcpp::SharedMemory<double> *shared_mem_im;
-    mrcpp::FunctionTree<3> *re; ///< Real part of function
-    mrcpp::FunctionTree<3> *im; ///< Imaginary part of function
+    mrcpp::FunctionTree<3, double> *re; ///< Real part of function
+    mrcpp::FunctionTree<3, double> *im; ///< Imaginary part of function
 
     void flushFuncData() {
         this->func_data.real_size = 0;
@@ -121,10 +121,10 @@ public:
     FunctionData &getFunctionData();
     int occ() const { return this->func_ptr->func_data.occ; }
     int spin() const { return this->func_ptr->func_data.spin; }
-    FunctionTree<3> &real() { return *this->func_ptr->re; }
-    FunctionTree<3> &imag() { return *this->func_ptr->im; }
-    const FunctionTree<3> &real() const { return *this->func_ptr->re; }
-    const FunctionTree<3> &imag() const { return *this->func_ptr->im; }
+    FunctionTree<3, double> &real() { return *this->func_ptr->re; }
+    FunctionTree<3, double> &imag() { return *this->func_ptr->im; }
+    const FunctionTree<3, double> &real() const { return *this->func_ptr->re; }
+    const FunctionTree<3, double> &imag() const { return *this->func_ptr->im; }
     void release() { this->func_ptr.reset(); }
     bool conjugate() const { return this->conj; }
     MultiResolutionAnalysis<3> *funcMRA = nullptr;
@@ -141,8 +141,8 @@ public:
     int getSizeNodes(int type) const;
     int getNNodes(int type) const;
 
-    void setReal(mrcpp::FunctionTree<3> *tree);
-    void setImag(mrcpp::FunctionTree<3> *tree);
+    void setReal(mrcpp::FunctionTree<3, double> *tree);
+    void setImag(mrcpp::FunctionTree<3, double> *tree);
 
     double norm() const;
     double squaredNorm() const;
@@ -172,8 +172,8 @@ void project(ComplexFunction &out, RepresentableFunction<3> &f, int type, double
 void multiply(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_real(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 void multiply_imag(ComplexFunction &out, ComplexFunction inp_a, ComplexFunction inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
-void multiply(ComplexFunction &out, ComplexFunction &inp_a, RepresentableFunction<3> &f, double prec, int nrefine = 0);
-void multiply(ComplexFunction &out, FunctionTree<3> &inp_a, RepresentableFunction<3> &f, double prec, int nrefine = 0);
+void multiply(ComplexFunction &out, ComplexFunction &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0);
+void multiply(ComplexFunction &out, FunctionTree<3, double> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0);
 void linear_combination(ComplexFunction &out, const ComplexVector &c, std::vector<ComplexFunction> &inp, double prec);
 } // namespace cplxfunc
 
@@ -187,7 +187,7 @@ public:
 namespace mpifuncvec {
 void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, double prec = -1.0);
-void save_nodes(MPI_FuncVector &Phi, mrcpp::FunctionTree<3> &refTree, BankAccount &account, int sizes = -1);
+void save_nodes(MPI_FuncVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
 MPI_FuncVector multiply(MPI_FuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
 ComplexVector dot(MPI_FuncVector &Bra, MPI_FuncVector &Ket);
 ComplexMatrix calc_lowdin_matrix(MPI_FuncVector &Phi);

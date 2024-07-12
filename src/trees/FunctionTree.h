@@ -77,7 +77,7 @@ public:
     // In place operations
     void square();
     void power(double p);
-    void rescale(double c);
+    void rescale(T c);
     void normalize();
     void add(double c, FunctionTree<D, T> &inp);
     void absadd(double c, FunctionTree<D, T> &inp);

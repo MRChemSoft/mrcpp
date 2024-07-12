@@ -363,7 +363,7 @@ template <int D, typename T> void FunctionTree<D, T>::power(double p) {
  * in-place multiplied by the given coefficient, no grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::rescale(double c) {
+template <int D, typename T> void FunctionTree<D, T>::rescale(T c) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) num_threads(mrcpp_get_num_threads())
     {

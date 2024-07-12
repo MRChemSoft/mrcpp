@@ -26,6 +26,7 @@
 #pragma once
 
 #include "trees/FunctionTreeVector.h"
+#include "utils/CompFunction.h"
 
 namespace mrcpp {
 
@@ -35,13 +36,21 @@ template <int D> class DerivativeOperator;
 template <int D> class ConvolutionOperator;
 
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void apply(double prec, CompFunction<D, T> &out, ConvolutionOperator<D> &oper, CompFunction<D, T> &inp, T **metric, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, FunctionTreeVector<D, T> &precTrees, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void apply(double prec, CompFunction<D, T> &out, ConvolutionOperator<D> &oper, CompFunction<D, T> &inp, FunctionTreeVector<D, T> *precTrees, T **metric, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void apply_far_field(double prec, CompFunction<D, T> &out, ConvolutionOperator<D> &oper, CompFunction<D, T> &inp, T **metric, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void apply_near_field(double prec, CompFunction<D, T> &out, ConvolutionOperator<D> &oper, CompFunction<D, T> &inp, T **metric, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTree<D, T> &inp, int dir = -1);
+template <int D, typename T> void apply(CompFunction<D, T> &out, DerivativeOperator<D> &oper, CompFunction<D, T> &inp, T **metric, int dir = -1);
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> &inp);
+template <int D, typename T> void divergence(CompFunction<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, T **metric);
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> &inp);
+template <int D, typename T> void divergence(CompFunction<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, T **metric);
 template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperator<D> &oper, FunctionTree<D, T> &inp);
+template <int D, typename T> CompFunctionVector<D, T> gradient(DerivativeOperator<D> &oper, CompFunction<D, T> &inp, T **metric);
 // clang-format on
 
 } // namespace mrcpp

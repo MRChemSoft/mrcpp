@@ -142,7 +142,7 @@ public:
     const NodeAllocator<D, T> &getNodeAllocator() const { return *this->nodeAllocator_p; }
     MWNodeVector<D, T> endNodeTable;          ///< Final projected nodes
 
-    void getNodeCoeff(NodeIndex<D> nIdx, double *data); // fetch coefficient from a specific node stored in Bank
+    void getNodeCoeff(NodeIndex<D> nIdx, T *data); // fetch coefficient from a specific node stored in Bank
 
     friend std::ostream &operator<<(std::ostream &o, const MWTree<D, T> &tree) { return tree.print(o); }
 

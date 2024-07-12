@@ -32,7 +32,7 @@
 
 namespace mrcpp {
 
-template <int D, typename T = double> using CoefsFunctionTree = std::tuple<double, FunctionTree<D, T> *>;
+template <int D, typename T = double> using CoefsFunctionTree = std::tuple<T, FunctionTree<D, T> *>;
 template <int D, typename T = double> using FunctionTreeVector = std::vector<CoefsFunctionTree<D, T>>;
 
 /** @brief Remove all entries in the vector
@@ -77,7 +77,7 @@ template <int D, typename T> int get_size_nodes(const FunctionTreeVector<D, T> &
  *  @param[in] fs: Vector to fetch from
  *  @param[in] i: Position in vector
  */
-template <int D, typename T> double get_coef(const FunctionTreeVector<D, T> &fs, int i) {
+template <int D, typename T> T get_coef(const FunctionTreeVector<D, T> &fs, int i) {
     return std::get<0>(fs[i]);
 }
 

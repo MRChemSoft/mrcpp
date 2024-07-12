@@ -199,15 +199,25 @@ template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, 
 }
 template class SharedMemory<double>;
 template class SharedMemory<ComplexDouble>;
-  
-template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void share_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm);
-template void share_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm);
-template void share_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm);
+
+template void send_tree<1>(FunctionTree<1, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<2>(FunctionTree<2, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<3>(FunctionTree<3, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<1>(FunctionTree<1, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<2>(FunctionTree<2, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<3>(FunctionTree<3, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void share_tree<1>(FunctionTree<1, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<2>(FunctionTree<2, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<3>(FunctionTree<3, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+
+template void send_tree<1>(FunctionTree<1, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<2>(FunctionTree<2, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<3>(FunctionTree<3, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<1>(FunctionTree<1, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<2>(FunctionTree<2, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<3>(FunctionTree<3, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void share_tree<1>(FunctionTree<1, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<2>(FunctionTree<2, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<3>(FunctionTree<3, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

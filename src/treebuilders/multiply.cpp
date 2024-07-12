@@ -71,7 +71,7 @@ namespace mrcpp {
 template <int D, typename T>
 void multiply(double prec,
               FunctionTree<D, T> &out,
-              double c,
+              T c,
               FunctionTree<D, T> &inp_a,
               FunctionTree<D, T> &inp_b,
               int maxIter,
@@ -278,13 +278,14 @@ void dot(double prec,
 
     FunctionTreeVector<D, T> tmp_vec;
     for (int d = 0; d < inp_a.size(); d++) {
-        double coef_a = get_coef(inp_a, d);
-        double coef_b = get_coef(inp_b, d);
+        T coef_a = get_coef(inp_a, d);
+        T coef_b = get_coef(inp_b, d);
         FunctionTree<D, T> &tree_a = get_func(inp_a, d);
         FunctionTree<D, T> &tree_b = get_func(inp_b, d);
         auto *out_d = new FunctionTree<D, T>(out.getMRA());
         build_grid(*out_d, out);
-        multiply(prec, *out_d, 1.0, tree_a, tree_b, maxIter, absPrec);
+        T One = 1.0;
+        multiply(prec, *out_d, One, tree_a, tree_b, maxIter, absPrec);
         tmp_vec.push_back({coef_a * coef_b, out_d});
     }
     build_grid(out, tmp_vec);
@@ -509,7 +510,7 @@ template double node_norm_dot<3, double>(FunctionTree<3, double> &bra, FunctionT
 
 template void multiply<1, ComplexDouble>(double prec,
                           FunctionTree<1, ComplexDouble> &out,
-                          double c,
+                          ComplexDouble c,
                           FunctionTree<1, ComplexDouble> &tree_a,
                           FunctionTree<1, ComplexDouble> &tree_b,
                           int maxIter,
@@ -517,7 +518,7 @@ template void multiply<1, ComplexDouble>(double prec,
                           bool useMaxNorms);
 template void multiply<2, ComplexDouble>(double prec,
                           FunctionTree<2, ComplexDouble> &out,
-                          double c,
+                          ComplexDouble c,
                           FunctionTree<2, ComplexDouble> &tree_a,
                           FunctionTree<2, ComplexDouble> &tree_b,
                           int maxIter,
@@ -525,7 +526,7 @@ template void multiply<2, ComplexDouble>(double prec,
                           bool useMaxNorms);
 template void multiply<3, ComplexDouble>(double prec,
                           FunctionTree<3, ComplexDouble> &out,
-                          double c,
+                          ComplexDouble c,
                           FunctionTree<3, ComplexDouble> &tree_a,
                           FunctionTree<3, ComplexDouble> &tree_b,
                           int maxIter,

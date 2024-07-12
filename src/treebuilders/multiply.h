@@ -47,7 +47,7 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra,
 
 template <int D, typename T> void multiply(double prec,
                                FunctionTree<D, T> &out,
-                               double c,
+                               T c,
                                FunctionTree<D, T> &inp_a,
                                FunctionTree<D, T> &inp_b,
                                int maxIter = -1,

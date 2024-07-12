@@ -353,7 +353,7 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
 
     FunctionTreeVector<D, T> tmp_vec;
     for (int d = 0; d < D; d++) {
-        double coef_d = get_coef(inp, d);
+        T coef_d = get_coef(inp, d);
         FunctionTree<D, T> &func_d = get_func(inp, d);
         auto *out_d = new FunctionTree<D, T>(func_d.getMRA());
         apply(*out_d, oper, func_d, d);

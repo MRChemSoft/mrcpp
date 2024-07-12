@@ -363,7 +363,7 @@ template <int D, typename T> void FunctionTree<D, T>::power(double p) {
  * in-place multiplied by the given coefficient, no grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::rescale(double c) {
+template <int D, typename T> void FunctionTree<D, T>::rescale(T c) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) num_threads(mrcpp_get_num_threads())
     {
@@ -399,7 +399,7 @@ template <int D, typename T> void FunctionTree<D, T>::normalize() {
  * the function, i.e. no further grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::add(double c, FunctionTree<D, T> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::add(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
@@ -428,7 +428,7 @@ template <int D, typename T> void FunctionTree<D, T>::add(double c, FunctionTree
  * function, i.e. no further grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::absadd(double c, FunctionTree<D, T> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::absadd (T c, FunctionTree<D, T> &inp) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
@@ -443,7 +443,7 @@ template <int D, typename T> void FunctionTree<D, T>::absadd(double c, FunctionT
             inp_node.cvTransform(Forward);
             T *out_coefs = out_node.getCoefs();
             const T *inp_coefs = inp_node.getCoefs();
-            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = abs(out_coefs[i]) + c * abs(inp_coefs[i]); }
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = std::norm(out_coefs[i]) + std::norm(c * inp_coefs[i]); }
             out_node.cvTransform(Backward);
             out_node.mwTransform(Compression);
             out_node.calcNorms();
@@ -463,7 +463,7 @@ template <int D, typename T> void FunctionTree<D, T>::absadd(double c, FunctionT
  * of the function, i.e. no further grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::multiply(double c, FunctionTree<D, T> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::multiply(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
@@ -763,16 +763,39 @@ template <int D, typename T> void FunctionTree<D, T>::deleteGeneratedParents() {
     for (int n = 0; n < this->getRootBox().size(); n++) this->getRootMWNode(n).deleteParent();
 }
 
-template <> int FunctionTree<3>::saveNodesAndRmCoeff() {
+template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
     if (this->isLocal) MSG_INFO("Tree is already in local representation");
     NodesCoeff = new BankAccount; // NB: must be a collective call!
     int stack_p = 0;
     if (mpi::wrk_rank == 0) {
         int sizecoeff = (1 << 3) * this->getKp1_d();
-        std::vector<MWNode<3> *> stack; // nodes from this Tree
+        std::vector<MWNode<3, double> *> stack; // nodes from this Tree
         for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
         while (stack.size() > stack_p) {
-            MWNode<3> *Node = stack[stack_p++];
+            MWNode<3, double> *Node = stack[stack_p++];
+            int id = 0;
+            NodesCoeff->put_data(Node->getNodeIndex(), sizecoeff, Node->getCoefs());
+            for (int i = 0; i < Node->getNChildren(); i++) { stack.push_back(Node->children[i]); }
+        }
+    }
+    this->nodeAllocator_p->deallocAllCoeff();
+    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
+    this->isLocal = true;
+    assert(this->NodeIndex2serialIx.size() == getNNodes());
+    return this->NodeIndex2serialIx.size();
+}
+
+template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
+    if (this->isLocal) MSG_INFO("Tree is already in local representation");
+    NodesCoeff = new BankAccount; // NB: must be a collective call!
+    int stack_p = 0;
+    if (mpi::wrk_rank == 0) {
+        int sizecoeff = (1 << 3) * this->getKp1_d();
+        sizecoeff *= 2; // double->ComplexDouble. Saved as twice as many doubles
+        std::vector<MWNode<3, ComplexDouble> *> stack; // nodes from this Tree
+        for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
+        while (stack.size() > stack_p) {
+            MWNode<3, ComplexDouble> *Node = stack[stack_p++];
             int id = 0;
             NodesCoeff->put_data(Node->getNodeIndex(), sizecoeff, Node->getCoefs());
             for (int i = 0; i < Node->getNChildren(); i++) { stack.push_back(Node->children[i]); }

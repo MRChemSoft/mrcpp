@@ -30,9 +30,9 @@ namespace mrcpp {
 
 template <int D, typename T> void add(double prec,
                           FunctionTree<D, T> &out,
-                          double a,
+                          T a,
                           FunctionTree<D, T> &tree_a,
-                          double b,
+                          T b,
                           FunctionTree<D, T> &tree_b,
                           int maxIter = -1,
                           bool absPrec = false);

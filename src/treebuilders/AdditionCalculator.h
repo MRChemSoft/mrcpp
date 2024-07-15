@@ -43,7 +43,7 @@ private:
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         T *coefs_o = node_o.getCoefs();
         for (int i = 0; i < this->sum_vec.size(); i++) {
-            double c_i = get_coef(this->sum_vec, i);
+            T c_i = get_coef(this->sum_vec, i);
             FunctionTree<D, T> &func_i = get_func(this->sum_vec, i);
             // This generates missing nodes
             const MWNode<D, T> &node_i = func_i.getNode(idx);

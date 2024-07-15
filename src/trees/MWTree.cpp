@@ -126,9 +126,9 @@ template <int D, typename T> void MWTree<D, T>::calcSquareNorm() {
  * @details It performs a Multiwavlet transform of the whole tree. The
  * input parameters will specify the direction (upwards or downwards)
  * and whether the result is added to the coefficients or it
- * overwrites them. See the documentation for the #mwTransformUp 
+ * overwrites them. See the documentation for the #mwTransformUp
  * and #mwTransformDown for details.
- * \f[ 
+ * \f[
  * \pmatrix{
  * s_{nl}\\
  * d_{nl}
@@ -215,7 +215,7 @@ template <int D, typename T> void MWTree<D, T>::mwTransformDown(bool overwrite) 
 }
 
 /** @brief Set the MW coefficients to zero, keeping the same tree structure
- *   
+ *
  * @details Keeps the node structure of the tree, even though the zero
  * function is representable at depth zero. One should then use \ref cropTree to remove
  * unnecessary nodes.
@@ -447,7 +447,7 @@ template <int D, typename T> MWNodeVector<D, T> *MWTree<D, T>::copyEndNodeTable(
  *
  * @details the endNodeTable is first deleted and then rebuilt from
  * scratch. It makes use of the TreeIterator to traverse the tree.
- * 
+ *
  */
 template <int D, typename T> void MWTree<D, T>::resetEndNodeTable() {
     clearEndNodeTable();
@@ -552,7 +552,7 @@ template <int D, typename T> int MWTree<D, T>::getIx(NodeIndex<D> nIdx) {
     else return NodeIndex2serialIx[nIdx];
 }
 
-template <int D, typename T> void MWTree<D, T>::getNodeCoeff(NodeIndex<D> nIdx, double *data) {
+template <int D, typename T> void MWTree<D, T>::getNodeCoeff(NodeIndex<D> nIdx, T *data) {
     assert(this->isLocal);
     int size = (1 << D) * kp1_d;
     int id = 0;

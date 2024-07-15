@@ -79,9 +79,9 @@ public:
     void power(double p);
     void rescale(T c);
     void normalize();
-    void add(double c, FunctionTree<D, T> &inp);
-    void absadd(double c, FunctionTree<D, T> &inp);
-    void multiply(double c, FunctionTree<D, T> &inp);
+    void add(T c, FunctionTree<D, T> &inp);
+    void absadd(T c, FunctionTree<D, T> &inp);
+    void multiply(T c, FunctionTree<D, T> &inp);
     void map(FMap<T, T> fmap);
 
     int getNChunks() { return this->getNodeAllocator().getNChunks(); }

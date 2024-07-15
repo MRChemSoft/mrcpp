@@ -152,7 +152,7 @@ template <int D> void testDifferentiationCplxABGV(double a, double b) {
     apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D, ComplexDouble> err_tree(*mra);
-    add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+    add(-1.0, err_tree, {1.0, 0.0}, df_tree, {-1.0, 0.0}, dg_tree);
 
     double df_norm = std::sqrt(df_tree.getSquareNorm());
     double abs_err = std::sqrt(err_tree.getSquareNorm());

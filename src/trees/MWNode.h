@@ -50,9 +50,9 @@ namespace mrcpp {
  * translation index, the norm, pointers to parent node and child
  * nodes, pointer to the corresponding MWTree etc... See member and
  * data descriptions for details.
- * 
+ *
  */
-  template <int D, typename T> class MWNode {
+template <int D, typename T> class MWNode {
 public:
     MWNode(const MWNode<D, T> &node, bool allocCoef = true, bool SetCoef = true);
     MWNode<D , T> &operator=(const MWNode<D , T> &node) = delete;

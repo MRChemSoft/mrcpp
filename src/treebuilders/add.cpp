@@ -64,9 +64,9 @@ namespace mrcpp {
 template <int D, typename T>
 void add(double prec,
          FunctionTree<D, T> &out,
-         double a,
+         T a,
          FunctionTree<D, T> &inp_a,
-         double b,
+         T b,
          FunctionTree<D, T> &inp_b,
          int maxIter,
          bool absPrec) {
@@ -190,29 +190,27 @@ template void add<3, double>(double prec,
                      bool absPrec);
 
 
-
-  
 template void add<1, ComplexDouble>(double prec,
                      FunctionTree<1, ComplexDouble> &out,
-                     double a,
+                     ComplexDouble a,
                      FunctionTree<1, ComplexDouble> &tree_a,
-                     double b,
+                     ComplexDouble b,
                      FunctionTree<1, ComplexDouble> &tree_b,
                      int maxIter,
                      bool absPrec);
 template void add<2, ComplexDouble>(double prec,
                      FunctionTree<2, ComplexDouble> &out,
-                     double a,
+                     ComplexDouble a,
                      FunctionTree<2, ComplexDouble> &tree_a,
-                     double b,
+                     ComplexDouble b,
                      FunctionTree<2, ComplexDouble> &tree_b,
                      int maxIter,
                      bool absPrec);
 template void add<3, ComplexDouble>(double prec,
                      FunctionTree<3, ComplexDouble> &out,
-                     double a,
+                     ComplexDouble a,
                      FunctionTree<3, ComplexDouble> &tree_a,
-                     double b,
+                     ComplexDouble b,
                      FunctionTree<3, ComplexDouble> &tree_b,
                      int maxIter,
                      bool absPrec);

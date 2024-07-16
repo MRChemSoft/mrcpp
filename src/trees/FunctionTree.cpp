@@ -36,6 +36,7 @@
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
 #include "utils/tree_utils.h"
+#include "treebuilders/grid.h"
 
 using namespace Eigen;
 
@@ -419,6 +420,37 @@ template <int D, typename T> void FunctionTree<D, T>::add(T c, FunctionTree<D, T
     this->calcSquareNorm();
     inp.deleteGenerated();
 }
+/** @brief In-place addition with MW function representations, fixed grid
+ *
+ * @param[in] c: Numerical coefficient of input function
+ * @param[in] inp: Input function to add
+ *
+ * @details The input function will be added to the union of the current grid of
+ * and input the function grid.
+ *
+ */
+template <int D, typename T> void FunctionTree<D, T>::add_inplace(T c, FunctionTree<D, T> &inp) {
+    if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+    if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
+    build_grid(*this, inp);
+#pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
+    {
+        int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D, T> &out_node = *this->endNodeTable[n];
+            MWNode<D, T> &inp_node = inp.getNode(out_node.getNodeIndex());
+            T *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] += c * inp_coefs[i]; }
+            out_node.calcNorms();
+        }
+    }
+    this->mwTransform(BottomUp);
+    this->calcSquareNorm();
+    inp.deleteGenerated();
+}
+
 /** @brief In-place addition of absolute values of MW function representations
  *
  * @param[in] c Numerical coefficient of input function
@@ -807,6 +839,61 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();
 }
+
+/**  @brief Deep copy of tree
+ *
+ * @details Exact copy without any binding between old and new tree
+ */
+template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out,FunctionTree<D, T> &inp){
+    out = new FunctionTree<D, T> (inp.getMRA(), inp.getName());
+    copy_grid(*out, inp);
+    copy_func(*out, inp);
+}
+
+/**  @brief New tree with only real part
+ */
+template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real(){
+    FunctionTree<D, double> *out = new FunctionTree<D, double> (this->getMRA(), this->getName());
+#pragma omp parallel num_threads(mrcpp_get_num_threads())
+    {
+        int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D, T> &inp_node = *this->endNodeTable[n];
+            MWNode<D, double> out_node = out->getNode(out_node.getNodeIndex()); // Full copy
+            double *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = std::real(inp_coefs[i]); }
+            out_node.calcNorms();
+        }
+    }
+    out->mwTransform(BottomUp);
+    out->calcSquareNorm();
+    return out;
+}
+
+/**  @brief New tree with only imaginary part
+ */
+template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag(){
+    FunctionTree<D, double> *out = new FunctionTree<D, double> (this->getMRA(), this->getName());
+#pragma omp parallel num_threads(mrcpp_get_num_threads())
+    {
+        int nNodes = this->getNEndNodes();
+#pragma omp for schedule(guided)
+        for (int n = 0; n < nNodes; n++) {
+            MWNode<D, T> &inp_node = *this->endNodeTable[n];
+            MWNode<D, double> out_node = out->getNode(out_node.getNodeIndex()); // Full copy
+            double *out_coefs = out_node.getCoefs();
+            const T *inp_coefs = inp_node.getCoefs();
+            for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = std::imag(inp_coefs[i]); }
+            out_node.calcNorms();
+        }
+    }
+    out->mwTransform(BottomUp);
+    out->calcSquareNorm();
+    return out;
+}
+
 
 template class FunctionTree<1, double>;
 template class FunctionTree<2, double>;

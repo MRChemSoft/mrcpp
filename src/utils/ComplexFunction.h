@@ -21,8 +21,9 @@ class MPI_FuncVector;
 
 namespace mrcpp {
 
+template <int D, typename T> class CompFunction;
 class BankAccount;
-  template <int D, typename T> class FunctionTree;
+template <int D, typename T> class FunctionTree;
 template <int D> class MultiResolutionAnalysis;
 
 using ComplexDouble = std::complex<double>;
@@ -110,6 +111,8 @@ private:
 
 class ComplexFunction {
 public:
+    ComplexFunction(CompFunction<3, double> cfunc);
+    ComplexFunction(CompFunction<3,ComplexDouble> cfunc);
     ComplexFunction(std::shared_ptr<TreePtr> funcptr);
     ComplexFunction(const ComplexFunction &func);
     ComplexFunction(int spin = 0, int occ = -1, int rank = -1, bool share = false);

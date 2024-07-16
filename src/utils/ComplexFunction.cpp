@@ -1,4 +1,3 @@
-#include "ComplexFunction.h"
 #include "Bank.h"
 #include "Printer.h"
 #include "Timer.h"
@@ -8,12 +7,32 @@
 #include "treebuilders/project.h"
 #include "trees/FunctionNode.h"
 #include "treebuilders/add.h"
+#include "ComplexFunction.h"
+#include "CompFunction.h"
 
 using mrcpp::Timer;
 
 namespace mrcpp {
 
 MultiResolutionAnalysis<3> *defaultMRA; // Global MRA
+
+ComplexFunction::ComplexFunction(CompFunction<3, double> cfunc)
+        : funcMRA(defaultMRA)
+        , func_ptr(std::make_shared<TreePtr>(false))
+        , rank(cfunc.rank) {
+    setSpin(cfunc.data.n1[0]);
+    setOcc(cfunc.data.n2[0]);
+    setReal(cfunc.Comp[0]);
+}
+ComplexFunction::ComplexFunction(CompFunction<3,ComplexDouble> cfunc)
+        : funcMRA(defaultMRA)
+        , func_ptr(std::make_shared<TreePtr>(false))
+        , rank(cfunc.rank) {
+    setSpin(cfunc.data.n1[0]);
+    setOcc(cfunc.data.n2[0]);
+    setReal(cfunc.Comp[0]->Real());
+    setImag(cfunc.Comp[0]->Imag());
+}
 
 ComplexFunction::ComplexFunction(std::shared_ptr<TreePtr> funcptr)
         : funcMRA(defaultMRA)

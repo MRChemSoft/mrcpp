@@ -80,6 +80,7 @@ public:
     void rescale(T c);
     void normalize();
     void add(T c, FunctionTree<D, T> &inp);
+    void add_inplace(T c, FunctionTree<D, T> &inp);
     void absadd(T c, FunctionTree<D, T> &inp);
     void multiply(T c, FunctionTree<D, T> &inp);
     void map(FMap<T, T> fmap);
@@ -113,6 +114,9 @@ public:
 
     // tools for use of local (nodes are stored in Bank) representation
     int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
+    void deep_copy(FunctionTree<D, T> *out, FunctionTree<D, T> &inp);
+    FunctionTree<D, double> *Real();
+    FunctionTree<D, double> *Imag();
 protected:
     std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) const override;

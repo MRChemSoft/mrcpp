@@ -432,7 +432,7 @@ template <int D, typename T> void FunctionTree<D, T>::add(T c, FunctionTree<D, T
 template <int D, typename T> void FunctionTree<D, T>::add_inplace(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
-    build_grid(*this, inp);
+    while (refine_grid(*this, inp)) {};
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();

@@ -3,14 +3,13 @@
 #include <Eigen/Core>
 
 #include "ComplexFunction.h"
+#include "CompFunction.h"
 #include "mpi_utils.h"
 #include "trees/MultiResolutionAnalysis.h"
 #include <map>
 #include <vector>
 
 // define a class for things that can be sent with MPI
-
-template <int D> class MultiResolutionAnalysis;
 
 using namespace Eigen;
 
@@ -49,10 +48,18 @@ void free_foreign(MPI_FuncVector &Phi);
 
 void send_function(ComplexFunction &func, int dst, int tag, MPI_Comm comm = mpi::comm_wrk);
 void recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm = mpi::comm_wrk);
+template <typename T>
+void send_function(CompFunction<3, T> &func, int dst, int tag, MPI_Comm comm = mpi::comm_wrk);
+template <typename T>
+void recv_function(CompFunction<3, T> &func, int src, int tag, MPI_Comm comm = mpi::comm_wrk);
 void share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm);
 
 void reduce_function(double prec, ComplexFunction &func, MPI_Comm comm);
 void broadcast_function(ComplexFunction &func, MPI_Comm comm);
+template <typename T>
+void reduce_function(double prec, CompFunction<3, T> &func, MPI_Comm comm);
+template <typename T>
+void broadcast_function(CompFunction<3, T> &func, MPI_Comm comm);
 
 void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<ComplexFunction> &Phi, MPI_Comm comm);

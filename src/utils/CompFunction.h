@@ -49,7 +49,13 @@ public:
 
     // ComplexFunctions are only defined for D=3
     template <int D_ = D, typename std::enable_if<D_ == 3, int>::type = 0>
-    CompFunction(T value, ComplexFunction cplxfunc);
+    CompFunction(ComplexFunction cplxfunc);
+    // CompFunction destructor
+    ~CompFunction() {
+        for (int i = 0; i < Ncomp; i++) {
+            delete Comp[i];
+        }
+    }
 
     double norm();
     double squaredNorm();

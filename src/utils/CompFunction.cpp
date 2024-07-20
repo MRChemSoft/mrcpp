@@ -10,8 +10,8 @@ namespace mrcpp {
 
   template <int D, typename T>
   template <int D_, typename std::enable_if<D_ == 3, int>::type>
-  CompFunction<D, T>::CompFunction(T value, ComplexFunction cplxfunc)
-      : Ncomp(1){
+  CompFunction<D, T>::CompFunction(ComplexFunction cplxfunc){
+      Ncomp = 1;
       defaultCompMRA<3> = cplxfunc.funcMRA;
       //we always copy real part
       Comp[0] = new FunctionTree<D, T>(*cplxfunc.funcMRA);
@@ -41,6 +41,7 @@ namespace mrcpp {
     Comp[2]=nullptr;
     Comp[3]=nullptr;
   }
+
   template <int D, typename T>
   double CompFunction<D, T>::norm() {
      double norm = squaredNorm();

@@ -79,8 +79,22 @@ protected:
     T integrateInterpolating() const;
     T integrateValues() const;
 };
+template <int D>
+double dot_scaling (const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
+template <int D>
+double dot_wavelet(const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
 
-template <int D, typename T> T dot_scaling(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket);
-template <int D, typename T> T dot_wavelet(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket);
+template <int D>
+ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+template <int D>
+ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
+    /*double FunctionNode<D, double>::dot_scaling (const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
+double FunctionNode<D, double>::dot_scaling(const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
+ComplexDouble FunctionNode<D, ComplexDouble>::dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+ComplexDouble FunctionNode<D, ComplexDouble>::dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+
+
+    template <int D, typename T> T dot_scaling(const FunctionNode<D, T > &bra, const FunctionNode<D, T> &ket);
+    template <int D, typename T> T dot_wavelet(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket);    */
 } // namespace mrcpp

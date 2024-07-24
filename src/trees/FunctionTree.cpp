@@ -844,10 +844,11 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
  *
  * @details Exact copy without any binding between old and new tree
  */
-template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out,FunctionTree<D, T> &inp){
-    out = new FunctionTree<D, T> (inp.getMRA(), inp.getName());
-    copy_grid(*out, inp);
-    copy_func(*out, inp);
+template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out){
+    delete out;
+    out = new FunctionTree<D, T> (this->getMRA(), this->getName());
+    copy_grid(*out, *this);
+    copy_func(*out, *this);
 }
 
 /**  @brief New tree with only real part

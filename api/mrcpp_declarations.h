@@ -62,7 +62,7 @@ template <int D, typename T = double> class NodeAllocator;
 
 template <int D, typename T = double> class MWNode;
 template <int D, typename T = double> class FunctionNode;
-template <int D, typename T> class CompFunction;
+template <int D = 3, typename T = double> class CompFunction;
 class ComplexFunction;
 class OperatorNode;
 

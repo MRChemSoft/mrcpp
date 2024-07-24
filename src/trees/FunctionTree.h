@@ -114,7 +114,7 @@ public:
 
     // tools for use of local (nodes are stored in Bank) representation
     int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
-    void deep_copy(FunctionTree<D, T> *out, FunctionTree<D, T> &inp);
+    void deep_copy(FunctionTree<D, T> *out);
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
 protected:

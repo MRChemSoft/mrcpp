@@ -393,6 +393,19 @@ void mpi::share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm)
     }
 }
 
+
+/** Update a shared function after it has been changed by one of the MPI ranks. */
+template <typename T>
+    void mpi::share_function(CompFunction<3, T> &func, int src, int tag, MPI_Comm comm) {
+    if (func.isShared()) {
+#ifdef MRCPP_HAS_MPI
+        for (int comp = 0; comp < func.Ncomp; comp++) {
+            mrcpp::share_tree(*func.Comp[comp], src, tag, comm);
+#endif
+        }
+    }
+}
+
 /** @brief Add all mpi function into rank zero */
 void mpi::reduce_function(double prec, ComplexFunction &func, MPI_Comm comm) {
 /* 1) Each odd rank send to the left rank
@@ -735,5 +748,7 @@ void mpi::broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MP
     template void mpi::send_function(CompFunction<3, ComplexDouble> &func, int dst, int tag, MPI_Comm comm);
     template void mpi::recv_function(CompFunction<3, double> &func, int dst, int tag, MPI_Comm comm);
     template void mpi::recv_function(CompFunction<3, ComplexDouble> &func, int dst, int tag, MPI_Comm comm);
+    template void mpi::share_function(CompFunction<3, double> &func, int src, int tag, MPI_Comm comm);
+    template void mpi::share_function(CompFunction<3, ComplexDouble> &func, int src, int tag, MPI_Comm comm);
 
 } // namespace mrcpp

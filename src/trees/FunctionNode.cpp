@@ -405,20 +405,73 @@ template <> void FunctionNode<3>::reCompress() {
  * Integrates the product of the functions represented by the scaling basis on
  * the node on the full support of the nodes. The scaling basis is fully
  * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support. */
-template <int D, typename T> T dot_scaling(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket) {
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const T *a = bra.getCoefs();
-    const T *b = ket.getCoefs();
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
 
     int size = bra.getKp1_d();
 #ifdef HAVE_BLAS
     return cblas_ddot(size, a, 1, b, 1);
 #else
-    T result = 0.0;
+    double result = 0.0;
     for (int i = 0; i < size; i++) result += a[i] * b[i];
+    return result;
+#endif
+}
+
+
+/** Inner product of the functions represented by the scaling basis of the nodes.
+ *
+ * Integrates the product of the functions represented by the scaling basis on
+ * the node on the full support of the nodes. The scaling basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
+    assert(bra.hasCoefs());
+    assert(ket.hasCoefs());
+
+    const ComplexDouble *a = bra.getCoefs();
+    const ComplexDouble *b = ket.getCoefs();
+
+    int size = bra.getKp1_d();
+    ComplexDouble result = 0.0;
+    for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
+    return result;
+}
+
+/** Inner product of the functions represented by the wavelet basis of the nodes.
+ *
+ * Integrates the product of the functions represented by the wavelet basis on
+ * the node on the full support of the nodes. The wavelet basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D>
+    double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
+    if (bra.isGenNode() or ket.isGenNode()) return 0.0;
+
+    assert(bra.hasCoefs());
+    assert(ket.hasCoefs());
+
+    const double *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
+
+    int start = bra.getKp1_d();
+    int size = (bra.getTDim() - 1) * start;
+#ifdef HAVE_BLAS
+    return cblas_ddot(size, &a[start], 1, &b[start], 1);
+#else
+    double result = 0.0;
+    for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
     return result;
 #endif
 }
@@ -428,25 +481,23 @@ template <int D, typename T> T dot_scaling(const FunctionNode<D, T> &bra, const 
  * Integrates the product of the functions represented by the wavelet basis on
  * the node on the full support of the nodes. The wavelet basis is fully
  * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support. */
-template <int D, typename T> T dot_wavelet(const FunctionNode<D, T> &bra, const FunctionNode<D, T> &ket) {
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
-    const T *a = bra.getCoefs();
-    const T *b = ket.getCoefs();
+    const ComplexDouble *a = bra.getCoefs();
+    const ComplexDouble *b = ket.getCoefs();
 
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
-#ifdef HAVE_BLAS
-    return cblas_ddot(size, &a[start], 1, &b[start], 1);
-#else
-    T result = 0.0;
-    for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
+    ComplexDouble result = 0.0;
+    for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];
     return result;
-#endif
 }
 
 template double dot_scaling(const FunctionNode<1, double> &bra, const FunctionNode<1, double> &ket);

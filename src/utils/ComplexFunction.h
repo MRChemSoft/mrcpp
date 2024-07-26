@@ -21,9 +21,8 @@ class MPI_FuncVector;
 
 namespace mrcpp {
 
-template <int D, typename T> class CompFunction;
 class BankAccount;
-template <int D, typename T> class FunctionTree;
+  template <int D, typename T> class FunctionTree;
 template <int D> class MultiResolutionAnalysis;
 
 using ComplexDouble = std::complex<double>;
@@ -111,23 +110,8 @@ private:
 
 class ComplexFunction {
 public:
-    //  template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-  //ComplexFunction(CompFunction<3, double> cfunc) ;
-   //   template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-      ComplexFunction(CompFunction<3, double>& cfunc);
-  //    template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-  //  ComplexFunction(CompFunction<3, double>&& cfunc);
-    /* template <typename T, typename = std::enable_if_t<std::is_same<T, ComplexDouble>::value>>
-  ComplexFunction( CompFunction<3, T> cfunc);
-  template <typename T, typename = std::enable_if_t<std::is_same<T, ComplexDouble>::value>>
-  ComplexFunction(const  CompFunction<3, T> &cfunc) ;
-     ComplexFunction(CompFunction<3, double> cfunc);
-    ComplexFunction(CompFunction<3,ComplexDouble> cfunc);
-    ComplexFunction(const CompFunction<3, double> &cfunc);
-    ComplexFunction(const CompFunction<3, ComplexDouble> &cfunc);*/
     ComplexFunction(std::shared_ptr<TreePtr> funcptr);
     ComplexFunction(const ComplexFunction &func);
-    ComplexFunction(ComplexFunction && func);
     ComplexFunction(int spin = 0, int occ = -1, int rank = -1, bool share = false);
     ComplexFunction &operator=(const ComplexFunction &func);
     ComplexFunction paramCopy() const;

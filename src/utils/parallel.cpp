@@ -266,10 +266,20 @@ bool mpi::my_orb(ComplexFunction orbj) {
     return my_orb(orbj.getRank());
 }
 
+/** @brief Test if function belongs to this MPI rank */
+bool mpi::my_func(int j) {
+    return ((j) % mpi::wrk_size == mpi::wrk_rank) ? true : false;
+}
+
+/** @brief Test if function belongs to this MPI rank */
+bool mpi::my_func(CompFunction<3> func) {
+    return my_func(func.rank);
+}
+
 /** @brief Free all function pointers not belonging to this MPI rank */
-void mpi::free_foreign(MPI_FuncVector &Phi) {
-    for (ComplexFunction &i : Phi) {
-        if (not mpi::my_orb(i)) i.free(NUMBER::Total);
+void mpi::free_foreign(MPI_CompFuncVector &Phi) {
+    for (CompFunction<3> &i : Phi) {
+        if (not mpi::my_func(i)) i.alloc(0);
     }
 }
 
@@ -355,30 +365,31 @@ void mpi::recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) 
 }
 
 // send a component function with MPI
-template <typename T>
-void mpi::send_function(CompFunction<3, T> &func, int dst, int tag, MPI_Comm comm) {
+void mpi::send_function(CompFunction<3> &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     for (int i = 0; i < func.data.Ncomp; i++) {
         //make sure that Nchunks is up to date
-        func.Nchunks[i] = func.Comp[i]->getNChunks();
+        if (func.isreal) func.Nchunks[i] = func.CompD[i]->getNChunks();
+        else func.Nchunks[i] = func.CompC[i]->getNChunks();
     }
     MPI_Send(&func.data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
     for (int i = 0; i < func.data.Ncomp; i++) {
-        mrcpp::send_tree(*func.Comp[i], dst, tag, comm, func.Nchunks[i]);
+        if (func.isreal) mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks[i]);
+        else mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks[i]);
     }
 #endif
 }
 
 // receive a component function with MPI
-template <typename T>
-void mpi::recv_function(CompFunction<3, T> &func, int src, int tag, MPI_Comm comm) {
+void mpi::recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     int func_ncomp_in = func.Ncomp;
     MPI_Recv(&func.data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
     for (int i = 0; i < func.data.Ncomp; i++) {
         if (func_ncomp_in <= i) func.alloc(i);
-        mrcpp::recv_tree(*func.Comp[i], src, tag, comm, func.Nchunks[i]);
+        if (func.isreal) mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks[i]);
+        else  mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks[i]);
     }
 #endif
 }
@@ -395,12 +406,12 @@ void mpi::share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm)
 
 
 /** Update a shared function after it has been changed by one of the MPI ranks. */
-template <typename T>
-    void mpi::share_function(CompFunction<3, T> &func, int src, int tag, MPI_Comm comm) {
+void mpi::share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     if (func.isShared()) {
 #ifdef MRCPP_HAS_MPI
         for (int comp = 0; comp < func.Ncomp; comp++) {
-            mrcpp::share_tree(*func.Comp[comp], src, tag, comm);
+            if (func.isreal) mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
+            else  mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
 #endif
         }
     }
@@ -448,9 +459,8 @@ void mpi::reduce_function(double prec, ComplexFunction &func, MPI_Comm comm) {
 #endif
 }
 
-template <typename T>
 /** @brief Add all mpi function into rank zero */
-void mpi::reduce_function(double prec, CompFunction<3,T> &func, MPI_Comm comm) {
+void mpi::reduce_function(double prec, CompFunction<3> &func, MPI_Comm comm) {
 /* 1) Each odd rank send to the left rank
    2) All odd ranks are "deleted" (can exit routine)
    3) new "effective" ranks are defined within the non-deleted ranks
@@ -469,8 +479,7 @@ void mpi::reduce_function(double prec, CompFunction<3,T> &func, MPI_Comm comm) {
             // receive
             int src = comm_rank + fac;
             if (src < comm_size) {
-                MultiResolutionAnalysis<3> mra(func.Comp[0]->getMRA());
-                CompFunction<3,T> func_i(mra);
+                CompFunction<3> func_i;
                 int tag = 3333 + src;
                 mpi::recv_function(func_i, src, tag, comm);
                 func.add(1.0, func_i); // add in place using union grid
@@ -595,6 +604,44 @@ void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<Co
 
 
 /** @brief make union tree without coeff and send to all
+ *  Real trees
+ */
+void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+    /* 1) make union grid of own orbitals
+       2) make union grid with others orbitals (sent to rank zero)
+       3) rank zero broadcast func to everybody
+     */
+
+    int N = Phi.size();
+    for (int j = 0; j < N; j++) {
+        if (not mpi::my_orb(j)) continue;
+        tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+    }
+    mpi::reduce_Tree_noCoeff(tree, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff(tree, mpi::comm_wrk);
+}
+
+
+/** @brief make union tree without coeff and send to all
+ *  Complex trees
+ */
+void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+    /* 1) make union grid of own orbitals
+       2) make union grid with others orbitals (sent to rank zero)
+       3) rank zero broadcast func to everybody
+     */
+
+    int N = Phi.size();
+    for (int j = 0; j < N; j++) {
+        if (not mpi::my_orb(j)) continue;
+        tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
+    }
+    mpi::reduce_Tree_noCoeff(tree, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff(tree, mpi::comm_wrk);
+}
+
+
+/** @brief make union tree without coeff and send to all
  *  Include both real and imaginary parts
  */
     void mpi::allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm) {
@@ -644,9 +691,8 @@ void mpi::broadcast_function(ComplexFunction &func, MPI_Comm comm) {
 #endif
 }
 
-template <typename T>
 /** @brief Distribute rank zero function to all ranks */
-void mpi::broadcast_function(CompFunction<3, T> &func, MPI_Comm comm) {
+void mpi::broadcast_function(CompFunction<3> &func, MPI_Comm comm) {
 /* use same strategy as a reduce, but in reverse order */
 #ifdef MRCPP_HAS_MPI
     int comm_size, comm_rank;
@@ -740,15 +786,5 @@ void mpi::broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MP
     MPI_Barrier(comm);
 #endif
 }
-    template void mpi::reduce_function(double prec, CompFunction<3, double> &func, MPI_Comm comm);
-    template void mpi::reduce_function(double prec, CompFunction<3, ComplexDouble> &func, MPI_Comm comm);
-    template void mpi::broadcast_function(CompFunction<3, double> &func, MPI_Comm comm);
-    template void mpi::broadcast_function(CompFunction<3, ComplexDouble> &func, MPI_Comm comm);
-    template void mpi::send_function(CompFunction<3, double> &func, int dst, int tag, MPI_Comm comm);
-    template void mpi::send_function(CompFunction<3, ComplexDouble> &func, int dst, int tag, MPI_Comm comm);
-    template void mpi::recv_function(CompFunction<3, double> &func, int dst, int tag, MPI_Comm comm);
-    template void mpi::recv_function(CompFunction<3, ComplexDouble> &func, int dst, int tag, MPI_Comm comm);
-    template void mpi::share_function(CompFunction<3, double> &func, int src, int tag, MPI_Comm comm);
-    template void mpi::share_function(CompFunction<3, ComplexDouble> &func, int src, int tag, MPI_Comm comm);
 
 } // namespace mrcpp

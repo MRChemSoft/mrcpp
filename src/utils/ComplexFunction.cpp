@@ -1,3 +1,4 @@
+#include "ComplexFunction.h"
 #include "Bank.h"
 #include "Printer.h"
 #include "Timer.h"
@@ -7,62 +8,12 @@
 #include "treebuilders/project.h"
 #include "trees/FunctionNode.h"
 #include "treebuilders/add.h"
-#include "ComplexFunction.h"
-#include "CompFunction.h"
 
 using mrcpp::Timer;
 
 namespace mrcpp {
 
 MultiResolutionAnalysis<3> *defaultMRA; // Global MRA
-  /*    template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-    ComplexFunction::ComplexFunction(CompFunction<3, T> cfunc)
-        : funcMRA(defaultMRA)
-        , func_ptr(std::make_shared<TreePtr>(false))
-        , rank(cfunc.rank) {
-    setSpin(cfunc.data.n1[0]);
-    setOcc(cfunc.data.n2[0]);
-    setReal(cfunc.Comp[0]);
-}
-       template <typename T, typename = std::enable_if_t<std::is_same<T, ComplexDouble>::value>>
-     ComplexFunction::ComplexFunction( CompFunction<3, T> cfunc) {
-        : funcMRA(defaultMRA)
-        , func_ptr(std::make_shared<TreePtr>(false))
-        , rank(cfunc.rank) {
-    setSpin(cfunc.data.n1[0]);
-    setOcc(cfunc.data.n2[0]);
-    setReal(cfunc.Comp[0]->Real());
-    setImag(cfunc.Comp[0]->Imag());
-    }*/
-
-   //  template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
-    ComplexFunction::ComplexFunction(CompFunction<3, double>& cfunc)
-        : funcMRA(defaultMRA)
-        , func_ptr(std::make_shared<TreePtr>(false))
-        , rank(cfunc.rank) {
-    setSpin(cfunc.data.n1[0]);
-    setOcc(cfunc.data.n2[0]);
-    setReal(cfunc.Comp[0]);
-}
-    //    template <typename T, typename = std::enable_if_t<std::is_same<T, double>::value>>
- //     ComplexFunction::ComplexFunction(CompFunction<3, double> && cfunc)
-//          : funcMRA(defaultMRA)
-//          , func_ptr(std::make_shared<TreePtr>(false))
-//          , rank(cfunc.rank) {
-//      setSpin(cfunc.data.n1[0]);
-//      setOcc(cfunc.data.n2[0]);
-//      setReal(cfunc.Comp[0]);
-//  }
-/*  template <typename T, typename = std::enable_if_t<std::is_same<T, ComplexDouble>::value>>
-     ComplexFunction::ComplexFunction(const CompFunction<3, T>& cfunc) {
-        : funcMRA(defaultMRA)
-        , func_ptr(std::make_shared<TreePtr>(false))
-        , rank(cfunc.rank) {
-    setSpin(cfunc.data.n1[0]);
-    setOcc(cfunc.data.n2[0]);
-    setReal(cfunc.Comp[0]->Real());
-    setImag(cfunc.Comp[0]->Imag());
-    }*/
 
 ComplexFunction::ComplexFunction(std::shared_ptr<TreePtr> funcptr)
         : funcMRA(defaultMRA)

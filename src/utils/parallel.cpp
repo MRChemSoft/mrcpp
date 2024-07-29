@@ -505,7 +505,7 @@ void reduce_function(double prec, CompFunction<3> &func, MPI_Comm comm) {
 }
 
 /** @brief make union tree and send into rank zero */
-void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm) {
+void reduce_Tree_noCoeff_real(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm) {
 /* 1) Each odd rank send to the left rank
    2) All odd ranks are "deleted" (can exit routine)
    3) new "effective" ranks are defined within the non-deleted ranks
@@ -546,7 +546,7 @@ void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm) {
 }
 
 /** @brief make union tree and send into rank zero */
-void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm) {
+void reduce_Tree_noCoeff_complex(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm) {
 /* 1) Each odd rank send to the left rank
    2) All odd ranks are "deleted" (can exit routine)
    3) new "effective" ranks are defined within the non-deleted ranks
@@ -601,8 +601,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<Complex
         if (Phi[j].hasReal()) tree.appendTreeNoCoeff(Phi[j].real());
         if (Phi[j].hasImag()) tree.appendTreeNoCoeff(Phi[j].imag());
     }
-    reduce_Tree_noCoeff(tree, comm_wrk);
-    broadcast_Tree_noCoeff(tree, comm_wrk);
+    reduce_Tree_noCoeff_real(tree, comm_wrk);
+    broadcast_Tree_noCoeff_real(tree, comm_wrk);
 }
 
 
@@ -620,8 +620,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
         if (not my_orb(j)) continue;
         tree.appendTreeNoCoeff(*Phi[j]->CompD[0]);
     }
-    reduce_Tree_noCoeff(tree, comm_wrk);
-    broadcast_Tree_noCoeff(tree, comm_wrk);
+    reduce_Tree_noCoeff_real(tree, comm_wrk);
+    broadcast_Tree_noCoeff_real(tree, comm_wrk);
 }
 
 
@@ -639,8 +639,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
         if (not my_orb(j)) continue;
         tree.appendTreeNoCoeff(*Phi[j]->CompC[0]);
     }
-    reduce_Tree_noCoeff(tree, comm_wrk);
-    broadcast_Tree_noCoeff(tree, comm_wrk);
+    reduce_Tree_noCoeff_complex(tree, comm_wrk);
+    broadcast_Tree_noCoeff_complex(tree, comm_wrk);
 }
 
 
@@ -658,8 +658,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
         if (not my_orb(j)) continue;
         tree.appendTreeNoCoeff(Phi[j]);
     }
-    reduce_Tree_noCoeff(tree, comm_wrk);
-    broadcast_Tree_noCoeff(tree, comm_wrk);
+    reduce_Tree_noCoeff_complex(tree, comm_wrk);
+    broadcast_Tree_noCoeff_complex(tree, comm_wrk);
 }
 
 /** @brief Distribute rank zero function to all ranks */
@@ -727,7 +727,7 @@ void broadcast_function(CompFunction<3> &func, MPI_Comm comm) {
 }
 
 /** @brief Distribute rank zero function to all ranks */
-void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm) {
+void broadcast_Tree_noCoeff_real(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm) {
 /* use same strategy as a reduce, but in reverse order */
 #ifdef MRCPP_HAS_MPI
     int comm_size, comm_rank;
@@ -759,7 +759,7 @@ void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm)
 }
 
 /** @brief Distribute rank zero function to all ranks */
-void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm) {
+void broadcast_Tree_noCoeff_complex(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm) {
 /* use same strategy as a reduce, but in reverse order */
 #ifdef MRCPP_HAS_MPI
     int comm_size, comm_rank;

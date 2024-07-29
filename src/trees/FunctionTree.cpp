@@ -811,7 +811,7 @@ template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
         }
     }
     this->nodeAllocator_p->deallocAllCoeff();
-    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff_real(*this, mpi::comm_wrk);
     this->isLocal = true;
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();
@@ -834,7 +834,7 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
         }
     }
     this->nodeAllocator_p->deallocAllCoeff();
-    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff_complex(*this, mpi::comm_wrk);
     this->isLocal = true;
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();

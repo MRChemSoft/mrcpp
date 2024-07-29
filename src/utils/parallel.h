@@ -61,12 +61,12 @@ void broadcast_function(ComplexFunction &func, MPI_Comm comm);
 void reduce_function(double prec, CompFunction<3> &func, MPI_Comm comm);
 void broadcast_function(CompFunction<3> &func, MPI_Comm comm);
 
-void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
+void reduce_Tree_noCoeff_real(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<ComplexFunction> &Phi, MPI_Comm comm);
-void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
-void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
+void broadcast_Tree_noCoeff_real(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
+void reduce_Tree_noCoeff_complex(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm);
-void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
+void broadcast_Tree_noCoeff_complex(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
 
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<CompFunction<3>*> &Phi, MPI_Comm comm);
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<CompFunction<3>*> &Phi, MPI_Comm comm);

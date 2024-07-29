@@ -460,36 +460,35 @@ template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperato
     return out;
 }
 
-template <int D> CompFunctionVector<D> gradient(DerivativeOperator<D> &oper, CompFunction<D> &inp,ComplexDouble  **metric) {
-    CompFunctionVector<D> out;
-    for (int d = 0; d < D; d++) {
-        CompFunction<D> *grad_d = new CompFunction<D>();
-        for (int icomp = 0; icomp < 4; icomp++){
-            if (inp.Comp[icomp]!=nullptr) {
-                for (int ocomp = 0; ocomp < 4; ocomp++){
-                    if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                        if (inp.isreal) {
-                            grad_d->isreal = 1;
-                            grad_d->iscomplex = 0;
-                            grad_d->CompD[ocomp] = new FunctionTree<D, double>(inp.getMRA());
-                            apply(grad_d->CompD[ocomp], oper, *inp.CompD[icomp], d);
-                            if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                                grad_d->CompD[ocomp]->rescale(metric[icomp][ocomp]);
-                            }
-                        } else {
-                            grad_d->isreal = 0;
-                            grad_d->iscomplex = 1;
-                            grad_d->CompC[ocomp] = new FunctionTree<D, ComplexDouble>(inp.getMRA());
-                            apply(grad_d->CompC[ocomp], oper, *inp.CompC[icomp], d);
-                            if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                                grad_d->CompC[ocomp]->rescale(metric[icomp][ocomp]);
-                            }
+std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  **metric) {
+    std::vector<CompFunction<3>*> out;
+    for (int d = 0; d < 3; d++) {
+        CompFunction<3> *grad_d = new CompFunction<3>();
+        for (int icomp = 0; icomp < inp.Ncomp; icomp++){
+            for (int ocomp = 0; ocomp < 4; ocomp++){
+                if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                    grad_d->Ncomp=ocomp;
+                    if (inp.isreal) {
+                        grad_d->isreal = 1;
+                        grad_d->iscomplex = 0;
+                        grad_d->CompD[ocomp] = new FunctionTree<3, double>(inp.CompD[0]->getMRA());
+                        apply(*(grad_d->CompD[ocomp]), oper, *inp.CompD[icomp], d);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
+                            grad_d->CompD[ocomp]->rescale((metric[icomp][ocomp]).real());
+                        }
+                    } else {
+                        grad_d->isreal = 0;
+                        grad_d->iscomplex = 1;
+                        grad_d->CompC[ocomp] = new FunctionTree<3, ComplexDouble>(inp.CompC[0]->getMRA());
+                        apply(*(grad_d->CompC[ocomp]), oper, *inp.CompC[icomp], d);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
+                            grad_d->CompC[ocomp]->rescale(metric[icomp][ocomp]);
                         }
                     }
                 }
             }
         }
-        out.oush_back(grad_d);
+        out.push_back(grad_d);
     }
     return out;
 }

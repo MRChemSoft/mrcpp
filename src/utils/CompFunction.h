@@ -45,8 +45,7 @@ public:
     CompFunction(int n1, bool share);
     CompFunction(const CompFunction<D> &compfunc);
     CompFunction(CompFunction<D> && compfunc);
-    //    ComplexFunction *CPXfct; // temporary solution
-
+    CompFunction<D> &operator=(const CompFunction<D> &compfunc);
 
     FunctionTree<D, double> *CompD[4];
     FunctionTree<D, ComplexDouble> *CompC[4];
@@ -65,7 +64,6 @@ public:
      //CompFunction(ComplexFunction cplxfunc);
     // template <int D_ = 3, typename std::enable_if<D_ == 3, int>::type = 0>
      //operator ComplexFunction() const;
-    CompFunction<D> &operator=(const CompFunction<D> &compfunc);
     // CompFunction destructor
     ~CompFunction() {
         for (int i = 0; i < Ncomp; i++) {
@@ -79,7 +77,7 @@ public:
     void alloc(int i);
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setRank(int i) {rank = i;};
-    int getRank() {return rank;};
+    const int getRank() const {return rank;};
     void add(ComplexDouble c, CompFunction<D> inp);
 
     int crop(double prec);
@@ -89,20 +87,19 @@ public:
     int getNNodes() const;
 
     //NB: All tbelow should be revised. Now only for backwards compatibility to ComplexFunction class
+
     bool hasReal()  const {return isreal;}
     bool hasImag()  const {return iscomplex;}
     bool isShared() const {return data.shared;}
     bool conjugate() const {return data.conj;}
 
-    FunctionTree<D, double> &real() {return *CompD[0];}
-    FunctionTree<D, double> &imag() {return *CompD[0];} //does not make sense
-    const FunctionTree<D, double> &real() const {return *CompD[0];}
-    const FunctionTree<D, double> &imag() const {return *CompD[0];} //does not make sense
+    FunctionTree<D, double> &real(int i = 0);
+    FunctionTree<D, double> &imag(int i = 0); //does not make sense now
+    const FunctionTree<D, double> &real(int i = 0) const;
+    const FunctionTree<D, double> &imag(int i = 0) const; //does not make sense now
     void free(int type) {delete CompD[0]; CompD[0] = nullptr; delete CompC[0]; CompC[0] = nullptr;}
     void flushFuncData();
 };
-
-template <int D> using CompFunctionVector = std::vector<CompFunction<D> *>;
 
 template <int D>
 void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp);
@@ -127,24 +124,24 @@ void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double p
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec);
 
-class MPI_CompFuncVector : public std::vector<CompFunction<3>> {
+class CompFunctionVector : public std::vector<CompFunction<3>*> {
 public:
-    MPI_CompFuncVector(int N = 0);
+    CompFunctionVector(int N = 0);
     MultiResolutionAnalysis<3> *vecMRA;
     void distribute();
 };
 
-void rotate(MPI_CompFuncVector &Phi, const ComplexMatrix &U, double prec = -1.0);
-void rotate(MPI_CompFuncVector &Phi, const ComplexMatrix &U, MPI_CompFuncVector &Psi, double prec = -1.0);
-void save_nodes(MPI_CompFuncVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
-MPI_CompFuncVector multiply(MPI_CompFuncVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
+void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec = -1.0);
+void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
+void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
+CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
-ComplexVector dot(MPI_CompFuncVector &Bra, MPI_CompFuncVector &Ket);
-ComplexMatrix calc_lowdin_matrix(MPI_CompFuncVector &Phi);
-ComplexMatrix calc_overlap_matrix(MPI_CompFuncVector &BraKet);
-ComplexMatrix calc_overlap_matrix(MPI_CompFuncVector &Bra, MPI_CompFuncVector &Ket);
-DoubleMatrix calc_norm_overlap_matrix(MPI_CompFuncVector &BraKet);
-void orthogonalize(double prec, MPI_CompFuncVector &Bra, MPI_CompFuncVector &Ket);
+ComplexVector dot(CompFunctionVector &Bra, CompFunctionVector &Ket);
+ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi);
+ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet);
+ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &Ket);
+DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet);
+void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket);
 
 
 } // namespace mrcpp

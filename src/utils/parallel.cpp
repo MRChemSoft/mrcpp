@@ -269,14 +269,20 @@ bool my_func(int j) {
 }
 
 /** @brief Test if function belongs to this MPI rank */
-bool my_func(CompFunction<3> func) {
+bool my_func(const CompFunction<3>& func) {
     return my_func(func.rank);
 }
 
+
+/** @brief Test if function belongs to this MPI rank */
+bool my_func(CompFunction<3> *func) {
+    return my_func(func->rank);
+}
+
 /** @brief Free all function pointers not belonging to this MPI rank */
-void free_foreign(MPI_CompFuncVector &Phi) {
-    for (CompFunction<3> &i : Phi) {
-        if (not my_func(i)) i.alloc(0);
+void free_foreign(CompFunctionVector &Phi) {
+    for (CompFunction<3>* &i : Phi) {
+        if (not my_func(i)) i->alloc(0);
     }
 }
 
@@ -603,7 +609,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<Complex
 /** @brief make union tree without coeff and send to all
  *  Real trees
  */
-void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFunction<3>*> &Phi, MPI_Comm comm) {
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -612,7 +618,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
         if (not my_orb(j)) continue;
-        tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+        tree.appendTreeNoCoeff(*Phi[j]->CompD[0]);
     }
     reduce_Tree_noCoeff(tree, comm_wrk);
     broadcast_Tree_noCoeff(tree, comm_wrk);
@@ -622,7 +628,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
 /** @brief make union tree without coeff and send to all
  *  Complex trees
  */
-void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<CompFunction<3>*> &Phi, MPI_Comm comm) {
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -631,7 +637,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
         if (not my_orb(j)) continue;
-        tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
+        tree.appendTreeNoCoeff(*Phi[j]->CompC[0]);
     }
     reduce_Tree_noCoeff(tree, comm_wrk);
     broadcast_Tree_noCoeff(tree, comm_wrk);

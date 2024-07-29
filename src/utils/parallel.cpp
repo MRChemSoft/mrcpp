@@ -5,8 +5,6 @@
 #include <thread>
 
 #include "Bank.h"
-#include "ComplexFunction.h"
-#include "CompFunction.h"
 #include "omp_utils.h"
 #include "parallel.h"
 #include "trees/FunctionTree.h"

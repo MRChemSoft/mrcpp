@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ComplexFunction.h"
 #include "CompFunction.h"
 #include "parallel.h"
 #include "trees/NodeIndex.h"

@@ -415,8 +415,8 @@ void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
         for (int comp = 0; comp < func.Ncomp; comp++) {
             if (func.isreal) mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
             else  mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
-#endif
         }
+#endif
     }
 }
 

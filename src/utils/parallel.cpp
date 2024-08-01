@@ -590,6 +590,7 @@ void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm c
  *  Include both real and imaginary parts
  */
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<ComplexFunction> &Phi, MPI_Comm comm) {
+#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -603,6 +604,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<Complex
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#endif
 }
 
 
@@ -610,6 +612,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<Complex
  *  Real trees
  */
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -622,6 +625,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#endif
 }
 
 
@@ -629,6 +633,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
  *  Complex trees
  */
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -641,6 +646,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#endif
 }
 
 
@@ -648,6 +654,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
  *  Include both real and imaginary parts
  */
     void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm) {
+#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -660,6 +667,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#endif
 }
 
 /** @brief Distribute rank zero function to all ranks */
@@ -790,5 +798,4 @@ void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Com
 #endif
 }
 } // namespace mpi
-
 } // namespace mrcpp

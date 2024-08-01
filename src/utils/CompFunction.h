@@ -16,8 +16,8 @@ struct CompFunctionData {
     int conj{0}; // conjugate of all components
     int CompFn1{0};
     int CompFn2{0};
-    int isreal{1}; // T=double
-    int iscomplex{0}; // T=DoubleComplex
+    int isreal{0}; // trees are defined for T=double
+    int iscomplex{0}; // trees are defined for T=DoubleComplex
     double CompFd1{0.0};
     double CompFd2{0.0};
     double CompFd3{0.0};
@@ -31,6 +31,14 @@ struct CompFunctionData {
     double d1[4]{0.0,0.0,0.0,0.0};
     double d2[4]{0.0,0.0,0.0,0.0};
     double d3[4]{0.0,0.0,0.0,0.0};
+    // used for storage on disk
+    int type{0};
+    int order{1};
+    int scale{0};
+    int depth{0};
+    int boxes[3] = {0, 0, 0};
+    int corner[3] = {0, 0, 0};
+
     // used internally
     int shared{0};
     int Nchunks[4]{0,0,0,0}; // number of chunks of each component tree
@@ -43,6 +51,7 @@ public:
     CompFunction();
     CompFunction(int n1);
     CompFunction(int n1, bool share);
+    CompFunction(const CompFunctionData<D>& indata);
     CompFunction(const CompFunction<D> &compfunc);
     CompFunction(CompFunction<D> && compfunc);
     CompFunction<D> &operator=(const CompFunction<D> &compfunc);
@@ -72,6 +81,8 @@ public:
         }
     }
 
+    CompFunction paramCopy() const;
+    ComplexDouble integrate() const;
     double norm() const;
     double squaredNorm() const;
     void alloc(int i);
@@ -85,20 +96,22 @@ public:
     void free();
     int getSizeNodes() const;
     int getNNodes() const;
+    void flushMRAData();
+    void flushFuncData();
+    CompFunctionData<D> getFuncData() const;
 
-    //NB: All tbelow should be revised. Now only for backwards compatibility to ComplexFunction class
+    //NB: All below should be revised. Now only for backwards compatibility to ComplexFunction class
 
+    void free(int type) {free();}
     bool hasReal()  const {return isreal;}
     bool hasImag()  const {return iscomplex;}
     bool isShared() const {return data.shared;}
     bool conjugate() const {return data.conj;}
-
+    CompFunction<D> dagger();
     FunctionTree<D, double> &real(int i = 0);
     FunctionTree<D, double> &imag(int i = 0); //does not make sense now
     const FunctionTree<D, double> &real(int i = 0) const;
     const FunctionTree<D, double> &imag(int i = 0) const; //does not make sense now
-    void free(int type) {delete CompD[0]; CompD[0] = nullptr; delete CompC[0]; CompC[0] = nullptr;}
-    void flushFuncData();
 };
 
 template <int D>
@@ -110,13 +123,19 @@ void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDo
 template <int D>
 void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec);
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec, bool useMaxNorms);
+void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false);
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, bool absPrec = false, bool useMaxNorms = false);
 template <int D, typename T>
 void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine = 0);
 template <int D, typename T>
 void multiply(CompFunction<D> &out, FunctionTree<D, T> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine = 0);
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket);
+template <int D>
+double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket);
 template <int D, typename T>
 void project(CompFunction<D> &out, std::function<T(const Coord<D> &r)> f, double prec);
 template <int D>
@@ -124,7 +143,7 @@ void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double p
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec);
 
-class CompFunctionVector : public std::vector<CompFunction<3>*> {
+class CompFunctionVector : public std::vector<CompFunction<3>> {
 public:
     CompFunctionVector(int N = 0);
     MultiResolutionAnalysis<3> *vecMRA;

@@ -111,10 +111,11 @@ public:
                          std::vector<MWNode<D, T> *> *refNodes = nullptr);
     void makeTreefromCoeff(MWTree<D, T> &refTree, std::vector<T *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode = "adaptive");
     void appendTreeNoCoeff(MWTree<D, T> &inTree);
-
+    void CopyTree(FunctionTree<D, double> &inTree);
     // tools for use of local (nodes are stored in Bank) representation
     int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
     void deep_copy(FunctionTree<D, T> *out);
+    FunctionTree<D, ComplexDouble>* CopyTreeToComplex();
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
 protected:

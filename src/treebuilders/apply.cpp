@@ -116,7 +116,18 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
  * no coefs).
  *
  */
-template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter, bool absPrec) {
+template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int icomp = 0; icomp < inp.Ncomp; icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -250,7 +261,17 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
     print::separator(10, ' ');
 }
 
-template <int D, typename T> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble **metric, int maxIter, bool absPrec) {
+template <int D, typename T> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int icomp = 0; icomp < inp.Ncomp; icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -296,7 +317,17 @@ template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T
     apply_on_unit_cell<D>(false, prec, out, oper, inp, maxIter, absPrec);
 }
 
-template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter, bool absPrec) {
+template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int icomp = 0; icomp < 4; icomp++){
         if (inp.Comp[icomp]!=nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++){
@@ -345,7 +376,17 @@ template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, 
 }
 
 
-template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter, bool absPrec) {
+template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int icomp = 0; icomp < 4; icomp++){
         if (inp.Comp[icomp]!=nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++){
@@ -418,7 +459,17 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
     print::separator(10, ' ');
 }
 
-template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int dir) {
+template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int icomp = 0; icomp < inp.Ncomp; icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -460,8 +511,18 @@ template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperato
     return out;
 }
 
-std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  **metric) {
+std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  metric[4][4]) {
     std::vector<CompFunction<3>*> out;
+    ComplexDouble defaultMetric[4][4];
+    for (int i=0; i<4; i++){
+        for (int j=0; j<4; j++){
+            if (i==j) defaultMetric[i][j] = 1.0;
+            else defaultMetric[i][j] = 0.0;
+        }
+    }
+    if (metric == nullptr) {
+        metric = defaultMetric;
+    }
     for (int d = 0; d < 3; d++) {
         CompFunction<3> *grad_d = new CompFunction<3>();
         for (int icomp = 0; icomp < inp.Ncomp; icomp++){
@@ -527,7 +588,7 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
     clear(tmp_vec, true);
 }
 
-template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, ComplexDouble **metric) {
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, ComplexDouble metric[4][4]) {
     MSG_ABORT("not implemented");
 }
 
@@ -536,16 +597,16 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     divergence(out, oper, inp_vec);
 }
-template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, ComplexDouble **metric) {
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, ComplexDouble metric[4][4]) {
     MSG_ABORT("not implemented");
 }
 
 template void apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
 template void apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
 template void apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
-template void apply<1>(double prec, CompFunction<1> &out, ConvolutionOperator<1> &oper, CompFunction<1> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
-template void apply<2>(double prec, CompFunction<2> &out, ConvolutionOperator<2> &oper, CompFunction<2> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
-template void apply<3>(double prec, CompFunction<3> &out, ConvolutionOperator<3> &oper, CompFunction<3> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
+template void apply<1>(double prec, CompFunction<1> &out, ConvolutionOperator<1> &oper, const CompFunction<1> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
+template void apply<2>(double prec, CompFunction<2> &out, ConvolutionOperator<2> &oper, const CompFunction<2> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
+template void apply<3>(double prec, CompFunction<3> &out, ConvolutionOperator<3> &oper, const CompFunction<3> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template void apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, FunctionTreeVector<1, double> &precTrees, int maxIter, bool absPrec);
 template void apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, FunctionTreeVector<2, double> &precTrees, int maxIter, bool absPrec);
 template void apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, FunctionTreeVector<3, double> &precTrees, int maxIter, bool absPrec);

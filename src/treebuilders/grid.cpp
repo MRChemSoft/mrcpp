@@ -224,6 +224,27 @@ template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTre
     build_grid(out, inp);
 }
 
+
+/** @brief Build empty grid that is identical to another MW grid for every component
+ *
+ * @param[out] out: Output to be built
+ * @param[in] inp: Input
+ *
+ * @note The difference from the corresponding `build_grid` function is that
+ * this will first clear the grid of the `out` function, while `build_grid`
+ * will _extend_ the existing grid.
+ *
+ */
+template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
+    out.free();
+    out.data = inp.data;
+    out.alloc(inp.Ncomp);
+    for (int i = 0; i < inp.Ncomp; i++) {
+        if (inp.isreal) build_grid(out.CompD[i], inp.CompD[i]);
+        if (inp.iscomplex) build_grid(out.CompC[i], inp.CompC[i]);
+    }
+}
+
 /** @brief Clear the MW coefficients of a function representation
  *
  * @param[in,out] out: Output function to be cleared

@@ -82,6 +82,19 @@ void multiply(double prec,
     tmp_vec.push_back({1.0, &inp_b});
     multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms);
 }
+    /*
+template <int D> void multiply(double prec,
+                               FunctionTree<D, ComplexDouble> &out,
+                               ComplexDouble c,
+                               FunctionTree<D, ComplexDouble> &inp_a,
+                               FunctionTree<D, double> &inp_b,
+                               int maxIter = -1,
+                               bool absPrec = false,
+                               bool useMaxNorms = false) {
+    // we rather make a copy with ComplexDouble type only
+    FunctionTree<D, ComplexDouble>* inp_b_CPLX = inp_b.CopyTreeToComplex();
+    multiply(prec, out,c,inp_a,inp_b_CPLX,maxIter,absPrec,useMaxNorms);
+    } */
 
 /** @brief Multiplication of several MW function representations, adaptive grid
  *
@@ -371,7 +384,7 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, Funct
             if (mwNode == nullptr) MSG_ABORT("Trees must have same grid");
             node.getAbsCoefs(valA);
             mwNode->getAbsCoefs(valB);
-            for (int i = 0; i < ncoef; i++) result += std::abs(valA[i] * valB[i]);
+            for (int i = 0; i < ncoef; i++) result += std::norm(valA[i] * valB[i]);
         } else {
             // approximate by product of node norms
             int rIdx = ket.getRootBox().getBoxIndex(idx);

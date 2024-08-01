@@ -787,6 +787,7 @@ template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D
     }
 }
 
+
 template <int D, typename T> void FunctionTree<D, T>::deleteGenerated() {
     for (int n = 0; n < this->getNEndNodes(); n++) this->getEndMWNode(n).deleteGenerated();
 }
@@ -811,7 +812,7 @@ template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
         }
     }
     this->nodeAllocator_p->deallocAllCoeff();
-    mpi::broadcast_Tree_noCoeff_real(*this, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
     this->isLocal = true;
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();
@@ -834,7 +835,7 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
         }
     }
     this->nodeAllocator_p->deallocAllCoeff();
-    mpi::broadcast_Tree_noCoeff_complex(*this, mpi::comm_wrk);
+    mpi::broadcast_Tree_noCoeff(*this, mpi::comm_wrk);
     this->isLocal = true;
     assert(this->NodeIndex2serialIx.size() == getNNodes());
     return this->NodeIndex2serialIx.size();
@@ -893,6 +894,27 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
     out->mwTransform(BottomUp);
     out->calcSquareNorm();
     return out;
+}
+
+
+/** From real to complex tree. Copy everything, and convert double to ComplexDouble for the coefficents.  */
+template <int D, typename T> FunctionTree<D, ComplexDouble>* FunctionTree<D, T>::CopyTreeToComplex() {
+    FunctionTree<D, ComplexDouble>* outTree = new FunctionTree<D, ComplexDouble> (this->getMRA());
+    int nChunks=getNChunks();
+    outTree->getNodeAllocator().init(nChunks, true); //also allocate coefficients
+    int Ncoefperchunk = outTree->getNodeAllocator().getCoefChunkSize()/sizeof(ComplexDouble);
+    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+        //MWNode<D, double> * inNode = inTree.getNodeAllocator().getNodeChunk(iChunk); //TODO
+        //outTree->getNodeAllocator().getNodeChunk(iChunk) = inTree.getNodeAllocator().getNodeChunk(iChunk);//TODO
+        ComplexDouble* Ccoefs;
+        Ccoefs = outTree->getNodeAllocator().getCoefChunk(iChunk);
+        auto InCoefs = this->getNodeAllocator().getCoefChunk(iChunk); // can be type double* or ComplexDouble*
+        for (int i = 0; i < Ncoefperchunk; i++) {
+            Ccoefs[i] = InCoefs[i];
+        }
+    }
+    outTree->getNodeAllocator().reassemble();
+    return outTree;
 }
 
 

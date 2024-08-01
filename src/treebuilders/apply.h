@@ -36,22 +36,22 @@ template <int D> class DerivativeOperator;
 template <int D> class ConvolutionOperator;
 
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
-template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
+template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, FunctionTreeVector<D, T> &precTrees, int maxIter = -1, bool absPrec = false);
-template <int D, typename T> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
-template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
+template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
-template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int maxIter = -1, bool absPrec = false);
+template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTree<D, T> &inp, int dir = -1);
-template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, ComplexDouble **metric, int dir = -1);
+template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir = -1, ComplexDouble metric[4][4] = nullptr);
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> &inp);
-template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, ComplexDouble **metric);
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, ComplexDouble metric[4][4]);
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> &inp);
-template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, ComplexDouble **metric);
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, ComplexDouble metric[4][4] = nullptr);
 template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperator<D> &oper, FunctionTree<D, T> &inp);
 // template <int D>
-std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  **metric);
+std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  metric[4][4] = nullptr);
 // clang-format on
 
 } // namespace mrcpp

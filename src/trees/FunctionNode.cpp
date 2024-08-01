@@ -231,14 +231,17 @@ template <int D, typename T> void FunctionNode<D, T>::setValues(const Matrix<T, 
 
 /** get coefficients corresponding to absolute value of function
  *
- * Leaves the original coefficients unchanged. */
+ * Leaves the original coefficients unchanged.
+ * Note that we mus use T and not double, even if the norms are double, because
+ * the transforms expect T types.
+ */
 template <int D, typename T> void FunctionNode<D, T>::getAbsCoefs(T *absCoefs) {
     T *coefsTmp = this->coefs;
     for (int i = 0; i < this->n_coefs; i++) absCoefs[i] = coefsTmp[i]; // copy
     this->coefs = absCoefs;                                            // swap coefs
     this->mwTransform(Reconstruction);
     this->cvTransform(Forward);
-    for (int i = 0; i < this->n_coefs; i++) this->coefs[i] = std::abs(this->coefs[i]);
+    for (int i = 0; i < this->n_coefs; i++) this->coefs[i] = std::norm(this->coefs[i]);
     this->cvTransform(Backward);
     this->mwTransform(Compression);
     this->coefs = coefsTmp; // restore original array (same address)

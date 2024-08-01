@@ -183,5 +183,4 @@ protected:
 
     virtual std::ostream &print(std::ostream &o) const;
 };
-
 } // namespace mrcpp

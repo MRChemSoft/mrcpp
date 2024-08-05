@@ -479,7 +479,7 @@ void Bank::remove_account(int account) {
     }
     std::vector<deposit> &deposits = *get_deposits[account];
     for (int ix = 1; ix < deposits.size(); ix++) {
-       if (deposits[ix].orb != nullptr) deposits[ix].orb->free(NUMBER::Total);
+       if (deposits[ix].orb != nullptr) deposits[ix].orb->free();
        if (deposits[ix].hasdata) {
            currentsize[account] -= deposits[ix].datasize / 128;
            totcurrentsize -= deposits[ix].datasize / 128;

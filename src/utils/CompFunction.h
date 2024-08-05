@@ -1,7 +1,6 @@
 #pragma once
 
 #include "trees/FunctionTree.h"
-#include "ComplexFunction.h"
 
 using namespace Eigen;
 
@@ -13,7 +12,7 @@ struct CompFunctionData {
     // occupancy, quantum number, norm, etc.
     int Ncomp{1}; // number of components defined
     int rank{-1}; // rank (index) if part of a vector
-    int conj{0}; // conjugate of all components
+    int conj{0}; // soft conjugate (all components)
     int CompFn1{0};
     int CompFn2{0};
     int isreal{0}; // trees are defined for T=double
@@ -65,6 +64,7 @@ public:
     CompFunctionData<D> data;
     int& Ncomp = data.Ncomp; //number of components defined
     int& rank = data.rank; // rank (index) if part of a vector
+    int& conj = data.conj; // soft conjugate
     int& isreal = data.isreal; // T=double
     int& iscomplex = data.iscomplex; // T=DoubleComplex
     int* Nchunks = data.Nchunks; // number of chunks of each component tree
@@ -85,7 +85,7 @@ public:
     ComplexDouble integrate() const;
     double norm() const;
     double squaredNorm() const;
-    void alloc(int i);
+    void alloc(int i = 0);
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setRank(int i) {rank = i;};
     const int getRank() const {return rank;};
@@ -99,6 +99,10 @@ public:
     void flushMRAData();
     void flushFuncData();
     CompFunctionData<D> getFuncData() const;
+    FunctionTree<D, double> &real(int i = 0);
+    FunctionTree<D, ComplexDouble> &complex(int i = 0);
+    const FunctionTree<D, double> &real(int i = 0) const;
+    const FunctionTree<D, ComplexDouble> &complex(int i = 0) const;
 
     //NB: All below should be revised. Now only for backwards compatibility to ComplexFunction class
 
@@ -108,9 +112,7 @@ public:
     bool isShared() const {return data.shared;}
     bool conjugate() const {return data.conj;}
     CompFunction<D> dagger();
-    FunctionTree<D, double> &real(int i = 0);
     FunctionTree<D, double> &imag(int i = 0); //does not make sense now
-    const FunctionTree<D, double> &real(int i = 0) const;
     const FunctionTree<D, double> &imag(int i = 0) const; //does not make sense now
 };
 
@@ -123,21 +125,25 @@ void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDo
 template <int D>
 void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec);
 template <int D>
-void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false);
-template <int D>
 void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
 template <int D>
+void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false);
+template <int D>
 void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, bool absPrec = false, bool useMaxNorms = false);
-template <int D, typename T>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine = 0);
-template <int D, typename T>
-void multiply(CompFunction<D> &out, FunctionTree<D, T> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine = 0);
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0);
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0);
+template <int D>
+void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0);
+template <int D>
+void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0);
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket);
 template <int D>
 double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket);
-template <int D, typename T>
-void project(CompFunction<D> &out, std::function<T(const Coord<D> &r)> f, double prec);
+void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec);
+void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec);
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec);
 template <int D>

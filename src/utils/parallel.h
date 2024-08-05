@@ -2,7 +2,6 @@
 
 #include <Eigen/Core>
 
-#include "ComplexFunction.h"
 #include "CompFunction.h"
 #include "mpi_utils.h"
 #include "trees/MultiResolutionAnalysis.h"
@@ -41,7 +40,6 @@ void barrier(MPI_Comm comm);
 bool grand_master();
 bool share_master();
 bool my_orb(int j);
-bool my_orb(ComplexFunction orbj);
 bool my_func(int j);
 bool my_func(const CompFunction<3>& func);
 bool my_func(CompFunction<3> *func);
@@ -49,20 +47,14 @@ bool my_func(CompFunction<3> *func);
 // bool my_unique_orb(const Orbital &orb);
 void free_foreign(CompFunctionVector &Phi);
 
-void send_function(ComplexFunction &func, int dst, int tag, MPI_Comm comm = mpi::comm_wrk);
-void recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm = mpi::comm_wrk);
 void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm = mpi::comm_wrk);
 void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm = mpi::comm_wrk);
-void share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm);
 void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm);
 
-void reduce_function(double prec, ComplexFunction &func, MPI_Comm comm);
-void broadcast_function(ComplexFunction &func, MPI_Comm comm);
 void reduce_function(double prec, CompFunction<3> &func, MPI_Comm comm);
 void broadcast_function(CompFunction<3> &func, MPI_Comm comm);
 
 void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
-void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<ComplexFunction> &Phi, MPI_Comm comm);
 void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
 void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm);

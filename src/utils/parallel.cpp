@@ -258,11 +258,6 @@ bool my_orb(int j) {
     return ((j) % wrk_size == wrk_rank) ? true : false;
 }
 
-/** @brief Test if orbital belongs to this MPI rank (or is common)*/
-bool my_orb(ComplexFunction orbj) {
-    return my_orb(orbj.getRank());
-}
-
 /** @brief Test if function belongs to this MPI rank */
 bool my_func(int j) {
     return ((j) % wrk_size == wrk_rank) ? true : false;
@@ -334,39 +329,6 @@ void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 #endif
 }
 
-// send a function with MPI
-void send_function(ComplexFunction &func, int dst, int tag, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
-    if (func.isShared()) MSG_WARN("Sending a shared function is not recommended");
-    FunctionData &funcinfo = func.getFunctionData();
-    MPI_Send(&funcinfo, sizeof(FunctionData), MPI_BYTE, dst, 0, comm);
-    if (func.hasReal()) mrcpp::send_tree(func.real(), dst, tag, comm, funcinfo.real_size);
-    if (func.hasImag()) mrcpp::send_tree(func.imag(), dst, tag + 10000, comm, funcinfo.imag_size);
-#endif
-}
-
-// receive a function with MPI
-void recv_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
-    if (func.isShared()) MSG_WARN("Receiving a shared function is not recommended");
-    MPI_Status status;
-
-    FunctionData &funcinfo = func.getFunctionData();
-    MPI_Recv(&funcinfo, sizeof(FunctionData), MPI_BYTE, src, 0, comm, &status);
-    if (funcinfo.real_size > 0) {
-        // We must have a tree defined for receiving nodes. Define one:
-        if (not func.hasReal()) func.alloc(NUMBER::Real);
-        mrcpp::recv_tree(func.real(), src, tag, comm, funcinfo.real_size);
-    }
-
-    if (funcinfo.imag_size > 0) {
-        // We must have a tree defined for receiving nodes. Define one:
-        if (not func.hasImag()) func.alloc(NUMBER::Imag);
-        mrcpp::recv_tree(func.imag(), src, tag + 10000, comm, funcinfo.imag_size);
-    }
-#endif
-}
-
 // send a component function with MPI
 void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
@@ -398,17 +360,6 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
 }
 
 /** Update a shared function after it has been changed by one of the MPI ranks. */
-void share_function(ComplexFunction &func, int src, int tag, MPI_Comm comm) {
-    if (func.isShared()) {
-#ifdef MRCPP_HAS_MPI
-        if (func.hasReal()) mrcpp::share_tree(func.real(), src, tag, comm);
-        if (func.hasImag()) mrcpp::share_tree(func.imag(), src, 2 * tag, comm);
-#endif
-    }
-}
-
-
-/** Update a shared function after it has been changed by one of the MPI ranks. */
 void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     if (func.isShared()) {
 #ifdef MRCPP_HAS_MPI
@@ -418,48 +369,6 @@ void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
         }
 #endif
     }
-}
-
-/** @brief Add all mpi function into rank zero */
-void reduce_function(double prec, ComplexFunction &func, MPI_Comm comm) {
-/* 1) Each odd rank send to the left rank
-   2) All odd ranks are "deleted" (can exit routine)
-   3) new "effective" ranks are defined within the non-deleted ranks
-      effective rank = rank/fac , where fac are powers of 2
-   4) repeat
- */
-#ifdef MRCPP_HAS_MPI
-    int comm_size, comm_rank;
-    MPI_Comm_rank(comm, &comm_rank);
-    MPI_Comm_size(comm, &comm_size);
-    if (comm_size == 1) return;
-
-    int fac = 1; // powers of 2
-    while (fac < comm_size) {
-        if ((comm_rank / fac) % 2 == 0) {
-            // receive
-            int src = comm_rank + fac;
-            if (src < comm_size) {
-                ComplexFunction func_i(false);
-                int tag = 3333 + src;
-                recv_function(func_i, src, tag, comm);
-                func.add(1.0, func_i); // add in place using union grid
-                func.crop(prec);
-            }
-        }
-        if ((comm_rank / fac) % 2 == 1) {
-            // send
-            int dest = comm_rank - fac;
-            if (dest >= 0) {
-                int tag = 3333 + comm_rank;
-                send_function(func, dest, tag, comm);
-                break; // once data is sent we are done
-            }
-        }
-        fac *= 2;
-    }
-    MPI_Barrier(comm);
-#endif
 }
 
 /** @brief Add all mpi function into rank zero */
@@ -587,28 +496,6 @@ void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm c
 }
 
 /** @brief make union tree without coeff and send to all
- *  Include both real and imaginary parts
- */
-void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<ComplexFunction> &Phi, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
-    /* 1) make union grid of own orbitals
-       2) make union grid with others orbitals (sent to rank zero)
-       3) rank zero broadcast func to everybody
-     */
-
-    int N = Phi.size();
-    for (int j = 0; j < N; j++) {
-        if (not my_orb(j)) continue;
-        if (Phi[j].hasReal()) tree.appendTreeNoCoeff(Phi[j].real());
-        if (Phi[j].hasImag()) tree.appendTreeNoCoeff(Phi[j].imag());
-    }
-    mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
-    mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
-#endif
-}
-
-
-/** @brief make union tree without coeff and send to all
  *  Real trees
  */
 void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
@@ -667,38 +554,6 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
-#endif
-}
-
-/** @brief Distribute rank zero function to all ranks */
-void broadcast_function(ComplexFunction &func, MPI_Comm comm) {
-/* use same strategy as a reduce, but in reverse order */
-#ifdef MRCPP_HAS_MPI
-    int comm_size, comm_rank;
-    MPI_Comm_rank(comm, &comm_rank);
-    MPI_Comm_size(comm, &comm_size);
-    if (comm_size == 1) return;
-
-    int fac = 1; // powers of 2
-    while (fac < comm_size) fac *= 2;
-    fac /= 2;
-
-    while (fac > 0) {
-        if (comm_rank % fac == 0 and (comm_rank / fac) % 2 == 1) {
-            // receive
-            int src = comm_rank - fac;
-            int tag = 4334 + comm_rank;
-            recv_function(func, src, tag, comm);
-        }
-        if (comm_rank % fac == 0 and (comm_rank / fac) % 2 == 0) {
-            // send
-            int dst = comm_rank + fac;
-            int tag = 4334 + dst;
-            if (dst < comm_size) send_function(func, dst, tag, comm);
-        }
-        fac /= 2;
-    }
-    MPI_Barrier(comm);
 #endif
 }
 

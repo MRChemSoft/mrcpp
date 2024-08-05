@@ -11,8 +11,6 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tree_utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Bank.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ComplexFunction.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ComplexFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompFunction.cpp
   )
 
@@ -30,7 +28,6 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/tree_utils.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Bank.h
   ${CMAKE_CURRENT_SOURCE_DIR}/parallel.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/ComplexFunction.h
   ${CMAKE_CURRENT_SOURCE_DIR}/CompFunction.h
   )
 

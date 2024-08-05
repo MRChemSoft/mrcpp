@@ -473,16 +473,18 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
     for (int icomp = 0; icomp < inp.Ncomp; icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal) {
+                if (inp.isreal and std::imag(metric[icomp][ocomp]) < MachinePrec) {
                     apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                        out.CompD[ocomp]->rescale(metric[icomp][ocomp]);
+                        out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
                     }
+                    out.isreal = 1;
                 } else {
                     apply(*out.CompC[ocomp], oper, *inp.CompC[icomp], dir);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompC[ocomp]->rescale(metric[icomp][ocomp]);
                     }
+                    out.iscomplex = 1;
                 }
             }
         }
@@ -656,5 +658,7 @@ template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, 
 template FunctionTreeVector<1, ComplexDouble> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp);
 template FunctionTreeVector<2, ComplexDouble> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp);
 template FunctionTreeVector<3, ComplexDouble> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp);
+
+template void apply(CompFunction<3> &out, DerivativeOperator<3> &oper, CompFunction<3> &inp, int dir = -1, ComplexDouble metric[4][4] = nullptr);
 
 } // namespace mrcpp

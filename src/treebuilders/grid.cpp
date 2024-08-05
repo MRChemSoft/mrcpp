@@ -240,8 +240,8 @@ template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
     out.data = inp.data;
     out.alloc(inp.Ncomp);
     for (int i = 0; i < inp.Ncomp; i++) {
-        if (inp.isreal) build_grid(out.CompD[i], inp.CompD[i]);
-        if (inp.iscomplex) build_grid(out.CompC[i], inp.CompC[i]);
+        if (inp.isreal) build_grid(*out.CompD[i], *inp.CompD[i]);
+        if (inp.iscomplex) build_grid(*out.CompC[i], *inp.CompC[i]);
     }
 }
 
@@ -344,6 +344,10 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, const Repr
     int nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }
+
+template void copy_grid(CompFunction<1> &out, CompFunction<1> &inp);
+template void copy_grid(CompFunction<2> &out, CompFunction<2> &inp);
+template void copy_grid(CompFunction<3> &out, CompFunction<3> &inp);
 
 template void build_grid<1, double>(FunctionTree<1, double> &out, int scales);
 template void build_grid<2, double>(FunctionTree<2, double> &out, int scales);

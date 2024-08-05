@@ -271,12 +271,21 @@ CompFunction<D> CompFunction<D>::dagger() {
 template <int D>
 FunctionTree<D, double> &CompFunction<D>::real(int i) {
     if (!isreal) MSG_ABORT("not real function");
+    if (CompD[i] == nullptr) alloc(i);
     return *CompD[i];
 }
 template <int D> //NB: should return CompC in the future
 FunctionTree<D, double>  &CompFunction<D>::imag(int i) {
+    MSG_ABORT("Must choose real or complex");
     if (!iscomplex) MSG_ABORT("not complex function");
     return *CompD[i];
+}
+
+template <int D>
+FunctionTree<D, ComplexDouble>  &CompFunction<D>::complex(int i) {
+    if (!iscomplex) MSG_ABORT("not marked as a complex function");
+    if (CompC[i] == nullptr) alloc(i);
+    return *CompC[i];
 }
 
 template <int D>
@@ -284,10 +293,16 @@ const FunctionTree<D, double> &CompFunction<D>::real(int i) const {
     if (!isreal) MSG_ABORT("not real function");
     return *CompD[i];
 }
-template <int D> //NB: should return CompC in the future
+template <int D> //NB: should use complex or real
 const FunctionTree<D, double> &CompFunction<D>::imag(int i) const {
+    MSG_ABORT("Must choose real or complex");
     if (!iscomplex) MSG_ABORT("not complex function");
     return *CompD[i];
+}
+template <int D>
+const FunctionTree<D, ComplexDouble> &CompFunction<D>::complex(int i) const {
+    if (!iscomplex) MSG_ABORT("not marked as a complex function");
+    return *CompC[i];
 }
 
  /* for backwards compatibility */
@@ -441,7 +456,7 @@ template <int D>
             if (need_to_add) {
                 if (fvec.size() > 0) {
                     if (prec < 0.0) {
-                        build_grid(out.CompD[comp], fvec);
+                        build_grid(*out.CompD[comp], fvec);
                         mrcpp::add(prec, *out.CompD[comp], fvec, 0);
                     } else {
                         mrcpp::add(prec, *out.CompD[comp], fvec);
@@ -455,12 +470,12 @@ template <int D>
             for (int i = 0; i < inp.size(); i++) {
                 if (std::norm(c[i]) < thrs) continue;
                 if (inp[i].data.conj) MSG_ERROR("conjugaison not implemented");
-                fvec.push_back(std::make_tuple(c[i], inp[i].CompD[comp]));
+                fvec.push_back(std::make_tuple(c[i], inp[i].CompC[comp]));
             }
             if (need_to_add) {
                 if (fvec.size() > 0) {
                     if (prec < 0.0) {
-                        build_grid(out.CompC[comp], fvec);
+                        build_grid(*out.CompC[comp], fvec);
                         mrcpp::add(prec, *out.CompC[comp], fvec, 0);
                     } else {
                         mrcpp::add(prec, *out.CompC[comp], fvec);
@@ -489,7 +504,7 @@ void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b
 template <int D>
 void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter, bool absPrec, bool useMaxNorms) {
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
-    for (int comp = 0; comp < inp_a[0].Ncomp; comp++) {
+    for (int comp = 0; comp < inp_a.Ncomp; comp++) {
         if (inp_a.isreal and inp_b.isreal) {
             delete out.CompD[comp];
             FunctionTree<D, double> *tree = new FunctionTree<D, double>(inp_a.CompD[0]->getMRA());
@@ -498,8 +513,8 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                 if (out.iscomplex and inp_b.data.conj) MSG_ERROR("conjugaison not implemented");
                 if (prec < 0.0) {
                     // Union grid
-                    build_grid(*tree, inp_a.CompD[comp]);
-                    build_grid(*tree, inp_b.CompD[comp]);
+                    build_grid(*tree, *inp_a.CompD[comp]);
+                    build_grid(*tree, *inp_b.CompD[comp]);
                     mrcpp::multiply(prec, *tree, coef, *inp_a.CompD[comp], *inp_b.CompD[comp], 0);
                 } else {
                     // Adaptive grid
@@ -530,8 +545,8 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                 if (out.iscomplex and inp_b.data.conj) MSG_ERROR("conjugaison not implemented");
                 if (prec < 0.0) {
                     // Union grid
-                    build_grid(*tree, inp_a.CompC[comp]);
-                    build_grid(*tree, inp_b.CompC[comp]);
+                    build_grid(*tree, *inp_a.CompC[comp]);
+                    build_grid(*tree, *inp_b.CompC[comp]);
                     mrcpp::multiply(prec, *tree, coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0);
                 } else {
                     // Adaptive grid
@@ -558,19 +573,47 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
 
 /** @brief out = inp_a * f
  *
- *  each component is multiplied
+ *  Only one component is multiplied
  */
-template <int D, typename T>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine) {
-    MSG_ERROR("Not implemented");
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine) {
+    if (inp_a.Ncomp > 1) MSG_ERROR("Not implemented");
+    if (inp_a.isreal != 1) MSG_ERROR("Not implemented");
+    multiply(out, *inp_a.CompD[0], f, prec, nrefine);
+}
+
+/** @brief out = inp_a * f
+ *
+ *  Only one component is multiplied
+ */
+template <int D>
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine) {
+    if (inp_a.Ncomp > 1) MSG_ERROR("Not implemented");
+    if (inp_a.iscomplex != 1) MSG_ERROR("Not implemented");
+    multiply(out, *inp_a.CompC[0], f, prec, nrefine);
+
 }
 
 /** @brief out = inp_a * f
  *
  */
-template <int D, typename T>
-void multiply(CompFunction<D>, FunctionTree<D, T> &inp_a, RepresentableFunction<D, T> &f, double prec, int nrefine) {
-    MSG_ERROR("Not implemented");
+template <int D>
+void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine) {
+    CompFunction<D> func_a(1);
+    func_a.isreal = 1;
+    func_a.iscomplex = 0;
+    func_a.CompD[0] = &inp_a;
+    multiply(out, func_a, f, prec, nrefine);
+    func_a.CompD[0] = nullptr;
+}
+template <int D>
+void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine) {
+    CompFunction<D> func_a(1);
+    func_a.isreal = 0;
+    func_a.iscomplex = 1;
+    func_a.CompC[0] = &inp_a;
+    multiply(out, func_a, f, prec, nrefine);
+    func_a.CompC[0] = nullptr;
 }
 
 
@@ -617,37 +660,32 @@ double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) {
     return dotprod;
 }
 
-
-template <int D, typename T>
-void project(CompFunction<D> &out, std::function<double(const Coord<D> &r)> f, double prec) {
-if (std::is_same<T, double>::value) {
+void project(CompFunction<3> &out, std::function<double(const Coord<3>& r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.isreal = 1;
     out.iscomplex = 0;
     if(out.Ncomp < 1) out.alloc(0);
-    if (need_to_project) mrcpp::project<D, double>(prec, out.CompD[0], f);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
-}
 
-template <int D, typename T>
-void project(CompFunction<D> &out, std::function<ComplexDouble(const Coord<D> &r)> f, double prec) {
-if (std::is_same<T, ComplexDouble>::value) {
+// template <int D, typename T>
+void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.isreal = 0;
     out.iscomplex = 1;
     if(out.Ncomp < 1) out.alloc(0);
-    if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, out.CompC[0], f);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
- }
+
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.isreal = 1;
     out.iscomplex = 0;
     if(out.Ncomp < 1) out.alloc(0);
-    if (need_to_project) mrcpp::project<D, double>(prec, out.CompD[0], f);
+    if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }
 template <int D>
@@ -656,7 +694,7 @@ void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, d
     out.isreal = 0;
     out.iscomplex = 1;
     if(out.Ncomp < 1) out.alloc(0);
-    if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, out.CompC[0], f);
+    if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
  }
 
@@ -733,8 +771,8 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 
     for (int j = 0; j < M; j++) {
         if (!mpi::my_func(j)) continue;
-        if (not makeReal and Psi[j].hasReal()) Psi[j].free(NUMBER::Real);
-        if (not makeImag and Psi[j].hasImag()) Psi[j].free(NUMBER::Imag);
+        if (not makeReal and Psi[j].hasReal()) Psi[j].free();
+        if (not makeImag and Psi[j].hasImag()) Psi[j].free();
     }
 
     if (not makeReal and not makeImag) { return; }
@@ -2035,6 +2073,17 @@ void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket
         if(my_func(Bra[j]))Bra[j].add(1.0,rotatedKet[j]);
     }
 }
-template ComplexDouble dot(CompFunction<3> bra, CompFunction<3> ket) ;
+template ComplexDouble dot(CompFunction<3> bra, CompFunction<3> ket);
+template void project(CompFunction<3>& out, RepresentableFunction<3, double>& f, double prec);
+template void project(CompFunction<3>& out, RepresentableFunction<3, ComplexDouble>& f, double prec);
+template void multiply(CompFunction<3> &out, CompFunction<3> inp_a, CompFunction<3> inp_b, double prec, bool absPrec, bool useMaxNorms);
+template void multiply(CompFunction<3>& out, FunctionTree<3, double> &inp_a, RepresentableFunction<3, double>& f, double prec, int nrefine = 0);
+template void multiply(CompFunction<3>& out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble>& f, double prec, int nrefine = 0);
+template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0);
+template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0);
+template void deep_copy(CompFunction<3>* out, const CompFunction<3> &inp);
+template void deep_copy(CompFunction<3>& out, const CompFunction<3> &inp);
+template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec);
+template double node_norm_dot(CompFunction<3> bra, CompFunction<3> ket);
 
 } // namespace mrcpp

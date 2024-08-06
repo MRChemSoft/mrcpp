@@ -1,6 +1,7 @@
 #pragma once
 
 #include "trees/FunctionTree.h"
+#include "mpi_utils.h"
 
 using namespace Eigen;
 
@@ -43,6 +44,41 @@ struct CompFunctionData {
     int Nchunks[4]{0,0,0,0}; // number of chunks of each component tree
 };
 
+template <int D> class TreePtr final {
+public:
+    explicit TreePtr(bool share)
+            : shared_mem_real(nullptr)
+            , shared_mem_cplx(nullptr) {
+        for (int i = 0; i < 4; i++) real[i] = nullptr;
+        for (int i = 0; i < 4; i++) cplx[i] = nullptr;
+        is_shared = share;
+        if (is_shared and mpi::share_size > 1) {
+            // Memory size in MB defined in input. Virtual memory, does not cost anything if not used.
+#ifdef MRCPP_HAS_MPI
+            this->shared_mem_real = new mrcpp::SharedMemory<double>(mpi::comm_share, mpi::shared_memory_size);
+            this->shared_mem_cplx = new mrcpp::SharedMemory<ComplexDouble>(mpi::comm_share, mpi::shared_memory_size);
+#endif
+        }
+
+    }
+
+    ~TreePtr() {
+        if (this->shared_mem_real != nullptr) delete this->shared_mem_real;
+        if (this->shared_mem_cplx != nullptr) delete this->shared_mem_cplx;
+        for (int i = 0; i < 4; i++) {
+            if (this->real[i] != nullptr) delete this->real[i];
+            if (this->cplx[i] != nullptr) delete this->cplx[i];
+        }
+    }
+    bool is_shared = false;
+    friend class CompFunction<D>;
+protected:
+    FunctionTree<D, double> *real[4]; // Real function
+    FunctionTree<D, ComplexDouble> *cplx[4]; // Complex function
+    SharedMemory<double> *shared_mem_real;
+    SharedMemory<ComplexDouble> *shared_mem_cplx;
+};
+
 
 template <int D> class CompFunction {
 public:
@@ -54,9 +90,10 @@ public:
     CompFunction(const CompFunction<D> &compfunc);
     CompFunction(CompFunction<D> && compfunc);
     CompFunction<D> &operator=(const CompFunction<D> &compfunc);
+    virtual ~CompFunction() = default;
 
-    FunctionTree<D, double> *CompD[4];
-    FunctionTree<D, ComplexDouble> *CompC[4];
+    FunctionTree<D, double>* (&CompD)[4] = func_ptr->real; // so that we can use name CompD instead of func_ptr.real
+    FunctionTree<D, ComplexDouble>* (&CompC)[4] = func_ptr->cplx;
 
     std::string name;
 
@@ -67,19 +104,15 @@ public:
     int& conj = data.conj; // soft conjugate
     int& isreal = data.isreal; // T=double
     int& iscomplex = data.iscomplex; // T=DoubleComplex
+    int& share = data.shared;
     int* Nchunks = data.Nchunks; // number of chunks of each component tree
+
     // ComplexFunctions are only defined for D=3
     // template <int D_ = D, typename std::enable_if<D_ == 3, int>::type = 0>
      //CompFunction(ComplexFunction cplxfunc);
     // template <int D_ = 3, typename std::enable_if<D_ == 3, int>::type = 0>
      //operator ComplexFunction() const;
     // CompFunction destructor
-    ~CompFunction() {
-        for (int i = 0; i < Ncomp; i++) {
-            delete CompD[i];
-            delete CompC[i];
-        }
-    }
 
     CompFunction paramCopy() const;
     ComplexDouble integrate() const;
@@ -114,6 +147,10 @@ public:
     CompFunction<D> dagger();
     FunctionTree<D, double> &imag(int i = 0); //does not make sense now
     const FunctionTree<D, double> &imag(int i = 0) const; //does not make sense now
+
+protected:
+    std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
+
 };
 
 template <int D>

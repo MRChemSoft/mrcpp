@@ -169,14 +169,14 @@ TEST_CASE("Apply Helmholtz' operator", "[apply_helmholtz], [helmholtz_operator],
         return R_0 * Y_00;
     };
     FunctionTree<3> psi_n(MRA);
-    project<3>(proj_prec, psi_n, hFunc);
+    project<3, double>(proj_prec, psi_n, hFunc);
 
     auto f = [Z](const Coord<3> &r) -> double {
         double x = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -Z / x;
     };
     FunctionTree<3> V(MRA);
-    project<3>(proj_prec, V, f);
+    project<3, double>(proj_prec, V, f);
 
     FunctionTree<3> Vpsi(MRA);
     copy_grid(Vpsi, psi_n);
@@ -222,7 +222,7 @@ TEST_CASE("Apply Periodic Helmholtz' operator", "[apply_periodic_helmholtz], [he
     auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
 
     FunctionTree<3> source_tree(MRA);
-    project<3>(proj_prec, source_tree, source);
+    project<3, double>(proj_prec, source_tree, source);
 
     FunctionTree<3> sol_tree(MRA);
     FunctionTree<3> in_tree(MRA);
@@ -265,7 +265,7 @@ TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz
     auto source = [mu](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi) + mu * mu * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
 
     FunctionTree<3> source_tree(MRA);
-    project<3>(proj_prec, source_tree, source);
+    project<3, double>(proj_prec, source_tree, source);
 
     FunctionTree<3> sol_tree(MRA);
 
@@ -274,4 +274,5 @@ TEST_CASE("Apply negative scale Helmholtz' operator", "[apply_periodic_helmholtz
     REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
     REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
 }
+
 } // namespace helmholtz_operator

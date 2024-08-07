@@ -73,7 +73,7 @@ html_logo = 'gfx/logo.jpg'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-breathe_projects = {'MRCPP': '_build/xml'}
+breathe_projects = {'MRCPP': '_build/xml', 'dot_graphs': '_build/xml'}
 breathe_default_project = 'MRCPP'
 
 

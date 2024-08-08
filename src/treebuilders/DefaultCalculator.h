@@ -29,16 +29,16 @@
 
 namespace mrcpp {
 
-template <int D> class DefaultCalculator final : public TreeCalculator<D> {
+template <int D, typename T> class DefaultCalculator final : public TreeCalculator<D, T> {
 public:
     // Reimplementation without OpenMP, the default is faster this way
-    void calcNodeVector(MWNodeVector<D> &nodeVec) override {
+    void calcNodeVector(MWNodeVector<D, T> &nodeVec) override {
         int nNodes = nodeVec.size();
         for (int n = 0; n < nNodes; n++) { calcNode(*nodeVec[n]); }
     }
 
 private:
-    void calcNode(MWNode<D> &node) override {
+    void calcNode(MWNode<D, T> &node) override {
         node.clearHasCoefs();
         node.clearNorms();
     }

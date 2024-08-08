@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     mrcpp::FunctionTree<D> f_tree(MRA);
 
     // Only rank 0 projects the function
-    if (wrank == 0) mrcpp::project<D>(prec, f_tree, f);
+    if (wrank == 0) mrcpp::project<D, double>(prec, f_tree, f);
 
     { // Print data before send
         auto integral = f_tree.integrate();

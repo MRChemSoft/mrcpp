@@ -29,24 +29,24 @@
 
 namespace mrcpp {
 
-template <int D> class MapCalculator final : public TreeCalculator<D> {
+template <int D, typename T> class MapCalculator final : public TreeCalculator<D, T> {
 public:
-    MapCalculator(FMap fm, FunctionTree<D> &inp)
+    MapCalculator(FMap<T, T> fm, FunctionTree<D, T> &inp)
             : func(&inp)
             , fmap(std::move(fm)) {}
 
 private:
-    FunctionTree<D> *func;
-    FMap fmap;
-    void calcNode(MWNode<D> &node_o) override {
+    FunctionTree<D, T> *func;
+    FMap<T, T> fmap;
+    void calcNode(MWNode<D, T> &node_o) override {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         int n_coefs = node_o.getNCoefs();
-        double *coefs_o = node_o.getCoefs();
+        T *coefs_o = node_o.getCoefs();
         // This generates missing nodes
-        MWNode<D> node_i = func->getNode(idx); // Copy node
+        MWNode<D, T> node_i = func->getNode(idx); // Copy node
         node_i.mwTransform(Reconstruction);
         node_i.cvTransform(Forward);
-        const double *coefs_i = node_i.getCoefs();
+        const T *coefs_i = node_i.getCoefs();
         for (int j = 0; j < n_coefs; j++) { coefs_o[j] = fmap(coefs_i[j]); }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);

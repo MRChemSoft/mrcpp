@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
     mrcpp::FunctionTree<D> err_tree(MRA);
 
     // Projecting functions
-    mrcpp::project<D>(prec, f_tree, f);
-    mrcpp::project<D>(prec, df_tree, df);
+    mrcpp::project<D, double>(prec, f_tree, f);
+    mrcpp::project<D, double>(prec, df_tree, df);
 
     // Applying derivative operator
     mrcpp::apply(dg_tree, D_00, f_tree, 0);

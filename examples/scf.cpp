@@ -31,7 +31,7 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
     };
 
     // Projecting function
-    project<D>(prec, V, f);
+    project<D, double>(prec, V, f);
 
     print::footer(0, timer, 2);
     Printer::setPrintLevel(oldlevel);
@@ -48,7 +48,7 @@ void setupInitialGuess(FunctionTree<D> &phi) {
     };
 
     // Projecting and normalizing function
-    project<D>(prec, phi, f);
+    project<D, double>(prec, phi, f);
     phi.normalize();
 
     print::footer(0, timer, 2);

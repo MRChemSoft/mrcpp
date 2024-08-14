@@ -446,7 +446,20 @@ template <> void FunctionNode<3>::reCompress() {
 
     int size = bra.getKp1_d();
     ComplexDouble result = 0.0;
-    for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
+    // note that bra is conjugated by default
+    if (bra.getMWTree().conjugate()){
+        if (ket.getMWTree().conjugate()){
+            for (int i = 0; i < size; i++) result += a[i] * std::conj(b[i]);
+        } else {
+            for (int i = 0; i < size; i++) result += a[i] * b[i];
+        }
+    } else {
+        if (ket.getMWTree().conjugate()){
+            for (int i = 0; i < size; i++) result += std::conj(a[i]) * std::conj(b[i]);
+        } else {
+            for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
+        }
+    }
     return result;
 }
 
@@ -499,7 +512,19 @@ template <> void FunctionNode<3>::reCompress() {
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
     ComplexDouble result = 0.0;
-    for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];
+    if (bra.getMWTree().conjugate()){
+        if (ket.getMWTree().conjugate()){
+            for (int i = 0; i < size; i++) result += a[start + i] * std::conj(b[start + i]);
+        } else {
+            for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
+        }
+    } else {
+        if (ket.getMWTree().conjugate()){
+            for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * std::conj(b[start + i]);
+        } else {
+            for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];
+        }
+    }
     return result;
 }
 

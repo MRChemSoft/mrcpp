@@ -167,6 +167,8 @@ public:
     friend class OperatorNode;
     friend class DerivativeCalculator<D, T>;
     bool isComplex = false; //TODO put as one of the flags
+    friend class FunctionTree<D, double>; // required if a ComplexDouble tree access a double node from another tree!
+    friend class FunctionTree<D, ComplexDouble>;
 
 protected:
     MWTree<D, T> *tree{nullptr};    ///< Tree the node belongs to

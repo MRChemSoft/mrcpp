@@ -143,6 +143,8 @@ public:
     MWNodeVector<D, T> endNodeTable;          ///< Final projected nodes
 
     void getNodeCoeff(NodeIndex<D> nIdx, T *data); // fetch coefficient from a specific node stored in Bank
+    bool conjugate() const { return this->conj; }
+    void setConjugate(bool conjug)  { this->conj = conjug; }
 
     friend std::ostream &operator<<(std::ostream &o, const MWTree<D, T> &tree) { return tree.print(o); }
 
@@ -180,6 +182,7 @@ protected:
     void decrementNodeCount(int scale);
 
     BankAccount *NodesCoeff = nullptr;
+    bool conj{false};
 
     virtual std::ostream &print(std::ostream &o) const;
 };

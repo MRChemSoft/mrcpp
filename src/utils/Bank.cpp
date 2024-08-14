@@ -863,6 +863,23 @@ int BankAccount::put_nodedata(int id, int nodeid, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity id as part of block with identity nodeid.
+// NB: Complex is stored as two doubles
+int BankAccount::put_nodedata(int id, int nodeid, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to nodeid
+    int messages[message_size];
+    messages[0] = SAVE_NODEDATA;
+    messages[1] = account_id;
+    messages[2] = nodeid; // which block
+    messages[3] = id;     // id within block
+    messages[4] = 2*size;   // size of this data
+    MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Send(data, 2*size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
 // get data with identity id
 int BankAccount::get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec) {
 #ifdef MRCPP_HAS_MPI
@@ -880,8 +897,47 @@ int BankAccount::get_nodedata(int id, int nodeid, int size, double *data, std::v
     return 1;
 }
 
+
+// get data with identity id
+int BankAccount::get_nodedata(int id, int nodeid, int size, ComplexDouble *data, std::vector<int> &idVec) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    // get the column with identity id
+    int messages[message_size];
+    messages[0] = GET_NODEDATA;
+    messages[1] = account_id;
+    messages[2] = nodeid; // which block
+    messages[3] = id;     // id within block.
+    messages[4] = size;   // expected size of data
+    MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
 // get all data for nodeid (same nodeid, different orbitals)
 int BankAccount::get_nodeblock(int nodeid, double *data, std::vector<int> &idVec) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    // get the entire superblock and also the id of each column
+    int messages[message_size];
+    messages[0] = GET_NODEBLOCK;
+    messages[1] = account_id;
+    messages[2] = nodeid;
+
+    MPI_Send(messages, 3, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(metadata_block, size_metadata, MPI_INT, bankmaster[nodeid % bank_size], 1, comm_bank, &status);
+    idVec.resize(metadata_block[1]);
+    int size = metadata_block[2];
+    if (size > 0) MPI_Recv(idVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
+    if (size > 0) MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
+
+// get all data for nodeid (same nodeid, different orbitals)
+int BankAccount::get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int> &idVec) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     // get the entire superblock and also the id of each column

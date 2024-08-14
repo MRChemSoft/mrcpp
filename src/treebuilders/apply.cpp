@@ -128,15 +128,17 @@ template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperat
     if (metric == nullptr) {
         metric = defaultMetric;
     }
-    for (int icomp = 0; icomp < inp.Ncomp; icomp++){
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal) {
+                if (inp.isreal()) {
+                    if (out.CompD[ocomp] == nullptr) out.alloc(ocomp);
                     apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompD[ocomp]->rescale(metric[icomp][ocomp].real());
                     }
                 } else {
+                    if (out.CompC[ocomp] == nullptr) out.alloc(ocomp);
                     apply(prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompC[ocomp]->rescale(metric[icomp][ocomp]);
@@ -272,10 +274,10 @@ template <int D, typename T> void apply(double prec, CompFunction<D> &out, Convo
     if (metric == nullptr) {
         metric = defaultMetric;
     }
-    for (int icomp = 0; icomp < inp.Ncomp; icomp++){
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal) {
+                if (inp.isreal()) {
                     apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], precTrees[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompD[ocomp]->rescale(metric[icomp][ocomp]);
@@ -332,7 +334,7 @@ template <int D> void apply_far_field(double prec, CompFunction<D> &out, Convolu
         if (inp.Comp[icomp]!=nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++){
                 if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                    if (inp.isreal) {
+                    if (inp.isreal()) {
                         apply_on_unit_cell<D>(false, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                         if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                             out.CompD[ocomp]->rescale(metric[icomp][ocomp]);
@@ -391,7 +393,7 @@ template <int D> void apply_near_field(double prec, CompFunction<D> &out, Convol
         if (inp.Comp[icomp]!=nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++){
                 if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                    if (inp.isreal) {
+                    if (inp.isreal()) {
                         apply_on_unit_cell<D>(true, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                         if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                             out.CompD[ocomp]->rescale(metric[icomp][ocomp]);
@@ -470,21 +472,21 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
     if (metric == nullptr) {
         metric = defaultMetric;
     }
-    for (int icomp = 0; icomp < inp.Ncomp; icomp++){
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal and std::imag(metric[icomp][ocomp]) < MachinePrec) {
+                if (inp.isreal() and std::imag(metric[icomp][ocomp]) < MachinePrec) {
                     apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
                     }
-                    out.isreal = 1;
+                    out.func_ptr->isreal = 1;
                 } else {
                     apply(*out.CompC[ocomp], oper, *inp.CompC[icomp], dir);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompC[ocomp]->rescale(metric[icomp][ocomp]);
                     }
-                    out.iscomplex = 1;
+                    out.func_ptr->iscomplex = 1;
                 }
             }
         }
@@ -527,21 +529,21 @@ std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction
     }
     for (int d = 0; d < 3; d++) {
         CompFunction<3> *grad_d = new CompFunction<3>();
-        for (int icomp = 0; icomp < inp.Ncomp; icomp++){
+        for (int icomp = 0; icomp < inp.Ncomp(); icomp++){
             for (int ocomp = 0; ocomp < 4; ocomp++){
                 if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                    grad_d->Ncomp=ocomp;
-                    if (inp.isreal) {
-                        grad_d->isreal = 1;
-                        grad_d->iscomplex = 0;
+                    grad_d->func_ptr->Ncomp=ocomp;
+                    if (inp.isreal()) {
+                        grad_d->func_ptr->isreal = 1;
+                        grad_d->func_ptr->iscomplex = 0;
                         grad_d->CompD[ocomp] = new FunctionTree<3, double>(inp.CompD[0]->getMRA());
                         apply(*(grad_d->CompD[ocomp]), oper, *inp.CompD[icomp], d);
                         if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                             grad_d->CompD[ocomp]->rescale((metric[icomp][ocomp]).real());
                         }
                     } else {
-                        grad_d->isreal = 0;
-                        grad_d->iscomplex = 1;
+                        grad_d->func_ptr->isreal = 0;
+                        grad_d->func_ptr->iscomplex = 1;
                         grad_d->CompC[ocomp] = new FunctionTree<3, ComplexDouble>(inp.CompC[0]->getMRA());
                         apply(*(grad_d->CompC[ocomp]), oper, *inp.CompC[icomp], d);
                         if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {

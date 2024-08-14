@@ -35,16 +35,19 @@ template <int D, typename T> void add(double prec,
                           T b,
                           FunctionTree<D, T> &tree_b,
                           int maxIter = -1,
-                          bool absPrec = false);
+                          bool absPrec = false,
+                          bool conjugate = false);
 template <int D, typename T> void add(double prec,
                           FunctionTree<D, T> &out,
                           FunctionTreeVector<D, T> &inp,
                           int maxIter = -1,
-                          bool absPrec = false);
+                          bool absPrec = false,
+                          bool conjugate = false);
 template <int D, typename T> void add(double prec,
                           FunctionTree<D, T> &out,
                           std::vector<FunctionTree<D, T> *> &inp,
                           int maxIter = -1,
-                          bool absPrec = false);
+                          bool absPrec = false,
+                          bool conjugate = false);
 
 } // namespace mrcpp

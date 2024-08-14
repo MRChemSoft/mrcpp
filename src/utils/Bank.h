@@ -108,8 +108,11 @@ public:
     int get_data(NodeIndex<3> nIdx, int size, double *data);
     int get_data(NodeIndex<3> nIdx, int size, ComplexDouble *data);
     int put_nodedata(int id, int nodeid, int size, double *data);
+    int put_nodedata(int id, int nodeid, int size, ComplexDouble *data);
     int get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec);
+    int get_nodedata(int id, int nodeid, int size, ComplexDouble *data, std::vector<int> &idVec);
     int get_nodeblock(int nodeid, double *data, std::vector<int> &idVec);
+    int get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int> &idVec);
     int get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart);
 };
 

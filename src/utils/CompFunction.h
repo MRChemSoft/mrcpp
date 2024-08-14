@@ -11,7 +11,7 @@ template <int D>
 struct CompFunctionData {
     // additional data that describe the overall multicomponent function (defined by user):
     // occupancy, quantum number, norm, etc.
-    int Ncomp{1}; // number of components defined
+    int Ncomp{0}; // number of components defined
     int rank{-1}; // rank (index) if part of a vector
     int conj{0}; // soft conjugate (all components)
     int CompFn1{0};
@@ -59,7 +59,6 @@ public:
             this->shared_mem_cplx = new mrcpp::SharedMemory<ComplexDouble>(mpi::comm_share, mpi::shared_memory_size);
 #endif
         }
-
     }
 
     ~TreePtr() {
@@ -70,6 +69,15 @@ public:
             if (this->cplx[i] != nullptr) delete this->cplx[i];
         }
     }
+    CompFunctionData<D> data;
+    int& Ncomp = data.Ncomp; //number of components defined
+    int& rank = data.rank; // rank (index) if part of a vector
+    int& conj = data.conj; // soft conjugate
+    int& isreal = data.isreal; // T=double
+    int& iscomplex = data.iscomplex; // T=DoubleComplex
+    int& share = data.shared;
+    int* Nchunks = data.Nchunks;
+
     bool is_shared = false;
     friend class CompFunction<D>;
 protected:
@@ -92,27 +100,22 @@ public:
     CompFunction<D> &operator=(const CompFunction<D> &compfunc);
     virtual ~CompFunction() = default;
 
-    FunctionTree<D, double>* (&CompD)[4] = func_ptr->real; // so that we can use name CompD instead of func_ptr.real
-    FunctionTree<D, ComplexDouble>* (&CompC)[4] = func_ptr->cplx;
+//    FunctionTree<D, double>* (&CompD)[4]; //  = func_ptr->real so that we can use name CompD instead of func_ptr.real
+//    FunctionTree<D, ComplexDouble>* (&CompC)[4]; // = func_ptr->cplx
+    FunctionTree<D, double>** CompD; //  = func_ptr->real so that we can use name CompD instead of func_ptr.real
+    FunctionTree<D, ComplexDouble>** CompC; // = func_ptr->cplx
 
     std::string name;
 
     // additional data that describe each component (defined by user):
-    CompFunctionData<D> data;
-    int& Ncomp = data.Ncomp; //number of components defined
-    int& rank = data.rank; // rank (index) if part of a vector
-    int& conj = data.conj; // soft conjugate
-    int& isreal = data.isreal; // T=double
-    int& iscomplex = data.iscomplex; // T=DoubleComplex
-    int& share = data.shared;
-    int* Nchunks = data.Nchunks; // number of chunks of each component tree
-
-    // ComplexFunctions are only defined for D=3
-    // template <int D_ = D, typename std::enable_if<D_ == 3, int>::type = 0>
-     //CompFunction(ComplexFunction cplxfunc);
-    // template <int D_ = 3, typename std::enable_if<D_ == 3, int>::type = 0>
-     //operator ComplexFunction() const;
-    // CompFunction destructor
+    CompFunctionData<D> data() const {return func_ptr->data;}
+    int Ncomp() const {return func_ptr->data.Ncomp;} //number of components defined
+    int rank() const {return func_ptr->data.rank;} // rank (index) if part of a vector
+    int conj() const {return func_ptr->data.conj;} // soft conjugate
+    int isreal() const {return func_ptr->data.isreal;} // T=double
+    int iscomplex() const {return func_ptr->data.iscomplex;} // T=DoubleComplex
+    int share() const {return func_ptr->data.shared;}
+    int* Nchunks() const {return func_ptr->data.Nchunks;} // number of chunks of each component tree
 
     CompFunction paramCopy() const;
     ComplexDouble integrate() const;
@@ -120,8 +123,9 @@ public:
     double squaredNorm() const;
     void alloc(int i = 0);
     void setReal(FunctionTree<D, double> *tree, int i = 0);
-    void setRank(int i) {rank = i;};
-    const int getRank() const {return rank;};
+    void setCplx(FunctionTree<D, ComplexDouble> *tree, int i = 0);
+    void setRank(int i) {func_ptr->rank = i;};
+    const int getRank() const {return func_ptr->rank;};
     void add(ComplexDouble c, CompFunction<D> inp);
 
     int crop(double prec);
@@ -140,15 +144,13 @@ public:
     //NB: All below should be revised. Now only for backwards compatibility to ComplexFunction class
 
     void free(int type) {free();}
-    bool hasReal()  const {return isreal;}
-    bool hasImag()  const {return iscomplex;}
-    bool isShared() const {return data.shared;}
-    bool conjugate() const {return data.conj;}
-    CompFunction<D> dagger();
+    bool hasReal()  const {return isreal();}
+    bool hasImag()  const {return iscomplex();}
+    bool isShared() const {return share();}
+    bool conjugate() const {return conj();}
+    void dagger();
     FunctionTree<D, double> &imag(int i = 0); //does not make sense now
     const FunctionTree<D, double> &imag(int i = 0) const; //does not make sense now
-
-protected:
     std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
 
 };
@@ -158,23 +160,23 @@ void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp);
 template <int D>
 void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp);
 template <int D>
-void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDouble b, CompFunction<D> inp_b, double prec);
+void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDouble b, CompFunction<D> inp_b, double prec, bool conjugate = false);
 template <int D>
-void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec);
+void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec = false, bool useMaxNorms = false);
+void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template <int D>
-void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false);
+void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, bool absPrec = false, bool useMaxNorms = false);
+void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0);
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0);
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0);
+void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0, bool conjugate = false);
 template <int D>
-void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0);
+void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate = false);
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket);
 template <int D>
@@ -185,6 +187,8 @@ template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec);
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec);
+template <int D>
+void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket);
 
 class CompFunctionVector : public std::vector<CompFunction<3>> {
 public:
@@ -195,8 +199,9 @@ public:
 
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
+void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
 void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
-CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, ComplexFunction *Func = nullptr, int nrefine = 1, bool all = false);
+CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CompFunction<3> *Func = nullptr, int nrefine = 1, bool all = false);
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
 ComplexVector dot(CompFunctionVector &Bra, CompFunctionVector &Ket);
 ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi);

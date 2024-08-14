@@ -32,24 +32,46 @@ namespace mrcpp {
 
 template <int D, typename T> class AdditionCalculator final : public TreeCalculator<D, T> {
 public:
-    AdditionCalculator(const FunctionTreeVector<D, T> &inp)
-            : sum_vec(inp) {}
+    AdditionCalculator(const FunctionTreeVector<D, T> &inp, bool conjugate = false)
+        : sum_vec(inp),
+          conj(conjugate) {}
 
 private:
     FunctionTreeVector<D, T> sum_vec;
+    bool conj;
 
-    void calcNode(MWNode<D, T> &node_o) override {
+    void calcNode(MWNode<D, double> &node_o) {
         node_o.zeroCoefs();
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        T *coefs_o = node_o.getCoefs();
+        double *coefs_o = node_o.getCoefs();
         for (int i = 0; i < this->sum_vec.size(); i++) {
-            T c_i = get_coef(this->sum_vec, i);
-            FunctionTree<D, T> &func_i = get_func(this->sum_vec, i);
+            double c_i = get_coef(this->sum_vec, i);
+            FunctionTree<D, double> &func_i = get_func(this->sum_vec, i);
             // This generates missing nodes
-            const MWNode<D, T> &node_i = func_i.getNode(idx);
-            const T *coefs_i = node_i.getCoefs();
+            const MWNode<D, double> &node_i = func_i.getNode(idx);
+            const double *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
             for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
+       }
+        node_o.setHasCoefs();
+        node_o.calcNorms();
+    }
+    void calcNode(MWNode<D, ComplexDouble> &node_o) {
+        node_o.zeroCoefs();
+        const NodeIndex<D> &idx = node_o.getNodeIndex();
+        ComplexDouble *coefs_o = node_o.getCoefs();
+        for (int i = 0; i < this->sum_vec.size(); i++) {
+            ComplexDouble c_i = get_coef(this->sum_vec, i);
+            FunctionTree<D, ComplexDouble> &func_i = get_func(this->sum_vec, i);
+            // This generates missing nodes
+            const MWNode<D, ComplexDouble> &node_i = func_i.getNode(idx);
+            const ComplexDouble *coefs_i = node_i.getCoefs();
+            int n_coefs = node_i.getNCoefs();
+            if (func_i.conjugate() xor conj) {
+               for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * std::conj(coefs_i[j]); }
+            } else {
+                for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
+            }
         }
         node_o.setHasCoefs();
         node_o.calcNorms();

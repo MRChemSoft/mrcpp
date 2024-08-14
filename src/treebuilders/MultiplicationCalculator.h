@@ -32,26 +32,52 @@ namespace mrcpp {
 
 template <int D, typename T> class MultiplicationCalculator final : public TreeCalculator<D, T> {
 public:
-    MultiplicationCalculator(const FunctionTreeVector<D, T> &inp)
-            : prod_vec(inp) {}
+    MultiplicationCalculator(const FunctionTreeVector<D, T> &inp, bool conjugate = false)
+            : prod_vec(inp),
+              conj(conjugate) {}
 
 private:
     FunctionTreeVector<D, T> prod_vec;
+    bool conj;
 
-    void calcNode(MWNode<D, T> &node_o) override {
+    void calcNode(MWNode<D, double> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        T *coefs_o = node_o.getCoefs();
+        double *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
         for (int i = 0; i < this->prod_vec.size(); i++) {
-            T c_i = get_coef(this->prod_vec, i);
-            FunctionTree<D, T> &func_i = get_func(this->prod_vec, i);
+            double c_i = get_coef(this->prod_vec, i);
+            FunctionTree<D, double> &func_i = get_func(this->prod_vec, i);
             // This generates missing nodes
-            MWNode<D, T> node_i = func_i.getNode(idx); // Copy node
+            MWNode<D, double> node_i = func_i.getNode(idx); // Copy node
             node_i.mwTransform(Reconstruction);
             node_i.cvTransform(Forward);
-            const T *coefs_i = node_i.getCoefs();
+            const double *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
             for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
+        }
+        node_o.cvTransform(Backward);
+        node_o.mwTransform(Compression);
+        node_o.setHasCoefs();
+        node_o.calcNorms();
+    }
+    void calcNode(MWNode<D, ComplexDouble> &node_o)  {
+        const NodeIndex<D> &idx = node_o.getNodeIndex();
+        ComplexDouble *coefs_o = node_o.getCoefs();
+        for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
+        for (int i = 0; i < this->prod_vec.size(); i++) {
+            ComplexDouble c_i = get_coef(this->prod_vec, i);
+            FunctionTree<D, ComplexDouble> &func_i = get_func(this->prod_vec, i);
+            // ComplexDoublehis generates missing nodes
+            MWNode<D, ComplexDouble> node_i = func_i.getNode(idx); // Copy node
+            node_i.mwTransform(Reconstruction);
+            node_i.cvTransform(Forward);
+            const ComplexDouble *coefs_i = node_i.getCoefs();
+            int n_coefs = node_i.getNCoefs();
+           if (func_i.conjugate() xor (conj and i==0)) {
+                for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * std::conj(coefs_i[j]); }
+            } else {
+                for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
+            }
         }
         node_o.cvTransform(Backward);
         node_o.mwTransform(Compression);

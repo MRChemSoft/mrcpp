@@ -52,33 +52,36 @@ template <int D, typename T> void multiply(double prec,
                                FunctionTree<D, T> &inp_b,
                                int maxIter = -1,
                                bool absPrec = false,
-                               bool useMaxNorms = false);
+                               bool useMaxNorms = false,
+                               bool conjugate = false );
 
 template <int D, typename T> void multiply(double prec,
                                FunctionTree<D, T> &out,
                                std::vector<FunctionTree<D, T> *> &inp,
                                int maxIter = -1,
                                bool absPrec = false,
-                               bool useMaxNorms = false);
+                               bool useMaxNorms = false,
+                               bool conjugate = false );
 
 template <int D, typename T> void multiply(double prec,
                                FunctionTree<D, T> &out,
                                FunctionTreeVector<D, T> &inp,
                                int maxIter = -1,
                                bool absPrec = false,
-                               bool useMaxNorms = false);
+                               bool useMaxNorms = false,
+                               bool conjugate = false );
 
 template <int D, typename T> void power(double prec,
                             FunctionTree<D, T> &out,
                             FunctionTree<D, T> &inp,
                             double p,
                             int maxIter = -1,
-                            bool absPrec = false);
+                            bool absPrec = false );
 
 template <int D, typename T> void square(double prec,
                              FunctionTree<D, T> &out,
                              FunctionTree<D, T> &inp,
                              int maxIter = -1,
-                             bool absPrec = false);
+                             bool absPrec = false, bool conjugate = false);
 
 } // namespace mrcpp

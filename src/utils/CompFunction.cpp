@@ -17,16 +17,20 @@ namespace mrcpp {
   template <int D>
   CompFunction<D>::CompFunction(MultiResolutionAnalysis<D> &mra)
   { defaultCompMRA<D> = &mra;
-    data.Ncomp = 0;
     func_ptr = std::make_shared<TreePtr<D>>(false);
-
+    CompD = func_ptr->real;
+    CompC = func_ptr->cplx;
+    for (int i = 0; i < 4; i++) CompD[i] = nullptr;
     for (int i = 0; i < 4; i++) CompC[i] = nullptr;
   }
 
   template <int D>
   CompFunction<D>::CompFunction()
-  { data.Ncomp = 0;
-      func_ptr = std::make_shared<TreePtr<D>>(false);
+  { func_ptr = std::make_shared<TreePtr<D>>(false);
+    CompD = func_ptr->real;
+    CompC = func_ptr->cplx;
+    for (int i = 0; i < 4; i++) CompD[i] = nullptr;
+    for (int i = 0; i < 4; i++) CompC[i] = nullptr;
   }
 
 /*
@@ -34,15 +38,18 @@ namespace mrcpp {
  */
   template <int D>
   CompFunction<D>::CompFunction(int n1)
-  { data.Ncomp = 0;
-      func_ptr = std::make_shared<TreePtr<D>>(false);
-      data.n1[0] = n1;
-      data.n2[0] = -1;
-      data.n3[0] = 0;
-      rank = 0;
-      isreal = 1;
-      iscomplex = 0;
-      data.shared = false;
+  {   func_ptr = std::make_shared<TreePtr<D>>(false);
+      CompD = func_ptr->real;
+      CompC = func_ptr->cplx;
+      for (int i = 0; i < 4; i++) CompD[i] = nullptr;
+      for (int i = 0; i < 4; i++) CompC[i] = nullptr;
+      func_ptr->data.n1[0] = n1;
+      func_ptr->data.n2[0] = -1;
+      func_ptr->data.n3[0] = 0;
+      func_ptr->rank = 0;
+      func_ptr->isreal = 1;
+      func_ptr->iscomplex = 0;
+      func_ptr->data.shared = false;
   }
 
 /*
@@ -50,24 +57,30 @@ namespace mrcpp {
  */
   template <int D>
   CompFunction<D>::CompFunction(int n1, bool share)
-  { data.Ncomp = 0;
-      func_ptr = std::make_shared<TreePtr<D>>(share);
-      data.n1[0] = n1;
-      data.n2[0] = -1;
-      data.n3[0] = 0;
-      rank = 0;
-      isreal = 1;
-      iscomplex = 0;
-      data.shared = share;
+  {   func_ptr = std::make_shared<TreePtr<D>>(share);
+      CompD = func_ptr->real;
+      CompC = func_ptr->cplx;
+      for (int i = 0; i < 4; i++) CompD[i] = nullptr;
+      for (int i = 0; i < 4; i++) CompC[i] = nullptr;
+      func_ptr->data.n1[0] = n1;
+      func_ptr->data.n2[0] = -1;
+      func_ptr->data.n3[0] = 0;
+      func_ptr->rank = 0;
+      func_ptr->isreal = 1;
+      func_ptr->iscomplex = 0;
+      func_ptr->data.shared = share;
   }
 
 /*
- * Empty functions (no components defined)
+ * Empty functions (trees defined but zero)
  */
   template <int D>
   CompFunction<D>::CompFunction(const CompFunctionData<D>& indata)
-  { data = indata;
-      func_ptr = std::make_shared<TreePtr<D>>(share);
+  { func_ptr = std::make_shared<TreePtr<D>>(indata.shared);
+    func_ptr->data = indata;
+    CompD = func_ptr->real;
+    CompC = func_ptr->cplx;
+    this->alloc(Ncomp()-1);
   }
 
 /** @brief Copy constructor
@@ -77,8 +90,9 @@ namespace mrcpp {
  */
   template <int D>
   CompFunction<D>::CompFunction(const CompFunction<D> &compfunc) {
-      data = compfunc.data;
       func_ptr = compfunc.func_ptr;
+      CompD = func_ptr->real;
+      CompC = func_ptr->cplx;
   }
 
 /** @brief Copy constructor
@@ -87,17 +101,12 @@ namespace mrcpp {
  * NO transfer of ownership.
  */
   template <int D>
-  CompFunction<D>::CompFunction(CompFunction<D> && compfunc) {
-      data = compfunc.data;
-      func_ptr = compfunc.func_ptr;
-  }
-
-  template <int D>
   CompFunction<D> &CompFunction<D>::operator=(const CompFunction<D> &compfunc) {
       if (this != &compfunc) {
-          data = compfunc.data;
           func_ptr = compfunc.func_ptr;
-      }
+          CompD = func_ptr->real;
+          CompC = func_ptr->cplx;
+     }
       return *this;
   }
 
@@ -107,36 +116,36 @@ template <int D>
  * Returns a copy without defined trees.
  */
 CompFunction<D> CompFunction<D>::paramCopy() const {
-    return CompFunction<D>(data);
+    return CompFunction<D>(func_ptr->data);
 }
 
 
 template <int D>
 void CompFunction<D>::flushMRAData() {
     const auto &box = defaultCompMRA<3>->getWorldBox();
-    data.type = defaultCompMRA<3>->getScalingBasis().getScalingType();
-    data.order = defaultCompMRA<3>->getOrder();
-    data.depth = defaultCompMRA<3>->getMaxDepth();
-    data.scale = box.getScale();
-    data.boxes[0] = box.size(0);
-    data.boxes[1] = box.size(1);
-    data.boxes[2] = box.size(2);
-    data.corner[0] = box.getCornerIndex().getTranslation(0);
-    data.corner[1] = box.getCornerIndex().getTranslation(1);
-    data.corner[2] = box.getCornerIndex().getTranslation(2);
+    func_ptr->data.type = defaultCompMRA<3>->getScalingBasis().getScalingType();
+    func_ptr->data.order = defaultCompMRA<3>->getOrder();
+    func_ptr->data.depth = defaultCompMRA<3>->getMaxDepth();
+    func_ptr->data.scale = box.getScale();
+    func_ptr->data.boxes[0] = box.size(0);
+    func_ptr->data.boxes[1] = box.size(1);
+    func_ptr->data.boxes[2] = box.size(2);
+    func_ptr->data.corner[0] = box.getCornerIndex().getTranslation(0);
+    func_ptr->data.corner[1] = box.getCornerIndex().getTranslation(1);
+    func_ptr->data.corner[2] = box.getCornerIndex().getTranslation(2);
 }
 
 template <int D>
 void CompFunction<D>::flushFuncData() {
     if (D == 3) flushMRAData();
-    for (int i = 0; i < Ncomp; i++) {
-        if (isreal) {
-            Nchunks[i] = CompD[i]->getNChunksUsed();
+    for (int i = 0; i < Ncomp(); i++) {
+        if (isreal()) {
+            func_ptr->Nchunks[i] = CompD[i]->getNChunksUsed();
         } else {
-            Nchunks[i] = CompC[i]->getNChunksUsed();
+            func_ptr->Nchunks[i] = CompC[i]->getNChunksUsed();
         }
     }
-    for (int i = Ncomp; i < 4; i++) Nchunks[i] = 0;
+    for (int i = Ncomp(); i < 4; i++) func_ptr->Nchunks[i] = 0;
 }
 
 template <int D>
@@ -153,14 +162,14 @@ CompFunctionData<D> CompFunction<D>::getFuncData() const {
     outdata.corner[0] = box.getCornerIndex().getTranslation(0);
     outdata.corner[1] = box.getCornerIndex().getTranslation(1);
     outdata.corner[2] = box.getCornerIndex().getTranslation(2);
-    for (int i = 0; i < Ncomp; i++) {
-        if (isreal) {
+    for (int i = 0; i < Ncomp(); i++) {
+        if (isreal()) {
             outdata.Nchunks[i] = CompD[i]->getNChunksUsed();
         } else {
             outdata.Nchunks[i] = CompC[i]->getNChunksUsed();
         }
     }
-    for (int i = Ncomp; i < 4; i++) Nchunks[i] = 0;
+    for (int i = Ncomp(); i < 4; i++) outdata.Nchunks[i] = 0;
     return outdata;
 }
 
@@ -168,52 +177,49 @@ CompFunctionData<D> CompFunction<D>::getFuncData() const {
 template <int D>
 ComplexDouble CompFunction<D>::integrate() const {
     ComplexDouble integral;
-    if (isreal) integral = CompD[0]->integrate();
+    if (isreal()) integral = CompD[0]->integrate();
     else integral = CompC[0]->integrate();
     return integral;
 }
 
-    template <int D>
-  double CompFunction<D>::norm() const {
-     double norm = squaredNorm();
-     for (int i = 0; i < Ncomp; i++) {
-          if (isreal) {
-              norm += CompD[i]->getSquareNorm();
-          } else {
-              norm += CompC[i]->getSquareNorm();
-          }
-     }
-     if (norm > 0.0) norm = std::sqrt(norm);
-     return norm;
-  }
-  template <int D>
-  double CompFunction<D>::squaredNorm() const {
-     double norm = squaredNorm();
-     for (int i = 0; i < Ncomp; i++) {
-          if (isreal) {
-              norm += CompD[i]->getSquareNorm();
-          } else {
-              norm += CompC[i]->getSquareNorm();
-          }
-     }
-     return norm;
-  }
-  template <int D>
-  void CompFunction<D>::alloc(int ialloc) {
+template <int D>
+double CompFunction<D>::norm() const {
+    double norm = squaredNorm();
+    if (norm > 0.0) norm = std::sqrt(norm);
+    return norm;
+}
+template <int D>
+double CompFunction<D>::squaredNorm() const {
+    double norm = 0.0;
+    for (int i = 0; i < Ncomp(); i++) {
+        if (isreal() and CompD[i]!= nullptr) {
+            norm += CompD[i]->getSquareNorm();
+        } else if (iscomplex() and CompC[i]!= nullptr) {
+            norm += CompC[i]->getSquareNorm();
+        }
+    }
+    return norm;
+}
+
+//  Allocate empty trees. The tree must be defined as real or complex already.
+//  Allocates all the ialloc+1 trees, with indices 0,...ialloc
+//  ialloc is the largest index allocated. ialloc=0 allocates one tree.
+template <int D>
+void CompFunction<D>::alloc(int ialloc) {
       if (defaultCompMRA<D> == nullptr) MSG_ABORT("Default MRA not yet defined");
-      if (isreal == 0 and iscomplex == 0)  MSG_ABORT("Function must be defined either real or complex");
+      if (isreal() == 0 and iscomplex() == 0)  MSG_ABORT("Function must be defined either real or complex");
       for (int i = 0; i < ialloc + 1; i++) {
           delete CompD[i];
           delete CompC[i];
-          if (isreal) {
+          if (isreal()) {
               CompD[i] =  new FunctionTree<D, double> (*defaultCompMRA<D>, func_ptr->shared_mem_real);
           }
-          if (iscomplex) {
+          if (iscomplex()) {
               CompC[i] = new FunctionTree<D, ComplexDouble> (*defaultCompMRA<D>, func_ptr->shared_mem_cplx);
           }
-          Ncomp = std::max(Ncomp, i + 1);
+          func_ptr->Ncomp = std::max(Ncomp(), i + 1);
       }
-      for (int i = ialloc + 1; i < Ncomp; i++) {
+      for (int i = ialloc + 1; i < Ncomp(); i++) {
           //delete possible remaining components
           delete CompD[i];
           delete CompC[i];
@@ -224,7 +230,7 @@ ComplexDouble CompFunction<D>::integrate() const {
 template <int D>
 void CompFunction<D>::free() {
     //TODO: shared memory handling
-    for (int i = 0; i < Ncomp; i++) {
+    for (int i = 0; i < Ncomp(); i++) {
         delete CompD[i];
         delete CompC[i];
     }
@@ -233,7 +239,7 @@ void CompFunction<D>::free() {
 template <int D>
 int CompFunction<D>::getSizeNodes() const {
     int size_mb = 0; // Memory size in kB
-    for (int i = 0; i < Ncomp; i++) {
+    for (int i = 0; i < Ncomp(); i++) {
         if (CompD[i]!= nullptr) size_mb +=CompD[i]->getSizeNodes();
         if (CompC[i]!= nullptr) size_mb +=CompC[i]->getSizeNodes();
     }
@@ -243,79 +249,83 @@ int CompFunction<D>::getSizeNodes() const {
 template <int D>
 int CompFunction<D>::getNNodes() const {
     int nNodes = 0;
-     for (int i = 0; i < Ncomp; i++) {
+     for (int i = 0; i < Ncomp(); i++) {
         if (CompD[i]!= nullptr) nNodes +=CompD[i]->getSizeNodes();
         if (CompC[i]!= nullptr) nNodes +=CompC[i]->getSizeNodes();
     }
     return nNodes;
 }
 
+/** @brief Soft complex conjugate
+ *
+ * Will use complex conjugate in operations (add, multiply etc.)
+ * Does change the state (conj flag), but does not actively change all coefficients.
+ */
 template <int D>
-CompFunction<D> CompFunction<D>::dagger() {
-        CompFunction<D> out(*this); // Returns shallow copy
-        out.data.conj = not(this->data.conj);
-        return out;
+void CompFunction<D>::dagger() {
+    func_ptr->data.conj = not(func_ptr->data.conj);
+    for (int i = 0; i < Ncomp(); i++) {
+        if (CompC[i]!= nullptr) CompC[i]->setConjugate(func_ptr->data.conj);
+    }
 }
 
 template <int D>
 FunctionTree<D, double> &CompFunction<D>::real(int i) {
-    if (!isreal) MSG_ABORT("not real function");
+    if (!isreal()) MSG_ABORT("not real function");
     if (CompD[i] == nullptr) alloc(i);
     return *CompD[i];
 }
 template <int D> //NB: should return CompC in the future
 FunctionTree<D, double>  &CompFunction<D>::imag(int i) {
     MSG_ABORT("Must choose real or complex");
-    if (!iscomplex) MSG_ABORT("not complex function");
+    if (!iscomplex()) MSG_ABORT("not complex function");
     return *CompD[i];
 }
 
 template <int D>
 FunctionTree<D, ComplexDouble>  &CompFunction<D>::complex(int i) {
-    if (!iscomplex) MSG_ABORT("not marked as a complex function");
+    if (!iscomplex()) MSG_ABORT("not marked as a complex function");
     if (CompC[i] == nullptr) alloc(i);
     return *CompC[i];
 }
 
 template <int D>
 const FunctionTree<D, double> &CompFunction<D>::real(int i) const {
-    if (!isreal) MSG_ABORT("not real function");
+    if (!isreal()) MSG_ABORT("not real function");
     return *CompD[i];
 }
 template <int D> //NB: should use complex or real
 const FunctionTree<D, double> &CompFunction<D>::imag(int i) const {
     MSG_ABORT("Must choose real or complex");
-    if (!iscomplex) MSG_ABORT("not complex function");
+    if (!iscomplex()) MSG_ABORT("not complex function");
     return *CompD[i];
 }
 template <int D>
 const FunctionTree<D, ComplexDouble> &CompFunction<D>::complex(int i) const {
-    if (!iscomplex) MSG_ABORT("not marked as a complex function");
+    if (!iscomplex()) MSG_ABORT("not marked as a complex function");
     return *CompC[i];
 }
 
  /* for backwards compatibility */
 template <int D>
 void CompFunction<D>::setReal(FunctionTree<D, double> *tree, int i) {
-      isreal = 1;
+      func_ptr->isreal = 1;
       if (CompD[i] != nullptr) delete CompD[i];
-      if (iscomplex) MSG_ERROR("cannot write real tree into complex function");
       CompD[i] = tree;
       if (tree != nullptr) {
-          Ncomp = std::max(Ncomp, i + 1);
-      } else {Ncomp = std::min(Ncomp, i);}
+          func_ptr->Ncomp = std::max(Ncomp(), i + 1);
+      } else {func_ptr->Ncomp = std::min(Ncomp(), i);}
 }
-    /*
+
 template <int D>
-void CompFunction<D>::set(FunctionTree<D, ComplexDouble> *tree, int i) {
-      if (CompC[i] != nullptr) delete CompD[i];
-      if (isreal) MSG_ERROR("cannot write comlex tree into complex function");
+void CompFunction<D>::setCplx(FunctionTree<D, ComplexDouble> *tree, int i) {
+      func_ptr->iscomplex = 1;
+      if (CompC[i] != nullptr) delete CompC[i];
       CompC[i] = tree;
       if (tree != nullptr) {
-          iscomplex = 1;
-          Ncomp = std::max(Ncomp, i + 1);
-      } else {Ncomp = std::min(Ncomp, i);}
-      } */
+          func_ptr->Ncomp = std::max(Ncomp(), i + 1);
+      } else {func_ptr->Ncomp = std::min(Ncomp(), i);}
+}
 
 /** @brief In place addition.
  *
@@ -324,9 +334,19 @@ void CompFunction<D>::set(FunctionTree<D, ComplexDouble> *tree, int i) {
  */
 template <int D>
 void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp) {
-    for (int i = 0; i < inp.Ncomp; i++) {
-        if (i >= Ncomp) alloc(i);
-        if (isreal) {
+    if (Ncomp()<inp.Ncomp()){
+        func_ptr->data = inp.func_ptr->data;
+        alloc(inp.Ncomp()-1);
+        for (int i = 0; i < inp.Ncomp(); i++) {
+            if (inp.isreal()) {
+                CompD[i]->setZero();
+            } else {
+                CompC[i]->setZero();
+            }
+        }
+    }
+    for (int i = 0; i < inp.Ncomp(); i++) {
+        if (inp.isreal()) {
             CompD[i]->add_inplace(c.real(),*inp.CompD[i]);
         } else {
             CompC[i]->add_inplace(c,*inp.CompC[i]);
@@ -339,8 +359,8 @@ template <int D>
 int CompFunction<D>::crop(double prec) {
     if (prec < 0.0) return 0;
     int nChunksremoved = 0;
-    for (int i = 0; i < Ncomp; i++) {
-        if (isreal) {
+    for (int i = 0; i < Ncomp(); i++) {
+        if (isreal()) {
             nChunksremoved += CompD[i]->crop(prec, 1.0, false);
         } else {
             nChunksremoved += CompC[i]->crop(prec, 1.0, false);
@@ -354,8 +374,8 @@ template <int D>
 void CompFunction<D>::rescale(ComplexDouble c) {
     bool need_to_rescale = not(isShared()) or mpi::share_master();
     if (need_to_rescale) {
-        for (int i = 0; i < Ncomp; i++) {
-            if (isreal) {
+        for (int i = 0; i < Ncomp(); i++) {
+            if (isreal()) {
                 CompD[i]->rescale(c.real());
             } else {
                 CompC[i]->rescale(c);
@@ -378,13 +398,12 @@ template class CompFunction<3>;
  */
   template <int D>
   void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp) {
-      out->data = inp.data;
-      for (int i = 0; i < inp.Ncomp; i++) {
-          if (inp.isreal) {
-              delete out->CompD[i];
+      out->func_ptr->data = inp.func_ptr->data;
+      out->alloc(inp.Ncomp()-1);
+      for (int i = 0; i < inp.Ncomp(); i++) {
+          if (inp.isreal()) {
               inp.CompD[i]->deep_copy(out->CompD[i]);
           } else {
-              delete out->CompC[i];
               inp.CompC[i]->deep_copy(out->CompC[i]);
           }
       }
@@ -393,17 +412,16 @@ template class CompFunction<3>;
 
 /** @brief Deep copy
  *
- * Deep copy: meta data is copied along with the content of each component.
+ * Deep copy: meta func_ptr->data is copied along with the content of each component.
  */
   template <int D>
   void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp) {
-      out.data = inp.data;
-      for (int i = 0; i < inp.Ncomp; i++) {
-          if (inp.isreal) {
-              out.CompD[i] = nullptr;
+      out.func_ptr->data = inp.func_ptr->data;
+      out.alloc(inp.Ncomp()-1);
+      for (int i = 0; i < inp.Ncomp(); i++) {
+          if (inp.isreal()) {
               inp.CompD[i]->deep_copy(out.CompD[i]);
           } else {
-              out.CompC[i] = nullptr;
               inp.CompC[i]->deep_copy(out.CompC[i]);
           }
       }
@@ -415,7 +433,7 @@ template class CompFunction<3>;
  *
  */
 template <int D>
-void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDouble b, CompFunction<D> inp_b, double prec) {
+void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDouble b, CompFunction<D> inp_b, double prec, bool conjugate) {
     std::vector<ComplexDouble> coefs(2);
     coefs[0] = a;
     coefs[1] = b;
@@ -424,7 +442,7 @@ void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDo
     funcs.push_back(inp_a);
     funcs.push_back(inp_b);
 
-    linear_combination(out, coefs, funcs, prec);
+    linear_combination(out, coefs, funcs, prec, conjugate);
 }
 
 /** @brief out = c_0*inp_0 + c_1*inp_1 + ... + c_N*inp_N
@@ -432,11 +450,21 @@ void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D> inp_a, ComplexDo
  * OMP parallel, but not MPI parallel
  */
 template <int D>
-    void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec) {
+    void linear_combination(CompFunction<D> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<D>> &inp, double prec, bool conjugate) {
     double thrs = MachineZero;
     bool need_to_add = not(out.isShared()) or mpi::share_master();
-    for (int comp = 0; comp < inp[0].Ncomp; comp++) {
-        if (inp[0].isreal) {
+    out.func_ptr->data = inp[0].func_ptr->data;
+    out.func_ptr->iscomplex = 0;
+    out.func_ptr->isreal = 1;
+    for (int i = 0; i < inp.size(); i++) {
+        if(inp[i].iscomplex()){
+            out.func_ptr->iscomplex = 1;
+            out.func_ptr->isreal = 0;
+        }
+    }
+    out = inp[0].paramCopy();
+    for (int comp = 0; comp < inp[0].Ncomp(); comp++) {
+        if (inp[0].isreal()) {
             FunctionTreeVector<D, double> fvec; // one component vector
             for (int i = 0; i < inp.size(); i++) {
                 if (std::norm(c[i]) < thrs) continue;
@@ -450,28 +478,27 @@ template <int D>
                     } else {
                         mrcpp::add(prec, *out.CompD[comp], fvec);
                     }
+                } else if (out.isreal()) {
+                    out.CompD[comp]->setZero();
                 }
-            } else if (out.hasReal()) {
-                out.CompD[comp]->setZero();
             }
         } else {
             FunctionTreeVector<D, ComplexDouble> fvec; // one component vector
             for (int i = 0; i < inp.size(); i++) {
                 if (std::norm(c[i]) < thrs) continue;
-                if (inp[i].data.conj) MSG_ERROR("conjugaison not implemented");
                 fvec.push_back(std::make_tuple(c[i], inp[i].CompC[comp]));
             }
             if (need_to_add) {
                 if (fvec.size() > 0) {
                     if (prec < 0.0) {
-                        build_grid(*out.CompC[comp], fvec);
-                        mrcpp::add(prec, *out.CompC[comp], fvec, 0);
+                       build_grid(*out.CompC[comp], fvec);
+                       mrcpp::add(prec, *out.CompC[comp], fvec, 0, false, conjugate);
                     } else {
-                        mrcpp::add(prec, *out.CompC[comp], fvec);
+                        mrcpp::add(prec, *out.CompC[comp], fvec, -1, false, conjugate);
                     }
+                } else if (out.iscomplex()) {
+                    out.CompC[comp]->setZero();
                 }
-            } else if (out.hasReal()) {
-                out.CompC[comp]->setZero();
             }
         }
         mpi::share_function(out, 0, 9911, mpi::comm_share);
@@ -482,8 +509,8 @@ template <int D>
  *
  */
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec, bool useMaxNorms) {
-    multiply(prec, out, 1.0, inp_a, inp_b, -1, absPrec, useMaxNorms);
+void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec, bool useMaxNorms, bool conjugate) {
+    multiply(prec, out, 1.0, inp_a, inp_b, -1, absPrec, useMaxNorms, conjugate);
 }
 
 
@@ -491,68 +518,67 @@ void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b
  *
  */
 template <int D>
-void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter, bool absPrec, bool useMaxNorms) {
+void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
-    for (int comp = 0; comp < inp_a.Ncomp; comp++) {
-        if (inp_a.isreal and inp_b.isreal) {
+    out.func_ptr->data = inp_a.func_ptr->data;
+    for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
+        if (inp_a.isreal() and inp_b.isreal()) {
             delete out.CompD[comp];
             FunctionTree<D, double> *tree = new FunctionTree<D, double>(inp_a.CompD[0]->getMRA());
             if (need_to_multiply) {
-                if (out.iscomplex and inp_a.data.conj) MSG_ERROR("conjugaison not implemented");
-                if (out.iscomplex and inp_b.data.conj) MSG_ERROR("conjugaison not implemented");
                 if (prec < 0.0) {
                     // Union grid
                     build_grid(*tree, *inp_a.CompD[comp]);
                     build_grid(*tree, *inp_b.CompD[comp]);
-                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompD[comp], *inp_b.CompD[comp], 0);
+                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompD[comp], *inp_b.CompD[comp], 0, false, false, conjugate);
                 } else {
                     // Adaptive grid
-                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompD[comp], *inp_b.CompD[comp], maxIter, absPrec, useMaxNorms);
+                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompD[comp], *inp_b.CompD[comp], maxIter, absPrec, useMaxNorms, conjugate);
                 }
             }
             out.CompD[comp] = tree;
         } else {
+            out.func_ptr->iscomplex = 1;
+            out.func_ptr->isreal = 0;
             // if one of the input is real, we simply make a new complex copy of it
-            bool inp_aisReal = inp_a.isreal;
-            bool inp_bisReal = inp_b.isreal;
+            bool inp_aisReal = inp_a.isreal();
+            bool inp_bisReal = inp_b.isreal();
             if(inp_aisReal) {
                 inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
-                inp_a.iscomplex = true;
-                inp_a.isreal = false;
+                inp_a.func_ptr->iscomplex = true;
+                inp_a.func_ptr->isreal = false;
             }
             if(inp_bisReal) {
                 inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
-                inp_b.iscomplex = true;
-                inp_b.isreal = false;
+                inp_b.func_ptr->iscomplex = true;
+                inp_b.func_ptr->isreal = false;
             }
 
             delete out.CompC[comp];
             FunctionTree<D, ComplexDouble> *tree = new FunctionTree<D, ComplexDouble>(inp_a.CompC[0]->getMRA());
             ComplexDouble coef = 1.0;
             if (need_to_multiply) {
-                if (out.iscomplex and inp_a.data.conj) MSG_ERROR("conjugaison not implemented");
-                if (out.iscomplex and inp_b.data.conj) MSG_ERROR("conjugaison not implemented");
                 if (prec < 0.0) {
                     // Union grid
                     build_grid(*tree, *inp_a.CompC[comp]);
                     build_grid(*tree, *inp_b.CompC[comp]);
-                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0);
+                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0, false, false, conjugate);
                 } else {
                     // Adaptive grid
-                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms);
+                    mrcpp::multiply(prec, *tree, coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
                 }
             }
             out.CompC[comp] = tree;
             // restore original tree
             if(inp_aisReal) {
                 delete inp_a.CompC[comp];
-                inp_a.iscomplex = false;
-                inp_a.isreal = true;
+                inp_a.func_ptr->iscomplex = false;
+                inp_a.func_ptr->isreal = true;
             }
             if(inp_bisReal) {
                 delete inp_b.CompC[comp];
-                inp_b.iscomplex = false;
-                inp_b.isreal = true;
+                inp_b.func_ptr->iscomplex = false;
+                inp_b.func_ptr->isreal = true;
             }
         }
     }
@@ -565,10 +591,10 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
  *  Only one component is multiplied
  */
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine) {
-    if (inp_a.Ncomp > 1) MSG_ERROR("Not implemented");
-    if (inp_a.isreal != 1) MSG_ERROR("Not implemented");
-    multiply(out, *inp_a.CompD[0], f, prec, nrefine);
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine, bool conjugate) {
+    if (inp_a.Ncomp() > 1) MSG_ERROR("Not implemented");
+    if (inp_a.isreal() != 1) MSG_ERROR("Not implemented");
+    multiply(out, *inp_a.CompD[0], f, prec, nrefine, conjugate);
 }
 
 /** @brief out = inp_a * f
@@ -576,10 +602,10 @@ void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunctio
  *  Only one component is multiplied
  */
 template <int D>
-void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine) {
-    if (inp_a.Ncomp > 1) MSG_ERROR("Not implemented");
-    if (inp_a.iscomplex != 1) MSG_ERROR("Not implemented");
-    multiply(out, *inp_a.CompC[0], f, prec, nrefine);
+void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine, bool conjugate) {
+    if (inp_a.Ncomp() > 1) MSG_ERROR("Not implemented");
+    if (inp_a.iscomplex() != 1) MSG_ERROR("Not implemented");
+    multiply(out, *inp_a.CompC[0], f, prec, nrefine, conjugate);
 
 }
 
@@ -587,21 +613,21 @@ void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunctio
  *
  */
 template <int D>
-void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine) {
+void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine, bool conjugate) {
     CompFunction<D> func_a(1);
-    func_a.isreal = 1;
-    func_a.iscomplex = 0;
+    func_a.func_ptr->isreal = 1;
+    func_a.func_ptr->iscomplex = 0;
     func_a.CompD[0] = &inp_a;
-    multiply(out, func_a, f, prec, nrefine);
+    multiply(out, func_a, f, prec, nrefine, conjugate);
     func_a.CompD[0] = nullptr;
 }
 template <int D>
-void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine) {
+void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine, bool conjugate) {
     CompFunction<D> func_a(1);
-    func_a.isreal = 0;
-    func_a.iscomplex = 1;
+    func_a.func_ptr->isreal = 0;
+    func_a.func_ptr->iscomplex = 1;
     func_a.CompC[0] = &inp_a;
-    multiply(out, func_a, f, prec, nrefine);
+    multiply(out, func_a, f, prec, nrefine, conjugate);
     func_a.CompC[0] = nullptr;
 }
 
@@ -615,15 +641,14 @@ void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, Repre
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
     ComplexDouble dotprod = 0.0;
-    if (bra.data.conj or ket.data.conj) MSG_ERROR("dot with conjugaison not implemented");
-    for (int comp = 0; comp < bra.Ncomp; comp++) {
-          if (bra.isreal and ket.isreal) {
+    for (int comp = 0; comp < bra.Ncomp(); comp++) {
+          if (bra.isreal() and ket.isreal()) {
               dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompD[comp]);
           } else {
               dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
           }
     }
-    if (bra.isreal and ket.isreal) {
+    if (bra.isreal() and ket.isreal()) {
         return dotprod.real();
     } else {
         return dotprod;
@@ -638,9 +663,8 @@ ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
 template <int D>
 double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) {
     double dotprod = 0.0;
-    if (bra.data.conj or ket.data.conj) MSG_ERROR("dot with conjugaison not implemented");
-    for (int comp = 0; comp < bra.Ncomp; comp++) {
-          if (bra.isreal and ket.isreal) {
+    for (int comp = 0; comp < bra.Ncomp(); comp++) {
+          if (bra.isreal() and ket.isreal()) {
               dotprod += mrcpp::node_norm_dot(*bra.CompD[comp], *ket.CompD[comp]);
           } else {
               dotprod += mrcpp::node_norm_dot(*bra.CompC[comp], *ket.CompC[comp]);
@@ -651,9 +675,9 @@ double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) {
 
 void project(CompFunction<3> &out, std::function<double(const Coord<3>& r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.isreal = 1;
-    out.iscomplex = 0;
-    if(out.Ncomp < 1) out.alloc(0);
+    out.func_ptr->isreal = 1;
+    out.func_ptr->iscomplex = 0;
+    if(out.Ncomp() < 1) out.alloc(0);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
@@ -661,9 +685,9 @@ void project(CompFunction<3> &out, std::function<double(const Coord<3>& r)> f, d
 // template <int D, typename T>
 void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.isreal = 0;
-    out.iscomplex = 1;
-    if(out.Ncomp < 1) out.alloc(0);
+    out.func_ptr->isreal = 0;
+    out.func_ptr->iscomplex = 1;
+    if(out.Ncomp() < 1) out.alloc(0);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
@@ -671,18 +695,18 @@ void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.isreal = 1;
-    out.iscomplex = 0;
-    if(out.Ncomp < 1) out.alloc(0);
+    out.func_ptr->isreal = 1;
+    out.func_ptr->iscomplex = 0;
+    if(out.Ncomp() < 1) out.alloc(0);
     if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }
 template <int D>
 void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.isreal = 0;
-    out.iscomplex = 1;
-    if(out.Ncomp < 1) out.alloc(0);
+    out.func_ptr->isreal = 0;
+    out.func_ptr->iscomplex = 1;
+    if(out.Ncomp() < 1) out.alloc(0);
     if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
  }
@@ -692,11 +716,11 @@ void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, d
 
 CompFunctionVector::CompFunctionVector(int N):
     std::vector<CompFunction<3>>(N) {
-    for (int i = 0; i < N; i++) (*this)[i].rank = i;
+    for (int i = 0; i < N; i++) (*this)[i].func_ptr->rank = i;
     vecMRA = defaultCompMRA<3>;
 }
 void CompFunctionVector::distribute() {
-    for (int i = 0; i < this->size(); i++) (*this)[i].rank = i;
+    for (int i = 0; i < this->size(); i++) (*this)[i].func_ptr->rank = i;
 }
 
 
@@ -710,6 +734,11 @@ void CompFunctionVector::distribute() {
  */
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec) {
 
+    if (Phi[0].iscomplex() ){
+        rotate_cplx(Phi, U, Psi, prec);
+        return;
+    }
+
     // The principle of this routine is that nodes are rotated one by one using matrix multiplication.
     // The routine does avoid when possible to move data, but uses pointers and indices manipulation.
     // MPI version does not use OMP yet, Serial version uses OMP
@@ -719,7 +748,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
     if (U.rows() < N) MSG_ABORT("Incompatible number of rows for U matrix");
     if (U.cols() < M) MSG_ABORT("Incompatible number of columns for U matrix");
 
-    // 1) make union tree without coefficients
+    // 1) make union tree without coefficients. Note that the ref tree is always real (in fact it has no coeff)
     FunctionTree<3> refTree(*Phi.vecMRA);
     mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
 
@@ -733,73 +762,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
     // get a list of all nodes in union tree, identified by their serialIx indices
     refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree);
     int max_n = indexVec_ref.size();
-
-   // 2) We work with real numbers only. Make real blocks for U matrix
-    bool UhasReal = false;
-    bool UhasImag = false;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            if (std::abs(U(i, j).real()) > 10*MachineZero) UhasReal = true;
-            if (std::abs(U(i, j).imag()) > 10*MachineZero) UhasImag = true;
-        }
-    }
-
-    IntVector PsihasReIm = IntVector::Zero(2);
-    for (int j = 0; j < N; j++) {
-        if (!mpi::my_func(j)) continue;
-        PsihasReIm[0] = (Phi[j].hasReal()) ? 1 : 0;
-        PsihasReIm[1] = (Phi[j].hasImag()) ? 1 : 0;
-    }
-    mpi::allreduce_vector(PsihasReIm, mpi::comm_wrk);
-    if (not PsihasReIm[0] and not PsihasReIm[1]) {
-        return; // do nothing
-    }
-
-    bool makeReal = (UhasReal and PsihasReIm[0]) or (UhasImag and PsihasReIm[1]);
-    bool makeImag = (UhasReal and PsihasReIm[1]) or (UhasImag and PsihasReIm[0]);
-
-    for (int j = 0; j < M; j++) {
-        if (!mpi::my_func(j)) continue;
-        if (not makeReal and Psi[j].hasReal()) Psi[j].free();
-        if (not makeImag and Psi[j].hasImag()) Psi[j].free();
-    }
-
-    if (not makeReal and not makeImag) { return; }
-
-    int Neff = N;               // effective number of input orbitals
-    int Meff = M;               // effective number of output orbitals
-    if (makeImag) Neff = 2 * N; // Imag and Real treated independently. We always use real part of U
-    if (makeImag) Meff = 2 * M; // Imag and Real treated independently. We always use real part of U
-
-    IntVector conjMat = IntVector::Zero(Neff);
-    for (int j = 0; j < Neff; j++) {
-        if (!mpi::my_func(j % N)) continue;
-        conjMat[j] = (Phi[j % N].conjugate()) ? -1 : 1;
-    }
-    mpi::allreduce_vector(conjMat, mpi::comm_wrk);
-
-    // we make a real matrix = U,  but organized as one or four real blocks
-    // out_r = U_rr*in_r - U_ir*in_i*conjMat
-    // out_i = U_ri*in_r - U_ii*in_i*conjMat
-    // the first index of U is the one used on input Phi
-    DoubleMatrix Ureal(Neff, Meff); // four blocks, for rr ri ir ii
-    for (int j = 0; j < Neff; j++) {
-        for (int i = 0; i < Meff; i++) {
-            double sign = 1.0;
-            if (j < N and i < M) {
-                // real U applied on real Phi
-                Ureal(j, i) = U.real()(j % N, i % M);
-            } else if (j >= N and i >= M) {
-                // real U applied on imag Phi
-                Ureal(j, i) = conjMat[j] * U.real()(j % N, i % M);
-            } else if (j < N and i >= M) {
-                // imag U applied on real Phi
-                Ureal(j, i) = U.imag()(j % N, i % M);
-            } else {
-                // imag U applied on imag Phi
-                Ureal(j, i) = -1.0 * conjMat[j] * U.imag()(j % N, i % M);
-            }
-        }
+    for (int i = 0; i < M; i++) {
+        Psi[i].func_ptr->data.isreal = 1;
+        Psi[i].func_ptr->data.iscomplex = 0;
     }
 
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
@@ -809,10 +774,10 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
     BankAccount nodesRotated;         // to put the rotated nodes
 
     // used for serial only:
-    std::vector<std::vector<double *>> coeffVec(Neff);
-    std::vector<std::vector<int>> indexVec(Neff);   // serialIx of the nodes
+    std::vector<std::vector<double *>> coeffVec(N);
+    std::vector<std::vector<int>> indexVec(N);   // serialIx of the nodes
     std::map<int, std::vector<int>> node2orbVec;    // for each node index, gives a vector with the indices of the orbitals using this node
-    std::vector<std::map<int, int>> orb2node(Neff); // for a given orbital and a given node, gives the node index in the
+    std::vector<std::map<int, int>> orb2node(N); // for a given orbital and a given node, gives the node index in the
                                                     // orbital given the node index in the reference tree
     if (serial) {
 
@@ -821,29 +786,16 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
         std::vector<double> scalefac;
         for (int j = 0; j < N; j++) {
             // make vector with all coef pointers and their indices in the union grid
-            if (Phi[j].hasReal()) {
-                Phi[j].real().makeCoeffVector(coeffVec[j], indexVec[j], parindexVec, scalefac, max_ix, refTree);
-                // make a map that gives j from indexVec
-                int orb_node_ix = 0;
-                for (int ix : indexVec[j]) {
-                    orb2node[j][ix] = orb_node_ix++;
-                    if (ix < 0) continue;
-                    node2orbVec[ix].push_back(j);
-                }
-            }
-            if (Phi[j].hasImag()) {
-                Phi[j].imag().makeCoeffVector(coeffVec[j + N], indexVec[j + N], parindexVec, scalefac, max_ix, refTree);
-                // make a map that gives j from indexVec
-                int orb_node_ix = 0;
-                for (int ix : indexVec[j + N]) {
-                    orb2node[j + N][ix] = orb_node_ix++;
-                    if (ix < 0) continue;
-                    node2orbVec[ix].push_back(j + N);
-                }
+            Phi[j].real().makeCoeffVector(coeffVec[j], indexVec[j], parindexVec, scalefac, max_ix, refTree);
+            // make a map that gives j from indexVec
+            int orb_node_ix = 0;
+            for (int ix : indexVec[j]) {
+                orb2node[j][ix] = orb_node_ix++;
+                if (ix < 0) continue;
+                node2orbVec[ix].push_back(j);
             }
         }
     } else { // MPI case
-
         // send own nodes to bank, identifying them through the serialIx of refTree
         save_nodes(Phi, refTree, nodesPhi);
         mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
@@ -851,18 +803,18 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 
     // 4) rotate all the nodes
     IntMatrix split_serial;                             // in the serial case all split are stored in one array
-    std::vector<std::vector<double *>> coeffpVec(Meff); // to put pointers to the rotated coefficient for each orbital in serial case
-    std::vector<std::map<int, int>> ix2coef(Meff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
+    std::vector<std::vector<double *>> coeffpVec(M); // to put pointers to the rotated coefficient for each orbital in serial case
+    std::vector<std::map<int, int>> ix2coef(M);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
     int csize;                                          // size of the current coefficients (different for roots and branches)
     std::vector<DoubleMatrix> rotatedCoeffVec;          // just to ensure that the data from rotatedCoeff is not deleted, since we point to it.
     // j indices are for unrotated orbitals, i indices are for rotated orbitals
     if (serial) {
         std::map<int, int> ix2coef_ref;   // to find the index n corresponding to a serialIx
-        split_serial.resize(Meff, max_n); // not use in the MPI case
+        split_serial.resize(M, max_n); // not use in the MPI case
         for (int n = 0; n < max_n; n++) {
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             ix2coef_ref[node_ix] = n;
-            for (int i = 0; i < Meff; i++) split_serial(i, n) = 1;
+            for (int i = 0; i < M; i++) split_serial(i, n) = 1;
         }
 
         std::vector<int> nodeReady(max_n, 0); // To indicate to OMP threads that the parent is ready (for splits)
@@ -896,9 +848,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             };
 
             std::vector<int> orbiVec;
-            for (int i = 0; i < Meff; i++) { // loop over all rotated orbitals
-                if (not makeReal and i < M) continue;
-                if (not makeImag and i >= M) continue;
+            for (int i = 0; i < M; i++) { // loop over all rotated orbitals
                 if (parindexVec_ref[n] >= 0 and split_serial(i, ix2coef_ref[parindexVec_ref[n]]) == 0) continue; // parent node has too small wavelets
                 orbiVec.push_back(i);
             }
@@ -906,7 +856,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             // 4c) rotate this node
             DoubleMatrix Un(orbjVec.size(), orbiVec.size()); // chunk of U, with reorganized indices
             for (int i = 0; i < orbiVec.size(); i++) {       // loop over rotated orbitals
-                for (int j = 0; j < orbjVec.size(); j++) { Un(j, i) = Ureal(orbjVec[j], orbiVec[i]); }
+                for (int j = 0; j < orbjVec.size(); j++) { Un(j, i) = std::real(U(orbjVec[j], orbiVec[i])); }
             }
             DoubleMatrix rotatedCoeff(csize, orbiVec.size());
             // HERE IT HAPPENS!
@@ -949,12 +899,12 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
     } else { // MPI case
 
         // TODO? rotate in bank, so that we do not get and put. Requires clever handling of splits.
-        std::vector<double> split(Meff, -1.0);    // which orbitals need splitting (at a given node). For now double for compatibilty with bank
-        std::vector<double> needsplit(Meff, 1.0); // which orbitals need splitting
+        std::vector<double> split(M, -1.0);    // which orbitals need splitting (at a given node). For now double for compatibilty with bank
+        std::vector<double> needsplit(M, 1.0); // which orbitals need splitting
         BankAccount nodeSplits;
         mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
 
-        DoubleMatrix coeffBlock(sizecoeff, Neff);
+        DoubleMatrix coeffBlock(sizecoeff, N);
         max_ix++; // largest node index + 1. to store rotated orbitals with different id
         TaskManager tasks(max_n);
         for (int nn = 0; nn < max_n; nn++) {
@@ -966,32 +916,23 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             if (parentid == -1) {
                 // root node, split if output needed
                 for (int i = 0; i < M; i++) {
-                    if (makeReal)
-                        split[i] = 1.0;
-                    else
-                        split[i] = -1.0;
-                }
-                for (int i = N; i < Meff; i++) {
-                    if (makeImag)
-                        split[i] = 1.0;
-                    else
-                        split[i] = -1.0;
+                         split[i] = 1.0;
                 }
                 csize = sizecoeff;
             } else {
                 // note that it will wait until data is available
-                nodeSplits.get_data(parentid, Meff, split.data());
+                nodeSplits.get_data(parentid, M, split.data());
                 csize = sizecoeffW;
             }
             std::vector<int> orbiVec;
             std::vector<int> orbjVec;
-            for (int i = 0; i < Meff; i++) {  // loop over rotated orbitals
+            for (int i = 0; i < M; i++) {  // loop over rotated orbitals
                 if (split[i] < 0.0) continue; // parent node has too small wavelets
                 orbiVec.push_back(i);
             }
 
             // 4b) rotate this node
-            DoubleMatrix coeffBlock(csize, Neff); // largest possible used size
+            DoubleMatrix coeffBlock(csize, N); // largest possible used size
             nodesPhi.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbjVec);
             coeffBlock.conservativeResize(Eigen::NoChange, orbjVec.size()); // keep only used part
 
@@ -1001,7 +942,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 
             for (int i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
                 for (int j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
-                    Un(j, i) = Ureal(orbjVec[j], orbiVec[i]);
+                    Un(j, i) = std::real(U(orbjVec[j], orbiVec[i]));
                 }
             }
 
@@ -1019,12 +960,12 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 if (thres < wnorm or prec < 0) needsplit[orbiVec[i]] = 1.0;
                 nodesRotated.put_nodedata(orbiVec[i], indexVec_ref[n] + max_ix, csize, rotatedCoeff.col(i).data());
             }
-            nodeSplits.put_data(indexVec_ref[n], Meff, needsplit.data());
+            nodeSplits.put_data(indexVec_ref[n], M, needsplit.data());
         }
         mpi::barrier(mpi::comm_wrk); // wait until all rotated nodes are ready
     }
 
-    // 5) reconstruct trees using rotated nodes.
+     // 5) reconstruct trees using rotated nodes.
 
     // only serial case can use OMP, because MPI cannot be used by threads
     if (serial) {
@@ -1032,23 +973,304 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
         // operation is writing the coefficient into the tree)
 
 #pragma omp parallel for schedule(static)
-        for (int j = 0; j < Meff; j++) {
+        for (int j = 0; j < M; j++) {
             if (coeffpVec[j].size()==0) continue;
-            if (j < M) {
-                if (!Psi[j].hasReal()) Psi[j].alloc(0);
-                Psi[j].real().clear();
-                Psi[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
-            } else {
-                if (!Psi[j % M].hasImag()) Psi[j % M].alloc(0);
-                Psi[j % M].imag().clear();
-                Psi[j % M].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
-            }
+            Psi[j].alloc(0);
+            Psi[j].real().clear();
+            Psi[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
         }
 
     } else { // MPI case
 
-        for (int j = 0; j < Meff; j++) {
-            if (not mpi::my_func(j % M)) continue;
+        for (int j = 0; j < M; j++) {
+            if (not mpi::my_func(j)) continue;
+            // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
+            std::vector<double *> coeffpVec; //
+            std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx
+            int ix = 0;
+            std::vector<double *> pointerstodelete; // list of temporary arrays to clean up
+            for (int ibank = 0; ibank < mpi::bank_size; ibank++) {
+                std::vector<int> nodeidVec;
+                double *dataVec; // will be allocated by bank
+                nodesRotated.get_orbblock(j, dataVec, nodeidVec, ibank);
+                if (nodeidVec.size() > 0) pointerstodelete.push_back(dataVec);
+                int shift = 0;
+                for (int n = 0; n < nodeidVec.size(); n++) {
+                    assert(nodeidVec[n] - max_ix >= 0);                // unrotated nodes have been deleted
+                    assert(ix2coef.count(nodeidVec[n] - max_ix) == 0); // each nodeid treated once
+                    ix2coef[nodeidVec[n] - max_ix] = ix++;
+                    csize = sizecoeffW;
+                    if (parindexVec_ref[nodeidVec[n] - max_ix] < 0) csize = sizecoeff;
+                    coeffpVec.push_back(&dataVec[shift]); // list of coeff pointers
+                    shift += csize;
+                }
+            }
+            Psi[j].alloc(0);
+            Psi[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
+
+            for (double *p : pointerstodelete) delete[] p;
+            pointerstodelete.clear();
+        }
+    }
+}
+
+/** @brief Make a linear combination of functions
+ *
+ * Uses "local" representation: treats one node at a time.
+ * For each node, all functions are transformed simultaneously
+ * by a dense matrix multiplication.
+ * Phi input functions, Psi output functions
+ * Phi must be complex.
+ */
+void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec) {
+
+    // The principle of this routine is that nodes for all orbitals are rotated one by one using matrix multiplication.
+    // The routine does avoid when possible to move data, but uses pointers and indices manipulation.
+    // MPI version does not use OMP yet, Serial version uses OMP
+    // size of input is N, size of output is M
+    bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
+    int N = Phi.size();
+    int M = Psi.size();
+    if (U.rows() < N) MSG_ABORT("Incompatible number of rows for U matrix");
+    if (U.cols() < M) MSG_ABORT("Incompatible number of columns for U matrix");
+
+    // 1) make union tree without coefficients. Note that the ref tree is always real (in fact it has no coeff)
+    FunctionTree<3> refTree(*Phi.vecMRA);
+    mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
+
+    int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
+    int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
+    std::vector<double> scalefac_ref;
+    std::vector<double *> coeffVec_ref; // not used!
+    std::vector<int> indexVec_ref;      // serialIx of the nodes
+    std::vector<int> parindexVec_ref;   // serialIx of the parent nodes
+    int max_ix;
+    // get a list of all nodes in union tree, identified by their serialIx indices
+    refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree);
+    int max_n = indexVec_ref.size();
+
+    for (int j = 0; j < N; j++) {
+        if (!mpi::my_func(j)) continue;
+        if (Phi[j].isreal()) MSG_ABORT("This function only use complex input");
+    }
+
+    for (int i = 0; i < M; i++) {
+        Psi[i].func_ptr->data.isreal = 0;
+        Psi[i].func_ptr->data.iscomplex = 1;
+    }
+
+    // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
+
+    BankAccount nodesPhi;             // to put the original nodes
+    BankAccount nodesRotated;         // to put the rotated nodes
+
+    // used for serial only:
+    std::vector<std::vector<ComplexDouble *>> coeffVec(N);
+    std::vector<std::vector<int>> indexVec(N);   // serialIx of the nodes
+    std::map<int, std::vector<int>> node2orbVec;    // for each node index, gives a vector with the indices of the orbitals using this node
+    std::vector<std::map<int, int>> orb2node(N); // for a given orbital and a given node, gives the node index in the
+                                                    // orbital given the node index in the reference tree
+    if (serial) {
+        // make list of all coefficients (coeffVec), and their reference indices (indexVec)
+        std::vector<int> parindexVec; // serialIx of the parent nodes
+        std::vector<double> scalefac;
+        for (int j = 0; j < N; j++) {
+            // make vector with all coef pointers and their indices in the union grid
+            Phi[j].complex().makeCoeffVector(coeffVec[j], indexVec[j], parindexVec, scalefac, max_ix, refTree);
+            // make a map that gives j from indexVec
+            int orb_node_ix = 0;
+            for (int ix : indexVec[j]) {
+                    orb2node[j][ix] = orb_node_ix++;
+                    if (ix < 0) continue;
+                    node2orbVec[ix].push_back(j);
+            }
+        }
+    } else { // MPI case
+        // send own nodes to bank, identifying them through the serialIx of refTree
+        save_nodes(Phi, refTree, nodesPhi);
+        mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
+    }
+
+    // 4) rotate all the nodes
+    IntMatrix split_serial;                             // in the serial case all split are stored in one array
+    std::vector<std::vector<ComplexDouble *>> coeffpVec(M); // to put pointers to the rotated coefficient for each orbital in serial case
+    std::vector<std::map<int, int>> ix2coef(M);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
+    int csize;                                          // size of the current coefficients (different for roots and branches)
+    std::vector<ComplexMatrix> rotatedCoeffVec;          // just to ensure that the data from rotatedCoeff is not deleted, since we point to it.
+   // j indices are for unrotated orbitals, i indices are for rotated orbitals
+    if (serial) {
+        std::map<int, int> ix2coef_ref;   // to find the index n corresponding to a serialIx
+        split_serial.resize(M, max_n); // not use in the MPI case
+        for (int n = 0; n < max_n; n++) {
+            int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
+            ix2coef_ref[node_ix] = n;
+            for (int i = 0; i < M; i++) split_serial(i, n) = 1;
+        }
+        std::vector<int> nodeReady(max_n, 0); // To indicate to OMP threads that the parent is ready (for splits)
+        // assumes the nodes are ordered such that parent are treated before children. BFS or DFS ok.
+        // NB: the n must be traversed approximately in right order: Thread n may have to wait until som other preceding
+        // n is finished.
+#pragma omp parallel for schedule(dynamic)
+        for (int n = 0; n < max_n; n++) {
+            int csize;
+            int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
+            // 4a) make a dense contiguous matrix with the coefficient from all the orbitals using node n
+            std::vector<int> orbjVec; // to remember which orbital correspond to each orbVec.size();
+            if (node2orbVec[node_ix].size() <= 0) continue;
+            csize = sizecoeffW;
+            if (parindexVec_ref[n] < 0) csize = sizecoeff; // for root nodes we include scaling coeff
+
+            int shift = sizecoeff - sizecoeffW; // to copy only wavelet part
+            if (parindexVec_ref[n] < 0) shift = 0;
+            ComplexMatrix coeffBlock(csize, node2orbVec[node_ix].size());
+            for (int j : node2orbVec[node_ix]) { // loop over indices of the orbitals using this node
+                int orb_node_ix = orb2node[j][node_ix];
+                for (int k = 0; k < csize; k++) coeffBlock(k, orbjVec.size()) = coeffVec[j][orb_node_ix][k + shift];
+                orbjVec.push_back(j);
+            }
+
+            // 4b) make a list of rotated orbitals needed for this node
+            // OMP must wait until parent is ready
+            while (parindexVec_ref[n] >= 0 and nodeReady[ix2coef_ref[parindexVec_ref[n]]] == 0) {
+#pragma omp flush
+            };
+
+            std::vector<int> orbiVec;
+            for (int i = 0; i < M; i++) { // loop over all rotated orbitals
+                if (parindexVec_ref[n] >= 0 and split_serial(i, ix2coef_ref[parindexVec_ref[n]]) == 0) continue; // parent node has too small wavelets
+                orbiVec.push_back(i);
+            }
+
+            // 4c) rotate this node
+            ComplexMatrix Un(orbjVec.size(), orbiVec.size()); // chunk of U, with reorganized indices
+            for (int i = 0; i < orbiVec.size(); i++) {       // loop over rotated orbitals
+                for (int j = 0; j < orbjVec.size(); j++) { Un(j, i) = U(orbjVec[j], orbiVec[i]); }
+            }
+            ComplexMatrix rotatedCoeff(csize, orbiVec.size());
+            // HERE IT HAPPENS!
+            // TODO: conjugaison
+            rotatedCoeff.noalias() = coeffBlock * Un; // Matrix mutiplication
+
+            // 4d) store and make rotated node pointers
+            // for now we allocate in buffer, in future could be directly allocated in the final trees
+            double thres = prec * prec * scalefac_ref[n] * scalefac_ref[n];
+            // make all norms:
+            for (int i = 0; i < orbiVec.size(); i++) {
+                // check if parent must be split
+                if (parindexVec_ref[n] == -1 or split_serial(orbiVec[i], ix2coef_ref[parindexVec_ref[n]])) {
+                    // mark this node for this orbital for later split
+#pragma omp critical
+                    {
+                        ix2coef[orbiVec[i]][node_ix] = coeffpVec[orbiVec[i]].size();
+                        coeffpVec[orbiVec[i]].push_back(&(rotatedCoeff(0, i))); // list of coefficient pointers
+                    }
+                    // check norms for split
+                    double wnorm = 0.0; // rotatedCoeff(k, i) is already in cache here
+                    int kstart = 0;
+                    if (parindexVec_ref[n] < 0) kstart = sizecoeff - sizecoeffW; // do not include scaling, even for roots
+                    for (int k = kstart; k < csize; k++) wnorm += std::real(rotatedCoeff(k, i) * std::conj(rotatedCoeff(k, i)));
+                    if (thres < wnorm or prec < 0)
+                        split_serial(orbiVec[i], n) = 1;
+                    else
+                        split_serial(orbiVec[i], n) = 0;
+                } else {
+                    ix2coef[orbiVec[i]][node_ix] = max_n + 1; // should not be used
+                    split_serial(orbiVec[i], n) = 0;          // do not split if parent does not need to be split
+                }
+            }
+            nodeReady[n] = 1;
+#pragma omp critical
+            {
+                // this ensures that rotatedCoeff is not deleted, when getting out of scope
+                rotatedCoeffVec.push_back(std::move(rotatedCoeff));
+            }
+        }
+    } else { // MPI case
+
+        // TODO? rotate in bank, so that we do not get and put. Requires clever handling of splits.
+        std::vector<double> split(M, -1.0);    // which orbitals need splitting (at a given node). For now double for compatibilty with bank
+        std::vector<double> needsplit(M, 1.0); // which orbitals need splitting
+        BankAccount nodeSplits;
+        mpi::barrier(mpi::comm_wrk); // required for now, as the blockdata functionality has no queue yet.
+
+        ComplexMatrix coeffBlock(sizecoeff, N);
+        max_ix++; // largest node index + 1. to store rotated orbitals with different id
+        TaskManager tasks(max_n);
+        for (int nn = 0; nn < max_n; nn++) {
+            int n = tasks.next_task();
+            if (n < 0) break;
+            double thres = prec * prec * scalefac_ref[n] * scalefac_ref[n];
+            // 4a) make list of orbitals that should split the parent node, i.e. include this node
+            int parentid = parindexVec_ref[n];
+            if (parentid == -1) {
+                // root node, split if output needed
+                for (int i = 0; i < M; i++) {
+                    split[i] = 1.0;
+                }
+                csize = sizecoeff;
+            } else {
+                // note that it will wait until data is available
+                nodeSplits.get_data(parentid, M, split.data());
+                csize = sizecoeffW;
+            }
+            std::vector<int> orbiVec;
+            std::vector<int> orbjVec;
+            for (int i = 0; i < M; i++) {  // loop over rotated orbitals
+                if (split[i] < 0.0) continue; // parent node has too small wavelets
+                orbiVec.push_back(i);
+            }
+
+            // 4b) rotate this node
+            ComplexMatrix coeffBlock(csize, N); // largest possible used size
+            nodesPhi.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbjVec);
+            coeffBlock.conservativeResize(Eigen::NoChange, orbjVec.size()); // keep only used part
+
+            // chunk of U, with reorganized indices and separate blocks for real and imag:
+            ComplexMatrix Un(orbjVec.size(), orbiVec.size());
+            ComplexMatrix rotatedCoeff(csize, orbiVec.size());
+
+            for (int i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
+                for (int j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
+                    Un(j, i) = U(orbjVec[j], orbiVec[i]);
+                }
+            }
+
+            // HERE IT HAPPENS
+            // TODO conjugaison
+            rotatedCoeff.noalias() = coeffBlock * Un; // Matrix mutiplication
+
+            // 3c) find which orbitals need to further refine this node, and store rotated node (after each other while
+            // in cache).
+            for (int i = 0; i < orbiVec.size(); i++) { // loop over rotated orbitals
+                needsplit[orbiVec[i]] = -1.0;          // default, do not split
+                // check if this node/orbital needs further refinement
+                double wnorm = 0.0;
+                int kwstart = csize - sizecoeffW; // do not include scaling
+                for (int k = kwstart; k < csize; k++) wnorm += std::real(rotatedCoeff.col(i)[k] * std::conj(rotatedCoeff.col(i)[k]));
+                if (thres < wnorm or prec < 0) needsplit[orbiVec[i]] = 1.0;
+                nodesRotated.put_nodedata(orbiVec[i], indexVec_ref[n] + max_ix, csize, rotatedCoeff.col(i).data());
+            }
+            nodeSplits.put_data(indexVec_ref[n], M, needsplit.data());
+        }
+        mpi::barrier(mpi::comm_wrk); // wait until all rotated nodes are ready
+    }
+
+     // 5) reconstruct trees using rotated nodes.
+
+    // only serial case can use OMP, because MPI cannot be used by threads
+    if (serial) {
+        // OMP parallelized, but does not scale well, because the total memory bandwidth is a bottleneck. (the main
+        // operation is writing the coefficient into the tree)
+
+#pragma omp parallel for schedule(static)
+        for (int j = 0; j < M; j++) {
+           if (coeffpVec[j].size()==0) continue;
+            Psi[j].alloc(0); //All data is stored in coeffpVec[j]
+            Psi[j].complex().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
+       }
+    } else { // MPI case
+        for (int j = 0; j < M; j++) {
+            if (not mpi::my_func(j)) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
             std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx
@@ -1077,9 +1299,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 Psi[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
             } else {
                 // Imag part
-                if (!Psi[j % M].hasImag()) Psi[j % M].alloc(0);
-                Psi[j % M].imag().clear();
-                Psi[j % M].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
+                if (!Psi[j].hasImag()) Psi[j].alloc(0);
+                Psi[j].imag().clear();
+                Psi[j].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
             }
             for (double *p : pointerstodelete) delete[] p;
             pointerstodelete.clear();
@@ -1193,9 +1415,6 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
         return out; // do nothing
     }
 
-    int Neff = N;
-    if (PsihasReIm[1]) Neff = 2 * N; // Imag and Real treated independently. We always treat real part of Psi
-
     std::vector<double> scalefac_ref;
     std::vector<double *> coeffVec_ref; // not used!
     std::vector<int> indexVec_ref;      // serialIx of the nodes
@@ -1213,10 +1432,10 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
     BankAccount nodesMultiplied; // to put the multiplied nodes
 
     // used for serial only:
-    std::vector<std::vector<double *>> coeffVec(Neff);
-    std::vector<std::vector<int>> indexVec(Neff);   // serialIx of the nodes
+    std::vector<std::vector<double *>> coeffVec(N);
+    std::vector<std::vector<int>> indexVec(N);   // serialIx of the nodes
     std::map<int, std::vector<int>> node2orbVec;    // for each node index, gives a vector with the indices of the orbitals using this node
-    std::vector<std::map<int, int>> orb2node(Neff); // for a given orbital and a given node, gives the node index in the
+    std::vector<std::map<int, int>> orb2node(N); // for a given orbital and a given node, gives the node index in the
                                                     // orbital given the node index in the reference tree
     if (serial) {
         // make list of all coefficients (coeffVec), and their reference indices (indexVec)
@@ -1257,9 +1476,9 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
     }
 
     // 3) mutiply for each node
-    std::vector<std::vector<double *>> coeffpVec(Neff); // to put pointers to the multiplied coefficient for each orbital in serial case
+    std::vector<std::vector<double *>> coeffpVec(N); // to put pointers to the multiplied coefficient for each orbital in serial case
     std::vector<DoubleMatrix> multipliedCoeffVec;       // just to ensure that the data from multipliedCoeff is not deleted, since we point to it.
-    std::vector<std::map<int, int>> ix2coef(Neff);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
+    std::vector<std::map<int, int>> ix2coef(N);      // to find the index in for example rotCoeffVec[] corresponding to a serialIx
     DoubleVector NODEP = DoubleVector::Zero(nCoefs);
     DoubleVector NODEF = DoubleVector::Zero(nCoefs);
 
@@ -1377,7 +1596,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             }
 
             // 3b) fetch all orbitals at this node
-            DoubleMatrix coeffBlock(nCoefs, Neff); // largest possible used size
+            DoubleMatrix coeffBlock(nCoefs, N); // largest possible used size
             std::vector<int> orbjVec;
             nodesPhi.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbjVec);
             coeffBlock.conservativeResize(Eigen::NoChange, orbjVec.size()); // keep only used part
@@ -1411,7 +1630,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
         // operation is writing the coefficient into the tree)
 
 #pragma omp parallel for schedule(static)
-        for (int j = 0; j < Neff; j++) {
+        for (int j = 0; j < N; j++) {
             if (j < N) {
                 if (Phi[j].hasReal()) {
                     out[j].alloc(0);
@@ -1422,18 +1641,18 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                     out[j].real().calcSquareNorm();
                 }
             } else {
-                if (Phi[j % N].hasImag()) {
-                    out[j % N].alloc(0);
-                    out[j % N].imag().clear();
-                    out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
+                if (Phi[j].hasImag()) {
+                    out[j].alloc(0);
+                    out[j].imag().clear();
+                    out[j].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
                     out[j].imag().mwTransform(BottomUp);
                     out[j].imag().calcSquareNorm();
                 }
             }
         }
     } else {
-        for (int j = 0; j < Neff; j++) {
-            if (not mpi::my_func(j % N) and not all) continue;
+        for (int j = 0; j < N; j++) {
+            if (not mpi::my_func(j) and not all) continue;
             // traverse possible nodes, and stop descending when norm is zero (leaf in out[j])
             std::vector<double *> coeffpVec; //
             std::map<int, int> ix2coef;      // to find the index in coeffVec[] corresponding to a serialIx in refTree
@@ -1467,14 +1686,14 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                     if (nrefine > 0) Phi[j].real().crop(prec, 1.0, false); // restablishes original Phi
                 }
             } else {
-                if (Phi[j % N].hasImag()) {
-                    out[j % N].alloc(0);
-                    out[j % N].imag().clear();
-                    out[j % N].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
-                    out[j % N].imag().mwTransform(BottomUp);
-                    out[j % N].imag().calcSquareNorm();
-                    // out[j % N].imag().crop(prec, 1.0, false);
-                    if (nrefine > 0) Phi[j % N].imag().crop(prec, 1.0, false);
+                if (Phi[j].hasImag()) {
+                    out[j].alloc(0);
+                    out[j].imag().clear();
+                    out[j].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
+                    out[j].imag().mwTransform(BottomUp);
+                    out[j].imag().calcSquareNorm();
+                    // out[j].imag().crop(prec, 1.0, false);
+                    if (nrefine > 0) Phi[j].imag().crop(prec, 1.0, false);
                 }
             }
 
@@ -1522,12 +1741,10 @@ ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi) {
  * MPI: Rank distribution of output vector is the same as input vector
  *
  */
-ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
-    // NB: must be spinseparated at this point!
-
+ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
     int N = BraKet.size();
     ComplexMatrix S = ComplexMatrix::Zero(N, N);
-    DoubleMatrix Sreal = DoubleMatrix::Zero(2 * N, 2 * N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
+    DoubleMatrix Sreal = S.real();
     MultiResolutionAnalysis<3> *mra = BraKet.vecMRA;
 
     // 1) make union tree without coefficients
@@ -1548,9 +1765,9 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
     int max_n = indexVec_ref.size();
 
     // only used for serial case:
-    std::vector<std::vector<double *>> coeffVec(2 * N);
+    std::vector<std::vector<ComplexDouble *>> coeffVec(N);
     std::map<int, std::vector<int>> node2orbVec;     // for each node index, gives a vector with the indices of the orbitals using this node
-    std::vector<std::map<int, int>> orb2node(2 * N); // for a given orbital and a given node, gives the node index in
+    std::vector<std::map<int, int>> orb2node(N); // for a given orbital and a given node, gives the node index in
                                                      // the orbital given the node index in the reference tree
 
     bool serial = mrcpp::mpi::wrk_size == 1; // flag for serial/MPI switch
@@ -1564,25 +1781,13 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
         std::vector<int> indexVec;    // serialIx of the nodes
         for (int j = 0; j < N; j++) {
             // make vector with all coef pointers and their indices in the union grid
-            if (BraKet[j].hasReal()) {
-                BraKet[j].real().makeCoeffVector(coeffVec[j], indexVec, parindexVec, scalefac, max_ix, refTree);
-                // make a map that gives j from indexVec
-                int orb_node_ix = 0;
-                for (int ix : indexVec) {
-                    orb2node[j][ix] = orb_node_ix++;
-                    if (ix < 0) continue;
-                    node2orbVec[ix].push_back(j);
-                }
-            }
-            if (BraKet[j].hasImag()) {
-                BraKet[j].imag().makeCoeffVector(coeffVec[j + N], indexVec, parindexVec, scalefac, max_ix, refTree);
-                // make a map that gives j from indexVec
-                int orb_node_ix = 0;
-                for (int ix : indexVec) {
-                    orb2node[j + N][ix] = orb_node_ix++;
-                    if (ix < 0) continue;
-                    node2orbVec[ix].push_back(j + N);
-                }
+            BraKet[j].complex().makeCoeffVector(coeffVec[j], indexVec, parindexVec, scalefac, max_ix, refTree);
+            // make a map that gives j from indexVec
+            int orb_node_ix = 0;
+            for (int ix : indexVec) {
+                orb2node[j][ix] = orb_node_ix++;
+                if (ix < 0) continue;
+                node2orbVec[ix].push_back(j);
             }
         }
     } else { // MPI case
@@ -1594,7 +1799,161 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
     // 3) make dot product for all the nodes and accumulate into S
 
     int ibank = 0;
-#pragma omp parallel for schedule(dynamic) if (serial)
+#pragma omp parallel if (serial)
+    {
+    ComplexMatrix S_omp = ComplexMatrix::Zero(N, N); // copy for each thread
+
+#pragma omp for schedule(dynamic)
+    for (int n = 0; n < max_n; n++) {
+        if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
+        int csize;
+        int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
+        std::vector<int> orbVec;       // identifies which orbitals use this node
+        if (serial and node2orbVec[node_ix].size() <= 0) continue;
+        if (parindexVec_ref[n] < 0)
+            csize = sizecoeff;
+        else
+            csize = sizecoeffW;
+
+        // In the serial case we copy the coeff coeffBlock. In the mpi case coeffBlock is provided by the bank
+        if (serial) {
+            int shift = sizecoeff - sizecoeffW; // to copy only wavelet part
+            if (parindexVec_ref[n] < 0) shift = 0;
+            ComplexMatrix coeffBlock(csize, node2orbVec[node_ix].size());
+            for (int j : node2orbVec[node_ix]) { // loop over indices of the orbitals using this node
+                int orb_node_ix = orb2node[j][node_ix];
+                for (int k = 0; k < csize; k++) coeffBlock(k, orbVec.size()) = coeffVec[j][orb_node_ix][k + shift];
+                orbVec.push_back(j);
+            }
+            if (orbVec.size() > 0) {
+                ComplexMatrix S_temp(orbVec.size(), orbVec.size());
+                S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
+                for (int i = 0; i < orbVec.size(); i++) {
+                    for (int j = 0; j < orbVec.size(); j++) {
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                            continue;
+                        S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
+                    }
+                }
+            }
+        } else { // MPI case
+            ComplexMatrix coeffBlock(csize, N);
+            nodesBraKet.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbVec);
+
+            if (orbVec.size() > 0) {
+                ComplexMatrix S_temp(orbVec.size(), orbVec.size());
+                coeffBlock.conservativeResize(Eigen::NoChange, orbVec.size());
+                S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
+                for (int i = 0; i < orbVec.size(); i++) {
+                    for (int j = 0; j < orbVec.size(); j++) {
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                            continue;
+                        S(orbVec[i], orbVec[j]) += S_temp(i, j);
+                    }
+                }
+            }
+        }
+    }
+    if (serial) {
+#pragma omp critical
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                S(i, j) += S_omp(i, j);
+            }
+        }
+    }
+
+    }
+    IntVector conjMat = IntVector::Zero(N);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(BraKet[i])) continue;
+        conjMat[i] = (BraKet[i].conjugate()) ? -1 : 1;
+    }
+    mrcpp::mpi::allreduce_vector(conjMat, mrcpp::mpi::comm_wrk);
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j <= i; j++) {
+            if (i != j) S(j, i) = std::conj(S(i, j)); // ensure exact symmetri
+        }
+    }
+
+    // Assumes linearity: result is sum of all nodes contributions
+    mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
+
+    return S;
+}
+ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
+    // NB: should be spinseparated at this point!
+    if (BraKet[0].iscomplex() ){
+        return calc_overlap_matrix_cplx(BraKet);
+   }
+
+    int N = BraKet.size();
+    ComplexMatrix S = ComplexMatrix::Zero(N, N);
+    DoubleMatrix Sreal = S.real();
+    MultiResolutionAnalysis<3> *mra = BraKet.vecMRA;
+
+    // 1) make union tree without coefficients
+    mrcpp::FunctionTree<3> refTree(*mra);
+    mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk);
+
+    int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
+    int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
+
+    // get a list of all nodes in union grid, as defined by their indices
+    std::vector<double> scalefac;
+    std::vector<double *> coeffVec_ref;
+    std::vector<int> indexVec_ref;    // serialIx of the nodes
+    std::vector<int> parindexVec_ref; // serialIx of the parent nodes
+    int max_ix;                       // largest index value (not used here)
+
+    refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac, max_ix, refTree);
+    int max_n = indexVec_ref.size();
+
+    // only used for serial case:
+    std::vector<std::vector<double *>> coeffVec(N);
+    std::map<int, std::vector<int>> node2orbVec;     // for each node index, gives a vector with the indices of the orbitals using this node
+    std::vector<std::map<int, int>> orb2node(N); // for a given orbital and a given node, gives the node index in
+                                                     // the orbital given the node index in the reference tree
+
+    bool serial = mrcpp::mpi::wrk_size == 1; // flag for serial/MPI switch
+    mrcpp::BankAccount nodesBraKet;
+
+    // In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
+    if (serial) {
+        // 2) make list of all coefficients, and their reference indices
+        // for different orbitals, indexVec will give the same index for the same node in space
+        std::vector<int> parindexVec; // serialIx of the parent nodes
+        std::vector<int> indexVec;    // serialIx of the nodes
+        for (int j = 0; j < N; j++) {
+            // make vector with all coef pointers and their indices in the union grid
+            BraKet[j].real().makeCoeffVector(coeffVec[j], indexVec, parindexVec, scalefac, max_ix, refTree);
+            // make a map that gives j from indexVec
+            int orb_node_ix = 0;
+            for (int ix : indexVec) {
+                orb2node[j][ix] = orb_node_ix++;
+                if (ix < 0) continue;
+                node2orbVec[ix].push_back(j);
+            }
+        }
+    } else { // MPI case
+        // 2) send own nodes to bank, identifying them through the serialIx of refTree
+        save_nodes(BraKet, refTree, nodesBraKet);
+        mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
+    }
+
+    // 3) make dot product for all the nodes and accumulate into S
+
+    int ibank = 0;
+#pragma omp parallel if (serial)
+    {
+    ComplexMatrix S_omp = ComplexMatrix::Zero(N, N); // copy for each thread
+
+#pragma omp for schedule(dynamic)
     for (int n = 0; n < max_n; n++) {
         if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
@@ -1617,23 +1976,20 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 orbVec.push_back(j);
             }
             if (orbVec.size() > 0) {
-                DoubleMatrix S_temp(orbVec.size(), orbVec.size());
+                ComplexMatrix S_temp(orbVec.size(), orbVec.size());
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i] % N].data.n1[0] != BraKet[orbVec[j] % N].data.n1[0] and
-                            BraKet[orbVec[i] % N].data.n1[0] != 0 and
-                            BraKet[orbVec[j] % N].data.n1[0] != 0)
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                             continue;
-                        double &Srealij = Sreal(orbVec[i], orbVec[j]);
-                        double &Stempij = S_temp(i, j);
-#pragma omp atomic
-                        Srealij += Stempij;
+                        S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
             }
         } else { // MPI case
-            DoubleMatrix coeffBlock(csize, 2 * N);
+            DoubleMatrix coeffBlock(csize, N);
             nodesBraKet.get_nodeblock(indexVec_ref[n], coeffBlock.data(), orbVec);
 
             if (orbVec.size() > 0) {
@@ -1642,15 +1998,25 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i] % N].data.n1[0] != BraKet[orbVec[j] % N].data.n1[0] and
-                            BraKet[orbVec[i] % N].data.n1[0] != 0 and
-                            BraKet[orbVec[j] % N].data.n1[0] != 0)
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                             continue;
-                        Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
+                        S(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
             }
         }
+    }
+    if (serial) {
+#pragma omp critical
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                S(i, j) += S_omp(i, j);
+            }
+        }
+    }
+
     }
     IntVector conjMat = IntVector::Zero(N);
     for (int i = 0; i < N; i++) {
@@ -1661,8 +2027,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j <= i; j++) {
-            S.real()(i, j) = Sreal(i, j) + conjMat[i] * conjMat[j] * Sreal(i + N, j + N);
-            S.imag()(i, j) = conjMat[j] * Sreal(i, j + N) - conjMat[i] * Sreal(i + N, j);
             if (i != j) S(j, i) = std::conj(S(i, j)); // ensure exact symmetri
         }
     }
@@ -1718,7 +2082,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                                                         // the orbital given the node index in the reference tree
     mrcpp::BankAccount nodesBra;
     mrcpp::BankAccount nodesKet;
-
     // In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
     if (serial) {
         // 2) make list of all coefficients, and their reference indices
@@ -1819,9 +2182,9 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i] % N].data.n1[0] != Ket[orbVecKet[j] % M].data.n1[0] and
-                            Bra[orbVecBra[i] % N].data.n1[0] != 0 and
-                            Ket[orbVecKet[j] % M].data.n1[0] != 0)
+                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                             continue;
                         // must ensure that threads are not competing
                         double &Srealij = Sreal(orbVecBra[i], orbVecKet[j]);
@@ -1847,9 +2210,9 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i] % N].data.n1[0] != Ket[orbVecKet[j] % M].data.n1[0] and
-                            Bra[orbVecBra[i] % N].data.n1[0] != 0 and
-                            Ket[orbVecKet[j] % M].data.n1[0] != 0)
+                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                             continue;
                         Sreal(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
@@ -1985,9 +2348,9 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i] % N].data.n1[0] != BraKet[orbVec[j] % N].data.n1[0] and
-                            BraKet[orbVec[i] % N].data.n1[0] != 0 and
-                            BraKet[orbVec[j] % N].data.n1[0]!= 0)
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
                             continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
@@ -2007,9 +2370,9 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i] % N].data.n1[0] != BraKet[orbVec[j] % N].data.n1[0] and
-                            BraKet[orbVec[i] % N].data.n1[0] != 0 and
-                            BraKet[orbVec[j] % N].data.n1[0]!= 0)
+                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                            BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
                             continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
@@ -2062,17 +2425,36 @@ void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket
         if(my_func(Bra[j]))Bra[j].add(1.0,rotatedKet[j]);
     }
 }
+
+/** @brief Orthogonalize the Bra against Ket
+ *
+ */
+template <int D>
+void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket) {
+    ComplexDouble overlap = dot(Bra, Ket);
+    double sq_norm = Ket.squaredNorm();
+    for (int i = 0; i < Bra.Ncomp(); i++) {
+        if (Bra.isreal()) {
+            Bra.CompD[i]->add_inplace(-overlap.real()/sq_norm,*Ket.CompD[i]);
+        } else {
+            Bra.CompC[i]->add_inplace(-overlap/sq_norm,*Ket.CompC[i]);
+        }
+    }
+}
+
 template ComplexDouble dot(CompFunction<3> bra, CompFunction<3> ket);
 template void project(CompFunction<3>& out, RepresentableFunction<3, double>& f, double prec);
 template void project(CompFunction<3>& out, RepresentableFunction<3, ComplexDouble>& f, double prec);
-template void multiply(CompFunction<3> &out, CompFunction<3> inp_a, CompFunction<3> inp_b, double prec, bool absPrec, bool useMaxNorms);
-template void multiply(CompFunction<3>& out, FunctionTree<3, double> &inp_a, RepresentableFunction<3, double>& f, double prec, int nrefine = 0);
-template void multiply(CompFunction<3>& out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble>& f, double prec, int nrefine = 0);
-template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0);
-template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0);
+template void multiply(CompFunction<3> &out, CompFunction<3> inp_a, CompFunction<3> inp_b, double prec, bool absPrec, bool useMaxNorms, bool conjugate);
+template void multiply(CompFunction<3>& out, FunctionTree<3, double> &inp_a, RepresentableFunction<3, double>& f, double prec, int nrefine = 0, bool conjugate);
+template void multiply(CompFunction<3>& out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble>& f, double prec, int nrefine = 0, bool conjugate);
+template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0, bool conjugate);
+template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
 template void deep_copy(CompFunction<3>* out, const CompFunction<3> &inp);
 template void deep_copy(CompFunction<3>& out, const CompFunction<3> &inp);
-template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec);
+template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec, bool conjugate);
+template void linear_combination(CompFunction<3> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<3>> &inp, double prec, bool conjugate);
 template double node_norm_dot(CompFunction<3> bra, CompFunction<3> ket);
+    template void orthogonalize(double prec, CompFunction<3> &Bra, CompFunction<3> &Ket);
 
 } // namespace mrcpp

@@ -58,6 +58,7 @@ namespace mrcpp {
  */
 template <int D, typename T> void project(double prec, FunctionTree<D, T> &out, std::function<T(const Coord<D> &r)> func, int maxIter, bool absPrec) {
     AnalyticFunction<D, T> inp(func);
+
     mrcpp::project(prec, out, inp, maxIter, absPrec);
 }
 
@@ -82,7 +83,6 @@ template <int D, typename T> void project(double prec, FunctionTree<D, T> &out, 
  *
  */
 template <int D, typename T> void project(double prec, FunctionTree<D, T> &out, RepresentableFunction<D, T> &inp, int maxIter, bool absPrec) {
-
     int maxScale = out.getMRA().getMaxScale();
     const auto scaling_factor = out.getMRA().getWorldBox().getScalingFactors();
     TreeBuilder<D, T> builder;

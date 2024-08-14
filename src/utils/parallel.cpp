@@ -265,13 +265,13 @@ bool my_func(int j) {
 
 /** @brief Test if function belongs to this MPI rank */
 bool my_func(const CompFunction<3>& func) {
-    return my_func(func.rank);
+    return my_func(func.rank());
 }
 
 
 /** @brief Test if function belongs to this MPI rank */
 bool my_func(CompFunction<3> *func) {
-    return my_func(func->rank);
+    return my_func(func->rank());
 }
 
 /** @brief Free all function pointers not belonging to this MPI rank */
@@ -332,15 +332,15 @@ void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 // send a component function with MPI
 void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
-    for (int i = 0; i < func.data.Ncomp; i++) {
+    for (int i = 0; i < func.Ncomp(); i++) {
         //make sure that Nchunks is up to date
-        if (func.isreal) func.Nchunks[i] = func.CompD[i]->getNChunks();
-        else func.Nchunks[i] = func.CompC[i]->getNChunks();
+        if (func.isreal()) func.Nchunks()[i] = func.CompD[i]->getNChunks();
+        else func.Nchunks()[i] = func.CompC[i]->getNChunks();
     }
-    MPI_Send(&func.data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
-    for (int i = 0; i < func.data.Ncomp; i++) {
-        if (func.isreal) mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks[i]);
-        else mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks[i]);
+    MPI_Send(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
+    for (int i = 0; i < func.Ncomp(); i++) {
+        if (func.isreal()) mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
+        else mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
     }
 #endif
 }
@@ -349,12 +349,12 @@ void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm)
 void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
-    int func_ncomp_in = func.Ncomp;
-    MPI_Recv(&func.data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
-    for (int i = 0; i < func.data.Ncomp; i++) {
+    int func_ncomp_in = func.Ncomp();
+    MPI_Recv(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
+    for (int i = 0; i < func.Ncomp(); i++) {
         if (func_ncomp_in <= i) func.alloc(i);
-        if (func.isreal) mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks[i]);
-        else  mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks[i]);
+        if (func.isreal()) mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
+        else  mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
     }
 #endif
 }
@@ -363,8 +363,8 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
 void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     if (func.isShared()) {
 #ifdef MRCPP_HAS_MPI
-        for (int comp = 0; comp < func.Ncomp; comp++) {
-            if (func.isreal) mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
+        for (int comp = 0; comp < func.Ncomp(); comp++) {
+            if (func.isreal()) mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
             else  mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
         }
 #endif
@@ -508,7 +508,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
         if (not my_orb(j)) continue;
-        tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+        if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+        if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
@@ -529,7 +530,8 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
         if (not my_orb(j)) continue;
-        tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
+        if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+        if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);

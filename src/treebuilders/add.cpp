@@ -69,11 +69,12 @@ void add(double prec,
          T b,
          FunctionTree<D, T> &inp_b,
          int maxIter,
-         bool absPrec) {
+         bool absPrec,
+         bool conjugate) {
     FunctionTreeVector<D, T> tmp_vec;
     tmp_vec.push_back(std::make_tuple(a, &inp_a));
     tmp_vec.push_back(std::make_tuple(b, &inp_b));
-    add(prec, out, tmp_vec, maxIter, absPrec);
+    add(prec, out, tmp_vec, maxIter, absPrec, conjugate);
 }
 
 /** @brief Addition of several MW function representations, adaptive grid
@@ -98,14 +99,14 @@ void add(double prec,
  * no coefs).
  *
  */
-template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec) {
+    template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
     WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
-    AdditionCalculator<D, T> calculator(inp);
+    AdditionCalculator<D, T> calculator(inp, conjugate);
 
     builder.build(out, calculator, adaptor, maxIter);
 
@@ -126,10 +127,10 @@ template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, Func
     print::separator(10, ' ');
 }
 
-template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec, bool conjugate) {
     FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
-    add(prec, out, inp_vec, maxIter, absPrec);
+    add(prec, out, inp_vec, maxIter, absPrec, conjugate);
 }
 
 template void add<1, double>(double prec,
@@ -139,7 +140,8 @@ template void add<1, double>(double prec,
                      double b,
                      FunctionTree<1, double> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, double>(double prec,
                      FunctionTree<2, double> &out,
                      double a,
@@ -147,7 +149,8 @@ template void add<2, double>(double prec,
                      double b,
                      FunctionTree<2, double> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, double>(double prec,
                      FunctionTree<3, double> &out,
                      double a,
@@ -155,39 +158,46 @@ template void add<3, double>(double prec,
                      double b,
                      FunctionTree<3, double> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 template void add<1, double>(double prec,
                      FunctionTree<1, double> &out,
                      FunctionTreeVector<1, double> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, double>(double prec,
                      FunctionTree<2, double> &out,
                      FunctionTreeVector<2, double> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, double>(double prec,
                      FunctionTree<3, double> &out,
 		     FunctionTreeVector<3, double> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 template void add<1, double>(double prec,
                      FunctionTree<1, double> &out,
                      std::vector<FunctionTree<1, double> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, double>(double prec,
                      FunctionTree<2, double> &out,
                      std::vector<FunctionTree<2, double> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, double>(double prec,
                      FunctionTree<3, double> &out,
                      std::vector<FunctionTree<3, double> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 
 template void add<1, ComplexDouble>(double prec,
@@ -197,7 +207,8 @@ template void add<1, ComplexDouble>(double prec,
                      ComplexDouble b,
                      FunctionTree<1, ComplexDouble> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, ComplexDouble>(double prec,
                      FunctionTree<2, ComplexDouble> &out,
                      ComplexDouble a,
@@ -205,7 +216,8 @@ template void add<2, ComplexDouble>(double prec,
                      ComplexDouble b,
                      FunctionTree<2, ComplexDouble> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, ComplexDouble>(double prec,
                      FunctionTree<3, ComplexDouble> &out,
                      ComplexDouble a,
@@ -213,38 +225,45 @@ template void add<3, ComplexDouble>(double prec,
                      ComplexDouble b,
                      FunctionTree<3, ComplexDouble> &tree_b,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 template void add<1, ComplexDouble>(double prec,
                      FunctionTree<1, ComplexDouble> &out,
                      FunctionTreeVector<1, ComplexDouble> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, ComplexDouble>(double prec,
                      FunctionTree<2, ComplexDouble> &out,
                      FunctionTreeVector<2, ComplexDouble> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, ComplexDouble>(double prec,
                      FunctionTree<3, ComplexDouble> &out,
                      FunctionTreeVector<3, ComplexDouble> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 template void add<1, ComplexDouble>(double prec,
                      FunctionTree<1, ComplexDouble> &out,
                      std::vector<FunctionTree<1, ComplexDouble> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<2, ComplexDouble>(double prec,
                      FunctionTree<2, ComplexDouble> &out,
                      std::vector<FunctionTree<2, ComplexDouble> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 template void add<3, ComplexDouble>(double prec,
                      FunctionTree<3, ComplexDouble> &out,
                      std::vector<FunctionTree<3, ComplexDouble> *> &inp,
                      int maxIter,
-                     bool absPrec);
+                     bool absPrec,
+                     bool conjugate);
 
 } // namespace mrcpp

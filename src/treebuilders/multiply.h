@@ -41,6 +41,11 @@ template <int D, typename T> void dot(double prec,
 template <int D, typename T> T dot(FunctionTree<D, T> &bra,
                             FunctionTree<D, T> &ket);
 
+template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra,
+                            FunctionTree<D, double> &ket);
+template <int D> ComplexDouble dot(FunctionTree<D, double> &bra,
+                            FunctionTree<D, ComplexDouble> &ket);
+
 template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra,
                                       FunctionTree<D, T> &ket,
                                       bool exact = false);

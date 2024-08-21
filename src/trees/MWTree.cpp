@@ -106,10 +106,11 @@ template <int D, typename T> void MWTree<D, T>::clear() {
  * @details The norm is calculated using endNodes only. The specific
  * type of norm which is computed will depend on the derived class
  */
-template <int D, typename T> void MWTree<D, T>::calcSquareNorm() {
+template <int D, typename T> void MWTree<D, T>::calcSquareNorm(bool deep) {
     double treeNorm = 0.0;
     for (int n = 0; n < this->getNEndNodes(); n++) {
-        const MWNode<D, T> &node = getEndMWNode(n);
+        MWNode<D, T> &node = getEndMWNode(n);
+        if (deep) node.calcNorms();
         assert(node.hasCoefs());
         treeNorm += node.getSquareNorm();
     }

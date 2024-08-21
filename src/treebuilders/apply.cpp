@@ -462,7 +462,7 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 }
 
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
-    ComplexDouble defaultMetric[4][4];
+   ComplexDouble defaultMetric[4][4];
     for (int i=0; i<4; i++){
         for (int j=0; j<4; j++){
             if (i==j) defaultMetric[i][j] = 1.0;
@@ -482,11 +482,17 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
                     }
                     out.func_ptr->isreal = 1;
                 } else {
-                    apply(*out.CompC[ocomp], oper, *inp.CompC[icomp], dir);
-                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                        out.CompC[ocomp]->rescale(metric[icomp][ocomp]);
+                    if (inp.isreal() ){
+                        apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
+                        out.CompD[icomp]->CopyTreeToComplex(out.CompC[ocomp]);
+                        out.func_ptr->isreal = 0;
+                        out.func_ptr->iscomplex = 1;
+                  } else {
+                        apply(*out.CompC[ocomp], oper, *inp.CompC[icomp], dir);
                     }
-                    out.func_ptr->iscomplex = 1;
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
+                         out.CompC[ocomp]->rescale(metric[icomp][ocomp]);
+                   }
                 }
             }
         }

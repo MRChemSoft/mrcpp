@@ -73,7 +73,7 @@ public:
 
     /** @returns Squared L2 norm of the function */
     double getSquareNorm() const { return this->squareNorm; }
-    void calcSquareNorm();
+    void calcSquareNorm(bool deep = false);
     void clearSquareNorm() { this->squareNorm = -1.0; }
 
     int getOrder() const { return this->order; }

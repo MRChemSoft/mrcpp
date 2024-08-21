@@ -769,7 +769,6 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     std::vector<std::map<int, int>> orb2node(Neff); // for a given orbital and a given node, gives the node index in the
                                                     // orbital given the node index in the reference tree
     if (serial) {
-
         // make list of all coefficients (coeffVec), and their reference indices (indexVec)
         std::vector<int> parindexVec; // serialIx of the parent nodes
         std::vector<double> scalefac;

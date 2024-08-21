@@ -67,6 +67,8 @@ public:
         for (int i = 0; i < 4; i++) {
             if (this->real[i] != nullptr) delete this->real[i];
             if (this->cplx[i] != nullptr) delete this->cplx[i];
+             this->real[i] = nullptr;
+             this->cplx[i] = nullptr;
         }
     }
     CompFunctionData<D> data;
@@ -100,8 +102,6 @@ public:
     CompFunction<D> &operator=(const CompFunction<D> &compfunc);
     virtual ~CompFunction() = default;
 
-//    FunctionTree<D, double>* (&CompD)[4]; //  = func_ptr->real so that we can use name CompD instead of func_ptr.real
-//    FunctionTree<D, ComplexDouble>* (&CompC)[4]; // = func_ptr->cplx
     FunctionTree<D, double>** CompD; //  = func_ptr->real so that we can use name CompD instead of func_ptr.real
     FunctionTree<D, ComplexDouble>** CompC; // = func_ptr->cplx
 
@@ -121,7 +121,7 @@ public:
     ComplexDouble integrate() const;
     double norm() const;
     double squaredNorm() const;
-    void alloc(int i = 0);
+    void alloc(int i = 0, bool zero = true);
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setCplx(FunctionTree<D, ComplexDouble> *tree, int i = 0);
     void setRank(int i) {func_ptr->rank = i;};
@@ -199,7 +199,7 @@ public:
 
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
-void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
+//void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
 void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
 CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CompFunction<3> *Func = nullptr, int nrefine = 1, bool all = false);
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
@@ -207,6 +207,7 @@ ComplexVector dot(CompFunctionVector &Bra, CompFunctionVector &Ket);
 ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi);
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet);
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &Ket);
+//ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVector &Ket);
 DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet);
 void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket);
 

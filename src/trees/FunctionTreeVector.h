@@ -39,11 +39,12 @@ template <int D, typename T = double> using FunctionTreeVector = std::vector<Coe
  *  @param[in] fs: Vector to clear
  *  @param[in] dealloc: Option to free FunctionTree pointer before clearing
  */
-  template <int D, typename T> void clear(FunctionTreeVector<D, T> &fs, bool dealloc = false) {
+template <int D, typename T> void clear(FunctionTreeVector<D, T> &fs, bool dealloc = false) {
     if (dealloc) {
         for (auto &t : fs) {
             auto f = std::get<1>(t);
             if (f != nullptr) delete f;
+            f = nullptr;
         }
     }
     fs.clear();

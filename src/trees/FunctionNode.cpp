@@ -463,6 +463,32 @@ template <> void FunctionNode<3>::reCompress() {
     return result;
 }
 
+/** Inner product of the functions represented by the scaling basis of the nodes.
+ *
+ * Integrates the product of the functions represented by the scaling basis on
+ * the node on the full support of the nodes. The scaling basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
+    assert(bra.hasCoefs());
+    assert(ket.hasCoefs());
+
+    const ComplexDouble *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
+
+    int size = bra.getKp1_d();
+    ComplexDouble result = 0.0;
+    // note that bra is conjugated by default
+    if (bra.getMWTree().conjugate()){
+        for (int i = 0; i < size; i++) result += a[i] * b[i];
+    } else {
+        for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
+    }
+    return result;
+}
+
 /** Inner product of the functions represented by the wavelet basis of the nodes.
  *
  * Integrates the product of the functions represented by the wavelet basis on
@@ -491,6 +517,7 @@ template <> void FunctionNode<3>::reCompress() {
     return result;
 #endif
 }
+
 
 /** Inner product of the functions represented by the wavelet basis of the nodes.
  *
@@ -528,6 +555,34 @@ template <> void FunctionNode<3>::reCompress() {
     return result;
 }
 
+/** Inner product of the functions represented by the wavelet basis of the nodes.
+ *
+ * Integrates the product of the functions represented by the wavelet basis on
+ * the node on the full support of the nodes. The wavelet basis is fully
+ * orthonormal, and the inner product is simply the dot product of the
+ * coefficient vectors. Assumes the nodes have identical support.
+ * NB: will take conjugate of bra in case of complex values.
+ */
+    template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
+    if (bra.isGenNode() or ket.isGenNode()) return 0.0;
+
+    assert(bra.hasCoefs());
+    assert(ket.hasCoefs());
+
+    const ComplexDouble *a = bra.getCoefs();
+    const double *b = ket.getCoefs();
+
+    int start = bra.getKp1_d();
+    int size = (bra.getTDim() - 1) * start;
+    ComplexDouble result = 0.0;
+    if (bra.getMWTree().conjugate()){
+        for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
+    } else {
+        for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];
+    }
+    return result;
+}
+
 template double dot_scaling(const FunctionNode<1, double> &bra, const FunctionNode<1, double> &ket);
 template double dot_scaling(const FunctionNode<2, double> &bra, const FunctionNode<2, double> &ket);
 template double dot_scaling(const FunctionNode<3, double> &bra, const FunctionNode<3, double> &ket);
@@ -549,5 +604,8 @@ template ComplexDouble dot_scaling(const FunctionNode<3, ComplexDouble> &bra, co
 template ComplexDouble dot_wavelet(const FunctionNode<1, ComplexDouble> &bra, const FunctionNode<1, ComplexDouble> &ket);
 template ComplexDouble dot_wavelet(const FunctionNode<2, ComplexDouble> &bra, const FunctionNode<2, ComplexDouble> &ket);
 template ComplexDouble dot_wavelet(const FunctionNode<3, ComplexDouble> &bra, const FunctionNode<3, ComplexDouble> &ket);
+
+template ComplexDouble dot_scaling(const FunctionNode<3, ComplexDouble> &bra, const FunctionNode<3, double> &ket);
+template ComplexDouble dot_wavelet(const FunctionNode<3, ComplexDouble> &bra, const FunctionNode<3, double> &ket);
 
 } // namespace mrcpp

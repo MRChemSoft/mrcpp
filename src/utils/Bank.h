@@ -114,6 +114,7 @@ public:
     int get_nodeblock(int nodeid, double *data, std::vector<int> &idVec);
     int get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int> &idVec);
     int get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart);
+    int get_orbblock(int orbid, ComplexDouble *&data, std::vector<int> &nodeidVec, int bankstart);
 };
 
 class TaskManager {

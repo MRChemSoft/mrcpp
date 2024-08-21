@@ -977,6 +977,28 @@ int BankAccount::get_orbblock(int orbid, double *&data, std::vector<int> &nodeid
     return 1;
 }
 
+
+// get all data with identity orbid (same orbital, different nodes)
+int BankAccount::get_orbblock(int orbid, ComplexDouble *&data, std::vector<int> &nodeidVec, int bankstart) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int nodeid = wrk_rank + bankstart;
+    // get the entire superblock and also the nodeid of each column
+    int messages[message_size];
+    messages[0] = GET_ORBBLOCK;
+    messages[1] = account_id;
+    messages[2] = orbid;
+    MPI_Send(messages, 3, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(metadata_block, size_metadata, MPI_INT, bankmaster[nodeid % bank_size], 1, comm_bank, &status);
+    nodeidVec.resize(metadata_block[1]);
+    int totsize = metadata_block[2];
+    if (totsize > 0) MPI_Recv(nodeidVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
+    data = new ComplexDouble[totsize/2];
+    if (totsize > 0) MPI_Recv(data, totsize, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
 // creator. NB: collective
 BankAccount::BankAccount(int iclient, MPI_Comm comm) {
     this->account_id = dataBank.openAccount(iclient, comm);

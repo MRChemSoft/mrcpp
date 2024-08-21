@@ -64,6 +64,7 @@ public:
     int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; }
     int getNodeChunkSize() const { return this->maxNodesPerChunk * this->sizeOfNode; }
     int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(T); }
+    int getMaxNodesPerChunk() const { return this->maxNodesPerChunk; }
 
     T * getCoef_p(int sIdx);
     MWNode<D, T> * getNode_p(int sIdx);

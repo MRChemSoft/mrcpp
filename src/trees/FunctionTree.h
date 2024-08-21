@@ -116,9 +116,11 @@ public:
     // tools for use of local (nodes are stored in Bank) representation
     int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
     void deep_copy(FunctionTree<D, T> *out);
-    FunctionTree<D, ComplexDouble>* CopyTreeToComplex();
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
+    void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &out);
+    void CopyTreeToReal(FunctionTree<3, double>* &out); //for testing
+
 protected:
     std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) const override;

@@ -360,6 +360,59 @@ template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &
     return result;
 }
 
+
+/** @returns Dot product <bra|ket> of two MW function representations
+ *
+ * @param[in] bra: Bra side input function
+ * @param[in] ket: Ket side input function
+ *
+ * @details The dot product is computed with the trees in compressed form, i.e.
+ * scaling coefs only on root nodes, wavelet coefs on all nodes. Since wavelet
+ * functions are orthonormal through ALL scales and the root scaling functions
+ * are orthonormal to all finer level wavelet functions, this becomes a rather
+ * efficient procedure as you only need to compute the dot product where the
+ * grids overlap.
+ *
+ */
+template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra, FunctionTree<D, double> &ket) {
+    if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
+    MWNodeVector<D, ComplexDouble> nodeTable;
+    TreeIterator<D, ComplexDouble> it(bra);
+    it.setReturnGenNodes(false);
+    while (it.next()) {
+        MWNode<D, ComplexDouble> &node = it.getNode();
+        nodeTable.push_back(&node);
+    }
+    int nNodes = nodeTable.size();
+    ComplexDouble result = 0.0;
+    ComplexDouble locResult = 0.0;
+    // OMP is disabled in order to get EXACT results (to the very last digit), the
+    // order of summation makes the result different beyond the 14th digit or so.
+    // OMP does improve the performace, but its not worth it for the time being.
+    //#pragma omp parallel firstprivate(n_nodes, locResult) num_threads(mrcpp_get_num_threads())
+    //		shared(nodeTable,rhs,result)
+    //    {
+    //#pragma omp for schedule(guided)
+    for (int n = 0; n < nNodes; n++) {
+        const auto &braNode = static_cast<const FunctionNode<D, ComplexDouble> &>(*nodeTable[n]);
+        const MWNode<D, double> *mwNode = ket.findNode(braNode.getNodeIndex());
+        if (mwNode == nullptr) continue;
+
+        const auto &ketNode = static_cast<const FunctionNode<D, double> &>(*mwNode);
+        if (braNode.isRootNode()) locResult += dot_scaling(braNode, ketNode);
+        locResult += dot_wavelet(braNode, ketNode);
+    }
+    //#pragma omp critical
+    result += locResult;
+    //    }
+    return result;
+}
+template <int D> ComplexDouble dot(FunctionTree<D, double> &bra, FunctionTree<D, ComplexDouble> &ket) {
+    ket.setConjugate(!ket.conjugate());
+    ComplexDouble prod =  dot(ket, bra);
+    ket.setConjugate(!ket.conjugate());
+    return prod;
+}
 /** @brief abs-dot product of two MW function representations
  *
  * @param[in] bra: Bra side input function
@@ -642,6 +695,8 @@ template void dot<3, ComplexDouble>(double prec,
 template ComplexDouble dot<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, ComplexDouble> &ket);
 template ComplexDouble dot<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, ComplexDouble> &ket);
 template ComplexDouble dot<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, ComplexDouble> &ket);
+template ComplexDouble dot<3>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, double> &ket);
+template ComplexDouble dot<3>(FunctionTree<3, double> &bra, FunctionTree<3, ComplexDouble> &ket);
 
 template double node_norm_dot<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, ComplexDouble> &ket, bool exact);
 template double node_norm_dot<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, ComplexDouble> &ket, bool exact);

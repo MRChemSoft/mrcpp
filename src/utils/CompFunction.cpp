@@ -392,7 +392,16 @@ void CompFunction<D>::rescale(ComplexDouble c) {
             if (iscomplex()) {
                 CompC[i]->rescale(c);
             } else {
-                CompD[i]->rescale(c.real());
+                if(abs(c.imag())>MachineZero){ //works only only for NComp==1)
+                    CompD[i]->CopyTreeToComplex(CompC[i]);
+                    delete CompD[i];
+                    CompD[i] = nullptr;
+                    func_ptr->iscomplex = true;
+                    func_ptr->isreal = false;
+                    CompC[i]->rescale(c);
+                } else {
+                    CompD[i]->rescale(c.real());
+                }
             }
         }
     } else MSG_ERROR("Not implemented");
@@ -535,13 +544,13 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
     bool out_allocated = true;
     if (out.Ncomp() == 0) out_allocated = false;
-    std::cout<<"multiply "<<" "<<out.getNNodes()<<" "<<inp_a.getNNodes()<<" "<<inp_b.getNNodes()<<" "<<out.isreal()<<" "<<out_allocated<<std::endl;
-   bool share = out.isShared();
+    bool share = out.isShared();
     out.func_ptr->data = inp_a.func_ptr->data;
     out.func_ptr->data.shared = share; // we don' inherit the shareness
     for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
         if (inp_a.isreal() and inp_b.isreal()) {
             if (need_to_multiply) {
+                if (!out_allocated) out.alloc(out.Ncomp()-1);
                 if (prec < 0.0) {
                     // Union grid
                     build_grid(*out.CompD[comp], *inp_a.CompD[comp]);
@@ -549,7 +558,6 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                     mrcpp::multiply(prec, *out.CompD[comp], coef, *inp_a.CompD[comp], *inp_b.CompD[comp], 0, false, false, conjugate);
                 } else {
                     // Adaptive grid
-                    if (!out_allocated) out.alloc(out.Ncomp()-1);
                     mrcpp::multiply(prec, *out.CompD[comp], coef, *inp_a.CompD[comp], *inp_b.CompD[comp], maxIter, absPrec, useMaxNorms, conjugate);
                }
             }
@@ -581,10 +589,8 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0, false, false, conjugate);
                 } else {// note that this assumes Ncomp=1
                     // Adaptive grid
-                    std::cout<<"Adaptive grid "<<" "<<out.getNNodes()<<" "<<inp_a.getNNodes()<<" "<<inp_b.getNNodes()<<std::endl;
-                   if (out.CompD[comp] != nullptr) { //NB: func_ptr has alreadybeen overwritten!
-                       std::cout<<"copoy to complex  "<<" "<<out.CompD[comp]->getNNodes()<<" "<<inp_a.getNNodes()<<" "<<inp_b.getNNodes()<<std::endl;
-                         if(out.CompD[comp]->getNNodes() > 0){
+                    if (out.CompD[comp] != nullptr) { //NB: func_ptr has alreadybeen overwritten!
+                        if(out.CompD[comp]->getNNodes() > 0){
                             out.CompD[comp]->CopyTreeToComplex(out.CompC[comp]);
                             out.func_ptr->iscomplex = 1;
                             out.func_ptr->isreal = 0;
@@ -600,8 +606,7 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                         out.func_ptr->isreal = 0;
                         if (!out_allocated) out.alloc(out.Ncomp()-1);
                     }
-                     std::cout<<"before "<<" "<<out.getNNodes()<<" "<<inp_a.getNNodes()<<" "<<inp_b.getNNodes()<<std::endl;
-                  mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
+                    mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
                 }
             }
             // restore original tree
@@ -620,7 +625,6 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
         }
     }
     mpi::share_function(out, 0, 9911, mpi::comm_share);
-   std::cout<<"final multiply "<<" "<<out.getNNodes()<<" "<<inp_a.getNNodes()<<" "<<inp_b.getNNodes()<<std::endl;
 
 }
 
@@ -1867,10 +1871,10 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                       // if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                       //     BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                       //     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                       //     continue;
                         S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -1885,10 +1889,10 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                      //  if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                      //      BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                      //      BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                      //      continue;
                         S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -2010,10 +2014,10 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                      //  if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                      //      BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                      //      BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                      //      continue;
                         S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -2028,10 +2032,10 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                      //  if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                      //      BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                      //      BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
+                      //      continue;
                         S(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -2066,7 +2070,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
  *  Will take the conjugate of bra before integrating
  */
 ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVector &Ket) {
-    std::cout<<" calc_overlap_matrix start"<<std::endl;
     mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
     bool braisreal = !Bra[0].iscomplex();
     bool ketisreal = !Ket[0].iscomplex();
@@ -2136,7 +2139,6 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                                                         // the orbital given the node index in the reference tree
     mrcpp::BankAccount nodesBra;
     mrcpp::BankAccount nodesKet;
-    std::cout<<" 1) calc_overlap_matrix start"<<std::endl;
 
     // In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
     if (serial) {
@@ -2175,13 +2177,13 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // wait until everything is stored before fetching!
     }
 
-    std::cout<<" 2) calc_overlap_matrix"<<std::endl;
     // 3) make dot product for all the nodes and accumulate into S
     int totsiz = 0;
     int totget = 0;
     int mxtotsiz = 0;
     int ibank = 0;
-#pragma omp parallel if (serial)
+    //the omp crashes sometime for unknown reasons!
+//#pragma omp parallel if (serial)
     {
     ComplexMatrix S_omp = ComplexMatrix::Zero(N, M); // copy for each thread
 
@@ -2227,10 +2229,10 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                 } else MSG_ABORT("Unexpected case");
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
-                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
-                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                        //                       if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+             //                  Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+            //                   Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
+               //                continue;
                         S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
                 }
@@ -2261,10 +2263,10 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
-                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
-                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                        //     if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+                    //        Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                     //       Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
+                     //       continue;
                         S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
                 }
@@ -2281,12 +2283,28 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     }
     }
 
-    std::cout<<" 4) calc_overlap_matrix"<<std::endl;
 
     // 4) collect results from all MPI. Linearity: result is sum of all node contributions
 
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
+    // restore input
+    if(braisreal){
+        for (int i = 0; i < Ket.size(); i++) {
+            delete Bra[i].CompC[0];
+            Bra[i].CompC[0] = nullptr;
+            Bra[i].func_ptr->iscomplex = 0;
+            Bra[i].func_ptr->isreal = 1;
+        }
+    }
+    if(ketisreal){
+        for (int i = 0; i < Ket.size(); i++) {
+            delete Ket[i].CompC[0];
+            Ket[i].CompC[0] = nullptr;
+            Ket[i].func_ptr->iscomplex = 0;
+            Ket[i].func_ptr->isreal = 1;
+        }
+    }
     return S;
 }
 
@@ -2420,10 +2438,10 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
 
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
-                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
-                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                       // if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+                       //     Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                       //     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
+                       //     continue;
                         S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
                 }
@@ -2444,10 +2462,10 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                 S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                 for (int i = 0; i < orbVecBra.size(); i++) {
                     for (int j = 0; j < orbVecKet.size(); j++) {
-                        if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
-                            Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
-                            Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
-                            continue;
+                      //  if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and
+                      //      Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                      //      Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
+                      //      continue;
                         S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
                     }
                 }
@@ -2476,7 +2494,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
  *
  */
 DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
-    std::cout<<" calc_norm_overlap_matrix "<<std::endl;
     int N = BraKet.size();
     DoubleMatrix S = DoubleMatrix::Zero(N, N);
     DoubleMatrix Sreal = DoubleMatrix::Zero(N, N); // same as S, but stored as 4 blocks, rr,ri,ir,ii
@@ -2573,10 +2590,10 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
-                            continue;
+                     //   if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                     //       BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                      //      BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
+                      //      continue;
                         double &Srealij = Sreal(orbVec[i], orbVec[j]);
                         double &Stempij = S_temp(i, j);
 #pragma omp atomic
@@ -2595,10 +2612,10 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
                 S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                 for (int i = 0; i < orbVec.size(); i++) {
                     for (int j = 0; j < orbVec.size(); j++) {
-                        if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
-                            BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
-                            BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
-                            continue;
+                     //   if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and
+                     //       BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                     //       BraKet[orbVec[j]].func_ptr->data.n1[0]!= 0)
+                     //       continue;
                         Sreal(orbVec[i], orbVec[j]) += S_temp(i, j);
                     }
                 }
@@ -2660,10 +2677,13 @@ void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket) {
     double sq_norm = Ket.squaredNorm();
     for (int i = 0; i < Bra.Ncomp(); i++) {
         if (Bra.isreal()) {
+            if (abs(overlap.imag())>MachineZero) MSG_ABORT("NOT IMPLEMENTED");
             Bra.CompD[i]->add_inplace(-overlap.real()/sq_norm,*Ket.CompD[i]);
         } else {
-            Bra.CompC[i]->add_inplace(-overlap/sq_norm,*Ket.CompC[i]);
-        }
+            if (Ket.isreal()) MSG_ABORT("NOT IMPLEMENTED");
+            Bra.CompC[i]->add_inplace(-std::conj(overlap/sq_norm),*Ket.CompC[i]);
+            overlap = dot(Bra, Ket);
+       }
     }
 }
 
@@ -2680,6 +2700,6 @@ template void deep_copy(CompFunction<3>& out, const CompFunction<3> &inp);
 template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec, bool conjugate);
 template void linear_combination(CompFunction<3> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<3>> &inp, double prec, bool conjugate);
 template double node_norm_dot(CompFunction<3> bra, CompFunction<3> ket);
-    template void orthogonalize(double prec, CompFunction<3> &Bra, CompFunction<3> &Ket);
+template void orthogonalize(double prec, CompFunction<3> &Bra, CompFunction<3> &Ket);
 
 } // namespace mrcpp

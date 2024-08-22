@@ -24,7 +24,7 @@ struct CompFunctionData {
     // additional data that describe each component (defined by user):
     // occupancy, quantum number, norm, etc.
     //Note: defined with fixed size to ease copying and MPI send
-    int n1[4]{0,0,0,0}; // 0: neutral. values 1 and 2 are orthogonal to each other (product = 0)
+    int n1[4]{0,0,0,0}; // NOT ENFORCED (spin tests in operator_comosition fails):  0: neutral. values 1 and 2 are orthogonal to each other (product = 0)
     int n2[4]{0,0,0,0};
     int n3[4]{0,0,0,0};
     int n4[4]{0,0,0,0};

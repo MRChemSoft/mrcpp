@@ -119,6 +119,8 @@ public:
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
     void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &out);
+    void CopyTreeToComplex(FunctionTree<2, ComplexDouble>* &out);
+    void CopyTreeToComplex(FunctionTree<1, ComplexDouble>* &out);
     void CopyTreeToReal(FunctionTree<3, double>* &out); //for testing
 
 protected:

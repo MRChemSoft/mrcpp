@@ -1013,6 +1013,86 @@ void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* 
     outTree->calcSquareNorm(true);
 }
 
+template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, ComplexDouble>* &outTree) {
+    delete outTree;
+    double ref=0.0;
+    outTree = new FunctionTree<2, ComplexDouble> (this->getMRA());
+    std::vector<MWNode<2, double> *> instack;   // node from this
+    std::vector<MWNode<2, ComplexDouble> *> outstack; // node from outTree
+    outTree->clearEndNodeTable();
+    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
+        instack.push_back(this->getRootBox().getNodes()[rIdx]);
+        outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
+    }
+    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
+    int ncoefs = this->getNodeAllocator().getNCoefs();
+    while (instack.size() > 0) {
+        // inNode and outNode are the same node in space, but on different trees
+        MWNode<2, ComplexDouble> *outNode = outstack.back();
+        outstack.pop_back();
+        MWNode<2, double> *inNode = instack.back();
+        instack.pop_back();
+        // copy coefficients:
+        double* incoefs = inNode->getCoefs();
+        ComplexDouble* outcoefs = outNode->getCoefs();
+        for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
+        outNode->setHasCoefs();
+        outNode->calcNorms();
+
+        if (inNode->getNChildren() > 0) {
+            if (outNode->getNChildren() < inNode->getNChildren()) outNode->createChildren(true);
+            for (int i = 0; i < inNode->getNChildren(); i++) {
+                instack.push_back(inNode->children[i]);
+                outstack.push_back(outNode->children[i]);
+            }
+        } else {
+            outTree->endNodeTable.push_back(outNode);
+        }
+    }
+    outTree->calcSquareNorm();
+    outTree->calcSquareNorm(true);
+}
+
+template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, ComplexDouble>* &outTree) {
+    delete outTree;
+    double ref=0.0;
+    outTree = new FunctionTree<1, ComplexDouble> (this->getMRA());
+    std::vector<MWNode<1, double> *> instack;   // node from this
+    std::vector<MWNode<1, ComplexDouble> *> outstack; // node from outTree
+    outTree->clearEndNodeTable();
+    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
+        instack.push_back(this->getRootBox().getNodes()[rIdx]);
+        outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
+    }
+    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
+    int ncoefs = this->getNodeAllocator().getNCoefs();
+    while (instack.size() > 0) {
+        // inNode and outNode are the same node in space, but on different trees
+        MWNode<1, ComplexDouble> *outNode = outstack.back();
+        outstack.pop_back();
+        MWNode<1, double> *inNode = instack.back();
+        instack.pop_back();
+        // copy coefficients:
+        double* incoefs = inNode->getCoefs();
+        ComplexDouble* outcoefs = outNode->getCoefs();
+        for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
+        outNode->setHasCoefs();
+        outNode->calcNorms();
+
+        if (inNode->getNChildren() > 0) {
+            if (outNode->getNChildren() < inNode->getNChildren()) outNode->createChildren(true);
+            for (int i = 0; i < inNode->getNChildren(); i++) {
+                instack.push_back(inNode->children[i]);
+                outstack.push_back(outNode->children[i]);
+            }
+        } else {
+            outTree->endNodeTable.push_back(outNode);
+        }
+    }
+    outTree->calcSquareNorm();
+    outTree->calcSquareNorm(true);
+}
+
 // for testing
 template<>
 void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>* &outTree) {

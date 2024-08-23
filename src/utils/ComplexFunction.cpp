@@ -169,13 +169,13 @@ ComplexDouble ComplexFunction::integrate() const {
 
 /** @brief Returns the norm of the orbital */
 double ComplexFunction::norm() const {
-    double norm = squaredNorm();
+    double norm = getSquareNorm();
     if (norm > 0.0) norm = std::sqrt(norm);
     return norm;
 }
 
 /** @brief Returns the squared norm of the orbital */
-double ComplexFunction::squaredNorm() const {
+double ComplexFunction::getSquareNorm() const {
     double sq_r = -1.0;
     double sq_i = -1.0;
     if (hasReal()) sq_r = real().getSquareNorm();
@@ -1996,7 +1996,7 @@ void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int M = Ket.size();
     DoubleVector Ketnorms = DoubleVector::Zero(M);
     for (int i = 0; i < M; i++) {
-        if (mpi::my_orb(Ket[i])) Ketnorms(i)  = Ket[i].squaredNorm();
+        if (mpi::my_orb(Ket[i])) Ketnorms(i)  = Ket[i].getSquareNorm();
     }
     mrcpp::mpi::allreduce_vector(Ketnorms, mrcpp::mpi::comm_wrk);
     ComplexMatrix rmat =  ComplexMatrix::Zero(M, N);

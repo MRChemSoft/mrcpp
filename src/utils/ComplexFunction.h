@@ -145,7 +145,7 @@ public:
     void setImag(mrcpp::FunctionTree<3, double> *tree);
 
     double norm() const;
-    double squaredNorm() const;
+    double getSquareNorm() const;
     ComplexDouble integrate() const;
 
     int crop(double prec);

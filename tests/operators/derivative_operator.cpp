@@ -122,12 +122,13 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     delete mra;
 }
 
+/* trees are defined as complex trees */
 template <int D> void testDifferentiationCplxABGV(double a, double b) {
     MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
 
     double prec = 1.0e-3;
     ABGVOperator<D> diff(*mra, a, b);
-    ComplexDouble s = {1.1, 1.3};
+    ComplexDouble s = {1.1, 1.3}; // NB: Complex
 
     Coord<D> r_0;
     for (auto &x : r_0) x = pi;
@@ -137,7 +138,7 @@ template <int D> void testDifferentiationCplxABGV(double a, double b) {
         return std::exp(-R * R * s);
     };
 
-    auto df = [r_0, s](const Coord<D> &r) {
+    auto df = [r_0, s](const Coord<D> &r) { // analytical derivative of f
         double R = math_utils::calc_distance<D>(r, r_0);
         return -2.0 * s * std::exp(-R * R * s) * (r[0] - r_0[0]);
     };
@@ -148,11 +149,11 @@ template <int D> void testDifferentiationCplxABGV(double a, double b) {
     FunctionTree<D, ComplexDouble> df_tree(*mra);
     project<D, ComplexDouble>(prec / 10, df_tree, df);
 
-    FunctionTree<D, ComplexDouble> dg_tree(*mra);
+    FunctionTree<D, ComplexDouble> dg_tree(*mra); // MW derivative of f
     apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D, ComplexDouble> err_tree(*mra);
-    add(-1.0, err_tree, {1.0, 0.0}, df_tree, {-1.0, 0.0}, dg_tree);
+    add(-1.0, err_tree, {1.0, 0.0}, df_tree, {-1.0, 0.0}, dg_tree);// difference between analytical and MW derivative of f.
 
     double df_norm = std::sqrt(df_tree.getSquareNorm());
     double abs_err = std::sqrt(err_tree.getSquareNorm());

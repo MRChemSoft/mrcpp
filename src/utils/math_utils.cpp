@@ -171,6 +171,7 @@ void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Ar) = A(i) * A; }
 }
 
+/** Matrix multiplication of the filter with the input coefficient (type double)*/
 void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
 #ifdef HAVE_BLAS
     cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
@@ -185,6 +186,7 @@ void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, i
 #endif
 }
 
+/** Matrix multiplication of the filter with the input coefficient (type complex)*/
 void math_utils::apply_filter(ComplexDouble *out, ComplexDouble *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
   //#ifdef HAVE_BLAS
 //    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);

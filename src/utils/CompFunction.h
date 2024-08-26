@@ -96,7 +96,7 @@ public:
     CompFunction();
     CompFunction(int n1);
     CompFunction(int n1, bool share);
-    CompFunction(const CompFunctionData<D>& indata);
+    CompFunction(const CompFunctionData<D>& indata, bool alloc = false);
     CompFunction(const CompFunction<D> &compfunc);
     CompFunction(CompFunction<D> && compfunc);
     CompFunction<D> &operator=(const CompFunction<D> &compfunc);
@@ -117,7 +117,7 @@ public:
     int share() const {return func_ptr->data.shared;}
     int* Nchunks() const {return func_ptr->data.Nchunks;} // number of chunks of each component tree
 
-    CompFunction paramCopy() const;
+    CompFunction paramCopy(bool alloc = false) const;
     ComplexDouble integrate() const;
     double norm() const;
     double getSquareNorm() const;

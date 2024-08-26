@@ -86,12 +86,13 @@ namespace mrcpp {
  * Empty functions (trees defined but zero)
  */
   template <int D>
-  CompFunction<D>::CompFunction(const CompFunctionData<D>& indata)
+  CompFunction<D>::CompFunction(const CompFunctionData<D>& indata, bool alloc)
   { func_ptr = std::make_shared<TreePtr<D>>(indata.shared);
     func_ptr->data = indata;
     CompD = func_ptr->real;
     CompC = func_ptr->cplx;
-    this->alloc(Ncomp()-1);
+    if (alloc) this->alloc(Ncomp()-1);
+    else this->free();
   }
 
 /** @brief Copy constructor
@@ -126,8 +127,8 @@ template <int D>
  *
  * Returns a copy without defined trees.
  */
-CompFunction<D> CompFunction<D>::paramCopy() const {
-    return CompFunction<D>(func_ptr->data);
+CompFunction<D> CompFunction<D>::paramCopy(bool alloc) const {
+    return CompFunction<D>(func_ptr->data, alloc);
 }
 
 
@@ -251,8 +252,8 @@ void CompFunction<D>::free() {
         CompD[i] = nullptr;
         CompC[i] = nullptr;
     }
-    //    if (this->func_ptr->shared_mem_real) this->func_ptr->shared_mem_real->clear();
-    //if (this->func_ptr->shared_mem_cplx) this->func_ptr->shared_mem_cplx->clear();
+    if (this->func_ptr->shared_mem_real) this->func_ptr->shared_mem_real->clear();
+    if (this->func_ptr->shared_mem_cplx) this->func_ptr->shared_mem_cplx->clear();
     func_ptr->Ncomp = 0;
 }
 
@@ -361,9 +362,16 @@ void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp) {
     }
 
     for (int i = 0; i < inp.Ncomp(); i++) {
-        if (inp.isreal()) {
+        if (inp.isreal() and c.imag()<MachineZero) {
             CompD[i]->add_inplace(c.real(),*inp.CompD[i]);
         } else {
+            if (this->isreal()){
+                CompD[i]->CopyTreeToComplex(CompC[i]);
+                delete CompD[i];
+                CompD[i] = nullptr;
+                func_ptr->iscomplex = true;
+                func_ptr->isreal = false;
+            }
             CompC[i]->add_inplace(c,*inp.CompC[i]);
         }
     }
@@ -404,7 +412,7 @@ void CompFunction<D>::rescale(ComplexDouble c) {
                 }
             }
         }
-    } else MSG_ERROR("Not implemented");
+    } else MSG_ABORT("Not implemented");
 }
 
 
@@ -479,16 +487,19 @@ template <int D>
     bool share = out.isShared();
     out.func_ptr->data = inp[0].func_ptr->data;
     out.func_ptr->data.shared = share; // we don' inherit the shareness
-    out.alloc(out.Ncomp()-1);
-    for (int i = 1; i < inp.size(); i++) {
-        if(inp[i].iscomplex() and !inp[0].iscomplex()) MSG_ABORT("mixed types not implemented");
+    bool iscomplex = false;
+    for (int i = 0; i < inp.size(); i++) if(inp[i].iscomplex() or c[i].imag() > MachineZero) iscomplex = true;
+    if (iscomplex) {
+        out.func_ptr->data.iscomplex = 1;
+        out.func_ptr->data.isreal = 0;
     }
+    out.alloc(out.Ncomp()-1);
     for (int comp = 0; comp < inp[0].Ncomp(); comp++) {
-        if (inp[0].isreal()) {
+        if (not iscomplex) {
             FunctionTreeVector<D, double> fvec; // one component vector
             for (int i = 0; i < inp.size(); i++) {
                 if (std::norm(c[i]) < thrs) continue;
-                if (inp[i].getNNodes()==0 or inp[i].CompD[comp]->getSquareNorm() < thrs) continue;
+                 if (inp[i].getNNodes()==0 or inp[i].CompD[comp]->getSquareNorm() < thrs) continue;
                 fvec.push_back(std::make_tuple(c[i].real(), inp[i].CompD[comp]));
             }
             if (need_to_add) {
@@ -506,6 +517,13 @@ template <int D>
         } else {
             FunctionTreeVector<D, ComplexDouble> fvec; // one component vector
             for (int i = 0; i < inp.size(); i++) {
+                if (inp[i].isreal()) {
+                    inp[i].CompD[comp]->CopyTreeToComplex(inp[i].CompC[comp]);
+                    delete inp[i].CompD[comp];
+                    inp[i].CompD[comp] = nullptr;
+                    inp[i].func_ptr->iscomplex = true;
+                    inp[i].func_ptr->isreal = false;
+               }
                 if (std::norm(c[i]) < thrs) continue;
                 if (inp[i].getNNodes()==0 or inp[i].CompC[comp]->getSquareNorm() < thrs) continue;
                 fvec.push_back(std::make_tuple(c[i], inp[i].CompC[comp]));
@@ -514,7 +532,7 @@ template <int D>
                 if (fvec.size() > 0) {
                     if (prec < 0.0) {
                         build_grid(*out.CompC[comp], fvec);
-                        mrcpp::add(prec, *out.CompC[comp], fvec, 0, false, conjugate);
+                      mrcpp::add(prec, *out.CompC[comp], fvec, 0, false, conjugate);
                     } else {
                         mrcpp::add(prec, *out.CompC[comp], fvec, -1, false, conjugate);
                     }
@@ -537,16 +555,20 @@ void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b
 
 
 /** @brief out = inp_a * inp_b
- *
+ *  Takes conjugate of inp_a if conjugate=true
+ *  In case of mixed real/complex inputs, the real functions are converted into complex functions.
  */
 template <int D>
 void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
+    if (inp_b.func_ptr->conj) MSG_ABORT("Not implemented");
+    if (inp_a.func_ptr->conj) conjugate = (not conjugate);
     bool need_to_multiply = not(out.isShared()) or mpi::share_master();
     bool out_allocated = true;
     if (out.Ncomp() == 0) out_allocated = false;
     bool share = out.isShared();
     out.func_ptr->data = inp_a.func_ptr->data;
     out.func_ptr->data.shared = share; // we don' inherit the shareness
+    out.func_ptr->conj = false; // we don' inherit conjugaison
     for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
         if (inp_a.isreal() and inp_b.isreal()) {
             if (need_to_multiply) {
@@ -625,7 +647,6 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
         }
     }
     mpi::share_function(out, 0, 9911, mpi::comm_share);
-
 }
 
 /** @brief out = inp_a * f
@@ -634,9 +655,9 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
  */
 template <int D>
 void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine, bool conjugate) {
-   if (inp_a.Ncomp() > 1) MSG_ERROR("Not implemented");
-    if (inp_a.isreal() != 1) MSG_ERROR("Not implemented");
-    if (conjugate) MSG_ERROR("Not implemented");
+    if (inp_a.Ncomp() > 1) MSG_ABORT("Not implemented");
+    if (inp_a.isreal() != 1) MSG_ABORT("Not implemented");
+    if (conjugate) MSG_ABORT("Not implemented");
     CompFunctionVector CompVec; // Should use vector<CompFunction>?
     CompVec.push_back(inp_a);
     CompFunctionVector CompVecOut;
@@ -651,10 +672,10 @@ void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunctio
  */
 template <int D>
 void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine, bool conjugate) {
-    MSG_ERROR("Not implemented");
-    if (inp_a.Ncomp() > 1) MSG_ERROR("Not implemented");
-    if (inp_a.iscomplex() != 1) MSG_ERROR("Not implemented");
-    if (conjugate) MSG_ERROR("Not implemented");
+    MSG_ABORT("Not implemented");
+    if (inp_a.Ncomp() > 1) MSG_ABORT("Not implemented");
+    if (inp_a.iscomplex() != 1) MSG_ABORT("Not implemented");
+    if (conjugate) MSG_ABORT("Not implemented");
     CompFunctionVector CompVec; // Should use vector<CompFunction>?
     CompVec.push_back(inp_a);
     CompFunctionVector CompVecOut;
@@ -695,17 +716,20 @@ void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, Repre
  */
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
+    if (bra.func_ptr->conj or ket.func_ptr->conj) MSG_ABORT("Not implemented");
     ComplexDouble dotprod = 0.0;
     for (int comp = 0; comp < bra.Ncomp(); comp++) {
-          if (bra.isreal() and ket.isreal()) {
-              dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompD[comp]);
-          } else  if (bra.isreal() and ket.iscomplex()) {
-              dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompC[comp]);
-          } else  if (bra.iscomplex() and ket.isreal()) {
-              dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompD[comp]);
-          } else {
-              dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
-          }
+        if (bra.func_ptr->data.n1[0] != ket.func_ptr->data.n1[0] and
+            bra.func_ptr->data.n1[0] != 0 and ket.func_ptr->data.n1[0]!= 0) continue;
+        if (bra.isreal() and ket.isreal()) {
+            dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompD[comp]);
+        } else  if (bra.isreal() and ket.iscomplex()) {
+            dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompC[comp]);
+        } else  if (bra.iscomplex() and ket.isreal()) {
+            dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompD[comp]);
+        } else {
+            dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
+        }
     }
     if (bra.isreal() and ket.isreal()) {
         return dotprod.real();
@@ -725,6 +749,10 @@ double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) {
     for (int comp = 0; comp < bra.Ncomp(); comp++) {
           if (bra.isreal() and ket.isreal()) {
               dotprod += mrcpp::node_norm_dot(*bra.CompD[comp], *ket.CompD[comp]);
+          } else  if (bra.isreal() and ket.iscomplex()) {
+              MSG_ABORT("Not implemented");
+          } else  if (bra.iscomplex() and ket.isreal()) {
+              MSG_ABORT("Not implemented");
           } else {
               dotprod += mrcpp::node_norm_dot(*bra.CompC[comp], *ket.CompC[comp]);
           }
@@ -800,6 +828,14 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
     bool serial = mpi::wrk_size == 1; // flag for serial/MPI switch
     int N = Phi.size();
     int M = Psi.size();
+    for (int i = 0; i < M; i++){
+        for (int j; j< 4; j++) delete Psi[i].CompD[j];
+        Psi[i].func_ptr->isreal = 0;
+        Psi[i].func_ptr->iscomplex = 1;
+    }
+    for (int i = 0; i < N; i++){
+        if (Phi[i].func_ptr->conj) MSG_ABORT("Conjugaison not implemneted for rotations");
+    }
     if (U.rows() < N) MSG_ABORT("Incompatible number of rows for U matrix");
     if (U.cols() < M) MSG_ABORT("Incompatible number of columns for U matrix");
 
@@ -1852,7 +1888,6 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
     }
 
     // 3) make dot product for all the nodes and accumulate into S
-
     int ibank = 0;
 #pragma omp parallel if (serial)
     {
@@ -2090,7 +2125,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     if (braisreal or ketisreal) {
         // temporary solution: copy as complex trees
         if(braisreal){
-            for (int i = 0; i < Ket.size(); i++) {
+            for (int i = 0; i < Bra.size(); i++) {
                 Bra[i].CompD[0]->CopyTreeToComplex(Bra[i].CompC[0]);
                 Bra[i].func_ptr->iscomplex = 1;
             }
@@ -2196,13 +2231,12 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     int totget = 0;
     int mxtotsiz = 0;
     int ibank = 0;
-    //the omp crashes sometime for unknown reasons!
-//#pragma omp parallel if (serial)
+    //the omp crashes sometime for unknown reasons?
+#pragma omp parallel if (serial)
     {
     ComplexMatrix S_omp = ComplexMatrix::Zero(N, M); // copy for each thread
 
-    //#pragma omp for schedule(dynamic)
-#pragma omp for schedule(static)
+#pragma omp for schedule(dynamic)
     for (int n = 0; n < max_n; n++) {
         if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
         int csize;
@@ -2287,7 +2321,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
             }
         }
     }
-    if (serial) {
+   if (serial) {
 #pragma omp critical
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
@@ -2297,14 +2331,13 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     }
     }
 
-
     // 4) collect results from all MPI. Linearity: result is sum of all node contributions
 
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
     // restore input
     if(braisreal){
-        for (int i = 0; i < Ket.size(); i++) {
+        for (int i = 0; i < Bra.size(); i++) {
             delete Bra[i].CompC[0];
             Bra[i].CompC[0] = nullptr;
             Bra[i].func_ptr->iscomplex = 0;
@@ -2330,7 +2363,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
     if (Bra[0].iscomplex() or Ket[0].iscomplex()){
          return calc_overlap_matrix_cplx(Bra, Ket);
     }
-
 
     mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
 
@@ -2414,7 +2446,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
     int totget = 0;
     int mxtotsiz = 0;
     int ibank = 0;
-    //#pragma omp parallel if (serial)
+#pragma omp parallel if (serial)
     {
     DoubleMatrix S_omp = DoubleMatrix::Zero(N, M); // copy for each thread
     //NB: dynamic does give strange errors?

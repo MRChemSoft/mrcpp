@@ -253,11 +253,6 @@ bool share_master() {
     return (share_rank == 0) ? true : false;
 }
 
-/** @brief Test if orbital belongs to this MPI rank (or is common)*/
-bool my_orb(int j) {
-    return ((j) % wrk_size == wrk_rank) ? true : false;
-}
-
 /** @brief Test if function belongs to this MPI rank */
 bool my_func(int j) {
     return ((j) % wrk_size == wrk_rank) ? true : false;
@@ -507,7 +502,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
 
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
-        if (not my_orb(j)) continue;
+        if (not my_func(j)) continue;
         if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
         if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
     }
@@ -529,7 +524,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
 
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
-        if (not my_orb(j)) continue;
+        if (not my_func(j)) continue;
         if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
         if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
     }
@@ -551,7 +546,7 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
 
     int N = Phi.size();
     for (int j = 0; j < N; j++) {
-        if (not my_orb(j)) continue;
+        if (not my_func(j)) continue;
         tree.appendTreeNoCoeff(Phi[j]);
     }
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);

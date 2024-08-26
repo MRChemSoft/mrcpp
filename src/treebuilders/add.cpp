@@ -99,7 +99,7 @@ void add(double prec,
  * no coefs).
  *
  */
-    template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
+template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
@@ -113,6 +113,7 @@ void add(double prec,
     Timer trans_t;
     out.mwTransform(BottomUp);
     out.calcSquareNorm();
+
     trans_t.stop();
 
     Timer clean_t;

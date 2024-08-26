@@ -24,7 +24,7 @@ struct CompFunctionData {
     // additional data that describe each component (defined by user):
     // occupancy, quantum number, norm, etc.
     //Note: defined with fixed size to ease copying and MPI send
-    int n1[4]{0,0,0,0}; // 0: neutral. other wise different values are orthogonal to each other (product = 0)
+    int n1[4]{0,0,0,0}; // 0: neutral. otherwise different values are orthogonal to each other (product = 0)
     int n2[4]{0,0,0,0};
     int n3[4]{0,0,0,0};
     int n4[4]{0,0,0,0};
@@ -121,7 +121,8 @@ public:
     ComplexDouble integrate() const;
     double norm() const;
     double getSquareNorm() const;
-    void alloc(int i = 0, bool zero = true);
+    void alloc(int nalloc = 1, bool zero = true);
+    void alloc_comp(int i = 0); // allocate one specific component
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setCplx(FunctionTree<D, ComplexDouble> *tree, int i = 0);
     void setRank(int i) {func_ptr->rank = i;};

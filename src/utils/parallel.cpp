@@ -272,7 +272,7 @@ bool my_func(CompFunction<3> *func) {
 /** @brief Free all function pointers not belonging to this MPI rank */
 void free_foreign(CompFunctionVector &Phi) {
     for (CompFunction<3> &i : Phi) {
-        if (not my_func(i)) i.alloc(0);
+        if (not my_func(i)) i.free();
     }
 }
 
@@ -347,7 +347,7 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     int func_ncomp_in = func.Ncomp();
     MPI_Recv(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
     for (int i = 0; i < func.Ncomp(); i++) {
-        if (func_ncomp_in <= i) func.alloc(i);
+        if (func_ncomp_in <= i) func.alloc(i+1);
         if (func.isreal()) mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
         else  mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
     }

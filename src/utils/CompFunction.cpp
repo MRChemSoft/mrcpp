@@ -91,7 +91,7 @@ namespace mrcpp {
     func_ptr->data = indata;
     CompD = func_ptr->real;
     CompC = func_ptr->cplx;
-    if (alloc) this->alloc(Ncomp()-1);
+    if (alloc) this->alloc(Ncomp());
     else this->free();
   }
 
@@ -214,13 +214,14 @@ double CompFunction<D>::getSquareNorm() const {
 }
 
 //  Allocate empty trees. The tree must be defined as real or complex already.
-//  Allocates all the ialloc+1 trees, with indices 0,...ialloc
-//  ialloc is the largest index allocated. ialloc=0 allocates one tree.
+//  Allocates all ialloc trees, with indices 0,...ialloc-1
+//  nalloc is the number of components allocated. ialloc=1 allocates one tree.
+//  deletes all old trees if found.
 template <int D>
-void CompFunction<D>::alloc(int ialloc, bool zero) {
+void CompFunction<D>::alloc(int nalloc, bool zero) {
       if (defaultCompMRA<D> == nullptr) MSG_ABORT("Default MRA not yet defined");
       if (isreal() == 0 and iscomplex() == 0)  MSG_ABORT("Function must be defined either real or complex");
-      for (int i = 0; i < ialloc + 1; i++) {
+      for (int i = 0; i < nalloc; i++) {
           delete CompD[i];
           delete CompC[i];
           CompD[i] = nullptr;
@@ -235,13 +236,37 @@ void CompFunction<D>::alloc(int ialloc, bool zero) {
           }
           func_ptr->Ncomp = std::max(Ncomp(), i + 1);
       }
-      for (int i = ialloc + 1; i < Ncomp(); i++) {
+      for (int i = nalloc; i < Ncomp(); i++) {
           //delete possible remaining components
           delete CompD[i];
           delete CompC[i];
           CompD[i] = nullptr;
           CompC[i] = nullptr;
       }
+}
+
+//  Allocate one empty trees for one specific component.
+//  The tree must be defined as real or complex already.
+//  ialloc is index allocated. ialloc=0 allocates the tree with index zero.
+//  deletes old tree if found.
+template <int D>
+void CompFunction<D>::alloc_comp(int ialloc) {
+      if (defaultCompMRA<D> == nullptr) MSG_ABORT("Default MRA not yet defined");
+      if (isreal() == 0 and iscomplex() == 0)  MSG_ABORT("Function must be defined either real or complex");
+      int i = ialloc;
+      delete CompD[i];
+      delete CompC[i];
+      CompD[i] = nullptr;
+      CompC[i] = nullptr;
+      if (isreal()) {
+          CompD[i] =  new FunctionTree<D, double> (*defaultCompMRA<D>, func_ptr->shared_mem_real);
+          CompD[i]->setZero();
+      }
+      if (iscomplex()) {
+          CompC[i] = new FunctionTree<D, ComplexDouble> (*defaultCompMRA<D>, func_ptr->shared_mem_cplx);
+          CompC[i]->setZero();
+      }
+      func_ptr->Ncomp = std::max(Ncomp(), i + 1);
 }
 
 template <int D>
@@ -293,7 +318,7 @@ void CompFunction<D>::dagger() {
 template <int D>
 FunctionTree<D, double> &CompFunction<D>::real(int i) {
     if (!isreal()) MSG_ABORT("not real function");
-    if (CompD[i] == nullptr) alloc(i);
+    if (CompD[i] == nullptr) alloc_comp(i);
     return *CompD[i];
 }
 template <int D> //NB: should return CompC in the future
@@ -306,7 +331,7 @@ FunctionTree<D, double>  &CompFunction<D>::imag(int i) {
 template <int D>
 FunctionTree<D, ComplexDouble>  &CompFunction<D>::complex(int i) {
     if (!iscomplex()) MSG_ABORT("not marked as a complex function");
-    if (CompC[i] == nullptr) alloc(i);
+    if (CompC[i] == nullptr) alloc_comp(i);
     return *CompC[i];
 }
 
@@ -358,7 +383,7 @@ void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp) {
 
     if (Ncomp()<inp.Ncomp()){
         func_ptr->data = inp.func_ptr->data;
-        alloc(inp.Ncomp()-1, true);
+        alloc(inp.Ncomp(), true);
     }
 
     for (int i = 0; i < inp.Ncomp(); i++) {
@@ -430,7 +455,7 @@ template class CompFunction<3>;
   template <int D>
   void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp) {
       out->func_ptr->data = inp.func_ptr->data;
-      out->alloc(inp.Ncomp()-1);
+      out->alloc(inp.Ncomp());
       for (int i = 0; i < inp.Ncomp(); i++) {
           if (inp.isreal()) {
               inp.CompD[i]->deep_copy(out->CompD[i]);
@@ -448,7 +473,7 @@ template class CompFunction<3>;
   template <int D>
   void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp) {
       out.func_ptr->data = inp.func_ptr->data;
-      out.alloc(inp.Ncomp()-1);
+      out.alloc(inp.Ncomp());
       for (int i = 0; i < inp.Ncomp(); i++) {
           if (inp.isreal()) {
               inp.CompD[i]->deep_copy(out.CompD[i]);
@@ -493,7 +518,7 @@ template <int D>
         out.func_ptr->data.iscomplex = 1;
         out.func_ptr->data.isreal = 0;
     }
-    out.alloc(out.Ncomp()-1);
+    out.alloc(out.Ncomp());
     for (int comp = 0; comp < inp[0].Ncomp(); comp++) {
         if (not iscomplex) {
             FunctionTreeVector<D, double> fvec; // one component vector
@@ -572,7 +597,7 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
     for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
         if (inp_a.isreal() and inp_b.isreal()) {
             if (need_to_multiply) {
-                if (!out_allocated) out.alloc(out.Ncomp()-1);
+                if (!out_allocated) out.alloc(out.Ncomp());
                 if (prec < 0.0) {
                     // Union grid
                     build_grid(*out.CompD[comp], *inp_a.CompD[comp]);
@@ -605,7 +630,7 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                     out.func_ptr->isreal = 0;
                     delete out.CompD[comp];
                     delete out.CompC[comp];
-                    if (!out_allocated) out.alloc(out.Ncomp()-1);
+                    if (!out_allocated) out.alloc(out.Ncomp());
                     build_grid(*out.CompC[comp], *inp_a.CompC[comp]);
                     build_grid(*out.CompC[comp], *inp_b.CompC[comp]);
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0, false, false, conjugate);
@@ -621,12 +646,12 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
                         } else {
                              out.func_ptr->iscomplex = 1;
                              out.func_ptr->isreal = 0;
-                             out.alloc(out.Ncomp()-1);
+                             out.alloc(out.Ncomp());
                         }
                     } else {
                         out.func_ptr->iscomplex = 1;
                         out.func_ptr->isreal = 0;
-                        if (!out_allocated) out.alloc(out.Ncomp()-1);
+                        if (!out_allocated) out.alloc(out.Ncomp());
                     }
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
                 }
@@ -692,7 +717,7 @@ void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, Representabl
     CompFunction<D> func_a;
     func_a.func_ptr->isreal = 1;
     func_a.func_ptr->iscomplex = 0;
-    func_a.alloc(0);
+    func_a.alloc(1);
     func_a.CompD[0] = &inp_a;
     multiply(out, func_a, f, prec, nrefine, conjugate);
     func_a.CompD[0] = nullptr;
@@ -764,7 +789,7 @@ void project(CompFunction<3> &out, std::function<double(const Coord<3>& r)> f, d
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 1;
     out.func_ptr->iscomplex = 0;
-    if(out.Ncomp() < 1) out.alloc(0);
+    if(out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
@@ -774,7 +799,7 @@ void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 0;
     out.func_ptr->iscomplex = 1;
-    if(out.Ncomp() < 1) out.alloc(0);
+    if(out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
@@ -784,7 +809,7 @@ void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double p
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 1;
     out.func_ptr->iscomplex = 0;
-    if(out.Ncomp() < 1) out.alloc(0);
+    if(out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }
@@ -793,7 +818,7 @@ void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, d
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 0;
     out.func_ptr->iscomplex = 1;
-    if(out.Ncomp() < 1) out.alloc(0);
+    if(out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
  }
@@ -1070,7 +1095,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
 #pragma omp parallel for schedule(static)
         for (int j = 0; j < M; j++) {
            if (coeffpVec[j].size()==0) continue;
-            Psi[j].alloc(0); //All data is stored in coeffpVec[j]
+            Psi[j].alloc(1); //All data is stored in coeffpVec[j]
             Psi[j].complex().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
        }
     } else { // MPI case
@@ -1098,7 +1123,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                 }
             }
 
-            Psi[j].alloc(0);
+            Psi[j].alloc(1);
             Psi[j].complex().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
 
             for (ComplexDouble *p : pointerstodelete) delete[] p;
@@ -1360,7 +1385,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 #pragma omp parallel for schedule(static)
         for (int j = 0; j < M; j++) {
             if (coeffpVec[j].size()==0) continue;
-            Psi[j].alloc(0);
+            Psi[j].alloc(1);
             Psi[j].real().clear();
             Psi[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
         }
@@ -1390,7 +1415,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                     shift += csize;
                 }
             }
-            Psi[j].alloc(0);
+            Psi[j].alloc(1);
             Psi[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
 
             for (double *p : pointerstodelete) delete[] p;
@@ -1724,7 +1749,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
         for (int j = 0; j < N; j++) {
             if (j < N) {
                 if (Phi[j].hasReal()) {
-                    out[j].alloc(0);
+                    out[j].alloc(1);
                     out[j].real().clear();
                     out[j].real().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
                     // 6) reconstruct trees from end nodes
@@ -1733,7 +1758,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                 }
             } else {
                 if (Phi[j].hasImag()) {
-                    out[j].alloc(0);
+                    out[j].alloc(1);
                     out[j].imag().clear();
                     out[j].imag().makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0, "copy");
                     out[j].imag().mwTransform(BottomUp);
@@ -1766,7 +1791,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             }
             if (j < N) {
                 if (Phi[j].hasReal()) {
-                    out[j].alloc(0);
+                    out[j].alloc(1);
                     out[j].real().clear();
                     out[j].real().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
                     // 6) reconstruct trees from end nodes
@@ -1778,7 +1803,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                 }
             } else {
                 if (Phi[j].hasImag()) {
-                    out[j].alloc(0);
+                    out[j].alloc(1);
                     out[j].imag().clear();
                     out[j].imag().makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0, "copy");
                     out[j].imag().mwTransform(BottomUp);

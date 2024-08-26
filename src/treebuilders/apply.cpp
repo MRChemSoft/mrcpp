@@ -132,13 +132,13 @@ template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperat
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
                 if (inp.isreal()) {
-                    if (out.CompD[ocomp] == nullptr) out.alloc(ocomp);
+                    if (out.CompD[ocomp] == nullptr) out.alloc_comp(ocomp);
                     apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompD[ocomp]->rescale(metric[icomp][ocomp].real());
                     }
                 } else {
-                    if (out.CompC[ocomp] == nullptr) out.alloc(ocomp);
+                    if (out.CompC[ocomp] == nullptr) out.alloc_comp(ocomp);
                     apply(prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
                         out.CompC[ocomp]->rescale(metric[icomp][ocomp]);

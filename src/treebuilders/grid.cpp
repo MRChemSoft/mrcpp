@@ -238,7 +238,7 @@ template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTre
 template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
     out.free();
     out.func_ptr->data = inp.func_ptr->data;
-    out.alloc(inp.Ncomp()-1);
+    out.alloc(inp.Ncomp());
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) build_grid(*out.CompD[i], *inp.CompD[i]);
         if (inp.iscomplex()) build_grid(*out.CompC[i], *inp.CompC[i]);

@@ -592,9 +592,10 @@ void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> in
     if (out.Ncomp() == 0) out_allocated = false;
     bool share = out.isShared();
     out.func_ptr->data = inp_a.func_ptr->data;
-    out.func_ptr->data.shared = share; // we don' inherit the shareness
-    out.func_ptr->conj = false; // we don' inherit conjugaison
+    out.func_ptr->data.shared = share; // we don't inherit the shareness
+    out.func_ptr->conj = false; // we don't inherit conjugaison
     for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
+        out.func_ptr->data.c1[comp] = inp_a.func_ptr->data.c1[comp] * inp_b.func_ptr->data.c1[comp]; // we could put this is coef if everything is real?
         if (inp_a.isreal() and inp_b.isreal()) {
             if (need_to_multiply) {
                 if (!out_allocated) out.alloc(out.Ncomp());
@@ -742,8 +743,9 @@ void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, Repre
 template <int D>
 ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
     if (bra.func_ptr->conj or ket.func_ptr->conj) MSG_ABORT("Not implemented");
-    ComplexDouble dotprod = 0.0;
+    ComplexDouble dotprodtot = 0.0;
     for (int comp = 0; comp < bra.Ncomp(); comp++) {
+        ComplexDouble dotprod = 0.0;
         if (bra.func_ptr->data.n1[0] != ket.func_ptr->data.n1[0] and
             bra.func_ptr->data.n1[0] != 0 and ket.func_ptr->data.n1[0]!= 0) continue;
         if (bra.isreal() and ket.isreal()) {
@@ -755,11 +757,13 @@ ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
         } else {
             dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
         }
+        dotprod *= bra.func_ptr->data.c1[comp] * ket.func_ptr->data.c1[comp];
+        dotprodtot += dotprod;
     }
     if (bra.isreal() and ket.isreal()) {
-        return dotprod.real();
+        return dotprodtot.real();
     } else {
-        return dotprod;
+        return dotprodtot;
     }
 }
 
@@ -770,19 +774,22 @@ ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
  */
 template <int D>
 double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) {
-    double dotprod = 0.0;
+    double dotprodtot = 0.0;
     for (int comp = 0; comp < bra.Ncomp(); comp++) {
-          if (bra.isreal() and ket.isreal()) {
-              dotprod += mrcpp::node_norm_dot(*bra.CompD[comp], *ket.CompD[comp]);
-          } else  if (bra.isreal() and ket.iscomplex()) {
-              MSG_ABORT("Not implemented");
-          } else  if (bra.iscomplex() and ket.isreal()) {
-              MSG_ABORT("Not implemented");
-          } else {
-              dotprod += mrcpp::node_norm_dot(*bra.CompC[comp], *ket.CompC[comp]);
-          }
-    }
-    return dotprod;
+        double dotprod = 0.0;
+        if (bra.isreal() and ket.isreal()) {
+            dotprod += mrcpp::node_norm_dot(*bra.CompD[comp], *ket.CompD[comp]);
+        } else  if (bra.isreal() and ket.iscomplex()) {
+            MSG_ABORT("Not implemented");
+        } else  if (bra.iscomplex() and ket.isreal()) {
+            MSG_ABORT("Not implemented");
+        } else {
+            dotprod += mrcpp::node_norm_dot(*bra.CompC[comp], *ket.CompC[comp]);
+        }
+        dotprod *= std::norm(bra.func_ptr->data.c1[comp]) * std::norm(ket.func_ptr->data.c1[comp]); //for fully complex values this does not really give the norm
+        dotprodtot += dotprod;
+   }
+    return dotprodtot;
 }
 
 void project(CompFunction<3> &out, std::function<double(const Coord<3>& r)> f, double prec) {
@@ -1992,6 +1999,20 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
 
     // Assumes linearity: result is sum of all nodes contributions
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
+    // multiply by CompFunction multiplicative factor
+
+    ComplexVector Fac = ComplexVector::Zero(N);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(BraKet[i])) continue;
+        Fac[i] = BraKet[i].func_ptr->data.c1[0];
+    }
+
+    mrcpp::mpi::allreduce_vector(Fac, mrcpp::mpi::comm_wrk);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            S(i, j) *=  std::conj(Fac[i])*Fac[j];
+        }
+    }
 
     return S;
 }
@@ -2135,6 +2156,19 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
 
     // Assumes linearity: result is sum of all nodes contributions
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
+
+    // multiply by CompFunction multiplicative factor
+    ComplexVector Fac = ComplexVector::Zero(N);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(BraKet[i])) continue;
+        Fac[i] = BraKet[i].func_ptr->data.c1[0];
+    }
+    mrcpp::mpi::allreduce_vector(Fac, mrcpp::mpi::comm_wrk);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            S(i, j) *=  std::conj(Fac[i])*Fac[j];
+        }
+    }
 
     return S;
 }
@@ -2360,6 +2394,25 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
+    // multiply by CompFunction multiplicative factor
+    ComplexVector FacBra = ComplexVector::Zero(N);
+    ComplexVector FacKet = ComplexVector::Zero(M);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(Bra[i])) continue;
+        FacBra[i] = Bra[i].func_ptr->data.c1[0];
+    }
+    for (int i = 0; i < M; i++) {
+        if (!mrcpp::mpi::my_func(Ket[i])) continue;
+        FacKet[i] = Ket[i].func_ptr->data.c1[0];
+    }
+    mrcpp::mpi::allreduce_vector(FacBra, mrcpp::mpi::comm_wrk);
+    mrcpp::mpi::allreduce_vector(FacKet, mrcpp::mpi::comm_wrk);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            S(i, j) *=  std::conj(FacBra[i])*FacKet[j];
+        }
+    }
+
     // restore input
     if(braisreal){
         for (int i = 0; i < Bra.size(); i++) {
@@ -2557,6 +2610,25 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
 
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
 
+    // multiply by CompFunction multiplicative factor
+    ComplexVector FacBra = ComplexVector::Zero(N);
+    ComplexVector FacKet = ComplexVector::Zero(M);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(Bra[i])) continue;
+        FacBra[i] = Bra[i].func_ptr->data.c1[0];
+    }
+    for (int i = 0; i < M; i++) {
+        if (!mrcpp::mpi::my_func(Ket[i])) continue;
+        FacKet[i] = Ket[i].func_ptr->data.c1[0];
+    }
+    mrcpp::mpi::allreduce_vector(FacBra, mrcpp::mpi::comm_wrk);
+    mrcpp::mpi::allreduce_vector(FacKet, mrcpp::mpi::comm_wrk);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            S(i, j) *=  std::conj(FacBra[i])*FacKet[j];
+        }
+    }
+
     return S;
 }
 
@@ -2710,6 +2782,18 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
 
     // Assumes linearity: result is sum of all nodes contributions
     mrcpp::mpi::allreduce_matrix(S, mrcpp::mpi::comm_wrk);
+    // multiply by CompFunction multiplicative factor
+    ComplexVector Fac = ComplexVector::Zero(N);
+    for (int i = 0; i < N; i++) {
+        if (!mrcpp::mpi::my_func(BraKet[i])) continue;
+        Fac[i] = BraKet[i].func_ptr->data.c1[0];
+    }
+    mrcpp::mpi::allreduce_vector(Fac, mrcpp::mpi::comm_wrk);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            S(i, j) *=  std::norm(std::conj(Fac[i]))*std::norm(Fac[j]);
+        }
+    }
     return S;
 }
 

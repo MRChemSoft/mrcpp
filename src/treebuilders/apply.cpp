@@ -462,7 +462,8 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 }
 
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
-   ComplexDouble defaultMetric[4][4];
+    //TODO: sums and not only each components independently
+    ComplexDouble defaultMetric[4][4];
     for (int i=0; i<4; i++){
         for (int j=0; j<4; j++){
             if (i==j) defaultMetric[i][j] = 1.0;
@@ -475,10 +476,11 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++){
         for (int ocomp = 0; ocomp < 4; ocomp++){
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal() and std::imag(metric[icomp][ocomp]) < MachinePrec) {
+                if (inp.isreal() and (std::imag(metric[icomp][ocomp]) < MachinePrec or inp.Ncomp() == 1) ) {
                     apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
-                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                        out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
+                    if (std::norm(metric[icomp][ocomp] - 1.0) > MachinePrec) {
+                        if(std::imag(metric[icomp][ocomp]) < MachinePrec) out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
+                        else out.func_ptr->data.c1[ocomp] *= metric[icomp][ocomp]; //TODO: multiply c1 in rescale?
                     }
                     out.func_ptr->isreal = 1;
                 } else {

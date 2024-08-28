@@ -30,8 +30,8 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D>
-OperatorStatistics<D>::OperatorStatistics()
+template <int D, typename T>
+OperatorStatistics<D, T>::OperatorStatistics()
         : nThreads(mrcpp_get_max_threads())
         , totFCount(0)
         , totGCount(0)
@@ -58,7 +58,7 @@ OperatorStatistics<D>::OperatorStatistics()
     }
 }
 
-template <int D> OperatorStatistics<D>::~OperatorStatistics() {
+template <int D, typename T> OperatorStatistics<D, T>::~OperatorStatistics() {
     for (int i = 0; i < this->nThreads; i++) { delete this->compCount[i]; }
     delete[] this->compCount;
     delete[] this->fCount;
@@ -68,7 +68,7 @@ template <int D> OperatorStatistics<D>::~OperatorStatistics() {
 }
 
 /** Sum all node counters from all threads. */
-template <int D> void OperatorStatistics<D>::flushNodeCounters() {
+template <int D, typename T> void OperatorStatistics<D, T>::flushNodeCounters() {
     for (int i = 0; i < this->nThreads; i++) {
         this->totFCount += this->fCount[i];
         this->totGCount += this->gCount[i];
@@ -82,20 +82,20 @@ template <int D> void OperatorStatistics<D>::flushNodeCounters() {
 }
 
 /** Increment g-node usage counter. Needed for load balancing. */
-template <int D> void OperatorStatistics<D>::incrementGNodeCounters(const MWNode<D> &gNode) {
+template <int D, typename T> void OperatorStatistics<D, T>::incrementGNodeCounters(const MWNode<D, T> &gNode) {
     int thread = mrcpp_get_thread_num();
     this->gCount[thread]++;
 }
 
 /** Increment operator application counter. */
-template <int D> void OperatorStatistics<D>::incrementFNodeCounters(const MWNode<D> &fNode, int ft, int gt) {
+template <int D, typename T> void OperatorStatistics<D, T>::incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt) {
     int thread = mrcpp_get_thread_num();
     this->fCount[thread]++;
     (*this->compCount[thread])(ft, gt) += 1;
     if (fNode.isGenNode()) { this->genCount[thread]++; }
 }
 
-template <int D> std::ostream &OperatorStatistics<D>::print(std::ostream &o) const {
+template <int D, typename T> std::ostream &OperatorStatistics<D, T>::print(std::ostream &o) const {
     o << std::setw(8);
     o << "*OperatorFunc statistics: " << std::endl << std::endl;
     o << "  Total calculated gNodes      : " << this->totGCount << std::endl;
@@ -105,8 +105,12 @@ template <int D> std::ostream &OperatorStatistics<D>::print(std::ostream &o) con
     return o;
 }
 
-template class OperatorStatistics<1>;
-template class OperatorStatistics<2>;
-template class OperatorStatistics<3>;
+template class OperatorStatistics<1, double>;
+template class OperatorStatistics<2, double>;
+template class OperatorStatistics<3, double>;
+
+template class OperatorStatistics<1, ComplexDouble>;
+template class OperatorStatistics<2, ComplexDouble>;
+template class OperatorStatistics<3, ComplexDouble>;
 
 } // namespace mrcpp

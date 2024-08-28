@@ -146,7 +146,12 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
  *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
  */
 template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
-    return !(*this == mra);
+    if (this->basis != mra.basis) std::cout<<"diff basis "<<this->basis<<std::endl <<"and  "<< mra.basis<<std::endl;
+    if (this->basis != mra.basis) return true;
+    if (this->world != mra.world) std::cout<<"diff world "<<this->world<<std::endl <<"and  " <<" "<< mra.world<<std::endl;
+    if (this->world != mra.world) return true;
+    if (this->maxDepth != mra.maxDepth) return true;
+    return false;
 }
 
 /**

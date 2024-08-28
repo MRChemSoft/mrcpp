@@ -30,7 +30,7 @@
 
 namespace mrcpp {
 
-template <int D> class TreeAdaptor {
+template <int D, typename T> class TreeAdaptor {
 public:
     TreeAdaptor(int ms)
             : maxScale(ms) {}
@@ -38,9 +38,9 @@ public:
 
     void setMaxScale(int ms) { this->maxScale = ms; }
 
-    void splitNodeVector(MWNodeVector<D> &out, MWNodeVector<D> &inp) const {
+    void splitNodeVector(MWNodeVector<D, T> &out, MWNodeVector<D, T> &inp) const {
         for (int n = 0; n < inp.size(); n++) {
-            MWNode<D> &node = *inp[n];
+            MWNode<D, T> &node = *inp[n];
             // Can be BranchNode in operator application
             if (node.isBranchNode()) continue;
             if (node.getScale() + 2 > this->maxScale) continue;
@@ -54,7 +54,7 @@ public:
 protected:
     int maxScale;
 
-    virtual bool splitNode(const MWNode<D> &node) const = 0;
+    virtual bool splitNode(const MWNode<D, T> &node) const = 0;
 };
 
 } // namespace mrcpp

@@ -301,9 +301,9 @@ void Bank::open() {
                     }
                     send_function(*deposits[ix].orb, status.MPI_SOURCE, 1, comm_bank);
                     if (message == GET_FUNCTION_AND_DELETE) {
-                        currentsize[account] -= deposits[ix].orb->getSizeNodes(NUMBER::Total);
-                        totcurrentsize -= deposits[ix].orb->getSizeNodes(NUMBER::Total);
-                        deposits[ix].orb->free(NUMBER::Total);
+                        currentsize[account] -= deposits[ix].orb->getSizeNodes();
+                        totcurrentsize -= deposits[ix].orb->getSizeNodes();
+                        deposits[ix].orb->free();
                         id2ix[id] = 0;
                     }
                 }
@@ -370,7 +370,7 @@ void Bank::open() {
             } else {
                 ix = deposits.size(); // NB: ix is now index of last element + 1
                 deposits.resize(ix + 1);
-                if (message == SAVE_FUNCTION) deposits[ix].orb = new ComplexFunction(0);
+                if (message == SAVE_FUNCTION) deposits[ix].orb = new CompFunction<3>(0);
                 if (message == SAVE_DATA) {
                     datasize = messages[3];
                     deposits[ix].data = mem[account]->get_mem(datasize);//new double[datasize];
@@ -385,10 +385,9 @@ void Bank::open() {
             deposits[ix].source = status.MPI_SOURCE;
             if (message == SAVE_FUNCTION) {
                 recv_function(*deposits[ix].orb, deposits[ix].source, 1, comm_bank);
-                cout<<"recv ORB size "<<deposits[ix].orb->getSizeNodes(NUMBER::Total)<<endl;
                 if (exist_flag == 0) {
-                    currentsize[account] += deposits[ix].orb->getSizeNodes(NUMBER::Total);
-                    totcurrentsize += deposits[ix].orb->getSizeNodes(NUMBER::Total);
+                    currentsize[account] += deposits[ix].orb->getSizeNodes();
+                    totcurrentsize += deposits[ix].orb->getSizeNodes();
                     this->maxsize = std::max(totcurrentsize, this->maxsize);
                 }
             }
@@ -480,7 +479,7 @@ void Bank::remove_account(int account) {
     }
     std::vector<deposit> &deposits = *get_deposits[account];
     for (int ix = 1; ix < deposits.size(); ix++) {
-       if (deposits[ix].orb != nullptr) deposits[ix].orb->free(NUMBER::Total);
+       if (deposits[ix].orb != nullptr) deposits[ix].orb->free();
        if (deposits[ix].hasdata) {
            currentsize[account] -= deposits[ix].datasize / 128;
            totcurrentsize -= deposits[ix].datasize / 128;
@@ -642,7 +641,7 @@ std::vector<int> Bank::get_totalsize() {
 // get orbital with identity id.
 // If wait=0, return immediately with value zero if not available (default)
 // else, wait until available
-int BankAccount::get_func(int id, ComplexFunction &func, int wait) {
+int BankAccount::get_func(int id, CompFunction<3> &func, int wait) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     int messages[message_size];
@@ -670,7 +669,7 @@ int BankAccount::get_func(int id, ComplexFunction &func, int wait) {
 
 // get orbital with identity id, and delete from bank.
 // return immediately with value zero if not available
-int BankAccount::get_func_del(int id, ComplexFunction &orb) {
+int BankAccount::get_func_del(int id, CompFunction<3> &orb) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     int messages[message_size];
@@ -691,7 +690,7 @@ int BankAccount::get_func_del(int id, ComplexFunction &orb) {
 }
 
 // save function in Bank with identity id
-int BankAccount::put_func(int id, ComplexFunction &func) {
+int BankAccount::put_func(int id, CompFunction<3> &func) {
 #ifdef MRCPP_HAS_MPI
     // for now we distribute according to id
     int messages[message_size];
@@ -721,6 +720,23 @@ int BankAccount::put_data(int id, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity id . datasize MUST have been set already. NB:not tested
+int BankAccount::put_data(int id, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to id
+    int messages[message_size];
+
+    messages[0] = SAVE_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = size * 2;//save as twice as many doubles
+    messages[4] = MIN_SCALE; // to indicate that it is defined by id
+    MPI_Send(messages, 5, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
 // save data in Bank with identity nIdx. datasize MUST have been set already. NB:not tested
 int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
@@ -740,6 +756,26 @@ int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity nIdx. datasize MUST have been set already. NB:not tested
+int BankAccount::put_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to id
+    int messages[message_size];
+    messages[0] = SAVE_DATA;
+    messages[1] = account_id;
+    messages[2] = nIdx.getTranslation(0);
+    messages[3] = size * 2; //save as twice as many doubles
+    messages[4] = nIdx.getScale();
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
+
 // get data with identity id
 int BankAccount::get_data(int id, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
@@ -751,6 +787,23 @@ int BankAccount::get_data(int id, int size, double *data) {
     messages[3] = MIN_SCALE;
     MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#endif
+    return 1;
+}
+
+
+// get data with identity id
+int BankAccount::get_data(int id, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int messages[message_size];
+    messages[0] = GET_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = MIN_SCALE;
+    MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    //fetch as twice as many doubles
+    MPI_Recv(data, size*2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
 #endif
     return 1;
 }
@@ -774,6 +827,26 @@ int BankAccount::get_data(NodeIndex<3> nIdx, int size, double *data) {
     return 1;
 }
 
+// get data with identity id
+int BankAccount::get_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int messages[message_size];
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    messages[0] = GET_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = nIdx.getScale();
+    messages[4] = nIdx.getTranslation(0);
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    //fetch as twice as many doubles
+    MPI_Recv(data, size*2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#endif
+    return 1;
+}
+
 // save data in Bank with identity id as part of block with identity nodeid.
 int BankAccount::put_nodedata(int id, int nodeid, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
@@ -790,8 +863,43 @@ int BankAccount::put_nodedata(int id, int nodeid, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity id as part of block with identity nodeid.
+// NB: Complex is stored as two doubles
+int BankAccount::put_nodedata(int id, int nodeid, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to nodeid
+    int messages[message_size];
+    messages[0] = SAVE_NODEDATA;
+    messages[1] = account_id;
+    messages[2] = nodeid; // which block
+    messages[3] = id;     // id within block
+    messages[4] = 2*size;   // size of this data
+    MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Send(data, 2*size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
 // get data with identity id
 int BankAccount::get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    // get the column with identity id
+    int messages[message_size];
+    messages[0] = GET_NODEDATA;
+    messages[1] = account_id;
+    messages[2] = nodeid; // which block
+    messages[3] = id;     // id within block.
+    messages[4] = size;   // expected size of data
+    MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
+
+// get data with identity id
+int BankAccount::get_nodedata(int id, int nodeid, int size, ComplexDouble *data, std::vector<int> &idVec) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     // get the column with identity id
@@ -827,6 +935,27 @@ int BankAccount::get_nodeblock(int nodeid, double *data, std::vector<int> &idVec
     return 1;
 }
 
+
+// get all data for nodeid (same nodeid, different orbitals)
+int BankAccount::get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int> &idVec) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    // get the entire superblock and also the id of each column
+    int messages[message_size];
+    messages[0] = GET_NODEBLOCK;
+    messages[1] = account_id;
+    messages[2] = nodeid;
+
+    MPI_Send(messages, 3, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(metadata_block, size_metadata, MPI_INT, bankmaster[nodeid % bank_size], 1, comm_bank, &status);
+    idVec.resize(metadata_block[1]);
+    int size = metadata_block[2];
+    if (size > 0) MPI_Recv(idVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
+    if (size > 0) MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
 // get all data with identity orbid (same orbital, different nodes)
 int BankAccount::get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart) {
 #ifdef MRCPP_HAS_MPI
@@ -843,6 +972,28 @@ int BankAccount::get_orbblock(int orbid, double *&data, std::vector<int> &nodeid
     int totsize = metadata_block[2];
     if (totsize > 0) MPI_Recv(nodeidVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
     data = new double[totsize];
+    if (totsize > 0) MPI_Recv(data, totsize, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#endif
+    return 1;
+}
+
+
+// get all data with identity orbid (same orbital, different nodes)
+int BankAccount::get_orbblock(int orbid, ComplexDouble *&data, std::vector<int> &nodeidVec, int bankstart) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int nodeid = wrk_rank + bankstart;
+    // get the entire superblock and also the nodeid of each column
+    int messages[message_size];
+    messages[0] = GET_ORBBLOCK;
+    messages[1] = account_id;
+    messages[2] = orbid;
+    MPI_Send(messages, 3, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
+    MPI_Recv(metadata_block, size_metadata, MPI_INT, bankmaster[nodeid % bank_size], 1, comm_bank, &status);
+    nodeidVec.resize(metadata_block[1]);
+    int totsize = metadata_block[2];
+    if (totsize > 0) MPI_Recv(nodeidVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
+    data = new ComplexDouble[totsize/2];
     if (totsize > 0) MPI_Recv(data, totsize, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
 #endif
     return 1;

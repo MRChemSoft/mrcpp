@@ -169,13 +169,13 @@ ComplexDouble ComplexFunction::integrate() const {
 
 /** @brief Returns the norm of the orbital */
 double ComplexFunction::norm() const {
-    double norm = squaredNorm();
+    double norm = getSquareNorm();
     if (norm > 0.0) norm = std::sqrt(norm);
     return norm;
 }
 
 /** @brief Returns the squared norm of the orbital */
-double ComplexFunction::squaredNorm() const {
+double ComplexFunction::getSquareNorm() const {
     double sq_r = -1.0;
     double sq_i = -1.0;
     if (hasReal()) sq_r = real().getSquareNorm();
@@ -769,7 +769,6 @@ void rotate(MPI_FuncVector &Phi, const ComplexMatrix &U, MPI_FuncVector &Psi, do
     std::vector<std::map<int, int>> orb2node(Neff); // for a given orbital and a given node, gives the node index in the
                                                     // orbital given the node index in the reference tree
     if (serial) {
-
         // make list of all coefficients (coeffVec), and their reference indices (indexVec)
         std::vector<int> parindexVec; // serialIx of the parent nodes
         std::vector<double> scalefac;
@@ -1997,7 +1996,7 @@ void orthogonalize(double prec, MPI_FuncVector &Bra, MPI_FuncVector &Ket) {
     int M = Ket.size();
     DoubleVector Ketnorms = DoubleVector::Zero(M);
     for (int i = 0; i < M; i++) {
-        if (mpi::my_orb(Ket[i])) Ketnorms(i)  = Ket[i].squaredNorm();
+        if (mpi::my_orb(Ket[i])) Ketnorms(i)  = Ket[i].getSquareNorm();
     }
     mrcpp::mpi::allreduce_vector(Ketnorms, mrcpp::mpi::comm_wrk);
     ComplexMatrix rmat =  ComplexMatrix::Zero(M, N);

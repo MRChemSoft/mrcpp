@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ComplexFunction.h"
+#include "CompFunction.h"
 #include "parallel.h"
 #include "trees/NodeIndex.h"
 
@@ -9,7 +9,7 @@ namespace mrcpp {
 using namespace mpi;
 
 struct deposit {
-    ComplexFunction *orb;
+    CompFunction<3> *orb;
     double *data; // for pure data arrays
     bool hasdata;
     int datasize;
@@ -96,17 +96,25 @@ public:
     void clear(int i = wrk_rank, MPI_Comm comm = comm_wrk);
     //    int put_orb(int id, ComplexFunction &orb);
     //    int get_orb(int id, ComplexFunction &orb, int wait = 0);
-    int get_func_del(int id, ComplexFunction &orb);
-    int put_func(int id, ComplexFunction &func);
-    int get_func(int id, ComplexFunction &func, int wait = 0);
+    int get_func_del(int id, CompFunction<3> &orb);
+    int put_func(int id, CompFunction<3> &func);
+    int get_func(int id, CompFunction<3> &func, int wait = 0);
     int put_data(int id, int size, double *data);
+    int put_data(int id, int size, ComplexDouble *data);
     int get_data(int id, int size, double *data);
+    int get_data(int id, int size, ComplexDouble *data);
     int put_data(NodeIndex<3> nIdx, int size, double *data);
+    int put_data(NodeIndex<3> nIdx, int size, ComplexDouble *data);
     int get_data(NodeIndex<3> nIdx, int size, double *data);
+    int get_data(NodeIndex<3> nIdx, int size, ComplexDouble *data);
     int put_nodedata(int id, int nodeid, int size, double *data);
+    int put_nodedata(int id, int nodeid, int size, ComplexDouble *data);
     int get_nodedata(int id, int nodeid, int size, double *data, std::vector<int> &idVec);
+    int get_nodedata(int id, int nodeid, int size, ComplexDouble *data, std::vector<int> &idVec);
     int get_nodeblock(int nodeid, double *data, std::vector<int> &idVec);
+    int get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int> &idVec);
     int get_orbblock(int orbid, double *&data, std::vector<int> &nodeidVec, int bankstart);
+    int get_orbblock(int orbid, ComplexDouble *&data, std::vector<int> &nodeidVec, int bankstart);
 };
 
 class TaskManager {

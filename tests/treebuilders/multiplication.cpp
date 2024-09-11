@@ -202,7 +202,7 @@ template <int D> void testSquare() {
     }
     finalize(&mra);
 }
-
+  
 TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot]") {
     MultiResolutionAnalysis<3> *mra = nullptr;
     initialize<3>(&mra);
@@ -221,14 +221,14 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
         double r2 = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return r[0] * r[1] * std::exp(-2.0 * r2);
     };
-
+    
     FunctionTree<3> fx_tree(*mra);
     FunctionTree<3> fy_tree(*mra);
     FunctionTree<3> fz_tree(*mra);
 
-    project<3>(prec, fx_tree, fx);
-    project<3>(prec, fy_tree, fy);
-    project<3>(prec, fz_tree, fz);
+    project<3, double>(prec, fx_tree, fx);
+    project<3, double>(prec, fy_tree, fy);
+    project<3, double>(prec, fz_tree, fz);
 
     FunctionTreeVector<3> vec_a;
     vec_a.push_back(std::make_tuple(1.0, &fx_tree));
@@ -252,6 +252,6 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     }
 
     finalize(&mra);
-}
+    }
 
 } // namespace multiplication

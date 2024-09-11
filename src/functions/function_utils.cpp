@@ -117,4 +117,5 @@ double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, dou
 template double function_utils::calc_overlap<1>(const GaussFunc<1> &a, const GaussFunc<1> &b);
 template double function_utils::calc_overlap<2>(const GaussFunc<2> &a, const GaussFunc<2> &b);
 template double function_utils::calc_overlap<3>(const GaussFunc<3> &a, const GaussFunc<3> &b);
+
 } // namespace mrcpp

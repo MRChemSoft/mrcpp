@@ -56,7 +56,7 @@ namespace mrcpp {
  *
  */
 
-template <int D> class Plotter {
+template <int D, typename T> class Plotter {
 public:
     explicit Plotter(const Coord<D> &o = {});
     virtual ~Plotter() = default;
@@ -65,10 +65,10 @@ public:
     void setOrigin(const Coord<D> &o);
     void setRange(const Coord<D> &a, const Coord<D> &b = {}, const Coord<D> &c = {});
 
-    void gridPlot(const MWTree<D> &tree, const std::string &fname);
-    void linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D> &func, const std::string &fname);
-    void surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D> &func, const std::string &fname);
-    void cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D> &func, const std::string &fname);
+    void gridPlot(const MWTree<D, T> &tree, const std::string &fname);
+    void linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D, T> &func, const std::string &fname);
+    void surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D, T> &func, const std::string &fname);
+    void cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D, T> &func, const std::string &fname);
 
     enum type { Line, Surface, Cube, Grid };
 
@@ -86,13 +86,13 @@ protected:
     Eigen::MatrixXd calcSurfCoordinates(int pts_a, int pts_b) const;
     Eigen::MatrixXd calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const;
 
-    Eigen::VectorXd evaluateFunction(const RepresentableFunction<D> &func, const Eigen::MatrixXd &coords) const;
+    Eigen::Matrix< T, Eigen::Dynamic, 1 > evaluateFunction(const RepresentableFunction<D, T> &func, const Eigen::MatrixXd &coords) const;
 
-    void writeData(const Eigen::MatrixXd &coords, const Eigen::VectorXd &values);
-    virtual void writeCube(const std::array<int, 3> &npts, const Eigen::VectorXd &values);
+  void writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix< T, Eigen::Dynamic, 1 > &values);
+  virtual void writeCube(const std::array<int, 3> &npts, const Eigen::Matrix< T, Eigen::Dynamic, 1 >  &values);
 
-    void writeGrid(const MWTree<D> &tree);
-    void writeNodeGrid(const MWNode<D> &node, const std::string &color);
+    void writeGrid(const MWTree<D, T> &tree);
+    void writeNodeGrid(const MWNode<D, T> &node, const std::string &color);
 
 private:
     bool verifyRange(int dim) const;

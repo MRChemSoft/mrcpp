@@ -385,7 +385,6 @@ void Bank::open() {
             deposits[ix].source = status.MPI_SOURCE;
             if (message == SAVE_FUNCTION) {
                 recv_function(*deposits[ix].orb, deposits[ix].source, 1, comm_bank);
-                cout<<"recv ORB size "<<deposits[ix].orb->getSizeNodes(NUMBER::Total)<<endl;
                 if (exist_flag == 0) {
                     currentsize[account] += deposits[ix].orb->getSizeNodes(NUMBER::Total);
                     totcurrentsize += deposits[ix].orb->getSizeNodes(NUMBER::Total);
@@ -721,6 +720,23 @@ int BankAccount::put_data(int id, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity id . datasize MUST have been set already. NB:not tested
+int BankAccount::put_data(int id, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to id
+    int messages[message_size];
+
+    messages[0] = SAVE_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = size * 2;//save as twice as many doubles
+    messages[4] = MIN_SCALE; // to indicate that it is defined by id
+    MPI_Send(messages, 5, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
 // save data in Bank with identity nIdx. datasize MUST have been set already. NB:not tested
 int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
@@ -740,6 +756,26 @@ int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
     return 1;
 }
 
+// save data in Bank with identity nIdx. datasize MUST have been set already. NB:not tested
+int BankAccount::put_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    // for now we distribute according to id
+    int messages[message_size];
+    messages[0] = SAVE_DATA;
+    messages[1] = account_id;
+    messages[2] = nIdx.getTranslation(0);
+    messages[3] = size * 2; //save as twice as many doubles
+    messages[4] = nIdx.getScale();
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#endif
+    return 1;
+}
+
+
 // get data with identity id
 int BankAccount::get_data(int id, int size, double *data) {
 #ifdef MRCPP_HAS_MPI
@@ -751,6 +787,23 @@ int BankAccount::get_data(int id, int size, double *data) {
     messages[3] = MIN_SCALE;
     MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#endif
+    return 1;
+}
+
+
+// get data with identity id
+int BankAccount::get_data(int id, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int messages[message_size];
+    messages[0] = GET_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = MIN_SCALE;
+    MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    //fetch as twice as many doubles
+    MPI_Recv(data, size*2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
 #endif
     return 1;
 }
@@ -770,6 +823,26 @@ int BankAccount::get_data(NodeIndex<3> nIdx, int size, double *data) {
     messages[6] = nIdx.getTranslation(2);
     MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#endif
+    return 1;
+}
+
+// get data with identity id
+int BankAccount::get_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Status status;
+    int messages[message_size];
+    int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
+    messages[0] = GET_DATA;
+    messages[1] = account_id;
+    messages[2] = id;
+    messages[3] = nIdx.getScale();
+    messages[4] = nIdx.getTranslation(0);
+    messages[5] = nIdx.getTranslation(1);
+    messages[6] = nIdx.getTranslation(2);
+    MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
+    //fetch as twice as many doubles
+    MPI_Recv(data, size*2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
 #endif
     return 1;
 }

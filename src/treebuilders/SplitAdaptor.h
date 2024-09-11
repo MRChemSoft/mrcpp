@@ -29,16 +29,16 @@
 
 namespace mrcpp {
 
-template <int D> class SplitAdaptor final : public TreeAdaptor<D> {
+template <int D, typename T = double> class SplitAdaptor final : public TreeAdaptor<D, T> {
 public:
     SplitAdaptor(int ms, bool sp)
-            : TreeAdaptor<D>(ms)
+            : TreeAdaptor<D, T>(ms)
             , split(sp) {}
 
 private:
     bool split;
 
-    bool splitNode(const MWNode<D> &node) const override { return this->split; }
+    bool splitNode(const MWNode<D, T> &node) const override { return this->split; }
 };
 
 } // namespace mrcpp

@@ -39,7 +39,7 @@
 namespace mrcpp {
 
 class Timer;
-template <int D> class MWTree;
+template <int D, typename T> class MWTree;
 
 /** @class Printer
  *
@@ -128,7 +128,7 @@ void memory(int level, const std::string &txt);
 void value(int level, const std::string &txt, double v, const std::string &unit = "", int p = -1, bool sci = true);
 void time(int level, const std::string &txt, const Timer &timer);
 void tree(int level, const std::string &txt, int n, int m, double t);
-template <int D> void tree(int level, const std::string &txt, const MWTree<D> &tree, const Timer &timer);
+template <int D, typename T> void tree(int level, const std::string &txt, const MWTree<D, T> &tree, const Timer &timer);
 } // namespace print
 
 // clang-format off

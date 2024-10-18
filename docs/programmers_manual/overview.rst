@@ -27,3 +27,4 @@ TODO: maybe add some low level theory/figures/algorithms before showing classes,
    complex_apply
    HeatOperator
    HeatKernel
+   ConvolutionOperator

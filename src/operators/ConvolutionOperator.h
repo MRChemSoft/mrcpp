@@ -29,6 +29,36 @@
 
 namespace mrcpp {
 
+/** @class ConvolutionOperator
+ *
+ * @brief Convolution defined by a Gaussian expansion
+ * 
+ * @details Represents the operator
+ * \f[
+ * 	    T = \sum_{m=1}^M
+ *  	\text{sign} (\alpha_m) \bigotimes \limits_{d = 1}^D T_d
+ *      \left( \beta_m, \sqrt[D]{| \alpha_m |} \right)
+ *      ,
+ * \f]
+ * where each
+ * \f$ T_d \left( \beta, \alpha \right) \f$
+ * is the convolution operator with one-dimensional Gaussian kernel
+ * \f$ k(x_d) = \alpha \exp \left( - \beta x_d^2 \right) \f$.
+ * Operator
+ * \f$ T \f$
+ * is obtained from the Gaussian expansion
+ * \f[
+ *      \sum_{m=1}^M \alpha_m \exp \left( - \beta_m |x|^2 \right)
+ * \f]
+ * which is passed as a parameter to the first two constructors.
+ *  
+ * @note Every \f$ T_d \left( \beta_m, \sqrt[D]{| \alpha_m |} \right) \f$ is the same
+ * operator associated with the one-dimensional variable \f$ x_d \f$ for \f$ d = 1, \ldots, D \f$.
+ * 
+ * \todo: One may want to change the logic so that \f$ D \f$-root is evaluated on the previous step,
+ * namely, when \f$ \alpha_m, \beta_m \f$ are calculated.
+ * 
+ */
 template <int D> class ConvolutionOperator : public MWOperator<D> {
 public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec);

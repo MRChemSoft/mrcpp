@@ -125,7 +125,7 @@ public:
     virtual void deleteChildren();
     virtual void deleteParent();
 
-    virtual void cvTransform(int kind);
+    virtual void cvTransform(int kind, bool firstchild = false);
     virtual void mwTransform(int kind);
 
     double getNodeNorm(const NodeIndex<D> &idx) const;
@@ -169,6 +169,7 @@ public:
     bool isComplex = false; //TODO put as one of the flags
     friend class FunctionTree<D, double>; // required if a ComplexDouble tree access a double node from another tree!
     friend class FunctionTree<D, ComplexDouble>;
+    int childSerialIx{-1};  ///< index of first child in serial Tree, or -1 for leafnodes/endnodes
 
 protected:
     MWTree<D, T> *tree{nullptr};    ///< Tree the node belongs to
@@ -190,7 +191,6 @@ protected:
 
     int serialIx{-1};       ///< index in serial Tree
     int parentSerialIx{-1}; ///< index of parent in serial Tree, or -1 for roots
-    int childSerialIx{-1};  ///< index of first child in serial Tree, or -1 for leafnodes/endnodes
 
     NodeIndex<D> nodeIndex;     ///< Scale and translation of the node
     HilbertPath<D> hilbertPath; ///< To be documented
@@ -226,7 +226,7 @@ protected:
     bool diffBranch(const MWNode<D , T> &rhs) const;
 
     MWNode<D , T> *retrieveNode(const Coord<D> &r, int depth);
-    MWNode<D , T> *retrieveNode(const NodeIndex<D> &idx);
+    MWNode<D , T> *retrieveNode(const NodeIndex<D> &idx, bool create = false);
     MWNode<D , T> *retrieveParent(const NodeIndex<D> &idx);
 
     const MWNode<D , T> *retrieveNodeNoGen(const NodeIndex<D> &idx) const;
@@ -238,6 +238,7 @@ protected:
     const MWNode<D , T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
     MWNode<D , T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
+    void threadSafeCreateChildren();
     void threadSafeGenChildren();
     void deleteGenerated();
 

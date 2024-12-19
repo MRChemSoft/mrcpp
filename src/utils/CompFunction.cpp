@@ -272,14 +272,18 @@ void CompFunction<D>::alloc_comp(int ialloc) {
 template <int D>
 void CompFunction<D>::free() {
     for (int i = 0; i < Ncomp(); i++) {
-        delete CompD[i];
-        delete CompC[i];
+        std::cout<<" delete "<<i<<std::endl;
+        if(CompD[i] != nullptr) delete CompD[i];
+         std::cout<<" delete C "<<i<<std::endl;
+       if(CompC[i] !=  nullptr) delete CompC[i];
         CompD[i] = nullptr;
         CompC[i] = nullptr;
+        std::cout<<" done delete "<<i<<std::endl;
     }
     if (this->func_ptr->shared_mem_real) this->func_ptr->shared_mem_real->clear();
     if (this->func_ptr->shared_mem_cplx) this->func_ptr->shared_mem_cplx->clear();
     func_ptr->Ncomp = 0;
+    std::cout<<" free done "<<std::endl;
 }
 
 template <int D>

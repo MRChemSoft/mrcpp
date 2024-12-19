@@ -105,7 +105,7 @@ public:
     MWNode<D, T> *findNode(NodeIndex<D> nIdx);
     const MWNode<D, T> *findNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D, T> &getNode(NodeIndex<D> nIdx);
+    MWNode<D, T> &getNode(NodeIndex<D> nIdx, bool create = false);
     MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx);
     const MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 

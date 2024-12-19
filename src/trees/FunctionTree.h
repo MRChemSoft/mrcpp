@@ -72,7 +72,9 @@ public:
     void setEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data);
 
     void saveTree(const std::string &file);
+    void saveTreeTXT(const std::string &file);
     void loadTree(const std::string &file);
+    void loadTreeTXT(const std::string &file);
 
     // In place operations
     void square();

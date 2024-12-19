@@ -107,6 +107,274 @@ template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
     if (this->getNNodes()>0) this->deleteRootNodes();
 }
 
+
+/** @brief Read a previously stusing MADNESS conventions for n, l and index order.ored tree assuming text/ASCII format,
+ *   in a representation
+ * @param[in] file: File name
+ * @note This tree must have the exact same MRA the one that was saved(?)
+ */
+template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::string &file) {
+    std::ifstream in(file);
+    int NDIM, k;
+    in>>NDIM;
+    if (NDIM != D) NOT_IMPLEMENTED_ABORT;
+    double coord[NDIM][2];
+    for (int d = 0; d < NDIM; d++) in >> coord[d][0] >> coord[d][1];
+
+    int p = 1;
+    int rscale = this->getRootScale(); //root scale of target MRA (MRChem) . NB: negative
+    for (int i = rscale; i < 0; i++) p *= 2;
+    int L = p; //NB for now we assume the world as a cube going from -L to +L and L is a power of 2
+    // We require that the world box size is identical and a power of 2
+    double TXT_thres = 1.0e-14; // threshold for differences in scaling factors
+    for (int d = 0; d < NDIM; d++) {
+        if (std::abs(coord[d][0] + L) > TXT_thres) std::cout<<coord[d][0]<<" "<<L<<std::endl;;
+        if (std::abs(coord[d][0] + L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
+        if (std::abs(coord[d][1] - L) > TXT_thres) std::cout<<coord[d][1]<<" "<<L<<std::endl;;
+        if (std::abs(coord[d][1] - L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
+    }
+
+    int nChildren = 1;
+    for (int d=0; d<NDIM; d++) nChildren *= 2;
+
+    int nmax = 0; //deppeset scale in TXT
+    in>>k;
+    if (k != this->getKp1()) NOT_IMPLEMENTED_ABORT;
+    k--; //MRChem defines k as highest polynomial order. MADNESS as number of polynomials
+
+    int ncoefs = 1; // number of coefficents for one single node (not a full MRChem MWnode which stores 2**D of them)
+    for (int i = 0; i < NDIM; i++) ncoefs *= k+1;
+
+    std::vector<std::vector<MWNode<D, T> *>> NodeTable(50); // to store all the nodes pointers
+    std::map<int,int> mp; // to store the number of children stored in each parent node
+    // MRChem and MADNESS do not use the same indices order for the qudrature points
+    // We read MADNESS convention (note that mapMRC[mapMRC[i]]=i for all i)
+    std::vector<int> mapMRC; // mapping vector
+    int kx = k;
+    int ky = k;
+    int kz = k;
+    if (D < 3) kz = 0;
+    if (D < 2) ky = 0;
+    int kp1 = k + 1;
+    // MADNESS: zyx and i=k,k-1,k-2... MRChem: xyz, i=0,1,2,3 ...
+    for (int x = kx; x >= 0; x--){
+        for (int y = ky; y >= 0; y--){
+            for (int z = kz; z >= 0; z--){
+                mapMRC.push_back(z*kp1*kp1 + y*kp1 + x);
+            }
+        }
+    }
+
+    MWNode<D, T> **roots = this->getRootBox().getNodes();
+    for (int rIdx = 0; rIdx < nChildren; rIdx++) {
+        roots[rIdx]->deleteChildren();
+        roots[rIdx]->zeroCoefs();
+    }
+    this->clearEndNodeTable();
+
+    int nread; // number of nodes to read
+    in>>nread;
+    while (nread-- > 0) {
+        // NB: MRChem stores quadrature points values in the PARENT node. 2**D nodes are stored in the same parent
+        int n; // TXT scale
+        int n_in; // MRChem scale
+        in >> n_in;
+        n = n_in + rscale - 1; //MRChem does not define root scale as zero.
+
+        std::array<int, D> l_in; // translation index TXT
+        std::array<int, D> l; // translation index MRChem
+        std::array<int, D> lp; // translation index MRChem, parent
+
+        for (int i = 0; i < NDIM; i++) in >> l_in[i];
+
+        //MRChem defines smallest l as -(2**n)*L , where -L is smallest world coordinate.
+        //note that root scale has 2**D nodes (if range is -L,L)
+        for (int i=0; i<NDIM; i++) {
+            l[i] = l_in[i] - std::pow(2,n)*L;
+            lp[i] = l_in[i]/2 - std::pow(2,n-1)*L; //for parent
+        }
+        NodeIndex<D> idx_p(n-1, lp); // index of parent node
+        MWNode<D, T> *node = &this->getNode(idx_p, true);
+        // note that node is not necesssarily an endnode, but they children are always endnodes
+        // must find to which child of the parent node it corresponds
+        int c_ix = 0; // child index in the parent
+        int p = 1;
+        for (int i = 0; i < NDIM; i++) {
+            if (abs(l[i])%2 == 1)c_ix += p;
+            p *= 2;
+        }
+        T *values = node->getCoefs();
+        if(mp[node->getSerialIx()]==0){
+            //init to zero
+            node->zeroCoefs();
+            if (not node->isRootNode()) {
+                //also set siblings to zero if not set yet
+                MWNode<D, T> *parent = &node->getMWParent();
+                for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+                    if (mp[parent->getMWChild(cIdx).getSerialIx()] == 0) parent->getMWChild(cIdx).zeroCoefs();
+                }
+            }
+        }
+        values += c_ix * ncoefs; //repoint to the right child position (ncoefs is for one child only)
+        for (int i = 0; i < ncoefs; i++) in >> values[mapMRC[i]]; // the indice i is mapped
+        mp[node->getSerialIx()]++; //counts the number of children included
+        nmax = std::max(nmax, n_in); //deepest scale in TXT
+        if (mp[node->getSerialIx()] == 1) NodeTable[n_in].push_back(node);
+    }
+    in.close();
+    // transform all nodes from quadrature point values to scaling coefficients
+    for (int n = nmax; n > -1; n--) {
+        for (int i = 0; i < NodeTable[n].size(); i++){
+            MWNode<D, T> *node = NodeTable[n][i];
+            node->cvTransform(Backward);
+            node->calcNorms();
+        }
+    }
+    // now tree has only scaling coefficients or zeros on end nodes
+
+    // Transform into scaling and wavelets, starting by leaf nodes and copying scaling into parents
+    for (int n = nmax; n > -1; n--) {
+        for (int i = 0; i < NodeTable[n].size(); i++){
+            MWNode<D, T> *node = NodeTable[n][i];
+            if (mp[node->getSerialIx()] == nChildren ){
+                //node complete: transform into scaling and wavelets
+                if (node->isEndNode()){
+                    node->mwTransform(Compression);
+                    node->setHasCoefs();
+                    node->calcNorms();
+                    this->endNodeTable.push_back(node);
+                } else {
+                    // MRCPP requires that all nodes that have no children are end nodes
+                    // and all nodes are groups of 2**D siblings
+                    T* pcoefs = node->getCoefs(); // parent coefficients
+                    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+                        MWNode<D, T> *cnode = &node->getMWChild(cIdx);
+                        if (mp[cnode->getSerialIx()] != nChildren) {
+                            // This child is not defined. must take scaling from parent
+                            if (mp[cnode->getSerialIx()] > 0) std::cout<<"accounting error "<<std::endl;
+                            T* ccoefs = cnode->getCoefs(); // child coefficients
+                            for (int j = 0; j< ncoefs; j++)  ccoefs[j] = pcoefs[j + cIdx*ncoefs];
+                            for (int j = ncoefs; j< ncoefs*nChildren; j++)  ccoefs[j] = 0.0; // the remainder are set to zero
+                            this->endNodeTable.push_back(cnode); // add to the list of nodes
+                            cnode->setHasCoefs();
+                            cnode->calcNorms();
+                        }
+                    }
+                    node->mwTransform(Compression);
+                    node->setHasCoefs();
+                    node->calcNorms();
+                }
+                if ( not node->isRootNode() ) {
+                    // and copy the new scaling parts into parent
+                    MWNode<D, T> *parent = &node->getMWParent();
+                    // check if parent exist already, and put in the list if not.
+                    if (mp[parent->getSerialIx()] == 0) NodeTable[n-1].push_back(parent);
+                    int my_ix=-1;
+                    // find index among siblings
+                    for (int cIdx = 0; cIdx < nChildren; cIdx++) {
+                        if (&parent->getMWChild(cIdx) == node) my_ix = cIdx;
+                    }
+                    if(my_ix < 0)std::cout<<" DID NOT FIND INDEX"<<std::endl;
+                    T *ccoefs = node->getCoefs();
+                    T *pcoefs = parent->getCoefs();
+                    for (int j = 0; j< ncoefs; j++)  pcoefs[j+my_ix*ncoefs] = ccoefs[j];
+                    mp[parent->getSerialIx()]++;
+                }
+            } else {
+                std::cout<<" WARNING: found incomplete node "<<std::endl;
+            }
+        }
+    }
+    this->calcSquareNorm();
+}
+
+/** @brief Write the tree to disk in text/ASCII format in a representation
+ *   using MADNESS conventions for n, l and index order.
+ * @param[in] file: File name
+ */
+template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::string &fname) {
+    int nRoots = this->getRootBox().size();
+    MWNode<D, T> **roots = this->getRootBox().getNodes();
+
+    std::ofstream out(fname);
+    out << std::setprecision(14);
+    out << D <<std::endl;
+    int rscale = this->getRootScale();
+    std::array<double, D> sf = this->getMRA().getWorldBox().getScalingFactors();
+    double LMRChem = 1.0;
+    for (int i=0; i>rscale; i--) LMRChem *= 2; // we assume world is from -L to L, and a cube with 2 root nodes in each direction
+    for (int d=0; d<D; d++) {
+        out <<- sf[d]*LMRChem <<" "<< sf[d]*LMRChem << std::endl;
+    }
+    int kp1 = this->getKp1();
+    out << kp1 <<std::endl;
+    int ncoefs = 1;
+    for (int d = 0; d < D; d++) ncoefs*=kp1;
+    int Tdim = std::pow(2,D);
+
+    int nout = this->endNodeTable.size();
+    out << Tdim*nout <<std::endl; // could output only scaling coeff?
+
+    // MRChem and MADNESS do not use the same indices order for the qudrature points
+    // We write into MADNESS convention (note that mapMRC[mapMRC[i]]=i for all i)
+    std::vector<int> mapMRC; // mapping vector
+    int kx = kp1 - 1;
+    int ky = kp1 - 1;
+    int kz = kp1 - 1;
+    if (D < 3) kz = 0;
+    if (D < 2) ky = 0;
+    // MADNESS: zyx and i=k,k-1,k-2... MRChem: xyz, i=0,1,2,3 ...
+    for (int x = kx; x >= 0; x--){
+        for (int y = ky; y >= 0; y--){
+            for (int z = kz; z >= 0; z--){
+                mapMRC.push_back(z*kp1*kp1 + y*kp1 + x);
+            }
+        }
+    }
+
+    int L = std::pow(2,-rscale);
+    int count = -1;
+    while (++count<nout) {
+        std::array<int, D> l;
+        NodeIndex<D> idx=this->endNodeTable[count]->getNodeIndex();
+        MWNode<D, T> *node = &(this->getNode(idx, false));
+        T *values = node->getCoefs();
+         int n = idx.getScale();
+         if(node->getSerialIx()==56 or (n==1 and idx.getTranslation(0)==0  and idx.getTranslation(1)==0  and idx.getTranslation(2)==0  )){
+             std::cout<<idx<<" "<<node->getSerialIx()<<" "<<node->getSquareNorm()<<" "<<node->getComponentNorm(0)<<std::endl;
+         }
+        node->mwTransform(Reconstruction);
+        node->cvTransform(Forward);
+        // we write for each children nodes separately
+        for (int i = 0; i < D; i++) {
+            // l in interval [0, max], while in MRCPP it is defined in [-max/2, max/2-1]
+            l[i] = 2 * (idx.getTranslation(i) + std::pow(2,n)*L); //first child
+        }
+        for (int cix = 0; cix < Tdim; cix++) {
+            out<< n-rscale+2 <<" ";// scales start at zero. NB: children are one scale larger than node
+            for (int i = 0; i < D; i++){
+                int p = (cix>>i) & 1; // shift by one for odd child indices
+                out << l[i] + p << " ";
+            }
+            out << std::endl;
+            for (int i=0; i< ncoefs; i++) out<< values[cix*ncoefs + mapMRC[i]]<<" ";
+            out << std::endl;
+            if(node->getSerialIx()==56 or (n==1 and idx.getTranslation(0)==0  and idx.getTranslation(1)==0  and idx.getTranslation(2)==0 )){
+            std::cout<< n-rscale+2 <<" ";// scales start at zero. NB: children are one scale larger than node
+            for (int i = 0; i < D; i++){
+                int p = (cix>>i) & 1; // shift by one for odd child indices
+                std::cout << l[i] + p << " ";
+            }
+            std::cout << std::endl;
+            T norm=0.0;
+             for (int i=0; i< ncoefs; i++) norm+=values[cix*ncoefs + i]*values[cix*ncoefs + i];
+             std::cout<<" norm quadrature "<<norm<<" "<<values[cix*ncoefs]<<std::endl;
+         }
+        }
+    }
+    out.close();
+
+}
 /** @brief Write the tree structure to disk, for later use
  * @param[in] file: File name, will get ".tree" extension
  */
@@ -117,7 +385,6 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
 
     std::stringstream fname;
     fname << file << ".tree";
-
     std::fstream f;
     f.open(fname.str(), std::ios::out | std::ios::binary);
     if (not f.is_open()) MSG_ERROR("Unable to open file");
@@ -125,6 +392,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
     // Write size of tree
     int nChunks = allocator.getNChunksUsed();
     f.write((char *)&nChunks, sizeof(int));
+    std::cout<<"saving. tree norm "<<this->getSquareNorm()<<", number of nodes "<<this->getNNodes()<<", Nchunks "<<nChunks<<" "<<nChunks*allocator.getCoefChunkSize()/1024<<"kB"<<std::endl;
 
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
@@ -132,6 +400,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
         f.write((char *)allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
+    this->saveTreeTXT("MRC.dat");
     print::time(10, "Time write", t1);
 }
 
@@ -141,6 +410,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
  */
 template <int D, typename T> void FunctionTree<D, T>::loadTree(const std::string &file) {
     Timer t1;
+
     std::stringstream fname;
     fname << file << ".tree";
 
@@ -166,6 +436,8 @@ template <int D, typename T> void FunctionTree<D, T>::loadTree(const std::string
     Timer t2;
     allocator.reassemble();
     this->resetEndNodeTable();
+    this->calcSquareNorm(true);
+    std::cout<<"Loaded. tree norm "<<this->getSquareNorm()<<" number of nodes "<<this->getNNodes()<<" N chunks"<<nChunks<<" "<<nChunks*allocator.getCoefChunkSize()/1024<<"kB"<<std::endl;
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -287,7 +559,8 @@ template <int D, typename T> T FunctionTree<D, T>::evalf_precise(const Coord<D> 
 
     MWNode<D, T> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<FunctionNode<D, T> &>(mw_node);
-    auto result = f_node.evalf(arg);
+    std::cout<<f_node.getNodeIndex()<<" "<<f_node.getSerialIx()<<" "<<f_node.getSquareNorm()<<" "<<f_node.isEndNode()<<" "<<f_node.getComponentNorm(0)<<" "<<f_node.getComponentNorm(1)<<" "<<f_node.getComponentNorm(2)<<" "<<f_node.getComponentNorm(3)<<" "<<f_node.getComponentNorm(4)<<" "<<f_node.getComponentNorm(5)<<" "<<f_node.getComponentNorm(6)<<" "<<f_node.getComponentNorm(7)<<std::endl;
+   auto result = f_node.evalf(arg);
     this->deleteGenerated();
 
     // Adjust for scaling factor included in basis

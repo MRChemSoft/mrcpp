@@ -113,7 +113,6 @@ template <int D, typename T> T * NodeAllocator<D, T>::getCoefNoLock(int sIdx) {
 template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coefs) {
     MRCPP_SET_OMP_LOCK();
     if (nNodes <= 0 or nNodes > this->maxNodesPerChunk) MSG_ABORT("Cannot allocate " << nNodes << " nodes");
-
     // move topstack to start of next chunk if current chunk is too small
     int cIdx = this->topStack % (this->maxNodesPerChunk);
     bool chunkOverflow = ((cIdx + nNodes) > this->maxNodesPerChunk);
@@ -126,6 +125,10 @@ template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coe
 
     // return value is index of first new node
     auto sIdx = this->topStack;
+
+    // we require that the index for first child is a multiple of 2**D
+    // so that we can find the sibling rank using rank=sIdx%(2**D)
+    if (sIdx%nNodes != 0) MSG_ERROR(" node allocate error");
 
     // fill stack status
     auto &status = this->stackStatus;
@@ -145,7 +148,7 @@ template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coe
 
 template <int D, typename T> void NodeAllocator<D, T>::dealloc(int sIdx) {
     MRCPP_SET_OMP_LOCK();
-    if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
+   if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
     auto *node_p = getNodeNoLock(sIdx);
     node_p->~MWNode();
     this->stackStatus[sIdx] = 0; // mark as available

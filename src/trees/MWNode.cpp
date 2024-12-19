@@ -403,7 +403,7 @@ MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
     }
 }
 
-/** @brief Generates scaling cofficients of children
+/** @brief Generates scaling coefficients of children
  *
  * @details If the node is a leafNode, it takes the scaling&wavelet
  * coefficients of the parent and it generates the scaling
@@ -421,6 +421,25 @@ MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
     MRCPP_UNSET_OMP_LOCK();
 }
 
+
+/** @brief Creates scaling coefficients of children
+ *
+ * @details If the node is a leafNode, it takes the scaling&wavelet
+ * coefficients of the parent and it generates the scaling
+ * coefficients for the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation. The new node is permanently added to the tree.
+ */
+  template <int D, typename T> void MWNode<D, T>::threadSafeCreateChildren() {
+    if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }
+    MRCPP_SET_OMP_LOCK();
+    if (isLeafNode()) {
+        createChildren(true);
+        giveChildrenCoefs();
+    }
+    MRCPP_UNSET_OMP_LOCK();
+}
+
 /** @brief Coefficient-Value transform
  *
  * @details This routine transforms the scaling coefficients of the node to the
@@ -431,7 +450,7 @@ MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
  * NOTE: this routine assumes a 0/1 (scaling on child 0 and 1)
  *       representation, instead of s/d (scaling and wavelet).
  */
-  template <int D, typename T> void MWNode<D, T>::cvTransform(int operation) {
+    template <int D, typename T> void MWNode<D, T>::cvTransform(int operation, bool firstchild) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     int kp1_d = this->getKp1_d();
@@ -443,8 +462,10 @@ MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
     T *out_vec = o_vec;
     T *in_vec = this->coefs;
 
+    int nChildren = this->getTDim();
+    if (firstchild) nChildren = 1;
     for (int i = 0; i < D; i++) {
-        for (int t = 0; t < this->getTDim(); t++) {
+        for (int t = 0; t < nChildren ; t++) {
             T *out = out_vec + t * kp1_d;
             T *in = in_vec + t * kp1_d;
             math_utils::apply_filter(out, in, S, kp1, kp1_dm1, 0.0);
@@ -881,7 +902,7 @@ void MWNode<D, T>::cvTransform(int operation) {
 
 /** @brief Returns the quadrature points in a given node
  *
- * @param[in,out] pts: expanded quadrature points in a \f$ d \times 
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times
  * 2^d(k+1)^d \f$ matrix form.
  *
  * @details The primitive quadrature points of the children are used to obtain a
@@ -1081,8 +1102,9 @@ void MWNode<D, T>::cvTransform(int operation) {
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
  * node is in fact descending from this node.
+ * If create = true, the nodes are permanently added to the tree.
  */
-  template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNode(const NodeIndex<D> &idx) {
+    template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNode(const NodeIndex<D> &idx, bool create) {
     if (getScale() == idx.getScale()) { // we're done
         if (tree->isLocal) {
 	   NOT_IMPLEMENTED_ABORT;
@@ -1097,10 +1119,14 @@ void MWNode<D, T>::cvTransform(int operation) {
     }
 
     assert(isAncestor(idx));
-    threadSafeGenChildren();
+    if  (create) {
+        threadSafeCreateChildren();
+    } else {
+        threadSafeGenChildren();
+    }
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);
-    return this->children[cIdx]->retrieveNode(idx);
+    return this->children[cIdx]->retrieveNode(idx, create);
 }
 
 /** Node retriever that ALWAYS returns the requested node.

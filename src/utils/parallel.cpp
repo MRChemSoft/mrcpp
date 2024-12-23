@@ -219,7 +219,7 @@ void initialize() {
 
         if (is_bank) nthreads = 1; // 3)
 
-        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<omp_get_num_procs()<<" maxthreads"<<omp_get_max_threads()<<" "<<" threads"<<omp_get_num_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<" my_OMP_NUM_THREADS "<<my_OMP_NUM_THREADS<<endl;
+        //        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<omp_get_num_procs()<<" maxthreads"<<omp_get_max_threads()<<" "<<" threads"<<omp_get_num_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<" my_OMP_NUM_THREADS "<<my_OMP_NUM_THREADS<<endl;
 
         if (omp_threads > 0) {
             if (omp_threads != nthreads and world_rank == 0) {

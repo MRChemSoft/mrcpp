@@ -118,8 +118,8 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     int NDIM, k;
     in>>NDIM;
     if (NDIM != D) NOT_IMPLEMENTED_ABORT;
-    double coord[NDIM][2];
-    for (int d = 0; d < NDIM; d++) in >> coord[d][0] >> coord[d][1];
+    double coord[D][2];
+    for (int d = 0; d < D; d++) in >> coord[d][0] >> coord[d][1];
 
     int p = 1;
     int rscale = this->getRootScale(); //root scale of target MRA (MRChem) . NB: negative
@@ -127,7 +127,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     int L = p; //NB for now we assume the world as a cube going from -L to +L and L is a power of 2
     // We require that the world box size is identical and a power of 2
     double TXT_thres = 1.0e-14; // threshold for differences in scaling factors
-    for (int d = 0; d < NDIM; d++) {
+    for (int d = 0; d < D; d++) {
         if (std::abs(coord[d][0] + L) > TXT_thres) std::cout<<coord[d][0]<<" "<<L<<std::endl;;
         if (std::abs(coord[d][0] + L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
         if (std::abs(coord[d][1] - L) > TXT_thres) std::cout<<coord[d][1]<<" "<<L<<std::endl;;
@@ -135,7 +135,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     }
 
     int nChildren = 1;
-    for (int d=0; d<NDIM; d++) nChildren *= 2;
+    for (int d=0; d<D; d++) nChildren *= 2;
 
     int nmax = 0; //deppeset scale in TXT
     in>>k;
@@ -143,7 +143,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     k--; //MRChem defines k as highest polynomial order. MADNESS as number of polynomials
 
     int ncoefs = 1; // number of coefficents for one single node (not a full MRChem MWnode which stores 2**D of them)
-    for (int i = 0; i < NDIM; i++) ncoefs *= k+1;
+    for (int i = 0; i < D; i++) ncoefs *= k+1;
 
     std::vector<std::vector<MWNode<D, T> *>> NodeTable(50); // to store all the nodes pointers
     std::map<int,int> mp; // to store the number of children stored in each parent node
@@ -185,11 +185,11 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
         std::array<int, D> l; // translation index MRChem
         std::array<int, D> lp; // translation index MRChem, parent
 
-        for (int i = 0; i < NDIM; i++) in >> l_in[i];
+        for (int i = 0; i < D; i++) in >> l_in[i];
 
         //MRChem defines smallest l as -(2**n)*L , where -L is smallest world coordinate.
         //note that root scale has 2**D nodes (if range is -L,L)
-        for (int i=0; i<NDIM; i++) {
+        for (int i=0; i<D; i++) {
             l[i] = l_in[i] - std::pow(2,n)*L;
             lp[i] = l_in[i]/2 - std::pow(2,n-1)*L; //for parent
         }
@@ -199,7 +199,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
         // must find to which child of the parent node it corresponds
         int c_ix = 0; // child index in the parent
         int p = 1;
-        for (int i = 0; i < NDIM; i++) {
+        for (int i = 0; i < D; i++) {
             if (abs(l[i])%2 == 1)c_ix += p;
             p *= 2;
         }
@@ -339,10 +339,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
         NodeIndex<D> idx=this->endNodeTable[count]->getNodeIndex();
         MWNode<D, T> *node = &(this->getNode(idx, false));
         T *values = node->getCoefs();
-         int n = idx.getScale();
-         if(node->getSerialIx()==56 or (n==1 and idx.getTranslation(0)==0  and idx.getTranslation(1)==0  and idx.getTranslation(2)==0  )){
-             std::cout<<idx<<" "<<node->getSerialIx()<<" "<<node->getSquareNorm()<<" "<<node->getComponentNorm(0)<<std::endl;
-         }
+        int n = idx.getScale();
         node->mwTransform(Reconstruction);
         node->cvTransform(Forward);
         // we write for each children nodes separately
@@ -359,17 +356,6 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
             out << std::endl;
             for (int i=0; i< ncoefs; i++) out<< values[cix*ncoefs + mapMRC[i]]<<" ";
             out << std::endl;
-            if(node->getSerialIx()==56 or (n==1 and idx.getTranslation(0)==0  and idx.getTranslation(1)==0  and idx.getTranslation(2)==0 )){
-            std::cout<< n-rscale+2 <<" ";// scales start at zero. NB: children are one scale larger than node
-            for (int i = 0; i < D; i++){
-                int p = (cix>>i) & 1; // shift by one for odd child indices
-                std::cout << l[i] + p << " ";
-            }
-            std::cout << std::endl;
-            T norm=0.0;
-             for (int i=0; i< ncoefs; i++) norm+=values[cix*ncoefs + i]*values[cix*ncoefs + i];
-             std::cout<<" norm quadrature "<<norm<<" "<<values[cix*ncoefs]<<std::endl;
-         }
         }
     }
     out.close();
@@ -392,7 +378,6 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
     // Write size of tree
     int nChunks = allocator.getNChunksUsed();
     f.write((char *)&nChunks, sizeof(int));
-    std::cout<<"saving. tree norm "<<this->getSquareNorm()<<", number of nodes "<<this->getNNodes()<<", Nchunks "<<nChunks<<" "<<nChunks*allocator.getCoefChunkSize()/1024<<"kB"<<std::endl;
 
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
@@ -437,7 +422,6 @@ template <int D, typename T> void FunctionTree<D, T>::loadTree(const std::string
     allocator.reassemble();
     this->resetEndNodeTable();
     this->calcSquareNorm(true);
-    std::cout<<"Loaded. tree norm "<<this->getSquareNorm()<<" number of nodes "<<this->getNNodes()<<" N chunks"<<nChunks<<" "<<nChunks*allocator.getCoefChunkSize()/1024<<"kB"<<std::endl;
     print::time(10, "Time rewrite pointers", t2);
 }
 
@@ -559,8 +543,7 @@ template <int D, typename T> T FunctionTree<D, T>::evalf_precise(const Coord<D> 
 
     MWNode<D, T> &mw_node = this->getNodeOrEndNode(arg);
     auto &f_node = static_cast<FunctionNode<D, T> &>(mw_node);
-    std::cout<<f_node.getNodeIndex()<<" "<<f_node.getSerialIx()<<" "<<f_node.getSquareNorm()<<" "<<f_node.isEndNode()<<" "<<f_node.getComponentNorm(0)<<" "<<f_node.getComponentNorm(1)<<" "<<f_node.getComponentNorm(2)<<" "<<f_node.getComponentNorm(3)<<" "<<f_node.getComponentNorm(4)<<" "<<f_node.getComponentNorm(5)<<" "<<f_node.getComponentNorm(6)<<" "<<f_node.getComponentNorm(7)<<std::endl;
-   auto result = f_node.evalf(arg);
+    auto result = f_node.evalf(arg);
     this->deleteGenerated();
 
     // Adjust for scaling factor included in basis

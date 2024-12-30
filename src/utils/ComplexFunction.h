@@ -44,7 +44,7 @@ struct FunctionData {
     int imag_size{0};
     bool is_shared{false};
     int spin{0};
-    int occ{0};
+    double occ{0};
 };
 
 class TreePtr final {
@@ -112,14 +112,14 @@ class ComplexFunction {
 public:
     ComplexFunction(std::shared_ptr<TreePtr> funcptr);
     ComplexFunction(const ComplexFunction &func);
-    ComplexFunction(int spin = 0, int occ = -1, int rank = -1, bool share = false);
+    ComplexFunction(int spin = 0, double occ = -1, int rank = -1, bool share = false);
     ComplexFunction &operator=(const ComplexFunction &func);
     ComplexFunction paramCopy() const;
     bool isShared() const { return this->func_ptr->func_data.is_shared; }
     bool hasReal() const { return (this->func_ptr->re == nullptr) ? false : true; }
     bool hasImag() const { return (this->func_ptr->im == nullptr) ? false : true; }
     FunctionData &getFunctionData();
-    int occ() const { return this->func_ptr->func_data.occ; }
+    double occ() const { return this->func_ptr->func_data.occ; }
     int spin() const { return this->func_ptr->func_data.spin; }
     FunctionTree<3, double> &real() { return *this->func_ptr->re; }
     FunctionTree<3, double> &imag() { return *this->func_ptr->im; }
@@ -130,7 +130,7 @@ public:
     MultiResolutionAnalysis<3> *funcMRA = nullptr;
     int getRank() const { return rank; }
     void setRank(int rank) { (*this).rank = rank; }
-    void setOcc(int occ) { this->getFunctionData().occ = occ; }
+    void setOcc(double occ) { this->getFunctionData().occ = occ; }
     void setSpin(int spin) { this->getFunctionData().spin = spin; }
     ComplexFunction dagger();
     virtual ~ComplexFunction() = default;

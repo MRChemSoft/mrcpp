@@ -86,7 +86,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
     for (int i = 0; i < kernel.size(); i++) {
         // Rescale Gaussian for D-dim application
         auto *k_func = kernel.getFunc(i).copy();
-        k_func->setCoef(std::pow(k_func->getCoef(), 1.0/D));
+        k_func->setCoef( std::copysign( std::pow(std::abs(k_func->getCoef()), 1.0/D), k_func->getCoef() ) );
 
         FunctionTree<1> k_tree(k_mra);
         mrcpp::build_grid(k_tree, *k_func);    // Generate empty grid to hold narrow Gaussian

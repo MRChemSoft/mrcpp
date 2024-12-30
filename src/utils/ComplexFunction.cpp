@@ -43,7 +43,7 @@ ComplexFunction &ComplexFunction::operator=(const ComplexFunction &func) {
  *
  * Initializes the mrcpp::ComplexFunction with NULL pointers for both real and imaginary part.
  */
-ComplexFunction::ComplexFunction(int spin, int occ, int rank, bool share)
+ComplexFunction::ComplexFunction(int spin, double occ, int rank, bool share)
         : funcMRA(defaultMRA)
         , func_ptr(std::make_shared<TreePtr>(share))
         , rank(rank) {

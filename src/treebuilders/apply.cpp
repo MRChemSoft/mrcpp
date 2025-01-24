@@ -38,6 +38,7 @@
 #include "trees/FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include <optional>
 
 namespace mrcpp {
 
@@ -117,16 +118,6 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
  */
 template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
 
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -260,16 +251,7 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
 
 template <int D, typename T>
 void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
+
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -312,16 +294,7 @@ template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T
 }
 
 template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
+
     for (int icomp = 0; icomp < 4; icomp++) {
         if (inp.Comp[icomp] != nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
@@ -366,16 +339,7 @@ template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, 
 }
 
 template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
+
     for (int icomp = 0; icomp < 4; icomp++) {
         if (inp.Comp[icomp] != nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
@@ -446,16 +410,7 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
     // TODO: sums and not only each components independently
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
+
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -508,16 +463,7 @@ template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperato
 
 std::vector<CompFunction<3> *> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble metric[4][4]) {
     std::vector<CompFunction<3> *> out;
-    ComplexDouble defaultMetric[4][4];
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (i == j)
-                defaultMetric[i][j] = 1.0;
-            else
-                defaultMetric[i][j] = 0.0;
-        }
-    }
-    if (metric == nullptr) { metric = defaultMetric; }
+
     for (int d = 0; d < 3; d++) {
         CompFunction<3> *grad_d = new CompFunction<3>();
         for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {

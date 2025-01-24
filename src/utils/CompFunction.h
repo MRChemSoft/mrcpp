@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mpi_utils.h"
-#include "trees/FunctionTree.h"
+#include "trees/FunctionTreeVector.h"
 
 using namespace Eigen;
 

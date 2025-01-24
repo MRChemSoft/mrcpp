@@ -49,7 +49,7 @@ namespace mrcpp {
  *   t > 0
  *   .
  * \f]
- * 
+ *
  */
 template <int D> class HeatKernel final : public GaussExp<1> {
 public:

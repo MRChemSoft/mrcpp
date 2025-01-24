@@ -29,7 +29,8 @@
 
 namespace mrcpp {
 
-template <int D, typename T> TreeIterator<D, T>::TreeIterator(int traverse, int iterator)
+template <int D, typename T>
+TreeIterator<D, T>::TreeIterator(int traverse, int iterator)
         : root(0)
         , nRoots(0)
         , mode(traverse)
@@ -38,7 +39,8 @@ template <int D, typename T> TreeIterator<D, T>::TreeIterator(int traverse, int 
         , state(nullptr)
         , initialState(nullptr) {}
 
-template <int D, typename T> TreeIterator<D, T>::TreeIterator(MWTree<D, T> &tree, int traverse, int iterator)
+template <int D, typename T>
+TreeIterator<D, T>::TreeIterator(MWTree<D, T> &tree, int traverse, int iterator)
         : root(0)
         , nRoots(0)
         , mode(traverse)
@@ -53,7 +55,7 @@ template <int D, typename T> TreeIterator<D, T>::~TreeIterator() {
     if (this->initialState != nullptr) delete this->initialState;
 }
 
-  template<int D, typename T> int TreeIterator<D, T>::getChildIndex(int i) const {
+template <int D, typename T> int TreeIterator<D, T>::getChildIndex(int i) const {
     const MWNode<D, T> &node = *this->state->node;
     const HilbertPath<D> &h = node.getHilbertPath();
     // Legesgue type returns i, Hilbert type returns Hilbert index

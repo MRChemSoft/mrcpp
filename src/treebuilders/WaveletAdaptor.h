@@ -31,18 +31,16 @@
 
 namespace mrcpp {
 
-  template <int D, typename T> class WaveletAdaptor : public TreeAdaptor<D, T> {
+template <int D, typename T> class WaveletAdaptor : public TreeAdaptor<D, T> {
 public:
     WaveletAdaptor(double pr, int ms, bool ap = false, double sf = 1.0)
-      : TreeAdaptor<D, T>(ms)
+            : TreeAdaptor<D, T>(ms)
             , absPrec(ap)
             , prec(pr)
             , splitFac(sf) {}
     ~WaveletAdaptor() override = default;
 
-    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) {
-        this->precFunc = prec_func;
-    }
+    void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) { this->precFunc = prec_func; }
 
 protected:
     bool absPrec;

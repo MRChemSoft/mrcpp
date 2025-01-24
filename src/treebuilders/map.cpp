@@ -65,8 +65,7 @@ namespace mrcpp {
  * no coefs).
  *
  */
-template <int D>
-void map(double prec, FunctionTree<D, double> &out, FunctionTree<D, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec) {
+template <int D> void map(double prec, FunctionTree<D, double> &out, FunctionTree<D, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec) {
 
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, double> builder;

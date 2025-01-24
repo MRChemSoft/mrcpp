@@ -40,7 +40,7 @@
 
 namespace mrcpp {
 
-    template <int D> class Gaussian : public RepresentableFunction<D, double> {
+template <int D> class Gaussian : public RepresentableFunction<D, double> {
 public:
     Gaussian(double a, double c, const Coord<D> &r, const std::array<int, D> &p);
     Gaussian(const std::array<double, D> &a, double c, const Coord<D> &r, const std::array<int, D> &p);

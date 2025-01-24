@@ -41,7 +41,7 @@ bool grand_master();
 bool share_master();
 
 bool my_func(int j);
-bool my_func(const CompFunction<3>& func);
+bool my_func(const CompFunction<3> &func);
 bool my_func(CompFunction<3> *func);
 
 // bool my_unique_orb(const Orbital &orb);

@@ -45,7 +45,7 @@ namespace mrcpp {
 /** Construct polynomial of order zero with given size and bounds.
  * Includes default constructor. */
 Polynomial::Polynomial(int k, const double *a, const double *b)
-  : RepresentableFunction<1, double>(a, b) {
+        : RepresentableFunction<1, double>(a, b) {
     assert(k >= 0);
     this->N = 1.0;
     this->L = 0.0;
@@ -88,8 +88,8 @@ Polynomial &Polynomial::operator=(const Polynomial &poly) {
 /** Evaluate scaled and translated polynomial */
 double Polynomial::evalf(double x) const {
     if (isBounded()) {
-        if (x < this->getScaledLowerBound() ) return 0.0;
-        if (x > this->getScaledUpperBound() ) return 0.0;
+        if (x < this->getScaledLowerBound()) return 0.0;
+        if (x > this->getScaledUpperBound()) return 0.0;
     }
     double xp = 1.0;
     double y = 0.0;
@@ -146,12 +146,8 @@ Polynomial &Polynomial::operator*=(double c) {
 /** Calculate P = P*Q */
 Polynomial &Polynomial::operator*=(const Polynomial &Q) {
     Polynomial &P = *this;
-    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) {
-        MSG_ERROR("Polynomials not defined on same scale.");
-    }
-    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
-        MSG_ERROR("Polynomials not defined on same translation.");
-    }
+    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same scale."); }
+    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same translation."); }
 
     int P_order = P.getOrder();
     int Q_order = Q.getOrder();
@@ -197,12 +193,8 @@ Polynomial &Polynomial::operator-=(const Polynomial &Q) {
 /** Calculate P = P + c*Q. */
 void Polynomial::addInPlace(double c, const Polynomial &Q) {
     Polynomial &P = *this;
-    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) {
-        MSG_ERROR("Polynomials not defined on same scale.");
-    }
-    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) {
-        MSG_ERROR("Polynomials not defined on same translation.");
-    }
+    if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same scale."); }
+    if (std::abs(P.getTranslation() - Q.getTranslation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same translation."); }
 
     int P_order = P.getOrder();
     int Q_order = Q.getOrder();

@@ -30,13 +30,13 @@
 #include "FunctionNode.h"
 #include "NodeAllocator.h"
 
+#include "treebuilders/grid.h"
 #include "utils/Bank.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/mpi_utils.h"
 #include "utils/periodic_utils.h"
 #include "utils/tree_utils.h"
-#include "treebuilders/grid.h"
 
 using namespace Eigen;
 
@@ -104,9 +104,8 @@ template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
 
 // FunctionTree destructor
 template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
-    if (this->getNNodes()>0) this->deleteRootNodes();
+    if (this->getNNodes() > 0) this->deleteRootNodes();
 }
-
 
 /** @brief Read a previously stusing MADNESS conventions for n, l and index order.ored tree assuming text/ASCII format,
  *   in a representation
@@ -116,37 +115,39 @@ template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
 template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::string &file) {
     std::ifstream in(file);
     int NDIM, k;
-    in>>NDIM;
+    in >> NDIM;
     if (NDIM != D) NOT_IMPLEMENTED_ABORT;
     double coord[D][2];
     for (int d = 0; d < D; d++) in >> coord[d][0] >> coord[d][1];
 
     int p = 1;
-    int rscale = this->getRootScale(); //root scale of target MRA (MRChem) . NB: negative
+    int rscale = this->getRootScale(); // root scale of target MRA (MRChem) . NB: negative
     for (int i = rscale; i < 0; i++) p *= 2;
-    int L = p; //NB for now we assume the world as a cube going from -L to +L and L is a power of 2
+    int L = p; // NB for now we assume the world as a cube going from -L to +L and L is a power of 2
     // We require that the world box size is identical and a power of 2
     double TXT_thres = 1.0e-14; // threshold for differences in scaling factors
     for (int d = 0; d < D; d++) {
-        if (std::abs(coord[d][0] + L) > TXT_thres) std::cout<<coord[d][0]<<" "<<L<<std::endl;;
+        if (std::abs(coord[d][0] + L) > TXT_thres) std::cout << coord[d][0] << " " << L << std::endl;
+        ;
         if (std::abs(coord[d][0] + L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
-        if (std::abs(coord[d][1] - L) > TXT_thres) std::cout<<coord[d][1]<<" "<<L<<std::endl;;
+        if (std::abs(coord[d][1] - L) > TXT_thres) std::cout << coord[d][1] << " " << L << std::endl;
+        ;
         if (std::abs(coord[d][1] - L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
     }
 
     int nChildren = 1;
-    for (int d=0; d<D; d++) nChildren *= 2;
+    for (int d = 0; d < D; d++) nChildren *= 2;
 
-    int nmax = 0; //deppeset scale in TXT
-    in>>k;
+    int nmax = 0; // deppeset scale in TXT
+    in >> k;
     if (k != this->getKp1()) NOT_IMPLEMENTED_ABORT;
-    k--; //MRChem defines k as highest polynomial order. MADNESS as number of polynomials
+    k--; // MRChem defines k as highest polynomial order. MADNESS as number of polynomials
 
     int ncoefs = 1; // number of coefficents for one single node (not a full MRChem MWnode which stores 2**D of them)
-    for (int i = 0; i < D; i++) ncoefs *= k+1;
+    for (int i = 0; i < D; i++) ncoefs *= k + 1;
 
     std::vector<std::vector<MWNode<D, T> *>> NodeTable(50); // to store all the nodes pointers
-    std::map<int,int> mp; // to store the number of children stored in each parent node
+    std::map<int, int> mp;                                  // to store the number of children stored in each parent node
     // MRChem and MADNESS do not use the same indices order for the qudrature points
     // We read MADNESS convention (note that mapMRC[mapMRC[i]]=i for all i)
     std::vector<int> mapMRC; // mapping vector
@@ -157,11 +158,9 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     if (D < 2) ky = 0;
     int kp1 = k + 1;
     // MADNESS: zyx and i=k,k-1,k-2... MRChem: xyz, i=0,1,2,3 ...
-    for (int x = kx; x >= 0; x--){
-        for (int y = ky; y >= 0; y--){
-            for (int z = kz; z >= 0; z--){
-                mapMRC.push_back(z*kp1*kp1 + y*kp1 + x);
-            }
+    for (int x = kx; x >= 0; x--) {
+        for (int y = ky; y >= 0; y--) {
+            for (int z = kz; z >= 0; z--) { mapMRC.push_back(z * kp1 * kp1 + y * kp1 + x); }
         }
     }
 
@@ -173,58 +172,58 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     this->clearEndNodeTable();
 
     int nread; // number of nodes to read
-    in>>nread;
+    in >> nread;
     while (nread-- > 0) {
         // NB: MRChem stores quadrature points values in the PARENT node. 2**D nodes are stored in the same parent
-        int n; // TXT scale
+        int n;    // TXT scale
         int n_in; // MRChem scale
         in >> n_in;
-        n = n_in + rscale - 1; //MRChem does not define root scale as zero.
+        n = n_in + rscale - 1; // MRChem does not define root scale as zero.
 
         std::array<int, D> l_in; // translation index TXT
-        std::array<int, D> l; // translation index MRChem
-        std::array<int, D> lp; // translation index MRChem, parent
+        std::array<int, D> l;    // translation index MRChem
+        std::array<int, D> lp;   // translation index MRChem, parent
 
         for (int i = 0; i < D; i++) in >> l_in[i];
 
-        //MRChem defines smallest l as -(2**n)*L , where -L is smallest world coordinate.
-        //note that root scale has 2**D nodes (if range is -L,L)
-        for (int i=0; i<D; i++) {
-            l[i] = l_in[i] - std::pow(2,n)*L;
-            lp[i] = l_in[i]/2 - std::pow(2,n-1)*L; //for parent
+        // MRChem defines smallest l as -(2**n)*L , where -L is smallest world coordinate.
+        // note that root scale has 2**D nodes (if range is -L,L)
+        for (int i = 0; i < D; i++) {
+            l[i] = l_in[i] - std::pow(2, n) * L;
+            lp[i] = l_in[i] / 2 - std::pow(2, n - 1) * L; // for parent
         }
-        NodeIndex<D> idx_p(n-1, lp); // index of parent node
+        NodeIndex<D> idx_p(n - 1, lp); // index of parent node
         MWNode<D, T> *node = &this->getNode(idx_p, true);
         // note that node is not necesssarily an endnode, but they children are always endnodes
         // must find to which child of the parent node it corresponds
         int c_ix = 0; // child index in the parent
         int p = 1;
         for (int i = 0; i < D; i++) {
-            if (abs(l[i])%2 == 1)c_ix += p;
+            if (abs(l[i]) % 2 == 1) c_ix += p;
             p *= 2;
         }
         T *values = node->getCoefs();
-        if(mp[node->getSerialIx()]==0){
-            //init to zero
+        if (mp[node->getSerialIx()] == 0) {
+            // init to zero
             node->zeroCoefs();
             if (not node->isRootNode()) {
-                //also set siblings to zero if not set yet
+                // also set siblings to zero if not set yet
                 MWNode<D, T> *parent = &node->getMWParent();
                 for (int cIdx = 0; cIdx < nChildren; cIdx++) {
                     if (mp[parent->getMWChild(cIdx).getSerialIx()] == 0) parent->getMWChild(cIdx).zeroCoefs();
                 }
             }
         }
-        values += c_ix * ncoefs; //repoint to the right child position (ncoefs is for one child only)
+        values += c_ix * ncoefs;                                  // repoint to the right child position (ncoefs is for one child only)
         for (int i = 0; i < ncoefs; i++) in >> values[mapMRC[i]]; // the indice i is mapped
-        mp[node->getSerialIx()]++; //counts the number of children included
-        nmax = std::max(nmax, n_in); //deepest scale in TXT
+        mp[node->getSerialIx()]++;                                // counts the number of children included
+        nmax = std::max(nmax, n_in);                              // deepest scale in TXT
         if (mp[node->getSerialIx()] == 1) NodeTable[n_in].push_back(node);
     }
     in.close();
     // transform all nodes from quadrature point values to scaling coefficients
     for (int n = nmax; n > -1; n--) {
-        for (int i = 0; i < NodeTable[n].size(); i++){
+        for (int i = 0; i < NodeTable[n].size(); i++) {
             MWNode<D, T> *node = NodeTable[n][i];
             node->cvTransform(Backward);
             node->calcNorms();
@@ -234,11 +233,11 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
 
     // Transform into scaling and wavelets, starting by leaf nodes and copying scaling into parents
     for (int n = nmax; n > -1; n--) {
-        for (int i = 0; i < NodeTable[n].size(); i++){
+        for (int i = 0; i < NodeTable[n].size(); i++) {
             MWNode<D, T> *node = NodeTable[n][i];
-            if (mp[node->getSerialIx()] == nChildren ){
-                //node complete: transform into scaling and wavelets
-                if (node->isEndNode()){
+            if (mp[node->getSerialIx()] == nChildren) {
+                // node complete: transform into scaling and wavelets
+                if (node->isEndNode()) {
                     node->mwTransform(Compression);
                     node->setHasCoefs();
                     node->calcNorms();
@@ -246,16 +245,16 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
                 } else {
                     // MRCPP requires that all nodes that have no children are end nodes
                     // and all nodes are groups of 2**D siblings
-                    T* pcoefs = node->getCoefs(); // parent coefficients
+                    T *pcoefs = node->getCoefs(); // parent coefficients
                     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
                         MWNode<D, T> *cnode = &node->getMWChild(cIdx);
                         if (mp[cnode->getSerialIx()] != nChildren) {
                             // This child is not defined. must take scaling from parent
-                            if (mp[cnode->getSerialIx()] > 0) std::cout<<"accounting error "<<std::endl;
-                            T* ccoefs = cnode->getCoefs(); // child coefficients
-                            for (int j = 0; j< ncoefs; j++)  ccoefs[j] = pcoefs[j + cIdx*ncoefs];
-                            for (int j = ncoefs; j< ncoefs*nChildren; j++)  ccoefs[j] = 0.0; // the remainder are set to zero
-                            this->endNodeTable.push_back(cnode); // add to the list of nodes
+                            if (mp[cnode->getSerialIx()] > 0) std::cout << "accounting error " << std::endl;
+                            T *ccoefs = cnode->getCoefs(); // child coefficients
+                            for (int j = 0; j < ncoefs; j++) ccoefs[j] = pcoefs[j + cIdx * ncoefs];
+                            for (int j = ncoefs; j < ncoefs * nChildren; j++) ccoefs[j] = 0.0; // the remainder are set to zero
+                            this->endNodeTable.push_back(cnode);                               // add to the list of nodes
                             cnode->setHasCoefs();
                             cnode->calcNorms();
                         }
@@ -264,24 +263,24 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
                     node->setHasCoefs();
                     node->calcNorms();
                 }
-                if ( not node->isRootNode() ) {
+                if (not node->isRootNode()) {
                     // and copy the new scaling parts into parent
                     MWNode<D, T> *parent = &node->getMWParent();
                     // check if parent exist already, and put in the list if not.
-                    if (mp[parent->getSerialIx()] == 0) NodeTable[n-1].push_back(parent);
-                    int my_ix=-1;
+                    if (mp[parent->getSerialIx()] == 0) NodeTable[n - 1].push_back(parent);
+                    int my_ix = -1;
                     // find index among siblings
                     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
                         if (&parent->getMWChild(cIdx) == node) my_ix = cIdx;
                     }
-                    if(my_ix < 0)std::cout<<" DID NOT FIND INDEX"<<std::endl;
+                    if (my_ix < 0) std::cout << " DID NOT FIND INDEX" << std::endl;
                     T *ccoefs = node->getCoefs();
                     T *pcoefs = parent->getCoefs();
-                    for (int j = 0; j< ncoefs; j++)  pcoefs[j+my_ix*ncoefs] = ccoefs[j];
+                    for (int j = 0; j < ncoefs; j++) pcoefs[j + my_ix * ncoefs] = ccoefs[j];
                     mp[parent->getSerialIx()]++;
                 }
             } else {
-                std::cout<<" WARNING: found incomplete node "<<std::endl;
+                std::cout << " WARNING: found incomplete node " << std::endl;
             }
         }
     }
@@ -298,22 +297,20 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
 
     std::ofstream out(fname);
     out << std::setprecision(14);
-    out << D <<std::endl;
+    out << D << std::endl;
     int rscale = this->getRootScale();
     std::array<double, D> sf = this->getMRA().getWorldBox().getScalingFactors();
     double LMRChem = 1.0;
-    for (int i=0; i>rscale; i--) LMRChem *= 2; // we assume world is from -L to L, and a cube with 2 root nodes in each direction
-    for (int d=0; d<D; d++) {
-        out <<- sf[d]*LMRChem <<" "<< sf[d]*LMRChem << std::endl;
-    }
+    for (int i = 0; i > rscale; i--) LMRChem *= 2; // we assume world is from -L to L, and a cube with 2 root nodes in each direction
+    for (int d = 0; d < D; d++) { out << -sf[d] * LMRChem << " " << sf[d] * LMRChem << std::endl; }
     int kp1 = this->getKp1();
-    out << kp1 <<std::endl;
+    out << kp1 << std::endl;
     int ncoefs = 1;
-    for (int d = 0; d < D; d++) ncoefs*=kp1;
-    int Tdim = std::pow(2,D);
+    for (int d = 0; d < D; d++) ncoefs *= kp1;
+    int Tdim = std::pow(2, D);
 
     int nout = this->endNodeTable.size();
-    out << Tdim*nout <<std::endl; // could output only scaling coeff?
+    out << Tdim * nout << std::endl; // could output only scaling coeff?
 
     // MRChem and MADNESS do not use the same indices order for the qudrature points
     // We write into MADNESS convention (note that mapMRC[mapMRC[i]]=i for all i)
@@ -324,19 +321,17 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
     if (D < 3) kz = 0;
     if (D < 2) ky = 0;
     // MADNESS: zyx and i=k,k-1,k-2... MRChem: xyz, i=0,1,2,3 ...
-    for (int x = kx; x >= 0; x--){
-        for (int y = ky; y >= 0; y--){
-            for (int z = kz; z >= 0; z--){
-                mapMRC.push_back(z*kp1*kp1 + y*kp1 + x);
-            }
+    for (int x = kx; x >= 0; x--) {
+        for (int y = ky; y >= 0; y--) {
+            for (int z = kz; z >= 0; z--) { mapMRC.push_back(z * kp1 * kp1 + y * kp1 + x); }
         }
     }
 
-    int L = std::pow(2,-rscale);
+    int L = std::pow(2, -rscale);
     int count = -1;
-    while (++count<nout) {
+    while (++count < nout) {
         std::array<int, D> l;
-        NodeIndex<D> idx=this->endNodeTable[count]->getNodeIndex();
+        NodeIndex<D> idx = this->endNodeTable[count]->getNodeIndex();
         MWNode<D, T> *node = &(this->getNode(idx, false));
         T *values = node->getCoefs();
         int n = idx.getScale();
@@ -345,21 +340,20 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
         // we write for each children nodes separately
         for (int i = 0; i < D; i++) {
             // l in interval [0, max], while in MRCPP it is defined in [-max/2, max/2-1]
-            l[i] = 2 * (idx.getTranslation(i) + std::pow(2,n)*L); //first child
+            l[i] = 2 * (idx.getTranslation(i) + std::pow(2, n) * L); // first child
         }
         for (int cix = 0; cix < Tdim; cix++) {
-            out<< n-rscale+2 <<" ";// scales start at zero. NB: children are one scale larger than node
-            for (int i = 0; i < D; i++){
-                int p = (cix>>i) & 1; // shift by one for odd child indices
+            out << n - rscale + 2 << " "; // scales start at zero. NB: children are one scale larger than node
+            for (int i = 0; i < D; i++) {
+                int p = (cix >> i) & 1; // shift by one for odd child indices
                 out << l[i] + p << " ";
             }
             out << std::endl;
-            for (int i=0; i< ncoefs; i++) out<< values[cix*ncoefs + mapMRC[i]]<<" ";
+            for (int i = 0; i < ncoefs; i++) out << values[cix * ncoefs + mapMRC[i]] << " ";
             out << std::endl;
         }
     }
     out.close();
-
 }
 /** @brief Write the tree structure to disk, for later use
  * @param[in] file: File name, will get ".tree" extension
@@ -444,11 +438,10 @@ template <int D, typename T> T FunctionTree<D, T>::integrate() const {
     return jacobian * result;
 }
 
-
 /** @returns Integral of a representable function over the grid given by the tree */
-  template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunction_M &f) {
-    //traverse tree, and treat end nodes only
-    std::vector<FunctionNode<3> *> stack;   // node from this
+template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunction_M &f) {
+    // traverse tree, and treat end nodes only
+    std::vector<FunctionNode<3> *> stack; // node from this
     for (int i = 0; i < this->getRootBox().size(); i++) stack.push_back(&(this->getRootFuncNode(i)));
     int basis = getMRA().getScalingBasis().getScalingType();
     double result = 0.0;
@@ -458,13 +451,13 @@ template <int D, typename T> T FunctionTree<D, T>::integrate() const {
         if (Node->getNChildren() > 0) {
             for (int i = 0; i < Node->getNChildren(); i++) stack.push_back(&(Node->getFuncChild(i)));
         } else {
-            //end nodes
+            // end nodes
             Eigen::MatrixXd fmat = f.evalf(Node->nodeIndex);
             double *coefs = Node->getCoefs(); // save position of coeff, but do not use them!
             // The data in fmat is not organized so that two consecutive points are stored after each other in memory, so needs to copy before mwtransform, cannot use memory adress directly.
-            int nc=fmat.cols();
+            int nc = fmat.cols();
             double cc[nc];
-            for (int i = 0; i < nc; i++)cc[i]=fmat(0,i);
+            for (int i = 0; i < nc; i++) cc[i] = fmat(0, i);
             Node->attachCoefs(cc);
             result += Node->integrateValues();
             Node->attachCoefs(coefs); // put back original coeff
@@ -717,7 +710,7 @@ template <int D, typename T> void FunctionTree<D, T>::add_inplace(T c, FunctionT
  * function, i.e. no further grid refinement.
  *
  */
-template <int D, typename T> void FunctionTree<D, T>::absadd (T c, FunctionTree<D, T> &inp) {
+template <int D, typename T> void FunctionTree<D, T>::absadd(T c, FunctionTree<D, T> &inp) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
     {
@@ -807,7 +800,7 @@ template <int D, typename T> void FunctionTree<D, T>::map(FMap<T, T> fmap) {
     this->calcSquareNorm();
 }
 
-template <int D, typename T> void FunctionTree<D, T>::getEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data) {
+template <int D, typename T> void FunctionTree<D, T>::getEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim() * this->getKp1_d();
@@ -823,7 +816,7 @@ template <int D, typename T> void FunctionTree<D, T>::getEndValues(Eigen::Matrix
     }
 }
 
-template <int D, typename T> void FunctionTree<D, T>::setEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data) {
+template <int D, typename T> void FunctionTree<D, T>::setEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     int nNodes = this->getNEndNodes();
     int nCoefs = this->getTDim() * this->getKp1_d();
@@ -877,20 +870,20 @@ template <int D, typename T> int FunctionTree<D, T>::crop(double prec, double sp
  * Set index -1 for nodes that are not present in refTree */
 template <int D, typename T>
 void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
-                                      std::vector<int> &indices,
-                                      std::vector<int> &parent_indices,
-                                      std::vector<double> &scalefac,
-                                      int &max_index,
-                                      MWTree<D, double> &refTree,
-                                      std::vector<MWNode<D, double> *> *refNodes) {
+                                         std::vector<int> &indices,
+                                         std::vector<int> &parent_indices,
+                                         std::vector<double> &scalefac,
+                                         int &max_index,
+                                         MWTree<D, double> &refTree,
+                                         std::vector<MWNode<D, double> *> *refNodes) {
     coefs.clear();
     indices.clear();
     parent_indices.clear();
     max_index = 0;
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
-    std::vector<MWNode<D, double> *> refstack;  // nodes from refTree
-    std::vector<MWNode<D, T> *> thisstack; // nodes from this Tree
+    std::vector<MWNode<D, double> *> refstack; // nodes from refTree
+    std::vector<MWNode<D, T> *> thisstack;     // nodes from this Tree
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
         refstack.push_back(refTree.getRootBox().getNodes()[rIdx]);
         thisstack.push_back(this->getRootBox().getNodes()[rIdx]);
@@ -1009,8 +1002,8 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
  *  Note that we do not use coefficients, so it does not matter what is real or complex
  */
 template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D, double> &inTree) {
-    std::vector<MWNode<D, double> *> instack;   // node from inTree
-    std::vector<MWNode<D, T> *> thisstack; // node from this Tree
+    std::vector<MWNode<D, double> *> instack; // node from inTree
+    std::vector<MWNode<D, T> *> thisstack;    // node from this Tree
     this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < inTree.getRootBox().size(); rIdx++) {
         instack.push_back(inTree.getRootBox().getNodes()[rIdx]);
@@ -1046,11 +1039,10 @@ template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D
     }
 }
 
-
 /** Traverse tree using DFS and append same nodes as another tree, without coefficients */
 template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D, ComplexDouble> &inTree) {
-    std::vector<MWNode<D, ComplexDouble> *> instack;   // node from inTree
-    std::vector<MWNode<D, T> *> thisstack; // node from this Tree
+    std::vector<MWNode<D, ComplexDouble> *> instack; // node from inTree
+    std::vector<MWNode<D, T> *> thisstack;           // node from this Tree
     this->clearEndNodeTable();
     for (int rIdx = 0; rIdx < inTree.getRootBox().size(); rIdx++) {
         instack.push_back(inTree.getRootBox().getNodes()[rIdx]);
@@ -1085,7 +1077,6 @@ template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D
         }
     }
 }
-
 
 template <int D, typename T> void FunctionTree<D, T>::deleteGenerated() {
     for (int n = 0; n < this->getNEndNodes(); n++) this->getEndMWNode(n).deleteGenerated();
@@ -1123,7 +1114,7 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
     int stack_p = 0;
     if (mpi::wrk_rank == 0) {
         int sizecoeff = (1 << 3) * this->getKp1_d();
-        sizecoeff *= 2; // double->ComplexDouble. Saved as twice as many doubles
+        sizecoeff *= 2;                                // double->ComplexDouble. Saved as twice as many doubles
         std::vector<MWNode<3, ComplexDouble> *> stack; // nodes from this Tree
         for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
         while (stack.size() > stack_p) {
@@ -1144,15 +1135,15 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
  *
  * @details Exact copy without any binding between old and new tree
  */
-template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out){
+template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out) {
     copy_grid(*out, *this);
     copy_func(*out, *this);
 }
 
 /**  @brief New tree with only real part
  */
-template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real(){
-    FunctionTree<D, double> *out = new FunctionTree<D, double> (this->getMRA(), this->getName());
+template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real() {
+    FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
 #pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
@@ -1173,8 +1164,8 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real()
 
 /**  @brief New tree with only imaginary part
  */
-template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag(){
-    FunctionTree<D, double> *out = new FunctionTree<D, double> (this->getMRA(), this->getName());
+template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag() {
+    FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
 #pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
@@ -1193,34 +1184,34 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
     return out;
 }
 
-    /*
+/*
 template<>
 void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree) {
-    //void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree, FunctionTree<3, double>* inTree) {
-    FunctionTree<3, double>* inTree = this;
-    delete outTree;
-    outTree = new FunctionTree<3, ComplexDouble> (inTree->getMRA());
-    int nChunks=inTree->getNChunks();
-    outTree->getNodeAllocator().init(nChunks, true); //also allocate coefficients
-    int Ncoefperchunk = outTree->getNodeAllocator().getCoefChunkSize()/sizeof(ComplexDouble);
-    // real and complex trees have the same Ncoefperchunk.
-    for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        MWNode<3, double> * inNode = inTree->getNodeAllocator().getNodeChunk(iChunk);
-        MWNode<3, ComplexDouble> * outNode = outTree->getNodeAllocator().getNodeChunk(iChunk);
-        //outTree->getNodeAllocator().getNodeChunk(iChunk) = inTree->getNodeAllocator().getNodeChunk(iChunk);
-        int nNodes = std::min(inTree->getNNodes(), inTree->getNodeAllocator().getMaxNodesPerChunk());
-        for (int i = 0; i < nNodes; i++) {
-            outNode[i] = *reinterpret_cast<MWNode<3, std::complex<double>>*>(&inNode[i]); // could be improved
-        }
-        ComplexDouble* Ccoefs;
-        int ncoefs = nNodes * inTree->getNodeAllocator().getNCoefs();
-        Ccoefs = outTree->getNodeAllocator().getCoefChunk(iChunk);
-        auto InCoefs = inTree->getNodeAllocator().getCoefChunk(iChunk);
-        for (int i = 0; i < ncoefs; i++) {
-            Ccoefs[i] = InCoefs[i];
-        }
+//void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree, FunctionTree<3, double>* inTree) {
+FunctionTree<3, double>* inTree = this;
+delete outTree;
+outTree = new FunctionTree<3, ComplexDouble> (inTree->getMRA());
+int nChunks=inTree->getNChunks();
+outTree->getNodeAllocator().init(nChunks, true); //also allocate coefficients
+int Ncoefperchunk = outTree->getNodeAllocator().getCoefChunkSize()/sizeof(ComplexDouble);
+// real and complex trees have the same Ncoefperchunk.
+for (int iChunk = 0; iChunk < nChunks; iChunk++) {
+    MWNode<3, double> * inNode = inTree->getNodeAllocator().getNodeChunk(iChunk);
+    MWNode<3, ComplexDouble> * outNode = outTree->getNodeAllocator().getNodeChunk(iChunk);
+    //outTree->getNodeAllocator().getNodeChunk(iChunk) = inTree->getNodeAllocator().getNodeChunk(iChunk);
+    int nNodes = std::min(inTree->getNNodes(), inTree->getNodeAllocator().getMaxNodesPerChunk());
+    for (int i = 0; i < nNodes; i++) {
+        outNode[i] = *reinterpret_cast<MWNode<3, std::complex<double>>*>(&inNode[i]); // could be improved
     }
-    outTree->getNodeAllocator().reassemble();
+    ComplexDouble* Ccoefs;
+    int ncoefs = nNodes * inTree->getNodeAllocator().getNCoefs();
+    Ccoefs = outTree->getNodeAllocator().getCoefChunk(iChunk);
+    auto InCoefs = inTree->getNodeAllocator().getCoefChunk(iChunk);
+    for (int i = 0; i < ncoefs; i++) {
+        Ccoefs[i] = InCoefs[i];
+    }
+}
+outTree->getNodeAllocator().reassemble();
 }*/
 
 /*
@@ -1228,12 +1219,11 @@ void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* 
  * Should use a deep_copy if generalized in the future.
  */
 
-template<>
-void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree) {
+template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref=0.0;
-    outTree = new FunctionTree<3, ComplexDouble> (this->getMRA());
-    std::vector<MWNode<3, double> *> instack;   // node from this
+    double ref = 0.0;
+    outTree = new FunctionTree<3, ComplexDouble>(this->getMRA());
+    std::vector<MWNode<3, double> *> instack;         // node from this
     std::vector<MWNode<3, ComplexDouble> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
@@ -1249,8 +1239,8 @@ void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* 
         MWNode<3, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
-        double* incoefs = inNode->getCoefs();
-        ComplexDouble* outcoefs = outNode->getCoefs();
+        double *incoefs = inNode->getCoefs();
+        ComplexDouble *outcoefs = outNode->getCoefs();
         for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
         outNode->setHasCoefs();
         outNode->calcNorms();
@@ -1269,11 +1259,11 @@ void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* 
     outTree->calcSquareNorm(true);
 }
 
-template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, ComplexDouble>* &outTree) {
+template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref=0.0;
-    outTree = new FunctionTree<2, ComplexDouble> (this->getMRA());
-    std::vector<MWNode<2, double> *> instack;   // node from this
+    double ref = 0.0;
+    outTree = new FunctionTree<2, ComplexDouble>(this->getMRA());
+    std::vector<MWNode<2, double> *> instack;         // node from this
     std::vector<MWNode<2, ComplexDouble> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
@@ -1289,8 +1279,8 @@ template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, Comp
         MWNode<2, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
-        double* incoefs = inNode->getCoefs();
-        ComplexDouble* outcoefs = outNode->getCoefs();
+        double *incoefs = inNode->getCoefs();
+        ComplexDouble *outcoefs = outNode->getCoefs();
         for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
         outNode->setHasCoefs();
         outNode->calcNorms();
@@ -1309,11 +1299,11 @@ template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, Comp
     outTree->calcSquareNorm(true);
 }
 
-template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, ComplexDouble>* &outTree) {
+template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref=0.0;
-    outTree = new FunctionTree<1, ComplexDouble> (this->getMRA());
-    std::vector<MWNode<1, double> *> instack;   // node from this
+    double ref = 0.0;
+    outTree = new FunctionTree<1, ComplexDouble>(this->getMRA());
+    std::vector<MWNode<1, double> *> instack;         // node from this
     std::vector<MWNode<1, ComplexDouble> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
@@ -1329,8 +1319,8 @@ template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, Comp
         MWNode<1, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
-        double* incoefs = inNode->getCoefs();
-        ComplexDouble* outcoefs = outNode->getCoefs();
+        double *incoefs = inNode->getCoefs();
+        ComplexDouble *outcoefs = outNode->getCoefs();
         for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
         outNode->setHasCoefs();
         outNode->calcNorms();
@@ -1350,13 +1340,12 @@ template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, Comp
 }
 
 // for testing
-template<>
-void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>* &outTree) {
+template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double> *&outTree) {
     delete outTree;
-    double ref=0.0;
+    double ref = 0.0;
     // FunctionTree<3, double>* inTree = this;
-    outTree = new FunctionTree<3, double> (this->getMRA());
-    std::vector<MWNode<3, double> *> instack;   // node from this
+    outTree = new FunctionTree<3, double>(this->getMRA());
+    std::vector<MWNode<3, double> *> instack;  // node from this
     std::vector<MWNode<3, double> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
@@ -1372,8 +1361,8 @@ void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>* &outTree) 
         MWNode<3, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
-        double* incoefs = inNode->getCoefs();
-        double* outcoefs = outNode->getCoefs();
+        double *incoefs = inNode->getCoefs();
+        double *outcoefs = outNode->getCoefs();
         for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
         outNode->setHasCoefs();
         outNode->calcNorms();

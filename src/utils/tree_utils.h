@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "utils/math_utils.h"
 #include "MRCPP/mrcpp_declarations.h"
+#include "utils/math_utils.h"
 
 namespace mrcpp {
 namespace tree_utils {
@@ -37,9 +37,8 @@ template <int D, typename T> void make_node_table(MWTree<D, T> &tree, MWNodeVect
 template <int D, typename T> void make_node_table(MWTree<D, T> &tree, std::vector<MWNodeVector<D, T>> &table);
 
 template <int D, typename T> void mw_transform(const MWTree<D, T> &tree, T *coeff_in, T *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
-//template <int D, typename T> void mw_transform_back(MWTree<D, T> &tree, T *coeff_in, T *coeff_out, int stride);
+// template <int D, typename T> void mw_transform_back(MWTree<D, T> &tree, T *coeff_in, T *coeff_out, int stride);
 template <typename T> void mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride);
-
 
 } // namespace tree_utils
 } // namespace mrcpp

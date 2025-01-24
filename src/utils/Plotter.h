@@ -86,10 +86,10 @@ protected:
     Eigen::MatrixXd calcSurfCoordinates(int pts_a, int pts_b) const;
     Eigen::MatrixXd calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const;
 
-    Eigen::Matrix< T, Eigen::Dynamic, 1 > evaluateFunction(const RepresentableFunction<D, T> &func, const Eigen::MatrixXd &coords) const;
+    Eigen::Matrix<T, Eigen::Dynamic, 1> evaluateFunction(const RepresentableFunction<D, T> &func, const Eigen::MatrixXd &coords) const;
 
-  void writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix< T, Eigen::Dynamic, 1 > &values);
-  virtual void writeCube(const std::array<int, 3> &npts, const Eigen::Matrix< T, Eigen::Dynamic, 1 >  &values);
+    void writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values);
+    virtual void writeCube(const std::array<int, 3> &npts, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values);
 
     void writeGrid(const MWTree<D, T> &tree);
     void writeNodeGrid(const MWNode<D, T> &node, const std::string &color);

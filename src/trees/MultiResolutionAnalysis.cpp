@@ -106,7 +106,8 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const MultiResolutionAnalysi
  * @param[in] sb: Polynomial basis (MW) as a ScalingBasis object
  * @param[in] depth: Maximum allowed resolution depth, relative to root scale
  *
- *  @details Creates a MRA object from pre-existing BoundingBox and ScalingBasis objects. These objects are taken as reference. For more details about the constructor itself, see the first constructor.
+ *  @details Creates a MRA object from pre-existing BoundingBox and ScalingBasis objects. These objects are taken as reference. For more details about the constructor itself, see the first
+ * constructor.
  */
 template <int D>
 MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth)
@@ -124,9 +125,9 @@ MultiResolutionAnalysis<D>::MultiResolutionAnalysis(const BoundingBox<D> &bb, co
  *
  * @param[in] mra: MRA object, taken by constant reference
  *
- *  @details Equality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis object) and maximum depth (integer), and false otherwise.
- *  Computations on different MRA cannot be combined, this operator can be used to make sure that the multiple MRAs are compatible.
- *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
+ *  @details Equality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis
+ * object) and maximum depth (integer), and false otherwise. Computations on different MRA cannot be combined, this operator can be used to make sure that the multiple MRAs are compatible. For more
+ * information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
  */
 template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResolutionAnalysis<D> &mra) const {
     if (this->basis != mra.basis) return false;
@@ -141,14 +142,17 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
  *
  * @param[in] mra: MRA object, taken by constant reference
  *
- *  @details Inequality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis object) and maximum depth (integer), and false otherwise.
- *  Opposite of the == operator.
- *  For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their respective classes.
+ *  @details Inequality operator for the MultiResolutionAnalysis class, returns true if both MRAs have the same polynomial basis represented by a BoundingBox object, computational domain (ScalingBasis
+ * object) and maximum depth (integer), and false otherwise. Opposite of the == operator. For more information about the meaning of equality for BoundingBox and ScalingBasis objets, see their
+ * respective classes.
  */
 template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
-    if (this->basis != mra.basis) std::cout<<"diff basis "<<this->basis<<std::endl <<"and  "<< mra.basis<<std::endl;
+    if (this->basis != mra.basis) std::cout << "diff basis " << this->basis << std::endl << "and  " << mra.basis << std::endl;
     if (this->basis != mra.basis) return true;
-    if (this->world != mra.world) std::cout<<"diff world "<<this->world<<std::endl <<"and  " <<" "<< mra.world<<std::endl;
+    if (this->world != mra.world)
+        std::cout << "diff world " << this->world << std::endl
+                  << "and  "
+                  << " " << mra.world << std::endl;
     if (this->world != mra.world) return true;
     if (this->maxDepth != mra.maxDepth) return true;
     return false;

@@ -35,8 +35,7 @@
 
 namespace mrcpp {
 
-template <int D, typename T>
-void TreeBuilder<D, T>::build(MWTree<D, T> &tree, TreeCalculator<D, T> &calculator, TreeAdaptor<D, T> &adaptor, int maxIter) const {
+template <int D, typename T> void TreeBuilder<D, T>::build(MWTree<D, T> &tree, TreeCalculator<D, T> &calculator, TreeAdaptor<D, T> &adaptor, int maxIter) const {
     Timer calc_t(false), split_t(false), norm_t(false);
     println(10, " == Building tree");
 
@@ -169,7 +168,6 @@ template <int D, typename T> double TreeBuilder<D, T>::calcWaveletNorm(const MWN
 template class TreeBuilder<1, double>;
 template class TreeBuilder<2, double>;
 template class TreeBuilder<3, double>;
-
 
 template class TreeBuilder<1, ComplexDouble>;
 template class TreeBuilder<2, ComplexDouble>;

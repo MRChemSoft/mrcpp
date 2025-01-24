@@ -63,7 +63,7 @@ extern MPI_Comm comm_share;
 extern MPI_Comm comm_sh_group;
 extern MPI_Comm comm_bank;
 
-}// namespace mpi
+} // namespace mpi
 } // namespace mrcpp
 
 namespace mrcpp {
@@ -85,9 +85,9 @@ public:
 
     void clear(); // show shared memory as entirely available
 
-    T *sh_start_ptr;  // start of shared block
-    T *sh_end_ptr;    // end of used part
-    T *sh_max_ptr;    // end of shared block
+    T *sh_start_ptr;       // start of shared block
+    T *sh_end_ptr;         // end of used part
+    T *sh_max_ptr;         // end of shared block
     mrcpp::mpi_win sh_win; // MPI window object
     int rank;              // rank among shared group
 };

@@ -32,7 +32,7 @@ namespace mrcpp {
 
 template <int D, typename T> class DerivativeCalculator final : public TreeCalculator<D, T> {
 public:
-  DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D, T> &f);
+    DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D, T> &f);
     ~DerivativeCalculator() override;
 
     MWNodeVector<D, T> *getInitialWorkVector(MWTree<D, T> &tree) const override;

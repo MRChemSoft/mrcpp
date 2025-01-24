@@ -32,8 +32,8 @@ namespace mrcpp {
 template <int D, typename T> class SquareCalculator final : public TreeCalculator<D, T> {
 public:
     SquareCalculator(FunctionTree<D, T> &inp, bool conjugate = false)
-            : func(&inp),
-              conj(conjugate) {}
+            : func(&inp)
+            , conj(conjugate) {}
 
 private:
     FunctionTree<D, T> *func;

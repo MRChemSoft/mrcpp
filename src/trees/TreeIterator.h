@@ -46,7 +46,7 @@ public:
     bool nextParent();
     MWNode<D, T> &getNode() { return *this->state->node; }
 
-  friend class IteratorNode<D, T>;
+    friend class IteratorNode<D, T>;
 
 protected:
     int root;

@@ -24,7 +24,6 @@
  */
 
 #include "complex_apply.h"
-#include "apply.h"
 #include "ConvolutionCalculator.h"
 #include "CopyAdaptor.h"
 #include "DefaultCalculator.h"
@@ -33,6 +32,7 @@
 #include "TreeBuilder.h"
 #include "WaveletAdaptor.h"
 #include "add.h"
+#include "apply.h"
 #include "grid.h"
 #include "operators/ConvolutionOperator.h"
 #include "operators/DerivativeOperator.h"
@@ -41,7 +41,6 @@
 #include "utils/Timer.h"
 
 namespace mrcpp {
-
 
 /** @brief Application of MW integral convolution operator (complex version)
  *
@@ -58,7 +57,7 @@ namespace mrcpp {
  * - Repeat until convergence or `maxIter` is reached
  * - `prec < 0` or `maxIter = 0` means NO refinement
  * - `maxIter < 0` means no bound
- * 
+ *
  * The default is to work with relative precision
  * (stop when the wavelet coefficients are below a given (small) fraction of
  * function norm.
@@ -74,40 +73,25 @@ namespace mrcpp {
  * tree when the function is called (this grid should however be EMPTY, e.i.
  * no coefs).
  * \todo !!! Here should be given a method for greed cleaning !!!
- * 
+ *
  *
  */
-template <int D>
-void apply
-(
-    double prec, ComplexObject< FunctionTree<D> > &out,
-    ComplexObject< ConvolutionOperator<D> > &oper, ComplexObject< FunctionTree<D> > &inp,
-    int maxIter, bool absPrec
-)
-{
-    FunctionTree<D> temp1( inp.real->getMRA() );
-    FunctionTree<D> temp2( inp.real->getMRA() );
+template <int D> void apply(double prec, ComplexObject<FunctionTree<D>> &out, ComplexObject<ConvolutionOperator<D>> &oper, ComplexObject<FunctionTree<D>> &inp, int maxIter, bool absPrec) {
+    FunctionTree<D> temp1(inp.real->getMRA());
+    FunctionTree<D> temp2(inp.real->getMRA());
 
     apply(prec, temp1, *oper.real, *inp.real, maxIter, absPrec);
     apply(prec, temp2, *oper.imaginary, *inp.imaginary, maxIter, absPrec);
     add(prec, *out.real, 1.0, temp1, -1.0, temp2);
 
-    //temp1.setZero();
-    //temp2.setZero();
+    // temp1.setZero();
+    // temp2.setZero();
 
     apply(prec, temp1, *oper.imaginary, *inp.real, maxIter, absPrec);
     apply(prec, temp2, *oper.real, *inp.imaginary, maxIter, absPrec);
     add(prec, *out.imaginary, 1.0, temp1, 1.0, temp2);
 }
 
-
-template
-void apply <1>
-(
-    double prec, ComplexObject< FunctionTree<1> > &out,
-    ComplexObject< ConvolutionOperator<1> > &oper, ComplexObject< FunctionTree<1> > &inp,
-    int maxIter, bool absPrec
-);
-
+template void apply<1>(double prec, ComplexObject<FunctionTree<1>> &out, ComplexObject<ConvolutionOperator<1>> &oper, ComplexObject<FunctionTree<1>> &inp, int maxIter, bool absPrec);
 
 } // namespace mrcpp

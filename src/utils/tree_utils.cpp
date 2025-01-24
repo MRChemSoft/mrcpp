@@ -216,7 +216,7 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
 }
 
 // Specialized for D=3 below.
-//template <int D, typename T> void tree_utils::mw_transform_back(MWTree<D, T> &tree, double *coeff_in, double *coeff_out, int stride) {
+// template <int D, typename T> void tree_utils::mw_transform_back(MWTree<D, T> &tree, double *coeff_in, double *coeff_out, int stride) {
 //    NOT_IMPLEMENTED_ABORT;
 //}
 
@@ -226,7 +226,7 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
  * The output is read directly from the 8 children scaling coefficients.
  * NB: ASSUMES that the children coefficients are separated by Children_Stride!
  */
-template <typename T>  void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride) {
+template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride) {
     int operation = Compression;
     int kp1 = tree.getKp1();
     int kp1_d = tree.getKp1_d();
@@ -300,7 +300,6 @@ template <typename T>  void tree_utils::mw_transform_back(MWTree<3, T> &tree, T 
     }
 }
 
-
 template void tree_utils::make_node_table<1, double>(MWTree<1, double> &tree, MWNodeVector<1, double> &table);
 template void tree_utils::make_node_table<2, double>(MWTree<2, double> &tree, MWNodeVector<2, double> &table);
 template void tree_utils::make_node_table<3, double>(MWTree<3, double> &tree, MWNodeVector<3, double> &table);
@@ -317,11 +316,10 @@ template void tree_utils::mw_transform<1, double>(const MWTree<1, double> &tree,
 template void tree_utils::mw_transform<2, double>(const MWTree<2, double> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
 template void tree_utils::mw_transform<3, double>(const MWTree<3, double> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
 
-//template void tree_utils::mw_transform_back<1, double>(MWTree<1, double> &tree, double *coeff_in, double *coeff_out, int stride);
-//template void tree_utils::mw_transform_back<2, double>(MWTree<2, double> &tree, double *coeff_in, double *coeff_out, int stride);
+// template void tree_utils::mw_transform_back<1, double>(MWTree<1, double> &tree, double *coeff_in, double *coeff_out, int stride);
+// template void tree_utils::mw_transform_back<2, double>(MWTree<2, double> &tree, double *coeff_in, double *coeff_out, int stride);
 template void tree_utils::mw_transform_back<double>(MWTree<3, double> &tree, double *coeff_in, double *coeff_out, int stride);
 
-  
 template void tree_utils::make_node_table<1, ComplexDouble>(MWTree<1, ComplexDouble> &tree, MWNodeVector<1, ComplexDouble> &table);
 template void tree_utils::make_node_table<2, ComplexDouble>(MWTree<2, ComplexDouble> &tree, MWNodeVector<2, ComplexDouble> &table);
 template void tree_utils::make_node_table<3, ComplexDouble>(MWTree<3, ComplexDouble> &tree, MWNodeVector<3, ComplexDouble> &table);
@@ -338,8 +336,8 @@ template void tree_utils::mw_transform<1, ComplexDouble>(const MWTree<1, Complex
 template void tree_utils::mw_transform<2, ComplexDouble>(const MWTree<2, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
 template void tree_utils::mw_transform<3, ComplexDouble>(const MWTree<3, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite);
 
-//template void tree_utils::mw_transform_back<1, ComplexDouble>(MWTree<1, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
-//template void tree_utils::mw_transform_back<2, ComplexDouble>(MWTree<2, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
+// template void tree_utils::mw_transform_back<1, ComplexDouble>(MWTree<1, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
+// template void tree_utils::mw_transform_back<2, ComplexDouble>(MWTree<2, ComplexDouble &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
 template void tree_utils::mw_transform_back<ComplexDouble>(MWTree<3, ComplexDouble> &tree, ComplexDouble *coeff_in, ComplexDouble *coeff_out, int stride);
 
 } // namespace mrcpp

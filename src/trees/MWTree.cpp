@@ -26,10 +26,10 @@
 #include "MWTree.h"
 
 #include "MWNode.h"
-#include "NodeIndex.h"
-#include "TreeIterator.h"
 #include "MultiResolutionAnalysis.h"
 #include "NodeAllocator.h"
+#include "NodeIndex.h"
+#include "TreeIterator.h"
 #include "utils/Bank.h"
 #include "utils/Printer.h"
 #include "utils/math_utils.h"
@@ -49,11 +49,11 @@ namespace mrcpp {
  * root nodes. The information for the root node configuration to use
  * is in the mra object which is passed to the constructor.
  */
-  template <int D, typename T>
+template <int D, typename T>
 MWTree<D, T>::MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n)
         : MRA(mra)
-        , order(mra.getOrder()) /// polynomial order
-        , kp1_d(math_utils::ipow(mra.getOrder() + 1, D)) ///nr of scaling coefficients \f$ (k+1)^D \f$
+        , order(mra.getOrder())                          /// polynomial order
+        , kp1_d(math_utils::ipow(mra.getOrder() + 1, D)) /// nr of scaling coefficients \f$ (k+1)^D \f$
         , name(n)
         , squareNorm(-1.0)
         , rootBox(mra.getWorldBox()) {
@@ -68,11 +68,11 @@ template <int D, typename T> MWTree<D, T>::~MWTree() {
 }
 
 /** @brief Deletes all the nodes in the tree
-  *
-  * @details This method will recursively delete all the nodes,
-  * including the root nodes. Derived classes will call this method
-  * when the object is deleted.
-  */
+ *
+ * @details This method will recursively delete all the nodes,
+ * including the root nodes. Derived classes will call this method
+ * when the object is deleted.
+ */
 template <int D, typename T> void MWTree<D, T>::deleteRootNodes() {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D, T> &root = this->getRootMWNode(i);
@@ -337,7 +337,7 @@ template <int D, typename T> MWNode<D, T> *MWTree<D, T>::findNode(NodeIndex<D> i
  * from this.
  * The nodes are permanently added to the tree if create = true
  */
-    template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNode(NodeIndex<D> idx, bool create) {
+template <int D, typename T> MWNode<D, T> &MWTree<D, T>::getNode(NodeIndex<D> idx, bool create) {
     if (getRootBox().isPeriodic()) periodic::index_manipulation<D>(idx, getRootBox().getPeriodic());
 
     MWNode<D, T> *out = nullptr;
@@ -461,7 +461,6 @@ template <int D, typename T> void MWTree<D, T>::resetEndNodeTable() {
     }
 }
 
-
 template <int D, typename T> int MWTree<D, T>::countBranchNodes(int depth) {
     NOT_IMPLEMENTED_ABORT;
 }
@@ -550,8 +549,10 @@ template <int D, typename T> void MWTree<D, T>::makeMaxSquareNorms() {
  */
 template <int D, typename T> int MWTree<D, T>::getIx(NodeIndex<D> nIdx) {
     if (this->isLocal == false) MSG_ERROR("getIx only implemented in local representation");
-    if(NodeIndex2serialIx.count(nIdx) == 0) return -1;
-    else return NodeIndex2serialIx[nIdx];
+    if (NodeIndex2serialIx.count(nIdx) == 0)
+        return -1;
+    else
+        return NodeIndex2serialIx[nIdx];
 }
 
 template <int D, typename T> void MWTree<D, T>::getNodeCoeff(NodeIndex<D> nIdx, T *data) {
@@ -565,7 +566,6 @@ template <int D, typename T> void MWTree<D, T>::getNodeCoeff(NodeIndex<D> nIdx, 
 template class MWTree<1, double>;
 template class MWTree<2, double>;
 template class MWTree<3, double>;
-
 
 template class MWTree<1, ComplexDouble>;
 template class MWTree<2, ComplexDouble>;

@@ -40,9 +40,15 @@ namespace mapping {
 template <int D> void testMapping();
 
 SCENARIO("Map a MW tree", "[map], [tree_builder]") {
-    GIVEN("One MW functions in 1D") { testMapping<1>(); }
-    GIVEN("One MW functions in 2D") { testMapping<2>(); }
-    GIVEN("One MW functions in 3D") { testMapping<3>(); }
+    GIVEN("One MW functions in 1D") {
+        testMapping<1>();
+    }
+    GIVEN("One MW functions in 2D") {
+        testMapping<2>();
+    }
+    GIVEN("One MW functions in 3D") {
+        testMapping<3>();
+    }
 }
 
 template <int D> void testMapping() {
@@ -77,7 +83,7 @@ template <int D> void testMapping() {
     const double inp_int = inp_tree.integrate();
     const double inp_norm = inp_tree.getSquareNorm();
 
-    FMap<double,double> fmap = [](double val) { return val * val; };
+    FMap<double, double> fmap = [](double val) { return val * val; };
 
     WHEN("the function is mapped") {
         FunctionTree<D> out_tree(*mra);

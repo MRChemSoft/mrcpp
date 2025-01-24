@@ -44,7 +44,7 @@ namespace mrcpp {
 
 template <int D, typename T> class OperatorState final {
 public:
-  OperatorState(MWNode<D, T> &gn, T *scr1)
+    OperatorState(MWNode<D, T> &gn, T *scr1)
             : gNode(&gn) {
         this->kp1 = this->gNode->getKp1();
         this->kp1_d = this->gNode->getKp1_d();
@@ -64,9 +64,9 @@ public:
         }
     }
 
-  OperatorState(MWNode<D, T> &gn, std::vector<T> scr1)
+    OperatorState(MWNode<D, T> &gn, std::vector<T> scr1)
             : OperatorState(gn, scr1.data()) {}
-  void setFNode(MWNode<D, T> &fn) {
+    void setFNode(MWNode<D, T> &fn) {
         this->fNode = &fn;
         this->fData = this->fNode->getCoefs();
     }
@@ -89,8 +89,8 @@ public:
     T **getAuxData() { return this->aux; }
     double **getOperData() { return this->oData; }
 
-  friend class ConvolutionCalculator<D, T>;
-  friend class DerivativeCalculator<D, T>;
+    friend class ConvolutionCalculator<D, T>;
+    friend class DerivativeCalculator<D, T>;
 
 private:
     int ft;

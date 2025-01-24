@@ -188,9 +188,9 @@ void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, i
 
 /** Matrix multiplication of the filter with the input coefficient (type complex)*/
 void math_utils::apply_filter(ComplexDouble *out, ComplexDouble *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
-  //#ifdef HAVE_BLAS
-//    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
-//#else
+    //#ifdef HAVE_BLAS
+    //    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
+    //#else
     Map<MatrixXcd> f(in, kp1, kp1_dm1);
     Map<MatrixXcd> g(out, kp1_dm1, kp1);
     if (fac < MachineZero) {
@@ -198,7 +198,7 @@ void math_utils::apply_filter(ComplexDouble *out, ComplexDouble *in, const Matri
     } else {
         g.noalias() += f.transpose() * filter;
     }
-//#endif
+    //#endif
 }
 
 /** Make a nD-representation from 1D-representations of separable functions.
@@ -241,7 +241,6 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
         }
     }
 }
-
 
 /** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix
  *

@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
         };
         mrcpp::FunctionTree<3> *tree = new mrcpp::FunctionTree<3>(MRA);
         if (i % wsize == wrank) {
-	  mrcpp::project<3, double>(prec, *tree, f);
+            mrcpp::project<3, double>(prec, *tree, f);
             tree->normalize();
         }
         f_vec.push_back(std::make_tuple(1.0, tree));

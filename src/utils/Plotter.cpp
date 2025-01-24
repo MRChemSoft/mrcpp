@@ -109,16 +109,13 @@ template <int D, typename T> void Plotter<D, T>::gridPlot(const MWTree<D, T> &tr
  *  vector A starting from the origin O to a file named fname + file extension
  *  (".line" as default).
  */
-template <int D, typename T>
-void Plotter<D, T>::linePlot(const std::array<int, 1> &npts,
-                          const RepresentableFunction<D, T> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "----------Line Plot-----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D, T>::Line];
     if (verifyRange(1)) { // Verifies only A vector
         Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
-        Eigen::Matrix< T, Eigen::Dynamic, 1 > values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeData(coords, values);
         closePlot();
@@ -138,16 +135,13 @@ void Plotter<D, T>::linePlot(const std::array<int, 1> &npts,
  *  vectors A (npts[0] points) and B (npts[1] points), starting from the
  *  origin O, to a file named fname + file extension (".surf" as default).
  */
-template <int D, typename T>
-void Plotter<D, T>::surfPlot(const std::array<int, 2> &npts,
-                          const RepresentableFunction<D, T> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "--------Surface Plot----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D, T>::Surface];
     if (verifyRange(2)) { // Verifies A and B vectors
         Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
-        Eigen::Matrix< T, Eigen::Dynamic, 1 > values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeData(coords, values);
         closePlot();
@@ -168,16 +162,13 @@ void Plotter<D, T>::surfPlot(const std::array<int, 2> &npts,
  *  starting from the origin O, to a file named fname + file extension
  *  (".cube" as default).
  */
-template <int D, typename T>
-void Plotter<D, T>::cubePlot(const std::array<int, 3> &npts,
-                          const RepresentableFunction<D, T> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "----------Cube Plot-----------");
     std::stringstream file;
     file << fname << this->suffix[Plotter<D, T>::Cube];
     if (verifyRange(3)) { // Verifies A, B and C vectors
         Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
-        Eigen::Matrix< T, Eigen::Dynamic, 1 > values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeCube(npts, values);
         closePlot();
@@ -272,12 +263,10 @@ template <int D, typename T> Eigen::MatrixXd Plotter<D, T>::calcCubeCoordinates(
  *  this routine evaluates the function in these points and stores the results
  *  in the vector "values".
  */
-template <int D, typename T>
-Eigen::Matrix< T, Eigen::Dynamic, 1 > Plotter<D, T>::evaluateFunction(const RepresentableFunction<D, T> &func,
-                                             const Eigen::MatrixXd &coords) const {
+template <int D, typename T> Eigen::Matrix<T, Eigen::Dynamic, 1> Plotter<D, T>::evaluateFunction(const RepresentableFunction<D, T> &func, const Eigen::MatrixXd &coords) const {
     auto npts = coords.rows();
     if (npts == 0) MSG_ERROR("Empty coordinates");
-    Eigen::Matrix< T, Eigen::Dynamic, 1 > values = Eigen::Matrix< T, Eigen::Dynamic, 1 >::Zero(npts);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> values = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(npts);
 #pragma omp parallel for schedule(static) num_threads(mrcpp_get_num_threads())
     for (auto i = 0; i < npts; i++) {
         Coord<D> r{};
@@ -294,7 +283,7 @@ Eigen::Matrix< T, Eigen::Dynamic, 1 > Plotter<D, T>::evaluateFunction(const Repr
  *  point number (between 0 and nPoints), coordinates 1 through D and the
  *  function value.
  */
-  template <int D, typename T> void Plotter<D, T>::writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix< T, Eigen::Dynamic, 1 > &values) {
+template <int D, typename T> void Plotter<D, T>::writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
     if (coords.rows() != values.size()) INVALID_ARG_ABORT;
     std::ofstream &o = *this->fout;
     for (auto i = 0; i < values.size(); i++) {
@@ -308,7 +297,7 @@ Eigen::Matrix< T, Eigen::Dynamic, 1 > Plotter<D, T>::evaluateFunction(const Repr
 }
 
 // Specialized for D=3 below
-  template <int D, typename T> void Plotter<D, T>::writeCube(const std::array<int, 3> &npts, const Eigen::Matrix< T, Eigen::Dynamic, 1 > &values) {
+template <int D, typename T> void Plotter<D, T>::writeCube(const std::array<int, 3> &npts, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -412,31 +401,22 @@ template <> void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::str
 
     for (int d = 0; d < 3; d++) origin[d] = node.getNodeIndex()[d] * length;
 
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " "
-      << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length
-      << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length
+      << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << color << std::endl;
 
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " "
-      << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length
-      << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length
-      << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " "
-      << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1]
+      << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length << " "
+      << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length
-      << " " << origin[1] << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color
+      << origin[0] + length << " " << origin[1] << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " "
-      << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color
+      << origin[0] << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " "
-      << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length << " " << color
+      << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length << color << std::endl;
 }
 
 /** @brief Writing grid data to file

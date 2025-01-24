@@ -1,8 +1,8 @@
 #include <Eigen/Core>
 #include <MRCPP/Printer>
 #include <MRCPP/Timer>
-#include <vector>
 #include <thread>
+#include <vector>
 
 #include "Bank.h"
 #include "omp_utils.h"
@@ -11,7 +11,7 @@
 
 #ifdef MRCPP_HAS_OMP
 #define mrcpp_get_max_threads() omp_get_max_threads()
-#define mrcpp_get_num_procs() omp_get_num_procs()/2
+#define mrcpp_get_num_procs() omp_get_num_procs() / 2
 #define mrcpp_set_dynamic(n) omp_set_dynamic(n)
 #else
 #define mrcpp_get_max_threads() 1
@@ -55,10 +55,10 @@ int is_bankclient = 1;
 int is_bankmaster = 0; // only one bankmaster is_bankmaster
 int bank_size = 0;
 int bank_per_node = 0;
-int omp_threads = -1; // can be set to force number of threads
+int omp_threads = -1;         // can be set to force number of threads
 int use_omp_num_threads = -1; // can be set to use number of threads from env
-int tot_bank_size = 0; // size of bank, including the task manager
-int max_tag = 0;       // max value allowed by MPI
+int tot_bank_size = 0;        // size of bank, including the task manager
+int max_tag = 0;              // max value allowed by MPI
 vector<int> bankmaster;
 int task_bank = -1; // world rank of the task manager
 
@@ -66,7 +66,6 @@ MPI_Comm comm_wrk;
 MPI_Comm comm_share;
 MPI_Comm comm_sh_group;
 MPI_Comm comm_bank;
-
 
 int id_shift; // to ensure that nodes, orbitals and functions do not collide
 
@@ -95,21 +94,19 @@ void initialize() {
     // define independent group of MPI processes, that are not part of comm_wrk
     // for now the new group does not include comm_share
     comm_bank = MPI_COMM_WORLD; // clients and master
-    MPI_Comm comm_remainder;         // clients only
+    MPI_Comm comm_remainder;    // clients only
 
     // set bank_size automatically if not defined by user
     if (world_size < 2) {
         bank_size = 0;
     } else if (bank_size < 0) {
         if (bank_per_node >= 0) {
-              bank_size = node_size * bank_per_node;
+            bank_size = node_size * bank_per_node;
         } else {
             bank_size = max(world_size / 3, 1);
         }
-    } else if (bank_size >=0 and bank_per_node >= 0) {
-        if (bank_size != node_size * bank_per_node and world_rank == 0)
-            std::cout<<"WARNING: bank_size and bank_per_node are incompatible "<<
-                bank_size<<" "<<bank_per_node<<std::endl;
+    } else if (bank_size >= 0 and bank_per_node >= 0) {
+        if (bank_size != node_size * bank_per_node and world_rank == 0) std::cout << "WARNING: bank_size and bank_per_node are incompatible " << bank_size << " " << bank_per_node << std::endl;
     }
     if (world_size - bank_size < 1) MSG_ABORT("No MPI ranks left for working!");
     if (bank_size < 1 and world_size > 1) MSG_ABORT("Bank size must be at least one when using MPI!");
@@ -173,13 +170,12 @@ void initialize() {
     max_tag = *(int *)val / 2;
     id_shift = max_tag / 2; // half is reserved for non orbital.
 
-
-    MPI_Comm comm_share_world;//all that share the memory
+    MPI_Comm comm_share_world; // all that share the memory
     MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &comm_share_world);
 
-    int n_bank_thisnode; //number of banks on this node
+    int n_bank_thisnode; // number of banks on this node
     MPI_Allreduce(&is_bank, &n_bank_thisnode, 1, MPI_INT, MPI_SUM, comm_share_world);
-    int n_wrk_thisnode; //number of workers on this node
+    int n_wrk_thisnode; // number of workers on this node
     MPI_Allreduce(&is_bankclient, &n_wrk_thisnode, 1, MPI_INT, MPI_SUM, comm_share_world);
 
     int omp_threads_available = thread::hardware_concurrency();
@@ -193,7 +189,7 @@ void initialize() {
         // NB: OMP_NUM_THREADS is the number of threads for all MPI processes on one node.
         // The bank need only one thread, and can give "their" remaining share to workers.
         int total_omp_threads_per_node = my_OMP_NUM_THREADS * (n_bank_thisnode + n_wrk_thisnode);
-        nthreads = (total_omp_threads_per_node - n_bank_thisnode)/n_wrk_thisnode;
+        nthreads = (total_omp_threads_per_node - n_bank_thisnode) / n_wrk_thisnode;
     } else {
         // we determine the number of threads by detecting what is available
         // determine the number of threads we can assign to each mpi worker.
@@ -209,36 +205,35 @@ void initialize() {
         // 3) Bank needs only one thread
         // 4) workers need as many threads as possible (but all workers use same number of threads)
         // 5) at least one thread
-        if (is_bankclient) nthreads = (omp_threads_available/2-n_bank_thisnode)/n_wrk_thisnode; // 1) and 4)
-        //cout<<nthreads<<" after direct calculation"<<endl;
-        // do not exceed total number of cores accessible (assumed to be half the number of logical threads)
-        nthreads = min(nthreads, omp_get_num_procs()/2); // 2)
-        //cout<<nthreads<<" after mrcpp_get_num_procs"<<endl;
+        if (is_bankclient) nthreads = (omp_threads_available / 2 - n_bank_thisnode) / n_wrk_thisnode; // 1) and 4)
+        // cout<<nthreads<<" after direct calculation"<<endl;
+        //  do not exceed total number of cores accessible (assumed to be half the number of logical threads)
+        nthreads = min(nthreads, omp_get_num_procs() / 2); // 2)
+        // cout<<nthreads<<" after mrcpp_get_num_procs"<<endl;
 
         // NB: we do not use OMP_NUM_THREADS. Use all cores accessible.
 
         if (is_bank) nthreads = 1; // 3)
 
-        //        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<omp_get_num_procs()<<" maxthreads"<<omp_get_max_threads()<<" "<<" threads"<<omp_get_num_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<" my_OMP_NUM_THREADS "<<my_OMP_NUM_THREADS<<endl;
+        //        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<omp_get_num_procs()<<" maxthreads"<<omp_get_max_threads()<<" "<<"
+        //        threads"<<omp_get_num_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<"
+        //        my_OMP_NUM_THREADS "<<my_OMP_NUM_THREADS<<endl;
 
         if (omp_threads > 0) {
             if (omp_threads != nthreads and world_rank == 0) {
-                cout<<"Warning: recommended number of threads is "<<nthreads<<endl;
-                cout<<"setting number of threads to omp_threads, "<<max(1, omp_threads)<<endl;
+                cout << "Warning: recommended number of threads is " << nthreads << endl;
+                cout << "setting number of threads to omp_threads, " << max(1, omp_threads) << endl;
             }
             nthreads = omp_threads;
         }
     }
     nthreads = max(1, nthreads); // 5)
 
-    if (nthreads*n_wrk_thisnode+n_bank_thisnode < omp_threads_available/3 and world_rank == 0) {
-        std::cout<<"WARNING: only "<<nthreads*n_wrk_thisnode+n_bank_thisnode<<" threads used per node while "<<omp_threads_available<<" logical cpus are accessible "<<std::endl;
+    if (nthreads * n_wrk_thisnode + n_bank_thisnode < omp_threads_available / 3 and world_rank == 0) {
+        std::cout << "WARNING: only " << nthreads * n_wrk_thisnode + n_bank_thisnode << " threads used per node while " << omp_threads_available << " logical cpus are accessible " << std::endl;
     }
 
-    if (nthreads > omp_get_num_procs()) {
-        std::cout<<"WARNING: MPI rank "<<world_rank<<" will use "<<nthreads<<" but only "<<
-            omp_get_num_procs()<<" procs are accessible"<<std::endl;
-    }
+    if (nthreads > omp_get_num_procs()) { std::cout << "WARNING: MPI rank " << world_rank << " will use " << nthreads << " but only " << omp_get_num_procs() << " procs are accessible" << std::endl; }
 
     omp::n_threads = nthreads;
     mrcpp::set_max_threads(nthreads);
@@ -290,10 +285,9 @@ bool my_func(int j) {
 }
 
 /** @brief Test if function belongs to this MPI rank */
-bool my_func(const CompFunction<3>& func) {
+bool my_func(const CompFunction<3> &func) {
     return my_func(func.rank());
 }
-
 
 /** @brief Test if function belongs to this MPI rank */
 bool my_func(CompFunction<3> *func) {
@@ -359,14 +353,18 @@ void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     for (int i = 0; i < func.Ncomp(); i++) {
-        //make sure that Nchunks is up to date
-        if (func.isreal()) func.Nchunks()[i] = func.CompD[i]->getNChunks();
-        else func.Nchunks()[i] = func.CompC[i]->getNChunks();
+        // make sure that Nchunks is up to date
+        if (func.isreal())
+            func.Nchunks()[i] = func.CompD[i]->getNChunks();
+        else
+            func.Nchunks()[i] = func.CompC[i]->getNChunks();
     }
     MPI_Send(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
     for (int i = 0; i < func.Ncomp(); i++) {
-        if (func.isreal()) mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
-        else mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
+        if (func.isreal())
+            mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
+        else
+            mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
     }
 #endif
 }
@@ -378,9 +376,11 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     int func_ncomp_in = func.Ncomp();
     MPI_Recv(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
     for (int i = 0; i < func.Ncomp(); i++) {
-        if (func_ncomp_in <= i) func.alloc(i+1);
-        if (func.isreal()) mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
-        else  mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
+        if (func_ncomp_in <= i) func.alloc(i + 1);
+        if (func.isreal())
+            mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
+        else
+            mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
     }
 #endif
 }
@@ -390,8 +390,10 @@ void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     if (func.isShared()) {
 #ifdef MRCPP_HAS_MPI
         for (int comp = 0; comp < func.Ncomp(); comp++) {
-            if (func.isreal()) mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
-            else  mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
+            if (func.isreal())
+                mrcpp::share_tree(*func.CompD[comp], src, tag, comm);
+            else
+                mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
         }
 #endif
     }
@@ -542,7 +544,6 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, vector<CompFun
 #endif
 }
 
-
 /** @brief make union tree without coeff and send to all
  *  Complex trees
  */
@@ -564,11 +565,10 @@ void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<
 #endif
 }
 
-
 /** @brief make union tree without coeff and send to all
  *  Include both real and imaginary parts
  */
-    void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm) {
+void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)

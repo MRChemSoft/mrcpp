@@ -137,7 +137,6 @@ template void project<1, double>(double prec, FunctionTreeVector<1, double> &out
 template void project<2, double>(double prec, FunctionTreeVector<2, double> &out, std::vector<std::function<double(const Coord<2> &r)>> inp, int maxIter, bool absPrec);
 template void project<3, double>(double prec, FunctionTreeVector<3, double> &out, std::vector<std::function<double(const Coord<3> &r)>> inp, int maxIter, bool absPrec);
 
-
 template void project<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, RepresentableFunction<1, ComplexDouble> &inp, int maxIter, bool absPrec);
 template void project<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, RepresentableFunction<2, ComplexDouble> &inp, int maxIter, bool absPrec);
 template void project<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, RepresentableFunction<3, ComplexDouble> &inp, int maxIter, bool absPrec);
@@ -148,6 +147,5 @@ template void project<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDoub
 template void project<1, ComplexDouble>(double prec, FunctionTreeVector<1, ComplexDouble> &out, std::vector<std::function<ComplexDouble(const Coord<1> &r)>> inp, int maxIter, bool absPrec);
 template void project<2, ComplexDouble>(double prec, FunctionTreeVector<2, ComplexDouble> &out, std::vector<std::function<ComplexDouble(const Coord<2> &r)>> inp, int maxIter, bool absPrec);
 template void project<3, ComplexDouble>(double prec, FunctionTreeVector<3, ComplexDouble> &out, std::vector<std::function<ComplexDouble(const Coord<3> &r)>> inp, int maxIter, bool absPrec);
-
 
 } // namespace mrcpp

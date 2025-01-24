@@ -36,7 +36,8 @@ namespace mrcpp {
  *  @param[in] comm: Communicator sharing resources
  *  @param[in] sh_size: Memory size, in MB
  */
-template <typename T> SharedMemory<T>::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
+template <typename T>
+SharedMemory<T>::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
         : sh_start_ptr(nullptr)
         , sh_end_ptr(nullptr)
         , sh_max_ptr(nullptr)
@@ -101,8 +102,7 @@ template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, i
     Timer t1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Send(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, dst, tag + iChunk + 1, comm);
-        if (coeff)
-            MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
+        if (coeff) MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
@@ -136,8 +136,7 @@ template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, i
     allocator.init(nChunks, coeff);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, tag + iChunk + 1, comm, &status);
-        if (coeff)
-            MPI_Recv(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
+        if (coeff) MPI_Recv(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
     }
     println(10, " Time receive                " << std::setw(30) << t1.elapsed());
 

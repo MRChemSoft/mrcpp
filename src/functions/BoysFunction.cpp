@@ -32,7 +32,7 @@
 namespace mrcpp {
 
 BoysFunction::BoysFunction(int n, double p)
-  : RepresentableFunction<1, double>()
+        : RepresentableFunction<1, double>()
         , order(n)
         , prec(p)
         , MRA(BoundingBox<1>(), InterpolatingBasis(13)) {}

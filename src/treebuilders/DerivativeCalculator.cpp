@@ -86,8 +86,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::printTimers() cons
     Printer::setPrecision(oldprec);
 }
 
-    template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D, T> &inpNode, MWNode<D, T> &outNode) {
-    //if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
+template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D, T> &inpNode, MWNode<D, T> &outNode) {
+    // if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
     outNode.zeroCoefs();
     int nComp = (1 << D);
     T tmpCoefs[outNode.getNCoefs()];
@@ -102,17 +102,15 @@ template <int D, typename T> void DerivativeCalculator<D, T>::printTimers() cons
         for (int gt = 0; gt < nComp; gt++) {
             os.setGComponent(gt);
             applyOperator_bw0(os);
-       }
+        }
     }
-   // Multiply appropriate scaling factor. TODO: Could be included elsewhere
-    const double scaling_factor =
-        1.0/std::pow(outNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
-    if(abs(scaling_factor-1.0)>MachineZero){
+    // Multiply appropriate scaling factor. TODO: Could be included elsewhere
+    const double scaling_factor = 1.0 / std::pow(outNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    if (abs(scaling_factor - 1.0) > MachineZero) {
         for (int i = 0; i < outNode.getNCoefs(); i++) outNode.getCoefs()[i] *= scaling_factor;
     }
-    outNode.calcNorms(); //TODO:required? norms are not used for now
+    outNode.calcNorms(); // TODO:required? norms are not used for now
 }
-
 
 template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D, T> &gNode) {
     gNode.zeroCoefs();
@@ -146,8 +144,7 @@ template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D,
         }
     }
     // Multiply appropriate scaling factor
-    const double scaling_factor =
-        std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    const double scaling_factor = std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
     for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= scaling_factor;
     this->calc_t[mrcpp_get_thread_num()].stop();
 
@@ -157,8 +154,7 @@ template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D,
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */
-template <int D, typename T>
-MWNodeVector<D, T> DerivativeCalculator<D, T>::makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band) {
+template <int D, typename T> MWNodeVector<D, T> DerivativeCalculator<D, T>::makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
@@ -183,7 +179,7 @@ MWNodeVector<D, T> DerivativeCalculator<D, T>::makeOperBand(const MWNode<D, T> &
 
 /** Apply a single operator component (term) to a single f-node assuming zero bandwidth */
 template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator_bw0(OperatorState<D, T> &os) {
-    //cout<<" applyOperator "<<endl;
+    // cout<<" applyOperator "<<endl;
     MWNode<D, T> &gNode = *os.gNode;
     MWNode<D, T> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
@@ -212,7 +208,6 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator_bw0(
     this->operStat.incrementFNodeCounters(fNode, os.ft, os.gt);
     tensorApplyOperComp(os);
 }
-
 
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
@@ -304,8 +299,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::tensorApplyOperCom
 #else
     */
     for (int i = 0; i < D; i++) {
-        Eigen::Map<Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >> f(aux[i], os.kp1, os.kp1_dm1);
-        Eigen::Map<Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >> g(aux[i + 1], os.kp1_dm1, os.kp1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> f(aux[i], os.kp1, os.kp1_dm1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> g(aux[i + 1], os.kp1_dm1, os.kp1);
         if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g

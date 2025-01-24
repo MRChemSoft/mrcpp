@@ -33,8 +33,8 @@ namespace mrcpp {
 template <int D, typename T> class AdditionCalculator final : public TreeCalculator<D, T> {
 public:
     AdditionCalculator(const FunctionTreeVector<D, T> &inp, bool conjugate = false)
-        : sum_vec(inp),
-          conj(conjugate) {}
+            : sum_vec(inp)
+            , conj(conjugate) {}
 
 private:
     FunctionTreeVector<D, T> sum_vec;
@@ -52,7 +52,7 @@ private:
             const double *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
             for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
-       }
+        }
         node_o.setHasCoefs();
         node_o.calcNorms();
     }
@@ -68,7 +68,7 @@ private:
             const ComplexDouble *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
             if (func_i.conjugate() xor conj) {
-               for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * std::conj(coefs_i[j]); }
+                for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * std::conj(coefs_i[j]); }
             } else {
                 for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
             }

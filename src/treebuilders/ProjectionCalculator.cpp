@@ -39,8 +39,8 @@ template <int D, typename T> void ProjectionCalculator<D, T>::calcNode(MWNode<D,
     Coord<D> r;
     T *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {
-      for (int d = 0; d < D; d++) { r[d] = scaling_factor[d] * exp_pts(d, i); }
-      coefs[i] = this->func->evalf(r);
+        for (int d = 0; d < D; d++) { r[d] = scaling_factor[d] * exp_pts(d, i); }
+        coefs[i] = this->func->evalf(r);
     }
 
     node.cvTransform(Backward);

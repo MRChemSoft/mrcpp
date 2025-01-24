@@ -26,12 +26,11 @@
 #include "TimeEvolutionOperator.h"
 //#include "MRCPP/MWOperators"
 
-
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 
-#include "functions/Gaussian.h"
 #include "functions/GaussExp.h"
+#include "functions/Gaussian.h"
 
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/DefaultCalculator.h"
@@ -42,8 +41,8 @@
 #include "treebuilders/project.h"
 
 #include "trees/BandWidth.h"
-#include "trees/FunctionTreeVector.h"
 #include "trees/CornerOperatorTree.h"
+#include "trees/FunctionTreeVector.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -55,9 +54,7 @@
 
 #include "trees/OperatorNode.h"
 
-
 namespace mrcpp {
-
 
 /** @brief A uniform constructor for TimeEvolutionOperator class.
  *
@@ -72,22 +69,20 @@ namespace mrcpp {
  *
  */
 template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator
-(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)
-    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
+TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)
+        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
-    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
+    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType());
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, finest_scale, imaginary, max_Jpower);     //will go outside of the constructor in future
+    initialize(time, finest_scale, imaginary, max_Jpower); // will go outside of the constructor in future
 
-    this->initOperExp(1);   //this turns out to be important
+    this->initOperExp(1); // this turns out to be important
     Printer::setPrintLevel(oldlevel);
 }
-
 
 /** @brief An adaptive constructor for TimeEvolutionOperator class.
  *
@@ -105,23 +100,20 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  *
  */
 template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator
-(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower)
-    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10)   //One can use ConvolutionOperator instead as well
+TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower)
+        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
-    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType() );
+    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType());
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, imaginary, max_Jpower);     //will go outside of the constructor in future
+    initialize(time, imaginary, max_Jpower); // will go outside of the constructor in future
 
-    this->initOperExp(1);   //this turns out to be important
+    this->initOperExp(1); // this turns out to be important
     Printer::setPrintLevel(oldlevel);
 }
-
-
 
 /** @brief Creates Re or Im of operator
  *
@@ -132,9 +124,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator
  * only needed ones, while building the tree (in progress).
  *
  */
-template <int D>
-void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_Jpower)
-{
+template <int D> void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_Jpower) {
     int N = 18;
 
     double o_prec = this->build_prec;
@@ -142,8 +132,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
 
     std::map<int, JpowerIntegrals *> J;
-    for( int n = 0; n <= N+1; n ++ )
-        J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower);
+    for (int n = 0; n <= N + 1; n++) J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower);
     TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true);
@@ -155,7 +144,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
     o_tree->removeRoughScaleNoise();
-    //o_tree->clearSquareNorm(); //does not affect printing
+    // o_tree->clearSquareNorm(); //does not affect printing
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
 
@@ -164,8 +153,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
 
     this->raw_exp.push_back(std::move(o_tree));
 
-    for( int n = 0; n <= N+1; n ++ )
-        delete J[n];
+    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
 /** @brief Creates Re or Im of operator
@@ -173,9 +161,7 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
  * @details Uniform down to finest scale.
  *
  */
-template <int D>
-void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower)
-{
+template <int D> void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower) {
     double o_prec = this->build_prec;
     auto o_mra = this->getOperatorMRA();
 
@@ -186,12 +172,11 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     int N = finest_scale;
     double threshold = o_prec / 1000.0;
     std::map<int, JpowerIntegrals *> J;
-    for( int n = 0; n <= N+1; n ++ )
-        J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
+    for (int n = 0; n <= N + 1; n++) J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
     auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
-    builder.build(*o_tree, calculator, uniform, N ); // Expand 1D kernel into 2D operator
+    builder.build(*o_tree, calculator, uniform, N); // Expand 1D kernel into 2D operator
 
     // Postprocess to make the operator functional
     Timer trans_t;
@@ -203,10 +188,8 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
 
     this->raw_exp.push_back(std::move(o_tree));
 
-    for( int n = 0; n <= N+1; n ++ )
-        delete J[n];
+    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
-
 
 /** @brief Creates Re or Im of operator (in progress)
  *
@@ -216,8 +199,7 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
  * @note This method is not ready for use and should not be used (in progress).
  *
  */
-template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower)
-{
+template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower) {
     MSG_ERROR("Not implemented yet method.");
 
     double o_prec = this->build_prec;
@@ -234,8 +216,7 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
 
     double threshold = o_prec / 1000.0;
     std::map<int, mrcpp::JpowerIntegrals *> J;
-    for( int n = 0; n <= N+1; n ++ )
-        J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
+    for (int n = 0; n <= N + 1; n++) J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
     mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
@@ -252,10 +233,8 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
 
     this->raw_exp.push_back(std::move(o_tree));
 
-    for( int n = 0; n <= N+1; n ++ )
-        delete J[n];
+    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
-
 
 template class TimeEvolutionOperator<1>;
 template class TimeEvolutionOperator<2>;

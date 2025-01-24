@@ -44,7 +44,7 @@
 
 namespace mrcpp {
 
-  class Polynomial : public RepresentableFunction<1, double> {
+class Polynomial : public RepresentableFunction<1, double> {
 public:
     Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
     Polynomial(int k, const std::vector<double> &a, const std::vector<double> &b)
@@ -74,7 +74,7 @@ public:
     void setDilation(double n) { this->N = n; }
     void setTranslation(double l) { this->L = l; }
     void dilate(double n) { this->N *= n; }
-    void translate(double l) { this->L += this->N*l; }
+    void translate(double l) { this->L += this->N * l; }
 
     int size() const { return this->coefs.size(); } ///< Length of coefs vector
     int getOrder() const;

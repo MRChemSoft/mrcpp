@@ -109,7 +109,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
         TreeBuilder<D> builder;
         DefaultCalculator<D> calculator;
         for (auto i = 0; i < inp.size(); i++) {
-	  AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
+            AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
@@ -224,7 +224,6 @@ template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTre
     build_grid(out, inp);
 }
 
-
 /** @brief Build empty grid that is identical to another MW grid for every component
  *
  * @param[out] out: Output to be built
@@ -242,7 +241,7 @@ template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) build_grid(*out.CompD[i], *inp.CompD[i]);
         if (inp.iscomplex()) build_grid(*out.CompC[i], *inp.CompC[i]);
-   }
+    }
 }
 
 /** @brief Clear the MW coefficients of a function representation
@@ -388,7 +387,6 @@ template int refine_grid<3, double>(FunctionTree<3, double> &out, FunctionTree<3
 template int refine_grid<1, double>(FunctionTree<1, double> &out, const RepresentableFunction<1, double> &inp);
 template int refine_grid<2, double>(FunctionTree<2, double> &out, const RepresentableFunction<2, double> &inp);
 template int refine_grid<3, double>(FunctionTree<3, double> &out, const RepresentableFunction<3, double> &inp);
-
 
 template void build_grid<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, int scales);
 template void build_grid<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, int scales);

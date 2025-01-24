@@ -40,9 +40,7 @@ public:
     AnalyticFunction(std::function<T(const Coord<D> &r)> f, const double *a = nullptr, const double *b = nullptr)
             : RepresentableFunction<D, T>(a, b)
             , func(f) {}
-    AnalyticFunction(std::function<T(const Coord<D> &r)> f,
-                     const std::vector<double> &a,
-                     const std::vector<double> &b)
+    AnalyticFunction(std::function<T(const Coord<D> &r)> f, const std::vector<double> &a, const std::vector<double> &b)
             : AnalyticFunction(f, a.data(), b.data()) {}
 
     void set(std::function<T(const Coord<D> &r)> f) { this->func = f; }

@@ -68,8 +68,8 @@ public:
 
     int getNGenNodes() const { return getGenNodeAllocator().getNNodes(); }
 
-    void getEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data);
-    void setEndValues(Eigen::Matrix<T , Eigen::Dynamic, 1 > &data);
+    void getEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data);
+    void setEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data);
 
     void saveTree(const std::string &file);
     void saveTreeTXT(const std::string &file);
@@ -120,10 +120,10 @@ public:
     void deep_copy(FunctionTree<D, T> *out);
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
-    void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &out);
-    void CopyTreeToComplex(FunctionTree<2, ComplexDouble>* &out);
-    void CopyTreeToComplex(FunctionTree<1, ComplexDouble>* &out);
-    void CopyTreeToReal(FunctionTree<3, double>* &out); //for testing
+    void CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&out);
+    void CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&out);
+    void CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&out);
+    void CopyTreeToReal(FunctionTree<3, double> *&out); // for testing
 
 protected:
     std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};

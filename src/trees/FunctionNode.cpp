@@ -169,15 +169,17 @@ template <int D, typename T> T FunctionNode<D, T>::integrateValues() const {
     Eigen::Matrix<T, Eigen::Dynamic, 1> coefs;
     this->getCoefs(coefs);
     int ncoefs = coefs.size();
-    int ncoefChild = ncoefs/(1<<D);
+    int ncoefChild = ncoefs / (1 << D);
     T cc[ncoefChild];
     // factorize out the children
-    for (int i = 0; i < ncoefChild; i++)cc[i]=coefs[i];
-    for (int j = 1; j < (1<<D); j++) for (int i = 0; i < ncoefChild; i++)cc[i]+=coefs[j*ncoefChild+i];
+    for (int i = 0; i < ncoefChild; i++) cc[i] = coefs[i];
+    for (int j = 1; j < (1 << D); j++)
+        for (int i = 0; i < ncoefChild; i++) cc[i] += coefs[j * ncoefChild + i];
 
     int nc = 0;
     T sum = 0.0;
-    if (D > 3) MSG_ABORT("Not Implemented")
+    if (D > 3)
+        MSG_ABORT("Not Implemented")
     else if (D == 3) {
         for (int i = 0; i < qOrder; i++) {
             T sumj = 0.0;
@@ -188,18 +190,21 @@ template <int D, typename T> T FunctionNode<D, T>::integrateValues() const {
             }
             sum += sumj * weights[i];
         }
-    } else if (D==2) {
+    } else if (D == 2) {
         for (int j = 0; j < qOrder; j++) {
-                T sumk = 0.0;
-                for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
-                sum += sumk * weights[j];
+            T sumk = 0.0;
+            for (int k = 0; k < qOrder; k++) sumk += cc[nc++] * weights[k];
+            sum += sumk * weights[j];
         }
-    } else if (D==1) for (int k = 0; k < qOrder; k++) sum += cc[nc++] * weights[k];
+    } else if (D == 1)
+        for (int k = 0; k < qOrder; k++) sum += cc[nc++] * weights[k];
 
-    int n = D * (this->getScale() + 1) ; // NB: one extra scale
-    int two_n = (1<<abs(n)); // 2**n;
-    if(n>0)sum/=two_n;
-    else sum*=two_n;
+    int n = D * (this->getScale() + 1); // NB: one extra scale
+    int two_n = (1 << abs(n));          // 2**n;
+    if (n > 0)
+        sum /= two_n;
+    else
+        sum *= two_n;
     return sum;
 }
 
@@ -212,7 +217,7 @@ template <int D, typename T> void FunctionNode<D, T>::setValues(const Matrix<T, 
     this->calcNorms();
 }
 
-  template <int D, typename T> void FunctionNode<D, T>::getValues(Matrix<T , Eigen::Dynamic, 1 > &vec) {
+template <int D, typename T> void FunctionNode<D, T>::getValues(Matrix<T, Eigen::Dynamic, 1> &vec) {
     if (this->isGenNode()) {
         MWNode<D, T> copy(*this);
         vec = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(copy.getNCoefs());
@@ -411,7 +416,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
+template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -428,7 +433,6 @@ template <> void FunctionNode<3>::reCompress() {
 #endif
 }
 
-
 /** Inner product of the functions represented by the scaling basis of the nodes.
  *
  * Integrates the product of the functions represented by the scaling basis on
@@ -437,7 +441,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -447,14 +451,14 @@ template <> void FunctionNode<3>::reCompress() {
     int size = bra.getKp1_d();
     ComplexDouble result = 0.0;
     // note that bra is conjugated by default
-    if (bra.getMWTree().conjugate()){
-        if (ket.getMWTree().conjugate()){
+    if (bra.getMWTree().conjugate()) {
+        if (ket.getMWTree().conjugate()) {
             for (int i = 0; i < size; i++) result += a[i] * std::conj(b[i]);
         } else {
             for (int i = 0; i < size; i++) result += a[i] * b[i];
         }
     } else {
-        if (ket.getMWTree().conjugate()){
+        if (ket.getMWTree().conjugate()) {
             for (int i = 0; i < size; i++) result += std::conj(a[i]) * std::conj(b[i]);
         } else {
             for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
@@ -471,7 +475,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
 
@@ -481,7 +485,7 @@ template <> void FunctionNode<3>::reCompress() {
     int size = bra.getKp1_d();
     ComplexDouble result = 0.0;
     // note that bra is conjugated by default
-    if (bra.getMWTree().conjugate()){
+    if (bra.getMWTree().conjugate()) {
         for (int i = 0; i < size; i++) result += a[i] * b[i];
     } else {
         for (int i = 0; i < size; i++) result += std::conj(a[i]) * b[i];
@@ -497,8 +501,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D>
-    double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
+template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
@@ -518,7 +521,6 @@ template <> void FunctionNode<3>::reCompress() {
 #endif
 }
 
-
 /** Inner product of the functions represented by the wavelet basis of the nodes.
  *
  * Integrates the product of the functions represented by the wavelet basis on
@@ -527,7 +529,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
@@ -539,14 +541,14 @@ template <> void FunctionNode<3>::reCompress() {
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
     ComplexDouble result = 0.0;
-    if (bra.getMWTree().conjugate()){
-        if (ket.getMWTree().conjugate()){
+    if (bra.getMWTree().conjugate()) {
+        if (ket.getMWTree().conjugate()) {
             for (int i = 0; i < size; i++) result += a[start + i] * std::conj(b[start + i]);
         } else {
             for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
         }
     } else {
-        if (ket.getMWTree().conjugate()){
+        if (ket.getMWTree().conjugate()) {
             for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * std::conj(b[start + i]);
         } else {
             for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];
@@ -563,7 +565,7 @@ template <> void FunctionNode<3>::reCompress() {
  * coefficient vectors. Assumes the nodes have identical support.
  * NB: will take conjugate of bra in case of complex values.
  */
-    template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
     assert(bra.hasCoefs());
@@ -575,7 +577,7 @@ template <> void FunctionNode<3>::reCompress() {
     int start = bra.getKp1_d();
     int size = (bra.getTDim() - 1) * start;
     ComplexDouble result = 0.0;
-    if (bra.getMWTree().conjugate()){
+    if (bra.getMWTree().conjugate()) {
         for (int i = 0; i < size; i++) result += a[start + i] * b[start + i];
     } else {
         for (int i = 0; i < size; i++) result += std::conj(a[start + i]) * b[start + i];

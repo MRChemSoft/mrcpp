@@ -275,7 +275,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
 }
 
 /** Apply each component (term) of the operator expansion to a node in f */
-  template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
+template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
     for (int i = 0; i < this->oper->size(); i++) {
@@ -289,13 +289,13 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
 }
 
 /** @brief Apply a single operator component (term) to a single f-node.
- * 
+ *
  * @details Apply a single operator component (term) to a single f-node.
  * Whether the operator actualy is applied is determined by a screening threshold.
  * Here we make use of the sparcity of matrices \f$ A, B, C \f$.
- * 
+ *
  */
- template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int i, OperatorState<D, T> &os) {
+template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int i, OperatorState<D, T> &os) {
     MWNode<D, T> &gNode = *os.gNode;
     MWNode<D, T> &fNode = *os.fNode;
 
@@ -315,7 +315,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        if ( oTree.isOutsideBand(oTransl, o_depth, idx) ) { return; }
+        if (oTree.isOutsideBand(oTransl, o_depth, idx)) { return; }
 
         const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);
@@ -331,7 +331,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
 
 /** Perorm the required linear algebra operations in order to apply an
 operator component to a f-node in a n-dimensional tesor space. */
-  template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
+template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
     T **aux = os.getAuxData();
     double **oData = os.getOperData();
     /*
@@ -361,8 +361,8 @@ operator component to a f-node in a n-dimensional tesor space. */
 #else
     */
     for (int i = 0; i < D; i++) {
-        Eigen::Map<Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >> f(aux[i], os.kp1, os.kp1_dm1);
-        Eigen::Map<Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >> g(aux[i + 1], os.kp1_dm1, os.kp1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> f(aux[i], os.kp1, os.kp1_dm1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> g(aux[i + 1], os.kp1_dm1, os.kp1);
         if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g

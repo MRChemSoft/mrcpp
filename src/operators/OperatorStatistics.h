@@ -32,7 +32,7 @@
 
 namespace mrcpp {
 
-  template <int D, typename T> class OperatorStatistics final {
+template <int D, typename T> class OperatorStatistics final {
 public:
     OperatorStatistics();
     ~OperatorStatistics();

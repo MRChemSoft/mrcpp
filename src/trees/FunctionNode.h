@@ -49,7 +49,7 @@ public:
 
     T integrate() const;
 
-    void setValues(const Eigen::Matrix<T , Eigen::Dynamic, 1> &vec);
+    void setValues(const Eigen::Matrix<T, Eigen::Dynamic, 1> &vec);
     void getValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &vec);
     void getAbsCoefs(T *absCoefs);
 
@@ -79,19 +79,13 @@ protected:
     T integrateInterpolating() const;
     T integrateValues() const;
 };
-template <int D>
-double dot_scaling (const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
-template <int D>
-double dot_wavelet(const FunctionNode<D, double > &bra, const FunctionNode<D, double > &ket);
+template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
+template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
 
-template <int D>
-ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
-template <int D>
-ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
-template <int D>
-ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
-template <int D>
-ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
 
 } // namespace mrcpp

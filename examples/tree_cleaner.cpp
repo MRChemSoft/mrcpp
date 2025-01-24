@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     auto iter = 0;
     auto n_nodes = 1;
     while (n_nodes > 0) {
-      mrcpp::project<D, double>(-1.0, f_tree, f);         // Projecting on fixed grid
+        mrcpp::project<D, double>(-1.0, f_tree, f); // Projecting on fixed grid
         n_nodes = mrcpp::refine_grid(f_tree, prec); // Refine grid
         mrcpp::clear_grid(f_tree);                  // Clear MW coefs
         printout(0, " iter " << std::setw(3) << iter++ << std::setw(45));

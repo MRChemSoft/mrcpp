@@ -30,7 +30,7 @@
 
 namespace mrcpp {
 
-  template <int D, typename T> class CopyAdaptor final : public TreeAdaptor<D, T> {
+template <int D, typename T> class CopyAdaptor final : public TreeAdaptor<D, T> {
 public:
     CopyAdaptor(FunctionTree<D, T> &t, int ms, int *bw);
     CopyAdaptor(FunctionTreeVector<D, T> &t, int ms, int *bw);

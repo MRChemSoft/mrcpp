@@ -31,62 +31,34 @@ namespace mrcpp {
 template <int D, typename T> class RepresentableFunction;
 template <int D, typename T> class FunctionTree;
 
-template <int D, typename T> void dot(double prec,
-                          FunctionTree<D, T> &out,
-                          FunctionTreeVector<D, T> &inp_a,
-                          FunctionTreeVector<D, T> &inp_b,
-                          int maxIter = -1,
-                          bool absPrec = false);
+template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp_a, FunctionTreeVector<D, T> &inp_b, int maxIter = -1, bool absPrec = false);
 
-template <int D, typename T> T dot(FunctionTree<D, T> &bra,
-                            FunctionTree<D, T> &ket);
+template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket);
 
-template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra,
-                            FunctionTree<D, double> &ket);
-template <int D> ComplexDouble dot(FunctionTree<D, double> &bra,
-                            FunctionTree<D, ComplexDouble> &ket);
+template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra, FunctionTree<D, double> &ket);
+template <int D> ComplexDouble dot(FunctionTree<D, double> &bra, FunctionTree<D, ComplexDouble> &ket);
 
-template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra,
-                                      FunctionTree<D, T> &ket,
-                                      bool exact = false);
+template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket, bool exact = false);
 
-template <int D, typename T> void multiply(double prec,
-                               FunctionTree<D, T> &out,
-                               T c,
-                               FunctionTree<D, T> &inp_a,
-                               FunctionTree<D, T> &inp_b,
-                               int maxIter = -1,
-                               bool absPrec = false,
-                               bool useMaxNorms = false,
-                               bool conjugate = false );
+template <int D, typename T>
+void multiply(double prec,
+              FunctionTree<D, T> &out,
+              T c,
+              FunctionTree<D, T> &inp_a,
+              FunctionTree<D, T> &inp_b,
+              int maxIter = -1,
+              bool absPrec = false,
+              bool useMaxNorms = false,
+              bool conjugate = false);
 
-template <int D, typename T> void multiply(double prec,
-                               FunctionTree<D, T> &out,
-                               std::vector<FunctionTree<D, T> *> &inp,
-                               int maxIter = -1,
-                               bool absPrec = false,
-                               bool useMaxNorms = false,
-                               bool conjugate = false );
+template <int D, typename T>
+void multiply(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 
-template <int D, typename T> void multiply(double prec,
-                               FunctionTree<D, T> &out,
-                               FunctionTreeVector<D, T> &inp,
-                               int maxIter = -1,
-                               bool absPrec = false,
-                               bool useMaxNorms = false,
-                               bool conjugate = false );
+template <int D, typename T>
+void multiply(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 
-template <int D, typename T> void power(double prec,
-                            FunctionTree<D, T> &out,
-                            FunctionTree<D, T> &inp,
-                            double p,
-                            int maxIter = -1,
-                            bool absPrec = false );
+template <int D, typename T> void power(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, double p, int maxIter = -1, bool absPrec = false);
 
-template <int D, typename T> void square(double prec,
-                             FunctionTree<D, T> &out,
-                             FunctionTree<D, T> &inp,
-                             int maxIter = -1,
-                             bool absPrec = false, bool conjugate = false);
+template <int D, typename T> void square(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false, bool conjugate = false);
 
 } // namespace mrcpp

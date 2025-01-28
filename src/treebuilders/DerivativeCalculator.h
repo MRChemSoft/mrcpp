@@ -46,7 +46,7 @@ private:
     std::vector<Timer> band_t;
     std::vector<Timer> calc_t;
     std::vector<Timer> norm_t;
-    OperatorStatistics<D, T> operStat;
+    OperatorStatistics operStat;
 
     MWNodeVector<D, T> makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band);
 

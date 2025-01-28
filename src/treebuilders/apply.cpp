@@ -409,7 +409,7 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 }
 
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
-    // TODO: sums and not only each components independently
+    // TODO: sums and not only each components independently, when concrete examples with non diagonal metric are tested
 
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
@@ -420,7 +420,7 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
                         if (std::imag(metric[icomp][ocomp]) < MachinePrec)
                             out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
                         else
-                            out.func_ptr->data.c1[ocomp] *= metric[icomp][ocomp]; // TODO: multiply c1 in rescale?
+                            out.func_ptr->data.c1[ocomp] *= metric[icomp][ocomp]; // To consider: multiply c1 in rescale?
                     }
                     out.func_ptr->isreal = 1;
                 } else {

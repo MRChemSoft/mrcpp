@@ -147,7 +147,6 @@ template <int D> bool MultiResolutionAnalysis<D>::operator==(const MultiResoluti
  * respective classes.
  */
 template <int D> bool MultiResolutionAnalysis<D>::operator!=(const MultiResolutionAnalysis<D> &mra) const {
-    if (this->basis != mra.basis) std::cout << "diff basis " << this->basis << std::endl << "and  " << mra.basis << std::endl;
     if (this->basis != mra.basis) return true;
     if (this->world != mra.world)
         std::cout << "diff world " << this->world << std::endl

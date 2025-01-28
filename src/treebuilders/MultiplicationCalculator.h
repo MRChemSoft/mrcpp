@@ -40,41 +40,25 @@ private:
     FunctionTreeVector<D, T> prod_vec;
     bool conj;
 
-    void calcNode(MWNode<D, double> &node_o) {
+    void calcNode(MWNode<D, T> &node_o) {
         const NodeIndex<D> &idx = node_o.getNodeIndex();
-        double *coefs_o = node_o.getCoefs();
+        T *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
         for (int i = 0; i < this->prod_vec.size(); i++) {
-            double c_i = get_coef(this->prod_vec, i);
-            FunctionTree<D, double> &func_i = get_func(this->prod_vec, i);
+            T c_i = get_coef(this->prod_vec, i);
+            FunctionTree<D, T> &func_i = get_func(this->prod_vec, i);
             // This generates missing nodes
-            MWNode<D, double> node_i = func_i.getNode(idx); // Copy node
+            MWNode<D, T> node_i = func_i.getNode(idx); // Copy node
             node_i.mwTransform(Reconstruction);
             node_i.cvTransform(Forward);
-            const double *coefs_i = node_i.getCoefs();
+            const T *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
-            for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
-        }
-        node_o.cvTransform(Backward);
-        node_o.mwTransform(Compression);
-        node_o.setHasCoefs();
-        node_o.calcNorms();
-    }
-    void calcNode(MWNode<D, ComplexDouble> &node_o) {
-        const NodeIndex<D> &idx = node_o.getNodeIndex();
-        ComplexDouble *coefs_o = node_o.getCoefs();
-        for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
-        for (int i = 0; i < this->prod_vec.size(); i++) {
-            ComplexDouble c_i = get_coef(this->prod_vec, i);
-            FunctionTree<D, ComplexDouble> &func_i = get_func(this->prod_vec, i);
-            // ComplexDoublehis generates missing nodes
-            MWNode<D, ComplexDouble> node_i = func_i.getNode(idx); // Copy node
-            node_i.mwTransform(Reconstruction);
-            node_i.cvTransform(Forward);
-            const ComplexDouble *coefs_i = node_i.getCoefs();
-            int n_coefs = node_i.getNCoefs();
-            if (func_i.conjugate() xor (conj and i == 0)) {
-                for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * std::conj(coefs_i[j]); }
+            if constexpr (std::is_same<T, ComplexDouble>::value) {
+                if (func_i.conjugate() xor (conj and i == 0)) { // NB: take complex conjugate of "bra"
+                    for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * std::conj(coefs_i[j]); }
+                } else {
+                    for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
+                }
             } else {
                 for (int j = 0; j < n_coefs; j++) { coefs_o[j] *= c_i * coefs_i[j]; }
             }

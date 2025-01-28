@@ -654,11 +654,7 @@ template <int D, typename T> double MWNode<D, T>::calcComponentNorm(int i) const
     int start = i * size;
 
     double sq_norm = 0.0;
-    //#ifdef HAVE_BLAS
-    //    sq_norm = cblas_ddot(size, &c[start], 1, &c[start], 1);
-    //#else
     for (int i = start; i < start + size; i++) { sq_norm += std::norm(c[i]); }
-    //#endif
     return std::sqrt(sq_norm);
 }
 

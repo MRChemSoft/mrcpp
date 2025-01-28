@@ -77,8 +77,7 @@ template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, Cros
         const MWNode<1> &node_a = this->kernel->getNode(idx_a);
         const MWNode<1> &node_b = this->kernel->getNode(idx_b);
 
-        Eigen::Matrix<double, Eigen::Dynamic, 1> vec_a;
-        VectorXd vec_b;
+        VectorXd vec_a, vec_b;
         node_a.getCoefs(vec_a);
         node_b.getCoefs(vec_b);
 
@@ -91,7 +90,7 @@ template <int T> void CrossCorrelationCalculator::applyCcc(MWNode<2> &node, Cros
     for (int i = 0; i < t_dim * kp1_d; i++) {
         auto scaling_factor = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
         // This is only implemented for unifrom scaling factors
-        // hence the zero TODO: make it work for non-unifrom scaling
+        // hence the zero TODO: make it work for non-uniform scaling
         coefs[i] = std::sqrt(scaling_factor) * two_n * vec_o(i);
     }
 }

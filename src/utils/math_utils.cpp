@@ -171,34 +171,26 @@ void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Ar) = A(i) * A; }
 }
 
-/** Matrix multiplication of the filter with the input coefficient (type double)*/
-void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
-#ifdef HAVE_BLAS
-    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
-#else
-    Map<MatrixXd> f(in, kp1, kp1_dm1);
-    Map<MatrixXd> g(out, kp1_dm1, kp1);
-    if (fac < MachineZero) {
-        g.noalias() = f.transpose() * filter;
-    } else {
-        g.noalias() += f.transpose() * filter;
-    }
-#endif
-}
-
-/** Matrix multiplication of the filter with the input coefficient (type complex)*/
-void math_utils::apply_filter(ComplexDouble *out, ComplexDouble *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
-    //#ifdef HAVE_BLAS
-    //    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
-    //#else
-    Map<MatrixXcd> f(in, kp1, kp1_dm1);
-    Map<MatrixXcd> g(out, kp1_dm1, kp1);
-    if (fac < MachineZero) {
-        g.noalias() = f.transpose() * filter;
-    } else {
-        g.noalias() += f.transpose() * filter;
-    }
-    //#endif
+/** Matrix multiplication of the filter with the input coefficients */
+template <typename T> void math_utils::apply_filter(T *out, T *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
+    if constexpr (std::is_same<T, double>::value) {
+        Map<MatrixXd> f(in, kp1, kp1_dm1);
+        Map<MatrixXd> g(out, kp1_dm1, kp1);
+        if (fac < MachineZero) {
+            g.noalias() = f.transpose() * filter;
+        } else {
+            g.noalias() += f.transpose() * filter;
+        }
+    } else if constexpr (std::is_same<T, ComplexDouble>::value) {
+        Map<MatrixXcd> f(in, kp1, kp1_dm1);
+        Map<MatrixXcd> g(out, kp1_dm1, kp1);
+        if (fac < MachineZero) {
+            g.noalias() = f.transpose() * filter;
+        } else {
+            g.noalias() += f.transpose() * filter;
+        }
+    } else
+        NOT_IMPLEMENTED_ABORT;
 }
 
 /** Make a nD-representation from 1D-representations of separable functions.
@@ -341,6 +333,9 @@ template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std
     }
     return output;
 }
+
+template void math_utils::apply_filter<double>(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
+template void math_utils::apply_filter<ComplexDouble>(ComplexDouble *out, ComplexDouble *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
 template double math_utils::calc_distance<1>(const Coord<1> &a, const Coord<1> &b);
 template double math_utils::calc_distance<2>(const Coord<2> &a, const Coord<2> &b);

@@ -31,12 +31,9 @@ namespace mrcpp {
 template <int D, typename T> class RepresentableFunction;
 template <int D, typename T> class FunctionTree;
 
+template <int D, typename T = double, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>())> V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket);
+
 template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp_a, FunctionTreeVector<D, T> &inp_b, int maxIter = -1, bool absPrec = false);
-
-template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket);
-
-template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra, FunctionTree<D, double> &ket);
-template <int D> ComplexDouble dot(FunctionTree<D, double> &bra, FunctionTree<D, ComplexDouble> &ket);
 
 template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket, bool exact = false);
 

@@ -57,7 +57,7 @@ private:
     std::vector<Timer *> calc_t;
     std::vector<Timer *> norm_t;
 
-    OperatorStatistics<D, T> operStat;
+    OperatorStatistics operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
     std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 

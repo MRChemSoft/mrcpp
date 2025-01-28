@@ -107,8 +107,8 @@ template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
     if (this->getNNodes() > 0) this->deleteRootNodes();
 }
 
-/** @brief Read a previously stusing MADNESS conventions for n, l and index order.ored tree assuming text/ASCII format,
- *   in a representation
+/** @brief Read a previously stored tree assuming text/ASCII format,
+ *   in a representation using MADNESS conventions for n, l and index order.
  * @param[in] file: File name
  * @note This tree must have the exact same MRA the one that was saved(?)
  */
@@ -128,10 +128,8 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     double TXT_thres = 1.0e-14; // threshold for differences in scaling factors
     for (int d = 0; d < D; d++) {
         if (std::abs(coord[d][0] + L) > TXT_thres) std::cout << coord[d][0] << " " << L << std::endl;
-        ;
         if (std::abs(coord[d][0] + L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
         if (std::abs(coord[d][1] - L) > TXT_thres) std::cout << coord[d][1] << " " << L << std::endl;
-        ;
         if (std::abs(coord[d][1] - L) > TXT_thres) NOT_IMPLEMENTED_ABORT;
     }
 
@@ -1183,36 +1181,6 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
     out->calcSquareNorm();
     return out;
 }
-
-/*
-template<>
-void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree) {
-//void CopyTreeToComplex(FunctionTree<3, ComplexDouble>* &outTree, FunctionTree<3, double>* inTree) {
-FunctionTree<3, double>* inTree = this;
-delete outTree;
-outTree = new FunctionTree<3, ComplexDouble> (inTree->getMRA());
-int nChunks=inTree->getNChunks();
-outTree->getNodeAllocator().init(nChunks, true); //also allocate coefficients
-int Ncoefperchunk = outTree->getNodeAllocator().getCoefChunkSize()/sizeof(ComplexDouble);
-// real and complex trees have the same Ncoefperchunk.
-for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-    MWNode<3, double> * inNode = inTree->getNodeAllocator().getNodeChunk(iChunk);
-    MWNode<3, ComplexDouble> * outNode = outTree->getNodeAllocator().getNodeChunk(iChunk);
-    //outTree->getNodeAllocator().getNodeChunk(iChunk) = inTree->getNodeAllocator().getNodeChunk(iChunk);
-    int nNodes = std::min(inTree->getNNodes(), inTree->getNodeAllocator().getMaxNodesPerChunk());
-    for (int i = 0; i < nNodes; i++) {
-        outNode[i] = *reinterpret_cast<MWNode<3, std::complex<double>>*>(&inNode[i]); // could be improved
-    }
-    ComplexDouble* Ccoefs;
-    int ncoefs = nNodes * inTree->getNodeAllocator().getNCoefs();
-    Ccoefs = outTree->getNodeAllocator().getCoefChunk(iChunk);
-    auto InCoefs = inTree->getNodeAllocator().getCoefChunk(iChunk);
-    for (int i = 0; i < ncoefs; i++) {
-        Ccoefs[i] = InCoefs[i];
-    }
-}
-outTree->getNodeAllocator().reassemble();
-}*/
 
 /*
  * From real to complex tree. Copy everything, and convert double to ComplexDouble for the coefficents.

@@ -259,45 +259,6 @@ operator component to a f-node in a n-dimensional tensor space. */
 template <int D, typename T> void DerivativeCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
     T **aux = os.getAuxData();
     double **oData = os.getOperData();
-    /*
-#ifdef HAVE_BLAS
-    double mult = 0.0;
-    for (int i = 0; i < D; i++) {
-        if (oData[i] != 0) {
-            if (i == D - 1) { // Last dir: Add up into g
-                mult = 1.0;
-            }
-            const T *f = aux[i];
-            T *g = const_cast<T *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor,
-                        CblasTrans,
-                        CblasNoTrans,
-                        os.kp1_dm1,
-                        os.kp1,
-                        os.kp1,
-                        1.0,
-                        f,
-                        os.kp1,
-                        oData[i],
-                        os.kp1,
-                        mult,
-                        g,
-                        os.kp1_dm1);
-        } else {
-            // Identity operator in direction i
-            Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
-            Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
-            if (oData[i] == 0) {
-                if (i == D - 1) { // Last dir: Add up into g
-                    g += f.transpose();
-                } else {
-                    g = f.transpose();
-                }
-            }
-        }
-    }
-#else
-    */
     for (int i = 0; i < D; i++) {
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> f(aux[i], os.kp1, os.kp1_dm1);
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> g(aux[i + 1], os.kp1_dm1, os.kp1);
@@ -317,7 +278,6 @@ template <int D, typename T> void DerivativeCalculator<D, T>::tensorApplyOperCom
             }
         }
     }
-    //#endif
 }
 
 template <int D, typename T> MWNodeVector<D, T> *DerivativeCalculator<D, T>::getInitialWorkVector(MWTree<D, T> &tree) const {

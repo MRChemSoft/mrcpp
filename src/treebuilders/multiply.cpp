@@ -76,19 +76,6 @@ void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp
     tmp_vec.push_back({1.0, &inp_b});
     multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms, conjugate);
 }
-/*
-template <int D> void multiply(double prec,
-                           FunctionTree<D, ComplexDouble> &out,
-                           ComplexDouble c,
-                           FunctionTree<D, ComplexDouble> &inp_a,
-                           FunctionTree<D, double> &inp_b,
-                           int maxIter = -1,
-                           bool absPrec = false,
-                           bool useMaxNorms = false) {
-// we rather make a copy with ComplexDouble type only
-FunctionTree<D, ComplexDouble>* inp_b_CPLX = inp_b.CopyTreeToComplex();
-multiply(prec, out,c,inp_a,inp_b_CPLX,maxIter,absPrec,useMaxNorms);
-} */
 
 /** @brief Multiplication of several MW function representations, adaptive grid
  *
@@ -296,9 +283,8 @@ template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, Func
  * grids overlap.
  *
  */
-template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket) {
+template <int D, typename T, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>())> V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
-
     MWNodeVector<D, T> nodeTable;
     TreeIterator<D, T> it(bra);
     it.setReturnGenNodes(false);
@@ -307,8 +293,8 @@ template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &
         nodeTable.push_back(&node);
     }
     int nNodes = nodeTable.size();
-    T result = 0.0;
-    T locResult = 0.0;
+    V result = 0.0;
+    V locResult = 0.0;
     // OMP is disabled in order to get EXACT results (to the very last digit), the
     // order of summation makes the result different beyond the 14th digit or so.
     // OMP does improve the performace, but its not worth it for the time being.
@@ -318,71 +304,19 @@ template <int D, typename T> T dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &
     //#pragma omp for schedule(guided)
     for (int n = 0; n < nNodes; n++) {
         const auto &braNode = static_cast<const FunctionNode<D, T> &>(*nodeTable[n]);
-        const MWNode<D, T> *mwNode = ket.findNode(braNode.getNodeIndex());
+        const MWNode<D, U> *mwNode = ket.findNode(braNode.getNodeIndex());
         if (mwNode == nullptr) continue;
 
-        const auto &ketNode = static_cast<const FunctionNode<D, T> &>(*mwNode);
+        const auto &ketNode = static_cast<const FunctionNode<D, U> &>(*mwNode);
         if (braNode.isRootNode()) locResult += dot_scaling(braNode, ketNode);
         locResult += dot_wavelet(braNode, ketNode);
     }
     //#pragma omp critical
     result += locResult;
-    //    }
+
     return result;
 }
 
-/** @returns Dot product <bra|ket> of two MW function representations
- *
- * @param[in] bra: Bra side input function
- * @param[in] ket: Ket side input function
- *
- * @details The dot product is computed with the trees in compressed form, i.e.
- * scaling coefs only on root nodes, wavelet coefs on all nodes. Since wavelet
- * functions are orthonormal through ALL scales and the root scaling functions
- * are orthonormal to all finer level wavelet functions, this becomes a rather
- * efficient procedure as you only need to compute the dot product where the
- * grids overlap.
- *
- */
-template <int D> ComplexDouble dot(FunctionTree<D, ComplexDouble> &bra, FunctionTree<D, double> &ket) {
-    if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
-    MWNodeVector<D, ComplexDouble> nodeTable;
-    TreeIterator<D, ComplexDouble> it(bra);
-    it.setReturnGenNodes(false);
-    while (it.next()) {
-        MWNode<D, ComplexDouble> &node = it.getNode();
-        nodeTable.push_back(&node);
-    }
-    int nNodes = nodeTable.size();
-    ComplexDouble result = 0.0;
-    ComplexDouble locResult = 0.0;
-    // OMP is disabled in order to get EXACT results (to the very last digit), the
-    // order of summation makes the result different beyond the 14th digit or so.
-    // OMP does improve the performace, but its not worth it for the time being.
-    //#pragma omp parallel firstprivate(n_nodes, locResult) num_threads(mrcpp_get_num_threads())
-    //		shared(nodeTable,rhs,result)
-    //    {
-    //#pragma omp for schedule(guided)
-    for (int n = 0; n < nNodes; n++) {
-        const auto &braNode = static_cast<const FunctionNode<D, ComplexDouble> &>(*nodeTable[n]);
-        const MWNode<D, double> *mwNode = ket.findNode(braNode.getNodeIndex());
-        if (mwNode == nullptr) continue;
-
-        const auto &ketNode = static_cast<const FunctionNode<D, double> &>(*mwNode);
-        if (braNode.isRootNode()) locResult += dot_scaling(braNode, ketNode);
-        locResult += dot_wavelet(braNode, ketNode);
-    }
-    //#pragma omp critical
-    result += locResult;
-    //    }
-    return result;
-}
-template <int D> ComplexDouble dot(FunctionTree<D, double> &bra, FunctionTree<D, ComplexDouble> &ket) {
-    ket.setConjugate(!ket.conjugate());
-    ComplexDouble prod = dot(ket, bra);
-    ket.setConjugate(!ket.conjugate());
-    return prod;
-}
 /** @brief abs-dot product of two MW function representations
  *
  * @param[in] bra: Bra side input function
@@ -447,11 +381,6 @@ template void square<3, double>(double prec, FunctionTree<3, double> &out, Funct
 template void dot<1, double>(double prec, FunctionTree<1, double> &out, FunctionTreeVector<1, double> &inp_a, FunctionTreeVector<1, double> &inp_b, int maxIter, bool absPrec);
 template void dot<2, double>(double prec, FunctionTree<2, double> &out, FunctionTreeVector<2, double> &inp_a, FunctionTreeVector<2, double> &inp_b, int maxIter, bool absPrec);
 template void dot<3, double>(double prec, FunctionTree<3, double> &out, FunctionTreeVector<3, double> &inp_a, FunctionTreeVector<3, double> &inp_b, int maxIter, bool absPrec);
-
-template double dot<1, double>(FunctionTree<1, double> &bra, FunctionTree<1, double> &ket);
-template double dot<2, double>(FunctionTree<2, double> &bra, FunctionTree<2, double> &ket);
-template double dot<3, double>(FunctionTree<3, double> &bra, FunctionTree<3, double> &ket);
-
 template double node_norm_dot<1, double>(FunctionTree<1, double> &bra, FunctionTree<1, double> &ket, bool exact);
 template double node_norm_dot<2, double>(FunctionTree<2, double> &bra, FunctionTree<2, double> &ket, bool exact);
 template double node_norm_dot<3, double>(FunctionTree<3, double> &bra, FunctionTree<3, double> &ket, bool exact);
@@ -517,11 +446,18 @@ template void dot<3, ComplexDouble>(double prec,
                                     int maxIter,
                                     bool absPrec);
 
-template ComplexDouble dot<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, ComplexDouble> &ket);
-template ComplexDouble dot<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, ComplexDouble> &ket);
-template ComplexDouble dot<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, ComplexDouble> &ket);
-template ComplexDouble dot<3>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, double> &ket);
-template ComplexDouble dot<3>(FunctionTree<3, double> &bra, FunctionTree<3, ComplexDouble> &ket);
+template double dot<1, double, double>(FunctionTree<1, double> &bra, FunctionTree<1, double> &ket);
+template double dot<2, double, double>(FunctionTree<2, double> &bra, FunctionTree<2, double> &ket);
+template double dot<3, double, double>(FunctionTree<3, double> &bra, FunctionTree<3, double> &ket);
+template ComplexDouble dot<1, ComplexDouble, double>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, double> &ket);
+template ComplexDouble dot<2, ComplexDouble, double>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, double> &ket);
+template ComplexDouble dot<3, ComplexDouble, double>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, double> &ket);
+template ComplexDouble dot<1, double, ComplexDouble>(FunctionTree<1, double> &bra, FunctionTree<1, ComplexDouble> &ket);
+template ComplexDouble dot<2, double, ComplexDouble>(FunctionTree<2, double> &bra, FunctionTree<2, ComplexDouble> &ket);
+template ComplexDouble dot<3, double, ComplexDouble>(FunctionTree<3, double> &bra, FunctionTree<3, ComplexDouble> &ket);
+template ComplexDouble dot<1, ComplexDouble, ComplexDouble>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, ComplexDouble> &ket);
+template ComplexDouble dot<2, ComplexDouble, ComplexDouble>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, ComplexDouble> &ket);
+template ComplexDouble dot<3, ComplexDouble, ComplexDouble>(FunctionTree<3, ComplexDouble> &bra, FunctionTree<3, ComplexDouble> &ket);
 
 template double node_norm_dot<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &bra, FunctionTree<1, ComplexDouble> &ket, bool exact);
 template double node_norm_dot<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &bra, FunctionTree<2, ComplexDouble> &ket, bool exact);

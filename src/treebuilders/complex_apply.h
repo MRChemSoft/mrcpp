@@ -30,15 +30,14 @@
 namespace mrcpp {
 
 /// @brief Stores pointers to real and imaginary parts of tree objects.
-/// @tparam MWClass 
-template <typename MWClass>
-struct ComplexObject
-{
-    MWClass* real;
-    MWClass* imaginary;
+/// @tparam MWClass
+template <typename MWClass> struct ComplexObject {
+    MWClass *real;
+    MWClass *imaginary;
 
-    ComplexObject(MWClass& realPart, MWClass& imaginaryPart)
-        : real(&realPart), imaginary(&imaginaryPart) {}
+    ComplexObject(MWClass &realPart, MWClass &imaginaryPart)
+            : real(&realPart)
+            , imaginary(&imaginaryPart) {}
 };
 
 // clang-format off
@@ -53,6 +52,5 @@ void apply
     int maxIter = -1, bool absPrec = false
 );
 // clang-format on
-
 
 } // namespace mrcpp

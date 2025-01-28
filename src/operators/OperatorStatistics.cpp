@@ -30,8 +30,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-template <int D, typename T>
-OperatorStatistics<D, T>::OperatorStatistics()
+OperatorStatistics::OperatorStatistics()
         : nThreads(mrcpp_get_max_threads())
         , totFCount(0)
         , totGCount(0)
@@ -58,7 +57,7 @@ OperatorStatistics<D, T>::OperatorStatistics()
     }
 }
 
-template <int D, typename T> OperatorStatistics<D, T>::~OperatorStatistics() {
+OperatorStatistics::~OperatorStatistics() {
     for (int i = 0; i < this->nThreads; i++) { delete this->compCount[i]; }
     delete[] this->compCount;
     delete[] this->fCount;
@@ -68,7 +67,7 @@ template <int D, typename T> OperatorStatistics<D, T>::~OperatorStatistics() {
 }
 
 /** Sum all node counters from all threads. */
-template <int D, typename T> void OperatorStatistics<D, T>::flushNodeCounters() {
+void OperatorStatistics::flushNodeCounters() {
     for (int i = 0; i < this->nThreads; i++) {
         this->totFCount += this->fCount[i];
         this->totGCount += this->gCount[i];
@@ -82,20 +81,20 @@ template <int D, typename T> void OperatorStatistics<D, T>::flushNodeCounters() 
 }
 
 /** Increment g-node usage counter. Needed for load balancing. */
-template <int D, typename T> void OperatorStatistics<D, T>::incrementGNodeCounters(const MWNode<D, T> &gNode) {
+template <int D, typename T> void OperatorStatistics::incrementGNodeCounters(const MWNode<D, T> &gNode) {
     int thread = mrcpp_get_thread_num();
     this->gCount[thread]++;
 }
 
 /** Increment operator application counter. */
-template <int D, typename T> void OperatorStatistics<D, T>::incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt) {
+template <int D, typename T> void OperatorStatistics::incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt) {
     int thread = mrcpp_get_thread_num();
     this->fCount[thread]++;
     (*this->compCount[thread])(ft, gt) += 1;
     if (fNode.isGenNode()) { this->genCount[thread]++; }
 }
 
-template <int D, typename T> std::ostream &OperatorStatistics<D, T>::print(std::ostream &o) const {
+std::ostream &OperatorStatistics::print(std::ostream &o) const {
     o << std::setw(8);
     o << "*OperatorFunc statistics: " << std::endl << std::endl;
     o << "  Total calculated gNodes      : " << this->totGCount << std::endl;
@@ -105,12 +104,17 @@ template <int D, typename T> std::ostream &OperatorStatistics<D, T>::print(std::
     return o;
 }
 
-template class OperatorStatistics<1, double>;
-template class OperatorStatistics<2, double>;
-template class OperatorStatistics<3, double>;
-
-template class OperatorStatistics<1, ComplexDouble>;
-template class OperatorStatistics<2, ComplexDouble>;
-template class OperatorStatistics<3, ComplexDouble>;
+template void OperatorStatistics::incrementFNodeCounters<1, double>(const MWNode<1, double> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementFNodeCounters<2, double>(const MWNode<2, double> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementFNodeCounters<3, double>(const MWNode<3, double> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementFNodeCounters<1, ComplexDouble>(const MWNode<1, ComplexDouble> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementFNodeCounters<2, ComplexDouble>(const MWNode<2, ComplexDouble> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementFNodeCounters<3, ComplexDouble>(const MWNode<3, ComplexDouble> &fNode, int ft, int gt);
+template void OperatorStatistics::incrementGNodeCounters<1, double>(const MWNode<1, double> &gNode);
+template void OperatorStatistics::incrementGNodeCounters<2, double>(const MWNode<2, double> &gNode);
+template void OperatorStatistics::incrementGNodeCounters<3, double>(const MWNode<3, double> &gNode);
+template void OperatorStatistics::incrementGNodeCounters<1, ComplexDouble>(const MWNode<1, ComplexDouble> &gNode);
+template void OperatorStatistics::incrementGNodeCounters<2, ComplexDouble>(const MWNode<2, ComplexDouble> &gNode);
+template void OperatorStatistics::incrementGNodeCounters<3, ComplexDouble>(const MWNode<3, ComplexDouble> &gNode);
 
 } // namespace mrcpp

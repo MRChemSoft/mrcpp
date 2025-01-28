@@ -283,7 +283,7 @@ template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, Func
  * grids overlap.
  *
  */
-template <int D, typename T, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>())> V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket) {
+template <int D, typename T, typename U, typename V> V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
     MWNodeVector<D, T> nodeTable;
     TreeIterator<D, T> it(bra);

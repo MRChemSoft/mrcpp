@@ -36,7 +36,8 @@ namespace mrcpp {
  *  @param[in] comm: Communicator sharing resources
  *  @param[in] sh_size: Memory size, in MB
  */
-SharedMemory::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
+template <typename T>
+SharedMemory<T>::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
         : sh_start_ptr(nullptr)
         , sh_end_ptr(nullptr)
         , sh_max_ptr(nullptr)
@@ -57,18 +58,18 @@ SharedMemory::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
     int qdisp = 0;
     MPI_Win_shared_query(this->sh_win, 0, &qsize, &qdisp, &this->sh_start_ptr);
     MPI_Win_fence(0, this->sh_win);
-    this->sh_max_ptr = this->sh_start_ptr + qsize / sizeof(double);
+    this->sh_max_ptr = this->sh_start_ptr + qsize / sizeof(T);
     this->sh_end_ptr = this->sh_start_ptr;
 #endif
 }
 
-void SharedMemory::clear() {
+template <typename T> void SharedMemory<T>::clear() {
 #ifdef MRCPP_HAS_MPI
     this->sh_end_ptr = this->sh_start_ptr;
 #endif
 }
 
-SharedMemory::~SharedMemory() {
+template <typename T> SharedMemory<T>::~SharedMemory() {
 #ifdef MRCPP_HAS_MPI
     // deallocates the memory block
     MPI_Win_free(&this->sh_win);
@@ -88,7 +89,7 @@ SharedMemory::~SharedMemory() {
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
+template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
 #ifdef MRCPP_HAS_MPI
     auto &allocator = tree.getNodeAllocator();
 
@@ -101,8 +102,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
     Timer t1;
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Send(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, dst, tag + iChunk + 1, comm);
-        if (coeff)
-            MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
+        if (coeff) MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
 #endif
@@ -121,7 +121,7 @@ template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::
  *  to speed up communication, otherwise it will be communicated in a separate
  *  step before the main communication.
  */
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
+template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
     auto &allocator = tree.getNodeAllocator();
@@ -136,8 +136,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
     allocator.init(nChunks, coeff);
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
         MPI_Recv(allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize(), MPI_BYTE, src, tag + iChunk + 1, comm, &status);
-        if (coeff)
-            MPI_Recv(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
+        if (coeff) MPI_Recv(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, src, tag + iChunk + 1001, comm, &status);
     }
     println(10, " Time receive                " << std::setw(30) << t1.elapsed());
 
@@ -157,7 +156,7 @@ template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::
  *  @details This function should be called every time a shared function is
  *  updated, in order to update the local memory of each MPI process.
  */
-template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm) {
+template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm) {
 #ifdef MRCPP_HAS_MPI
     Timer t1;
     auto &allocator = tree.getNodeAllocator();
@@ -197,15 +196,27 @@ template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp:
     println(10, " Time share                  " << std::setw(30) << t1.elapsed());
 #endif
 }
+template class SharedMemory<double>;
+template class SharedMemory<ComplexDouble>;
 
-template void send_tree<1>(FunctionTree<1> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void send_tree<2>(FunctionTree<2> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void send_tree<3>(FunctionTree<3> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void recv_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
-template void share_tree<1>(FunctionTree<1> &tree, int src, int tag, mrcpp::mpi_comm comm);
-template void share_tree<2>(FunctionTree<2> &tree, int src, int tag, mrcpp::mpi_comm comm);
-template void share_tree<3>(FunctionTree<3> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void send_tree<1>(FunctionTree<1, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<2>(FunctionTree<2, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<3>(FunctionTree<3, double> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<1>(FunctionTree<1, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<2>(FunctionTree<2, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<3>(FunctionTree<3, double> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void share_tree<1>(FunctionTree<1, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<2>(FunctionTree<2, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<3>(FunctionTree<3, double> &tree, int src, int tag, mrcpp::mpi_comm comm);
+
+template void send_tree<1>(FunctionTree<1, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<2>(FunctionTree<2, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void send_tree<3>(FunctionTree<3, ComplexDouble> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<1>(FunctionTree<1, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<2>(FunctionTree<2, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void recv_tree<3>(FunctionTree<3, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff);
+template void share_tree<1>(FunctionTree<1, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<2>(FunctionTree<2, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template void share_tree<3>(FunctionTree<3, ComplexDouble> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

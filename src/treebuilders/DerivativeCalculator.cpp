@@ -42,8 +42,8 @@ using Eigen::MatrixXd;
 
 namespace mrcpp {
 
-template <int D>
-DerivativeCalculator<D>::DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f)
+template <int D, typename T>
+DerivativeCalculator<D, T>::DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D, T> &f)
         : applyDir(dir)
         , fTree(&f)
         , oper(&o) {
@@ -51,12 +51,12 @@ DerivativeCalculator<D>::DerivativeCalculator(int dir, DerivativeOperator<D> &o,
     initTimers();
 }
 
-template <int D> DerivativeCalculator<D>::~DerivativeCalculator() {
+template <int D, typename T> DerivativeCalculator<D, T>::~DerivativeCalculator() {
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
 }
 
-template <int D> void DerivativeCalculator<D>::initTimers() {
+template <int D, typename T> void DerivativeCalculator<D, T>::initTimers() {
     int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
         this->band_t.push_back(Timer(false));
@@ -65,13 +65,13 @@ template <int D> void DerivativeCalculator<D>::initTimers() {
     }
 }
 
-template <int D> void DerivativeCalculator<D>::clearTimers() {
+template <int D, typename T> void DerivativeCalculator<D, T>::clearTimers() {
     this->band_t.clear();
     this->calc_t.clear();
     this->norm_t.clear();
 }
 
-template <int D> void DerivativeCalculator<D>::printTimers() const {
+template <int D, typename T> void DerivativeCalculator<D, T>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = mrcpp_get_max_threads();
     printout(20, "\n\nthread ");
@@ -86,12 +86,12 @@ template <int D> void DerivativeCalculator<D>::printTimers() const {
     Printer::setPrecision(oldprec);
 }
 
-template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &inpNode, MWNode<D> &outNode) {
-    //if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
+template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D, T> &inpNode, MWNode<D, T> &outNode) {
+    // if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
     outNode.zeroCoefs();
     int nComp = (1 << D);
-    double tmpCoefs[outNode.getNCoefs()];
-    OperatorState<D> os(outNode, tmpCoefs);
+    T tmpCoefs[outNode.getNCoefs()];
+    OperatorState<D, T> os(outNode, tmpCoefs);
 
     os.setFNode(inpNode);
     os.setFIndex(inpNode.nodeIndex);
@@ -102,36 +102,34 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &inpNode, MWNo
         for (int gt = 0; gt < nComp; gt++) {
             os.setGComponent(gt);
             applyOperator_bw0(os);
-       }
+        }
     }
-   // Multiply appropriate scaling factor. TODO: Could be included elsewhere
-    const double scaling_factor =
-        1.0/std::pow(outNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
-    if(abs(scaling_factor-1.0)>MachineZero){
+    // Multiply appropriate scaling factor. TODO: Could be included elsewhere
+    const double scaling_factor = 1.0 / std::pow(outNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    if (abs(scaling_factor - 1.0) > MachineZero) {
         for (int i = 0; i < outNode.getNCoefs(); i++) outNode.getCoefs()[i] *= scaling_factor;
     }
-    outNode.calcNorms(); //TODO:required? norms are not used for now
+    outNode.calcNorms(); // TODO:required? norms are not used for now
 }
 
-
-template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
+template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D, T> &gNode) {
     gNode.zeroCoefs();
 
     int nComp = (1 << D);
-    double tmpCoefs[gNode.getNCoefs()];
-    OperatorState<D> os(gNode, tmpCoefs);
+    T tmpCoefs[gNode.getNCoefs()];
+    OperatorState<D, T> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
     this->band_t[mrcpp_get_thread_num()].resume();
     std::vector<NodeIndex<D>> idx_band;
-    MWNodeVector<D> fBand = makeOperBand(gNode, idx_band);
+    MWNodeVector<D, T> fBand = makeOperBand(gNode, idx_band);
     this->band_t[mrcpp_get_thread_num()].stop();
 
     this->calc_t[mrcpp_get_thread_num()].resume();
 
     for (int n = 0; n < fBand.size(); n++) {
-        MWNode<D> &fNode = *fBand[n];
+        MWNode<D, T> &fNode = *fBand[n];
         NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);
         os.setFIndex(fIdx);
@@ -146,8 +144,7 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
         }
     }
     // Multiply appropriate scaling factor
-    const double scaling_factor =
-        std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
+    const double scaling_factor = std::pow(gNode.getMWTree().getMRA().getWorldBox().getScalingFactor(this->applyDir), oper->getOrder());
     for (int i = 0; i < gNode.getNCoefs(); i++) gNode.getCoefs()[i] /= scaling_factor;
     this->calc_t[mrcpp_get_thread_num()].stop();
 
@@ -157,12 +154,11 @@ template <int D> void DerivativeCalculator<D>::calcNode(MWNode<D> &gNode) {
 }
 
 /** Return a vector of nodes in F affected by O, given a node in G */
-template <int D>
-MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band) {
+template <int D, typename T> MWNodeVector<D, T> DerivativeCalculator<D, T>::makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     assert(this->applyDir >= 0);
     assert(this->applyDir < D);
 
-    MWNodeVector<D> band;
+    MWNodeVector<D, T> band;
     const NodeIndex<D> &idx_0 = gNode.getNodeIndex();
 
     // Assumes given width only in applyDir, otherwise width = 0
@@ -182,10 +178,10 @@ MWNodeVector<D> DerivativeCalculator<D>::makeOperBand(const MWNode<D> &gNode, st
 }
 
 /** Apply a single operator component (term) to a single f-node assuming zero bandwidth */
-template <int D> void DerivativeCalculator<D>::applyOperator_bw0(OperatorState<D> &os) {
-    //cout<<" applyOperator "<<endl;
-    MWNode<D> &gNode = *os.gNode;
-    MWNode<D> &fNode = *os.fNode;
+template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator_bw0(OperatorState<D, T> &os) {
+    // cout<<" applyOperator "<<endl;
+    MWNode<D, T> &gNode = *os.gNode;
+    MWNode<D, T> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
     const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
@@ -213,12 +209,11 @@ template <int D> void DerivativeCalculator<D>::applyOperator_bw0(OperatorState<D
     tensorApplyOperComp(os);
 }
 
-
 /** Apply a single operator component (term) to a single f-node. Whether the
 operator actualy is applied is determined by a screening threshold. */
-template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &os) {
-    MWNode<D> &gNode = *os.gNode;
-    MWNode<D> &fNode = *os.fNode;
+template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator(OperatorState<D, T> &os) {
+    MWNode<D, T> &gNode = *os.gNode;
+    MWNode<D, T> &fNode = *os.fNode;
     const NodeIndex<D> &fIdx = *os.fIdx;
     const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
@@ -261,49 +256,12 @@ template <int D> void DerivativeCalculator<D>::applyOperator(OperatorState<D> &o
 
 /** Perform the required linear algebra operations in order to apply an
 operator component to a f-node in a n-dimensional tensor space. */
-template <int D> void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState<D> &os) {
-    double **aux = os.getAuxData();
+template <int D, typename T> void DerivativeCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
+    T **aux = os.getAuxData();
     double **oData = os.getOperData();
-#ifdef HAVE_BLAS
-    double mult = 0.0;
     for (int i = 0; i < D; i++) {
-        if (oData[i] != 0) {
-            if (i == D - 1) { // Last dir: Add up into g
-                mult = 1.0;
-            }
-            const double *f = aux[i];
-            double *g = const_cast<double *>(aux[i + 1]);
-            cblas_dgemm(CblasColMajor,
-                        CblasTrans,
-                        CblasNoTrans,
-                        os.kp1_dm1,
-                        os.kp1,
-                        os.kp1,
-                        1.0,
-                        f,
-                        os.kp1,
-                        oData[i],
-                        os.kp1,
-                        mult,
-                        g,
-                        os.kp1_dm1);
-        } else {
-            // Identity operator in direction i
-            Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
-            Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
-            if (oData[i] == 0) {
-                if (i == D - 1) { // Last dir: Add up into g
-                    g += f.transpose();
-                } else {
-                    g = f.transpose();
-                }
-            }
-        }
-    }
-#else
-    for (int i = 0; i < D; i++) {
-        Eigen::Map<MatrixXd> f(aux[i], os.kp1, os.kp1_dm1);
-        Eigen::Map<MatrixXd> g(aux[i + 1], os.kp1_dm1, os.kp1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> f(aux[i], os.kp1, os.kp1_dm1);
+        Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> g(aux[i + 1], os.kp1_dm1, os.kp1);
         if (oData[i] != nullptr) {
             Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
@@ -320,15 +278,18 @@ template <int D> void DerivativeCalculator<D>::tensorApplyOperComp(OperatorState
             }
         }
     }
-#endif
 }
 
-template <int D> MWNodeVector<D> *DerivativeCalculator<D>::getInitialWorkVector(MWTree<D> &tree) const {
+template <int D, typename T> MWNodeVector<D, T> *DerivativeCalculator<D, T>::getInitialWorkVector(MWTree<D, T> &tree) const {
     return tree.copyEndNodeTable();
 }
 
-template class DerivativeCalculator<1>;
-template class DerivativeCalculator<2>;
-template class DerivativeCalculator<3>;
+template class DerivativeCalculator<1, double>;
+template class DerivativeCalculator<2, double>;
+template class DerivativeCalculator<3, double>;
+
+template class DerivativeCalculator<1, ComplexDouble>;
+template class DerivativeCalculator<2, ComplexDouble>;
+template class DerivativeCalculator<3, ComplexDouble>;
 
 } // namespace mrcpp

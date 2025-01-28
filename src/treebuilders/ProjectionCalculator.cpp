@@ -30,18 +30,19 @@ using Eigen::MatrixXd;
 
 namespace mrcpp {
 
-template <int D> void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
+template <int D, typename T> void ProjectionCalculator<D, T>::calcNode(MWNode<D, T> &node) {
     MatrixXd exp_pts;
     node.getExpandedChildPts(exp_pts);
 
     assert(exp_pts.cols() == node.getNCoefs());
 
     Coord<D> r;
-    double *coefs = node.getCoefs();
+    T *coefs = node.getCoefs();
     for (int i = 0; i < node.getNCoefs(); i++) {
         for (int d = 0; d < D; d++) { r[d] = scaling_factor[d] * exp_pts(d, i); }
         coefs[i] = this->func->evalf(r);
     }
+
     node.cvTransform(Backward);
     node.mwTransform(Compression);
     node.setHasCoefs();
@@ -50,7 +51,7 @@ template <int D> void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
 
 /* Old interpolating version, somewhat faster
 template<int D>
-void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
+void ProjectionCalculator<D, T>::calcNode(MWNode<D, T> &node) {
     const ScalingBasis &sf = node.getMWTree().getMRA().getScalingBasis();
     if (sf.getScalingType() != Interpol) {
         NOT_IMPLEMENTED_ABORT;
@@ -104,8 +105,12 @@ void ProjectionCalculator<D>::calcNode(MWNode<D> &node) {
 }
 */
 
-template class ProjectionCalculator<1>;
-template class ProjectionCalculator<2>;
-template class ProjectionCalculator<3>;
+template class ProjectionCalculator<1, double>;
+template class ProjectionCalculator<2, double>;
+template class ProjectionCalculator<3, double>;
+
+template class ProjectionCalculator<1, ComplexDouble>;
+template class ProjectionCalculator<2, ComplexDouble>;
+template class ProjectionCalculator<3, ComplexDouble>;
 
 } // namespace mrcpp

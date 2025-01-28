@@ -29,7 +29,8 @@
 
 namespace mrcpp {
 
-template <int D> TreeIterator<D>::TreeIterator(int traverse, int iterator)
+template <int D, typename T>
+TreeIterator<D, T>::TreeIterator(int traverse, int iterator)
         : root(0)
         , nRoots(0)
         , mode(traverse)
@@ -38,7 +39,8 @@ template <int D> TreeIterator<D>::TreeIterator(int traverse, int iterator)
         , state(nullptr)
         , initialState(nullptr) {}
 
-template <int D> TreeIterator<D>::TreeIterator(MWTree<D> &tree, int traverse, int iterator)
+template <int D, typename T>
+TreeIterator<D, T>::TreeIterator(MWTree<D, T> &tree, int traverse, int iterator)
         : root(0)
         , nRoots(0)
         , mode(traverse)
@@ -49,23 +51,23 @@ template <int D> TreeIterator<D>::TreeIterator(MWTree<D> &tree, int traverse, in
     init(tree);
 }
 
-template <int D> TreeIterator<D>::~TreeIterator() {
+template <int D, typename T> TreeIterator<D, T>::~TreeIterator() {
     if (this->initialState != nullptr) delete this->initialState;
 }
 
-template<int D> int TreeIterator<D>::getChildIndex(int i) const {
-    const MWNode<D> &node = *this->state->node;
+template <int D, typename T> int TreeIterator<D, T>::getChildIndex(int i) const {
+    const MWNode<D, T> &node = *this->state->node;
     const HilbertPath<D> &h = node.getHilbertPath();
     // Legesgue type returns i, Hilbert type returns Hilbert index
     return (this->type == Hilbert) ? h.getZIndex(i) : i;
 }
 
-template <int D> bool TreeIterator<D>::next() {
+template <int D, typename T> bool TreeIterator<D, T>::next() {
     if (not this->state) return false;
     if (this->mode == TopDown) {
         if (this->tryNode()) return true;
     }
-    MWNode<D> &node = *this->state->node;
+    MWNode<D, T> &node = *this->state->node;
     if (checkDepth(node) and checkGenerated(node)) {
         const int nChildren = 1 << D;
         for (int i = 0; i < nChildren; i++) {
@@ -80,12 +82,12 @@ template <int D> bool TreeIterator<D>::next() {
     this->removeState();
     return next();
 }
-template <int D> bool TreeIterator<D>::nextParent() {
+template <int D, typename T> bool TreeIterator<D, T>::nextParent() {
     if (not this->state) return false;
     if (this->mode == BottomUp) {
         if (this->tryNode()) return true;
     }
-    MWNode<D> &node = *this->state->node;
+    MWNode<D, T> &node = *this->state->node;
     if (this->tryNextRootParent()) return true;
     if (checkDepth(node)) {
         if (this->tryParent()) return true;
@@ -97,73 +99,73 @@ template <int D> bool TreeIterator<D>::nextParent() {
     return nextParent();
 }
 
-template <int D> void TreeIterator<D>::init(MWTree<D> &tree) {
+template <int D, typename T> void TreeIterator<D, T>::init(MWTree<D, T> &tree) {
     this->root = 0;
     this->maxDepth = -1;
     this->nRoots = tree.getRootBox().size();
-    this->state = new IteratorNode<D>(&tree.getRootBox().getNode(this->root));
+    this->state = new IteratorNode<D, T>(&tree.getRootBox().getNode(this->root));
     // Save the first state so it can be properly deleted later
     this->initialState = this->state;
 }
 
-template <int D> bool TreeIterator<D>::tryNode() {
+template <int D, typename T> bool TreeIterator<D, T>::tryNode() {
     if (not this->state) { return false; }
     if (this->state->doneNode) { return false; }
     this->state->doneNode = true;
     return true;
 }
 
-template <int D> bool TreeIterator<D>::tryChild(int i) {
+template <int D, typename T> bool TreeIterator<D, T>::tryChild(int i) {
     if (not this->state) { return false; }
     if (this->state->doneChild[i]) { return false; }
     this->state->doneChild[i] = true;
     if (this->state->node->isLeafNode()) { return false; }
-    MWNode<D> *child = &this->state->node->getMWChild(i);
-    this->state = new IteratorNode<D>(child, this->state);
+    MWNode<D, T> *child = &this->state->node->getMWChild(i);
+    this->state = new IteratorNode<D, T>(child, this->state);
     return next();
 }
 
-template <int D> bool TreeIterator<D>::tryParent() {
+template <int D, typename T> bool TreeIterator<D, T>::tryParent() {
     if (not this->state) return false;
     if (this->state->doneParent) return false;
     this->state->doneParent = true;
     if (not this->state->node->hasParent()) return false;
-    MWNode<D> *parent = &this->state->node->getMWParent();
-    this->state = new IteratorNode<D>(parent, this->state);
+    MWNode<D, T> *parent = &this->state->node->getMWParent();
+    this->state = new IteratorNode<D, T>(parent, this->state);
     return nextParent();
 }
 
-template <int D> bool TreeIterator<D>::tryNextRoot() {
+template <int D, typename T> bool TreeIterator<D, T>::tryNextRoot() {
     if (not this->state) { return false; }
     if (not this->state->node->isRootNode()) { return false; }
     this->root++;
     if (this->root >= this->nRoots) { return false; }
-    MWNode<D> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
-    this->state = new IteratorNode<D>(nextRoot, this->state);
+    MWNode<D, T> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
+    this->state = new IteratorNode<D, T>(nextRoot, this->state);
     return next();
 }
 
-template <int D> bool TreeIterator<D>::tryNextRootParent() {
+template <int D, typename T> bool TreeIterator<D, T>::tryNextRootParent() {
     if (not this->state) { return false; }
     if (not this->state->node->isRootNode()) { return false; }
     this->root++;
     if (this->root >= this->nRoots) { return false; }
-    MWNode<D> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
-    this->state = new IteratorNode<D>(nextRoot, this->state);
+    MWNode<D, T> *nextRoot = &state->node->getMWTree().getRootBox().getNode(root);
+    this->state = new IteratorNode<D, T>(nextRoot, this->state);
     return nextParent();
 }
 
-template <int D> void TreeIterator<D>::removeState() {
+template <int D, typename T> void TreeIterator<D, T>::removeState() {
     if (this->state == this->initialState) { this->initialState = nullptr; }
     if (this->state != nullptr) {
-        IteratorNode<D> *spare = this->state;
+        IteratorNode<D, T> *spare = this->state;
         this->state = spare->next;
         spare->next = nullptr;
         delete spare;
     }
 }
 
-template <int D> void TreeIterator<D>::setTraverse(int traverse) {
+template <int D, typename T> void TreeIterator<D, T>::setTraverse(int traverse) {
     switch (traverse) {
         case TopDown:
             this->mode = TopDown;
@@ -177,7 +179,7 @@ template <int D> void TreeIterator<D>::setTraverse(int traverse) {
     }
 }
 
-template <int D> void TreeIterator<D>::setIterator(int iterator) {
+template <int D, typename T> void TreeIterator<D, T>::setIterator(int iterator) {
     switch (iterator) {
         case Lebesgue:
             this->type = Lebesgue;
@@ -191,7 +193,7 @@ template <int D> void TreeIterator<D>::setIterator(int iterator) {
     }
 }
 
-template <int D> bool TreeIterator<D>::checkDepth(const MWNode<D> &node) const {
+template <int D, typename T> bool TreeIterator<D, T>::checkDepth(const MWNode<D, T> &node) const {
     if (this->maxDepth < 0) {
         return true;
     } else if (node.getDepth() < this->maxDepth) {
@@ -201,7 +203,7 @@ template <int D> bool TreeIterator<D>::checkDepth(const MWNode<D> &node) const {
     }
 }
 
-template <int D> bool TreeIterator<D>::checkGenerated(const MWNode<D> &node) const {
+template <int D, typename T> bool TreeIterator<D, T>::checkGenerated(const MWNode<D, T> &node) const {
     if (node.isEndNode() and not this->returnGenNodes) {
         return false;
     } else {
@@ -209,8 +211,8 @@ template <int D> bool TreeIterator<D>::checkGenerated(const MWNode<D> &node) con
     }
 }
 
-template <int D>
-IteratorNode<D>::IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx)
+template <int D, typename T>
+IteratorNode<D, T>::IteratorNode(MWNode<D, T> *nd, IteratorNode<D, T> *nx)
         : node(nd)
         , next(nx)
         , doneNode(false)
@@ -219,8 +221,12 @@ IteratorNode<D>::IteratorNode(MWNode<D> *nd, IteratorNode<D> *nx)
     for (int i = 0; i < nChildren; i++) { this->doneChild[i] = false; }
 }
 
-template class TreeIterator<1>;
-template class TreeIterator<2>;
-template class TreeIterator<3>;
+template class TreeIterator<1, double>;
+template class TreeIterator<2, double>;
+template class TreeIterator<3, double>;
+
+template class TreeIterator<1, ComplexDouble>;
+template class TreeIterator<2, ComplexDouble>;
+template class TreeIterator<3, ComplexDouble>;
 
 } // namespace mrcpp

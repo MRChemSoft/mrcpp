@@ -52,69 +52,81 @@ namespace mrcpp {
  * uninitialized, and its square norm will be negative (minus one).
  */
 
-template <int D> class FunctionTree final : public MWTree<D>, public RepresentableFunction<D> {
+template <int D, typename T> class FunctionTree final : public MWTree<D, T>, public RepresentableFunction<D, T> {
 public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name)
             : FunctionTree(mra, nullptr, name) {}
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory *sh_mem = nullptr, const std::string &name = "nn");
-    FunctionTree(const FunctionTree<D> &tree) = delete;
-    FunctionTree<D> &operator=(const FunctionTree<D> &tree) = delete;
+    FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem = nullptr, const std::string &name = "nn");
+    FunctionTree(const FunctionTree<D, T> &tree) = delete;
+    FunctionTree<D, T> &operator=(const FunctionTree<D, T> &tree) = delete;
     ~FunctionTree() override;
 
-    double integrate() const;
+    T integrate() const;
     double integrateEndNodes(RepresentableFunction_M &f);
-    double evalf_precise(const Coord<D> &r);
-    double evalf(const Coord<D> &r) const override;
+    T evalf_precise(const Coord<D> &r);
+    T evalf(const Coord<D> &r) const override;
 
     int getNGenNodes() const { return getGenNodeAllocator().getNNodes(); }
 
-    void getEndValues(Eigen::VectorXd &data);
-    void setEndValues(Eigen::VectorXd &data);
+    void getEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data);
+    void setEndValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &data);
 
     void saveTree(const std::string &file);
+    void saveTreeTXT(const std::string &file);
     void loadTree(const std::string &file);
+    void loadTreeTXT(const std::string &file);
 
     // In place operations
     void square();
     void power(double p);
-    void rescale(double c);
+    void rescale(T c);
     void normalize();
-    void add(double c, FunctionTree<D> &inp);
-    void absadd(double c, FunctionTree<D> &inp);
-    void multiply(double c, FunctionTree<D> &inp);
-    void map(FMap fmap);
+    void add(T c, FunctionTree<D, T> &inp);
+    void add_inplace(T c, FunctionTree<D, T> &inp);
+    void absadd(T c, FunctionTree<D, T> &inp);
+    void multiply(T c, FunctionTree<D, T> &inp);
+    void map(FMap<T, T> fmap);
 
     int getNChunks() { return this->getNodeAllocator().getNChunks(); }
     int getNChunksUsed() { return this->getNodeAllocator().getNChunksUsed(); }
 
     int crop(double prec, double splitFac = 1.0, bool absPrec = true);
 
-    FunctionNode<D> &getEndFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->getEndMWNode(i)); }
-    FunctionNode<D> &getRootFuncNode(int i) { return static_cast<FunctionNode<D> &>(this->rootBox.getNode(i)); }
+    FunctionNode<D, T> &getEndFuncNode(int i) { return static_cast<FunctionNode<D, T> &>(this->getEndMWNode(i)); }
+    FunctionNode<D, T> &getRootFuncNode(int i) { return static_cast<FunctionNode<D, T> &>(this->rootBox.getNode(i)); }
 
-    NodeAllocator<D> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
-    const NodeAllocator<D> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
+    NodeAllocator<D, T> &getGenNodeAllocator() { return *this->genNodeAllocator_p; }
+    const NodeAllocator<D, T> &getGenNodeAllocator() const { return *this->genNodeAllocator_p; }
 
-    const FunctionNode<D> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->getEndMWNode(i)); }
-    const FunctionNode<D> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D> &>(this->rootBox.getNode(i)); }
+    const FunctionNode<D, T> &getEndFuncNode(int i) const { return static_cast<const FunctionNode<D, T> &>(this->getEndMWNode(i)); }
+    const FunctionNode<D, T> &getRootFuncNode(int i) const { return static_cast<const FunctionNode<D, T> &>(this->rootBox.getNode(i)); }
 
     void deleteGenerated();
     void deleteGeneratedParents();
 
-    void makeCoeffVector(std::vector<double *> &coefs,
+    void makeCoeffVector(std::vector<T *> &coefs,
                          std::vector<int> &indices,
                          std::vector<int> &parent_indices,
                          std::vector<double> &scalefac,
                          int &max_index,
-                         MWTree<D> &refTree,
-                         std::vector<MWNode<D> *> *refNodes = nullptr);
-    void makeTreefromCoeff(MWTree<D> &refTree, std::vector<double *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode = "adaptive");
-    void appendTreeNoCoeff(MWTree<D> &inTree);
-
+                         MWTree<D, double> &refTree,
+                         std::vector<MWNode<D, double> *> *refNodes = nullptr);
+    void makeTreefromCoeff(MWTree<D, double> &refTree, std::vector<T *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode = "adaptive");
+    void appendTreeNoCoeff(MWTree<D, double> &inTree);
+    void appendTreeNoCoeff(MWTree<D, ComplexDouble> &inTree);
+    void CopyTree(FunctionTree<D, double> &inTree);
     // tools for use of local (nodes are stored in Bank) representation
     int saveNodesAndRmCoeff(); // put all nodes coefficients in Bank and delete all coefficients
+    void deep_copy(FunctionTree<D, T> *out);
+    FunctionTree<D, double> *Real();
+    FunctionTree<D, double> *Imag();
+    void CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&out);
+    void CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&out);
+    void CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&out);
+    void CopyTreeToReal(FunctionTree<3, double> *&out); // for testing
+
 protected:
-    std::unique_ptr<NodeAllocator<D>> genNodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};
     std::ostream &print(std::ostream &o) const override;
 
     void allocRootNodes();

@@ -24,47 +24,37 @@
  */
 
 #include "JpowerIntegrals.h"
-#include <algorithm>    // std::find_if_not
-
+#include <algorithm> // std::find_if_not
 
 namespace mrcpp {
 
-
-JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double threshold)
-{
+JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double threshold) {
     this->scaling = scaling;
     int N = 1 << scaling;
-    for(int l = 0; l < N; l++  )
-        integrals.push_back( calculate_J_power_integrals(l, a, M, threshold) );
-    for(int l = 1 - N; l < 0; l++  )
-        integrals.push_back( calculate_J_power_integrals(l, a, M, threshold) );
+    for (int l = 0; l < N; l++) integrals.push_back(calculate_J_power_integrals(l, a, M, threshold));
+    for (int l = 1 - N; l < 0; l++) integrals.push_back(calculate_J_power_integrals(l, a, M, threshold));
 }
-
 
 /// @brief in progress
 /// @param index - interger lying in the interval \f$ [ -2^n + 1, \ldots, 2^n - 1 ] \f$.
 /// @return in progress
-std::vector<std::complex<double>> & JpowerIntegrals::operator[](int index)
-{
-    if( index < 0 ) index += integrals.size();
+std::vector<std::complex<double>> &JpowerIntegrals::operator[](int index) {
+    if (index < 0) index += integrals.size();
     return integrals[index];
 }
 
-std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M, double threshold)
-{
+std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M, double threshold) {
     using namespace std::complex_literals;
 
     std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
     std::complex<double> beta(0, 0.5 / a);
     auto alpha = static_cast<double>(l) * beta;
-    
+
     std::vector<std::complex<double>> J = {0.0, J_0};
 
-    for (int m = 0; m < M; m++)
-    {
+    for (int m = 0; m < M; m++) {
         std::complex<double> term1 = J[J.size() - 1] * alpha;
-        std::complex<double> term2
-        = J[J.size() - 2] * beta * static_cast<double>(m) / static_cast<double>(m + 2);
+        std::complex<double> term2 = J[J.size() - 2] * beta * static_cast<double>(m) / static_cast<double>(m + 2);
         std::complex<double> last = (term1 + term2) / static_cast<double>(m + 3);
         J.push_back(last);
     }
@@ -73,14 +63,10 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
     return J;
 }
 
-
 /// @details Removes negligible elements in \b J until it reaches a considerable value.
-void JpowerIntegrals::crop(std::vector<std::complex<double>> & J, double threshold)
-{
+void JpowerIntegrals::crop(std::vector<std::complex<double>> &J, double threshold) {
     // Lambda function to check if an element is negligible
-    auto isNegligible = [threshold](const std::complex<double>& c) {
-        return std::abs(c.real()) < threshold && std::abs(c.imag()) < threshold;
-    };
+    auto isNegligible = [threshold](const std::complex<double> &c) { return std::abs(c.real()) < threshold && std::abs(c.imag()) < threshold; };
     // Remove negligible elements from the end of the vector
     J.erase(std::find_if_not(J.rbegin(), J.rend(), isNegligible).base(), J.end());
 }

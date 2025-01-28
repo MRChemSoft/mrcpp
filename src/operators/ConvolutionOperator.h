@@ -32,7 +32,7 @@ namespace mrcpp {
 /** @class ConvolutionOperator
  *
  * @brief Convolution defined by a Gaussian expansion
- * 
+ *
  * @details Represents the operator
  * \f[
  * 	    T = \sum_{m=1}^M
@@ -51,13 +51,13 @@ namespace mrcpp {
  *      \sum_{m=1}^M \alpha_m \exp \left( - \beta_m |x|^2 \right)
  * \f]
  * which is passed as a parameter to the first two constructors.
- *  
+ *
  * @note Every \f$ T_d \left( \beta_m, \sqrt[D]{| \alpha_m |} \right) \f$ is the same
  * operator associated with the one-dimensional variable \f$ x_d \f$ for \f$ d = 1, \ldots, D \f$.
- * 
+ *
  * \todo: One may want to change the logic so that \f$ D \f$-root is evaluated on the previous step,
  * namely, when \f$ \alpha_m, \beta_m \f$ are calculated.
- * 
+ *
  */
 template <int D> class ConvolutionOperator : public MWOperator<D> {
 public:
@@ -71,9 +71,9 @@ public:
 
 protected:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
-        : MWOperator<D>(mra, mra.getRootScale(), -10) {}
+            : MWOperator<D>(mra, mra.getRootScale(), -10) {}
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
-        : MWOperator<D>(mra, root, reach) {}
+            : MWOperator<D>(mra, root, reach) {}
 
     void initialize(GaussExp<1> &kernel, double k_prec, double o_prec);
     void setBuildPrec(double prec) { this->build_prec = prec; }

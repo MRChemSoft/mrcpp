@@ -28,8 +28,8 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 
-#include "functions/Gaussian.h"
 #include "functions/GaussExp.h"
+#include "functions/Gaussian.h"
 
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/OperatorAdaptor.h"
@@ -75,8 +75,7 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
-template <int D>
-void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
+template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
     auto k_mra = this->getKernelMRA();
     auto o_mra = this->getOperatorMRA();
 
@@ -86,10 +85,10 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
     for (int i = 0; i < kernel.size(); i++) {
         // Rescale Gaussian for D-dim application
         auto *k_func = kernel.getFunc(i).copy();
-        k_func->setCoef( std::copysign( std::pow(std::abs(k_func->getCoef()), 1.0/D), k_func->getCoef() ) );
+        k_func->setCoef(std::copysign(std::pow(std::abs(k_func->getCoef()), 1.0 / D), k_func->getCoef()));
 
         FunctionTree<1> k_tree(k_mra);
-        mrcpp::build_grid(k_tree, *k_func);    // Generate empty grid to hold narrow Gaussian
+        mrcpp::build_grid(k_tree, *k_func);      // Generate empty grid to hold narrow Gaussian
         mrcpp::project(k_prec, k_tree, *k_func); // Project Gaussian starting from the empty grid
         delete k_func;
 
@@ -108,8 +107,7 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
     }
 }
 
-template <int D>
-MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
+template <int D> MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
     const BoundingBox<D> &box = this->MRA.getWorldBox();
     const ScalingBasis &basis = this->MRA.getScalingBasis();
 

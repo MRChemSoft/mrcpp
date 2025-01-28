@@ -40,12 +40,12 @@
 
 namespace mrcpp {
 
-template <int D> class NodeAllocator final {
+template <int D, typename T> class NodeAllocator final {
 public:
-    NodeAllocator(OperatorTree *tree, SharedMemory *mem, int coefsPerNode, int nodesPerChunk);
-    NodeAllocator(FunctionTree<D> *tree, SharedMemory *mem, int coefsPerNode, int nodesPerChunk);
-    NodeAllocator(const NodeAllocator<D> &tree) = delete;
-    NodeAllocator<D> &operator=(const NodeAllocator<D> &tree) = delete;
+    NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
+    NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
+    NodeAllocator(const NodeAllocator<D, T> &tree) = delete;
+    NodeAllocator<D, T> &operator=(const NodeAllocator<D, T> &tree) = delete;
     ~NodeAllocator();
 
     int alloc(int nNodes, bool coefs = true);
@@ -63,38 +63,39 @@ public:
     int getNChunks() const { return this->nodeChunks.size(); }
     int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; }
     int getNodeChunkSize() const { return this->maxNodesPerChunk * this->sizeOfNode; }
-    int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(double); }
+    int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(T); }
+    int getMaxNodesPerChunk() const { return this->maxNodesPerChunk; }
 
-    double * getCoef_p(int sIdx);
-    MWNode<D> * getNode_p(int sIdx);
+    T *getCoef_p(int sIdx);
+    MWNode<D, T> *getNode_p(int sIdx);
 
-    double * getCoefChunk(int i) { return this->coefChunks[i]; }
-    MWNode<D> * getNodeChunk(int i) { return this->nodeChunks[i]; }
+    T *getCoefChunk(int i) { return this->coefChunks[i]; }
+    MWNode<D, T> *getNodeChunk(int i) { return this->nodeChunks[i]; }
 
     void print() const;
 
 protected:
-    int nNodes{0};                  // number of nodes actually in use
-    int topStack{0};                // index of last node on stack
-    int sizeOfNode{0};              // sizeof(NodeType)
-    int coefsPerNode{0};            // number of coef for one node
-    int maxNodesPerChunk{0};        // max number of nodes per allocation
+    int nNodes{0};           // number of nodes actually in use
+    int topStack{0};         // index of last node on stack
+    int sizeOfNode{0};       // sizeof(NodeType)
+    int coefsPerNode{0};     // number of coef for one node
+    int maxNodesPerChunk{0}; // max number of nodes per allocation
 
     std::vector<int> stackStatus{};
-    std::vector<double *> coefChunks{};
-    std::vector<MWNode<D> *> nodeChunks{};
+    std::vector<T *> coefChunks{};
+    std::vector<MWNode<D, T> *> nodeChunks{};
 
-    char *cvptr{nullptr};           // pointer to virtual table
-    MWNode<D> *last_p{nullptr};     // pointer just after the last active node, i.e. where to put next node
-    MWTree<D> *tree_p{nullptr};     // pointer to external object
-    SharedMemory *shmem_p{nullptr}; // pointer to external object
+    char *cvptr{nullptr};              // pointer to virtual table
+    MWNode<D, T> *last_p{nullptr};     // pointer just after the last active node, i.e. where to put next node
+    MWTree<D, T> *tree_p{nullptr};     // pointer to external object
+    SharedMemory<T> *shmem_p{nullptr}; // pointer to external object
 
     bool isShared() const { return (this->shmem_p != nullptr); }
-    MWTree<D> &getTree() { return *this->tree_p; }
-    SharedMemory &getMemory() { return *this->shmem_p; }
+    MWTree<D, T> &getTree() { return *this->tree_p; }
+    SharedMemory<T> &getMemory() { return *this->shmem_p; }
 
-    double * getCoefNoLock(int sIdx);
-    MWNode<D> * getNodeNoLock(int sIdx);
+    T *getCoefNoLock(int sIdx);
+    MWNode<D, T> *getNodeNoLock(int sIdx);
 
     void moveNodes(int nNodes, int srcIdx, int dstIdx);
     void appendChunk(bool coefs);
@@ -106,6 +107,5 @@ protected:
     omp_lock_t omp_lock;
 #endif
 };
-
 
 } // namespace mrcpp

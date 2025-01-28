@@ -26,17 +26,19 @@
 #pragma once
 
 #include "MRCPP/mrcpp_declarations.h"
+#include "utils/math_utils.h"
 
 namespace mrcpp {
 namespace tree_utils {
 
-template <int D> bool split_check(const MWNode<D> &node, double prec, double split_fac, bool abs_prec);
+template <int D, typename T> bool split_check(const MWNode<D, T> &node, double prec, double split_fac, bool abs_prec);
 
-template <int D> void make_node_table(MWTree<D> &tree, MWNodeVector<D> &table);
-template <int D> void make_node_table(MWTree<D> &tree, std::vector<MWNodeVector<D>> &table);
+template <int D, typename T> void make_node_table(MWTree<D, T> &tree, MWNodeVector<D, T> &table);
+template <int D, typename T> void make_node_table(MWTree<D, T> &tree, std::vector<MWNodeVector<D, T>> &table);
 
-template <int D> void mw_transform(const MWTree<D> &tree, double *coeff_in, double *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
-template <int D> void mw_transform_back(MWTree<D> &tree, double *coeff_in, double *coeff_out, int stride);
+template <int D, typename T> void mw_transform(const MWTree<D, T> &tree, T *coeff_in, T *coeff_out, bool readOnlyScaling, int stride, bool overwrite = true);
+// template <int D, typename T> void mw_transform_back(MWTree<D, T> &tree, T *coeff_in, T *coeff_out, int stride);
+template <typename T> void mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride);
 
 } // namespace tree_utils
 } // namespace mrcpp

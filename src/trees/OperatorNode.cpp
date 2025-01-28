@@ -42,16 +42,16 @@ void OperatorNode::dealloc() {
     this->tree->getNodeAllocator().dealloc(sIdx);
 }
 
-/** 
+/**
  * @brief Calculate one specific component norm of the OperatorNode (TODO: needs to be specified more).
- * 
+ *
  * @param[in] i: TODO: deens to be specified
  *
  * @details OperatorNorms are defined as matrix 2-norms that are expensive to calculate.
  * Thus we calculate some cheaper upper bounds for this norm for thresholding.
  * First a simple vector norm, then a product of the 1- and infinity-norm.
  * (TODO: needs to be more presiced).
- * 
+ *
  */
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
@@ -64,7 +64,7 @@ double OperatorNode::calcComponentNorm(int i) const {
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
     const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
-    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1);   //one can use MatrixXd OperatorNode::getComponent(int i)
+    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1); // one can use MatrixXd OperatorNode::getComponent(int i)
 
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
@@ -79,7 +79,6 @@ double OperatorNode::calcComponentNorm(int i) const {
     return norm;
 }
 
-
 /** @brief Matrix elements of the non-standard form.
  *
  * @param[in] i: Index enumerating the matrix type in the non-standard form.
@@ -92,10 +91,9 @@ double OperatorNode::calcComponentNorm(int i) const {
  * One of these matrices is returned by the method according to the choice of the index parameter
  * \f$ i = 0, 1, 2, 3 \f$, respectively.
  * For example, \f$ \alpha_l^n = \text{getComponent}(3) \f$.
- * 
+ *
  */
-MatrixXd OperatorNode::getComponent(int i)
-{
+MatrixXd OperatorNode::getComponent(int i) {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
     double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));

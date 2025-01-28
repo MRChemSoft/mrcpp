@@ -33,9 +33,7 @@ double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, doubl
 
 template <int D> double function_utils::calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b) {
     double S = 1.0;
-    for (int d = 0; d < D; d++) {
-        S *= ObaraSaika_ab(a.getPower()[d], b.getPower()[d], a.getPos()[d], b.getPos()[d], a.getExp()[d], b.getExp()[d]);
-    }
+    for (int d = 0; d < D; d++) { S *= ObaraSaika_ab(a.getPower()[d], b.getPower()[d], a.getPos()[d], b.getPos()[d], a.getExp()[d], b.getExp()[d]); }
     S *= a.getCoef() * b.getCoef();
     return S;
 }
@@ -117,4 +115,5 @@ double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, dou
 template double function_utils::calc_overlap<1>(const GaussFunc<1> &a, const GaussFunc<1> &b);
 template double function_utils::calc_overlap<2>(const GaussFunc<2> &a, const GaussFunc<2> &b);
 template double function_utils::calc_overlap<3>(const GaussFunc<3> &a, const GaussFunc<3> &b);
+
 } // namespace mrcpp

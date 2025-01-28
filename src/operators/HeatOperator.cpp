@@ -36,7 +36,7 @@ namespace mrcpp {
  *  @param[in] prec: Build precision
  *  @details This will project a kernel of a single gaussian with
  *  exponent \f$ 1/(4t) \f$.
- * 
+ *
  */
 template <int D>
 HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec)
@@ -64,11 +64,11 @@ HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, d
  *  @details This will project a kernel of a single gaussian with
  *           exponent \f$ 1/(4t) \f$.
  *           This version of the constructor
- *           is used for calculations within periodic boundary conditions (PBC). 
+ *           is used for calculations within periodic boundary conditions (PBC).
  *           The \a root parameter is the coarsest negative scale at wich the operator
  *           is applied. The \a reach parameter is the bandwidth of the operator at
  *           the root scale. For details see \ref MWOperator
- * 
+ *
  */
 template <int D>
 HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec, int root, int reach)

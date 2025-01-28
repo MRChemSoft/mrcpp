@@ -36,50 +36,50 @@
 
 namespace mrcpp {
 
-template <int D>
-NodeBox<D>::NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb)
+template <int D, typename T>
+NodeBox<D, T>::NodeBox(const NodeIndex<D> &idx, const std::array<int, D> &nb)
         : BoundingBox<D>(idx, nb)
         , nOccupied(0)
         , nodes(nullptr) {
     allocNodePointers();
 }
 
-template <int D>
-NodeBox<D>::NodeBox(const BoundingBox<D> &box)
+template <int D, typename T>
+NodeBox<D, T>::NodeBox(const BoundingBox<D> &box)
         : BoundingBox<D>(box)
         , nOccupied(0)
         , nodes(nullptr) {
     allocNodePointers();
 }
 
-template <int D>
-NodeBox<D>::NodeBox(const NodeBox<D> &box)
+template <int D, typename T>
+NodeBox<D, T>::NodeBox(const NodeBox<D, T> &box)
         : BoundingBox<D>(box)
         , nOccupied(0)
         , nodes(nullptr) {
     allocNodePointers();
 }
 
-template <int D> void NodeBox<D>::allocNodePointers() {
+template <int D, typename T> void NodeBox<D, T>::allocNodePointers() {
     assert(this->nodes == nullptr);
     int nNodes = this->size();
-    this->nodes = new MWNode<D> *[nNodes];
+    this->nodes = new MWNode<D, T> *[nNodes];
     for (int n = 0; n < nNodes; n++) { this->nodes[n] = nullptr; }
     this->nOccupied = 0;
 }
 
-template <int D> NodeBox<D>::~NodeBox() {
+template <int D, typename T> NodeBox<D, T>::~NodeBox() {
     deleteNodes();
 }
 
-template <int D> void NodeBox<D>::deleteNodes() {
+template <int D, typename T> void NodeBox<D, T>::deleteNodes() {
     if (this->nodes == nullptr) { return; }
     for (int n = 0; n < this->size(); n++) { clearNode(n); }
     delete[] this->nodes;
     this->nodes = nullptr;
 }
 
-template <int D> void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
+template <int D, typename T> void NodeBox<D, T>::setNode(int bIdx, MWNode<D, T> **node) {
     assert(bIdx >= 0);
     assert(bIdx < this->totBoxes);
     clearNode(bIdx);
@@ -89,44 +89,48 @@ template <int D> void NodeBox<D>::setNode(int bIdx, MWNode<D> **node) {
     *node = nullptr;
 }
 
-template <int D> MWNode<D> &NodeBox<D>::getNode(NodeIndex<D> nIdx) {
+template <int D, typename T> MWNode<D, T> &NodeBox<D, T>::getNode(NodeIndex<D> nIdx) {
     int bIdx = this->getBoxIndex(nIdx);
     return getNode(bIdx);
 }
 
-template <int D> MWNode<D> &NodeBox<D>::getNode(Coord<D> r) {
+template <int D, typename T> MWNode<D, T> &NodeBox<D, T>::getNode(Coord<D> r) {
     int bIdx = this->getBoxIndex(r);
     if (bIdx < 0) MSG_ERROR("Coord out of bounds");
     return getNode(bIdx);
 }
 
-template <int D> MWNode<D> &NodeBox<D>::getNode(int bIdx) {
+template <int D, typename T> MWNode<D, T> &NodeBox<D, T>::getNode(int bIdx) {
     assert(bIdx >= 0);
     assert(bIdx < this->totBoxes);
     assert(this->nodes[bIdx] != nullptr);
     return *this->nodes[bIdx];
 }
 
-template <int D> const MWNode<D> &NodeBox<D>::getNode(NodeIndex<D> nIdx) const {
+template <int D, typename T> const MWNode<D, T> &NodeBox<D, T>::getNode(NodeIndex<D> nIdx) const {
     int bIdx = this->getBoxIndex(nIdx);
     return getNode(bIdx);
 }
 
-template <int D> const MWNode<D> &NodeBox<D>::getNode(Coord<D> r) const {
+template <int D, typename T> const MWNode<D, T> &NodeBox<D, T>::getNode(Coord<D> r) const {
     int bIdx = this->getBoxIndex(r);
     if (bIdx < 0) MSG_ERROR("Coord out of bounds");
     return getNode(bIdx);
 }
 
-template <int D> const MWNode<D> &NodeBox<D>::getNode(int bIdx) const {
+template <int D, typename T> const MWNode<D, T> &NodeBox<D, T>::getNode(int bIdx) const {
     assert(bIdx >= 0);
     assert(bIdx < this->totBoxes);
     assert(this->nodes[bIdx] != nullptr);
     return *this->nodes[bIdx];
 }
 
-template class NodeBox<1>;
-template class NodeBox<2>;
-template class NodeBox<3>;
+template class NodeBox<1, double>;
+template class NodeBox<2, double>;
+template class NodeBox<3, double>;
+
+template class NodeBox<1, ComplexDouble>;
+template class NodeBox<2, ComplexDouble>;
+template class NodeBox<3, ComplexDouble>;
 
 } // namespace mrcpp

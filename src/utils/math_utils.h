@@ -66,7 +66,7 @@ double matrix_norm_inf(const Eigen::MatrixXd &M);
 double matrix_norm_1(const Eigen::MatrixXd &M);
 double matrix_norm_2(const Eigen::MatrixXd &M);
 
-void apply_filter(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
+template <typename T> void apply_filter(T *out, T *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
 void tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d, const Eigen::MatrixXd &primitive, Eigen::VectorXd &expanded);
 

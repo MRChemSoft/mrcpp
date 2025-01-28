@@ -41,7 +41,6 @@
 #include "trees/BandWidth.h"
 #include "operators/HeatOperator.h"
 #include "functions/special_functions.h"
-#include "treebuilders/complex_apply.h"
 #include "treebuilders/add.h"
 
 //using namespace mrcpp;
@@ -56,7 +55,7 @@ TEST_CASE("Apply heat evolution operator", "[apply_heat_evolution], [heat_evolut
     const auto order = 5;
     const auto prec = 1.0e-8;
 
-    
+
     // Time moment:
     double delta_t = 0.0005;
 
@@ -67,7 +66,7 @@ TEST_CASE("Apply heat evolution operator", "[apply_heat_evolution], [heat_evolut
 
     // Time evolution operatror Exp(delta_t)
     mrcpp::HeatOperator<1> H(MRA, delta_t, prec);
-    
+
     // Analytical solution parameters for psi(x, t)
     double sigma = 0.001;
     double x0 = 0.5;
@@ -81,7 +80,7 @@ TEST_CASE("Apply heat evolution operator", "[apply_heat_evolution], [heat_evolut
     mrcpp::project<1>(prec, f_tree, f);
     mrcpp::FunctionTree<1> g_tree(MRA);
     mrcpp::project<1>(prec, g_tree, g);
-    
+
     // Apply operator H = Exp(delta_t) f(x)
     mrcpp::FunctionTree<1> output(MRA);
     mrcpp::apply(prec, output, H, f_tree);

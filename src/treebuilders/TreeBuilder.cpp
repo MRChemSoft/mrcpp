@@ -35,13 +35,12 @@
 
 namespace mrcpp {
 
-template <int D>
-void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeAdaptor<D> &adaptor, int maxIter) const {
+template <int D, typename T> void TreeBuilder<D, T>::build(MWTree<D, T> &tree, TreeCalculator<D, T> &calculator, TreeAdaptor<D, T> &adaptor, int maxIter) const {
     Timer calc_t(false), split_t(false), norm_t(false);
     println(10, " == Building tree");
 
-    MWNodeVector<D> *newVec = nullptr;
-    MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
+    MWNodeVector<D, T> *newVec = nullptr;
+    MWNodeVector<D, T> *workVec = calculator.getInitialWorkVector(tree);
 
     double sNorm = 0.0;
     double wNorm = 0.0;
@@ -69,7 +68,7 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
         norm_t.stop();
 
         split_t.resume();
-        newVec = new MWNodeVector<D>;
+        newVec = new MWNodeVector<D, T>;
         if (iter >= maxIter and maxIter >= 0) workVec->clear();
         adaptor.splitNodeVector(*newVec, *workVec);
         split_t.stop();
@@ -87,11 +86,11 @@ void TreeBuilder<D>::build(MWTree<D> &tree, TreeCalculator<D> &calculator, TreeA
     print::time(10, "Time split", split_t);
 }
 
-template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &calculator) const {
+template <int D, typename T> void TreeBuilder<D, T>::clear(MWTree<D, T> &tree, TreeCalculator<D, T> &calculator) const {
     println(10, " == Clearing tree");
 
     Timer clean_t;
-    MWNodeVector<D> nodeVec;
+    MWNodeVector<D, T> nodeVec;
     tree_utils::make_node_table(tree, nodeVec);
     calculator.calcNodeVector(nodeVec); // clear all coefficients
     clean_t.stop();
@@ -104,16 +103,16 @@ template <int D> void TreeBuilder<D>::clear(MWTree<D> &tree, TreeCalculator<D> &
     print::separator(10, ' ');
 }
 
-template <int D> int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adaptor, bool passCoefs) const {
+template <int D, typename T> int TreeBuilder<D, T>::split(MWTree<D, T> &tree, TreeAdaptor<D, T> &adaptor, bool passCoefs) const {
     println(10, " == Refining tree");
 
     Timer split_t;
-    MWNodeVector<D> newVec;
-    MWNodeVector<D> *workVec = tree.copyEndNodeTable();
+    MWNodeVector<D, T> newVec;
+    MWNodeVector<D, T> *workVec = tree.copyEndNodeTable();
     adaptor.splitNodeVector(newVec, *workVec);
     if (passCoefs) {
         for (int i = 0; i < workVec->size(); i++) {
-            MWNode<D> &node = *(*workVec)[i];
+            MWNode<D, T> &node = *(*workVec)[i];
             if (node.isBranchNode()) { node.giveChildrenCoefs(true); }
         }
     }
@@ -131,11 +130,11 @@ template <int D> int TreeBuilder<D>::split(MWTree<D> &tree, TreeAdaptor<D> &adap
     return newVec.size();
 }
 
-template <int D> void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &calculator) const {
+template <int D, typename T> void TreeBuilder<D, T>::calc(MWTree<D, T> &tree, TreeCalculator<D, T> &calculator) const {
     println(10, " == Calculating tree");
 
     Timer calc_t;
-    MWNodeVector<D> *workVec = calculator.getInitialWorkVector(tree);
+    MWNodeVector<D, T> *workVec = calculator.getInitialWorkVector(tree);
     calculator.calcNodeVector(*workVec);
     printout(10, "  -- #" << std::setw(3) << 0 << ": Calculated ");
     printout(10, std::setw(6) << workVec->size() << " nodes ");
@@ -148,26 +147,30 @@ template <int D> void TreeBuilder<D>::calc(MWTree<D> &tree, TreeCalculator<D> &c
     print::time(10, "Time calc", calc_t);
 }
 
-template <int D> double TreeBuilder<D>::calcScalingNorm(const MWNodeVector<D> &vec) const {
+template <int D, typename T> double TreeBuilder<D, T>::calcScalingNorm(const MWNodeVector<D, T> &vec) const {
     double sNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
-        const MWNode<D> &node = *vec[i];
+        const MWNode<D, T> &node = *vec[i];
         if (node.getDepth() >= 0) sNorm += node.getScalingNorm();
     }
     return sNorm;
 }
 
-template <int D> double TreeBuilder<D>::calcWaveletNorm(const MWNodeVector<D> &vec) const {
+template <int D, typename T> double TreeBuilder<D, T>::calcWaveletNorm(const MWNodeVector<D, T> &vec) const {
     double wNorm = 0.0;
     for (int i = 0; i < vec.size(); i++) {
-        const MWNode<D> &node = *vec[i];
+        const MWNode<D, T> &node = *vec[i];
         if (node.getDepth() >= 0) wNorm += node.getWaveletNorm();
     }
     return wNorm;
 }
 
-template class TreeBuilder<1>;
-template class TreeBuilder<2>;
-template class TreeBuilder<3>;
+template class TreeBuilder<1, double>;
+template class TreeBuilder<2, double>;
+template class TreeBuilder<3, double>;
+
+template class TreeBuilder<1, ComplexDouble>;
+template class TreeBuilder<2, ComplexDouble>;
+template class TreeBuilder<3, ComplexDouble>;
 
 } // namespace mrcpp

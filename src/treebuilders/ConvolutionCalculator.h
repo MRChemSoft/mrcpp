@@ -33,12 +33,12 @@
 
 namespace mrcpp {
 
-template <int D> class ConvolutionCalculator final : public TreeCalculator<D> {
+template <int D, typename T> class ConvolutionCalculator final : public TreeCalculator<D, T> {
 public:
-    ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D> &f, int depth = MaxDepth);
+    ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D, T> &f, int depth = MaxDepth);
     ~ConvolutionCalculator() override;
 
-    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
+    MWNodeVector<D, T> *getInitialWorkVector(MWTree<D, T> &tree) const override;
 
     void setPrecFunction(const std::function<double(const NodeIndex<D> &idx)> &prec_func) { this->precFunc = prec_func; }
     void startManipulateOperator(bool excUnit) {
@@ -52,45 +52,45 @@ private:
     bool manipulateOperator{false};
     bool onUnitcell{false};
     ConvolutionOperator<D> *oper;
-    FunctionTree<D> *fTree;
+    FunctionTree<D, T> *fTree;
     std::vector<Timer *> band_t;
     std::vector<Timer *> calc_t;
     std::vector<Timer *> norm_t;
 
-    OperatorStatistics<D> operStat;
+    OperatorStatistics operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
     std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
 
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);
 
-    MWNodeVector<D> *makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band);
-    void fillOperBand(MWNodeVector<D> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim);
+    MWNodeVector<D, T> *makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band);
+    void fillOperBand(MWNodeVector<D, T> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim);
 
     void initTimers();
     void clearTimers();
     void printTimers() const;
 
     void initBandSizes();
-    int getBandSizeFactor(int i, int depth, const OperatorState<D> &os) const {
+    int getBandSizeFactor(int i, int depth, const OperatorState<D, T> &os) const {
         int k = os.gt * this->nComp + os.ft;
         return (*this->bandSizes[i])(depth, k);
     }
 
     void calcBandSizeFactor(Eigen::MatrixXi &bs, int depth, const BandWidth &bw);
 
-    void calcNode(MWNode<D> &node) override;
+    void calcNode(MWNode<D, T> &node) override;
     void postProcess() override {
         printTimers();
         clearTimers();
         initTimers();
     }
 
-    void applyOperComp(OperatorState<D> &os);
-    void applyOperator(int i, OperatorState<D> &os);
-    void tensorApplyOperComp(OperatorState<D> &os);
+    void applyOperComp(OperatorState<D, T> &os);
+    void applyOperator(int i, OperatorState<D, T> &os);
+    void tensorApplyOperComp(OperatorState<D, T> &os);
 
-    void touchParentNodes(MWTree<D> &tree) const;
+    void touchParentNodes(MWTree<D, T> &tree) const;
 };
 
 } // namespace mrcpp

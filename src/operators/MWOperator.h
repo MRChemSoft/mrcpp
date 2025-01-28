@@ -39,8 +39,7 @@ namespace mrcpp {
  * @details Fixme
  *
  */
-template <int D>
-class MWOperator {
+template <int D> class MWOperator {
 public:
     MWOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
             : oper_root(root)
@@ -63,8 +62,8 @@ public:
     OperatorTree &getComponent(int i, int d);
     const OperatorTree &getComponent(int i, int d) const;
 
-    std::array<OperatorTree*, D> &operator[](int i) { return this->oper_exp[i]; }
-    const std::array<OperatorTree*, D> &operator[](int i) const { return this->oper_exp[i]; }
+    std::array<OperatorTree *, D> &operator[](int i) { return this->oper_exp[i]; }
+    const std::array<OperatorTree *, D> &operator[](int i) const { return this->oper_exp[i]; }
 
 protected:
     int oper_root;
@@ -78,7 +77,6 @@ protected:
 
     void initOperExp(int M);
     void assign(int i, int d, OperatorTree *oper) { this->oper_exp[i][d] = oper; }
-
 };
 
 } // namespace mrcpp

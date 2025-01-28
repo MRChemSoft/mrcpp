@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 namespace mrcpp {
 
@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    short int N{0};          ///< Length scale index 2^N
+    short int N{0};         ///< Length scale index 2^N
     std::array<int, D> L{}; ///< Translation index [x,y,z,...]
 };
 

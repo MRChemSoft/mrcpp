@@ -30,7 +30,7 @@
 
 namespace mrcpp {
 
-class BoysFunction final : public RepresentableFunction<1> {
+class BoysFunction final : public RepresentableFunction<1, double> {
 public:
     BoysFunction(int n, double prec = 1.0e-10);
 

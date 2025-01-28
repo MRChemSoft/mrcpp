@@ -102,16 +102,58 @@ template <int D> void testDifferentiationABGV(double a, double b) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
 
     FunctionTree<D> err_tree(*mra);
     add(-1.0, err_tree, 1.0, df_tree, -1.0, dg_tree);
+
+    double df_norm = std::sqrt(df_tree.getSquareNorm());
+    double abs_err = std::sqrt(err_tree.getSquareNorm());
+    double rel_err = abs_err / df_norm;
+
+    REQUIRE(rel_err == Catch::Approx(0.0).margin(prec));
+
+    delete mra;
+}
+
+/* trees are defined as complex trees */
+template <int D> void testDifferentiationCplxABGV(double a, double b) {
+    MultiResolutionAnalysis<D> *mra = initializeMRA<D>();
+
+    double prec = 1.0e-3;
+    ABGVOperator<D> diff(*mra, a, b);
+    ComplexDouble s = {1.1, 1.3}; // NB: Complex
+
+    Coord<D> r_0;
+    for (auto &x : r_0) x = pi;
+
+    auto f = [r_0, s](const Coord<D> &r) {
+        double R = math_utils::calc_distance<D>(r, r_0);
+        return std::exp(-R * R * s);
+    };
+
+    auto df = [r_0, s](const Coord<D> &r) { // analytical derivative of f
+        double R = math_utils::calc_distance<D>(r, r_0);
+        return -2.0 * s * std::exp(-R * R * s) * (r[0] - r_0[0]);
+    };
+
+    FunctionTree<D, ComplexDouble> f_tree(*mra);
+    project<D, ComplexDouble>(prec / 10, f_tree, f);
+
+    FunctionTree<D, ComplexDouble> df_tree(*mra);
+    project<D, ComplexDouble>(prec / 10, df_tree, df);
+
+    FunctionTree<D, ComplexDouble> dg_tree(*mra); // MW derivative of f
+    apply(dg_tree, diff, f_tree, 0);
+
+    FunctionTree<D, ComplexDouble> err_tree(*mra);
+    add(-1.0, err_tree, {1.0, 0.0}, df_tree, {-1.0, 0.0}, dg_tree); // difference between analytical and MW derivative of f.
 
     double df_norm = std::sqrt(df_tree.getSquareNorm());
     double abs_err = std::sqrt(err_tree.getSquareNorm());
@@ -143,10 +185,10 @@ template <int D> void testDifferentiationPH(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -174,7 +216,7 @@ template <int D> void testDifferentiationPeriodicABGV(double a, double b) {
     FunctionTree<D> g_tree(*mra);
     FunctionTree<D> dg_tree(*mra);
 
-    project<D>(prec, g_tree, g_func);
+    project<D, double>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
@@ -202,7 +244,7 @@ template <int D> void testDifferentiationPeriodicPH(int order) {
     FunctionTree<D> g_tree(*mra);
     FunctionTree<D> dg_tree(*mra);
 
-    project<D>(prec, g_tree, g_func);
+    project<D, double>(prec, g_tree, g_func);
 
     apply(dg_tree, diff, g_tree, 0);
     refine_grid(dg_tree, 1); // for accurate evalf
@@ -237,10 +279,10 @@ template <int D> void testDifferentiationBS(int order) {
     };
 
     FunctionTree<D> f_tree(*mra);
-    project<D>(prec / 10, f_tree, f);
+    project<D, double>(prec / 10, f_tree, f);
 
     FunctionTree<D> df_tree(*mra);
-    project<D>(prec / 10, df_tree, df);
+    project<D, double>(prec / 10, df_tree, df);
 
     FunctionTree<D> dg_tree(*mra);
     apply(dg_tree, diff, f_tree, 0);
@@ -259,56 +301,117 @@ template <int D> void testDifferentiationBS(int order) {
 
 TEST_CASE("ABGV differentiantion central difference", "[derivative_operator], [central_difference]") {
     // 0.5,0.5 specifies central difference
-    SECTION("1D derivative test") { testDifferentiationABGV<1>(0.5, 0.5); }
-    SECTION("2D derivative test") { testDifferentiationABGV<2>(0.5, 0.5); }
-    SECTION("3D derivative test") { testDifferentiationABGV<3>(0.5, 0.5); }
+    SECTION("1D derivative test") {
+        testDifferentiationABGV<1>(0.5, 0.5);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationABGV<2>(0.5, 0.5);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationABGV<3>(0.5, 0.5);
+    }
 }
 
 TEST_CASE("ABGV differentiantion center difference", "[derivative_operator], [center_difference]") {
     // 0,0 specifies center difference
-    SECTION("1D derivative test") { testDifferentiationABGV<1>(0, 0); }
-    SECTION("2D derivative test") { testDifferentiationABGV<2>(0, 0); }
-    SECTION("3D derivative test") { testDifferentiationABGV<3>(0, 0); }
+    SECTION("1D derivative test") {
+        testDifferentiationABGV<1>(0, 0);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationABGV<2>(0, 0);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationABGV<3>(0, 0);
+    }
+}
+
+TEST_CASE("ABGV differentiantion of Complex function", "[derivative_operator], [Complex]") {
+    // 0.5,0.5 specifies central difference
+    SECTION("1D derivative test") {
+        testDifferentiationCplxABGV<1>(0.5, 0.5);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationCplxABGV<2>(0.5, 0.5);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationCplxABGV<3>(0.5, 0.5);
+    }
 }
 
 TEST_CASE("PH differentiantion first order", "[derivative_operator], [PH_first_order]") {
-    SECTION("1D derivative test") { testDifferentiationPH<1>(1); }
-    SECTION("2D derivative test") { testDifferentiationPH<2>(1); }
-    SECTION("3D derivative test") { testDifferentiationPH<3>(1); }
+    SECTION("1D derivative test") {
+        testDifferentiationPH<1>(1);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationPH<2>(1);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationPH<3>(1);
+    }
 }
 
 TEST_CASE("PH differentiantion second order", "[derivative_operator], [PH_second_order]") {
-    SECTION("1D second order derivative test") { testDifferentiationPH<1>(2); }
-    SECTION("2D second order derivative test") { testDifferentiationPH<2>(2); }
-    SECTION("3D second order derivative test") { testDifferentiationPH<3>(2); }
+    SECTION("1D second order derivative test") {
+        testDifferentiationPH<1>(2);
+    }
+    SECTION("2D second order derivative test") {
+        testDifferentiationPH<2>(2);
+    }
+    SECTION("3D second order derivative test") {
+        testDifferentiationPH<3>(2);
+    }
 }
 
 TEST_CASE("Periodic ABGV differentiantion central difference", "[periodic_derivative],[derivative_operator], [central_difference], [ABGV_periodic]") {
     // 0.5,0.5 specifies central difference
-    SECTION("3D periodic derivative test") { testDifferentiationPeriodicABGV<3>(0.5, 0.5); }
+    SECTION("3D periodic derivative test") {
+        testDifferentiationPeriodicABGV<3>(0.5, 0.5);
+    }
 }
 
 TEST_CASE("Periodic PH differentiantion", "[periodic_derivative], [derivative_operator], [PH_periodic]") {
-    SECTION("3D first order periodic derivative test") { testDifferentiationPeriodicPH<3>(1); }
-    SECTION("3D first order periodic derivative test") { testDifferentiationPeriodicPH<3>(2); }
+    SECTION("3D first order periodic derivative test") {
+        testDifferentiationPeriodicPH<3>(1);
+    }
+    SECTION("3D first order periodic derivative test") {
+        testDifferentiationPeriodicPH<3>(2);
+    }
 }
 
 TEST_CASE("BS differentiantion first order", "[derivative_operator], [BS_first_order]") {
-    SECTION("1D derivative test") { testDifferentiationBS<1>(1); }
-    SECTION("2D derivative test") { testDifferentiationBS<2>(1); }
-    SECTION("3D derivative test") { testDifferentiationBS<3>(1); }
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(1);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(1);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(1);
+    }
 }
 
 TEST_CASE("BS differentiantion second order", "[derivative_operator], [BS_second_order]") {
-    SECTION("1D derivative test") { testDifferentiationBS<1>(2); }
-    SECTION("2D derivative test") { testDifferentiationBS<2>(2); }
-    SECTION("3D derivative test") { testDifferentiationBS<3>(2); }
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(2);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(2);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(2);
+    }
 }
 
 TEST_CASE("BS differentiantion third order", "[derivative_operator], [BS_third_order]") {
-    SECTION("1D derivative test") { testDifferentiationBS<1>(3); }
-    SECTION("2D derivative test") { testDifferentiationBS<2>(3); }
-    SECTION("3D derivative test") { testDifferentiationBS<3>(3); }
+    SECTION("1D derivative test") {
+        testDifferentiationBS<1>(3);
+    }
+    SECTION("2D derivative test") {
+        testDifferentiationBS<2>(3);
+    }
+    SECTION("3D derivative test") {
+        testDifferentiationBS<3>(3);
+    }
 }
 
 TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
@@ -335,7 +438,7 @@ TEST_CASE("Gradient operator", "[derivative_operator], [gradient_operator]") {
     };
 
     FunctionTree<3> f_tree(*mra);
-    project<3>(prec, f_tree, f);
+    project<3, double>(prec, f_tree, f);
 
     auto grad_f = gradient(diff, f_tree);
     REQUIRE(grad_f.size() == 3);
@@ -373,7 +476,7 @@ TEST_CASE("Divergence operator", "[derivative_operator], [divergence_operator]")
     };
 
     FunctionTree<3> f_tree(*mra);
-    project<3>(prec, f_tree, f);
+    project<3, double>(prec, f_tree, f);
     FunctionTreeVector<3> f_vec;
     f_vec.push_back(std::make_tuple(1.0, &f_tree));
     f_vec.push_back(std::make_tuple(2.0, &f_tree));

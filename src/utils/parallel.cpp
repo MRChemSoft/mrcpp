@@ -11,7 +11,7 @@
 
 #ifdef MRCPP_HAS_OMP
 #define mrcpp_get_max_threads() omp_get_max_threads()
-#define mrcpp_get_num_procs() omp_get_num_procs() / 2
+#define mrcpp_get_num_procs() omp_get_num_procs()
 #define mrcpp_set_dynamic(n) omp_set_dynamic(n)
 #else
 #define mrcpp_get_max_threads() 1
@@ -181,7 +181,7 @@ void initialize() {
     int omp_threads_available = thread::hardware_concurrency();
 
     int nthreads = 1;
-    int my_OMP_NUM_THREADS = omp_get_max_threads();
+    int my_OMP_NUM_THREADS = mrcpp_get_max_threads();
     MPI_Bcast(&my_OMP_NUM_THREADS, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if (use_omp_num_threads) { // we assume that the user has set the environment variable
         // OMP_NUM_THREADS, such that the total number of threads that can be used on each node is
@@ -208,14 +208,14 @@ void initialize() {
         if (is_bankclient) nthreads = (omp_threads_available / 2 - n_bank_thisnode) / n_wrk_thisnode; // 1) and 4)
         // cout<<nthreads<<" after direct calculation"<<endl;
         //  do not exceed total number of cores accessible (assumed to be half the number of logical threads)
-        nthreads = min(nthreads, omp_get_num_procs() / 2); // 2)
+        nthreads = min(nthreads, mrcpp_get_num_procs() / 2); // 2)
         // cout<<nthreads<<" after mrcpp_get_num_procs"<<endl;
 
         // NB: we do not use OMP_NUM_THREADS. Use all cores accessible.
 
         if (is_bank) nthreads = 1; // 3)
 
-        //        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<omp_get_num_procs()<<" maxthreads"<<omp_get_max_threads()<<" "<<"
+        //        cout<<world_rank<<" found "<<omp_threads_available<<" available threads. omp: procs"<<mrcpp_get_num_procs()<<" maxthreads"<<mrcpp_get_max_threads()<<" "<<"
         //        threads"<<omp_get_num_threads()<<" "<<mrcpp::omp::n_threads<<" On this node: "<<n_bank_thisnode<<" banks "<<n_wrk_thisnode<<" workers"<<" "<<nthreads<<" is bank "<<is_bank<<"
         //        my_OMP_NUM_THREADS "<<my_OMP_NUM_THREADS<<endl;
 
@@ -233,7 +233,7 @@ void initialize() {
         std::cout << "WARNING: only " << nthreads * n_wrk_thisnode + n_bank_thisnode << " threads used per node while " << omp_threads_available << " logical cpus are accessible " << std::endl;
     }
 
-    if (nthreads > omp_get_num_procs()) { std::cout << "WARNING: MPI rank " << world_rank << " will use " << nthreads << " but only " << omp_get_num_procs() << " procs are accessible" << std::endl; }
+    if (nthreads > mrcpp_get_num_procs() / 2) { std::cout << "WARNING: MPI rank " << world_rank << " will use " << nthreads << " but only " << mrcpp_get_num_procs() / 2 << " procs are accessible" << std::endl; }
 
     omp::n_threads = nthreads;
     mrcpp::set_max_threads(nthreads);

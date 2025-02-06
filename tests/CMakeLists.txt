@@ -1,11 +1,11 @@
 find_package( Catch2 3.0.1 CONFIG)
 if( NOT Catch2_FOUND )
-  message( STATUS "Could NOT Find Catch2 (Building v3.3.2 Locally)" )
+  message( STATUS "Could NOT Find Catch2 (Building v3.8.0 Locally)" )
   include( FetchContent )
   FetchContent_Declare(
     catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.3.2
+    GIT_TAG        v3.8.0
   )
   set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(catch2)

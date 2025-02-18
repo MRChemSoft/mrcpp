@@ -41,9 +41,15 @@ template <int D> void testMultiplication();
 template <int D> void testSquare();
 
 SCENARIO("Multiplying MW trees", "[multiplication], [tree_builder]") {
-    GIVEN("Two MW functions in 1D") { testMultiplication<1>(); }
-    GIVEN("Two MW functions in 2D") { testMultiplication<2>(); }
-    GIVEN("Two MW functions in 3D") { testMultiplication<3>(); }
+    GIVEN("Two MW functions in 1D") {
+        testMultiplication<1>();
+    }
+    GIVEN("Two MW functions in 2D") {
+        testMultiplication<2>();
+    }
+    GIVEN("Two MW functions in 3D") {
+        testMultiplication<3>();
+    }
 }
 
 template <int D> void testMultiplication() {
@@ -116,9 +122,15 @@ template <int D> void testMultiplication() {
 }
 
 SCENARIO("Squaring MW trees", "[square], [tree_builder]") {
-    GIVEN("A MW function in 1D") { testSquare<1>(); }
-    GIVEN("A MW function in 2D") { testSquare<2>(); }
-    GIVEN("A MW function in 3D") { testSquare<3>(); }
+    GIVEN("A MW function in 1D") {
+        testSquare<1>();
+    }
+    GIVEN("A MW function in 2D") {
+        testSquare<2>();
+    }
+    GIVEN("A MW function in 3D") {
+        testSquare<3>();
+    }
 }
 
 template <int D> void testSquare() {
@@ -226,9 +238,9 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     FunctionTree<3> fy_tree(*mra);
     FunctionTree<3> fz_tree(*mra);
 
-    project<3>(prec, fx_tree, fx);
-    project<3>(prec, fy_tree, fy);
-    project<3>(prec, fz_tree, fz);
+    project<3, double>(prec, fx_tree, fx);
+    project<3, double>(prec, fy_tree, fy);
+    project<3, double>(prec, fz_tree, fz);
 
     FunctionTreeVector<3> vec_a;
     vec_a.push_back(std::make_tuple(1.0, &fx_tree));

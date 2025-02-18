@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
     // Projecting function
     mrcpp::FunctionTree<D> f_tree(MRA);
-    mrcpp::project<D>(prec, f_tree, f, -1);
+    mrcpp::project<D, double>(prec, f_tree, f, -1);
     auto integral = f_tree.integrate();
 
     mrcpp::print::header(0, "Projecting analytic function");

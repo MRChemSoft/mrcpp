@@ -54,7 +54,7 @@ namespace mrcpp {
  *   t > 0
  *   .
  * \f]
- * 
+ *
  */
 template <int D> class HeatOperator final : public ConvolutionOperator<D> {
 public:

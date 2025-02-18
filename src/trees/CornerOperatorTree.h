@@ -29,7 +29,6 @@
 
 namespace mrcpp {
 
-
 /** @class CornerOperatorTree
  *
  * @brief Special case of OperatorTree class

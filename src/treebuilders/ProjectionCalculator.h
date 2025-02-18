@@ -29,16 +29,16 @@
 
 namespace mrcpp {
 
-template <int D> class ProjectionCalculator final : public TreeCalculator<D> {
+template <int D, typename T> class ProjectionCalculator final : public TreeCalculator<D, T> {
 public:
-    ProjectionCalculator(const RepresentableFunction<D> &inp_func, const std::array<double, D> &sf)
+    ProjectionCalculator(const RepresentableFunction<D, T> &inp_func, const std::array<double, D> &sf)
             : func(&inp_func)
             , scaling_factor(sf) {}
 
 private:
-    const RepresentableFunction<D> *func;
+    const RepresentableFunction<D, T> *func;
     const std::array<double, D> scaling_factor;
-    void calcNode(MWNode<D> &node) override;
+    void calcNode(MWNode<D, T> &node) override;
 };
 
 } // namespace mrcpp

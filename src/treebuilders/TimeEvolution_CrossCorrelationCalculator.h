@@ -30,9 +30,7 @@
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
 #include "functions/JpowerIntegrals.h"
 
-
 namespace mrcpp {
-
 
 /** @class TimeEvolution_CrossCorrelationCalculator
  *
@@ -40,28 +38,28 @@ namespace mrcpp {
  *
  * @details An efficient way to calculate ... having the form
  * \f$ \ldots = \ldots \f$
- * 
- * 
- * 
+ *
+ *
+ *
  */
-class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2>
-{
+class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2> {
 public:
-    TimeEvolution_CrossCorrelationCalculator
-    (std::map<int, JpowerIntegrals *> &  J, SchrodingerEvolution_CrossCorrelation *cross_correlation, bool imaginary)
-        : J_power_inetgarls(J), cross_correlation(cross_correlation), imaginary(imaginary){}
-//private:
+    TimeEvolution_CrossCorrelationCalculator(std::map<int, JpowerIntegrals *> &J, SchrodingerEvolution_CrossCorrelation *cross_correlation, bool imaginary)
+            : J_power_inetgarls(J)
+            , cross_correlation(cross_correlation)
+            , imaginary(imaginary) {}
+    // private:
     std::map<int, JpowerIntegrals *> J_power_inetgarls;
     SchrodingerEvolution_CrossCorrelation *cross_correlation;
-    
+
     /// @brief If False then the calculator is using th real part of integrals, otherwise - the imaginary part.
     bool imaginary;
 
     void calcNode(MWNode<2> &node) override;
 
-    //template <int T>
+    // template <int T>
     void applyCcc(MWNode<2> &node);
-    //template <int T> void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);
+    // template <int T> void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);
 };
 
 } // namespace mrcpp

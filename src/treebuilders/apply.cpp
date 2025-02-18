@@ -38,10 +38,11 @@
 #include "trees/FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
+#include <optional>
 
 namespace mrcpp {
 
-template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec);
+template <int D, typename T> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec);
 
 /** @brief Application of MW integral convolution operator
  *
@@ -64,16 +65,16 @@ template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<
  * no coefs).
  *
  */
-template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     pre_t.stop();
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -89,6 +90,49 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
     print::time(10, "Time pre operator", pre_t);
     print::time(10, "Time post operator", post_t);
     print::separator(10, ' ');
+}
+
+/** @brief Application of MW integral convolution operator on Four component
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] oper: Convolution operator to apply
+ * @param[in] inp: Input function
+ * @param[in] metric: 4x4 array with coefficients that relates the in and out components
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree, default -1
+ * @param[in] absPrec: Build output tree based on absolute precision, default false
+ *
+ * @details The output function will be computed using the general algorithm:
+ * - For each input component apply the operator
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ * - After application multiply by metric coefficient, and put in relevant output component
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
+template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
+        for (int ocomp = 0; ocomp < 4; ocomp++) {
+            if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                if (inp.isreal()) {
+                    if (out.CompD[ocomp] == nullptr) out.alloc_comp(ocomp);
+                    apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp].real()); }
+                } else {
+                    if (out.CompC[ocomp] == nullptr) out.alloc_comp(ocomp);
+                    apply(prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                }
+            }
+        }
+    }
 }
 
 /** @brief Application of MW integral convolution operator
@@ -113,18 +157,18 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
  * no coefs).
  *
  */
-template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_on_unit_cell(bool inside, double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     calculator.startManipulateOperator(inside);
     pre_t.stop();
 
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -166,7 +210,7 @@ template <int D> void apply_on_unit_cell(bool inside, double prec, FunctionTree<
  * no coefs).
  *
  */
-template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, FunctionTreeVector<D> &precTrees, int maxIter, bool absPrec) {
+template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, FunctionTreeVector<D, T> &precTrees, int maxIter, bool absPrec) {
     Timer pre_t;
     oper.calcBandWidths(prec);
     int maxScale = out.getMRA().getMaxScale();
@@ -183,13 +227,13 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
         return 1.0 / maxNorm;
     };
 
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
+    WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
     adaptor.setPrecFunction(precFunc);
-    ConvolutionCalculator<D> calculator(prec, oper, inp);
+    ConvolutionCalculator<D, T> calculator(prec, oper, inp);
     calculator.setPrecFunction(precFunc);
     pre_t.stop();
 
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     builder.build(out, calculator, adaptor, maxIter);
 
     Timer post_t;
@@ -203,6 +247,24 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
     print::time(10, "Time pre operator", pre_t);
     print::time(10, "Time post operator", post_t);
     print::separator(10, ' ');
+}
+
+template <int D, typename T>
+void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
+        for (int ocomp = 0; ocomp < 4; ocomp++) {
+            if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                if (inp.isreal()) {
+                    apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], precTrees[icomp], maxIter, absPrec);
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
+                } else {
+                    apply(prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], precTrees[icomp], maxIter, absPrec);
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                }
+            }
+        }
+    }
 }
 
 /** @brief Application of MW integral convolution operator on a periodic cell,
@@ -227,8 +289,27 @@ template <int D> void apply(double prec, FunctionTree<D> &out, ConvolutionOperat
  * no coefs).
  *
  */
-template <int D> void apply_far_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     apply_on_unit_cell<D>(false, prec, out, oper, inp, maxIter, absPrec);
+}
+
+template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+
+    for (int icomp = 0; icomp < 4; icomp++) {
+        if (inp.Comp[icomp] != nullptr) {
+            for (int ocomp = 0; ocomp < 4; ocomp++) {
+                if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                    if (inp.isreal()) {
+                        apply_on_unit_cell<D>(false, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
+                    } else {
+                        apply_on_unit_cell<D>(false, prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /** @brief Application of MW integral convolution operator on a periodic cell,
@@ -253,8 +334,27 @@ template <int D> void apply_far_field(double prec, FunctionTree<D> &out, Convolu
  * no coefs).
  *
  */
-template <int D> void apply_near_field(double prec, FunctionTree<D> &out, ConvolutionOperator<D> &oper, FunctionTree<D> &inp, int maxIter, bool absPrec) {
+template <int D, typename T> void apply_near_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     apply_on_unit_cell<D>(true, prec, out, oper, inp, maxIter, absPrec);
+}
+
+template <int D> void apply_near_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, ComplexDouble metric[4][4], int maxIter, bool absPrec) {
+
+    for (int icomp = 0; icomp < 4; icomp++) {
+        if (inp.Comp[icomp] != nullptr) {
+            for (int ocomp = 0; ocomp < 4; ocomp++) {
+                if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                    if (inp.isreal()) {
+                        apply_on_unit_cell<D>(true, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
+                    } else {
+                        apply_on_unit_cell<D>(true, prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /** @brief Application of MW derivative operator
@@ -273,9 +373,9 @@ template <int D> void apply_near_field(double prec, FunctionTree<D> &out, Convol
  * @note The output function should contain only empty root nodes at entry.
  *
  */
-template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTree<D> &inp, int dir) {
+template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTree<D, T> &inp, int dir) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
-    TreeBuilder<D> builder;
+    TreeBuilder<D, T> builder;
     int maxScale = out.getMRA().getMaxScale();
 
     int bw[D]; // Operator bandwidth in [x,y,z]
@@ -285,14 +385,14 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     Timer pre_t;
     oper.calcBandWidths(1.0); // Fixed 0 or 1 for derivatives
     bw[dir] = oper.getMaxBandWidth();
-    CopyAdaptor<D> pre_adaptor(inp, maxScale, bw);
-    DefaultCalculator<D> pre_calculator;
+    CopyAdaptor<D, T> pre_adaptor(inp, maxScale, bw);
+    DefaultCalculator<D, T> pre_calculator;
     builder.build(out, pre_calculator, pre_adaptor, -1);
     pre_t.stop();
 
     // Apply operator on fixed expanded grid
-    SplitAdaptor<D> apply_adaptor(maxScale, false); // Splits no nodes
-    DerivativeCalculator<D> apply_calculator(dir, oper, inp);
+    SplitAdaptor<D, T> apply_adaptor(maxScale, false); // Splits no nodes
+    DerivativeCalculator<D, T> apply_calculator(dir, oper, inp);
     builder.build(out, apply_calculator, apply_adaptor, 0);
     if (out.isPeriodic()) out.rescale(std::pow(2.0, -oper.getOperatorRoot()));
 
@@ -308,6 +408,37 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
     print::separator(10, ' ');
 }
 
+template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, ComplexDouble metric[4][4]) {
+    // TODO: sums and not only each components independently, when concrete examples with non diagonal metric are tested
+
+    for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
+        for (int ocomp = 0; ocomp < 4; ocomp++) {
+            if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                if (inp.isreal() and (std::imag(metric[icomp][ocomp]) < MachinePrec or inp.Ncomp() == 1)) {
+                    apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
+                    if (std::norm(metric[icomp][ocomp] - 1.0) > MachinePrec) {
+                        if (std::imag(metric[icomp][ocomp]) < MachinePrec)
+                            out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
+                        else
+                            out.func_ptr->data.c1[ocomp] *= metric[icomp][ocomp]; // To consider: multiply c1 in rescale?
+                    }
+                    out.func_ptr->isreal = 1;
+                } else {
+                    if (inp.isreal()) {
+                        apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
+                        out.CompD[icomp]->CopyTreeToComplex(out.CompC[ocomp]);
+                        out.func_ptr->isreal = 0;
+                        out.func_ptr->iscomplex = 1;
+                    } else {
+                        apply(*out.CompC[ocomp], oper, *inp.CompC[icomp], dir);
+                    }
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                }
+            }
+        }
+    }
+}
+
 /** @brief Calculation of gradient vector of a function
  *
  * @param[in] oper: Derivative operator to apply
@@ -320,12 +451,42 @@ template <int D> void apply(FunctionTree<D> &out, DerivativeOperator<D> &oper, F
  * @note The length of the output vector will be the template dimension D.
  *
  */
-template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, FunctionTree<D> &inp) {
-    FunctionTreeVector<D> out;
+template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperator<D> &oper, FunctionTree<D, T> &inp) {
+    FunctionTreeVector<D, T> out;
     for (int d = 0; d < D; d++) {
-        auto *grad_d = new FunctionTree<D>(inp.getMRA());
+        auto *grad_d = new FunctionTree<D, T>(inp.getMRA());
         apply(*grad_d, oper, inp, d);
         out.push_back({1.0, grad_d});
+    }
+    return out;
+}
+
+std::vector<CompFunction<3> *> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble metric[4][4]) {
+    std::vector<CompFunction<3> *> out;
+
+    for (int d = 0; d < 3; d++) {
+        CompFunction<3> *grad_d = new CompFunction<3>();
+        for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
+            for (int ocomp = 0; ocomp < 4; ocomp++) {
+                if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                    grad_d->func_ptr->Ncomp = ocomp;
+                    if (inp.isreal()) {
+                        grad_d->func_ptr->isreal = 1;
+                        grad_d->func_ptr->iscomplex = 0;
+                        grad_d->CompD[ocomp] = new FunctionTree<3, double>(inp.CompD[0]->getMRA());
+                        apply(*(grad_d->CompD[ocomp]), oper, *inp.CompD[icomp], d);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { grad_d->CompD[ocomp]->rescale((metric[icomp][ocomp]).real()); }
+                    } else {
+                        grad_d->func_ptr->isreal = 0;
+                        grad_d->func_ptr->iscomplex = 1;
+                        grad_d->CompC[ocomp] = new FunctionTree<3, ComplexDouble>(inp.CompC[0]->getMRA());
+                        apply(*(grad_d->CompC[ocomp]), oper, *inp.CompC[icomp], d);
+                        if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { grad_d->CompC[ocomp]->rescale(metric[icomp][ocomp]); }
+                    }
+                }
+            }
+        }
+        out.push_back(grad_d);
     }
     return out;
 }
@@ -346,16 +507,16 @@ template <int D> FunctionTreeVector<D> gradient(DerivativeOperator<D> &oper, Fun
  * - The output function should contain only empty root nodes at entry.
  *
  */
-template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D> &inp) {
+template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> &inp) {
     if (inp.size() != D) MSG_ABORT("Dimension mismatch");
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
-    FunctionTreeVector<D> tmp_vec;
+    FunctionTreeVector<D, T> tmp_vec;
     for (int d = 0; d < D; d++) {
-        double coef_d = get_coef(inp, d);
-        FunctionTree<D> &func_d = get_func(inp, d);
-        auto *out_d = new FunctionTree<D>(func_d.getMRA());
+        T coef_d = get_coef(inp, d);
+        FunctionTree<D, T> &func_d = get_func(inp, d);
+        auto *out_d = new FunctionTree<D, T>(func_d.getMRA());
         apply(*out_d, oper, func_d, d);
         tmp_vec.push_back(std::make_tuple(coef_d, out_d));
     }
@@ -364,35 +525,94 @@ template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &op
     clear(tmp_vec, true);
 }
 
-template <int D> void divergence(FunctionTree<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D> *> &inp) {
-    FunctionTreeVector<D> inp_vec;
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, ComplexDouble metric[4][4]) {
+    MSG_ABORT("not implemented");
+}
+
+template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> &inp) {
+    FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     divergence(out, oper, inp_vec);
 }
+template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, ComplexDouble metric[4][4]) {
+    MSG_ABORT("not implemented");
+}
 
-template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, FunctionTreeVector<1> &precTrees, int maxIter, bool absPrec);
-template void apply<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, FunctionTreeVector<2> &precTrees, int maxIter, bool absPrec);
-template void apply<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, FunctionTreeVector<3> &precTrees, int maxIter, bool absPrec);
-template void apply_far_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply_far_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply_far_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply_near_field<1>(double prec, FunctionTree<1> &out, ConvolutionOperator<1> &oper, FunctionTree<1> &inp, int maxIter, bool absPrec);
-template void apply_near_field<2>(double prec, FunctionTree<2> &out, ConvolutionOperator<2> &oper, FunctionTree<2> &inp, int maxIter, bool absPrec);
-template void apply_near_field<3>(double prec, FunctionTree<3> &out, ConvolutionOperator<3> &oper, FunctionTree<3> &inp, int maxIter, bool absPrec);
-template void apply<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTree<1> &inp, int dir);
-template void apply<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTree<2> &inp, int dir);
-template void apply<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTree<3> &inp, int dir);
-template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1> &inp);
-template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2> &inp);
-template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3> &inp);
-template void divergence<1>(FunctionTree<1> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1> *> &inp);
-template void divergence<2>(FunctionTree<2> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2> *> &inp);
-template void divergence<3>(FunctionTree<3> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3> *> &inp);
-template FunctionTreeVector<1> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1> &inp);
-template FunctionTreeVector<2> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2> &inp);
-template FunctionTreeVector<3> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3> &inp);
+template void apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply<1>(double prec, CompFunction<1> &out, ConvolutionOperator<1> &oper, const CompFunction<1> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
+template void apply<2>(double prec, CompFunction<2> &out, ConvolutionOperator<2> &oper, const CompFunction<2> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
+template void apply<3>(double prec, CompFunction<3> &out, ConvolutionOperator<3> &oper, const CompFunction<3> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
+template void
+apply<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, FunctionTreeVector<1, double> &precTrees, int maxIter, bool absPrec);
+template void
+apply<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, FunctionTreeVector<2, double> &precTrees, int maxIter, bool absPrec);
+template void
+apply<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, FunctionTreeVector<3, double> &precTrees, int maxIter, bool absPrec);
+template void apply_far_field<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply_far_field<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply_far_field<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<1, double>(double prec, FunctionTree<1, double> &out, ConvolutionOperator<1> &oper, FunctionTree<1, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<2, double>(double prec, FunctionTree<2, double> &out, ConvolutionOperator<2> &oper, FunctionTree<2, double> &inp, int maxIter, bool absPrec);
+template void apply_near_field<3, double>(double prec, FunctionTree<3, double> &out, ConvolutionOperator<3> &oper, FunctionTree<3, double> &inp, int maxIter, bool absPrec);
+template void apply<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, FunctionTree<1, double> &inp, int dir);
+template void apply<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, FunctionTree<2, double> &inp, int dir);
+template void apply<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, FunctionTree<3, double> &inp, int dir);
+template void divergence<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1, double> &inp);
+template void divergence<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2, double> &inp);
+template void divergence<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3, double> &inp);
+template void divergence<1, double>(FunctionTree<1, double> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1, double> *> &inp);
+template void divergence<2, double>(FunctionTree<2, double> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2, double> *> &inp);
+template void divergence<3, double>(FunctionTree<3, double> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3, double> *> &inp);
+template FunctionTreeVector<1, double> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, double> &inp);
+template FunctionTreeVector<2, double> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, double> &inp);
+template FunctionTreeVector<3, double> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, double> &inp);
+
+template void apply<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+
+template void apply<1, ComplexDouble>(double prec,
+                                      FunctionTree<1, ComplexDouble> &out,
+                                      ConvolutionOperator<1> &oper,
+                                      FunctionTree<1, ComplexDouble> &inp,
+                                      FunctionTreeVector<1, ComplexDouble> &precTrees,
+                                      int maxIter,
+                                      bool absPrec);
+template void apply<2, ComplexDouble>(double prec,
+                                      FunctionTree<2, ComplexDouble> &out,
+                                      ConvolutionOperator<2> &oper,
+                                      FunctionTree<2, ComplexDouble> &inp,
+                                      FunctionTreeVector<2, ComplexDouble> &precTrees,
+                                      int maxIter,
+                                      bool absPrec);
+template void apply<3, ComplexDouble>(double prec,
+                                      FunctionTree<3, ComplexDouble> &out,
+                                      ConvolutionOperator<3> &oper,
+                                      FunctionTree<3, ComplexDouble> &inp,
+                                      FunctionTreeVector<3, ComplexDouble> &precTrees,
+                                      int maxIter,
+                                      bool absPrec);
+template void apply_far_field<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_far_field<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_far_field<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<1, ComplexDouble>(double prec, FunctionTree<1, ComplexDouble> &out, ConvolutionOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<2, ComplexDouble>(double prec, FunctionTree<2, ComplexDouble> &out, ConvolutionOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply_near_field<3, ComplexDouble>(double prec, FunctionTree<3, ComplexDouble> &out, ConvolutionOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int maxIter, bool absPrec);
+template void apply<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp, int dir);
+template void apply<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp, int dir);
+template void apply<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp, int dir);
+template void divergence<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, FunctionTreeVector<1, ComplexDouble> &inp);
+template void divergence<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, FunctionTreeVector<2, ComplexDouble> &inp);
+template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, FunctionTreeVector<3, ComplexDouble> &inp);
+template void divergence<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1, ComplexDouble> *> &inp);
+template void divergence<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2, ComplexDouble> *> &inp);
+template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3, ComplexDouble> *> &inp);
+template FunctionTreeVector<1, ComplexDouble> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp);
+template FunctionTreeVector<2, ComplexDouble> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp);
+template FunctionTreeVector<3, ComplexDouble> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp);
+
+template void apply(CompFunction<3> &out, DerivativeOperator<3> &oper, CompFunction<3> &inp, int dir = -1, ComplexDouble metric[4][4] = nullptr);
 
 } // namespace mrcpp

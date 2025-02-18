@@ -31,19 +31,19 @@
 
 namespace mrcpp {
 
-template <int D> class MultiplicationAdaptor : public TreeAdaptor<D> {
+template <int D, typename T> class MultiplicationAdaptor : public TreeAdaptor<D, T> {
 public:
-    MultiplicationAdaptor(double pr, int ms, FunctionTreeVector<D> &t)
-            : TreeAdaptor<D>(ms)
+    MultiplicationAdaptor(double pr, int ms, FunctionTreeVector<D, T> &t)
+            : TreeAdaptor<D, T>(ms)
             , prec(pr)
             , trees(t) {}
     ~MultiplicationAdaptor() override = default;
 
 protected:
     double prec;
-    mutable FunctionTreeVector<D> trees;
+    mutable FunctionTreeVector<D, T> trees;
 
-    bool splitNode(const MWNode<D> &node) const override {
+    bool splitNode(const MWNode<D, T> &node) const override {
         if (this->trees.size() != 2) MSG_ERROR("Invalid tree vec size: " << this->trees.size());
         auto &pNode0 = get_func(trees, 0).getNode(node.getNodeIndex());
         auto &pNode1 = get_func(trees, 1).getNode(node.getNodeIndex());

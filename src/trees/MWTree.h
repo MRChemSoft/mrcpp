@@ -26,8 +26,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <memory>
 #include <map>
+#include <memory>
 
 #include "MRCPP/mrcpp_declarations.h"
 #include "utils/omp_utils.h"
@@ -61,11 +61,11 @@ class BankAccount;
  * present. See specific methods for details.
  *
  */
-template <int D> class MWTree {
+template <int D, typename T> class MWTree {
 public:
     MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n);
-    MWTree(const MWTree<D> &tree) = delete;
-    MWTree<D> &operator=(const MWTree<D> &tree) = delete;
+    MWTree(const MWTree<D, T> &tree) = delete;
+    MWTree<D, T> &operator=(const MWTree<D, T> &tree) = delete;
     virtual ~MWTree();
 
     void setZero();
@@ -73,7 +73,7 @@ public:
 
     /** @returns Squared L2 norm of the function */
     double getSquareNorm() const { return this->squareNorm; }
-    void calcSquareNorm();
+    void calcSquareNorm(bool deep = false);
     void clearSquareNorm() { this->squareNorm = -1.0; }
 
     int getOrder() const { return this->order; }
@@ -90,8 +90,8 @@ public:
     int getSizeNodes() const;
 
     /** @returns */
-    NodeBox<D> &getRootBox() { return this->rootBox; }
-    const NodeBox<D> &getRootBox() const { return this->rootBox; }
+    NodeBox<D, T> &getRootBox() { return this->rootBox; }
+    const NodeBox<D, T> &getRootBox() const { return this->rootBox; }
     const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }
 
     void mwTransform(int type, bool overwrite = true);
@@ -102,28 +102,28 @@ public:
     int getRootIndex(Coord<D> r) const { return this->rootBox.getBoxIndex(r); }
     int getRootIndex(NodeIndex<D> nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
 
-    MWNode<D> *findNode(NodeIndex<D> nIdx);
-    const MWNode<D> *findNode(NodeIndex<D> nIdx) const;
+    MWNode<D, T> *findNode(NodeIndex<D> nIdx);
+    const MWNode<D, T> *findNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D> &getNode(NodeIndex<D> nIdx);
-    MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx);
-    const MWNode<D> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
+    MWNode<D, T> &getNode(NodeIndex<D> nIdx, bool create = false);
+    MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx);
+    const MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 
-    MWNode<D> &getNode(Coord<D> r, int depth = -1);
-    MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1);
-    const MWNode<D> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
+    MWNode<D, T> &getNode(Coord<D> r, int depth = -1);
+    MWNode<D, T> &getNodeOrEndNode(Coord<D> r, int depth = -1);
+    const MWNode<D, T> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
 
     int getNEndNodes() const { return this->endNodeTable.size(); }
     int getNRootNodes() const { return this->rootBox.size(); }
-    MWNode<D> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
-    MWNode<D> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
-    const MWNode<D> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
-    const MWNode<D> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
+    MWNode<D, T> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
+    MWNode<D, T> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
+    const MWNode<D, T> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
+    const MWNode<D, T> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
 
     bool isPeriodic() const { return this->MRA.getWorldBox().isPeriodic(); }
 
-    MWNodeVector<D> *copyEndNodeTable();
-    MWNodeVector<D> *getEndNodeTable() { return &this->endNodeTable; }
+    MWNodeVector<D, T> *copyEndNodeTable();
+    MWNodeVector<D, T> *getEndNodeTable() { return &this->endNodeTable; }
 
     void deleteRootNodes();
     void resetEndNodeTable();
@@ -133,24 +133,26 @@ public:
     int countLeafNodes(int depth = -1);
     int countAllocNodes(int depth = -1);
     int countNodes(int depth = -1);
-    bool isLocal = false; // to know whether the tree coeffcients are stored in the Bank
+    bool isLocal = false;         // to know whether the tree coeffcients are stored in the Bank
     int getIx(NodeIndex<D> nIdx); // gives serialIx of a stored node from its NodeIndex if isLocal
 
     void makeMaxSquareNorms(); // sets values for maxSquareNorm and maxWSquareNorm in all nodes
 
-    NodeAllocator<D> &getNodeAllocator() { return *this->nodeAllocator_p; }
-    const NodeAllocator<D> &getNodeAllocator() const { return *this->nodeAllocator_p; }
-    MWNodeVector<D> endNodeTable;          ///< Final projected nodes
+    NodeAllocator<D, T> &getNodeAllocator() { return *this->nodeAllocator_p; }
+    const NodeAllocator<D, T> &getNodeAllocator() const { return *this->nodeAllocator_p; }
+    MWNodeVector<D, T> endNodeTable; ///< Final projected nodes
 
-    void getNodeCoeff(NodeIndex<D> nIdx, double *data); // fetch coefficient from a specific node stored in Bank
+    void getNodeCoeff(NodeIndex<D> nIdx, T *data); // fetch coefficient from a specific node stored in Bank
+    bool conjugate() const { return this->conj; }
+    void setConjugate(bool conjug) { this->conj = conjug; }
 
-    friend std::ostream &operator<<(std::ostream &o, const MWTree<D> &tree) { return tree.print(o); }
+    friend std::ostream &operator<<(std::ostream &o, const MWTree<D, T> &tree) { return tree.print(o); }
 
-    friend class MWNode<D>;
-    friend class FunctionNode<D>;
+    friend class MWNode<D, T>;
+    friend class FunctionNode<D, T>;
     friend class OperatorNode;
-    friend class TreeBuilder<D>;
-    friend class NodeAllocator<D>;
+    friend class TreeBuilder<D, T>;
+    friend class NodeAllocator<D, T>;
 
 protected:
     // Parameters that are set in construction and should never change
@@ -165,11 +167,11 @@ protected:
     // Parameters that are dynamic and can be set by user
     std::string name;
 
-    std::unique_ptr<NodeAllocator<D>> nodeAllocator_p{nullptr};
+    std::unique_ptr<NodeAllocator<D, T>> nodeAllocator_p{nullptr};
 
     // Tree data
     double squareNorm;
-    NodeBox<D> rootBox;                    ///< The actual container of nodes
+    NodeBox<D, T> rootBox;                 ///< The actual container of nodes
     std::vector<int> nodesAtDepth;         ///< Node counter
     std::vector<int> nodesAtNegativeDepth; ///< Node counter
 
@@ -180,8 +182,8 @@ protected:
     void decrementNodeCount(int scale);
 
     BankAccount *NodesCoeff = nullptr;
+    bool conj{false};
 
     virtual std::ostream &print(std::ostream &o) const;
 };
-
 } // namespace mrcpp

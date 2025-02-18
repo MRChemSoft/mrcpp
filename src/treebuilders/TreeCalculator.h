@@ -29,20 +29,20 @@
 
 namespace mrcpp {
 
-template <int D> class TreeCalculator {
+template <int D, typename T> class TreeCalculator {
 public:
     TreeCalculator() = default;
     virtual ~TreeCalculator() = default;
 
-    virtual MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const { return tree.copyEndNodeTable(); }
+    virtual MWNodeVector<D, T> *getInitialWorkVector(MWTree<D, T> &tree) const { return tree.copyEndNodeTable(); }
 
-    virtual void calcNodeVector(MWNodeVector<D> &nodeVec) {
+    virtual void calcNodeVector(MWNodeVector<D, T> &nodeVec) {
 #pragma omp parallel shared(nodeVec) num_threads(mrcpp_get_num_threads())
         {
             int nNodes = nodeVec.size();
 #pragma omp for schedule(guided)
             for (int n = 0; n < nNodes; n++) {
-                MWNode<D> &node = *nodeVec[n];
+                MWNode<D, T> &node = *nodeVec[n];
                 calcNode(node);
             }
         }
@@ -50,7 +50,7 @@ public:
     }
 
 protected:
-    virtual void calcNode(MWNode<D> &node) = 0;
+    virtual void calcNode(MWNode<D, T> &node) = 0;
     virtual void postProcess() {}
 };
 

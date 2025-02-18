@@ -28,8 +28,8 @@
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
 
-#include "functions/Gaussian.h"
 #include "functions/GaussExp.h"
+#include "functions/Gaussian.h"
 
 #include "treebuilders/CrossCorrelationCalculator.h"
 #include "treebuilders/OperatorAdaptor.h"
@@ -68,9 +68,9 @@ CartesianConvolution::CartesianConvolution(const MultiResolutionAnalysis<3> &mra
 }
 
 void CartesianConvolution::setCartesianComponents(int x, int y, int z) {
-    int x_shift = x*this->sep_rank;
-    int y_shift = y*this->sep_rank;
-    int z_shift = z*this->sep_rank;
+    int x_shift = x * this->sep_rank;
+    int y_shift = y * this->sep_rank;
+    int z_shift = z * this->sep_rank;
 
     for (int i = 0; i < this->sep_rank; i++) this->assign(i, 0, this->raw_exp[x_shift + i].get());
     for (int i = 0; i < this->sep_rank; i++) this->assign(i, 1, this->raw_exp[y_shift + i].get());

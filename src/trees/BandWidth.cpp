@@ -44,7 +44,6 @@ void BandWidth::setWidth(int depth, int index, int wd) {
     if (wd > this->widths(depth, 4)) { this->widths(depth, 4) = wd; }
 }
 
-
 std::ostream &BandWidth::print(std::ostream &o) const {
     o << "  *BandWidths:" << std::endl;
     o << "   n      T   C   B   A  |  max " << std::endl;

@@ -60,7 +60,7 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
  *  @param[in] reach: width at root scale (applies to periodic boundary conditions)
  *  @details This will project a kernel of a single gaussian with
  *           exponent sqrt(10/build_prec). This version of the constructor
- *           is used for calculations within periodic boundary conditions (PBC). 
+ *           is used for calculations within periodic boundary conditions (PBC).
  *           The \a root parameter is the coarsest negative scale at wich the operator
  *           is applied. The \a reach parameter is the bandwidth of the operator at
  *           the root scale. For details see \ref MWOperator

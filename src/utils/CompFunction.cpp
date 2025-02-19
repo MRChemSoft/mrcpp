@@ -2605,6 +2605,7 @@ DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet) {
                 }
             }
             if (BraKet[j].hasImag()) {
+                NOT_IMPLEMENTED_ABORT;
                 BraKet[j].imag().makeCoeffVector(coeffVec[j + N], indexVec, parindexVec, scalefac, max_ix, refTree);
                 // make a map that gives j from indexVec
                 int orb_node_ix = 0;

@@ -485,7 +485,6 @@ template <typename T> void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, 
 /** @brief make union tree without coeff and send to all
  */
 template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, vector<FunctionTree<3, T>> &Phi, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -496,6 +495,7 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
         if (not my_func(j)) continue;
         tree.appendTreeNoCoeff(Phi[j]);
     }
+#ifdef MRCPP_HAS_MPI
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
 #endif
@@ -504,7 +504,6 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 /** @brief make union tree without coeff and send to all
  */
 template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
-#ifdef MRCPP_HAS_MPI
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
@@ -516,6 +515,7 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
         if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
         if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
     }
+#ifdef MRCPP_HAS_MPI
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
 #endif

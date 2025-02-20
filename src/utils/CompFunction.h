@@ -187,7 +187,6 @@ public:
 
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
-// void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
 void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
 CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CompFunction<3> *Func = nullptr, int nrefine = 1, bool all = false);
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
@@ -195,8 +194,6 @@ ComplexVector dot(CompFunctionVector &Bra, CompFunctionVector &Ket);
 ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi);
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet);
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &Ket);
-// ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVector &Ket);
-DoubleMatrix calc_norm_overlap_matrix(CompFunctionVector &BraKet);
 void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket);
 
 } // namespace mrcpp

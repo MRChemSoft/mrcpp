@@ -96,7 +96,6 @@ template <int D, typename T> void project(double prec, FunctionTree<D, T> &out, 
     out.mwTransform(BottomUp);
     out.calcSquareNorm();
     trans_t.stop();
-    std::cout<<" project "<<out<<" "<<prec<<" "<< absPrec<<std::endl;
 
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');

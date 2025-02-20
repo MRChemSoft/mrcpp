@@ -777,7 +777,6 @@ template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, dou
     out.func_ptr->iscomplex = 0;
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
-    std::cout<<" comppproject "<<*out.CompD[0]<<std::endl;
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }
 template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec) {

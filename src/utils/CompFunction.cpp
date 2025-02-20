@@ -432,6 +432,7 @@ template class CompFunction<3>;
 template <int D> void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp) {
     out->func_ptr->data = inp.func_ptr->data;
     out->alloc(inp.Ncomp());
+    if (inp.getNNodes() == 0) return;
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) {
             inp.CompD[i]->deep_copy(out->CompD[i]);
@@ -448,6 +449,7 @@ template <int D> void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp
 template <int D> void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp) {
     out.func_ptr->data = inp.func_ptr->data;
     out.alloc(inp.Ncomp());
+    if (inp.getNNodes() == 0) return;
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) {
             inp.CompD[i]->deep_copy(out.CompD[i]);
@@ -564,6 +566,10 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
     out.func_ptr->data = inp_a.func_ptr->data;
     out.func_ptr->data.shared = share; // we don't inherit the shareness
     out.func_ptr->conj = false;        // we don't inherit conjugaison
+    if (inp_a.getNNodes() == 0 or inp_b.getNNodes() == 0) {
+        if (!out_allocated) out.alloc(out.Ncomp());
+        return;
+    }
     for (int comp = 0; comp < inp_a.Ncomp(); comp++) {
         out.func_ptr->data.c1[comp] = inp_a.func_ptr->data.c1[comp] * inp_b.func_ptr->data.c1[comp]; // we could put this is coef if everything is real?
         if (inp_a.isreal() and inp_b.isreal()) {

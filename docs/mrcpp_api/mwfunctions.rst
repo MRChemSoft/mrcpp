@@ -165,7 +165,7 @@ Constructing an MRA
 
 An MRA is defined in two steps, first the computational domain is given by a
 ``BoundingBox`` (D is the dimension), e.g. for a total domain of
-:math:`[-32,32]^3` in three dimensions (eight root boxes of size :math:`[32]^3`
+:math:`[-16,16]^3` in three dimensions (eight root boxes of size :math:`[16]^3`
 each):
 
 .. code-block:: cpp

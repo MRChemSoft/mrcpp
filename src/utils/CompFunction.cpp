@@ -782,6 +782,7 @@ template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, dou
     out.func_ptr->isreal = 1;
     out.func_ptr->iscomplex = 0;
     if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) build_grid(*out.CompD[0], f);
     if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }
@@ -790,6 +791,7 @@ template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, Com
     out.func_ptr->isreal = 0;
     out.func_ptr->iscomplex = 1;
     if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) build_grid(*out.CompC[0], f);
     if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 132231, mpi::comm_share);
 }

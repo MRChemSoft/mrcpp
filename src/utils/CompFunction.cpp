@@ -707,7 +707,7 @@ template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDoub
 /** @brief Compute <bra|ket> = int bra^\dag(r) * ket(r) dr.
  *
  *  Sum of component dots.
- *  Notice that the <bra| position is already complex conjugated.
+ *  Notice that the <bra| position is complex conjugated in the tree multiplication.
  *
  */
 template <int D> ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
@@ -725,14 +725,10 @@ template <int D> ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
         } else {
             dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
         }
-        dotprod *= bra.func_ptr->data.c1[comp] * ket.func_ptr->data.c1[comp];
+        dotprod *= std::conj(bra.func_ptr->data.c1[comp]) * ket.func_ptr->data.c1[comp];
         dotprodtot += dotprod;
     }
-    if (bra.isreal() and ket.isreal()) {
-        return dotprodtot.real();
-    } else {
-        return dotprodtot;
-    }
+    return dotprodtot;
 }
 
 /** @brief Compute  <bra|ket> = int |bra^\dag(r)| * |ket(r)| dr.

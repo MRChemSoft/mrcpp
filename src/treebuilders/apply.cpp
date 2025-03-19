@@ -38,7 +38,6 @@
 #include "trees/FunctionTree.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
-#include <optional>
 
 namespace mrcpp {
 

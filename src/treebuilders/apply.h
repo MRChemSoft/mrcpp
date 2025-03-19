@@ -36,10 +36,8 @@ template <int D, typename T> class FunctionTree;
 template <int D> class DerivativeOperator;
 template <int D> class ConvolutionOperator;
 
-const ComplexDouble  defaultMetric [4][4] ={{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
-
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);
-template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, const ComplexDouble metric[4][4] = defaultMetric, int maxIter = -1, bool absPrec = false);
+template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, FunctionTreeVector<D, T> &precTrees, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, ComplexDouble metric[4][4] = nullptr, int maxIter = -1, bool absPrec = false);
 template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter = -1, bool absPrec = false);

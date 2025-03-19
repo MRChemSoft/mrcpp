@@ -117,10 +117,7 @@ int main(int argc, char **argv) {
 
 
 
-    // Create a vector of CompFunction<3> to hold the components
-    std::vector<mrcpp::CompFunction<3>> Psi;
-    Psi.push_back(GVPhi_tree_top);
-    Psi.push_back(GVPhi_tree_bottom);
+
     
     // ==================================================================================================================================
     // ================= My function will be now a 1s H atom orbital in 3D, given by the following lambda function ======================
@@ -159,7 +156,11 @@ int main(int argc, char **argv) {
     GVPhi_tree_top.rescale(1.0/Psi_norm);
     GVPhi_tree_bottom.rescale(1.0/Psi_norm);
 
-    
+    // Create a vector of CompFunction<3> to hold the components
+    std::vector<mrcpp::CompFunction<3>> Psi_2c;
+    Psi_2c.push_back(GVPhi_tree_top);
+    Psi_2c.push_back(GVPhi_tree_bottom);
+
     
     // As well as the potential:
     
@@ -181,8 +182,8 @@ int main(int argc, char **argv) {
     std::cout << "Potential_tree Norm = ";
     std::cout << Potential_tree.getSquareNorm() << '\n';
     std::cout << "************************************" << '\n';
-    std::cout << '\n'<< " Psi_trial (top) square norm = " << Psi[0].getSquareNorm() << '\n';
-    std::cout << '\n'<< " Psi_trial (bottom) square norm = " << Psi[1].getSquareNorm() << '\n' << '\n';
+    std::cout << '\n'<< " Psi_trial (top) square norm = " << Psi_2c[0].getSquareNorm() << '\n';
+    std::cout << '\n'<< " Psi_trial (bottom) square norm = " << Psi_2c[1].getSquareNorm() << '\n' << '\n';
     std::cout << "************************************" << '\n';
     }
     
@@ -209,13 +210,15 @@ int main(int argc, char **argv) {
 
     // Print the norm of the difference
     std::cout << "Cycle " << num_cycle << " done...  Norm of the difference = "<< norm_diff << '\n';
-    //E = energy_ZORA(building_precision, mra, GVPhi_tree, Potential_tree);
+    E = energy_ZORA(mra, Psi_2c, Potential_tree);
+    std::cout << "Energy = " << E << '\n';
     
     //std::cout << "Energy = " << E << '\n';
     mu = std::sqrt(-2.0 * E);
     std::cout << "mu = " << mu << '\n';
     std::cout << "************************************************************" << '\n';
     num_cycle++;
+
 
     
 

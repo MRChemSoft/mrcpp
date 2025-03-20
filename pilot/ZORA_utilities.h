@@ -20,7 +20,7 @@
 
 
 
-
+// FOR NOW I PLAY IT SAFE, A SIMPLE ADDITION MAY BE JUST TO ADD IN THE ARGUMENTS THE ABGV OPERATOR, NOT TO REDEFINE IT EVERY TIME
 
 
 
@@ -56,6 +56,47 @@ ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
 
 
 
+ComplexDouble compute_Term2_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
+    std::vector<mrcpp::CompFunction<3>> Psi_t_Nabla_K;; 
+    std::vector<mrcpp::CompFunction<3>> Psi_b_Nabla_K;
+
+    CompFunction<3> Psi_Nabla_k_tmp(MRA);
+    CompFunction<3> Psi_element(MRA);
+    CompFunction<3> Nabla_K_element(MRA);
+    
+    // Operatr ABGV
+    mrcpp::ABGVOperator<3> D(MRA, 0.0, 0.0);
+
+
+    // Gradient of K
+    auto Nabla_K = Nabla_K_tree;
+
+    // Gradient of the 2 components of Psi
+    // PAY ATTENTION!!! The gradient obtained is actually a pointer, so later on we'll have to dereference it
+    auto Nabla_Psi_t = Nabla_Psi_2c[0];
+    auto Nabla_Psi_b = Nabla_Psi_2c[1];
+
+    // Compute Psi_top * Nabla_K
+    for (int i=0;i<3;i++){
+        mrcpp::multiply(Psi_Nabla_k_tmp, Psi_2c[0], *Nabla_K[i],building_precision, false, false, true);   // <---- Here we dereference the pointer
+        Psi_t_Nabla_K.push_back(Psi_Nabla_k_tmp);
+    }
+    
+    // Compute Psi_bottom * Nabla_K
+    for (int i=0;i<3;i++){
+        mrcpp::multiply(Psi_Nabla_k_tmp, Psi_2c[1], *Nabla_K[i],building_precision, false, false, true);   // <---- Here we dereference the pointer
+        Psi_b_Nabla_K.push_back(Psi_Nabla_k_tmp);
+    }
+
+    std::vector<ComplexDouble> Kinetic_term_1;
+
+
+    ComplexDouble Top_contribution  = dot(Psi_t_Nabla_K[0],*Nabla_Psi_t[0]) + dot(Psi_t_Nabla_K[1],*Nabla_Psi_t[1]) + dot(Psi_t_Nabla_K[2],*Nabla_Psi_t[2]);
+    ComplexDouble Bottom_contribution  = dot(Psi_b_Nabla_K[0],*Nabla_Psi_b[0]) + dot(Psi_b_Nabla_K[1],*Nabla_Psi_b[1]) + dot(Psi_b_Nabla_K[2],*Nabla_Psi_b[2]);
+
+
+    return Top_contribution + Bottom_contribution;
+}
 
 
 

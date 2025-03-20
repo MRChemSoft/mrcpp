@@ -8,8 +8,61 @@
 #include <numeric>
 
 
-#include "MRCPP/MWFunctions"
-#include "MRCPP/MWOperators"
+#include "../api/Printer"
+#include "../api/Timer"
+#include "../api/Gaussians"
+#include "../api/Plotter"
+#include "../api/MWFunctions"
+#include "../api/MWOperators"
+
+
+
+
+
+
+
+
+
+
+
+
+ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
+    // Nabla(\Psi K) = \Nabla \Psi  K + \Psi  \Nabla K
+
+    CompFunction<3> Psi_t_K;
+    CompFunction<3> Psi_b_K;
+
+    std::vector<mrcpp::CompFunction<3> *> Nabla_Psi_t = Nabla_Psi_2c[0];
+    std::vector<mrcpp::CompFunction<3> *> Nabla_Psi_b = Nabla_Psi_2c[1];
+
+    // Compute Psi_top * K
+    mrcpp::multiply(Psi_t_K, Psi_2c[0], K_tree,building_precision, false, false, true);
+    // Compute Psi_bottom * K
+    mrcpp::multiply(Psi_b_K, Psi_2c[1], K_tree,building_precision, false, false, true);
+
+    // Operatr ABGV
+    mrcpp::ABGVOperator<3> D(MRA, 0.0, 0.0);
+
+    // Gradient of Psi_top * K
+    auto Nabla_Psi_t_K = mrcpp::gradient(D,Psi_t_K);
+    // Gradient of Psi_bottom * K
+    auto Nabla_Psi_b_K = mrcpp::gradient(D,Psi_b_K);
+
+    // REMEMBER THE MINUS SIGN!!! (it comes from the integration by parts)
+    ComplexDouble Top_contribute = -1.0*(dot(*Nabla_Psi_t_K[0],*Nabla_Psi_t[0]) + dot(*Nabla_Psi_t_K[1],*Nabla_Psi_t[1]) + dot(*Nabla_Psi_t_K[2],*Nabla_Psi_t[2]));
+    ComplexDouble Bottom_contribute = -1.0*(dot(*Nabla_Psi_b_K[0],*Nabla_Psi_b[0]) + dot(*Nabla_Psi_b_K[1],*Nabla_Psi_b[1]) + dot(*Nabla_Psi_b_K[2],*Nabla_Psi_b[2]));
+    return Top_contribute + Bottom_contribute;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 double energy_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<mrcpp::CompFunction<3>> &Psi, CompFunction<3> &V){

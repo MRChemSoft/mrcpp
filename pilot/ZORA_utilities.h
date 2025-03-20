@@ -25,8 +25,8 @@
 
 
 
-
-ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
+// IN principle, one could skip the step of recomputing all the gradient of the \Psi * K bu simpli adding \Nabla \Psi  K + \Psi  \Nabla K, but this would be longer, tho requiring less memory
+ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
     // Nabla(\Psi K) = \Nabla \Psi  K + \Psi  \Nabla K
 
     CompFunction<3> Psi_t_K;
@@ -98,6 +98,117 @@ ComplexDouble compute_Term2_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
     return Top_contribution + Bottom_contribution;
 }
 
+
+void compute_rotor( std::vector<mrcpp::CompFunction<3>*> &Rotor , mrcpp::ABGVOperator<3> &D,  std::vector<mrcpp::CompFunction<3>*> &K_Nabla_Psi, MultiResolutionAnalysis<3> &MRA){
+    Eigen::Matrix<int, 3, 2> Curl_coef;
+    Curl_coef << 1, 2,
+                 2, 0,
+                 0, 1;
+                      
+    CompFunction<3> Deriv_1(MRA);
+    CompFunction<3> Deriv_2(MRA);
+
+
+    // For synthax:
+    //void mrcpp::apply<3>(mrcpp::CompFunction<3> &out, mrcpp::DerivativeOperator<3> &oper, mrcpp::CompFunction<3> &inp, int dir, ComplexDouble (*metric)[4] = (ComplexDouble (*)[4])nullptr)
+    // mrcpp::apply(deriv_Psi1, D, Psi_in[s], j); // Derivative of Psi with respect to j
+    for (int i=0; i<3; i++){
+        mrcpp::apply<3>(Deriv_1, D, *(K_Nabla_Psi[Curl_coef(i,1)]), Curl_coef(i,0));
+        mrcpp::apply<3>(Deriv_2, D, *(K_Nabla_Psi[Curl_coef(i,0)]), Curl_coef(i,1));
+        mrcpp::add<3>(*Rotor[i], 1.0, Deriv_1, -1.0, Deriv_2, building_precision, false);
+    }
+
+
+}
+
+
+void compute_sigma_cdot_spinor( std::vector<mrcpp::CompFunction<3>*> Curl_top, std::vector<mrcpp::CompFunction<3>*> Curl_bottom, CompFunction<3> &SOC_Psi_t, CompFunction<3> &SOC_Psi_b,  MultiResolutionAnalysis<3> &MRA){
+    // Define the sigma matrices in a vector:
+    std::vector<Eigen::Matrix2cd> sigma(3);
+    sigma[0] << 0, 1,
+                1, 0; // Pauli matrix sigma_x
+    sigma[1] << 0, -std::complex<double>(0, 1),
+                std::complex<double>(0, 1), 0; // Pauli matrix sigma_y
+    sigma[2] << 1, 0,
+                0, -1; // Pauli matrix sigma_z
+
+
+    // I'll devide the xyz components of the top and bottoom components of the spinor in 3 spinors, one for each direction
+    std::vector<mrcpp::CompFunction<3>> Spinor_component_x(2);
+    std::vector<mrcpp::CompFunction<3>> Spinor_component_y(2);
+    std::vector<mrcpp::CompFunction<3>> Spinor_component_z(2);
+
+    Spinor_component_x[0] = *Curl_top[0];
+    Spinor_component_x[1] = *Curl_bottom[0];
+
+    Spinor_component_y[0] = *Curl_top[1];
+    Spinor_component_y[1] = *Curl_bottom[1];
+
+    Spinor_component_z[0] = *Curl_top[2];
+    Spinor_component_z[1] = *Curl_bottom[2];
+
+
+    // Now i compute the scalar product between the rotor and the sigma matrix vector
+    // I'll do one by one
+    // Compute SOC_i as the matrix-vector product of sigma_i and Spinor_component_i
+    std::vector<mrcpp::CompFunction<3>*> SOC_x(2);
+    std::vector<mrcpp::CompFunction<3>*> SOC_y(2);
+    std::vector<mrcpp::CompFunction<3>*> SOC_z(2);
+
+    // In general, for each matrix vector(spinor) multiplication we need 4 scalar multiplication and 2 additions
+
+    // Sigma_x * Spinor_component_x
+    mrcpp::add(*SOC_x[0], sigma[0](0,0), Spinor_component_x[0], sigma[0](0,1), Spinor_component_x[1], building_precision, false);
+    mrcpp::add(*SOC_x[1], sigma[0](1,0), Spinor_component_x[0], sigma[0](1,1), Spinor_component_x[1], building_precision, false);
+
+    // Sigma_y * Spinor_component_y
+    mrcpp::add(*SOC_y[0], sigma[1](0,0), Spinor_component_y[0], sigma[1](0,1), Spinor_component_y[1], building_precision, false);
+    mrcpp::add(*SOC_y[1], sigma[1](1,0), Spinor_component_y[0], sigma[1](1,1), Spinor_component_y[1], building_precision, false);
+
+    // Sigma_z * Spinor_component_z
+    mrcpp::add(*SOC_z[0], sigma[2](0,0), Spinor_component_z[0], sigma[2](0,1), Spinor_component_z[1], building_precision, false);
+    mrcpp::add(*SOC_z[1], sigma[2](1,0), Spinor_component_z[0], sigma[2](1,1), Spinor_component_z[1], building_precision, false);
+
+
+    // Now i sum the y and z components
+    std::vector<mrcpp::CompFunction<3>> SOC_yz(2); // This is the sum of the y and z components, temporary, to be used in the final sum
+    mrcpp::add(SOC_yz[0], 1.0, *SOC_y[0], 1.0, *SOC_z[0],building_precision, false);
+    mrcpp::add(SOC_yz[1], 1.0, *SOC_y[1], 1.0, *SOC_z[1],building_precision, false);
+
+    // Finally i sum the x component to the yz component to the total SOC
+    mrcpp::add(SOC_Psi_t, 1.0, *SOC_x[0], 1.0, SOC_yz[0],building_precision, false);
+    mrcpp::add(SOC_Psi_b, 1.0, *SOC_x[1], 1.0, SOC_yz[1],building_precision, false);
+
+}
+
+
+
+ComplexDouble compute_Term3_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
+    // Compute the product K * (\Nabla \Psi) for top and bottom components
+    std::vector<mrcpp::CompFunction<3>*> K_Nabla_Psi_top;
+    std::vector<mrcpp::CompFunction<3>*> K_Nabla_Psi_bottom;
+
+    // For synthax:
+    // void mrcpp::multiply<3>(mrcpp::CompFunction<3> &out, mrcpp::CompFunction<3> inp_a, mrcpp::CompFunction<3> inp_b, double prec, bool absPrec, bool useMaxNorms, bool conjugate)
+    for (int i = 0; i<2; i++){
+        mrcpp::multiply(*K_Nabla_Psi_top[i], K_tree, *Nabla_Psi_2c[0][i] ,building_precision, false, false, false);   
+        mrcpp::multiply(*K_Nabla_Psi_top[i], K_tree, *Nabla_Psi_2c[1][i] ,building_precision, false, false, false);   
+    }
+    
+    // Compute the rotor of K * (\Nabla \Psi) for top and bottom components
+    std::vector<mrcpp::CompFunction<3>*> rotor_K_Nabla_Psi_top;
+    std::vector<mrcpp::CompFunction<3>*> rotor_K_Nabla_Psi_bottom;
+
+    mrcpp::ABGVOperator<3> D(MRA, 0.0, 0.0);
+    compute_rotor(rotor_K_Nabla_Psi_top, D, K_Nabla_Psi_top, MRA);
+    compute_rotor(rotor_K_Nabla_Psi_bottom, D, K_Nabla_Psi_bottom, MRA);
+
+    // Compute the scalar product between the rotor and the sigma matrix vector
+
+
+
+    return ComplexDouble(0.0, 0.0);
+}
 
 
 

@@ -180,6 +180,7 @@ int main(int argc, char **argv) {
 
 
 
+
     if (debug){
     // Befofe starting the SCF cycle, let's print some debugging information:
     std::cout << "Here is some debugging information: " << '\n';
@@ -212,7 +213,7 @@ int main(int argc, char **argv) {
 
     double E;
 
-
+    std::cout << "************************************************************" << '\n' << "Debug 1" << '\n';
     // We now define all the trees that will be used to compute the enrgy and the SCF cycle
     mrcpp::CompFunction<3> K_tree(mra);  // -> This is the tree that will hold the K function
     mrcpp::CompFunction<3> K_inverted_tree(mra);  // -> This is the tree that will hold the K^-1 function
@@ -231,25 +232,48 @@ int main(int argc, char **argv) {
         return (1 - (constant / abs_r));
     };
 
+    std::cout << "************************************************************" << '\n' << "Debug 2" << '\n';
     // Project the K and K^-1 functions on the tree
     mrcpp::project(K_tree, K_r,building_precision);
     mrcpp::project(K_inverted_tree, K_inverted_r,building_precision);
 
+
+
+    
+
     // Gradient of K
     mrcpp::ABGVOperator<3> D(mra, 0.0, 0.0); // deine the ABGV operator
-    Nabla_K_tree = mrcpp::gradient(D,K_tree); // Gradient of K
 
+    std::cout << K_tree.getSquareNorm() << '\n';
+    std::cout << "Real? " << K_tree.isreal() << '\n';
+    std::cout << "Imag? " << K_tree.iscomplex() << '\n';
+
+
+
+
+
+    //mrcpp::apply(apply_precision, tmp, D, *K_tree.CompD[0], 1, false);
+    //Nabla_K_tree 
+    auto tmp = mrcpp::gradient(D,*K_tree.CompD[0]); // Gradient of K
+
+
+    std::cout << "************************************************************" << '\n' << "Debug 3" << '\n';
+
+    
     // Now we compute the Gradient of Psi_2c as well
     std::vector<mrcpp::CompFunction<3>*> Nabla_Psi_t;
     std::vector<mrcpp::CompFunction<3>*> Nabla_Psi_b;  
     Nabla_Psi_t = mrcpp::gradient(D, Psi_2c[0]);
     Nabla_Psi_b = mrcpp::gradient(D, Psi_2c[1]);
 
+
+    std::cout << "************************************************************" << '\n' << "Debug 4" << '\n';
+
     // Create a vector to hold both Nabla_Psi_t and Nabla_Psi_b
     std::vector<std::vector<mrcpp::CompFunction<3>*>> Nabla_Psi_2c = {Nabla_Psi_t, Nabla_Psi_b};
 
 
-
+    std::cout << "************************************************************" << '\n' << "Debug 5" << '\n';
 
 
 

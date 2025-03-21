@@ -24,6 +24,12 @@
 
 
 
+/*
+*
+*   CHANGE IN TERM 1 AND 2: THE FUNCTION DOT ALREADY CONJUGATES THE COMPFUNCTION BRA!!!!!!!!! UNCONJUGATE THEM AS IT IS DONE IN THE FUNCTION
+*
+*/
+
 
 // IN principle, one could skip the step of recomputing all the gradient of the \Psi * K bu simpli adding \Nabla \Psi  K + \Psi  \Nabla K, but this would be longer, tho requiring less memory
 ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
@@ -36,9 +42,9 @@ ComplexDouble compute_Term1_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
     std::vector<mrcpp::CompFunction<3> *> Nabla_Psi_b = Nabla_Psi_2c[1];
 
     // Compute Psi_top * K
-    mrcpp::multiply(Psi_t_K, Psi_2c[0], K_tree,building_precision, false, false, true);
+    mrcpp::multiply(Psi_t_K, Psi_2c[0], K_tree,building_precision, false, false, false);
     // Compute Psi_bottom * K
-    mrcpp::multiply(Psi_b_K, Psi_2c[1], K_tree,building_precision, false, false, true);
+    mrcpp::multiply(Psi_b_K, Psi_2c[1], K_tree,building_precision, false, false, false);
 
     // Operatr ABGV
     mrcpp::ABGVOperator<3> D(MRA, 0.0, 0.0);
@@ -78,7 +84,7 @@ ComplexDouble compute_Term2_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
 
     // Compute Psi_top * Nabla_K
     for (int i=0;i<3;i++){
-        mrcpp::multiply(Psi_Nabla_k_tmp, Psi_2c[0], *Nabla_K[i],building_precision, false, false, true);   // <---- Here we dereference the pointer
+        mrcpp::multiply(Psi_Nabla_k_tmp, Psi_2c[0], *Nabla_K[i],building_precision, false, false, false);   // <---- Here we dereference the pointer
         Psi_t_Nabla_K.push_back(Psi_Nabla_k_tmp);
     }
     
@@ -97,6 +103,13 @@ ComplexDouble compute_Term2_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
 
     return Top_contribution + Bottom_contribution;
 }
+
+
+
+
+
+
+
 
 
 void compute_rotor( std::vector<mrcpp::CompFunction<3>*> &Rotor , mrcpp::ABGVOperator<3> &D,  std::vector<mrcpp::CompFunction<3>*> &K_Nabla_Psi, MultiResolutionAnalysis<3> &MRA){
@@ -122,7 +135,7 @@ void compute_rotor( std::vector<mrcpp::CompFunction<3>*> &Rotor , mrcpp::ABGVOpe
 }
 
 
-void compute_sigma_cdot_spinor( std::vector<mrcpp::CompFunction<3>*> Curl_top, std::vector<mrcpp::CompFunction<3>*> Curl_bottom, CompFunction<3> &SOC_Psi_t, CompFunction<3> &SOC_Psi_b,  MultiResolutionAnalysis<3> &MRA){
+void compute_sigma_cdot_spinor( std::vector<mrcpp::CompFunction<3>*> &Curl_top, std::vector<mrcpp::CompFunction<3>*> &Curl_bottom, CompFunction<3> &SOC_Psi_t, CompFunction<3> &SOC_Psi_b){
     // Define the sigma matrices in a vector:
     std::vector<Eigen::Matrix2cd> sigma(3);
     sigma[0] << 0, 1,
@@ -183,6 +196,8 @@ void compute_sigma_cdot_spinor( std::vector<mrcpp::CompFunction<3>*> Curl_top, s
 
 
 
+
+
 ComplexDouble compute_Term3_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c){
     // Compute the product K * (\Nabla \Psi) for top and bottom components
     std::vector<mrcpp::CompFunction<3>*> K_Nabla_Psi_top;
@@ -204,11 +219,78 @@ ComplexDouble compute_Term3_T_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<
     compute_rotor(rotor_K_Nabla_Psi_bottom, D, K_Nabla_Psi_bottom, MRA);
 
     // Compute the scalar product between the rotor and the sigma matrix vector
+    CompFunction<3> SOC_Psi_t(MRA);
+    CompFunction<3> SOC_Psi_b(MRA);
+    compute_sigma_cdot_spinor(rotor_K_Nabla_Psi_top, rotor_K_Nabla_Psi_bottom, SOC_Psi_t, SOC_Psi_b);
 
+    // Now i do the innetr produc with the bra
+    ComplexDouble Top_contribution = dot(Psi_2c[0], SOC_Psi_t);
+    ComplexDouble Bottom_contribution = dot(Psi_2c[1], SOC_Psi_b);
 
-
-    return ComplexDouble(0.0, 0.0);
+    return ComplexDouble(0,1)*(Top_contribution + Bottom_contribution);
 }
+
+
+
+
+
+
+
+ComplexDouble compute_energy_ZORA(MultiResolutionAnalysis<3> &MRA, std::vector<std::vector<mrcpp::CompFunction<3>*>> &Nabla_Psi_2c, mrcpp::CompFunction<3> &K_tree, std::vector<mrcpp::CompFunction<3> *> &Nabla_K_tree,  std::vector<mrcpp::CompFunction<3>> Psi_2c, CompFunction<3> &V){
+    ComplexDouble Term1 = compute_Term1_T_ZORA(MRA, Nabla_Psi_2c, K_tree, Psi_2c);
+    ComplexDouble Term2 = compute_Term2_T_ZORA(MRA, Nabla_Psi_2c, K_tree, Nabla_K_tree, Psi_2c);
+    ComplexDouble Term3 = compute_Term3_T_ZORA(MRA, Nabla_Psi_2c, K_tree, Nabla_K_tree, Psi_2c);
+
+    // Now we do <Psi | V | Psi>
+    mrcpp::CompFunction<3> psi_top__V(MRA);
+    mrcpp::CompFunction<3> psi_bottom__V(MRA);
+
+    mrcpp::multiply(psi_top__V, V, Psi_2c[0],building_precision, false, false, false);
+    mrcpp::multiply(psi_bottom__V, V, Psi_2c[1],building_precision, false, false, false);
+
+    ComplexDouble potential_energy = dot(Psi_2c[0],psi_top__V) + dot(Psi_2c[1],psi_bottom__V);
+
+    ComplexDouble kinetic_energy = -0.5*m* (Term1 + Term2 + Term3) ;
+
+    return kinetic_energy + potential_energy;
+
+
+
+}
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

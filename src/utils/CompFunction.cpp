@@ -821,7 +821,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
     int N = Phi.size();
     int M = Psi.size();
     for (int i = 0; i < M; i++) {
-        for (int j; j < 4; j++) delete Psi[i].CompD[j];
+        for (int j = 0; j < 4; j++) delete Psi[i].CompD[j];
         Psi[i].func_ptr->isreal = 0;
         Psi[i].func_ptr->iscomplex = 1;
     }

@@ -53,8 +53,7 @@ template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOpe
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> &inp);
 template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, const ComplexDouble (*metric)[4]  = defaultMetric);
 template <int D, typename T> FunctionTreeVector<D, T> gradient(DerivativeOperator<D> &oper, FunctionTree<D, T> &inp);
-// template <int D>
-std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, ComplexDouble  (*metric)[4] = nullptr);
+std::vector<CompFunction<3>*> gradient(DerivativeOperator<3> &oper, CompFunction<3> &inp, const ComplexDouble  (*metric)[4] = defaultMetric);
 // clang-format on
 
 } // namespace mrcpp

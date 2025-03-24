@@ -469,7 +469,7 @@ std::vector<CompFunction<3> *> gradient(DerivativeOperator<3> &oper, CompFunctio
         for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
                 if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                    grad_d->func_ptr->Ncomp = ocomp;
+                    grad_d->func_ptr->Ncomp = ocomp + 1;
                     if (inp.isreal()) {
                         grad_d->func_ptr->isreal = 1;
                         grad_d->func_ptr->iscomplex = 0;

@@ -122,7 +122,10 @@ template <int D>
  * Returns a copy without defined trees.
  */
 CompFunction<D> CompFunction<D>::paramCopy(bool alloc) const {
-    return CompFunction<D>(func_ptr->data, alloc);
+    CompFunction<D> out(func_ptr->data, alloc);
+    // we do not copy tree sizes:
+    for (int i = 0; i < 4; i++) out.func_ptr->data.Nchunks[i] = 0;
+    return out;
 }
 
 template <int D> void CompFunction<D>::flushMRAData() {

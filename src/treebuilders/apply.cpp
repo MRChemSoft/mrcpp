@@ -118,6 +118,7 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
  */
 template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -252,6 +253,7 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
 template <int D, typename T>
 void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -295,6 +297,7 @@ template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T
 
 template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < 4; icomp++) {
         if (inp.Comp[icomp] != nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
@@ -411,7 +414,7 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, const ComplexDouble (*metric)[4]) {
     // TODO: sums and not only each components independently, when concrete examples with non diagonal metric are tested
 
-    out = inp.paramCopy(true);
+    out = inp.paramCopy(true); // note that this will copy the factor of inp (inp.func_ptr->data.c1)
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {

@@ -118,6 +118,7 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
  */
 template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, const CompFunction<D> &inp, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -252,6 +253,7 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
 template <int D, typename T>
 void apply(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, FunctionTreeVector<D, T> *precTrees, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -295,6 +297,7 @@ template <int D, typename T> void apply_far_field(double prec, FunctionTree<D, T
 
 template <int D> void apply_far_field(double prec, CompFunction<D> &out, ConvolutionOperator<D> &oper, CompFunction<D> &inp, const ComplexDouble (*metric)[4], int maxIter, bool absPrec) {
 
+    out = inp.paramCopy(true);
     for (int icomp = 0; icomp < 4; icomp++) {
         if (inp.Comp[icomp] != nullptr) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
@@ -411,6 +414,7 @@ template <int D, typename T> void apply(FunctionTree<D, T> &out, DerivativeOpera
 template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, CompFunction<D> &inp, int dir, const ComplexDouble (*metric)[4]) {
     // TODO: sums and not only each components independently, when concrete examples with non diagonal metric are tested
 
+    out = inp.paramCopy(true); // note that this will copy the factor of inp (inp.func_ptr->data.c1)
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
@@ -469,7 +473,7 @@ std::vector<CompFunction<3> *> gradient(DerivativeOperator<3> &oper, CompFunctio
         for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
             for (int ocomp = 0; ocomp < 4; ocomp++) {
                 if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                    grad_d->func_ptr->Ncomp = ocomp;
+                    grad_d->func_ptr->Ncomp = ocomp + 1;
                     if (inp.isreal()) {
                         grad_d->func_ptr->isreal = 1;
                         grad_d->func_ptr->iscomplex = 0;
@@ -609,9 +613,6 @@ template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, 
 template void divergence<1, ComplexDouble>(FunctionTree<1, ComplexDouble> &out, DerivativeOperator<1> &oper, std::vector<FunctionTree<1, ComplexDouble> *> &inp);
 template void divergence<2, ComplexDouble>(FunctionTree<2, ComplexDouble> &out, DerivativeOperator<2> &oper, std::vector<FunctionTree<2, ComplexDouble> *> &inp);
 template void divergence<3, ComplexDouble>(FunctionTree<3, ComplexDouble> &out, DerivativeOperator<3> &oper, std::vector<FunctionTree<3, ComplexDouble> *> &inp);
-template FunctionTreeVector<1, ComplexDouble> gradient<1>(DerivativeOperator<1> &oper, FunctionTree<1, ComplexDouble> &inp);
-template FunctionTreeVector<2, ComplexDouble> gradient<2>(DerivativeOperator<2> &oper, FunctionTree<2, ComplexDouble> &inp);
-template FunctionTreeVector<3, ComplexDouble> gradient<3>(DerivativeOperator<3> &oper, FunctionTree<3, ComplexDouble> &inp);
 
 template void apply(CompFunction<3> &out, DerivativeOperator<3> &oper, CompFunction<3> &inp, int dir = -1, const ComplexDouble (*metric)[4]);
 

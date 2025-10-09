@@ -306,6 +306,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
     int ncoefs = 1;
     for (int d = 0; d < D; d++) ncoefs *= kp1;
     int Tdim = std::pow(2, D);
+    T values[ncoefs * Tdim];
 
     int nout = this->endNodeTable.size();
     out << Tdim * nout << std::endl; // could output only scaling coeff?
@@ -331,7 +332,9 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
         std::array<int, D> l;
         NodeIndex<D> idx = this->endNodeTable[count]->getNodeIndex();
         MWNode<D, T> *node = &(this->getNode(idx, false));
-        T *values = node->getCoefs();
+	T *coefs = node->getCoefs();
+	for (int i = 0; i < ncoefs * Tdim; i++) values[i] = coefs[i];
+	node->attachCoefs(values);
         int n = idx.getScale();
         node->mwTransform(Reconstruction);
         node->cvTransform(Forward);
@@ -350,7 +353,8 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
             for (int i = 0; i < ncoefs; i++) out << values[cix * ncoefs + mapMRC[i]] << " ";
             out << std::endl;
         }
-    }
+	node->attachCoefs(coefs); // put back original coeff
+   }
     out.close();
 }
 /** @brief Write the tree structure to disk, for later use
@@ -358,9 +362,9 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
  */
 template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string &file) {
     Timer t1;
+
     this->deleteGenerated();
     auto &allocator = this->getNodeAllocator();
-
     std::stringstream fname;
     fname << file << ".tree";
     std::fstream f;
@@ -370,14 +374,12 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
     // Write size of tree
     int nChunks = allocator.getNChunksUsed();
     f.write((char *)&nChunks, sizeof(int));
-
     // Write tree data, chunk by chunk
     for (int iChunk = 0; iChunk < nChunks; iChunk++) {
-        f.write((char *)allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
-        f.write((char *)allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
+       f.write((char *)allocator.getNodeChunk(iChunk), allocator.getNodeChunkSize());
+       f.write((char *)allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize());
     }
     f.close();
-    this->saveTreeTXT("MRC.dat");
     print::time(10, "Time write", t1);
 }
 

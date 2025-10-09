@@ -1144,19 +1144,22 @@ template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, 
  */
 template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real() {
     FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
-#pragma omp parallel num_threads(mrcpp_get_num_threads())
+    out->setZero();
+    // TODO: why does the omp parallelism not always work here?
+    //#pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
-#pragma omp for schedule(guided)
+	//#pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
             MWNode<D, T> &inp_node = *this->endNodeTable[n];
-            MWNode<D, double> out_node = out->getNode(out_node.getNodeIndex()); // Full copy
+            MWNode<D, double> &out_node = out->getNode(inp_node.getNodeIndex(), true);
             double *out_coefs = out_node.getCoefs();
             const T *inp_coefs = inp_node.getCoefs();
             for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = std::real(inp_coefs[i]); }
             out_node.calcNorms();
         }
     }
+    out->resetEndNodeTable();
     out->mwTransform(BottomUp);
     out->calcSquareNorm();
     return out;
@@ -1166,13 +1169,14 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real()
  */
 template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag() {
     FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
-#pragma omp parallel num_threads(mrcpp_get_num_threads())
+    out->setZero();
+    //#pragma omp parallel num_threads(mrcpp_get_num_threads())
     {
         int nNodes = this->getNEndNodes();
-#pragma omp for schedule(guided)
+	//#pragma omp for schedule(guided)
         for (int n = 0; n < nNodes; n++) {
             MWNode<D, T> &inp_node = *this->endNodeTable[n];
-            MWNode<D, double> out_node = out->getNode(out_node.getNodeIndex()); // Full copy
+            MWNode<D, double> &out_node = out->getNode(inp_node.getNodeIndex(), true);
             double *out_coefs = out_node.getCoefs();
             const T *inp_coefs = inp_node.getCoefs();
             for (int i = 0; i < inp_node.getNCoefs(); i++) { out_coefs[i] = std::imag(inp_coefs[i]); }

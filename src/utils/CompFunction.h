@@ -174,7 +174,9 @@ template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDoub
 template <int D> ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket);
 template <int D> double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket);
 void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec);
+void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec); //overload of project is not always recognized by the compiler
 void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec);
+void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec); //overload of project is not always recognized by the compiler
 template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec);
 template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec);
 template <int D> void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket);

@@ -785,8 +785,25 @@ void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, d
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
 
-// template <int D, typename T>
+void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec) {
+    bool need_to_project = not(out.isShared()) or mpi::share_master();
+    out.func_ptr->isreal = 1;
+    out.func_ptr->iscomplex = 0;
+    if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
+    mpi::share_function(out, 0, 123123, mpi::comm_share);
+}
+
 void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
+    bool need_to_project = not(out.isShared()) or mpi::share_master();
+    out.func_ptr->isreal = 0;
+    out.func_ptr->iscomplex = 1;
+    if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
+    mpi::share_function(out, 0, 123123, mpi::comm_share);
+}
+
+void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 0;
     out.func_ptr->iscomplex = 1;

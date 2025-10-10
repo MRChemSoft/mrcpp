@@ -165,6 +165,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
 template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, double prec, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template <int D>
 void multiply(double prec, CompFunction<D> &out, double coef, CompFunction<D> inp_a, CompFunction<D> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
+template <int D> void make_density(CompFunction<D> &out, CompFunction<D> inp, double prec);
 template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, CompFunction<D> inp_b, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template <int D> void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine = 0, bool conjugate = false);
 template <int D> void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate = false);

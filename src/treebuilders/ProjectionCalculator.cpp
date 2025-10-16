@@ -25,6 +25,7 @@
 
 #include "ProjectionCalculator.h"
 #include "trees/MWNode.h"
+#include <cassert>
 
 using Eigen::MatrixXd;
 

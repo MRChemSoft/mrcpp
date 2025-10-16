@@ -548,6 +548,25 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
     }
 }
 
+/** @brief out = conj(inp) * inp
+ *
+ *  Note that output is always real
+ *
+ */
+template <int D> void make_density(CompFunction<D> &out, CompFunction<D> inp, double prec) {
+    multiply(prec, out, 1.0, inp, inp, -1, false, false, true);
+    if (out.iscomplex()) {
+        // copy onto real components
+        for (int i = 0; i < out.Ncomp(); i++) {
+            out.CompD[i] = out.CompC[i]->Real();
+            delete out.CompC[i];
+        }
+        out.func_ptr->isreal = 1;
+        out.func_ptr->iscomplex = 0;
+    }
+}
+
+
 /** @brief out = inp_a * inp_b
  *
  */
@@ -766,8 +785,25 @@ void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, d
     mpi::share_function(out, 0, 123123, mpi::comm_share);
 }
 
-// template <int D, typename T>
+void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec) {
+    bool need_to_project = not(out.isShared()) or mpi::share_master();
+    out.func_ptr->isreal = 1;
+    out.func_ptr->iscomplex = 0;
+    if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
+    mpi::share_function(out, 0, 123123, mpi::comm_share);
+}
+
 void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
+    bool need_to_project = not(out.isShared()) or mpi::share_master();
+    out.func_ptr->isreal = 0;
+    out.func_ptr->iscomplex = 1;
+    if (out.Ncomp() < 1) out.alloc(1);
+    if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
+    mpi::share_function(out, 0, 123123, mpi::comm_share);
+}
+
+void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
     out.func_ptr->isreal = 0;
     out.func_ptr->iscomplex = 1;
@@ -2614,5 +2650,6 @@ template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, 
 template void linear_combination(CompFunction<3> &out, const std::vector<ComplexDouble> &c, std::vector<CompFunction<3>> &inp, double prec, bool conjugate);
 template double node_norm_dot(CompFunction<3> bra, CompFunction<3> ket);
 template void orthogonalize(double prec, CompFunction<3> &Bra, CompFunction<3> &Ket);
+template void make_density(CompFunction<3> &out, CompFunction<3> inp, double prec);
 
 } // namespace mrcpp

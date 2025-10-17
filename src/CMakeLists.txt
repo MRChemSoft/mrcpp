@@ -34,12 +34,22 @@ target_include_directories(mrcpp
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/MRCPP>
   )
 
+find_package(FFTW3 REQUIRED)
+
+if(TARGET FFTW3::fftw3)
+    set(FFTW3_LIB_TARGET FFTW3::fftw3)
+else()
+    set(FFTW3_LIB_TARGET ${FFTW3_LIBRARIES})
+    target_include_directories(mrcpp PUBLIC ${FFTW3_INCLUDE_DIRS})
+endif()
+
 target_link_libraries(mrcpp
   PUBLIC
     Eigen3::Eigen
     $<BUILD_INTERFACE:$<$<TARGET_EXISTS:OpenMP::OpenMP_CXX>:OpenMP::OpenMP_CXX>>
     $<BUILD_INTERFACE:$<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>>
-  )
+    ${FFTW3_LIB_TARGET}
+)
 
 add_subdirectory(core)
 add_subdirectory(functions)

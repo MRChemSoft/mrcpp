@@ -92,7 +92,7 @@ class SmoothDerivative : public ConvolutionOperator<D> // One can use Convolutio
 {
 public:
 //    SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);
-    SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30);
+    SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double cut_off, int max_Jpower = 30);
     SmoothDerivative(const SmoothDerivative &oper) = delete;
     SmoothDerivative &operator=(const SmoothDerivative &oper) = delete;
     virtual ~SmoothDerivative() = default;

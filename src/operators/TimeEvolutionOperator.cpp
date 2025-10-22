@@ -241,7 +241,39 @@ template class TimeEvolutionOperator<2>;
 template class TimeEvolutionOperator<3>;
 
 
-/** @brief Creates Re or Im of operator
+
+/** @brief An adaptive constructor for TimeEvolutionOperator class.
+ *
+ * @param[in] mra: MRA.
+ * @param[in] prec: precision.
+ * @param[in] time: the time moment (step).
+ * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
+ * @param[in] max_Jpower: maximum amount of power integrals used.
+ *
+ * @details Adaptively constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
+ * It is recommended for use in case of high polynomial order in use of the scaling basis.
+ *
+ * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
+ * This should be weakened in future.
+ *
+ */
+template <int D>
+SmoothDerivative<D>::SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double cut_off, int max_Jpower)
+        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
+{
+    int oldlevel = Printer::setPrintLevel(0);
+    this->setBuildPrec(prec);
+
+    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType());
+    this->cross_correlation = &cross_correlation;
+
+    initialize(cut_off, max_Jpower); // will go outside of the constructor in future
+
+    this->initOperExp(1); // this turns out to be important
+    Printer::setPrintLevel(oldlevel);
+}
+
+/** @brief Creates Derivative operator
  *
  * @details Adaptive down to scale \f$ N = 18 \f$.
  * This scale limit bounds the amount of JpowerIntegrals
@@ -282,5 +314,9 @@ template <int D> void SmoothDerivative<D>::initialize(double cut_off, int max_Jp
     for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
+
+template class SmoothDerivative<1>;
+template class SmoothDerivative<2>;
+template class SmoothDerivative<3>;
 
 } // namespace mrcpp

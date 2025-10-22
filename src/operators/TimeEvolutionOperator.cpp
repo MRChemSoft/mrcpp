@@ -240,4 +240,47 @@ template class TimeEvolutionOperator<1>;
 template class TimeEvolutionOperator<2>;
 template class TimeEvolutionOperator<3>;
 
+
+/** @brief Creates Re or Im of operator
+ *
+ * @details Adaptive down to scale \f$ N = 18 \f$.
+ * This scale limit bounds the amount of JpowerIntegrals
+ * to be calculated.
+ * @note In future work we plan to optimize calculation of JpowerIntegrals so that we calculate
+ * only needed ones, while building the tree (in progress).
+ *
+ */
+template <int D> void SmoothDerivative<D>::initialize(double cut_off, int max_Jpower) {
+    int N = 18;
+
+    double o_prec = this->build_prec;
+    auto o_mra = this->getOperatorMRA();
+    auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
+
+    std::map<int, DerivativePowerIntegrals *> J;
+    for (int n = 0; n <= N + 1; n++) J[n] = new DerivativePowerIntegrals(cut_off, n, max_Jpower);
+    DerivativeCrossCorrelationCalculator calculator(J, this->cross_correlation);
+
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true);
+
+    mrcpp::TreeBuilder<2> builder;
+    builder.build(*o_tree, calculator, adaptor, N);
+
+    // Postprocess to make the operator functional
+    Timer trans_t;
+    o_tree->mwTransform(BottomUp);
+    o_tree->removeRoughScaleNoise();
+    // o_tree->clearSquareNorm(); //does not affect printing
+    o_tree->calcSquareNorm();
+    o_tree->setupOperNodeCache();
+
+    print::time(10, "Time transform", trans_t);
+    print::separator(10, ' ');
+
+    this->raw_exp.push_back(std::move(o_tree));
+
+    for (int n = 0; n <= N + 1; n++) delete J[n];
+}
+
+
 } // namespace mrcpp

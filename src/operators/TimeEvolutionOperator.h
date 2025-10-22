@@ -70,4 +70,42 @@ protected:
     SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
 };
 
+
+/** @class SmoothDerivative
+ *
+ * @brief Derivative with cutt off high frequencies
+ *
+ * @details Represents the convolution with the kernel
+ * \f$
+ *      \mathcal F^{-1} \left( i \xi \chi_R(\xi) \right)
+ *      .
+ * \f$
+ * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponent(0, 0).
+ *
+ * @note So far implementation is done for Legendre scaling functions in 1d.
+ *
+ * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
+ *
+ */
+template <int D>
+class SmoothDerivative : public ConvolutionOperator<D> // One can use ConvolutionOperator instead as well
+{
+public:
+//    SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);
+    SmoothDerivative(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30);
+    SmoothDerivative(const SmoothDerivative &oper) = delete;
+    SmoothDerivative &operator=(const SmoothDerivative &oper) = delete;
+    virtual ~SmoothDerivative() = default;
+
+    double getBuildPrec() const { return this->build_prec; }
+
+protected:
+    void initialize(double cut_off, int max_Jpower);
+    
+    void setBuildPrec(double prec) { this->build_prec = prec; }
+
+    double build_prec{-1.0};
+    SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
+};
+
 } // namespace mrcpp

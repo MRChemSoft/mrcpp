@@ -295,8 +295,10 @@ template <int D> void SmoothDerivative<D>::initialize(double cut_off, int max_Jp
 
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true);
 
-    mrcpp::TreeBuilder<2> builder;
-    builder.build(*o_tree, calculator, adaptor, N);
+    mrcpp::TreeBuilder<2, double> builder;
+std::cout << "TESTING.....\n";
+    builder.build(*o_tree, calculator, adaptor, N);  // causing segmentation fault
+std::cout << "TESTING.....\n";
 
     // Postprocess to make the operator functional
     Timer trans_t;

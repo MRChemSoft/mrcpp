@@ -150,11 +150,13 @@ private:
 };
 
 
-class DerivativePowerIntegrals : public JpowerIntegrals
+
+
+class DerivativePowerIntegrals
 {
 public:
     /// @brief creates an array of power integrals
-    /// @param cut_off : parameter a
+    /// @param cut_off : parameter R
     /// @param scaling : scaling level
     /// @param M : maximum amount of integrals for each l
     /// @param threshold : lower limit for neglecting the integrals
@@ -162,8 +164,15 @@ public:
     //JpowerIntegrals(double a, int scaling, int M, double threshold = 1.0e-15);
 
     
-private:
-    std::vector<std::complex<double>> calculate_J_power_integrals(int l, double cut_off, int M, double threshold);
+    DerivativePowerIntegrals(double cut_off, int scaling, int M, double threshold = 1.0e-15);
+    
+    
+    int scaling;
+    std::vector<std::vector<double>> integrals;
+
+    std::vector<double> & operator[](int index);
+//private:
+    std::vector<std::vector<double>> calculate_J_power_integrals(double cut_off, int M, double threshold);
 };
 
 } // namespace mrcpp

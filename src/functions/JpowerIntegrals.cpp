@@ -73,7 +73,15 @@ void JpowerIntegrals::crop(std::vector<std::complex<double>> &J, double threshol
 }
 
 
-std::vector<std::complex<double>> DerivativePowerIntegrals::calculate_J_power_integrals(int l, double cut_off, int M, double threshold) {
+
+DerivativePowerIntegrals::DerivativePowerIntegrals(double cut_off, int scaling, int M, double threshold)
+    : scaling(scaling)
+{
+    integrals = calculate_J_power_integrals(cut_off, M, threshold);
+}
+
+
+std::vector<std::vector<double>> DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M, double threshold) {
     using namespace std::complex_literals;
     
     const int N = 1 << this->scaling;
@@ -130,24 +138,16 @@ std::vector<std::complex<double>> DerivativePowerIntegrals::calculate_J_power_in
 
     fftw_destroy_plan(plan);
 
-
-
-    //std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
-    //std::complex<double> beta(0, 0.5 / a);
-    //auto alpha = static_cast<double>(l) * beta;
-
-    std::vector<std::complex<double>> J = {0.0};
-/*
-    for (int m = 0; m < M; m++) {
-        std::complex<double> term1 = J[J.size() - 1] * alpha;
-        std::complex<double> term2 = J[J.size() - 2] * beta * static_cast<double>(m) / static_cast<double>(m + 2);
-        std::complex<double> last = (term1 + term2) / static_cast<double>(m + 3);
-        J.push_back(last);
-    }
-
-    J.erase(J.begin());
-*/
-    return J;
+    return power_integrals;
 }
+
+/// @brief in progress
+/// @param index - interger lying in the interval \f$ [ -2^n + 1, \ldots, 2^n - 1 ] \f$.
+/// @return in progress
+std::vector<double> &DerivativePowerIntegrals::operator[](int index) {
+    if (index < 0) index += integrals.size();
+    return integrals[index];
+}
+
 
 } // namespace mrcpp

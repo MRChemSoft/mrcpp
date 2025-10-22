@@ -32,6 +32,9 @@
 
 namespace mrcpp {
 
+
+
+
 /** @class JpowerIntegrals
  *
  * @brief A class needed for construction Schrodinger time evolution operator
@@ -144,6 +147,23 @@ public:
 private:
     std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold);
     void crop(std::vector<std::complex<double>> & J, double threshold);
+};
+
+
+class DerivativePowerIntegrals : public JpowerIntegrals
+{
+public:
+    /// @brief creates an array of power integrals
+    /// @param cut_off : parameter a
+    /// @param scaling : scaling level
+    /// @param M : maximum amount of integrals for each l
+    /// @param threshold : lower limit for neglecting the integrals
+    /// @details The array is orginised as a vector ordered as \f$l = 0, 1, 2, \ldots, 2^n - 1, 1 - 2^n, 2 - 2^n, \ldots, -2, -1 \f$.
+    //JpowerIntegrals(double a, int scaling, int M, double threshold = 1.0e-15);
+
+    
+private:
+    std::vector<std::complex<double>> calculate_J_power_integrals(int l, double cut_off, int M, double threshold);
 };
 
 } // namespace mrcpp

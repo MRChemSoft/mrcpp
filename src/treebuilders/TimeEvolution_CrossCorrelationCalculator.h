@@ -62,4 +62,30 @@ public:
     // template <int T> void applyCcc(MWNode<2> &node, CrossCorrelationCache<T> &ccc);
 };
 
+
+/** @class DerivativeCrossCorrelationCalculator
+ *
+ * @brief An efficient way to calculate ... (work in progress)
+ *
+ * @details An efficient way to calculate ... having the form
+ * \f$ \ldots = \ldots \f$
+ *
+ *
+ *
+ */
+class DerivativeCrossCorrelationCalculator final : public TreeCalculator<2> {
+public:
+    DerivativeCrossCorrelationCalculator(std::map<int, DerivativePowerIntegrals *> &J, SchrodingerEvolution_CrossCorrelation *cross_correlation)
+            : J_power_inetgarls(J)
+            , cross_correlation(cross_correlation) {}
+// private:
+    std::map<int, DerivativePowerIntegrals *> J_power_inetgarls;
+    SchrodingerEvolution_CrossCorrelation *cross_correlation;
+
+
+    void calcNode(MWNode<2> &node) override;
+
+    void applyCcc(MWNode<2> &node);
+};
+
 } // namespace mrcpp

@@ -428,6 +428,25 @@ template class CompFunction<1>;
 template class CompFunction<2>;
 template class CompFunction<3>;
 
+/** @brief Deep copy that changes type from real to complex
+ *
+ * Deep copy: makes an exact copy with type complex from a real input
+ */
+template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp) {
+    out.func_ptr->data = inp.func_ptr->data;
+    out.defcomplex();
+    out.alloc(inp.Ncomp());
+    if (inp.getNNodes() == 0) return;
+    for (int i = 0; i < inp.Ncomp(); i++) {
+        if (inp.isreal()) {
+            inp.CompD[i]->CopyTreeToComplex(out.CompC[i]);
+        } else {
+            inp.CompC[i]->deep_copy(out.CompC[i]);
+        }
+    }
+}
+
+
 /** @brief Deep copy
  *
  * Deep copy: meta data is copied along with the content of each component.
@@ -2644,6 +2663,7 @@ template void multiply(CompFunction<3> &out, FunctionTree<3, double> &inp_a, Rep
 template void multiply(CompFunction<3> &out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
+template void CopyToComplex(CompFunction<3> &out, const CompFunction<3> &inp);
 template void deep_copy(CompFunction<3> *out, const CompFunction<3> &inp);
 template void deep_copy(CompFunction<3> &out, const CompFunction<3> &inp);
 template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec, bool conjugate);

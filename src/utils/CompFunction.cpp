@@ -435,6 +435,7 @@ template class CompFunction<3>;
 template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp) {
     out.func_ptr->data = inp.func_ptr->data;
     out.defcomplex();
+    out.func_ptr->data.isreal = 0;
     out.alloc(inp.Ncomp());
     if (inp.getNNodes() == 0) return;
     for (int i = 0; i < inp.Ncomp(); i++) {

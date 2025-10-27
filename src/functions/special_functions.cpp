@@ -25,74 +25,84 @@
 
 #include "special_functions.h"
 
-
 namespace mrcpp {
 
-
-/** @brief Free-particle time evolution on real line.
+/**
+ * @brief Analytic solution of the free-particle Schrödinger equation on ℝ at time @p t.
  *
- * @param[in] x: space coordinate in \f$ \mathbb R \f$.
- * @param[in] x0: \f$ x_0 \f$ center of gaussian function at zero time moment.
- * @param[in] t: time moment.
- * @param[in] sigma: \f$ \sigma \f$ width of the initial gaussian wave.
+ * This implements the standard Gaussian wave packet propagation (free particle, \f$\hbar=1\f$, mass \f$m=\tfrac12\f$
+ * so that the free propagator denominator becomes \f$4it+\sigma\f$ as used below). Given an initial
+ * Gaussian of width parameter \f$\sigma>0\f$ centered at \f$x_0\f$ at time \f$t=0\f$,
+ * the wave function at time \f$t\f$ is
  *
- * @details Analytical solution of a one dimensional free-particle
- * movement
  * \f[
- *      \psi(x, t)
- *      =
- *      \sqrt{
- *          \frac{ \sigma }{ 4it + \sigma }
- *      }
- *      e^{ - \frac { (x - x_0)^2 }{ 4it + \sigma } }
+ *   \psi(x,t)
+ *   =
+ *   \sqrt{\frac{\sigma}{\,\sigma + 4\, i\, t\,}}
+ *   \exp\!\left(
+ *     -\,\frac{(x - x_0)^2}{\,\sigma + 4\, i\, t\,}
+ *   \right),
  * \f]
- * where \f$ t, \sigma > 0 \f$.
- * 
- * @returns The complex-valued wave function
- * \f$ \psi(x, t) \f$
- * at the specified space coordinate and time.
- * 
- * 
+ *
+ * which disperses in time and acquires a complex phase.
+ *
+ * #### Parameters
+ * - @param x     Real-space coordinate \f$x \in \mathbb{R}\f$.
+ * - @param x0    Initial center \f$x_0\f$ of the Gaussian at \f$t=0\f$.
+ * - @param t     Time \f$t \in \mathbb{R}\f$ (can be positive or negative).
+ * - @param sigma Width parameter \f$\sigma>0\f$ of the initial Gaussian.
+ *
+ * #### Returns
+ * The complex-valued wave function \f$\psi(x,t)\f$ at the requested space-time point.
+ *
+ * #### Notes
+ * - For @p t = 0, this reduces to \f$\psi(x,0)=\exp\!\big(-\tfrac{(x-x_0)^2}{\sigma}\big)\f$.
+ * - The branch of the complex square root is the principal branch via `std::sqrt(std::complex)`.
+ * - Numerical behavior near large \f$|t|\f$: the modulus decays like \f$|\sigma/(\sigma+4it)|^{1/2}\f$,
+ *   while the phase is dominated by the complex denominator; standard `std::complex` arithmetic handles this.
+ * - This function assumes consistent physical units so that the closed form above applies directly.
  */
 std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma)
 {
-    std::complex<double> i(0.0, 1.0);  // Imaginary unit
-    auto denominator = 4 * t * i + sigma;
-    std::complex<double> sqrt_denom = std::sqrt(denominator);
-    std::complex<double> exponent = -((x - x0) * (x - x0)) / denominator;
+    std::complex<double> i(0.0, 1.0);                  // imaginary unit i
+    std::complex<double> denom = sigma + 4.0 * t * i;  // σ + 4 i t
+    std::complex<double> exponent = -((x - x0) * (x - x0)) / denom;
 
-    return std::sqrt(sigma) / sqrt_denom * std::exp(exponent);
+    return std::sqrt(sigma) / std::sqrt(denom) * std::exp(exponent);
 }
 
-
-
-/** @brief A smooth compactly supported non-negative function.
+/**
+ * @brief Smooth, compactly supported "bump" function on the interval \f$(a,b)\f$.
  *
- * @param[in] x: space coordinate in \f$ \mathbb R \f$.
- * @param[in] a: the left support boundary.
- * @param[in] b: the right support boundary.
- *
- * @details Smooth function on the real line \f$ \mathbb R \f$
- * defined by the formula
+ * Defines a non-negative \f$C^\infty\f$ function
  * \f[
- *      g_{a,b} (x) = \exp \left( - \frac{b - a}{(x - a)(b - x)} \right)
- *      , \quad
- *      a < x < b
+ *   g_{a,b}(x) =
+ *   \begin{cases}
+ *     \exp\!\Big( -\,\dfrac{b-a}{(x-a)(b-x)} \Big), & a < x < b,\\[6pt]
+ *     0, & \text{otherwise},
+ *   \end{cases}
  * \f]
- * and \f$ g_{a,b} (x) = 0 \f$ elsewhere.
- * 
- * @returns The non-negative value
- * \f$ g_{a,b} (x) \f$
- * at the specified space coordinate \f$ x \in \mathbb R \f$.
- * 
- * 
+ * which vanishes to **all orders** at the endpoints \f$a\f$ and \f$b\f$.
+ *
+ * #### Parameters
+ * - @param x  Real-space coordinate \f$x \in \mathbb{R}\f$.
+ * - @param a  Left endpoint (must satisfy \f$a<b\f$ for a non-trivial function).
+ * - @param b  Right endpoint (\f$b>a\f$).
+ *
+ * #### Returns
+ * - \f$g_{a,b}(x)\f$ if \f$a < x < b\f$, and `0.0` otherwise.
+ *
+ * #### Numerical remarks
+ * - Near the endpoints, \f$(x-a)(b-x)\to 0^+\f$ and the exponent \f$-\frac{b-a}{(x-a)(b-x)}\f$ becomes large
+ *   and negative, so the value safely underflows toward 0; this is expected and preserves smooth compact support.
+ * - If `a >= b`, the definition yields the zero function for all `x`.
  */
 double smooth_compact_function(double x, double a, double b) {
-    double res = 0;
     if (a < x && x < b) {
-        res = exp((a - b) / (x - a) / (b - x));
+        // Equivalent to: exp( - (b-a) / ((x-a)(b-x)) )
+        return std::exp((a - b) / ((x - a) * (b - x)));
     }
-    return res;
+    return 0.0;
 }
 
 } // namespace mrcpp

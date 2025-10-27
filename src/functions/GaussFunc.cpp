@@ -23,6 +23,32 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file GaussFunc.cpp
+ *
+ * @brief Implementation of @c GaussFunc<D>, a single Cartesian Gaussian (possibly
+ *        multiplied by a coordinate power) in D dimensions.
+ *
+ * Model
+ * -----
+ * A term has the form
+ *   f(r) = c * Π_{d=0}^{D-1} (x_d - R_d)^{p_d} * exp( -α_d (x_d - R_d)^2 ),
+ * with scalar coefficient c, center R, exponents α (per axis), and integer powers p
+ * (Cartesian angular momenta). Many operations here are separable over dimensions.
+ *
+ * Highlights
+ * ----------
+ * - @ref evalf computes the value with optional screening (box truncation).
+ * - @ref calcSquareNorm uses 1D closed forms and multiplies across axes.
+ * - @ref differentiate returns a @ref GaussPoly<D> (Gaussian times polynomial),
+ *   using the product rule on (x-R)^p * exp(-α (x-R)^2).
+ * - @ref mult multiplies two @c GaussFunc into a @c GaussPoly by “completing the square”
+ *   (handled by @c GaussPoly::multPureGauss) and then combining the two polynomials
+ *   created by shifting to the new center.
+ * - @ref calcCoulombEnergy (D=3 specialization) uses Boys F_0 and assumes isotropic
+ *   exponents for both Gaussians.
+ */
+
 #include <cmath>
 
 #include "BoysFunction.h"
@@ -39,11 +65,26 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/**
+ * @brief Polymorphic deep copy (virtual constructor idiom).
+ * @return Newly allocated @c GaussFunc with identical parameters.
+ */
 template <int D> Gaussian<D> *GaussFunc<D>::copy() const {
     auto *gauss = new GaussFunc<D>(*this);
     return gauss;
 }
 
+/**
+ * @brief Pointwise evaluation of the Gaussian (with optional polynomial factor).
+ *
+ * Steps
+ * -----
+ * 1) If screening is enabled, immediately return 0 if any coordinate lies outside
+ *    the precomputed box [A[d], B[d]].
+ * 2) Accumulate q2 = Σ α_d (x_d - R_d)^2 (the exponent argument),
+ *    and p2 = Π (x_d - R_d)^{p_d} (the Cartesian polynomial).
+ * 3) Return c * p2 * exp(-q2).
+ */
 template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
     if (this->getScreen()) {
         for (int d = 0; d < D; d++) {
@@ -65,6 +106,13 @@ template <int D> double GaussFunc<D>::evalf(const Coord<D> &r) const {
     return this->coef * p2 * std::exp(-q2);
 }
 
+/**
+ * @brief 1D evaluation of the d-th component only (factor for separable product).
+ *
+ * This returns (x - R_d)^{p_d} * exp(-α_d (x - R_d)^2) times @c coef if d==0
+ * (the overall scalar is stored redundantly only on one axis when factoring).
+ * Screening is applied on that axis if enabled.
+ */
 template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
@@ -85,6 +133,16 @@ template <int D> double GaussFunc<D>::evalf1D(double r, int d) const {
     return result;
 }
 
+/**
+ * @brief Squared L2 norm  ||f||^2 = ∫ |f|^2 d r  (separable product of 1D integrals).
+ *
+ * For one axis (drop subscript d for brevity):
+ *   ∫ (x-R)^{2p} exp(-2α (x-R)^2) dx
+ * = sqrt(pi / (2α)) * [(2p-1)!!] / (2α)^p,
+ * which is implemented via a simple descending product:
+ *    sq_norm = Π_{i odd from (2p-1) down to 1} i / (2α).
+ * The D-dimensional norm is the product over axes, multiplied by coef^2.
+ */
 template <int D> double GaussFunc<D>::calcSquareNorm() const {
     double norm = 1.0;
     for (int d = 0; d < D; d++) {
@@ -105,12 +163,28 @@ template <int D> double GaussFunc<D>::calcSquareNorm() const {
     return norm * this->coef * this->coef;
 }
 
+/**
+ * @brief Convert a single @c GaussFunc into a length-1 @c GaussExp.
+ *
+ * Useful when operations expect an expansion (e.g., in norm cross-terms).
+ */
 template<int D> GaussExp<D> GaussFunc<D>::asGaussExp() const {
     GaussExp<D> gexp;
     gexp.append(*this);
     return gexp;
 }
 
+/**
+ * @brief Derivative along axis @p dir, returning a @c GaussPoly<D>.
+ *
+ * In 1D:
+ *   d/dx [(x-R)^p e^{-α(x-R)^2}] =
+ *     p (x-R)^{p-1} e^{-α...}  + (x-R)^p * (-2α)(x-R) e^{-α...}
+ *   = [ p (x-R)^{p-1}  - 2α (x-R)^{p+1} ] e^{-α...}
+ *
+ * We therefore create a new polynomial of degree (p+1) with two nonzero
+ * coefficients at (p-1) and (p+1). Other axes carry over unchanged.
+ */
 template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
     GaussPoly<D> result(*this);
     int oldPow = this->getPower(dir);
@@ -123,6 +197,21 @@ template <int D> GaussPoly<D> GaussFunc<D>::differentiate(int dir) const {
     return result;
 }
 
+/**
+ * @brief In-place multiplication by another @c GaussFunc with the SAME center.
+ *
+ * Preconditions
+ * -------------
+ * - The two Gaussians must share identical centers in every axis.
+ *
+ * Effect
+ * ------
+ * - Exponents add: α_new = α_lhs + α_rhs.
+ * - Powers add:    p_new = p_lhs + p_rhs.
+ * - Coefficients multiply: c_new = c_lhs * c_rhs.
+ *
+ * This keeps the center unchanged and avoids creating polynomials.
+ */
 template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     for (int d = 0; d < D; d++) {
@@ -147,6 +236,17 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
  *  @param[in] this: Left hand side of multiply
  *  @param[in] rhs: Right hand side of multiply
  *  @returns New GaussPoly
+ *
+ * Algorithm
+ * ---------
+ * 1) “Complete the square”: the product of two Gaussians is a (shifted) Gaussian
+ *    with combined exponent and a new center (weighted by exponents). This part is
+ *    delegated to @c GaussPoly::multPureGauss, which sets the new Gaussian envelope
+ *    (position, exponents, and a prefactor).
+ * 2) Each original polynomial factor (x-R)^p is re-expressed relative to the new
+ *    center R_new: (x-R) = (x-R_new) + (R_new - R). We therefore have two polynomials
+ *    per axis; they are multiplied to obtain the combined polynomial for that axis.
+ * 3) Multiply in the original scalar coefficients c_lhs * c_rhs.
  */
 template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
@@ -163,16 +263,22 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     return result;
 }
 
-/** @brief Multiply GaussFunc by scalar
- *  @param[in] c: Scalar to multiply
- *  @returns New GaussFunc
- */
+/** @brief Multiply GaussFunc by scalar (returns a copy with scaled coefficient). */
 template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
     GaussFunc<D> g = *this;
     g.coef *= c;
     return g;
 }
 
+/**
+ * @brief Pretty-printer for a Gaussian term.
+ *
+ * Prints:
+ *  - Coef
+ *  - Exp: either a single value if all α_d are equal, or all components.
+ *  - Pos: center coordinates
+ *  - Pow: integer powers per axis
+ */
 template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     auto is_array = details::are_all_equal<D>(this->getExp());
 
@@ -202,11 +308,29 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
  *
  *  @note Both Gaussians must be normalized to unit charge
  *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
+ *
+ *  General D is not implemented here; see the D=3 specialization below.
  */
 template <int D> double GaussFunc<D>::calcCoulombEnergy(const GaussFunc<D> &gf) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
+/**
+ * @brief Coulomb energy for 3D isotropic Gaussians using Boys F_0.
+ *
+ * Preconditions
+ * -------------
+ * - Both Gaussians must have isotropic exponents (α_x = α_y = α_z), verified via
+ *   @c details::are_all_equal<3>.
+ *
+ * Formula
+ * -------
+ * With exponents p and q, α = p q / (p + q), separation R = |R_p - R_q|,
+ * the Coulomb interaction is:
+ *   E = sqrt( 4 α / π ) * F_0( α R^2 ),
+ * where F_0 is the order-zero Boys function. The code constructs a @c BoysFunction(0)
+ * and evaluates it at α R^2.
+ */
 template <> double GaussFunc<3>::calcCoulombEnergy(const GaussFunc<3> &gf) const {
 
     // Checking if the elements in each exponent are constant
@@ -236,6 +360,7 @@ template <> double GaussFunc<3>::calcCoulombEnergy(const GaussFunc<3> &gf) const
     return std::sqrt(4.0 * alpha / pi) * boysFac;
 }
 
+// Explicit template instantiations
 template class GaussFunc<1>;
 template class GaussFunc<2>;
 template class GaussFunc<3>;

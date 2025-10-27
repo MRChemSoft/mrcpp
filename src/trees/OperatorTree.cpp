@@ -25,9 +25,9 @@
 
 #include "OperatorTree.h"
 #include "BandWidth.h"
-#include "TreeIterator.h"
 #include "NodeAllocator.h"
 #include "OperatorNode.h"
+#include "TreeIterator.h"
 #include "utils/Printer.h"
 #include "utils/tree_utils.h"
 
@@ -98,8 +98,16 @@ void OperatorTree::clearBandWidth() {
     this->bandWidth = nullptr;
 }
 
+/** @brief Calculates band widths of the non-standard form matrices.
+ *
+ * @param[in] prec: Precision used for thresholding
+ *
+ * @details It is starting from \f$ l = 0 \f$ and updating the band width value each time we encounter
+ * considerable value while keeping increasing \f$ l \f$, that stands for the distance to the diagonal.
+ *
+ */
 void OperatorTree::calcBandWidth(double prec) {
-    if (this->bandWidth != nullptr) MSG_ERROR("Band width not properly cleared");
+    if (this->bandWidth == nullptr) clearBandWidth();
     this->bandWidth = new BandWidth(getDepth());
 
     VectorXi max_transl;
@@ -107,7 +115,6 @@ void OperatorTree::calcBandWidth(double prec) {
 
     if (prec < 0.0) prec = this->normPrec;
     for (int depth = 0; depth < this->getDepth(); depth++) {
-        int n = getRootScale() + depth;
         int l = 0;
         bool done = false;
         while (not done) {
@@ -124,6 +131,52 @@ void OperatorTree::calcBandWidth(double prec) {
         }
     }
     println(100, "\nOperator BandWidth" << *this->bandWidth);
+}
+
+/** @brief Checks if the distance to diagonal is bigger than the operator band width.
+ *
+ * @param[in] oTransl: distance to diagonal
+ * @param[in] o_depth: scaling order
+ * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
+ *
+ * @returns True if \b oTransl is outside of the band and False otherwise.
+ *
+ */
+bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) {
+    return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
+}
+
+/** @brief Cleans up end nodes.
+ *
+ * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building).
+ *
+ * @details Traverses the tree and rewrites end nodes having branch node twins,
+ * i. e. identical with respect to scale and translation.
+ * This method is very handy, when an adaptive operator construction
+ * can make a significunt noise at low scaling depth.
+ * Its need comes from the fact that mwTransform up cannot override
+ * rubbish that can potentially stick to end nodes at a particular level,
+ * and as a result spread further up to the root with mwTransform.
+ *
+ */
+void OperatorTree::removeRoughScaleNoise(int trust_scale) {
+    MWNode<2> *p_rubbish;     // possibly inexact end node
+    MWNode<2> *p_counterpart; // exact branch node
+    for (int n = (this->getDepth() - 2 < trust_scale) ? this->getDepth() - 2 : trust_scale; n > this->getRootScale(); n--) {
+        int N = 1 << n;
+        for (int m = 0; m < N; m++)
+            for (int l = 0; l < N; l++) {
+                p_rubbish = this->findNode(NodeIndex<2>(n, {m, l}));
+                if (p_rubbish != nullptr && p_rubbish->isEndNode()) {
+                    for (int m1 = 0; m1 < N; m1++)
+                        for (int l1 = 0; l1 < N; l1++)
+                            if ((m1 - l1 == m - l) && (p_counterpart = this->findNode(NodeIndex<2>(n, {m1, l1}))) != nullptr && p_counterpart->isBranchNode()) {
+                                for (int i = 0; i < p_counterpart->n_coefs; i++) p_rubbish->coefs[i] = p_counterpart->coefs[i];
+                            }
+                }
+            }
+        this->mwTransform(BottomUp);
+    }
 }
 
 void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {

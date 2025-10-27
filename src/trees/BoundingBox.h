@@ -90,7 +90,7 @@ protected:
     NodeIndex<D> cornerIndex;    ///< Index defining the lower corner of the box
     std::array<int, D> nBoxes{}; ///< Number of boxes in each dim, last entry total
     std::array<double, D> scalingFactor{};
-    std::array<bool, D> periodic{};
+    std::array<bool, D> periodic{}; ///< Sets which dimension has Periodic boundary conditions.
 
     // Derived parameters
     int totBoxes{1};

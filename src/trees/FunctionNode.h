@@ -32,54 +32,63 @@
 
 namespace mrcpp {
 
-template <int D> class FunctionNode final : public MWNode<D> {
+template <int D, typename T> class FunctionNode final : public MWNode<D, T> {
 public:
-    FunctionTree<D> &getFuncTree() { return static_cast<FunctionTree<D> &>(*this->tree); }
-    FunctionNode<D> &getFuncParent() { return static_cast<FunctionNode<D> &>(*this->parent); }
-    FunctionNode<D> &getFuncChild(int i) { return static_cast<FunctionNode<D> &>(*this->children[i]); }
+    FunctionTree<D, T> &getFuncTree() { return static_cast<FunctionTree<D, T> &>(*this->tree); }
+    FunctionNode<D, T> &getFuncParent() { return static_cast<FunctionNode<D, T> &>(*this->parent); }
+    FunctionNode<D, T> &getFuncChild(int i) { return static_cast<FunctionNode<D, T> &>(*this->children[i]); }
 
-    const FunctionTree<D> &getFuncTree() const { return static_cast<const FunctionTree<D> &>(*this->tree); }
-    const FunctionNode<D> &getFuncParent() const { return static_cast<const FunctionNode<D> &>(*this->parent); }
-    const FunctionNode<D> &getFuncChild(int i) const { return static_cast<const FunctionNode<D> &>(*this->children[i]); }
+    const FunctionTree<D, T> &getFuncTree() const { return static_cast<const FunctionTree<D, T> &>(*this->tree); }
+    const FunctionNode<D, T> &getFuncParent() const { return static_cast<const FunctionNode<D, T> &>(*this->parent); }
+    const FunctionNode<D, T> &getFuncChild(int i) const { return static_cast<const FunctionNode<D, T> &>(*this->children[i]); }
 
     void createChildren(bool coefs) override;
     void genChildren() override;
     void genParent() override;
     void deleteChildren() override;
 
-    double integrate() const;
+    T integrate() const;
 
-    void setValues(const Eigen::VectorXd &vec);
-    void getValues(Eigen::VectorXd &vec);
-    void getAbsCoefs(double *absCoefs);
+    void setValues(const Eigen::Matrix<T, Eigen::Dynamic, 1> &vec);
+    void getValues(Eigen::Matrix<T, Eigen::Dynamic, 1> &vec);
+    void getAbsCoefs(T *absCoefs);
 
-    friend class FunctionTree<D>;
-    friend class NodeAllocator<D>;
+    friend class FunctionTree<D, T>;
+    friend class NodeAllocator<D, T>;
 
 protected:
     FunctionNode()
-            : MWNode<D>() {}
-    FunctionNode(MWTree<D> *tree, int rIdx)
-            : MWNode<D>(tree, rIdx) {}
-    FunctionNode(MWNode<D> *parent, int cIdx)
-            : MWNode<D>(parent, cIdx) {}
-    FunctionNode(MWTree<D> *tree, const NodeIndex<D> &idx)
-            : MWNode<D>(tree, idx) {}
-    FunctionNode(const FunctionNode<D> &node) = delete;
-    FunctionNode<D> &operator=(const FunctionNode<D> &node) = delete;
+            : MWNode<D, T>() {}
+    FunctionNode(MWTree<D, T> *tree, int rIdx)
+            : MWNode<D, T>(tree, rIdx) {}
+    FunctionNode(MWNode<D, T> *parent, int cIdx)
+            : MWNode<D, T>(parent, cIdx) {}
+    FunctionNode(MWTree<D, T> *tree, const NodeIndex<D> &idx)
+            : MWNode<D, T>(tree, idx) {}
+    FunctionNode(const FunctionNode<D, T> &node) = delete;
+    FunctionNode<D, T> &operator=(const FunctionNode<D, T> &node) = delete;
     ~FunctionNode() = default;
 
-    double evalf(Coord<D> r);
-    double evalScaling(const Coord<D> &r) const;
+    T evalf(Coord<D> r);
+    T evalScaling(const Coord<D> &r) const;
 
     void dealloc() override;
     void reCompress() override;
 
-    double integrateLegendre() const;
-    double integrateInterpolating() const;
+    T integrateLegendre() const;
+    T integrateInterpolating() const;
+    T integrateValues() const;
 };
+template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
+template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
 
-template <int D> double dot_scaling(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
-template <int D> double dot_wavelet(const FunctionNode<D> &bra, const FunctionNode<D> &ket);
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
+
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
+
+template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket);
+template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
 } // namespace mrcpp

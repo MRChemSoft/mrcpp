@@ -49,8 +49,7 @@ ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, d
     initialize(a, b);
 }
 
-template <int D>
-void ABGVOperator<D>::initialize(double a, double b) {
+template <int D> void ABGVOperator<D>::initialize(double a, double b) {
     int bw = 0; // Operator bandwidth
     if (std::abs(a) > MachineZero) bw = 1;
     if (std::abs(b) > MachineZero) bw = 1;
@@ -70,7 +69,8 @@ void ABGVOperator<D>::initialize(double a, double b) {
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
-    this->oper_exp.push_back(std::move(o_tree));
+    this->raw_exp.push_back(std::move(o_tree));
+    this->initOperExp(1);
 }
 
 template class ABGVOperator<1>;

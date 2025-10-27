@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -37,7 +37,7 @@ namespace tree_io {
 template <int D> void testProjectFunction();
 
 SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
-    const double prec = 1.0e-4;
+    const double prec = 1.0e-6;
 
     GaussFunc<3> *func = nullptr;
     initialize(&func);
@@ -54,16 +54,16 @@ SCENARIO("FunctionTree IO", "[tree_io], [trees]") {
     WHEN("a function is saved") {
         f_tree.saveTree("f");
         THEN("the old tree remains unchanged") {
-            REQUIRE(f_tree.integrate() == Approx(ref_charge).epsilon(1.0e-12));
-            REQUIRE(f_tree.getSquareNorm() == Approx(ref_norm).epsilon(1.0e-12));
+            REQUIRE(f_tree.integrate() == Catch::Approx(ref_charge).epsilon(1.0e-12));
+            REQUIRE(f_tree.getSquareNorm() == Catch::Approx(ref_norm).epsilon(1.0e-12));
             REQUIRE(f_tree.getNNodes() == ref_nodes);
         }
         AND_WHEN("the saved function is load into a new tree") {
             FunctionTree<3> g_tree(*mra);
             g_tree.loadTree("f");
             THEN("the new tree is identical to the old") {
-                REQUIRE(g_tree.integrate() == Approx(ref_charge).epsilon(1.0e-12));
-                REQUIRE(g_tree.getSquareNorm() == Approx(ref_norm).epsilon(1.0e-12));
+                REQUIRE(g_tree.integrate() == Catch::Approx(ref_charge).epsilon(1.0e-12));
+                REQUIRE(g_tree.getSquareNorm() == Catch::Approx(ref_norm).epsilon(1.0e-12));
                 REQUIRE(g_tree.getNNodes() == ref_nodes);
             }
         }

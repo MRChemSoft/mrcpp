@@ -18,6 +18,7 @@ import pathlib
 import shutil
 import re
 
+
 # -- Project information -----------------------------------------------------
 
 project = 'MRCPP'
@@ -32,7 +33,11 @@ release = '1.2.0-alpha'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'breathe']
+extensions = [
+    'breathe',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.graphviz',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,12 +54,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-on_rtd = os.environ.get('READTHEDOCS') == 'True'
-if on_rtd:
-    html_theme = 'default'
-else:
-    html_theme = 'sphinx_rtd_theme'
+import sphinx_rtd_theme
+html_theme = "sphinx_rtd_theme"
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -71,7 +73,7 @@ html_logo = 'gfx/logo.jpg'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-breathe_projects = {'MRCPP': '_build/xml'}
+breathe_projects = {'MRCPP': '_build/xml', 'dot_graphs': '_build/xml'}
 breathe_default_project = 'MRCPP'
 
 

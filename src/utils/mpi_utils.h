@@ -27,18 +27,44 @@
 
 #ifdef MRCPP_HAS_MPI
 #include <mpi.h>
+#else
+using MPI_Comm = int;
+using MPI_Win = int;
+using MPI_Request = int;
+#endif
+
 namespace mrcpp {
 using mpi_comm = MPI_Comm;
 using mpi_win = MPI_Win;
 using mpi_request = MPI_Request;
+namespace mpi {
+extern bool numerically_exact;
+extern int shared_memory_size;
+
+extern int world_rank;
+extern int world_size;
+extern int wrk_rank;
+extern int wrk_size;
+extern int share_rank;
+extern int share_size;
+extern int sh_group_rank;
+extern int is_bank;
+extern int is_bankclient;
+extern int bank_size;
+extern int bank_per_node;
+extern int omp_threads;
+extern int use_omp_num_threads;
+extern int tot_bank_size;
+extern int max_tag;
+extern int task_bank;
+
+extern MPI_Comm comm_wrk;
+extern MPI_Comm comm_share;
+extern MPI_Comm comm_sh_group;
+extern MPI_Comm comm_bank;
+
+} // namespace mpi
 } // namespace mrcpp
-#else
-namespace mrcpp {
-using mpi_comm = int;
-using mpi_win = int;
-using mpi_request = int;
-} // namespace mrcpp
-#endif
 
 namespace mrcpp {
 
@@ -50,26 +76,26 @@ namespace mrcpp {
  *  communicator. In order to allocate a FunctionTree in shared memory,
  *  simply pass a SharedMemory object to the FunctionTree constructor.
  */
-class SharedMemory {
+template <typename T> class SharedMemory {
 public:
     SharedMemory(mrcpp::mpi_comm comm, int sh_size);
     SharedMemory(const SharedMemory &mem) = delete;
-    SharedMemory &operator=(const SharedMemory &mem) = delete;
+    SharedMemory<T> &operator=(const SharedMemory<T> &mem) = delete;
     ~SharedMemory();
 
     void clear(); // show shared memory as entirely available
 
-    double *sh_start_ptr;  // start of shared block
-    double *sh_end_ptr;    // end of used part
-    double *sh_max_ptr;    // end of shared block
+    T *sh_start_ptr;       // start of shared block
+    T *sh_end_ptr;         // end of used part
+    T *sh_max_ptr;         // end of shared block
     mrcpp::mpi_win sh_win; // MPI window object
     int rank;              // rank among shared group
 };
 
-template <int D> class FunctionTree;
+template <int D, typename T> class FunctionTree;
 
-template <int D> void send_tree(FunctionTree<D> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
-template <int D> void recv_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
-template <int D> void share_tree(FunctionTree<D> &tree, int src, int tag, mrcpp::mpi_comm comm);
+template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
+template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks = -1, bool coeff = true);
+template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm);
 
 } // namespace mrcpp

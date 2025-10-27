@@ -30,38 +30,40 @@
 
 namespace mrcpp {
 
-template <int D> class DerivativeCalculator final : public TreeCalculator<D> {
+template <int D, typename T> class DerivativeCalculator final : public TreeCalculator<D, T> {
 public:
-    DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D> &f);
+    DerivativeCalculator(int dir, DerivativeOperator<D> &o, FunctionTree<D, T> &f);
     ~DerivativeCalculator() override;
 
-    MWNodeVector<D> *getInitialWorkVector(MWTree<D> &tree) const override;
+    MWNodeVector<D, T> *getInitialWorkVector(MWTree<D, T> &tree) const override;
+    void calcNode(MWNode<D, T> &fNode, MWNode<D, T> &gNode);
 
 private:
     int applyDir;
-    FunctionTree<D> *fTree;
+    FunctionTree<D, T> *fTree;
     DerivativeOperator<D> *oper;
 
     std::vector<Timer> band_t;
     std::vector<Timer> calc_t;
     std::vector<Timer> norm_t;
-    OperatorStatistics<D> operStat;
+    OperatorStatistics operStat;
 
-    MWNodeVector<D> makeOperBand(const MWNode<D> &gNode, std::vector<NodeIndex<D>> &idx_band);
+    MWNodeVector<D, T> makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band);
 
     void initTimers();
     void clearTimers();
     void printTimers() const;
 
-    void calcNode(MWNode<D> &node) override;
+    void calcNode(MWNode<D, T> &node) override;
     void postProcess() override {
         printTimers();
         clearTimers();
         initTimers();
     }
 
-    void applyOperator(OperatorState<D> &os);
-    void tensorApplyOperComp(OperatorState<D> &os);
+    void applyOperator(OperatorState<D, T> &os);
+    void applyOperator_bw0(OperatorState<D, T> &os);
+    void tensorApplyOperComp(OperatorState<D, T> &os);
 };
 
 } // namespace mrcpp

@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "functions/function_utils.h"
 #include "functions/GaussExp.h"
@@ -73,7 +73,7 @@ template <int D> void testIsNarrowGaussiansMadePeriodic() {
     WHEN("The gaussian is generated it is constructed, it is not periodic") {
         auto gauss = GaussFunc<D>(beta, alpha, pos);
         THEN("The Gaussian should be close to zero at the bondary of the unit cell") {
-            REQUIRE(gauss.evalf(new_pos) == Approx(0.0));
+            REQUIRE(gauss.evalf(new_pos) == Catch::Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodic, it is periodic") {
             auto gexp = gauss.periodify(period);
@@ -100,12 +100,12 @@ template <int D> void testIsWideGaussiansMadePeriodic() {
     WHEN("The gaussian is generated it is constructed, it is not periodic") {
         auto gauss = GaussFunc<D>(beta, alpha, pos);
         THEN("The Gaussian should be close to zero at the bondary of the unit cell") {
-            REQUIRE(gauss.evalf(new_pos) != Approx(0.0));
+            REQUIRE(gauss.evalf(new_pos) != Catch::Approx(0.0));
         }
         AND_WHEN("The gaussian is made periodc, it is periodic") {
             auto gexp = gauss.periodify(period);
             THEN("The gaussian should have the same value at -0.2 and 1.8") {
-                REQUIRE(gexp.evalf(pos) == Approx(gexp.evalf(new_pos)));
+                REQUIRE(gexp.evalf(pos) == Catch::Approx(gexp.evalf(new_pos)));
             }
         }
     }
@@ -135,12 +135,12 @@ template <int D> void testIsGaussExpMadePeriodic() {
         gauss_exp.append(gauss_1);
         gauss_exp.append(gauss_2);
         REQUIRE(gauss_exp.size() == 2);
-        REQUIRE(gauss_exp.evalf(r0) != Approx(gauss_exp.evalf(r1)));
+        REQUIRE(gauss_exp.evalf(r0) != Catch::Approx(gauss_exp.evalf(r1)));
 
         AND_WHEN("The gaussians are make periodic") {
             auto per_exp = gauss_exp.periodify(period);
             REQUIRE(per_exp.size() > 2);
-            REQUIRE(per_exp.evalf(r0) == Approx(per_exp.evalf(r1)));
+            REQUIRE(per_exp.evalf(r0) == Catch::Approx(per_exp.evalf(r1)));
         }
     }
 }

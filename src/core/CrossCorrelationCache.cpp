@@ -121,12 +121,38 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
     if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order).getLMatrix();
 }
-
-/*
- * getRMatrix(order)
- * -----------------
- * Convenience accessor: returns a const reference to the Right matrix
- * for the requested 'order', auto-loading it if necessary.
+/**
+ * @brief Returns a const reference to the “Right” cross-correlation matrix for a given order,
+ *        auto-loading it into the cache if necessary.
+ *
+ * @param order Polynomial order @f$k@f$ of the scaling space @f$V_0\subset L^2(0,1)@f$.
+ *              Let @f$K = k+1@f$ be the number of basis functions.
+ * @return Const reference to the Right matrix @f$\mathbf{C}^{(+)}\in\mathbb{R}^{(K^2)\times(2K)}@f$.
+ *
+ * @details
+ * The entries are the cross-correlation coefficients
+ * @f[
+ *   C^{(+)}_{i j p}
+ *   \;=\;
+ *   \int_0^1\!\!\int_0^1
+ *     \phi_i(x)\,\phi_j(x - z)\,\phi_p(z)\;dx\,dz,
+ *   \qquad
+ *   i,j=0,\ldots,k,\;\;p=0,\ldots,2k+1,
+ * @f]
+ * assembled column-wise in the Right matrix
+ * @f[
+ *   \mathbf{C}^{(+)} \;=\;
+ *   \begin{pmatrix}
+ *     C^{(+)}_{000} & C^{(+)}_{001} & \cdots & C^{(+)}_{00,\,2k+1} \\
+ *     C^{(+)}_{010} & C^{(+)}_{011} & \cdots & C^{(+)}_{01,\,2k+1} \\
+ *     \vdots        & \vdots        &        & \vdots              \\
+ *     C^{(+)}_{k(k-1)0} & C^{(+)}_{k(k-1)1} & \cdots & C^{(+)}_{k(k-1),\,2k+1} \\
+ *     C^{(+)}_{kk0} & C^{(+)}_{kk1} & \cdots & C^{(+)}_{kk,\,2k+1}
+ *   \end{pmatrix}.
+ * @f]
+ * Practically, this accessor just returns the precomputed Right matrix for
+ * the requested @p order; if it is not yet cached, it is loaded/constructed
+ * on demand and then returned.
  */
 template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getRMatrix(int order) {
     if (not hasId(order)) { load(order); }

@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -106,16 +106,16 @@ template <int D> void testAddition() {
         THEN("their integrals add up") {
             double c_int = c_tree.integrate();
             double int_sum = a_coef * a_int + b_coef * b_int;
-            REQUIRE(c_int == Approx(int_sum));
+            REQUIRE(c_int == Catch::Approx(int_sum));
         }
 
         AND_THEN("the MW sum equals the analytic sum") {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE(c_int == Approx(ref_int));
-            REQUIRE(c_dot == Approx(ref_norm));
-            REQUIRE(c_norm == Approx(ref_norm));
+            REQUIRE(c_int == Catch::Approx(ref_int));
+            REQUIRE(c_dot == Catch::Approx(ref_norm));
+            REQUIRE(c_norm == Catch::Approx(ref_norm));
         }
 
         AND_WHEN("the first function is subtracted") {
@@ -128,7 +128,7 @@ template <int D> void testAddition() {
             THEN("the integral is the same as the second function") {
                 double d_int = d_tree.integrate();
                 double ref_int = b_coef * b_int;
-                REQUIRE(d_int == Approx(ref_int));
+                REQUIRE(d_int == Catch::Approx(ref_int));
             }
 
             AND_WHEN("the second function is subtracted") {
@@ -141,7 +141,7 @@ template <int D> void testAddition() {
                 THEN("the integral is zero") {
                     double e_int = e_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE(e_int == Approx(ref_int).margin(prec * prec));
+                    REQUIRE(e_int == Catch::Approx(ref_int).margin(prec * prec));
                 }
             }
             AND_WHEN("the second function is subtracted in-place") {
@@ -150,7 +150,7 @@ template <int D> void testAddition() {
                 THEN("the integral is zero") {
                     double d_int = d_tree.integrate();
                     double ref_int = 0.0;
-                    REQUIRE(d_int == Approx(ref_int).margin(prec * prec));
+                    REQUIRE(d_int == Catch::Approx(ref_int).margin(prec * prec));
                 }
             }
         }

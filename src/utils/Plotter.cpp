@@ -37,24 +37,24 @@ namespace mrcpp {
  *
  *  @param[in] o: Plot origin, default `(0, 0, ... , 0)`
  */
-template <int D>
-Plotter<D>::Plotter(const Coord<D> &o)
+template <int D, typename T>
+Plotter<D, T>::Plotter(const Coord<D> &o)
         : O(o) {
-    setSuffix(Plotter<D>::Line, ".line");
-    setSuffix(Plotter<D>::Surface, ".surf");
-    setSuffix(Plotter<D>::Cube, ".cube");
-    setSuffix(Plotter<D>::Grid, ".grid");
+    setSuffix(Plotter<D, T>::Line, ".line");
+    setSuffix(Plotter<D, T>::Surface, ".surf");
+    setSuffix(Plotter<D, T>::Cube, ".cube");
+    setSuffix(Plotter<D, T>::Grid, ".grid");
 }
 
 /** @brief Set file extension for output file
  *
- *  @param[in] t: Plot type (`Plotter<D>::Line`, `::Surface`, `::Cube`, `::Grid`)
+ *  @param[in] t: Plot type (`Plotter<D, T>::Line`, `::Surface`, `::Cube`, `::Grid`)
  *  @param[in] s: Extension string, default `.line`, `.surf`, `.cube`, `.grid`
  *
  *  @details The file name you decide for the output will get a predefined
  *  suffix that differentiates between different types of plot.
  */
-template <int D> void Plotter<D>::setSuffix(int t, const std::string &s) {
+template <int D, typename T> void Plotter<D, T>::setSuffix(int t, const std::string &s) {
     this->suffix.insert(std::pair<int, std::string>(t, s));
 }
 
@@ -62,7 +62,7 @@ template <int D> void Plotter<D>::setSuffix(int t, const std::string &s) {
  *
  *  @param[in] o: Plot origin, default `(0, 0, ... , 0)`
  */
-template <int D> void Plotter<D>::setOrigin(const Coord<D> &o) {
+template <int D, typename T> void Plotter<D, T>::setOrigin(const Coord<D> &o) {
     this->O = o;
 }
 
@@ -72,7 +72,7 @@ template <int D> void Plotter<D>::setOrigin(const Coord<D> &o) {
  *  @param[in] b: B vector
  *  @param[in] c: C vector
  */
-template <int D> void Plotter<D>::setRange(const Coord<D> &a, const Coord<D> &b, const Coord<D> &c) {
+template <int D, typename T> void Plotter<D, T>::setRange(const Coord<D> &a, const Coord<D> &b, const Coord<D> &c) {
     this->A = a;
     this->B = b;
     this->C = c;
@@ -89,10 +89,10 @@ template <int D> void Plotter<D>::setRange(const Coord<D> &a, const Coord<D> &b,
  *  separate file, and will print only nodes owned by itself (pluss the
  *  rootNodes).
  */
-template <int D> void Plotter<D>::gridPlot(const MWTree<D> &tree, const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::gridPlot(const MWTree<D, T> &tree, const std::string &fname) {
     println(20, "----------Grid Plot-----------");
     std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Grid];
+    file << fname << this->suffix[Plotter<D, T>::Grid];
     openPlot(file.str());
     writeGrid(tree);
     closePlot();
@@ -109,16 +109,13 @@ template <int D> void Plotter<D>::gridPlot(const MWTree<D> &tree, const std::str
  *  vector A starting from the origin O to a file named fname + file extension
  *  (".line" as default).
  */
-template <int D>
-void Plotter<D>::linePlot(const std::array<int, 1> &npts,
-                          const RepresentableFunction<D> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::linePlot(const std::array<int, 1> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "----------Line Plot-----------");
     std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Line];
+    file << fname << this->suffix[Plotter<D, T>::Line];
     if (verifyRange(1)) { // Verifies only A vector
         Eigen::MatrixXd coords = calcLineCoordinates(npts[0]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeData(coords, values);
         closePlot();
@@ -138,16 +135,13 @@ void Plotter<D>::linePlot(const std::array<int, 1> &npts,
  *  vectors A (npts[0] points) and B (npts[1] points), starting from the
  *  origin O, to a file named fname + file extension (".surf" as default).
  */
-template <int D>
-void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
-                          const RepresentableFunction<D> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::surfPlot(const std::array<int, 2> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "--------Surface Plot----------");
     std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Surface];
+    file << fname << this->suffix[Plotter<D, T>::Surface];
     if (verifyRange(2)) { // Verifies A and B vectors
         Eigen::MatrixXd coords = calcSurfCoordinates(npts[0], npts[1]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeData(coords, values);
         closePlot();
@@ -168,16 +162,13 @@ void Plotter<D>::surfPlot(const std::array<int, 2> &npts,
  *  starting from the origin O, to a file named fname + file extension
  *  (".cube" as default).
  */
-template <int D>
-void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
-                          const RepresentableFunction<D> &func,
-                          const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::cubePlot(const std::array<int, 3> &npts, const RepresentableFunction<D, T> &func, const std::string &fname) {
     println(20, "----------Cube Plot-----------");
     std::stringstream file;
-    file << fname << this->suffix[Plotter<D>::Cube];
+    file << fname << this->suffix[Plotter<D, T>::Cube];
     if (verifyRange(3)) { // Verifies A, B and C vectors
         Eigen::MatrixXd coords = calcCubeCoordinates(npts[0], npts[1], npts[2]);
-        Eigen::VectorXd values = evaluateFunction(func, coords);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> values = evaluateFunction(func, coords);
         openPlot(file.str());
         writeCube(npts, values);
         closePlot();
@@ -192,7 +183,7 @@ void Plotter<D>::cubePlot(const std::array<int, 3> &npts,
  *  @details Generating a vector of pts_a equidistant coordinates that makes
  *  up the vector A in D dimensions, starting from the origin O.
  */
-template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) const {
+template <int D, typename T> Eigen::MatrixXd Plotter<D, T>::calcLineCoordinates(int pts_a) const {
     MatrixXd coords;
     if (pts_a > 0) {
         Coord<D> a = calcStep(this->A, pts_a);
@@ -211,7 +202,7 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcLineCoordinates(int pts_a) cons
  *  @details Generating a vector of equidistant coordinates that makes up the
  *  area spanned by vectors A and B in D dimensions, starting from the origin O.
  */
-template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int pts_b) const {
+template <int D, typename T> Eigen::MatrixXd Plotter<D, T>::calcSurfCoordinates(int pts_a, int pts_b) const {
     if (D < 2) MSG_ERROR("Cannot surfPlot less than 2D");
 
     MatrixXd coords;
@@ -240,7 +231,7 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcSurfCoordinates(int pts_a, int 
  *  volume spanned by vectors A, B and C in D dimensions, starting from
  *  the origin O.
  */
-template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const {
+template <int D, typename T> Eigen::MatrixXd Plotter<D, T>::calcCubeCoordinates(int pts_a, int pts_b, int pts_c) const {
     if (D < 3) MSG_ERROR("Cannot cubePlot less than 3D function");
 
     MatrixXd coords;
@@ -272,12 +263,10 @@ template <int D> Eigen::MatrixXd Plotter<D>::calcCubeCoordinates(int pts_a, int 
  *  this routine evaluates the function in these points and stores the results
  *  in the vector "values".
  */
-template <int D>
-Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &func,
-                                             const Eigen::MatrixXd &coords) const {
+template <int D, typename T> Eigen::Matrix<T, Eigen::Dynamic, 1> Plotter<D, T>::evaluateFunction(const RepresentableFunction<D, T> &func, const Eigen::MatrixXd &coords) const {
     auto npts = coords.rows();
     if (npts == 0) MSG_ERROR("Empty coordinates");
-    Eigen::VectorXd values = VectorXd::Zero(npts);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> values = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(npts);
 #pragma omp parallel for schedule(static) num_threads(mrcpp_get_num_threads())
     for (auto i = 0; i < npts; i++) {
         Coord<D> r{};
@@ -294,7 +283,7 @@ Eigen::VectorXd Plotter<D>::evaluateFunction(const RepresentableFunction<D> &fun
  *  point number (between 0 and nPoints), coordinates 1 through D and the
  *  function value.
  */
-template <int D> void Plotter<D>::writeData(const Eigen::MatrixXd &coords, const Eigen::VectorXd &values) {
+template <int D, typename T> void Plotter<D, T>::writeData(const Eigen::MatrixXd &coords, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
     if (coords.rows() != values.size()) INVALID_ARG_ABORT;
     std::ofstream &o = *this->fout;
     for (auto i = 0; i < values.size(); i++) {
@@ -308,17 +297,17 @@ template <int D> void Plotter<D>::writeData(const Eigen::MatrixXd &coords, const
 }
 
 // Specialized for D=3 below
-template <int D> void Plotter<D>::writeCube(const std::array<int, 3> &npts, const Eigen::VectorXd &values) {
+template <int D, typename T> void Plotter<D, T>::writeCube(const std::array<int, 3> &npts, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
-template <int D> void Plotter<D>::writeNodeGrid(const MWNode<D> &node, const std::string &color) {
+template <int D, typename T> void Plotter<D, T>::writeNodeGrid(const MWNode<D, T> &node, const std::string &color) {
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
-template <int D> void Plotter<D>::writeGrid(const MWTree<D> &tree) {
+template <int D, typename T> void Plotter<D, T>::writeGrid(const MWTree<D, T> &tree) {
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -326,7 +315,7 @@ template <int D> void Plotter<D>::writeGrid(const MWTree<D> &tree) {
  *
  *  @details Opens a file output stream fout for file named fname.
  */
-template <int D> void Plotter<D>::openPlot(const std::string &fname) {
+template <int D, typename T> void Plotter<D, T>::openPlot(const std::string &fname) {
     if (fname.empty()) {
         if (this->fout == nullptr) {
             MSG_ERROR("Plot file not set!");
@@ -350,7 +339,7 @@ template <int D> void Plotter<D>::openPlot(const std::string &fname) {
  *
  *  @details Closes the file output stream fout.
  */
-template <int D> void Plotter<D>::closePlot() {
+template <int D, typename T> void Plotter<D, T>::closePlot() {
     if (this->fout != nullptr) this->fout->close();
     this->fout = nullptr;
 }
@@ -412,31 +401,22 @@ template <> void Plotter<3>::writeNodeGrid(const MWNode<3> &node, const std::str
 
     for (int d = 0; d < 3; d++) origin[d] = node.getNodeIndex()[d] * length;
 
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " "
-      << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length
-      << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length
+      << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << color << std::endl;
 
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " "
-      << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length
-      << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
-    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length
-      << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " "
-      << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1]
+      << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
+    o << origin[0] << " " << origin[1] << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length << " "
+      << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] + length
-      << " " << origin[1] << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color
+      << origin[0] + length << " " << origin[1] << " " << origin[2] << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " "
-      << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] + length << " " << origin[2] << " " << color
+      << origin[0] << " " << origin[1] + length << " " << origin[2] << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length << color << std::endl;
 
-    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color
-      << origin[0] + length << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " "
-      << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " "
-      << origin[2] + length << color << std::endl;
+    o << origin[0] + length << " " << origin[1] + length << " " << origin[2] + length << " " << color << origin[0] + length << " " << origin[1] << " " << origin[2] + length << " " << color
+      << origin[0] << " " << origin[1] << " " << origin[2] + length << " " << color << origin[0] << " " << origin[1] + length << " " << origin[2] + length << color << std::endl;
 }
 
 /** @brief Writing grid data to file
@@ -462,7 +442,7 @@ template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
 }
 
 /** @brief Checks the validity of the plotting range */
-template <int D> bool Plotter<D>::verifyRange(int dim) const {
+template <int D, typename T> bool Plotter<D, T>::verifyRange(int dim) const {
 
     auto is_len_zero = [](Coord<D> vec) {
         double vec_sq = 0.0;
@@ -483,14 +463,18 @@ template <int D> bool Plotter<D>::verifyRange(int dim) const {
 }
 
 /** @brief Compute step length to cover vector with `pts` points, including edges */
-template <int D> Coord<D> Plotter<D>::calcStep(const Coord<D> &vec, int pts) const {
+template <int D, typename T> Coord<D> Plotter<D, T>::calcStep(const Coord<D> &vec, int pts) const {
     Coord<D> step;
     for (auto d = 0; d < D; d++) step[d] = vec[d] / (pts - 1.0);
     return step;
 }
 
-template class Plotter<1>;
-template class Plotter<2>;
-template class Plotter<3>;
+template class Plotter<1, double>;
+template class Plotter<2, double>;
+template class Plotter<3, double>;
+
+template class Plotter<1, ComplexDouble>;
+template class Plotter<2, ComplexDouble>;
+template class Plotter<3, ComplexDouble>;
 
 } // namespace mrcpp

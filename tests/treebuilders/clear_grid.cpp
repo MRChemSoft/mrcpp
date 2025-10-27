@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -63,16 +63,16 @@ template <int D> void testClearGrid() {
         THEN("it represents an undefined function on the root grid") {
             REQUIRE(tree.getDepth() == 1);
             REQUIRE(tree.getNNodes() == tree.getRootBox().size());
-            REQUIRE(tree.integrate() == Approx(0.0));
-            REQUIRE(tree.getSquareNorm() == Approx(-1.0));
+            REQUIRE(tree.integrate() == Catch::Approx(0.0));
+            REQUIRE(tree.getSquareNorm() == Catch::Approx(-1.0));
             AND_WHEN("the function is re-projected") {
                 build_grid(tree, *func);
                 project(prec, tree, *func);
                 THEN("the representation is the same as before it was cleared") {
                     REQUIRE(tree.getDepth() == refDepth);
                     REQUIRE(tree.getNNodes() == refNodes);
-                    REQUIRE(tree.integrate() == Approx(refInt));
-                    REQUIRE(tree.getSquareNorm() == Approx(refNorm));
+                    REQUIRE(tree.integrate() == Catch::Approx(refInt));
+                    REQUIRE(tree.getSquareNorm() == Catch::Approx(refNorm));
                 }
             }
         }
@@ -82,15 +82,15 @@ template <int D> void testClearGrid() {
         THEN("it represents an undefined function on the same grid") {
             REQUIRE(tree.getDepth() == refDepth);
             REQUIRE(tree.getNNodes() == refNodes);
-            REQUIRE(tree.integrate() == Approx(0.0));
-            REQUIRE(tree.getSquareNorm() == Approx(-1.0));
+            REQUIRE(tree.integrate() == Catch::Approx(0.0));
+            REQUIRE(tree.getSquareNorm() == Catch::Approx(-1.0));
             AND_WHEN("the function is re-projected on the same grid") {
                 project(-1.0, tree, *func);
                 THEN("the representation is the same as before") {
                     REQUIRE(tree.getDepth() == refDepth);
                     REQUIRE(tree.getNNodes() == refNodes);
-                    REQUIRE(tree.integrate() == Approx(refInt));
-                    REQUIRE(tree.getSquareNorm() == Approx(refNorm));
+                    REQUIRE(tree.integrate() == Catch::Approx(refInt));
+                    REQUIRE(tree.getSquareNorm() == Catch::Approx(refNorm));
                 }
             }
         }
@@ -101,8 +101,8 @@ template <int D> void testClearGrid() {
         THEN("it represents the same function on a larger grid") {
             REQUIRE(tree.getDepth() >= refDepth);
             REQUIRE(tree.getNNodes() > refNodes);
-            REQUIRE(tree.integrate() == Approx(refInt).epsilon(1.0e-8));
-            REQUIRE(tree.getSquareNorm() == Approx(refNorm).epsilon(1.0e-8));
+            REQUIRE(tree.integrate() == Catch::Approx(refInt).epsilon(1.0e-8));
+            REQUIRE(tree.getSquareNorm() == Catch::Approx(refNorm).epsilon(1.0e-8));
         }
     }
     finalize(&mra);

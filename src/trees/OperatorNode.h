@@ -60,6 +60,7 @@ protected:
 
     void dealloc() override;
     double calcComponentNorm(int i) const override;
+    Eigen::MatrixXd getComponent(int i);
 };
 
 } // namespace mrcpp

@@ -28,7 +28,7 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
    install.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Application Program Interface
 
    mrcpp_api/introduction
@@ -42,6 +42,7 @@ The code can be found on `GitHub <https://github.com/MRChemSoft/mrcpp>`_.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Programmers Manual
+   :caption: Programmer's Manual
 
-   programmers_manual/clang_tidy
+   programmers_manual/overview
+   programmers_manual/clang_tidy.rst

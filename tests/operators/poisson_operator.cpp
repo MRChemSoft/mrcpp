@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -67,7 +67,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
 
         Coord<1> x{r_min};
         while (x[0] < r_max) {
-            REQUIRE(poisson.evalf(x) == Approx(1.0 / x[0]).epsilon(2.0 * exp_prec));
+            REQUIRE(poisson.evalf(x) == Catch::Approx(1.0 / x[0]).epsilon(2.0 * exp_prec));
             x[0] *= 1.5;
         }
         SECTION("Project Poisson's kernel") {
@@ -96,7 +96,6 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                 TreeBuilder<2> builder;
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
 
-                MWOperator<3> O(func_mra, func_mra.getRootScale(), -10);
                 for (int i = 0; i < kern_vec.size(); i++) {
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
@@ -121,13 +120,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                         REQUIRE(bw_1.getMaxWidth(i) <= bw_2.getMaxWidth(i));
                         REQUIRE(bw_2.getMaxWidth(i) <= bw_3.getMaxWidth(i));
                     }
-                    O.push_back(std::move(oper_tree));
                 }
-                O.calcBandWidths(band_prec);
-                REQUIRE(O.getMaxBandWidth(3) == 3);
-                REQUIRE(O.getMaxBandWidth(7) == 5);
-                REQUIRE(O.getMaxBandWidth(13) == 9);
-                REQUIRE(O.getMaxBandWidth(19) == -1);
             }
             clear(kern_vec, true);
         }
@@ -155,7 +148,7 @@ TEST_CASE("Apply Poisson's operator", "[apply_poisson], [poisson_operator], [mw_
     double E_num = dot(gTree, fTree);
     double E_ana = fFunc->calcCoulombEnergy(*fFunc);
 
-    REQUIRE(E_num == Approx(E_ana).epsilon(apply_prec));
+    REQUIRE(E_num == Catch::Approx(E_ana).epsilon(apply_prec));
 
     finalize(&fFunc);
     finalize(&mra);
@@ -194,14 +187,14 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
     auto source = [](const mrcpp::Coord<3> &r) { return 3.0 * cos(r[0]) * cos(r[1]) * cos(r[2]) / (4.0 * pi); };
 
     FunctionTree<3> source_tree(MRA);
-    project<3>(proj_prec, source_tree, source);
+    project<3, double>(proj_prec, source_tree, source);
 
     FunctionTree<3> sol_tree(MRA);
 
     apply(apply_prec, sol_tree, P, source_tree);
 
-    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Approx(1.0).epsilon(apply_prec));
-    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Approx(-1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({0.0, 0.0, 0.0}) == Catch::Approx(1.0).epsilon(apply_prec));
+    REQUIRE(sol_tree.evalf({pi, 0.0, 0.0}) == Catch::Approx(-1.0).epsilon(apply_prec));
 }
 
 } // namespace poisson_operator

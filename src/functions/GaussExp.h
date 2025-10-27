@@ -51,7 +51,7 @@ namespace mrcpp {
  *
  */
 
-template <int D> class GaussExp : public RepresentableFunction<D> {
+template <int D> class GaussExp : public RepresentableFunction<D, double> {
 public:
     GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
     GaussExp(const GaussExp<D> &gExp);

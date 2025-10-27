@@ -24,19 +24,18 @@
  */
 
 #include "omp_utils.h"
-
+#include <iostream>
 namespace mrcpp {
 
 // By default we get OMP_NUM_THREADS
 int max_threads = mrcpp_get_max_threads();
 
 void set_max_threads(int threads) {
-    auto omp_max = mrcpp_get_max_threads();
-    if (threads < 1 or threads > omp_max) {
-        mrcpp::max_threads = omp_max;
-    } else {
-        mrcpp::max_threads = threads;
-    }
+    threads = std::max(1, threads);
+    mrcpp::max_threads = threads;
+#ifdef MRCPP_HAS_OMP
+    omp_set_num_threads(threads);
+#endif
 }
 
 } // namespace mrcpp

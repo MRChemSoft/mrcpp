@@ -65,13 +65,12 @@ namespace mrcpp {
  * no coefs).
  *
  */
-template <int D>
-void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int maxIter, bool absPrec) {
+template <int D> void map(double prec, FunctionTree<D, double> &out, FunctionTree<D, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec) {
 
     int maxScale = out.getMRA().getMaxScale();
-    TreeBuilder<D> builder;
-    WaveletAdaptor<D> adaptor(prec, maxScale, absPrec);
-    MapCalculator<D> calculator(fmap, inp);
+    TreeBuilder<D, double> builder;
+    WaveletAdaptor<D, double> adaptor(prec, maxScale, absPrec);
+    MapCalculator<D, double> calculator(fmap, inp);
 
     builder.build(out, calculator, adaptor, maxIter);
 
@@ -89,8 +88,8 @@ void map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int
     print::separator(10, ' ');
 }
 
-template void map<1>(double prec, FunctionTree<1> &out, FunctionTree<1> &inp, FMap fmap, int maxIter, bool absPrec);
-template void map<2>(double prec, FunctionTree<2> &out, FunctionTree<2> &inp, FMap fmap, int maxIter, bool absPrec);
-template void map<3>(double prec, FunctionTree<3> &out, FunctionTree<3> &inp, FMap fmap, int maxIter, bool absPrec);
+template void map<1>(double prec, FunctionTree<1, double> &out, FunctionTree<1, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
+template void map<2>(double prec, FunctionTree<2, double> &out, FunctionTree<2, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
+template void map<3>(double prec, FunctionTree<3, double> &out, FunctionTree<3, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec);
 
 } // Namespace mrcpp

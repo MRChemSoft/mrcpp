@@ -67,36 +67,49 @@
 using namespace Eigen;
 
 namespace mrcpp {
-
 /**
- * @brief Build the set of interpolating scaling polynomials {I_k}.
+ * @brief Initialise the interpolating scaling basis and populate `funcs`.
  *
- * Procedure (for quadrature order q and scaling order s):
- *  1) Fetch Gaussian quadrature nodes (roots) and weights (wgts) of order q.
- *  2) Precompute Legendre polynomials L_0, L_1, …, L_{q-1} (scaled/shifted
- *     variant via LegendrePoly(k, 2.0, 1.0)).
- *  3) For each quadrature node k:
- *       a) Start from a copy of L_s (highest degree used for stability).
- *       b) Scale it so that I_k(roots[k]) accumulates the desired unit
- *          contribution. The factor (2*i+1) is the standard Legendre
- *          normalization multiplier that appears in expansions / projections.
- *       c) Accumulate lower-degree Legendre polynomials down to degree 0,
- *          with coefficients proportional to L_i(roots[k]) * (2*i+1).
- *       d) Finally, scale I_k by sqrt(wgts[k]) to make the quadrature-based
- *          normalization diagonal and simple (see calcCVMaps()).
- *  4) Store I_k into this->funcs.
+ * @details
+ * This builds the set of interpolating (cardinal) scaling polynomials
+ * \f[
+ *   \varphi_j(x)
+ *   \;=\;
+ *   \sqrt{w_j}\;\sum_{m=0}^{k} \phi_m(x_j)\,\phi_m(x),
+ *   \qquad x\in(0,1),\; j=0,\ldots,k,
+ * \f]
+ * where \f$\{\phi_m\}\f$ are the Legendre scaling functions, \f$\{x_j,w_j\}\f$
+ * are the Gauss–Legendre nodes and weights of order \f$q=k+1\f$, and
+ * \f$k=\texttt{order}\f$ from the base class. The resulting functions are
+ * stored in `std::vector<Polynomial> funcs` inherited from @ref ScalingBasis .
+ *
+ * Procedural outline (q := quadrature order, s := scaling order = k):
+ *  1) Fetch q-point Gaussian quadrature nodes `roots` and weights `wgts`.
+ *  2) Precompute Legendre polynomials \f$L_0,\ldots,L_{q-1}\f$ on (0,1) using
+ *     `LegendrePoly(i, 2.0, 1.0)` (scaled/shifted variant).
+ *  3) For each quadrature node j:
+ *       a) Start from a copy of \f$L_s\f$ (highest degree used for stability).
+ *       b) Scale so that \f$I_j(x_j)\f$ accumulates the desired unit
+ *          contribution; the factor \f$(2i+1)\f$ is the standard Legendre
+ *          normalization used in projections/expansions.
+ *       c) Accumulate lower-degree Legendre polynomials down to degree 0 with
+ *          coefficients \f$L_i(x_j)\,(2i+1)\f$.
+ *       d) Multiply the resulting polynomial by \f$\sqrt{w_j}\f$ so that the
+ *          quadrature-based normalization becomes diagonal (see `calcCVMaps()`).
+ *  4) Push the constructed \f$I_j\f$ into `this->funcs`.
  *
  * Remarks:
- *  - The outer loop is over nodes k, producing one cardinal/interpolatory
- *    polynomial per node.
- *  - The inner loop goes from high to low degree (q-2 … 0). The comment in
- *    the code notes that adding higher-order polys into lower-order ones is
- *    numerically undesirable, hence the chosen order of accumulation.
+ *  - One interpolatory polynomial \f$I_j\f$ is produced per node \f$x_j\f$.
+ *  - The accumulation loop goes from high to low degree (\f$q-2,\ldots,0\f$)
+ *    to avoid adding higher-order polynomials into lower-order ones, which is
+ *    numerically less stable.
+ *  - These interpolating scaling functions are defined on the unit interval
+ *    \f$(0,1)\f$.
  */
 void InterpolatingBasis::initScalingBasis() {
     int qOrder = getQuadratureOrder();   // number of quadrature points (q)
     int sOrder = getScalingOrder();      // polynomial "scaling order" (s)
-
+  
     // Obtain quadrature nodes and weights of order q.
     getQuadratureCache(qc);
     const VectorXd roots = qc.getRoots(qOrder);   // size q
@@ -132,34 +145,33 @@ void InterpolatingBasis::initScalingBasis() {
         this->funcs.push_back(I_k);
     }
 }
-
 /**
  * @brief Fill the matrix of basis values at quadrature nodes.
  *
- * For an *interpolating* basis, evaluating basis polynomial I_k at node k'
- * yields δ_{k,k'}. Therefore, the quadrature value matrix is just the identity.
+ * For an interpolating basis the cardinal property holds:
+ * I_k(x_{k'}) = δ_{k,k'}.
+ * Therefore `quadVals` is simply the identity matrix of size q×q,
+ * where q = getQuadratureOrder().
  *
  * Implementation detail:
- *  - Only the diagonal entries are set to 1; all other entries remain 0
- *    (matrix presumed zero-initialized elsewhere).
+ * - Only the diagonal entries are set to 1.0; all off-diagonals remain 0.
+ *   The matrix is assumed to have been zero-initialized.
  */
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
     for (int k = 0; k < q_order; k++) { this->quadVals(k, k) = 1.0; }
 }
-
 /**
  * @brief Build coefficient↔value diagonal maps using quadrature weights.
  *
- * The maps relate coefficient vectors in the interpolatory basis to vectors
- * of point-values at quadrature nodes, under the quadrature-induced inner
- * product:
+ * These maps relate coefficient vectors in the interpolatory basis to vectors
+ * of point-values at quadrature nodes under the quadrature-induced inner product.
  *
- *   - cvMap: coefficient → value map at nodes (scales by sqrt(1/w_k))
- *   - vcMap: value → coefficient map at nodes (scales by sqrt(w_k))
+ *  - cvMap (coeff → values at nodes):   cvMap(k,k) = sqrt(1 / w_k)
+ *  - vcMap (values at nodes → coeff):   vcMap(k,k) = sqrt(w_k)
  *
- * With the construction in initScalingBasis(), these maps are diagonal and
- * inverse of each other.
+ * Because the basis is cardinal (I_k(x_{k'}) = δ_{k,k'}), both maps are diagonal
+ * and are mutual inverses. Here {w_k} are the Gauss–Legendre weights of order q.
  */
 void InterpolatingBasis::calcCVMaps() {
     int q_order = getQuadratureOrder();

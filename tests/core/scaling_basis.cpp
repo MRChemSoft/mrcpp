@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
@@ -41,8 +41,8 @@ TEST_CASE("InterpolatingBasis", "[interpolating_basis], [scaling_basis]") {
         SECTION("Constructor") {
             for (int k = 0; k < 1; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == 1);
             }
         }
@@ -53,8 +53,8 @@ TEST_CASE("InterpolatingBasis", "[interpolating_basis], [scaling_basis]") {
         SECTION("Constructor") {
             for (int k = 0; k < 6; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == 6);
             }
         }
@@ -65,8 +65,8 @@ TEST_CASE("InterpolatingBasis", "[interpolating_basis], [scaling_basis]") {
         SECTION("Constructor") {
             for (int k = 0; k < 10; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == 10);
             }
         }
@@ -80,8 +80,8 @@ TEST_CASE("LegendreBasis", "[legendre_basis], [scaling_basis]") {
         SECTION("Constructor") {
             for (int k = 0; k < 1; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == k);
             }
         }
@@ -92,8 +92,8 @@ TEST_CASE("LegendreBasis", "[legendre_basis], [scaling_basis]") {
         SECTION("Test constructor") {
             for (int k = 0; k < 6; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == k);
             }
         }
@@ -104,8 +104,8 @@ TEST_CASE("LegendreBasis", "[legendre_basis], [scaling_basis]") {
         SECTION("Test constructor") {
             for (int k = 0; k < 10; k++) {
                 const Polynomial &P_k = basis.getFunc(k);
-                REQUIRE(P_k.getScaledLowerBound() == Approx(0.0));
-                REQUIRE(P_k.getScaledUpperBound() == Approx(1.0));
+                REQUIRE(P_k.getScaledLowerBound() == Catch::Approx(0.0));
+                REQUIRE(P_k.getScaledUpperBound() == Catch::Approx(1.0));
                 REQUIRE(P_k.getOrder() == k);
             }
         }
@@ -117,11 +117,11 @@ template <int K> void testOrthonormality(const ScalingBasis &basis) {
     for (int i = 0; i < K; i++) {
         const Polynomial &P_i = basis.getFunc(i);
         double S_ii = P_i.innerProduct(P_i);
-        REQUIRE(S_ii == Approx(1.0));
+        REQUIRE(S_ii == Catch::Approx(1.0));
         for (int j = 0; j < i; j++) {
             const Polynomial &P_j = basis.getFunc(j);
             double S_ij = P_i.innerProduct(P_j);
-            REQUIRE(S_ij == Approx(0.0).margin(1.0e-10));
+            REQUIRE(S_ij == Catch::Approx(0.0).margin(1.0e-10));
         }
     }
 }

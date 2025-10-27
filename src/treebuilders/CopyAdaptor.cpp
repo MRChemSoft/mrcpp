@@ -29,21 +29,21 @@
 
 namespace mrcpp {
 
-template <int D>
-CopyAdaptor<D>::CopyAdaptor(FunctionTree<D> &t, int ms, int *bw)
-        : TreeAdaptor<D>(ms) {
+template <int D, typename T>
+CopyAdaptor<D, T>::CopyAdaptor(FunctionTree<D, T> &t, int ms, int *bw)
+        : TreeAdaptor<D, T>(ms) {
     setBandWidth(bw);
     tree_vec.push_back(std::make_tuple(1.0, &t));
 }
 
-template <int D>
-CopyAdaptor<D>::CopyAdaptor(FunctionTreeVector<D> &t, int ms, int *bw)
-        : TreeAdaptor<D>(ms)
+template <int D, typename T>
+CopyAdaptor<D, T>::CopyAdaptor(FunctionTreeVector<D, T> &t, int ms, int *bw)
+        : TreeAdaptor<D, T>(ms)
         , tree_vec(t) {
     setBandWidth(bw);
 }
 
-template <int D> void CopyAdaptor<D>::setBandWidth(int *bw) {
+template <int D, typename T> void CopyAdaptor<D, T>::setBandWidth(int *bw) {
     for (int d = 0; d < D; d++) {
         if (bw != nullptr) {
             this->bandWidth[d] = bw[d];
@@ -53,7 +53,7 @@ template <int D> void CopyAdaptor<D>::setBandWidth(int *bw) {
     }
 }
 
-template <int D> bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
+template <int D, typename T> bool CopyAdaptor<D, T>::splitNode(const MWNode<D, T> &node) const {
     const NodeIndex<D> &idx = node.getNodeIndex();
     for (int c = 0; c < node.getTDim(); c++) {
         for (int d = 0; d < D; d++) {
@@ -61,8 +61,8 @@ template <int D> bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
                 NodeIndex<D> bwIdx = idx.child(c);
                 bwIdx[d] += bw;
                 for (int i = 0; i < this->tree_vec.size(); i++) {
-                    const FunctionTree<D> &func_i = get_func(tree_vec, i);
-                    const MWNode<D> *node_i = func_i.findNode(bwIdx);
+                    const FunctionTree<D, T> &func_i = get_func(tree_vec, i);
+                    const MWNode<D, T> *node_i = func_i.findNode(bwIdx);
                     if (node_i != nullptr) return true;
                 }
             }
@@ -71,8 +71,12 @@ template <int D> bool CopyAdaptor<D>::splitNode(const MWNode<D> &node) const {
     return false;
 }
 
-template class CopyAdaptor<1>;
-template class CopyAdaptor<2>;
-template class CopyAdaptor<3>;
+template class CopyAdaptor<1, double>;
+template class CopyAdaptor<2, double>;
+template class CopyAdaptor<3, double>;
+
+template class CopyAdaptor<1, ComplexDouble>;
+template class CopyAdaptor<2, ComplexDouble>;
+template class CopyAdaptor<3, ComplexDouble>;
 
 } // namespace mrcpp

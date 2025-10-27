@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -40,9 +40,15 @@ namespace mapping {
 template <int D> void testMapping();
 
 SCENARIO("Map a MW tree", "[map], [tree_builder]") {
-    GIVEN("One MW functions in 1D") { testMapping<1>(); }
-    GIVEN("One MW functions in 2D") { testMapping<2>(); }
-    GIVEN("One MW functions in 3D") { testMapping<3>(); }
+    GIVEN("One MW functions in 1D") {
+        testMapping<1>();
+    }
+    GIVEN("One MW functions in 2D") {
+        testMapping<2>();
+    }
+    GIVEN("One MW functions in 3D") {
+        testMapping<3>();
+    }
 }
 
 template <int D> void testMapping() {
@@ -77,7 +83,7 @@ template <int D> void testMapping() {
     const double inp_int = inp_tree.integrate();
     const double inp_norm = inp_tree.getSquareNorm();
 
-    auto fmap = [](double val) { return val * val; };
+    FMap<double, double> fmap = [](double val) { return val * val; };
 
     WHEN("the function is mapped") {
         FunctionTree<D> out_tree(*mra);
@@ -87,9 +93,9 @@ template <int D> void testMapping() {
         THEN("the MW map equals the analytic map") {
             double out_int = out_tree.integrate();
             double out_norm = out_tree.getSquareNorm();
-            REQUIRE(out_int == Approx(ref_int));
-            REQUIRE(out_norm == Approx(ref_norm));
-            REQUIRE(inp_norm == Approx(out_int));
+            REQUIRE(out_int == Catch::Approx(ref_int));
+            REQUIRE(out_norm == Catch::Approx(ref_norm));
+            REQUIRE(inp_norm == Catch::Approx(out_int));
         }
     }
     WHEN("the functions is mapped in-place") {
@@ -97,8 +103,8 @@ template <int D> void testMapping() {
         THEN("the first function equals the analytic product") {
             double inp_int = inp_tree.integrate();
             double inp_norm = inp_tree.getSquareNorm();
-            REQUIRE(inp_int == Approx(ref_int));
-            REQUIRE(inp_norm == Approx(ref_norm));
+            REQUIRE(inp_int == Catch::Approx(ref_int));
+            REQUIRE(inp_norm == Catch::Approx(ref_norm));
         }
     }
     finalize(&mra);

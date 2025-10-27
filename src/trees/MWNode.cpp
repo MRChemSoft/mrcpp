@@ -34,17 +34,19 @@
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
+#include "utils/parallel.h"
 #include "utils/tree_utils.h"
 
 using namespace Eigen;
 
 namespace mrcpp {
 
-/** MWNode default constructor.
- *  Should be used only by NodeAllocator to obtain
+/** @brief MWNode default constructor.
+ *
+ * @details Should be used only by NodeAllocator to obtain
  *  virtual table pointers for the derived classes. */
-template <int D>
-MWNode<D>::MWNode()
+template <int D, typename T>
+MWNode<D, T>::MWNode()
         : tree(nullptr)
         , parent(nullptr)
         , nodeIndex()
@@ -57,8 +59,15 @@ MWNode<D>::MWNode()
     MRCPP_INIT_OMP_LOCK();
 }
 
-template <int D>
-MWNode<D>::MWNode(MWTree<D> *tree, const NodeIndex<D> &idx)
+/** @brief MWNode constructor.
+ *
+ * @param[in] tree: the MWTree the root node belongs to
+ * @param[in] idx: the NodeIndex defining scale and translation of the node
+ *
+ * @details Constructor for an empty node, given the corresponding MWTree and NodeIndex
+ */
+template <int D, typename T>
+MWNode<D, T>::MWNode(MWTree<D, T> *tree, const NodeIndex<D> &idx)
         : tree(tree)
         , parent(nullptr)
         , nodeIndex(idx)
@@ -70,8 +79,16 @@ MWNode<D>::MWNode(MWTree<D> *tree, const NodeIndex<D> &idx)
     MRCPP_INIT_OMP_LOCK();
 }
 
-template <int D>
-MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
+/** @brief MWNode constructor.
+ *
+ * @param[in] tree: the MWTree the root node belongs to
+ * @param[in] rIdx: the integer specifying the corresponding root node
+ *
+ * @details Constructor for root nodes. It requires the corresponding
+ * MWTree and an integer to fetch the right NodeIndex
+ */
+template <int D, typename T>
+MWNode<D, T>::MWNode(MWTree<D, T> *tree, int rIdx)
         : tree(tree)
         , parent(nullptr)
         , nodeIndex(tree->getRootBox().getNodeIndex(rIdx))
@@ -83,8 +100,16 @@ MWNode<D>::MWNode(MWTree<D> *tree, int rIdx)
     MRCPP_INIT_OMP_LOCK();
 }
 
-template <int D>
-MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
+/** @brief MWNode constructor.
+ *
+ * @param[in] parent: parent node
+ * @param[in] cIdx: child index of the current node
+ *
+ * @details Constructor for leaf nodes. It requires the corresponding
+ * parent and an integer to identify the correct child.
+ */
+template <int D, typename T>
+MWNode<D, T>::MWNode(MWNode<D, T> *parent, int cIdx)
         : tree(parent->tree)
         , parent(parent)
         , nodeIndex(parent->getNodeIndex().child(cIdx))
@@ -96,10 +121,17 @@ MWNode<D>::MWNode(MWNode<D> *parent, int cIdx)
     MRCPP_INIT_OMP_LOCK();
 }
 
-/** MWNode copy constructor.
- *  Creates loose nodes and copy coefs */
-template <int D>
-MWNode<D>::MWNode(const MWNode<D> &node)
+/** @brief MWNode copy constructor.
+ *
+ * @param[in] node: the original node
+ * @param[in] allocCoef: if true MW coefficients are allocated and copied from the original node
+ *
+ * @details Creates loose nodes and optionally copy coefs. The node
+ * does not "belong" to the tree: it cannot be accessed by traversing
+ * the tree.
+ */
+template <int D, typename T>
+MWNode<D, T>::MWNode(const MWNode<D, T> &node, bool allocCoef, bool SetCoef)
         : tree(node.tree)
         , parent(nullptr)
         , nodeIndex(node.nodeIndex)
@@ -107,48 +139,70 @@ MWNode<D>::MWNode(const MWNode<D> &node)
     for (int i = 0; i < getTDim(); i++) this->children[i] = nullptr;
     setIsLeafNode();
     setIsLooseNode();
-
-    allocCoefs(this->getTDim(), this->getKp1_d());
-    if (node.hasCoefs()) {
-        setCoefBlock(0, node.getNCoefs(), node.getCoefs());
-        if (this->getNCoefs() > node.getNCoefs()) {
-            for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
+    if (allocCoef) {
+        allocCoefs(this->getTDim(), this->getKp1_d());
+        if (node.hasCoefs() and SetCoef) {
+            setCoefBlock(0, node.getNCoefs(), node.getCoefs());
+            if (this->getNCoefs() > node.getNCoefs()) {
+                for (int i = node.getNCoefs(); i < this->getNCoefs(); i++) this->coefs[i] = 0.0;
+            }
+            this->setHasCoefs();
+            this->calcNorms();
+        } else {
+            this->clearHasCoefs();
+            this->clearNorms();
         }
-        this->setHasCoefs();
-        this->calcNorms();
     } else {
-        this->clearHasCoefs();
-        this->clearNorms();
+        clearHasCoefs();
+        coefs = nullptr;
     }
     MRCPP_INIT_OMP_LOCK();
 }
 
-/** MWNode destructor.
- * Recursive deallocation of a node and all its decendants */
-template <int D> MWNode<D>::~MWNode() {
+/** @brief MWNode destructor.
+ *
+ * @details Recursive deallocation of a node and all its decendants
+ */
+template <int D, typename T> MWNode<D, T>::~MWNode() {
     if (this->isLooseNode()) this->freeCoefs();
     MRCPP_DESTROY_OMP_LOCK();
 }
 
-template <int D> void MWNode<D>::dealloc() {
+/** @brief Dummy deallocation of MWNode coefficients.
+ *
+ * @details This is just to make sure this method never really gets
+ * called (derived classes must implement their own version). This was
+ * to avoid having pure virtual methods in the base class.
+ */
+template <int D, typename T> void MWNode<D, T>::dealloc() {
     NOT_REACHED_ABORT;
 }
 
-/** Allocate the coefs vector. Only used by loose nodes. */
-template <int D> void MWNode<D>::allocCoefs(int n_blocks, int block_size) {
+/** @brief Allocate the coefs vector.
+ *
+ * @details This is only used by loose nodes, because the loose nodes
+ * are not treated by the NodeAllocator class.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::allocCoefs(int n_blocks, int block_size) {
     if (this->n_coefs != 0) MSG_ABORT("n_coefs should be zero");
     if (this->isAllocated()) MSG_ABORT("Coefs already allocated");
     if (not this->isLooseNode()) MSG_ABORT("Only loose nodes here!");
 
     this->n_coefs = n_blocks * block_size;
-    this->coefs = new double[this->n_coefs];
+    this->coefs = new T[this->n_coefs];
 
     this->clearHasCoefs();
     this->setIsAllocated();
 }
 
-/** Deallocation of coefficients. Only used by loose nodes. */
-template <int D> void MWNode<D>::freeCoefs() {
+/** @brief Deallocate the coefs vector.
+ *
+ * @details This is only used by loose nodes, because the loose nodes
+ * are not treated by the NodeAllocator class.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::freeCoefs() {
     if (not this->isLooseNode()) MSG_ABORT("Only loose nodes here!");
 
     if (this->coefs != nullptr) delete[] this->coefs;
@@ -160,7 +214,9 @@ template <int D> void MWNode<D>::freeCoefs() {
     this->clearIsAllocated();
 }
 
-template <int D> void MWNode<D>::printCoefs() const {
+/** @brief Printout of node coefficients
+ */
+template <int D, typename T> void MWNode<D, T>::printCoefs() const {
     if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
     println(0, "\nMW coefs");
     int kp1_d = this->getKp1_d();
@@ -170,15 +226,20 @@ template <int D> void MWNode<D>::printCoefs() const {
     }
 }
 
-template <int D> void MWNode<D>::getCoefs(Eigen::VectorXd &c) const {
+/** @brief wraps the MW coefficients into an eigen vector object
+ */
+template <int D, typename T> void MWNode<D, T>::getCoefs(Eigen::Matrix<T, Eigen::Dynamic, 1> &c) const {
     if (not this->isAllocated()) MSG_ABORT("Node is not allocated");
     if (not this->hasCoefs()) MSG_ABORT("Node has no coefs");
     if (this->n_coefs == 0) MSG_ABORT("ncoefs == 0");
 
-    c = VectorXd::Map(this->coefs, this->n_coefs);
+    c = Eigen::Matrix<T, Eigen::Dynamic, 1>::Map(this->coefs, this->n_coefs);
 }
 
-template <int D> void MWNode<D>::zeroCoefs() {
+/** @brief sets all MW coefficients and the norms to zero
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::zeroCoefs() {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated " << *this);
 
     for (int i = 0; i < this->n_coefs; i++) { this->coefs[i] = 0.0; }
@@ -186,22 +247,69 @@ template <int D> void MWNode<D>::zeroCoefs() {
     this->setHasCoefs();
 }
 
-template <int D> void MWNode<D>::setCoefBlock(int block, int block_size, const double *c) {
+/** @brief Attach a set of coefs to this node. Only used locally (the tree is not aware of this).
+ */
+template <int D, typename T> void MWNode<D, T>::attachCoefs(T *coefs) {
+    this->coefs = coefs;
+    this->setHasCoefs();
+}
+
+/** @brief assigns values to a block of coefficients
+ *
+ * @param[in] c: the input coefficients
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @details a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
+template <int D, typename T> void MWNode<D, T>::setCoefBlock(int block, int block_size, const T *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = c[i]; }
 }
 
-template <int D> void MWNode<D>::addCoefBlock(int block, int block_size, const double *c) {
+/** @brief adds values to a block of coefficients
+ *
+ * @param[in] c: the input coefficients
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @details a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
+template <int D, typename T> void MWNode<D, T>::addCoefBlock(int block, int block_size, const T *c) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] += c[i]; }
 }
 
-template <int D> void MWNode<D>::zeroCoefBlock(int block, int block_size) {
+/** @brief sets values of a block of coefficients to zero
+ *
+ * @param[in] block: the block index
+ * @param[in] block_size: size of the block
+ *
+ * @details a block is typically containing one kind of coefficients
+ * (given scaling/wavelet in each direction). Its size is then \f$
+ * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+ */
+template <int D, typename T> void MWNode<D, T>::zeroCoefBlock(int block, int block_size) {
     if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
     for (int i = 0; i < block_size; i++) { this->coefs[block * block_size + i] = 0.0; }
 }
 
-template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
+/** @brief forward MW transform from this node to its children
+ *
+ * @param[in] overwrite: if true the coefficients of the children are
+ * overwritten. If false the values are summed to the already present
+ * ones.
+ *
+ * @details it performs forward MW transform inserting the result
+ * directly in the right place for each child node. The children must
+ * already be present and its memory allocated for this to work
+ * properly.
+ */
+template <int D, typename T> void MWNode<D, T>::giveChildrenCoefs(bool overwrite) {
     assert(this->isBranchNode());
     if (not this->isAllocated()) MSG_ABORT("Not allocated!");
     if (not this->hasCoefs()) MSG_ABORT("No coefficients!");
@@ -212,8 +320,8 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
 
     // coeff of child should be have been allocated already here
     int stride = getMWChild(0).getNCoefs();
-    double *inp = getCoefs();
-    double *out = getMWChild(0).getCoefs();
+    T *inp = getCoefs();
+    T *out = getMWChild(0).getCoefs();
     bool readOnlyScaling = false;
     if (this->isGenNode()) readOnlyScaling = true;
 
@@ -226,9 +334,20 @@ template <int D> void MWNode<D>::giveChildrenCoefs(bool overwrite) {
     }
 }
 
-template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
+/** @brief forward MW transform to compute scaling coefficients of a single child
+ *
+ * @param[in] cIdx: child index
+ * @param[in] overwrite: if true the coefficients of the children are
+ * overwritten. If false the values are summed to the already present
+ * ones.
+ *
+ * @details it performs forward MW transform in place on a loose
+ * node. The scaling coefficients of the selected child are then
+ * copied/summed in the correct child node.
+ */
+template <int D, typename T> void MWNode<D, T>::giveChildCoefs(int cIdx, bool overwrite) {
 
-    MWNode<D> node_i = *this;
+    MWNode<D, T> node_i = *this;
 
     node_i.mwTransform(Reconstruction);
 
@@ -236,7 +355,7 @@ template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
     int nChildren = this->getTDim();
 
     if (this->children[cIdx] == nullptr) MSG_ABORT("Child does not exist!");
-    MWNode<D> &child = getMWChild(cIdx);
+    MWNode<D, T> &child = getMWChild(cIdx);
     if (overwrite) {
         child.setCoefBlock(0, kp1_d, &node_i.getCoefs()[cIdx * kp1_d]);
     } else {
@@ -248,12 +367,16 @@ template <int D> void MWNode<D>::giveChildCoefs(int cIdx, bool overwrite) {
 
 /** Takes a MWParent and generates coefficients, reverse operation from
  * giveChildrenCoefs */
-template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
-    MWNode<D> node = *this;
-    MWNode<D> &parent = getMWParent();
+/** @brief backward MW transform to compute scaling/wavelet coefficients of a parent
+ *
+ * \warning This routine is only used in connection with Periodic Boundary Conditions
+ */
+template <int D, typename T> void MWNode<D, T>::giveParentCoefs(bool overwrite) {
+    MWNode<D, T> node = *this;
+    MWNode<D, T> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
     if (node.getScale() == 0) {
-        NodeBox<D> &box = this->getMWTree().getRootBox();
+        NodeBox<D, T> &box = this->getMWTree().getRootBox();
         auto reverse = getTDim() - 1;
         for (auto i = 0; i < getTDim(); i++) { parent.setCoefBlock(i, kp1_d, &box.getNode(reverse - i).getCoefs()[0]); }
     } else {
@@ -264,19 +387,32 @@ template <int D> void MWNode<D>::giveParentCoefs(bool overwrite) {
     parent.calcNorms();
 }
 
-/** Takes the scaling coefficients of the children and stores them consecutively
- * in the  given vector. */
-template <int D> void MWNode<D>::copyCoefsFromChildren() {
+/** @brief Copy scaling coefficients from children to parent
+ *
+ * @details Takes the scaling coefficients of the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
+ */
+template <int D, typename T> void MWNode<D, T>::copyCoefsFromChildren() {
     int kp1_d = this->getKp1_d();
     int nChildren = this->getTDim();
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        MWNode<D> &child = getMWChild(cIdx);
+        MWNode<D, T> &child = getMWChild(cIdx);
         if (not child.hasCoefs()) MSG_ABORT("Child has no coefs");
         setCoefBlock(cIdx, kp1_d, child.getCoefs());
     }
 }
 
-template <int D> void MWNode<D>::threadSafeGenChildren() {
+/** @brief Generates scaling coefficients of children
+ *
+ * @details If the node is a leafNode, it takes the scaling&wavelet
+ * coefficients of the parent and it generates the scaling
+ * coefficients for the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation.
+ */
+template <int D, typename T> void MWNode<D, T>::threadSafeGenChildren() {
+    if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }
     MRCPP_SET_OMP_LOCK();
     if (isLeafNode()) {
         genChildren();
@@ -285,16 +421,35 @@ template <int D> void MWNode<D>::threadSafeGenChildren() {
     MRCPP_UNSET_OMP_LOCK();
 }
 
-/** Coefficient-Value transform
+/** @brief Creates scaling coefficients of children
  *
- * This routine transforms the scaling coefficients of the node to the
+ * @details If the node is a leafNode, it takes the scaling&wavelet
+ * coefficients of the parent and it generates the scaling
+ * coefficients for the children and stores
+ * them consecutively in the corresponding block of the parent,
+ * following the usual bitwise notation. The new node is permanently added to the tree.
+ */
+template <int D, typename T> void MWNode<D, T>::threadSafeCreateChildren() {
+    if (tree->isLocal) { NOT_IMPLEMENTED_ABORT; }
+    MRCPP_SET_OMP_LOCK();
+    if (isLeafNode()) {
+        createChildren(true);
+        giveChildrenCoefs();
+    }
+    MRCPP_UNSET_OMP_LOCK();
+}
+
+/** @brief Coefficient-Value transform
+ *
+ * @details This routine transforms the scaling coefficients of the node to the
  * function values in the corresponding quadrature roots (of its children).
- * Input parameter = forward: coef->value.
- * Input parameter = backward: value->coef.
  *
- * NOTE: this routine assumes a 0/1 (scaling on children 0 and 1)
- *       representation, in oppose to s/d (scaling and wavelet). */
-template <int D> void MWNode<D>::cvTransform(int operation) {
+ * @param[in] operation: forward (coef->value) or backward (value->coef).
+ *
+ * NOTE: this routine assumes a 0/1 (scaling on child 0 and 1)
+ *       representation, instead of s/d (scaling and wavelet).
+ */
+template <int D, typename T> void MWNode<D, T>::cvTransform(int operation, bool firstchild) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     int kp1_d = this->getKp1_d();
@@ -302,17 +457,19 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
 
     auto sb = this->getMWTree().getMRA().getScalingBasis();
     const MatrixXd &S = sb.getCVMap(operation);
-    double o_vec[nCoefs];
-    double *out_vec = o_vec;
-    double *in_vec = this->coefs;
+    T o_vec[nCoefs];
+    T *out_vec = o_vec;
+    T *in_vec = this->coefs;
 
+    int nChildren = this->getTDim();
+    if (firstchild) nChildren = 1;
     for (int i = 0; i < D; i++) {
-        for (int t = 0; t < this->getTDim(); t++) {
-            double *out = out_vec + t * kp1_d;
-            double *in = in_vec + t * kp1_d;
+        for (int t = 0; t < nChildren; t++) {
+            T *out = out_vec + t * kp1_d;
+            T *in = in_vec + t * kp1_d;
             math_utils::apply_filter(out, in, S, kp1, kp1_dm1, 0.0);
         }
-        double *tmp = in_vec;
+        T *tmp = in_vec;
         in_vec = out_vec;
         out_vec = tmp;
     }
@@ -336,8 +493,8 @@ template <int D> void MWNode<D>::cvTransform(int operation) {
     }
 }
 /* Old interpolating version, somewhat faster
-template<int D>
-void MWNode<D>::cvTransform(int operation) {
+template<int D, typename T>
+void MWNode<D, T>::cvTransform(int operation) {
     const ScalingBasis &sf = this->getMWTree().getMRA().getScalingBasis();
     if (sf.getScalingType() != Interpol) {
         NOT_IMPLEMENTED_ABORT;
@@ -382,26 +539,26 @@ void MWNode<D>::cvTransform(int operation) {
 }
 */
 
-/** Multiwavelet transform: fast version
-  *
-  * Application of the filters on one node to pass from a 0/1 (scaling
-  * on children 0 and 1) representation to an s/d (scaling and
-  * wavelet) representation. Bit manipulation is used in order to
-  * determine the correct filters and whether to apply them or just
-  * pass to the next couple of indexes. The starting coefficients are
-  * preserved until the application is terminated, then they are
-  * overwritten. With minor modifications this code can also be used
-  * for the inverse mw transform (just use the transpose filters) or
-  * for the application of an operator (using A, B, C and T parts of an
-  * operator instead of G1, G0, H1, H0). This is the version where the
-  * three directions are operated one after the other. Although this
-  * is formally faster than the other algorithm, the separation of the
-  * three dimensions prevent the possibility to use the norm of the
-  * operator in order to discard a priori negligible contributions.
-
-  * Luca Frediani, August 2006
-  * C++ version: Jonas Juselius, September 2009 */
-template <int D> void MWNode<D>::mwTransform(int operation) {
+/** @brief Multiwavelet transform
+ *
+ * @details Application of the filters on one node to pass from a 0/1 (scaling
+ * on child 0 and 1) representation to an s/d (scaling and
+ * wavelet) representation. Bit manipulation is used in order to
+ * determine the correct filters and whether to apply them or just
+ * pass to the next couple of indexes. The starting coefficients are
+ * preserved until the application is terminated, then they are
+ * overwritten. With minor modifications this code can also be used
+ * for the inverse mw transform (just use the transpose filters) or
+ * for the application of an operator (using A, B, C and T parts of an
+ * operator instead of G1, G0, H1, H0). This is the version where the
+ * three directions are operated one after the other. Although this
+ * is formally faster than the other algorithm, the separation of the
+ * three dimensions prevent the possibility to use the norm of the
+ * operator in order to discard a priori negligible contributions.
+ *
+ *  * @param[in] operation: compression (s0,s1->s,d) or reconstruction (s,d->s0,s1).
+ */
+template <int D, typename T> void MWNode<D, T>::mwTransform(int operation) {
     int kp1 = this->getKp1();
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     int kp1_d = this->getKp1_d();
@@ -409,20 +566,20 @@ template <int D> void MWNode<D>::mwTransform(int operation) {
     const MWFilter &filter = getMWTree().getMRA().getFilter();
     double overwrite = 0.0;
 
-    double o_vec[nCoefs];
-    double *out_vec = o_vec;
-    double *in_vec = this->coefs;
+    T o_vec[nCoefs];
+    T *out_vec = o_vec;
+    T *in_vec = this->coefs;
 
     for (int i = 0; i < D; i++) {
         int mask = 1 << i;
         for (int gt = 0; gt < this->getTDim(); gt++) {
-            double *out = out_vec + gt * kp1_d;
+            T *out = out_vec + gt * kp1_d;
             for (int ft = 0; ft < this->getTDim(); ft++) {
                 /* Operate in direction i only if the bits along other
                  * directions are identical. The bit of the direction we
                  * operate on determines the appropriate filter/operator */
                 if ((gt | mask) == (ft | mask)) {
-                    double *in = in_vec + ft * kp1_d;
+                    T *in = in_vec + ft * kp1_d;
                     int fIdx = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const MatrixXd &oper = filter.getSubFilter(fIdx, operation);
                     math_utils::apply_filter(out, in, oper, kp1, kp1_dm1, overwrite);
@@ -431,7 +588,7 @@ template <int D> void MWNode<D>::mwTransform(int operation) {
             }
             overwrite = 0.0;
         }
-        double *tmp = in_vec;
+        T *tmp = in_vec;
         in_vec = out_vec;
         out_vec = tmp;
     }
@@ -440,20 +597,20 @@ template <int D> void MWNode<D>::mwTransform(int operation) {
     }
 }
 
-/** Set all norms to Undefined. */
-template <int D> void MWNode<D>::clearNorms() {
+/** @brief Set all norms to Undefined. */
+template <int D, typename T> void MWNode<D, T>::clearNorms() {
     this->squareNorm = -1.0;
     for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = -1.0; }
 }
 
-/** Set all norms to zero. */
-template <int D> void MWNode<D>::zeroNorms() {
+/** @brief Set all norms to zero. */
+template <int D, typename T> void MWNode<D, T>::zeroNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) { this->componentNorms[i] = 0.0; }
 }
 
-/** Calculate and store square norm and component norms, if allocated. */
-template <int D> void MWNode<D>::calcNorms() {
+/** @brief Calculate and store square norm and component norms, if allocated. */
+template <int D, typename T> void MWNode<D, T>::calcNorms() {
     this->squareNorm = 0.0;
     for (int i = 0; i < this->getTDim(); i++) {
         double norm_i = calcComponentNorm(i);
@@ -462,8 +619,8 @@ template <int D> void MWNode<D>::calcNorms() {
     }
 }
 
-/** Calculate and return the squared scaling norm. */
-template <int D> double MWNode<D>::getScalingNorm() const {
+/** @brief Calculate and return the squared scaling norm. */
+template <int D, typename T> double MWNode<D, T>::getScalingNorm() const {
     double sNorm = this->getComponentNorm(0);
     if (sNorm >= 0.0) {
         return sNorm * sNorm;
@@ -472,8 +629,8 @@ template <int D> double MWNode<D>::getScalingNorm() const {
     }
 }
 
-/** Calculate and return the squared wavelet norm. */
-template <int D> double MWNode<D>::getWaveletNorm() const {
+/** @brief Calculate and return the squared wavelet norm. */
+template <int D, typename T> double MWNode<D, T>::getWaveletNorm() const {
     double wNorm = 0.0;
     for (int i = 1; i < this->getTDim(); i++) {
         double norm_i = this->getComponentNorm(i);
@@ -486,29 +643,25 @@ template <int D> double MWNode<D>::getWaveletNorm() const {
     return wNorm;
 }
 
-/** Calculate the norm of one component (NOT the squared norm!). */
-template <int D> double MWNode<D>::calcComponentNorm(int i) const {
+/** @brief Calculate the norm of one component (NOT the squared norm!). */
+template <int D, typename T> double MWNode<D, T>::calcComponentNorm(int i) const {
     if (this->isGenNode() and i != 0) return 0.0;
     assert(this->isAllocated());
     assert(this->hasCoefs());
 
-    const double *c = this->getCoefs();
+    const T *c = this->getCoefs();
     int size = this->getKp1_d();
     int start = i * size;
 
     double sq_norm = 0.0;
-#ifdef HAVE_BLAS
-    sq_norm = cblas_ddot(size, &c[start], 1, &c[start], 1);
-#else
-    for (int i = start; i < start + size; i++) { sq_norm += c[i] * c[i]; }
-#endif
+    for (int i = start; i < start + size; i++) { sq_norm += std::norm(c[i]); }
     return std::sqrt(sq_norm);
 }
 
-/** Update the coefficients of the node by a mw transform of the scaling
- * coefficients of the children. Option to overwrite or add up existing
- * coefficients. */
-template <int D> void MWNode<D>::reCompress() {
+/** @brief Update the coefficients of the node by a mw transform of the scaling
+ * coefficients of the children.
+ */
+template <int D, typename T> void MWNode<D, T>::reCompress() {
     if (this->isGenNode()) NOT_IMPLEMENTED_ABORT;
     if (this->isBranchNode()) {
         if (not this->isAllocated()) MSG_ABORT("Coefs not allocated");
@@ -519,14 +672,18 @@ template <int D> void MWNode<D>::reCompress() {
     }
 }
 
-/** Recurse down until an EndNode is found, and then crop children with
- * too high precision. */
-template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec) {
+/** @brief Recurse down until an EndNode is found, and then crop children below the given precision threshold
+ *
+ * @param[in] prec: precision required
+ * @param[in] splitFac: factor used in the split check (larger factor means tighter threshold for finer nodes)
+ * @param[in] absPrec: flag to switch from relative (false) to absolute (true) precision.
+ */
+template <int D, typename T> bool MWNode<D, T>::crop(double prec, double splitFac, bool absPrec) {
     if (this->isEndNode()) {
         return true;
     } else {
         for (int i = 0; i < this->getTDim(); i++) {
-            MWNode<D> &child = *this->children[i];
+            MWNode<D, T> &child = *this->children[i];
             if (child.crop(prec, splitFac, absPrec)) {
                 if (tree_utils::split_check(*this, prec, splitFac, absPrec) == false) {
                     this->deleteChildren();
@@ -538,25 +695,28 @@ template <int D> bool MWNode<D>::crop(double prec, double splitFac, bool absPrec
     return false;
 }
 
-template <int D> void MWNode<D>::createChildren(bool coefs) {
+template <int D, typename T> void MWNode<D, T>::createChildren(bool coefs) {
     NOT_REACHED_ABORT;
 }
 
-template <int D> void MWNode<D>::genChildren() {
+template <int D, typename T> void MWNode<D, T>::genChildren() {
     NOT_REACHED_ABORT;
 }
 
-template <int D> void MWNode<D>::genParent() {
+template <int D, typename T> void MWNode<D, T>::genParent() {
     NOT_REACHED_ABORT;
 }
 
-/** Recursive deallocation of children and all their descendants.
- * Leaves node as LeafNode and children[] as null pointer. */
-template <int D> void MWNode<D>::deleteChildren() {
+/** @brief Recursive deallocation of children and all their descendants.
+ *
+ * @details
+ * Leaves node as LeafNode and children[] as null pointer.
+ */
+template <int D, typename T> void MWNode<D, T>::deleteChildren() {
     if (this->isLeafNode()) return;
     for (int cIdx = 0; cIdx < getTDim(); cIdx++) {
         if (this->children[cIdx] != nullptr) {
-            MWNode<D> &child = getMWChild(cIdx);
+            MWNode<D, T> &child = getMWChild(cIdx);
             child.deleteChildren();
             child.dealloc();
         }
@@ -566,17 +726,18 @@ template <int D> void MWNode<D>::deleteChildren() {
     this->setIsLeafNode();
 }
 
-/** Recursive deallocation of parent and all their forefathers. */
-template <int D> void MWNode<D>::deleteParent() {
+/** @brief Recursive deallocation of parent and all their forefathers. */
+template <int D, typename T> void MWNode<D, T>::deleteParent() {
     if (this->parent == nullptr) return;
-    MWNode<D> &parent = getMWParent();
+    MWNode<D, T> &parent = getMWParent();
     parent.deleteParent();
     parent.dealloc();
     this->parentSerialIx = -1;
     this->parent = nullptr;
 }
 
-template <int D> void MWNode<D>::deleteGenerated() {
+/** @brief Deallocation of all generated nodes . */
+template <int D, typename T> void MWNode<D, T>::deleteGenerated() {
     if (this->isBranchNode()) {
         if (this->isEndNode()) {
             this->deleteChildren();
@@ -586,16 +747,18 @@ template <int D> void MWNode<D>::deleteGenerated() {
     }
 }
 
-template <int D> Coord<D> MWNode<D>::getCenter() const {
+/** @brief returns the coordinates of the centre of the node */
+template <int D, typename T> Coord<D> MWNode<D, T>::getCenter() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
     auto &l = getNodeIndex();
     auto r = Coord<D>{};
-    for (int d = 0; d < D; d++) r[d] = scaling_factor[d]*two_n*(l[d] + 0.5);
+    for (int d = 0; d < D; d++) r[d] = scaling_factor[d] * two_n * (l[d] + 0.5);
     return r;
 }
 
-template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
+/** @brief returns the upper bounds of the D-interval defining the node  */
+template <int D, typename T> Coord<D> MWNode<D, T>::getUpperBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
     auto &l = getNodeIndex();
@@ -604,7 +767,8 @@ template <int D> Coord<D> MWNode<D>::getUpperBounds() const {
     return ub;
 }
 
-template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
+/** @brief returns the lower bounds of the D-interval defining the node  */
+template <int D, typename T> Coord<D> MWNode<D, T>::getLowerBounds() const {
     auto two_n = std::pow(2.0, -getScale());
     auto scaling_factor = getMWTree().getMRA().getWorldBox().getScalingFactors();
     auto &l = getNodeIndex();
@@ -613,13 +777,15 @@ template <int D> Coord<D> MWNode<D>::getLowerBounds() const {
     return lb;
 }
 
-/** Routine to find the path along the tree.
+/** @brief Routine to find the path along the tree.
  *
- * Given the translation indices at the final scale, computes the child m
+ * @param[in] nIdx: the sought after node through its NodeIndex
+ *
+ * @details Given the translation indices at the final scale, computes the child m
  * to be followed at the current scale in oder to get to the requested
  * node at the final scale. The result is the index of the child needed.
  * The index is obtained by bit manipulation of of the translation indices. */
-template <int D> int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
+template <int D, typename T> int MWNode<D, T>::getChildIndex(const NodeIndex<D> &nIdx) const {
     assert(isAncestor(nIdx));
     int cIdx = 0;
     int diffScale = nIdx.getScale() - getScale() - 1;
@@ -633,11 +799,13 @@ template <int D> int MWNode<D>::getChildIndex(const NodeIndex<D> &nIdx) const {
     return cIdx;
 }
 
-/** Routine to find the path along the tree.
+/** @brief Routine to find the path along the tree.
  *
- * Given a point in space, determines which child should be followed
+ * @param[in] r: the sought after node through the coordinates of a point in space
+ *
+ * @detailsGiven a point in space, determines which child should be followed
  * to get to the corresponding terminal node. */
-template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
+template <int D, typename T> int MWNode<D, T>::getChildIndex(const Coord<D> &r) const {
     assert(hasCoord(r));
     int cIdx = 0;
     double sFac = std::pow(2.0, -getScale());
@@ -650,19 +818,44 @@ template <int D> int MWNode<D>::getChildIndex(const Coord<D> &r) const {
     return cIdx;
 }
 
-template <int D> void MWNode<D>::getPrimitiveQuadPts(MatrixXd &pts) const {
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+ *
+ * @details The original quadrature points are fetched and then
+ * dilated and translated. For each cartesian direction \f$ \alpha =
+ * x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i =
+ * 2^{-n} (x_i + l^\alpha \f$. By taking all possible
+ * \f$(k+1)^d\f$ combinations, they will then define a d-dimensional
+ * grid of quadrature points.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::getPrimitiveQuadPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
-    pts = MatrixXd::Zero(kp1, D);
+    pts = MatrixXd::Zero(D, kp1);
 
     getQuadratureCache(qc);
     const VectorXd &roots = qc.getRoots(kp1);
 
     double sFac = std::pow(2.0, -getScale());
     const NodeIndex<D> &l = getNodeIndex();
-    for (int d = 0; d < D; d++) pts.col(d) = sFac * (roots.array() + static_cast<double>(l[d]));
+    for (int d = 0; d < D; d++) pts.row(d) = sFac * (roots.array() + static_cast<double>(l[d]));
 }
 
-template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+ *
+ * @details The original quadrature points are fetched and then
+ * dilated and translated to match the quadrature points in the
+ * children of the given node. For each cartesian direction \f$ \alpha = x,y,z... \f$
+ * the set of quadrature points becomes \f$ x^\alpha_i = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha) \f$, where \f$ t^\alpha =
+ * 0,1 \f$. By taking all possible \f$(k+1)^d\combinations \f$, they will
+ * then define a d-dimensional grid of quadrature points for the child
+ * nodes.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::getPrimitiveChildPts(MatrixXd &pts) const {
     int kp1 = this->getKp1();
     pts = MatrixXd::Zero(D, 2 * kp1);
 
@@ -677,7 +870,17 @@ template <int D> void MWNode<D>::getPrimitiveChildPts(MatrixXd &pts) const {
     }
 }
 
-template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times
+ * (k+1)^d \f$ matrix form.
+ *
+ * @details The primitive quadrature points are used to obtain a
+ * tensor-product representation collecting all \f$ (k+1)^d \f$
+ * vectors of quadrature points.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::getExpandedQuadPts(Eigen::MatrixXd &pts) const {
     MatrixXd prim_pts;
     getPrimitiveQuadPts(prim_pts);
 
@@ -691,7 +894,17 @@ template <int D> void MWNode<D>::getExpandedQuadPts(Eigen::MatrixXd &pts) const 
     if (D >= 4) NOT_IMPLEMENTED_ABORT;
 }
 
-template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
+/** @brief Returns the quadrature points in a given node
+ *
+ * @param[in,out] pts: expanded quadrature points in a \f$ d \times
+ * 2^d(k+1)^d \f$ matrix form.
+ *
+ * @details The primitive quadrature points of the children are used to obtain a
+ * tensor-product representation collecting all \f$ 2^d (k+1)^d \f$
+ * vectors of quadrature points.
+ *
+ */
+template <int D, typename T> void MWNode<D, T>::getExpandedChildPts(MatrixXd &pts) const {
     MatrixXd prim_pts;
     getPrimitiveChildPts(prim_pts);
 
@@ -715,13 +928,17 @@ template <int D> void MWNode<D>::getExpandedChildPts(MatrixXd &pts) const {
     }
 }
 
-/** Const version of node retriever that NEVER generates.
+/** @brief Const version of node retriever that NEVER generates.
  *
+ * @param[in] idx: the requested NodeIndex
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
- * node and ASSUMES the requested node is in fact decending from this node. */
-template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) const {
+ * node and ASSUMES the requested node is in fact decending from this node.
+ */
+template <int D, typename T> const MWNode<D, T> *MWNode<D, T>::retrieveNodeNoGen(const NodeIndex<D> &idx) const {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
         return this;
@@ -735,13 +952,17 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
-/** Node retriever that NEVER generates.
+/** @brief Node retriever that NEVER generates.
  *
+ * @param[in] idx: the requested NodeIndex
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine returns the appropriate Node, or a NULL pointer if
  * the node does not exist, or if it is a GenNode. Recursion starts at at this
- * node and ASSUMES the requested node is in fact decending from this node. */
-template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
+ * node and ASSUMES the requested node is in fact decending from this node.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNodeNoGen(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
         return this;
@@ -755,28 +976,56 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeNoGen(const NodeIndex<D> &idx
     return this->children[cIdx]->retrieveNodeNoGen(idx);
 }
 
-template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
-    if (getDepth() == depth or this->isEndNode()) { return this; }
-    int cIdx = getChildIndex(r);
-    assert(this->children[cIdx] != nullptr);
-    return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
-}
-
-/** Node retriever that return requested Node or EndNode.
+/** @brief Node retriever that returns requested Node or EndNode (const version).
  *
- * Recursive routine to find and return the node with a given NodeIndex.
- * This routine returns the appropriate Node, or the EndNode on the
- * path to the requested node, and will never create or return GenNodes.
- * Recursion starts at at this node and ASSUMES the requested node is in fact
- * decending from this node. */
-template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
+template <int D, typename T> const MWNode<D, T> *MWNode<D, T>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) const {
     if (getDepth() == depth or this->isEndNode()) { return this; }
     int cIdx = getChildIndex(r);
     assert(this->children[cIdx] != nullptr);
     return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
 }
 
-template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) const {
+/** @brief Node retriever that returns requested Node or EndNode.
+ *
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNodeOrEndNode(const Coord<D> &r, int depth) {
+    if (getDepth() == depth or this->isEndNode()) { return this; }
+    int cIdx = getChildIndex(r);
+    assert(this->children[cIdx] != nullptr);
+    return this->children[cIdx]->retrieveNodeOrEndNode(r, depth);
+}
+
+/** @brief Node retriever that returns requested Node or EndNode (const version).
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
+template <int D, typename T> const MWNode<D, T> *MWNode<D, T>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) const {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
         return this;
@@ -790,7 +1039,19 @@ template <int D> const MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeInd
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
-template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
+/** @brief Node retriever that returns requested Node or EndNode.
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
+ * Recursive routine to find and return the node given the
+ * coordinates of a point in space.  This routine returns the
+ * appropriate Node, or the EndNode on the path to the requested node,
+ * and will never create or return GenNodes.  Recursion starts at at
+ * this node and ASSUMES the requested node is in fact decending from
+ * this node.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNodeOrEndNode(const NodeIndex<D> &idx) {
     if (getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
         return this;
@@ -804,13 +1065,18 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNodeOrEndNode(const NodeIndex<D> 
     return this->children[cIdx]->retrieveNodeOrEndNode(idx);
 }
 
-/** Node retriever that ALWAYS returns the requested node.
+/** @brief Node retriever that ALWAYS returns the requested node.
  *
+ * @param[in] r: the coordinates of a point in the node
+ * @param[in] depth: the depth which one needs to descend
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex.
  * This routine always returns the appropriate node, and will generate nodes
  * that does not exist. Recursion starts at this node and ASSUMES the
- * requested node is in fact decending from this node. */
-template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth) {
+ * requested node is in fact decending from this node.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNode(const Coord<D> &r, int depth) {
     if (depth < 0) MSG_ABORT("Invalid argument");
 
     if (getDepth() == depth) { return this; }
@@ -821,34 +1087,55 @@ template <int D> MWNode<D> *MWNode<D>::retrieveNode(const Coord<D> &r, int depth
     return this->children[cIdx]->retrieveNode(r, depth);
 }
 
-/** Node retriever that ALWAYS returns the requested node, possibly without coefs.
+/** @brief Node retriever that ALWAYS returns the requested node, possibly without coefs.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
- * node is in fact decending from this node. */
-template <int D> MWNode<D> *MWNode<D>::retrieveNode(const NodeIndex<D> &idx) {
+ * node is in fact descending from this node.
+ * If create = true, the nodes are permanently added to the tree.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveNode(const NodeIndex<D> &idx, bool create) {
     if (getScale() == idx.getScale()) { // we're done
+        if (tree->isLocal) {
+            NOT_IMPLEMENTED_ABORT;
+            // has to fetch coeff in Bank. NOT USED YET
+            // int ncoefs = (1 << D) * this->getKp1_d();
+            // coefs = new double[ncoefs]; // TODO must be cleaned at some stage
+            // coefs = new double[ncoefs]; // TODO must be cleaned at some stage
+            // tree->getNodeCoeff(idx, coefs);
+        }
         assert(getNodeIndex() == idx);
         return this;
     }
 
     assert(isAncestor(idx));
-    threadSafeGenChildren();
+    if (create) {
+        threadSafeCreateChildren();
+    } else {
+        threadSafeGenChildren();
+    }
     int cIdx = getChildIndex(idx);
     assert(this->children[cIdx] != nullptr);
-    return this->children[cIdx]->retrieveNode(idx);
+    return this->children[cIdx]->retrieveNode(idx, create);
 }
 
 /** Node retriever that ALWAYS returns the requested node.
  *
  * WARNING: This routine is NOT thread safe! Must be used within omp critical.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find and return the node with a given NodeIndex. This
  * routine always returns the appropriate node, and will generate nodes that
  * does not exist. Recursion starts at this node and ASSUMES the requested
- * node is in fact related to this node. */
-template <int D> MWNode<D> *MWNode<D>::retrieveParent(const NodeIndex<D> &idx) {
+ * node is in fact related to this node.
+ */
+template <int D, typename T> MWNode<D, T> *MWNode<D, T>::retrieveParent(const NodeIndex<D> &idx) {
     if (getScale() < idx.getScale()) MSG_ABORT("Scale error")
     if (getScale() == idx.getScale()) return this;
     if (this->parent == nullptr) {
@@ -858,12 +1145,16 @@ template <int D> MWNode<D> *MWNode<D>::retrieveParent(const NodeIndex<D> &idx) {
     return this->parent->retrieveParent(idx);
 }
 
-/** Gives the norm (absolute value) of the node at the given NodeIndex.
+/** @brief Gives the norm (absolute value) of the node at the given NodeIndex.
  *
+ * @param[in] idx: the NodeIndex of the requested node
+ *
+ * @details
  * Recursive routine to find the node with a given NodeIndex. When an EndNode is
  * found, do not generate any new node, but rather give the value of the norm
- * assuming the function is uniformly distributed within the node. */
-template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
+ * assuming the function is uniformly distributed within the node.
+ */
+template <int D, typename T> double MWNode<D, T>::getNodeNorm(const NodeIndex<D> &idx) const {
     if (this->getScale() == idx.getScale()) { // we're done
         assert(getNodeIndex() == idx);
         return std::sqrt(this->squareNorm);
@@ -877,8 +1168,11 @@ template <int D> double MWNode<D>::getNodeNorm(const NodeIndex<D> &idx) const {
     return this->children[cIdx]->getNodeNorm(idx);
 }
 
-/** Test if a given coordinate is within the boundaries of the node. */
-template <int D> bool MWNode<D>::hasCoord(const Coord<D> &r) const {
+/** @brief Test if a given coordinate is within the boundaries of the node.
+ *
+ * @param[in] r: point coordinates
+ */
+template <int D, typename T> bool MWNode<D, T>::hasCoord(const Coord<D> &r) const {
     double sFac = std::pow(2.0, -getScale());
     const NodeIndex<D> &l = getNodeIndex();
     //    println(1, "[" << r[0] << "," << r[1] << "," << r[2] << "]");
@@ -896,7 +1190,7 @@ template <int D> bool MWNode<D>::hasCoord(const Coord<D> &r) const {
 
 /** Testing if nodes are compatible wrt NodeIndex and Tree (order, rootScale,
  * relPrec, etc). */
-template <int D> bool MWNode<D>::isCompatible(const MWNode<D> &node) {
+template <int D, typename T> bool MWNode<D, T>::isCompatible(const MWNode<D, T> &node) {
     NOT_IMPLEMENTED_ABORT;
     //    if (nodeIndex != node.nodeIndex) {
     //        println(0, "nodeIndex mismatch" << std::endl);
@@ -909,9 +1203,12 @@ template <int D> bool MWNode<D>::isCompatible(const MWNode<D> &node) {
     //    return true;
 }
 
-/** Test if the node is decending from a given NodeIndex, that is, if they have
- * overlapping support. */
-template <int D> bool MWNode<D>::isAncestor(const NodeIndex<D> &idx) const {
+/** @brief Test if the node is decending from a given NodeIndex, that is, if they have
+ * overlapping support.
+ *
+ * @param[in] idx: the NodeIndex of the requested node
+ */
+template <int D, typename T> bool MWNode<D, T>::isAncestor(const NodeIndex<D> &idx) const {
     int relScale = idx.getScale() - getScale();
     if (relScale < 0) return false;
     const NodeIndex<D> &l = getNodeIndex();
@@ -922,11 +1219,15 @@ template <int D> bool MWNode<D>::isAncestor(const NodeIndex<D> &idx) const {
     return true;
 }
 
-template <int D> bool MWNode<D>::isDecendant(const NodeIndex<D> &idx) const {
+template <int D, typename T> bool MWNode<D, T>::isDecendant(const NodeIndex<D> &idx) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
-template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
+/** @brief printout ofm the node content.
+ *
+ * @param[in] o: the output stream
+ */
+template <int D, typename T> std::ostream &MWNode<D, T>::print(std::ostream &o) const {
     std::string flags = "       ";
     o << getNodeIndex();
     if (isRootNode()) flags[0] = 'R';
@@ -953,38 +1254,43 @@ template <int D> std::ostream &MWNode<D>::print(std::ostream &o) const {
 
 /** @brief recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
  *
- * @details normalization is such that a constant function gives constant value,
+ * @details
+ * normalization is such that a constant function gives constant value,
  * i.e. *not* same normalization as a squareNorm
  */
-template <int D> void MWNode<D>::setMaxSquareNorm() {
+template <int D, typename T> void MWNode<D, T>::setMaxSquareNorm() {
     auto n = this->getScale();
     this->maxWSquareNorm = calcScaledWSquareNorm();
     this->maxSquareNorm = calcScaledSquareNorm();
 
     if (not this->isEndNode()) {
         for (int i = 0; i < this->getTDim(); i++) {
-            MWNode<D> &child = *this->children[i];
+            MWNode<D, T> &child = *this->children[i];
             child.setMaxSquareNorm();
             this->maxSquareNorm = std::max(this->maxSquareNorm, child.maxSquareNorm);
             this->maxWSquareNorm = std::max(this->maxWSquareNorm, child.maxWSquareNorm);
         }
     }
 }
-/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1 */
-template <int D> void MWNode<D>::resetMaxSquareNorm() {
+/** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1
+ */
+template <int D, typename T> void MWNode<D, T>::resetMaxSquareNorm() {
     auto n = this->getScale();
     this->maxSquareNorm = -1.0;
     this->maxWSquareNorm = -1.0;
     if (not this->isEndNode()) {
         for (int i = 0; i < this->getTDim(); i++) {
-            MWNode<D> &child = *this->children[i];
+            MWNode<D, T> &child = *this->children[i];
             child.resetMaxSquareNorm();
         }
     }
 }
 
-template class MWNode<1>;
-template class MWNode<2>;
-template class MWNode<3>;
+template class MWNode<1, double>;
+template class MWNode<2, double>;
+template class MWNode<3, double>;
+template class MWNode<1, ComplexDouble>;
+template class MWNode<2, ComplexDouble>;
+template class MWNode<3, ComplexDouble>;
 
 } // namespace mrcpp

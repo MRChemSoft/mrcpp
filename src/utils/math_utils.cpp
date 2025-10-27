@@ -171,18 +171,26 @@ void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Ar) = A(i) * A; }
 }
 
-void math_utils::apply_filter(double *out, double *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
-#ifdef HAVE_BLAS
-    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, kp1_dm1, kp1, kp1, 1.0, in, kp1, filter.data(), kp1, fac, out, kp1_dm1);
-#else
-    Map<MatrixXd> f(in, kp1, kp1_dm1);
-    Map<MatrixXd> g(out, kp1_dm1, kp1);
-    if (fac < MachineZero) {
-        g.noalias() = f.transpose() * filter;
-    } else {
-        g.noalias() += f.transpose() * filter;
-    }
-#endif
+/** Matrix multiplication of the filter with the input coefficients */
+template <typename T> void math_utils::apply_filter(T *out, T *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
+    if constexpr (std::is_same<T, double>::value) {
+        Map<MatrixXd> f(in, kp1, kp1_dm1);
+        Map<MatrixXd> g(out, kp1_dm1, kp1);
+        if (fac < MachineZero) {
+            g.noalias() = f.transpose() * filter;
+        } else {
+            g.noalias() += f.transpose() * filter;
+        }
+    } else if constexpr (std::is_same<T, ComplexDouble>::value) {
+        Map<MatrixXcd> f(in, kp1, kp1_dm1);
+        Map<MatrixXcd> g(out, kp1_dm1, kp1);
+        if (fac < MachineZero) {
+            g.noalias() = f.transpose() * filter;
+        } else {
+            g.noalias() += f.transpose() * filter;
+        }
+    } else
+        NOT_IMPLEMENTED_ABORT;
 }
 
 /** Make a nD-representation from 1D-representations of separable functions.
@@ -224,6 +232,63 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
             }
         }
     }
+}
+
+/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix
+ *
+ * @param A: matrix to diagonalize (not modified)
+ * @param b: vector to store eigenvalues
+ *
+ * Returns the matrix of eigenvectors and stores the eigenvalues in the input vector.
+ */
+ComplexMatrix math_utils::diagonalize_hermitian_matrix(const ComplexMatrix &A, DoubleVector &diag) {
+    Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(A.cols());
+    es.compute(A);
+    diag = es.eigenvalues();  // real
+    return es.eigenvectors(); // complex
+}
+
+/** @brief Compute the power of a Hermitian matrix
+ *
+ * @param A: matrix
+ * @param b: exponent
+ *
+ * The matrix is first diagonalized, then the diagonal elements are raised
+ * to the given power, and the diagonalization is reversed. Sanity check for
+ * eigenvalues close to zero, necessary for negative exponents in combination
+ * with slightly negative eigenvalues.
+ */
+ComplexMatrix math_utils::hermitian_matrix_pow(const ComplexMatrix &A, double b) {
+    DoubleVector diag;
+    ComplexMatrix U = diagonalize_hermitian_matrix(A, diag);
+
+    DoubleMatrix B = DoubleMatrix::Zero(A.rows(), A.cols());
+    for (int i = 0; i < diag.size(); i++) {
+        if (std::abs(diag(i)) < mrcpp::MachineZero) {
+            B(i, i) = 0.0;
+        } else {
+            B(i, i) = std::pow(diag(i), b);
+        }
+    }
+    return U * B * U.adjoint();
+}
+
+/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix block
+ *
+ * @param A: matrix to diagonalize (updated in place)
+ * @param U: matrix of eigenvectors
+ * @param nstart: upper left corner of block
+ * @param nsize: size of block
+ *
+ * Assumes that the given block is a proper Hermitian sub matrix.
+ */
+void math_utils::diagonalize_block(ComplexMatrix &A, ComplexMatrix &U, int nstart, int nsize) {
+    Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(nsize);
+    es.compute(A.block(nstart, nstart, nsize, nsize));
+    ComplexMatrix ei_vec = es.eigenvectors();
+    ComplexVector ei_val = es.eigenvalues().cast<ComplexDouble>();
+    U.block(nstart, nstart, nsize, nsize) = ei_vec;
+    A.block(nstart, nstart, nsize, nsize) = ei_val.asDiagonal();
 }
 
 /** Calculate the distance between two points in n-dimensions */
@@ -268,6 +333,9 @@ template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std
     }
     return output;
 }
+
+template void math_utils::apply_filter<double>(double *out, double *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
+template void math_utils::apply_filter<ComplexDouble>(ComplexDouble *out, ComplexDouble *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 
 template double math_utils::calc_distance<1>(const Coord<1> &a, const Coord<1> &b);
 template double math_utils::calc_distance<2>(const Coord<2> &a, const Coord<2> &b);

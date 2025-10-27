@@ -1,7 +1,16 @@
-# Prepare "Catch" library for other executables, if not already available
-if(NOT TARGET Catch)
-  add_library(Catch INTERFACE)
-  target_include_directories(Catch INTERFACE ${PROJECT_SOURCE_DIR}/external/catch)
+find_package( Catch2 3.0.1 CONFIG)
+if( NOT Catch2_FOUND )
+  message( STATUS "Could NOT Find Catch2 (Building v3.8.0 Locally)" )
+  include( FetchContent )
+  FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.8.0
+  )
+  set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(catch2)
+else()
+  message( STATUS "Found Catch2 VERSION ${Catch2_VERSION} DIR ${Catch2_DIR}" )
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -15,8 +24,7 @@ add_subdirectory(trees)
 add_subdirectory(scalingfactor)
 
 target_link_libraries(mrcpp-tests
-  mrcpp
-  Catch
+  PUBLIC mrcpp Catch2::Catch2WithMain
   )
 
 # RPATH fixing

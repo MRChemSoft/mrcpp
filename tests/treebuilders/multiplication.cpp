@@ -23,7 +23,7 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-#include "catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include "factory_functions.h"
 
@@ -41,9 +41,15 @@ template <int D> void testMultiplication();
 template <int D> void testSquare();
 
 SCENARIO("Multiplying MW trees", "[multiplication], [tree_builder]") {
-    GIVEN("Two MW functions in 1D") { testMultiplication<1>(); }
-    GIVEN("Two MW functions in 2D") { testMultiplication<2>(); }
-    GIVEN("Two MW functions in 3D") { testMultiplication<3>(); }
+    GIVEN("Two MW functions in 1D") {
+        testMultiplication<1>();
+    }
+    GIVEN("Two MW functions in 2D") {
+        testMultiplication<2>();
+    }
+    GIVEN("Two MW functions in 3D") {
+        testMultiplication<3>();
+    }
 }
 
 template <int D> void testMultiplication() {
@@ -95,9 +101,9 @@ template <int D> void testMultiplication() {
             double c_int = c_tree.integrate();
             double c_dot = dot(c_tree, ref_tree);
             double c_norm = c_tree.getSquareNorm();
-            REQUIRE(c_int == Approx(ref_int));
-            REQUIRE(c_dot == Approx(ref_norm));
-            REQUIRE(c_norm == Approx(ref_norm));
+            REQUIRE(c_int == Catch::Approx(ref_int));
+            REQUIRE(c_dot == Catch::Approx(ref_norm));
+            REQUIRE(c_norm == Catch::Approx(ref_norm));
         }
     }
     WHEN("the functions are multiplied in-place") {
@@ -107,18 +113,24 @@ template <int D> void testMultiplication() {
             double a_int = a_tree.integrate();
             double a_dot = dot(a_tree, ref_tree);
             double a_norm = a_tree.getSquareNorm();
-            REQUIRE(a_int == Approx(ref_int));
-            REQUIRE(a_dot == Approx(ref_norm));
-            REQUIRE(a_norm == Approx(ref_norm));
+            REQUIRE(a_int == Catch::Approx(ref_int));
+            REQUIRE(a_dot == Catch::Approx(ref_norm));
+            REQUIRE(a_norm == Catch::Approx(ref_norm));
         }
     }
     finalize(&mra);
 }
 
 SCENARIO("Squaring MW trees", "[square], [tree_builder]") {
-    GIVEN("A MW function in 1D") { testSquare<1>(); }
-    GIVEN("A MW function in 2D") { testSquare<2>(); }
-    GIVEN("A MW function in 3D") { testSquare<3>(); }
+    GIVEN("A MW function in 1D") {
+        testSquare<1>();
+    }
+    GIVEN("A MW function in 2D") {
+        testSquare<2>();
+    }
+    GIVEN("A MW function in 3D") {
+        testSquare<3>();
+    }
 }
 
 template <int D> void testSquare() {
@@ -158,9 +170,9 @@ template <int D> void testSquare() {
             double ff_int = ff_tree.integrate();
             double ff_dot = dot(ff_tree, ref_tree);
             double ff_norm = ff_tree.getSquareNorm();
-            REQUIRE(ff_int == Approx(ref_int));
-            REQUIRE(ff_dot == Approx(ref_norm));
-            REQUIRE(ff_norm == Approx(ref_norm));
+            REQUIRE(ff_int == Catch::Approx(ref_int));
+            REQUIRE(ff_dot == Catch::Approx(ref_norm));
+            REQUIRE(ff_norm == Catch::Approx(ref_norm));
         }
     }
     WHEN("the function is squared in-place") {
@@ -170,9 +182,9 @@ template <int D> void testSquare() {
             double f_int = f_tree.integrate();
             double f_dot = dot(f_tree, ref_tree);
             double f_norm = f_tree.getSquareNorm();
-            REQUIRE(f_int == Approx(ref_int));
-            REQUIRE(f_dot == Approx(ref_norm));
-            REQUIRE(f_norm == Approx(ref_norm));
+            REQUIRE(f_int == Catch::Approx(ref_int));
+            REQUIRE(f_dot == Catch::Approx(ref_norm));
+            REQUIRE(f_norm == Catch::Approx(ref_norm));
         }
     }
     WHEN("the function is raised to the second power out-of-place") {
@@ -183,9 +195,9 @@ template <int D> void testSquare() {
             double ff_int = ff_tree.integrate();
             double ff_dot = dot(ff_tree, ref_tree);
             double ff_norm = ff_tree.getSquareNorm();
-            REQUIRE(ff_int == Approx(ref_int));
-            REQUIRE(ff_dot == Approx(ref_norm));
-            REQUIRE(ff_norm == Approx(ref_norm));
+            REQUIRE(ff_int == Catch::Approx(ref_int));
+            REQUIRE(ff_dot == Catch::Approx(ref_norm));
+            REQUIRE(ff_norm == Catch::Approx(ref_norm));
         }
     }
     WHEN("the function is raised to second power in-place") {
@@ -195,9 +207,9 @@ template <int D> void testSquare() {
             double f_int = f_tree.integrate();
             double f_dot = dot(f_tree, ref_tree);
             double f_norm = f_tree.getSquareNorm();
-            REQUIRE(f_int == Approx(ref_int));
-            REQUIRE(f_dot == Approx(ref_norm));
-            REQUIRE(f_norm == Approx(ref_norm));
+            REQUIRE(f_int == Catch::Approx(ref_int));
+            REQUIRE(f_dot == Catch::Approx(ref_norm));
+            REQUIRE(f_norm == Catch::Approx(ref_norm));
         }
     }
     finalize(&mra);
@@ -226,9 +238,9 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     FunctionTree<3> fy_tree(*mra);
     FunctionTree<3> fz_tree(*mra);
 
-    project<3>(prec, fx_tree, fx);
-    project<3>(prec, fy_tree, fy);
-    project<3>(prec, fz_tree, fz);
+    project<3, double>(prec, fx_tree, fx);
+    project<3, double>(prec, fy_tree, fy);
+    project<3, double>(prec, fz_tree, fz);
 
     FunctionTreeVector<3> vec_a;
     vec_a.push_back(std::make_tuple(1.0, &fx_tree));
@@ -248,7 +260,7 @@ TEST_CASE("Dot product FunctionTreeVectors", "[multiplication], [tree_vector_dot
     for (int i = 0; i < 10; i++) {
         const Coord<3> r = {-0.4 + 0.01 * i, 0.9 - 0.05 * i, 0.7 + 0.1 * i};
         const double ref = 1.0 * fx(r) * fz(r) + 4.0 * fy(r) * fy(r) + 9.0 * fz(r) * fx(r);
-        REQUIRE(dot_ab.evalf(r) == Approx(ref).margin(prec));
+        REQUIRE(dot_ab.evalf(r) == Catch::Approx(ref).margin(prec));
     }
 
     finalize(&mra);

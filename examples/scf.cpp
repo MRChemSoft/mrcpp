@@ -21,17 +21,14 @@ void setupNuclearPotential(double Z, FunctionTree<D> &V) {
 
     // Smoothing parameter
     auto c = 0.00435 * prec / std::pow(Z, 5);
-    auto u = [](double r) -> double {
-        return std::erf(r) / r +
-               1.0 / (3.0 * std::sqrt(mrcpp::pi)) * (std::exp(-r * r) + 16.0 * std::exp(-4.0 * r * r));
-    };
+    auto u = [](double r) -> double { return std::erf(r) / r + 1.0 / (3.0 * std::sqrt(mrcpp::pi)) * (std::exp(-r * r) + 16.0 * std::exp(-4.0 * r * r)); };
     auto f = [u, c, Z](const Coord<3> &r) -> double {
         auto x = std::sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
         return -1.0 * Z * u(x / c) / c;
     };
 
     // Projecting function
-    project<D>(prec, V, f);
+    project<D, double>(prec, V, f);
 
     print::footer(0, timer, 2);
     Printer::setPrintLevel(oldlevel);
@@ -48,7 +45,7 @@ void setupInitialGuess(FunctionTree<D> &phi) {
     };
 
     // Projecting and normalizing function
-    project<D>(prec, phi, f);
+    project<D, double>(prec, phi, f);
     phi.normalize();
 
     print::footer(0, timer, 2);

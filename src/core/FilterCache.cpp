@@ -24,13 +24,32 @@
  */
 
 /*
+ *  File purpose (high level)
+ *  -------------------------
+ *  This file implements a small, thread-safe cache for MWFilter objects
+ *  (multiwavelet filter banks) keyed by polynomial order. The cache is
+ *  parameterized by filter family via the template parameter T (e.g.,
+ *  Interpol or Legendre).
  *
+ *  Motivation:
+ *    Loading/constructing MWFilter(order, type) may involve I/O and setup.
+ *    Reusing the same filter for repeated calls is faster and reduces memory
+ *    churn. This cache ensures a single instance per (order, type).
  *
- *  \date Jul 8, 2009
- *  \author Jonas Juselius <jonas.juselius@uit.no> \n
- *          CTCC, University of Tromsø
+ *  Concurrency:
+ *    - Uses MRCPP_SET_OMP_LOCK / MRCPP_UNSET_OMP_LOCK to serialize the
+ *      first-time construction and insertion into the cache.
+ *    - After an entry exists, get() returns it without reloading.
  *
- * \breif
+ *  Memory accounting:
+ *    - A rough memory footprint (in bytes) is computed as
+ *        f->getFilter().size() * sizeof(double)
+ *      and passed to the base ObjectCache for bookkeeping/eviction policy.
+ *
+ *  Template parameter T:
+ *    - Must be a valid family tag (Interpol or Legendre).
+ *    - The explicit instantiations at the end of the file make sure code for
+ *      these two variants is emitted by the compiler.
  */
 
 #include "FilterCache.h"
@@ -42,6 +61,14 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/*
+ * Constructor
+ * -----------
+ * Determine the runtime 'type' field from the compile-time template parameter T.
+ * If T is not a recognized family, emit an error. Valid values are:
+ *   - Interpol : interpolatory multiwavelet family
+ *   - Legendre : Legendre multiwavelet family
+ */
 template <int T> FilterCache<T>::FilterCache() {
     switch (T) {
         case (Interpol):
@@ -55,6 +82,20 @@ template <int T> FilterCache<T>::FilterCache() {
     }
 }
 
+/*
+ * load(order)
+ * -----------
+ * Ensure that an MWFilter for the given 'order' exists in the cache. If not,
+ * construct it and insert it along with a memory estimate.
+ *
+ * Steps:
+ *   1) Acquire OpenMP lock to prevent concurrent insertions.
+ *   2) Check presence via hasId(order). If absent:
+ *        - Allocate MWFilter(order, type).
+ *        - Compute 'memo' as (#elements) * sizeof(double).
+ *        - Insert into base ObjectCache keyed by 'order'.
+ *   3) Release the lock.
+ */
 template <int T> void FilterCache<T>::load(int order) {
     MRCPP_SET_OMP_LOCK();
     if (not hasId(order)) {
@@ -65,16 +106,39 @@ template <int T> void FilterCache<T>::load(int order) {
     MRCPP_UNSET_OMP_LOCK();
 }
 
+/*
+ * get(order)
+ * ----------
+ * Retrieve a reference to the cached MWFilter for 'order'; if it doesn't
+ * exist yet, load() is called lazily. The reference is owned by the cache.
+ */
 template <int T> MWFilter &FilterCache<T>::get(int order) {
     if (not hasId(order)) { load(order); }
     return ObjectCache<MWFilter>::get(order);
 }
 
+/*
+ * getFilterMatrix(order)
+ * ----------------------
+ * Convenience accessor: returns a const reference to the underlying filter
+ * matrix for the requested 'order'. Triggers lazy load if necessary.
+ *
+ * Notes:
+ *  - MWFilter::getFilter() is expected to return an Eigen::MatrixXd (or
+ *    compatible type) containing the filter taps laid out as used elsewhere
+ *    in MRCPP.
+ */
 template <int T> const MatrixXd &FilterCache<T>::getFilterMatrix(int order) {
     if (not hasId(order)) { load(order); }
     return ObjectCache<MWFilter>::get(order).getFilter();
 }
 
+/*
+ * Explicit template instantiations
+ * --------------------------------
+ * Instantiate the cache for the two standard families so clients can link
+ * against these symbols without needing to compile this TU with their T.
+ */
 template class FilterCache<Interpol>;
 template class FilterCache<Legendre>;
 

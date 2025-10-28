@@ -10,6 +10,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GaussFunc.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GaussPoly.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Gaussian.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Slater.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/special_functions.cpp
   )
 
@@ -27,6 +28,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/GaussFunc.h
   ${CMAKE_CURRENT_SOURCE_DIR}/GaussPoly.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Gaussian.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/Slater.h
   ${CMAKE_CURRENT_SOURCE_DIR}/special_functions.h
   )
 

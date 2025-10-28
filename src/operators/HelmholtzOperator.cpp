@@ -23,20 +23,42 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file HelmholtzOperator.cpp
+ * @brief Definition of a separable 3D convolution operator approximating the Helmholtz/Yukawa kernel.
+ *
+ * @details
+ * This file implements @ref mrcpp::HelmholtzOperator, a convenience convolution operator
+ * in three spatial dimensions that applies a Gaussian expansion of the radial kernel
+ * \f$ e^{-\mu r}/r \f$. The expansion is built by @ref mrcpp::HelmholtzKernel and
+ * lifted into a separable multiwavelet operator, which can then be applied along the
+ * Cartesian directions.
+ */
+
 #include "HelmholtzOperator.h"
 #include "HelmholtzKernel.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
 
-/** @returns New HelmholtzOperator object
- *  @param[in] mra: Which MRA the operator is defined
- *  @param[in] m: Exponential parameter of the operator
- *  @param[in] pr: Build precision, closeness to exp(-mu*r)/r
- *  @details This will construct a gaussian expansion to approximate
- *  exp(-mu*r)/r, and project each term into a one-dimensional MW operator.
- *  Subsequent application of this operator will apply each of the terms to
- *  the input function in all Cartesian directions.
+/**
+ * @brief Construct a 3D Helmholtz (Yukawa) convolution operator.
+ *
+ * @param mra   The 3D @ref MultiResolutionAnalysis that defines the domain and basis.
+ * @param mu    Screening parameter \f$\mu>0\f$ of the Yukawa kernel.
+ * @param prec  Build precision; controls kernel- and operator-assembly tolerances and,
+ *              indirectly, the separation rank of the Gaussian expansion.
+ *
+ * @details
+ * - Chooses separate tolerances for the kernel projection (@c k_prec = prec/10) and
+ *   the operator assembly (@c o_prec = prec).
+ * - Estimates the admissible radial interval \f$[r_{\min}, r_{\max}]\f$ from @p mra via
+ *   @ref MultiResolutionAnalysis::calcMinDistance and @ref MultiResolutionAnalysis::calcMaxDistance.
+ * - Builds a @ref HelmholtzKernel on that interval with the requested accuracy, then
+ *   calls @ref ConvolutionOperator::initialize to form the separable operator blocks
+ *   and caches them via @ref MWOperator::initOperExp.
+ *
+ * @note The printer level is temporarily reduced during build to keep output concise.
  */
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec)
         : ConvolutionOperator<3>(mra) {
@@ -55,6 +77,31 @@ HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, doub
     Printer::setPrintLevel(oldlevel);
 }
 
+/**
+ * @brief Construct a 3D Helmholtz convolution operator with explicit root and reach.
+ *
+ * @param mra    The 3D @ref MultiResolutionAnalysis.
+ * @param mu     Screening parameter \f$\mu>0\f$.
+ * @param prec   Build precision (as above).
+ * @param root   Operator root scale (coarsest level for the operator support).
+ * @param reach  Operator reach (half-width in levels). For periodic domains this
+ *               sets the operator bandwidth at @p root.
+ *
+ * @details
+ * - Uses a tighter kernel-projection tolerance (@c k_prec = prec/100) while keeping
+ *   the operator-assembly tolerance at @c o_prec = prec.
+ * - Estimates \f$[r_{\min}, r_{\max}]\f$ as in the other constructor, then adjusts
+ *   @c r_max to reflect periodic worlds by scaling with the relative root shift and
+ *   the chosen @p reach:
+ *   \f[
+ *     r_{\max} \leftarrow r_{\max}\, 2^{-(\text{oper\_root} - \text{MRA.root})}
+ *               \times \big( 2\,\text{reach} + 1 \big).
+ *   \f]
+ * - Builds the @ref HelmholtzKernel and initializes the separable operator.
+ *
+ * @note This overload is intended for periodic boundary conditions or scenarios
+ *       where the operator must be confined to a specific scale window.
+ */
 HelmholtzOperator::HelmholtzOperator(const MultiResolutionAnalysis<3> &mra, double mu, double prec, int root, int reach)
         : ConvolutionOperator<3>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);

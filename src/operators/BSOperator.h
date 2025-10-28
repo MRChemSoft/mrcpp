@@ -83,7 +83,7 @@ public:
      *
      * @code
      * MultiResolutionAnalysis<1> mra(...);
-     * BSOperator<1> Dx(mra, /* order = */ 1);  // first derivative in 1D
+     * BSOperator<1> Dx(mra, 1); // first derivative in 1D
      * // apply Dx to a function tree / coefficient vector later...
      * @endcode
      */

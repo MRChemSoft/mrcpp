@@ -23,6 +23,27 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file TimeEvolutionOperator.cpp
+ * @brief Construction of (real/imaginary) parts of the Schrödinger time-evolution
+ *        operator in the multiwavelet framework.
+ *
+ * The implementation builds a separable, multi-resolution representation of the
+ * free-particle time-evolution semigroup
+ * \f[
+ *   U(t) = e^{\, i t \Delta}
+ * \f]
+ * (or its real/imaginary part), using cross-correlation calculators and
+ * precomputed power integrals \f$ \widetilde J_m \f$ (see @ref JpowerIntegrals).
+ * Two build modes are provided:
+ *  - **Adaptive** down to a fixed scale \f$N=18\f$, bounding the number of
+ *    power integrals.
+ *  - **Uniform** down to a user-specified finest scale.
+ *
+ * Assembly follows the standard operator pipeline:
+ * projection/lifting → multiwavelet transform → cache/init of operator blocks.
+ */
+
 #include "TimeEvolutionOperator.h"
 //#include "MRCPP/MWOperators"
 
@@ -56,20 +77,30 @@
 
 namespace mrcpp {
 
-/** @brief A uniform constructor for TimeEvolutionOperator class.
+/**
+ * @brief Uniform constructor.
  *
- * @param[in] mra: MRA.
- * @param[in] prec: precision.
- * @param[in] time: the time moment (step).
- * @param[in] finest_scale: the operator tree is constructed uniformly down to this scale.
- * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
- * @param[in] max_Jpower: maximum amount of power integrals used.
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @param mra            Target @ref MultiResolutionAnalysis defining domain and basis.
+ * @param prec           Build precision for assembly and pruning.
+ * @param time           Time parameter \f$ t \f$ of the semigroup.
+ * @param finest_scale   Uniform build depth (finest level) of the operator tree.
+ * @param imaginary      If `true`, build the imaginary part; otherwise, the real part.
+ * @param max_Jpower     Maximum number of power-integral terms \f$ \widetilde J_m \f$ to retain.
  *
- * @details Constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
- *
+ * @details
+ * Builds a **uniform** operator down to @p finest_scale. Internally sets up a
+ * @ref SchrodingerEvolution_CrossCorrelation calculator and calls
+ * the uniform @ref initialize(double,int,bool,int) overload. The operator
+ * expansion is finalized via @ref initOperExp(1).
  */
 template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower)
+TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                                                double prec,
+                                                double time,
+                                                int finest_scale,
+                                                bool imaginary,
+                                                int max_Jpower)
         : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
@@ -80,27 +111,32 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 
     initialize(time, finest_scale, imaginary, max_Jpower); // will go outside of the constructor in future
 
-    this->initOperExp(1); // this turns out to be important
+    this->initOperExp(1); // Important to finalize component mapping
     Printer::setPrintLevel(oldlevel);
 }
 
-/** @brief An adaptive constructor for TimeEvolutionOperator class.
+/**
+ * @brief Adaptive constructor.
  *
- * @param[in] mra: MRA.
- * @param[in] prec: precision.
- * @param[in] time: the time moment (step).
- * @param[in] imaginary: defines the real (faulse) or imaginary (true) part of the semigroup.
- * @param[in] max_Jpower: maximum amount of power integrals used.
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @param mra         Target @ref MultiResolutionAnalysis.
+ * @param prec        Build precision.
+ * @param time        Time parameter \f$ t \f$ of the semigroup.
+ * @param imaginary   If `true`, build the imaginary part; otherwise, the real part.
+ * @param max_Jpower  Maximum number of power-integral terms \f$ \widetilde J_m \f$ to retain.
  *
- * @details Adaptively constructs either real or imaginary part of the Schrodinger semigroup at a given time moment.
- * It is recommended for use in case of high polynomial order in use of the scaling basis.
- *
- * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
- * This should be weakened in future.
- *
+ * @details
+ * Builds an **adaptive** operator down to a fixed scale \f$N=18\f$, which keeps the number
+ * of necessary power integrals bounded. The assembly uses a
+ * @ref TimeEvolution_CrossCorrelationCalculator fed by a per-scale
+ * map of @ref JpowerIntegrals.
  */
 template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower)
+TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                                                double prec,
+                                                double time,
+                                                bool imaginary,
+                                                int max_Jpower)
         : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
 {
     int oldlevel = Printer::setPrintLevel(0);
@@ -111,20 +147,29 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 
     initialize(time, imaginary, max_Jpower); // will go outside of the constructor in future
 
-    this->initOperExp(1); // this turns out to be important
+    this->initOperExp(1); // Important to finalize component mapping
     Printer::setPrintLevel(oldlevel);
 }
 
-/** @brief Creates Re or Im of operator
+/**
+ * @brief Adaptive build: create real or imaginary part of the operator.
  *
- * @details Adaptive down to scale \f$ N = 18 \f$.
- * This scale limit bounds the amount of JpowerIntegrals
- * to be calculated.
- * @note In future work we plan to optimize calculation of JpowerIntegrals so that we calculate
- * only needed ones, while building the tree (in progress).
+ * @param time        Time parameter \f$ t \f$.
+ * @param imaginary   If `true`, build the imaginary part; otherwise, the real part.
+ * @param max_Jpower  Maximum number of power-integral terms \f$ \widetilde J_m \f$ per scale.
  *
+ * @details
+ * Builds **adaptively** down to scale \f$ N = 18 \f$. For each scale
+ * \f$ n=0,\dots,N+1 \f$ a corresponding @ref JpowerIntegrals object is created
+ * with parameter \f$ a = t\,4^n \f$. The operator is assembled using a
+ * @ref TimeEvolution_CrossCorrelationCalculator and finalized by multiwavelet
+ * transform, rough-scale noise removal, square-norm evaluation, and cache setup.
+ *
+ * @note The fixed depth ensures a bounded number of power integrals while building.
+ * Future work aims to compute only the power integrals actually needed during build.
  */
-template <int D> void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_Jpower) {
+template <int D>
+void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_Jpower) {
     int N = 18;
 
     double o_prec = this->build_prec;
@@ -144,7 +189,7 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, bool ima
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
     o_tree->removeRoughScaleNoise();
-    // o_tree->clearSquareNorm(); //does not affect printing
+    // o_tree->clearSquareNorm(); // does not affect printing
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
 
@@ -156,12 +201,23 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, bool ima
     for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
-/** @brief Creates Re or Im of operator
+/**
+ * @brief Uniform build: create real or imaginary part of the operator.
  *
- * @details Uniform down to finest scale.
+ * @param time          Time parameter \f$ t \f$.
+ * @param finest_scale  Finest (uniform) scale to which the operator tree is constructed.
+ * @param imaginary     If `true`, build the imaginary part; otherwise, the real part.
+ * @param max_Jpower    Maximum number of power-integral terms \f$ \widetilde J_m \f$ per scale.
  *
+ * @details
+ * Builds **uniformly** down to @p finest_scale using a @ref SplitAdaptor.
+ * A threshold of \f$ \text{prec}/1000 \f$ is used while creating
+ * @ref JpowerIntegrals for scales \f$ n=0,\dots,N+1 \f$ with
+ * \f$ a = t\,4^n \f$. The resulting @ref CornerOperatorTree is then transformed,
+ * squared-normed, and cached for later application.
  */
-template <int D> void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower) {
+template <int D>
+void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower) {
     double o_prec = this->build_prec;
     auto o_mra = this->getOperatorMRA();
 
@@ -191,15 +247,21 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, int fine
     for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
-/** @brief Creates Re or Im of operator (in progress)
+/**
+ * @brief Semi-uniform build (prototype; not ready for production).
  *
- * @details Tree construction starts uniformly and then continues adaptively down to scale \f$ N = 18 \f$.
- * This scale limit bounds the amount of JpowerIntegrals
- * to be calculated.
- * @note This method is not ready for use and should not be used (in progress).
+ * @param time        Time parameter \f$ t \f$.
+ * @param imaginary   If `true`, build the imaginary part; otherwise, the real part.
+ * @param max_Jpower  Maximum number of power-integral terms \f$ \widetilde J_m \f$ per scale.
  *
+ * @details
+ * Starts with a small uniform prefix of the operator tree and continues adaptively
+ * down to \f$ N = 18 \f$. **Not implemented**—kept as a placeholder for future work.
+ *
+ * @warning This method deliberately aborts at runtime.
  */
-template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower) {
+template <int D>
+void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower) {
     MSG_ERROR("Not implemented yet method.");
 
     double o_prec = this->build_prec;
@@ -236,6 +298,7 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
     for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
+/* Explicit template instantiations */
 template class TimeEvolutionOperator<1>;
 template class TimeEvolutionOperator<2>;
 template class TimeEvolutionOperator<3>;

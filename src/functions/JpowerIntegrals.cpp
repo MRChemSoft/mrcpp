@@ -25,6 +25,7 @@
 
 #include "JpowerIntegrals.h"
 #include <algorithm> // std::find_if_not
+#include <fftw3.h>
 
 namespace mrcpp {
 
@@ -70,5 +71,83 @@ void JpowerIntegrals::crop(std::vector<std::complex<double>> &J, double threshol
     // Remove negligible elements from the end of the vector
     J.erase(std::find_if_not(J.rbegin(), J.rend(), isNegligible).base(), J.end());
 }
+
+
+
+DerivativePowerIntegrals::DerivativePowerIntegrals(double cut_off, int scaling, int M, double threshold)
+    : scaling(scaling)
+{
+    integrals = calculate_J_power_integrals(cut_off, M, threshold);
+}
+
+
+std::vector<std::vector<double>> DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M, double threshold) {
+    using namespace std::complex_literals;
+    
+    const int N = 1 << this->scaling;
+    const int total_N = 2 * N + 1;
+    const double two_pi = 2.0 * M_PI;
+
+     // --- 2. Frequency grid (same as np.fft.fftfreq) ---
+    std::vector<double> xi_freq(total_N);
+    for (int k = 0; k < total_N; ++k) {
+        double freq = (k <= total_N / 2) ? k : k - total_N;
+        xi_freq[k] = two_pi * freq / total_N;
+    }
+
+    // --- 3. Smooth cutoff function chi_cut ---
+    std::vector<double> chi(total_N);
+    for (int k = 0; k < total_N; ++k) {
+        double abs_xi = std::abs(N * xi_freq[k]);
+        chi[k] = (abs_xi > cut_off)
+            ? std::exp(-std::pow(abs_xi - cut_off, 2))
+            : 1.0;
+    }
+
+    // --- 4. Initialize FFTW arrays ---
+    std::vector<std::complex<double>> f_values(total_N);
+    for (int k = 0; k < total_N; ++k)
+        f_values[k] = chi[k];  // start with chi_cut(ξ)
+
+    std::vector<std::complex<double>> ifft_output(total_N);
+    fftw_plan plan = fftw_plan_dft_1d(
+        total_N,
+        reinterpret_cast<fftw_complex*>(f_values.data()),
+        reinterpret_cast<fftw_complex*>(ifft_output.data()),
+        FFTW_BACKWARD,  // inverse FFT
+        FFTW_ESTIMATE
+    );
+
+    // --- 5. Compute power integrals ---
+    std::vector<std::vector<double>> power_integrals;
+    power_integrals.emplace_back(total_N, 0.0); // dummy for index 0
+
+    for (int m = 1; m < M; ++m) {
+        for (int k = 0; k < total_N; ++k)
+            f_values[k] *= std::complex<double>(0.0, xi_freq[k]) / double(m + 1);
+
+        fftw_execute(plan);
+
+        // normalize and store real part
+        std::vector<double> integral(total_N);
+        for (int k = 0; k < total_N; ++k)
+            integral[k] = ifft_output[k].real() / total_N;
+
+        power_integrals.push_back(std::move(integral));
+    }
+
+    fftw_destroy_plan(plan);
+
+    return power_integrals;
+}
+
+/// @brief in progress
+/// @param index - interger lying in the interval \f$ [ -2^n + 1, \ldots, 2^n - 1 ] \f$.
+/// @return in progress
+std::vector<double> &DerivativePowerIntegrals::operator[](int index) {
+    if (index < 0) index += integrals.size();
+    return integrals[index];
+}
+
 
 } // namespace mrcpp

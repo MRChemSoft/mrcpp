@@ -38,7 +38,7 @@ namespace mrcpp {
  * @brief Declaration of the MultiResolutionAnalysis class template.
  *
  * @details
- * A **MultiResolutionAnalysis (MRA)** bundles the information that must be
+ * A MultiResolutionAnalysis (MRA) bundles the information that must be
  * shared by compatible functions and operators:
  * - the computational domain (see @ref BoundingBox),
  * - the multiresolution scaling basis (see @ref ScalingBasis), and
@@ -52,17 +52,17 @@ namespace mrcpp {
  * using MRA3 = mrcpp::MultiResolutionAnalysis<3>;
  *
  * // Domain: [-4, 4]^3 with automatically chosen root scale
- * mrcpp::BoundingBox<3> world({-4, 4});
+ * mrcpp::BoundingBox<3> world({-4.0, 4.0});
  *
- * // Build a 3D MRA with Legendre order=7 and maxDepth=12
- * mrcpp::ScalingBasis basis(Legendre, /*order=*/7);
- * MRA3 mra(world, basis, /*depth=*/12);
+ * // Build a 3D MRA with Legendre, order = 7, depth = 12
+ * mrcpp::ScalingBasis basis(Legendre, 7);
+ * MRA3 mra(world, basis, 12);
  *
  * // Query information
- * int order     = mra.getOrder();
- * int maxScale  = mra.getMaxScale();
- * auto &box     = mra.getWorldBox();
- * auto &sbasis  = mra.getScalingBasis();
+ * int   order    = mra.getOrder();
+ * int   maxScale = mra.getMaxScale();
+ * auto &box      = mra.getWorldBox();
+ * auto &sbasis   = mra.getScalingBasis();
  * @endcode
  */
 

@@ -23,6 +23,39 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file multiply.cpp
+ * @brief Adaptive algebra on multiresolution (MW) function trees: product,
+ *        square, power, (componentwise) dot, and inner products.
+ *
+ * @details
+ * This module implements a family of adaptive build routines that produce
+ * a new #mrcpp::FunctionTree from algebraic combinations of one or more input
+ * trees. The build is driven by the multiresolution refinement loop
+ * (TreeBuilder + Adaptor + Calculator):
+ *
+ *  - On the current output grid, local contributions are computed by a
+ *    Calculator (e.g. MultiplicationCalculator, SquareCalculator, PowerCalculator).
+ *  - A refinement Adaptor (WaveletAdaptor by default, or MultiplicationAdaptor
+ *    when useMaxNorms is enabled) decides whether to split nodes based on
+ *    requested precision.
+ *  - The refine–recompute process repeats until the target precision is met
+ *    or the iteration limit is reached.
+ *
+ * Precision semantics:
+ *  - Relative precision (absPrec = false): split while |d| is not small
+ *    relative to the function norm.
+ *  - Absolute precision (absPrec = true): split while |d| is above a fixed
+ *    absolute threshold.
+ *
+ * Notes:
+ *  - All routines assume the output tree starts with an empty grid (no coeffs).
+ *    The grid is grown adaptively unless otherwise stated.
+ *  - The input and output trees must belong to compatible MRAs.
+ *  - Some routines can optionally use max-norm estimates from inputs to guide
+ *    refinement (useMaxNorms).
+ */
+
 #include <Eigen/Core>
 
 #include "MultiplicationAdaptor.h"
@@ -44,30 +77,27 @@
 
 namespace mrcpp {
 
-/** @brief Multiplication of two MW function representations, adaptive grid
+/**
+ * @brief Adaptive product of two MW functions with an overall scalar factor.
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] c: Numerical coefficient
- * @param[in] inp_a: Input function a
- * @param[in] inp_b: Input function b
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
- * @param[in] useMaxNorms: Build output tree based on norm estimates from input
+ * @tparam D  Spatial dimension (1, 2, or 3).
+ * @tparam T  Coefficient type (double or ComplexDouble).
  *
- * @details The output function will be computed as the product of the two input
- * functions (including the numerical coefficient), using the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
- * - conjugate is applied on inp_b
+ * @param[in]  prec       Target build precision.
+ * @param[out] out        Output function tree to construct.
+ * @param[in]  c          Scalar prefactor multiplying inp_a * inp_b.
+ * @param[in]  inp_a      First input tree.
+ * @param[in]  inp_b      Second input tree.
+ * @param[in]  maxIter    Max refinement iterations (-1 means unbounded).
+ * @param[in]  absPrec    If true: absolute precision; else relative.
+ * @param[in]  useMaxNorms If true: use MultiplicationAdaptor with local
+ *                         max-norm estimates from inputs for split checks.
+ * @param[in]  conjugate  If true: apply complex conjugation to inp_b during multiplication.
  *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @details
+ * Builds out = c * inp_a * (conjugate ? conj(inp_b) : inp_b) on an adaptively
+ * refined grid. If useMaxNorms is true, each input tree contributes local
+ * estimates (makeMaxSquareNorms) to scale the precision per node.
  */
 template <int D, typename T>
 void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp_a, FunctionTree<D, T> &inp_b, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
@@ -77,31 +107,28 @@ void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp
     multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms, conjugate);
 }
 
-/** @brief Multiplication of several MW function representations, adaptive grid
+/**
+ * @brief Adaptive product of several MW functions (with per-input scalars).
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] inp: Vector of input function
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
- * @param[in] useMaxNorms: Build output tree based on norm estimates from input
+ * @tparam D  Spatial dimension (1, 2, or 3).
+ * @tparam T  Coefficient type.
  *
- * @details The output function will be computed as the product of all input
- * functions in the vector (including their numerical coefficients), using
- * the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
- * - conjugate is applied on all the trees in inp, except the first
+ * @param[in]  prec        Target build precision.
+ * @param[out] out         Output function tree to construct.
+ * @param[in]  inp         Vector of inputs (scalar, tree) pairs.
+ * @param[in]  maxIter     Max refinement iterations (-1 means unbounded).
+ * @param[in]  absPrec     If true: absolute precision; else relative.
+ * @param[in]  useMaxNorms Use norm-based adaptor when true.
+ * @param[in]  conjugate   Conjugate all trees except the first (if complex).
  *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @details
+ * Builds out = (Π_k a_k * f_k) where each (a_k, f_k) is the k-th pair.
+ * If conjugate is true, all factors except the first are conjugated in the
+ * complex case. When useMaxNorms is true, #mrcpp::MultiplicationAdaptor
+ * scales the split threshold by input-node max norms to improve targeting.
  */
-template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
+template <int D, typename T>
+void multiply(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
@@ -135,34 +162,30 @@ template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out,
     print::separator(10, ' ');
 }
 
-template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
+/**
+ * @brief Convenience overload: product of a list of trees (unit coefficients).
+ *
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type.
+ */
+template <int D, typename T>
+void multiply(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
     FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     multiply(prec, out, inp_vec, maxIter, absPrec, useMaxNorms, conjugate);
 }
 
-/** @brief Out-of-place square of MW function representations, adaptive grid
+/**
+ * @brief Adaptive, out-of-place square: out = (conjugate ? conj(inp) : inp)^2.
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] inp: Input function to square
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type.
  *
- * @details The output function will be computed as the square of the input
- * function, using the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
- *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @details
+ * Uses #mrcpp::SquareCalculator over a wavelet-driven adaptive refinement.
  */
-template <int D, typename T> void square(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
+template <int D, typename T>
+void square(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
@@ -186,29 +209,16 @@ template <int D, typename T> void square(double prec, FunctionTree<D, T> &out, F
     print::separator(10, ' ');
 }
 
-/** @brief Out-of-place power of MW function representations, adaptive grid
+/**
+ * @brief Adaptive power: out = inp^p (real exponent p).
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] inp: Input function to square
- * @param[in] p: Numerical power
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type.
  *
- * @details The output function will be computed as the input function raised
- * to the given power, using the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
- *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @warning Conjugated inputs are not supported here.
  */
-template <int D, typename T> void power(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, double p, int maxIter, bool absPrec) {
+template <int D, typename T>
+void power(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, double p, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (inp.conjugate()) MSG_ABORT("Not implemented");
 
@@ -233,24 +243,26 @@ template <int D, typename T> void power(double prec, FunctionTree<D, T> &out, Fu
     print::separator(10, ' ');
 }
 
-/** @brief Dot product of two MW function vectors, adaptive grid
+/**
+ * @brief Adaptive componentwise dot product of two function vectors.
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] inp_a: Input function vector
- * @param[in] inp_b: Input function vector
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type.
  *
- * @details The output function will be computed as the dot product of the two
- * input vectors (including their numerical coefficients). The precision
- * parameter is used only in the multiplication part, the final addition will
- * be on the fixed union grid of the components.
+ * @param[in]  prec     Target build precision for the per-component products.
+ * @param[out] out      Output tree holding the sum over component products.
+ * @param[in]  inp_a    First vector of (scalar, tree) pairs.
+ * @param[in]  inp_b    Second vector of (scalar, tree) pairs.
+ * @param[in]  maxIter  Max refinement iterations per component product.
+ * @param[in]  absPrec  Absolute vs relative precision.
  *
- * @note The length of the input vectors must be the same.
- *
+ * @details
+ * Computes out = Σ_d (a_d f_d) · (b_d g_d) by first forming per-component
+ * products on grids compatible with @p out, then summing these contributions
+ * on the fixed union grid (addition step uses a fixed grid, not adaptive).
  */
-template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp_a, FunctionTreeVector<D, T> &inp_b, int maxIter, bool absPrec) {
+template <int D, typename T>
+void dot(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp_a, FunctionTreeVector<D, T> &inp_b, int maxIter, bool absPrec) {
     if (inp_a.size() != inp_b.size()) MSG_ABORT("Input length mismatch");
 
     FunctionTreeVector<D, T> tmp_vec;
@@ -270,20 +282,21 @@ template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, Func
     clear(tmp_vec, true);
 }
 
-/** @returns Dot product <bra|ket> of two MW function representations
+/**
+ * @brief Inner product ⟨bra|ket⟩ on compressed MW trees.
  *
- * @param[in] bra: Bra side input function
- * @param[in] ket: Ket side input function
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type of bra.
+ * @tparam U  Coefficient type of ket.
+ * @tparam V  Return type (double or ComplexDouble).
  *
- * @details The dot product is computed with the trees in compressed form, i.e.
- * scaling coefs only on root nodes, wavelet coefs on all nodes. Since wavelet
- * functions are orthonormal through ALL scales and the root scaling functions
- * are orthonormal to all finer level wavelet functions, this becomes a rather
- * efficient procedure as you only need to compute the dot product where the
- * grids overlap.
- *
+ * @details
+ * Works directly on compressed representation: scaling coefficients on roots
+ * and wavelet coefficients on all nodes. Orthonormality across scales makes
+ * this efficient: only overlapping nodes contribute.
  */
-template <int D, typename T, typename U, typename V> V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket) {
+template <int D, typename T, typename U, typename V>
+V dot(FunctionTree<D, T> &bra, FunctionTree<D, U> &ket) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Trees not compatible");
     MWNodeVector<D, T> nodeTable;
     TreeIterator<D, T> it(bra);
@@ -295,13 +308,7 @@ template <int D, typename T, typename U, typename V> V dot(FunctionTree<D, T> &b
     int nNodes = nodeTable.size();
     V result = 0.0;
     V locResult = 0.0;
-    // OMP is disabled in order to get EXACT results (to the very last digit), the
-    // order of summation makes the result different beyond the 14th digit or so.
-    // OMP does improve the performace, but its not worth it for the time being.
-    //#pragma omp parallel firstprivate(n_nodes, locResult) num_threads(mrcpp_get_num_threads())
-    //		shared(nodeTable,rhs,result)
-    //    {
-    //#pragma omp for schedule(guided)
+
     for (int n = 0; n < nNodes; n++) {
         const auto &braNode = static_cast<const FunctionNode<D, T> &>(*nodeTable[n]);
         const MWNode<D, U> *mwNode = ket.findNode(braNode.getNodeIndex());
@@ -311,25 +318,32 @@ template <int D, typename T, typename U, typename V> V dot(FunctionTree<D, T> &b
         if (braNode.isRootNode()) locResult += dot_scaling(braNode, ketNode);
         locResult += dot_wavelet(braNode, ketNode);
     }
-    //#pragma omp critical
     result += locResult;
-
     return result;
 }
 
-/** @brief abs-dot product of two MW function representations
+/**
+ * @brief Absolute inner product proxy based on node norms.
  *
- * @param[in] bra: Bra side input function
- * @param[in] ket: Ket side input function
+ * @tparam D  Spatial dimension.
+ * @tparam T  Coefficient type.
  *
- * If exact=true: the grid of ket MUST include the grid of bra.
- * If exact=false: does not at any time read the coefficients individually.
- * The product is done for the end nodes of the bra multiplied by the nodes from the
- * ket with either the same idx, or using a lower scale and assuming uniform
- * distribution within the node.
- * If the product is zero, the functions are disjoints.
+ * @param[in] bra   First input function.
+ * @param[in] ket   Second input function.
+ * @param[in] exact If true, requires ket's grid to include bra's grid and
+ *                  uses absolute coefficients per node. If false, uses an
+ *                  approximate product of node norms and root-node norms.
+ *
+ * @returns Value proportional to the absolute inner product.
+ *
+ * @details
+ * With exact = true, the routine converts to interpolating coefficients,
+ * takes absolute values, and accumulates exact contributions node by node.
+ * With exact = false, it avoids per-coefficient access and approximates the
+ * product via node norms; disjoint functions yield zero.
  */
-template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket, bool exact) {
+template <int D, typename T>
+double node_norm_dot(FunctionTree<D, T> &bra, FunctionTree<D, T> &ket, bool exact) {
     if (bra.getMRA() != ket.getMRA()) MSG_ABORT("Incompatible MRA");
 
     double result = 0.0;
@@ -342,14 +356,12 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, Funct
         FunctionNode<D, T> &node = bra.getEndFuncNode(n);
         const NodeIndex<D> idx = node.getNodeIndex();
         if (exact) {
-            // convert to interpolating coef, take abs, convert back
             FunctionNode<D, T> *mwNode = static_cast<FunctionNode<D, T> *>(ket.findNode(idx));
             if (mwNode == nullptr) MSG_ABORT("Trees must have same grid");
             node.getAbsCoefs(valA);
             mwNode->getAbsCoefs(valB);
             for (int i = 0; i < ncoef; i++) result += std::norm(valA[i] * valB[i]);
         } else {
-            // approximate by product of node norms
             int rIdx = ket.getRootBox().getBoxIndex(idx);
             assert(rIdx >= 0);
             const MWNode<D, T> &root = ket.getRootBox().getNode(rIdx);
@@ -359,6 +371,8 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, Funct
 
     return result;
 }
+
+// ---- Explicit instantiations ------------------------------------------------
 
 template void
 multiply<1, double>(double prec, FunctionTree<1, double> &out, double c, FunctionTree<1, double> &tree_a, FunctionTree<1, double> &tree_b, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate);

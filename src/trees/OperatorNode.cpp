@@ -42,17 +42,6 @@ void OperatorNode::dealloc() {
     this->tree->getNodeAllocator().dealloc(sIdx);
 }
 
-/**
- * @brief Calculate one specific component norm of the OperatorNode (TODO: needs to be specified more).
- *
- * @param[in] i: TODO: deens to be specified
- *
- * @details OperatorNorms are defined as matrix 2-norms that are expensive to calculate.
- * Thus we calculate some cheaper upper bounds for this norm for thresholding.
- * First a simple vector norm, then a product of the 1- and infinity-norm.
- * (TODO: needs to be more presiced).
- *
- */
 double OperatorNode::calcComponentNorm(int i) const {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
@@ -64,7 +53,7 @@ double OperatorNode::calcComponentNorm(int i) const {
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
     const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
-    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1); // one can use MatrixXd OperatorNode::getComponent(int i)
+    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1);
 
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
@@ -79,20 +68,6 @@ double OperatorNode::calcComponentNorm(int i) const {
     return norm;
 }
 
-/** @brief Matrix elements of the non-standard form.
- *
- * @param[in] i: Index enumerating the matrix type in the non-standard form.
- * @returns A submatrix of \f$ (k + 1) \times (k + 1) \f$-size from the non-standard form.
- *
- * @details OperatorNode is uniquely associted with a scale \f$ n \f$ and translation
- * \f$ l = -2^n + 1, \ldots, 2^n = 1 \f$.
- * The non-standard form \f$ T_n, B_n, C_n, A_n \f$ defines matrices
- * \f$ \sigma_l^n, \beta_l^n, \gamma_l^n, \alpha_l^n \f$ for a given pair \f$ (n, l) \f$.
- * One of these matrices is returned by the method according to the choice of the index parameter
- * \f$ i = 0, 1, 2, 3 \f$, respectively.
- * For example, \f$ \alpha_l^n = \text{getComponent}(3) \f$.
- *
- */
 MatrixXd OperatorNode::getComponent(int i) {
     int depth = getDepth();
     double prec = getOperTree().getNormPrecision();
@@ -120,7 +95,6 @@ void OperatorNode::createChildren(bool coefs) {
 
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
-        // construct into allocator memory
         new (child_p) OperatorNode(this, cIdx);
         this->children[cIdx] = child_p;
 

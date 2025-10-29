@@ -44,7 +44,6 @@ NodeAllocator<D, T>::NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *me
         , maxNodesPerChunk(nodesPerChunk)
         , tree_p(tree)
         , shmem_p(mem) {
-    // reserve space for chunk pointers to avoid excessive reallocation
     this->nodeChunks.reserve(100);
     this->coefChunks.reserve(100);
 
@@ -61,7 +60,6 @@ NodeAllocator<2>::NodeAllocator(OperatorTree *tree, SharedMemory<double> *mem, i
         , maxNodesPerChunk(nodesPerChunk)
         , tree_p(tree)
         , shmem_p(mem) {
-    // reserve space for chunk pointers to avoid excessive reallocation
     this->nodeChunks.reserve(100);
     this->coefChunks.reserve(100);
 
@@ -78,7 +76,7 @@ template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree *tr
 
 template <int D, typename T> NodeAllocator<D, T>::~NodeAllocator() {
     for (auto &chunk : this->nodeChunks) delete[](char *) chunk;
-    if (not isShared()) // if the data is shared, it must be freed by MPI_Win_free
+    if (not isShared())
         for (auto &chunk : this->coefChunks) delete[] chunk;
     this->stackStatus.clear();
     MRCPP_DESTROY_OMP_LOCK();
@@ -100,46 +98,39 @@ template <int D, typename T> T *NodeAllocator<D, T>::getCoef_p(int sIdx) {
 
 template <int D, typename T> MWNode<D, T> *NodeAllocator<D, T>::getNodeNoLock(int sIdx) {
     if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
-    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
-    int cIdx = sIdx % this->maxNodesPerChunk;  // position in chunk
+    int chunk = sIdx / this->maxNodesPerChunk;
+    int cIdx = sIdx % this->maxNodesPerChunk;
     return this->nodeChunks[chunk] + cIdx;
 }
 
 template <int D, typename T> T *NodeAllocator<D, T>::getCoefNoLock(int sIdx) {
     if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
-    int chunk = sIdx / this->maxNodesPerChunk; // which chunk
-    int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
+    int chunk = sIdx / this->maxNodesPerChunk;
+    int idx = sIdx % this->maxNodesPerChunk;
     return this->coefChunks[chunk] + idx * this->coefsPerNode;
 }
 
 template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coefs) {
     MRCPP_SET_OMP_LOCK();
     if (nNodes <= 0 or nNodes > this->maxNodesPerChunk) MSG_ABORT("Cannot allocate " << nNodes << " nodes");
-    // move topstack to start of next chunk if current chunk is too small
     int cIdx = this->topStack % (this->maxNodesPerChunk);
     bool chunkOverflow = ((cIdx + nNodes) > this->maxNodesPerChunk);
     if (chunkOverflow) this->topStack = this->maxNodesPerChunk * ((this->topStack + nNodes - 1) / this->maxNodesPerChunk);
 
-    // append chunk if necessary
     int chunk = this->topStack / this->maxNodesPerChunk;
     bool needNewChunk = (chunk >= this->nodeChunks.size());
     if (needNewChunk) appendChunk(coefs);
 
-    // return value is index of first new node
     auto sIdx = this->topStack;
 
-    // we require that the index for first child is a multiple of 2**D
-    // so that we can find the sibling rank using rank=sIdx%(2**D)
     if (sIdx % nNodes != 0) MSG_WARN("Warning: recommended number of siblings is 2**D");
 
-    // fill stack status
     auto &status = this->stackStatus;
     for (int i = sIdx; i < sIdx + nNodes; i++) {
         if (status[i] != 0) MSG_ERROR(" NodeStackStatus: not available [" << i << "] : " << status[i]);
         status[i] = 1;
     }
 
-    // advance stack pointers
     this->nNodes += nNodes;
     this->topStack += nNodes;
     this->last_p = getNodeNoLock(sIdx) + nNodes;
@@ -153,13 +144,12 @@ template <int D, typename T> void NodeAllocator<D, T>::dealloc(int sIdx) {
     if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
     auto *node_p = getNodeNoLock(sIdx);
     node_p->~MWNode();
-    this->stackStatus[sIdx] = 0;      // mark as available
-    if (sIdx == this->topStack - 1) { // top of stack
+    this->stackStatus[sIdx] = 0;
+    if (sIdx == this->topStack - 1) {
         while (this->stackStatus[this->topStack - 1] == 0) {
             this->topStack--;
             if (this->topStack < 1) break;
         }
-        // has to redefine last_p
         this->last_p = getNodeNoLock(this->topStack);
     }
     this->nNodes--;
@@ -180,7 +170,6 @@ template <int D, typename T> void NodeAllocator<D, T>::init(int nChunks, bool co
     if (nChunks <= 0) MSG_ABORT("Invalid number of chunks: " << nChunks);
     for (int i = getNChunks(); i < nChunks; i++) appendChunk(coefs);
 
-    // reinitialize stacks
     int nodeCount = this->nodeChunks.size() * this->maxNodesPerChunk;
     this->stackStatus.resize(nodeCount);
     std::fill(this->stackStatus.begin(), this->stackStatus.end(), 0);
@@ -188,14 +177,11 @@ template <int D, typename T> void NodeAllocator<D, T>::init(int nChunks, bool co
 }
 
 template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
-    // make coeff chunk
     if (coefs) {
         T *c_chunk = nullptr;
         if (this->isShared()) {
-            // for coefficients, take from the shared memory block
             c_chunk = this->shmem_p->sh_end_ptr;
             this->shmem_p->sh_end_ptr += (this->coefsPerNode * this->maxNodesPerChunk);
-            // may increase size dynamically in the future
             if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
         } else {
             c_chunk = new T[getCoefChunkSize() / sizeof(T)];
@@ -203,7 +189,6 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
         this->coefChunks.push_back(c_chunk);
     }
 
-    // make node chunk
     auto n_chunk = (MWNode<D, T> *)new char[getNodeChunkSize()];
     for (int i = 0; i < this->maxNodesPerChunk; i++) {
         n_chunk[i].serialIx = -1;
@@ -212,35 +197,32 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
     }
     this->nodeChunks.push_back(n_chunk);
 
-    // append to stackStatus
     int oldsize = this->stackStatus.size();
     int newsize = oldsize + this->maxNodesPerChunk;
     this->stackStatus.resize(newsize);
     std::fill(this->stackStatus.begin() + oldsize, this->stackStatus.end(), 0);
 }
 
-/** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D, typename T> int NodeAllocator<D, T>::compress() {
     MRCPP_SET_OMP_LOCK();
     int nNodes = (1 << D);
     if (this->maxNodesPerChunk * this->nodeChunks.size() <= getTree().getNNodes() + this->maxNodesPerChunk + nNodes - 1) {
         MRCPP_UNSET_OMP_LOCK();
-        return 0; // nothing to compress
+        return 0;
     }
 
     int posocc = 0;
-    int posavail = getTree().getRootBox().size(); // start after root nodes
+    int posavail = getTree().getRootBox().size();
     while (true) {
         posavail = findNextAvailable(posavail, nNodes);
-        if (posavail >= this->topStack) break; // treated all nodes
+        if (posavail >= this->topStack) break;
 
         posocc = findNextOccupied(posavail);
-        if (posocc >= this->topStack) break; // treated all nodes
+        if (posocc >= this->topStack) break;
 
         moveNodes(nNodes, posocc, posavail);
     }
 
-    // find the last used node
     posocc = this->topStack - 1;
     while (this->stackStatus[posocc] == 0 and posocc > 0) posocc--;
     this->topStack = posocc + 1;
@@ -254,21 +236,18 @@ template <int D, typename T> int NodeAllocator<D, T>::compress() {
 }
 
 template <int D, typename T> int NodeAllocator<D, T>::deleteUnusedChunks() {
-    // number of occupied chunks
     int nChunksTotal = getNChunks();
     int nChunksUsed = getNChunksUsed();
-    if (nChunksTotal == nChunksUsed) return 0; // no unused chunks
+    if (nChunksTotal == nChunksUsed) return 0;
     assert(nChunksTotal >= nChunksUsed);
     for (int i = nChunksUsed; i < nChunksTotal; i++) delete[](char *)(this->nodeChunks[i]);
 
     if (isShared()) {
-        // shared coefficients cannot be fully deallocated, only pointer is moved.
         getMemory().sh_end_ptr -= (nChunksTotal - nChunksUsed) * this->coefsPerNode * this->maxNodesPerChunk;
     } else {
         for (int i = nChunksUsed; i < nChunksTotal; i++) delete[] this->coefChunks[i];
     }
 
-    // shrink the stacks
     this->nodeChunks.resize(nChunksUsed);
     this->coefChunks.resize(nChunksUsed);
     this->stackStatus.resize(nChunksUsed * this->maxNodesPerChunk);
@@ -284,34 +263,27 @@ template <int D, typename T> void NodeAllocator<D, T>::moveNodes(int nNodes, int
     assert(srcNode != nullptr);
     assert(dstNode != nullptr);
 
-    // check that all siblings are consecutive. Should never be root node.
     for (int i = 0; i < nNodes; i++) assert(this->stackStatus[dstIdx + i] == 0);
-    for (int i = 1; i < nNodes; i++) assert((srcNode + i)->parent->serialIx == srcNode->parent->serialIx); // siblings
+    for (int i = 1; i < nNodes; i++) assert((srcNode + i)->parent->serialIx == srcNode->parent->serialIx);
 
-    // just copy everything "as is"
     for (int i = 0; i < nNodes * this->sizeOfNode; i++) ((char *)dstNode)[i] = ((char *)srcNode)[i];
 
-    // coefs have new adresses
     T *coefs_p = getCoefNoLock(dstIdx);
-    if (coefs_p == nullptr) NOT_IMPLEMENTED_ABORT; // Nodes without coefs not handled atm
+    if (coefs_p == nullptr) NOT_IMPLEMENTED_ABORT;
     for (int i = 0; i < nNodes; i++) (dstNode + i)->coefs = coefs_p + i * getNCoefs();
 
-    // copy coefs to new adress
     if (not isShared()) {
         for (int i = 0; i < nNodes * this->coefsPerNode; i++) dstNode->coefs[i] = srcNode->coefs[i];
     } else {
-        if (getMemory().rank == 0) // only master copy the data. careful with sync
+        if (getMemory().rank == 0)
             for (int i = 0; i < nNodes * this->coefsPerNode; i++) dstNode->coefs[i] = srcNode->coefs[i];
     }
 
-    // update node
     for (int i = 0; i < nNodes; i++) (dstNode + i)->serialIx = dstIdx + i;
 
-    // update parent
     dstNode->parent->childSerialIx = dstIdx;
     for (int i = 0; i < nNodes; i++) dstNode->parent->children[i] = dstNode + i;
 
-    // update children
     for (int i = 0; i < nNodes; i++) {
         for (int j = 0; j < (dstNode + i)->getNChildren(); j++) {
             (dstNode + i)->children[j]->parentSerialIx = dstIdx + i;
@@ -319,16 +291,13 @@ template <int D, typename T> void NodeAllocator<D, T>::moveNodes(int nNodes, int
         }
     }
 
-    // mark moved nodes as occupied
     for (int i = 0; i < nNodes; i++) this->stackStatus[dstIdx + i] = 1;
     dstIdx += nNodes;
 
-    // delete "old" nodes
     for (int i = 0; i < nNodes; i++) this->stackStatus[srcIdx + i] = 0;
     for (int i = 0; i < nNodes; i++) (srcNode + i)->serialIx = -1;
 }
 
-// Last positions on a chunk cannot be used if there is no place for nNodes siblings on the same chunk
 template <int D, typename T> int NodeAllocator<D, T>::findNextAvailable(int sIdx, int nNodes) const {
     assert(sIdx >= 0);
     assert(sIdx < this->stackStatus.size());
@@ -362,7 +331,6 @@ template <int D, typename T> int NodeAllocator<D, T>::findNextOccupied(int sIdx)
     return sIdx;
 }
 
-/** Traverse tree and redefine pointer, counter and tables. */
 template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
     MRCPP_SET_OMP_LOCK();
     this->nNodes = 0;
@@ -394,7 +362,6 @@ template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
         if (node_p->isEndNode()) getTree().squareNorm += node_p->getSquareNorm();
         if (node_p->isEndNode()) getTree().endNodeTable.push_back(node_p);
 
-        // normally (intel) the virtual table does not change, but we overwrite anyway
         *(char **)(node_p) = this->cvptr;
         node_p->initNodeLock();
 
@@ -411,7 +378,7 @@ template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
             stack.push(child_p);
             child_p++;
         }
-        this->stackStatus[sIdx] = 1; // occupied
+        this->stackStatus[sIdx] = 1;
     }
     this->last_p = getNodeNoLock(this->topStack);
     assert(this->last_p != nullptr);

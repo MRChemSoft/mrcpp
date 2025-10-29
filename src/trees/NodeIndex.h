@@ -23,46 +23,96 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- * \breif Simple storage class for scale and translation indexes.
- * The usefulness of the class becomes evident when examining
- * the parallel algorithms for projection & friends.
+/**
+ * @file NodeIndex.h
+ * @brief Compact storage for multiresolution node indices (scale and translation).
+ *
+ * @details
+ * A NodeIndex encodes the position of a node in a multiresolution tree by:
+ * - an integer **scale** \f$N\f$ (node size \f$\propto 2^{-N}\f$), and
+ * - an integer **translation** vector \f$\mathbf{L}\in\mathbb{Z}^D\f$.
+ *
+ * The class provides helpers to obtain the parent/child indices, comparisons
+ * (including a strict weak ordering for associative containers), and utilities
+ * to test ancestry/sibling relations (see free functions @ref related and
+ * @ref siblings below).
  */
 
 #pragma once
 
+#include <array>
 #include <iomanip>
 #include <iostream>
 
 namespace mrcpp {
 
+/**
+ * @class NodeIndex
+ * @tparam D Spatial dimension (1, 2 or 3).
+ * @brief Scale–translation pair identifying a node in a MW tree.
+ *
+ * @details
+ * The scale is stored as a short integer; the translation is a D-dimensional
+ * integer vector. The translation follows the standard dyadic refinement:
+ * children are obtained by doubling each component and adding the child-bit
+ * extracted from the child index.
+ */
 template <int D> class NodeIndex final {
 public:
-    // regular constructors
+    /**
+     * @name Constructors
+     * @{
+     */
+
+    /**
+     * @brief Construct from scale and translation.
+     * @param n Scale \f$N\f$.
+     * @param l Translation vector \f$\mathbf{L}\f$ (defaults to all zeros).
+     */
     NodeIndex(int n = 0, const std::array<int, D> &l = {})
             : N(static_cast<short int>(n))
             , L(l) {}
 
-    // relative constructors
+    /**
+     * @brief Index of the parent node (one level coarser).
+     * @return Parent index \f$(N-1, \lfloor L/2 \rfloor)\f$ with correct rounding for negatives.
+     */
     NodeIndex<D> parent() const {
         std::array<int, D> l;
         for (int d = 0; d < D; d++) l[d] = (this->L[d] < 0) ? (this->L[d] - 1) / 2 : this->L[d] / 2;
         return NodeIndex<D>(this->N - 1, l);
     }
+
+    /**
+     * @brief Index of a child node (one level finer).
+     * @param cIdx Child linear index in \f$[0, 2^D)\f$; bit @c d selects the offset in dimension @c d.
+     * @return Child index \f$(N+1, 2L + b)\f$ with @c b given by the bits of @p cIdx.
+     */
     NodeIndex<D> child(int cIdx) const {
         std::array<int, D> l;
         for (int d = 0; d < D; d++) l[d] = (2 * this->L[d]) + ((cIdx >> d) & 1);
         return NodeIndex<D>(this->N + 1, l);
     }
+    /// @}
 
-    // comparisons
+    /**
+     * @name Comparisons
+     * @{
+     */
+    /// Inequality.
     bool operator!=(const NodeIndex<D> &idx) const { return not(*this == idx); }
+
+    /// Equality (same scale and same translation vector).
     bool operator==(const NodeIndex<D> &idx) const {
         bool out = (this->N == idx.N);
         for (int d = 0; d < D; d++) out &= (this->L[d] == idx.L[d]);
         return out;
     }
-    // defines an order of the nodes (allows to use std::map)
+
+    /**
+     * @brief Strict weak ordering (by scale, then lexicographically by translation).
+     * @details Enables usage as key in @c std::map / @c std::set.
+     */
     bool operator<(const NodeIndex<D> &idy) const {
         const NodeIndex<D> &idx = *this;
         if (idx.N != idy.N) return idx.N < idy.N;
@@ -70,20 +120,49 @@ public:
         if (idx.L[1] != idy.L[1] or D < 3) return idx.L[1] < idy.L[1];
         return idx.L[2] < idy.L[2];
     }
+    /// @}
 
-    // setters
+    /**
+     * @name Setters
+     * @{
+     */
+    /// Set the scale.
     void setScale(int n) { this->N = static_cast<short int>(n); }
+
+    /// Set the translation vector.
     void setTranslation(const std::array<int, D> &l) { this->L = l; }
+    /// @}
 
-    // value getters
+    /**
+     * @name Getters (values)
+     * @{
+     */
+    /// @return The scale \f$N\f$.
     int getScale() const { return this->N; }
+
+    /// @return Component @p d of the translation vector.
     int getTranslation(int d) const { return this->L[d]; }
+
+    /// @return Full translation vector.
     std::array<int, D> getTranslation() const { return this->L; }
+    /// @}
 
-    // reference getters
+    /**
+     * @name Getters (references)
+     * @{
+     */
+    /// Mutable access to translation component @p d.
     int &operator[](int d) { return this->L[d]; }
-    const int &operator[](int d) const { return this->L[d]; }
 
+    /// Const access to translation component @p d.
+    const int &operator[](int d) const { return this->L[d]; }
+    /// @}
+
+    /**
+     * @brief Print as "[ N | L0, L1, ... ]".
+     * @param o Output stream.
+     * @return The stream @p o.
+     */
     std::ostream &print(std::ostream &o) const {
         o << "[ " << std::setw(3) << this->N << " | ";
         for (int d = 0; d < D - 1; d++) o << std::setw(4) << this->L[d] << ", ";
@@ -92,16 +171,29 @@ public:
     }
 
 private:
-    short int N{0};         ///< Length scale index 2^N
-    std::array<int, D> L{}; ///< Translation index [x,y,z,...]
+    short int N{0};         ///< Length-scale index \f$N\f$ (node size \f$\propto 2^{-N}\f$).
+    std::array<int, D> L{}; ///< Translation vector \f$\mathbf{L}\f$.
 };
 
-/** @brief ostream printer */
+/**
+ * @brief Stream inserter for @ref NodeIndex.
+ * @relates NodeIndex
+ */
 template <int D> std::ostream &operator<<(std::ostream &o, const NodeIndex<D> &idx) {
     return idx.print(o);
 }
 
-/** @brief Check whether indices are directly related (not sibling) */
+/**
+ * @brief Test if two indices are on the same branch (ancestor/descendant relation).
+ * @tparam D Dimension.
+ * @param a First index.
+ * @param b Second index.
+ * @return @c true if the coarser index equals the finer index truncated to the coarser scale.
+ *
+ * @details
+ * Let @c sr be the shallower (coarser) of @p a and @p b, and @c jr the deeper (finer).
+ * They are related if \f$\mathbf{L}_{\text{sr}} = \lfloor \mathbf{L}_{\text{jr}} / 2^{N_{\text{jr}}-N_{\text{sr}}}\rfloor\f$.
+ */
 template <int D> bool related(const NodeIndex<D> &a, const NodeIndex<D> &b) {
     const auto &sr = (a.getScale() < b.getScale()) ? a : b;
     const auto &jr = (a.getScale() >= b.getScale()) ? a : b;
@@ -112,7 +204,13 @@ template <int D> bool related(const NodeIndex<D> &a, const NodeIndex<D> &b) {
     return related;
 }
 
-/** @brief Check whether indices are siblings, i.e. same parent */
+/**
+ * @brief Test if two indices are siblings (share the same parent).
+ * @tparam D Dimension.
+ * @param a First index.
+ * @param b Second index.
+ * @return @c true if @p a.parent() == @p b.parent().
+ */
 template <int D> bool siblings(const NodeIndex<D> &a, const NodeIndex<D> &b) {
     return (a.parent() == b.parent());
 }

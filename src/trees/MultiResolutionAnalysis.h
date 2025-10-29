@@ -33,51 +33,158 @@
 
 namespace mrcpp {
 
-/** @class MultiResolutionAnalysis
+/**
+ * @file MultiResolutionAnalysis.h
+ * @brief Declaration of the MultiResolutionAnalysis class template.
  *
- * @brief Class collecting computational domain and MW basis
+ * @details
+ * A **MultiResolutionAnalysis (MRA)** bundles the information that must be
+ * shared by compatible functions and operators:
+ * - the computational domain (see @ref BoundingBox),
+ * - the multiresolution scaling basis (see @ref ScalingBasis), and
+ * - a maximum refinement depth.
  *
- * @details In order to combine different functions and operators in
- * mathematical operations, they need to be compatible. That is, they must
- * be defined on the same computational domain and constructed using the same
- * polynomial basis (order and type). This information constitutes an MRA,
- * which needs to be defined and passed as argument to all function and
- * operator constructors, and only functions and operators with compatible
- * MRAs can be combined in subsequent calculations.
+ * Two objects (functions/operators) can only be combined if their MRAs are
+ * equal, i.e. identical domain, basis order/type, and depth.
+ *
+ * @par Example
+ * @code{.cpp}
+ * using MRA3 = mrcpp::MultiResolutionAnalysis<3>;
+ *
+ * // Domain: [-4, 4]^3 with automatically chosen root scale
+ * mrcpp::BoundingBox<3> world({-4, 4});
+ *
+ * // Build a 3D MRA with Legendre order=7 and maxDepth=12
+ * mrcpp::ScalingBasis basis(Legendre, /*order=*/7);
+ * MRA3 mra(world, basis, /*depth=*/12);
+ *
+ * // Query information
+ * int order     = mra.getOrder();
+ * int maxScale  = mra.getMaxScale();
+ * auto &box     = mra.getWorldBox();
+ * auto &sbasis  = mra.getScalingBasis();
+ * @endcode
  */
 
-template <int D> class MultiResolutionAnalysis final {
+/**
+ * @class MultiResolutionAnalysis
+ * @tparam D Spatial dimension (1, 2, or 3).
+ *
+ * @brief Collects the computational domain and multiresolution basis.
+ *
+ * @details
+ * The MRA fixes:
+ * - the **world box** (domain tiling and scaling),
+ * - the **scaling basis** (type and polynomial order), and
+ * - the **maximum depth** of refinement relative to the world’s root scale.
+ *
+ * The combination of these parameters determines the finest admissible scale
+ * via @ref getMaxScale.
+ */
+template <int D>
+class MultiResolutionAnalysis final {
 public:
+    /**
+     * @brief Construct from a symmetric domain and a basis order.
+     *
+     * @param[in] bb    Domain bounds as either [0,L] or [-L,L] (L>0).
+     * @param[in] order Polynomial order of the scaling basis.
+     * @param[in] depth Maximum refinement depth (relative to root scale).
+     *
+     * @details
+     * The scaling basis type is chosen by MRCPP defaults for the given @p order.
+     * The root scale is inferred from @p bb to keep the per-dimension scaling
+     * factor in (1, 2).
+     */
     MultiResolutionAnalysis(std::array<int, 2> bb, int order, int depth = MaxDepth);
+
+    /**
+     * @brief Construct from a preconfigured @ref BoundingBox and basis order.
+     *
+     * @param[in] bb    Computational domain (possibly periodic).
+     * @param[in] order Polynomial order of the scaling basis.
+     * @param[in] depth Maximum refinement depth.
+     */
     MultiResolutionAnalysis(const BoundingBox<D> &bb, int order, int depth = MaxDepth);
+
+    /**
+     * @brief Construct from a @ref BoundingBox and a fully specified @ref ScalingBasis.
+     *
+     * @param[in] bb    Computational domain.
+     * @param[in] sb    Scaling basis (type and order).
+     * @param[in] depth Maximum refinement depth.
+     */
     MultiResolutionAnalysis(const BoundingBox<D> &bb, const ScalingBasis &sb, int depth = MaxDepth);
+
+    /** @brief Copy constructor. */
     MultiResolutionAnalysis(const MultiResolutionAnalysis<D> &mra);
+
+    /** @brief Deleted assignment (MRAs are intended to be immutable after construction). */
     MultiResolutionAnalysis &operator=(const MultiResolutionAnalysis &mra) = delete;
 
+    /** @brief Return polynomial order of the scaling basis. */
     int getOrder() const { return this->basis.getScalingOrder(); }
+
+    /** @brief Maximum refinement depth relative to the world’s root scale. */
     int getMaxDepth() const { return this->maxDepth; }
+
+    /**
+     * @brief Absolute finest scale index.
+     *
+     * @details
+     * This is the sum of the world root scale and @ref getMaxDepth, i.e.
+     * the maximum scale the MRA allows trees to reach.
+     */
     int getMaxScale() const { return this->world.getScale() + this->maxDepth; }
 
+    /** @brief Low-level filter associated with the current basis. */
     const MWFilter &getFilter() const { return *this->filter; }
+
+    /** @brief The scaling basis specification (type and order). */
     const ScalingBasis &getScalingBasis() const { return this->basis; }
+
+    /** @brief The computational domain (world box). */
     const BoundingBox<D> &getWorldBox() const { return this->world; }
 
+    /**
+     * @brief Convenience: compute a minimal length scale from a tolerance.
+     *
+     * @param[in] epsilon Target tolerance.
+     * @return A distance proportional to \f$\sqrt{\epsilon\,2^{-\mathrm{maxScale}}}\f$.
+     */
     double calcMinDistance(double epsilon) const { return std::sqrt(epsilon * std::pow(2.0, -getMaxScale())); }
+
+    /**
+     * @brief Convenience: compute a maximal relevant distance.
+     *
+     * @details The exact definition is basis-dependent and implemented in
+     * the corresponding source file.
+     */
     double calcMaxDistance() const;
 
+    /** @brief Root (coarsest) scale index of the world. */
     int getRootScale() const { return this->world.getScale(); }
 
+    /**
+     * @brief Equality: same world, same basis (type & order), same depth.
+     *
+     * @note Two MRAs must compare equal to allow mixing functions/operators.
+     */
     bool operator==(const MultiResolutionAnalysis<D> &mra) const;
+
+    /** @brief Inequality. */
     bool operator!=(const MultiResolutionAnalysis<D> &mra) const;
 
+    /** @brief Human-readable diagnostics to stdout. */
     void print() const;
 
 protected:
-    const int maxDepth;
-    const ScalingBasis basis;
-    const BoundingBox<D> world;
-    MWFilter *filter;
+    const int maxDepth;           ///< Maximum refinement depth permitted by this MRA.
+    const ScalingBasis basis;     ///< Scaling basis (type and polynomial order).
+    const BoundingBox<D> world;   ///< Computational domain description.
+    MWFilter *filter;             ///< Low-level filter derived from @ref basis.
 
+    /** @brief Internal helper to instantiate @ref filter based on @ref basis. */
     void setupFilter();
 };
 

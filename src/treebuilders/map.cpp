@@ -64,7 +64,7 @@
  * // ... build 'in' somehow (project analytic function, read from file, etc.)
  *
  * auto clamp_nonnegative = [](double x) { return x < 0.0 ? 0.0 : x; };
- * map<3>(1e-6, out, in, clamp_nonnegative, -1 /* maxIter (unbounded) */, false /* relative precision */);
+ * map<3>(1e-6, out, in, clamp_nonnegative, -1, false); // -1: unbounded maxIter, false: relative precision
  * @endcode
  *
  * @see mrcpp::MapCalculator, mrcpp::WaveletAdaptor, mrcpp::TreeBuilder

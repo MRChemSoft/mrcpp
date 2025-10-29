@@ -23,6 +23,46 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file add.cpp
+ * @brief Adaptive summation of multiwavelet (MW) function trees.
+ *
+ * @details
+ * This module provides a family of `add` routines that assemble the linear
+ * combination of one or more MW functions into an output MW function on an
+ * adaptively refined grid.
+ *
+ * The summation is performed by the generic @ref TreeBuilder orchestrating:
+ * - an @ref AdditionCalculator that evaluates the local sum of input trees
+ *   with their numerical coefficients (and optional complex conjugation),
+ * - a @ref WaveletAdaptor that refines the output grid where needed to meet
+ *   the requested precision.
+ *
+ * The core algorithm (all overloads):
+ * - Compute MW coefficients of the sum on the **current** output grid.
+ * - Refine the grid according to the precision target.
+ * - Repeat until convergence or until a maximum number of refinement
+ *   iterations is reached.
+ * - Finally transform the output to the MW domain and compute its squared norm.
+ *
+ * Precision and iteration controls:
+ * - `prec < 0` or `maxIter = 0` disables refinement (single pass on
+ *   the existing output grid).
+ * - `maxIter < 0` removes the iteration limit and refines until the
+ *   precision criterion is satisfied.
+ * - `absPrec = true` interprets `prec` as an absolute tolerance, otherwise
+ *   it is treated as a relative criterion.
+ *
+ * Requirements:
+ * - All input trees must share the same @ref MultiResolutionAnalysis as the
+ *   output tree, otherwise the routine aborts.
+ *
+ * Notes:
+ * - The routine starts from whatever grid is already present in `out`. This
+ *   grid is expected to be empty in terms of coefficients.
+ * - Generated nodes present in input trees are removed at the end (cleanup).
+ */
+
 #include <tuple>
 #include <vector>
 
@@ -37,60 +77,78 @@
 
 namespace mrcpp {
 
-/** @brief Addition of two MW function representations, adaptive grid
+/**
+ * @brief Sum two MW functions (with scalar weights) into an output tree using adaptive refinement.
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] a: Numerical coefficient of function a
- * @param[in] inp_a: Input function a
- * @param[in] b: Numerical coefficient of function b
- * @param[in] inp_b: Input function b
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @tparam T Coefficient type (e.g., double or ComplexDouble).
  *
- * @details The output function will be computed as the sum of the two input
- * functions (including the numerical coefficient), using the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
+ * @param[in]  prec      Target build precision for the output function.
+ * @param[out] out       Output function tree to build (its current grid is used as a starting point).
+ * @param[in]  a         Numerical coefficient multiplying `inp_a`.
+ * @param[in]  inp_a     First input function tree.
+ * @param[in]  b         Numerical coefficient multiplying `inp_b`.
+ * @param[in]  inp_b     Second input function tree.
+ * @param[in]  maxIter   Maximum number of refinement iterations.
+ *                       Use a negative value to allow unbounded refinement.
+ *                       Use zero to disable refinement (single-pass build).
+ * @param[in]  absPrec   If true, interpret `prec` as an absolute tolerance;
+ *                       otherwise interpret it as relative.
+ * @param[in]  conjugate When `T` is complex, conjugate all input trees before summation.
  *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @details
+ * Builds `out ≈ a * inp_a (+) b * inp_b` to the requested precision on an adaptively
+ * refined grid. After the build, `out` is transformed to the MW domain and its squared
+ * norm is computed. The input trees are not modified except that any generated nodes
+ * created temporarily during the build are cleaned up.
  */
-template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, T a, FunctionTree<D, T> &inp_a, T b, FunctionTree<D, T> &inp_b, int maxIter, bool absPrec, bool conjugate) {
+template <int D, typename T>
+void add(double prec,
+         FunctionTree<D, T> &out,
+         T a, FunctionTree<D, T> &inp_a,
+         T b, FunctionTree<D, T> &inp_b,
+         int maxIter,
+         bool absPrec,
+         bool conjugate) {
     FunctionTreeVector<D, T> tmp_vec;
     tmp_vec.push_back(std::make_tuple(a, &inp_a));
     tmp_vec.push_back(std::make_tuple(b, &inp_b));
     add(prec, out, tmp_vec, maxIter, absPrec, conjugate);
 }
 
-/** @brief Addition of several MW function representations, adaptive grid
+/**
+ * @brief Sum a vector of MW functions (with scalar weights) into an output tree using adaptive refinement.
  *
- * @param[in] prec: Build precision of output function
- * @param[out] out: Output function to be built
- * @param[in] inp: Vector of input function
- * @param[in] maxIter: Maximum number of refinement iterations in output tree
- * @param[in] absPrec: Build output tree based on absolute precision
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @tparam T Coefficient type (e.g., double or ComplexDouble).
  *
- * @details The output function will be computed as the sum of all input
- * functions in the vector (including their numerical coefficients), using
- * the general algorithm:
- * - Compute MW coefs on current grid
- * - Refine grid where necessary based on `prec`
- * - Repeat until convergence or `maxIter` is reached
- * - `prec < 0` or `maxIter = 0` means NO refinement
- * - `maxIter < 0` means no bound
+ * @param[in]  prec      Target build precision for the output function.
+ * @param[out] out       Output function tree to build (its current grid is used as a starting point).
+ * @param[in]  inp       Vector of pairs (weight, pointer-to-tree) to be summed.
+ * @param[in]  maxIter   Maximum number of refinement iterations.
+ *                       Use a negative value to allow unbounded refinement.
+ *                       Use zero to disable refinement (single-pass build).
+ * @param[in]  absPrec   If true, interpret `prec` as an absolute tolerance;
+ *                       otherwise interpret it as relative.
+ * @param[in]  conjugate When `T` is complex, conjugate all input trees before summation.
  *
- * @note This algorithm will start at whatever grid is present in the `out`
- * tree when the function is called (this grid should however be EMPTY, e.i.
- * no coefs).
- *
+ * @details
+ * Builds `out ≈ Σ_i w_i * f_i` to the requested precision on an adaptively refined grid.
+ * The routine:
+ * - verifies that all inputs share the same MRA as `out`,
+ * - constructs a @ref WaveletAdaptor with the precision policy,
+ * - uses an @ref AdditionCalculator to evaluate the local sums,
+ * - runs @ref TreeBuilder to refine and assemble,
+ * - finishes with MW transform and squared norm computation,
+ * - and finally deletes any generated nodes from inputs.
  */
-template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
+template <int D, typename T>
+void add(double prec,
+         FunctionTree<D, T> &out,
+         FunctionTreeVector<D, T> &inp,
+         int maxIter,
+         bool absPrec,
+         bool conjugate) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
@@ -119,12 +177,36 @@ template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, Func
     print::separator(10, ' ');
 }
 
-template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter, bool absPrec, bool conjugate) {
+/**
+ * @brief Convenience overload: sum a list of unweighted trees (weights set to 1).
+ *
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @tparam T Coefficient type (e.g., double or ComplexDouble).
+ *
+ * @param[in]  prec      Target build precision for the output function.
+ * @param[out] out       Output function tree.
+ * @param[in]  inp       Vector of pointers to input trees (all weights taken as 1).
+ * @param[in]  maxIter   Maximum number of refinement iterations (see other overload).
+ * @param[in]  absPrec   Absolute-vs-relative precision flag.
+ * @param[in]  conjugate Conjugate complex inputs before summation.
+ *
+ * @details
+ * Internally wraps the list into a @ref FunctionTreeVector with unit weights
+ * and forwards to the vector-based overload.
+ */
+template <int D, typename T>
+void add(double prec,
+         FunctionTree<D, T> &out,
+         std::vector<FunctionTree<D, T> *> &inp,
+         int maxIter,
+         bool absPrec,
+         bool conjugate) {
     FunctionTreeVector<D, T> inp_vec;
     for (auto &t : inp) inp_vec.push_back({1.0, t});
     add(prec, out, inp_vec, maxIter, absPrec, conjugate);
 }
 
+/* ------- Explicit template instantiations (double) ------- */
 template void
 add<1, double>(double prec, FunctionTree<1, double> &out, double a, FunctionTree<1, double> &tree_a, double b, FunctionTree<1, double> &tree_b, int maxIter, bool absPrec, bool conjugate);
 template void
@@ -140,6 +222,7 @@ template void add<1, double>(double prec, FunctionTree<1, double> &out, std::vec
 template void add<2, double>(double prec, FunctionTree<2, double> &out, std::vector<FunctionTree<2, double> *> &inp, int maxIter, bool absPrec, bool conjugate);
 template void add<3, double>(double prec, FunctionTree<3, double> &out, std::vector<FunctionTree<3, double> *> &inp, int maxIter, bool absPrec, bool conjugate);
 
+/* ------- Explicit template instantiations (ComplexDouble) ------- */
 template void add<1, ComplexDouble>(double prec,
                                     FunctionTree<1, ComplexDouble> &out,
                                     ComplexDouble a,

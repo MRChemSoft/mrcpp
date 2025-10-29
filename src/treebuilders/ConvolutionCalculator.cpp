@@ -23,6 +23,54 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file ConvolutionCalculator.cpp
+ * @brief Adaptive node-wise application kernel for separable convolution operators.
+ *
+ * @details
+ * This file implements the templated class
+ * mrcpp::ConvolutionCalculator, which is the **workhorse** used by the
+ * adaptive `TreeBuilder` when applying a separable convolution operator
+ * (#mrcpp::ConvolutionOperator) to a multiresolution function tree
+ * (#mrcpp::FunctionTree).
+ *
+ * At a high level, for each **target** node \f$ g \f$ (in the output tree)
+ * the calculator:
+ *  - determines the **band** of **source** nodes \f$ f \f$ that can
+ *    contribute via the operator's bandwidth model,
+ *  - estimates cheap **screening bounds** using precomputed operator norms,
+ *    the local source/target norms, and a precision policy,
+ *  - for surviving pairs \f$ (g,f) \f$, performs a sequence of small
+ *    **tensor contractions** (one per Cartesian direction) to apply the
+ *    separable operator component(s) and accumulates the result into \f$ g \f$.
+ *
+ * The class also:
+ *  - precomputes **band-size factors** per depth and component-combination to
+ *    drive thresholding,
+ *  - supports **periodic worlds** and optional **unit-cell manipulation**
+ *    (near-field vs. far-field selection),
+ *  - collects **per-thread timings** and **operator-usage statistics**.
+ *
+ * ### Screening model (outline)
+ * Let \f$ \mathcal{O} = \sum_i \bigotimes_{d=1}^D O_i^{(d)} \f$ be the
+ * separable expansion (terms indexed by \f$ i \f$). For a source node
+ * \f$ f \f$ and target node \f$ g \f$, the calculator estimates
+ * \f[
+ *   \| \mathcal{O}_i f \| \;\lesssim\;
+ *   \Big(\prod_{d=1}^D \|O_i^{(d)}\|\Big)\; \|f\|\; s(i, \Delta \ell)
+ * \f]
+ * where \f$ s(\cdot) \f$ is a band-size factor depending on depth and the
+ * component combination, and compares the bound to a target threshold
+ * \f$ \tau(g) \sim \texttt{prec} \cdot \sqrt{\|g\|^2 / N_\text{terms}} \f$.
+ * Only terms that can exceed \f$ \tau(g) \f$ are explicitly applied.
+ *
+ * ### BLAS vs. Eigen
+ * If BLAS is available, the directional contractions can be carried out via
+ * GEMM. Otherwise, an Eigen-based path is used. Both routes compute
+ * \f$ G \leftarrow F^\top O \f$ in each direction and **accumulate** on the
+ * last direction to the target buffer.
+ */
+
 #include "ConvolutionCalculator.h"
 #include "operators/ConvolutionOperator.h"
 #include "operators/OperatorState.h"
@@ -46,6 +94,21 @@ using Eigen::MatrixXi;
 
 namespace mrcpp {
 
+/**
+ * @brief Construct a calculator for applying a convolution operator.
+ *
+ * @tparam D Spatial dimension (1, 2, or 3).
+ * @tparam T Coefficient type (`double` or `ComplexDouble`).
+ * @param p       Target precision used for screening and adaptivity.
+ * @param o       Separable convolution operator to apply.
+ * @param f       Source function tree (input).
+ * @param depth   Maximum operator depth considered for band-size tables.
+ *
+ * @details
+ * Initializes per-term **band-size tables** (used in screening) and
+ * allocates per-thread timers. The `depth` argument is upper-bounded by
+ * `MaxDepth`.
+ */
 template <int D, typename T>
 ConvolutionCalculator<D, T>::ConvolutionCalculator(double p, ConvolutionOperator<D> &o, FunctionTree<D, T> &f, int depth)
         : maxDepth(depth)
@@ -57,6 +120,9 @@ ConvolutionCalculator<D, T>::ConvolutionCalculator(double p, ConvolutionOperator
     initTimers();
 }
 
+/**
+ * @brief Destructor: clear timers and print aggregated operator statistics.
+ */
 template <int D, typename T> ConvolutionCalculator<D, T>::~ConvolutionCalculator() {
     clearTimers();
     this->operStat.flushNodeCounters();
@@ -64,6 +130,9 @@ template <int D, typename T> ConvolutionCalculator<D, T>::~ConvolutionCalculator
     for (int i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
 }
 
+/**
+ * @brief Allocate per-thread timers for band construction, calculation, and norm updates.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::initTimers() {
     int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
@@ -73,6 +142,9 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::initTimers() {
     }
 }
 
+/**
+ * @brief Release per-thread timers.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::clearTimers() {
     int nThreads = mrcpp_get_max_threads();
     for (int i = 0; i < nThreads; i++) {
@@ -85,6 +157,9 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::clearTimers() {
     this->norm_t.clear();
 }
 
+/**
+ * @brief Print a compact report of thread-wise timings.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() const {
     int oldprec = Printer::setPrecision(1);
     int nThreads = mrcpp_get_max_threads();
@@ -100,8 +175,15 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
     Printer::setPrecision(oldprec);
 }
 
-/** Initialize the number of nodes formally within the bandwidth of an
- operator. The band size is used for thresholding. */
+/**
+ * @brief Precompute per-depth band-size factors for all operator terms.
+ *
+ * @details
+ * For each raw operator term and each depth, builds a table of the number of
+ * source nodes formally falling within the **Cartesian bandwidth box** for
+ * every component-combination (gt,ft). These factors are later used to scale
+ * screening thresholds.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
@@ -114,10 +196,19 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     }
 }
 
-/** Calculate the number of nodes within the bandwidth
- * of an operator. Currently this routine ignores the fact that
- * there are edges on the world box, and thus over estimates
- * the number of nodes. This is different from the previous version. */
+/**
+ * @brief Compute band-size factor for a given depth from a bandwidth model.
+ *
+ * @param[out] bs   Table to be filled (rows: depth, cols: component-pairs plus a max column).
+ * @param[in]  depth Operator depth relative to root.
+ * @param[in]  bw   Bandwidth model (per-depth widths per component index).
+ *
+ * @details
+ * For each component pair \f$(g_t,f_t)\f$, the routine forms the Cartesian
+ * product of directional half-widths to estimate the number of contributing
+ * source nodes and stores it in \p bs. The last column stores the row-wise
+ * maximum for quick access.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::calcBandSizeFactor(MatrixXi &bs, int depth, const BandWidth &bw) {
     for (int gt = 0; gt < this->nComp; gt++) {
         for (int ft = 0; ft < this->nComp; ft++) {
@@ -138,7 +229,18 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcBandSizeFacto
     bs(depth, this->nComp2) = bs.row(depth).maxCoeff();
 }
 
-/** Return a vector of nodes in F affected by O, given a node in G */
+/**
+ * @brief Build the band of source nodes affected by the operator for a given target node.
+ *
+ * @param[in]  gNode    Target node (in the output tree).
+ * @param[out] idx_band Matching indices of the source nodes added to the band.
+ * @returns A vector of pointers to the source nodes \f$ f \f$.
+ *
+ * @details
+ * The band is the intersection between the operator's bandwidth box centered
+ * at \p gNode and the function-tree world box, respecting periodicity and
+ * (optionally) unit-cell filtering when `manipulateOperator` is enabled.
+ */
 template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     auto *band = new MWNodeVector<D, T>;
 
@@ -161,7 +263,7 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ma
         for (int i = 0; i < D; i++) {
             sIdx[i] = gIdx[i] - width;
             eIdx[i] = gIdx[i] + width;
-            // We need to consider the world borders
+            // Consider world borders / periodic wrapping
             int nboxes = fWorld.size(i) * (1 << o_depth);
             int c_i = cIdx[i] * (1 << o_depth);
             if (not periodic) {
@@ -179,7 +281,20 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ma
     return band;
 }
 
-/** Recursively retrieve all reachable f-nodes within the bandwidth. */
+/**
+ * @brief Recursive helper to enumerate all source indices inside the bandwidth box.
+ *
+ * @param[out] band     Vector of pointers to source nodes added along the recursion.
+ * @param[out] idx_band Parallel vector of node indices corresponding to \p band.
+ * @param[in]  idx      Current multi-index (mutated along recursion).
+ * @param[in]  nbox     Side lengths of the bandwidth box.
+ * @param[in]  dim      Current dimension to recurse on.
+ *
+ * @details
+ * If **unit-cell manipulation** is enabled, nodes are included/excluded based
+ * on their membership in the first unit cell (for periodic worlds) and the
+ * `onUnitcell` flag.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::fillOperBand(MWNodeVector<D, T> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim) {
     int l_start = idx[dim];
     for (int j = 0; j < nbox[dim]; j++) {
@@ -222,6 +337,18 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::fillOperBand(MWNo
     idx[dim] = l_start;
 }
 
+/**
+ * @brief Compute contributions to a single **target** node by scanning its band.
+ *
+ * @param[in,out] node Target node (coefficients are accumulated here).
+ *
+ * @details
+ * - Builds the source band for the target node.
+ * - Computes a **local target threshold** from the node's tree norm and `prec`.
+ * - Loops over band nodes and component combinations, performing **screening**.
+ * - For surviving pairs, applies all operator terms via `applyOperComp`.
+ * - Updates node norms at the end.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D, T> &node) {
     auto &gNode = static_cast<FunctionNode<D, T> &>(node);
     gNode.zeroCoefs();
@@ -232,12 +359,13 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     OperatorState<D, T> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
-    // Get all nodes in f within the bandwith of O in g
+    // Get all nodes in f within the bandwidth of O around g
     this->band_t[mrcpp_get_thread_num()]->resume();
     std::vector<NodeIndex<D>> idx_band;
     MWNodeVector<D, T> *fBand = makeOperBand(gNode, idx_band);
     this->band_t[mrcpp_get_thread_num()]->stop();
 
+    // Build target threshold (relative by default; may be scaled by precFunc)
     MWTree<D, T> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
@@ -245,9 +373,9 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
         auto precFac = this->precFunc(gNode.getNodeIndex());
         gThrs = this->prec * precFac * std::sqrt(gThrs / nTerms);
     }
-
     os.gThreshold = gThrs;
 
+    // Scan band and apply screened operator terms
     this->calc_t[mrcpp_get_thread_num()]->resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D, T> &fNode = *(*fBand)[n];
@@ -274,7 +402,20 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     delete fBand;
 }
 
-/** Apply each component (term) of the operator expansion to a node in f */
+/**
+ * @brief Apply all operator **terms** for a fixed component pair (ft,gt), with screening.
+ *
+ * @param[in,out] os Transient operator state bundling node pointers, buffers and norms.
+ *
+ * @details
+ * For each term \f$ i \f$:
+ *  - Check per-depth **bandwidth** feasibility (via `BandWidth`).
+ *  - Build a per-term **source threshold** from band-size tables and \f$ \|f\| \f$.
+ *  - Compute an **upper bound** using cached directional norms of the operator
+ *    node at the appropriate translation; compare to \f$ \tau(g) \f$.
+ *  - If the bound exceeds \f$ \tau(g) \f$, execute the tensor contraction
+ *    (see `tensorApplyOperComp`).
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
@@ -288,12 +429,23 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(Ope
     }
 }
 
-/** @brief Apply a single operator component (term) to a single f-node.
+/**
+ * @brief Apply a single operator term to a single source node (low-level path).
  *
- * @details Apply a single operator component (term) to a single f-node.
- * Whether the operator actualy is applied is determined by a screening threshold.
- * Here we make use of the sparcity of matrices \f$ A, B, C \f$.
+ * @param i  Index of the operator term in the separable expansion.
+ * @param os Operator state (nodes, buffers, norms, component indices).
  *
+ * @details
+ * For each direction:
+ *  - Fetch the operator-block at the required translation (\f$ \Delta \ell \f$)
+ *    and depth \f$ o\_depth \f$; multiply the running contraction with its norm
+ *    and keep a raw pointer to its coefficient block.
+ *  - If the translation is outside bandwidth, return early.
+ * After the per-direction setup:
+ *  - Form an **upper bound** as product of directional norms times the
+ *    source-threshold and compare to the target-threshold.
+ *  - If active, dispatch to `tensorApplyOperComp` to carry out the contraction
+ *    and accumulate into the target node buffer.
  */
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int i, OperatorState<D, T> &os) {
     MWNode<D, T> &gNode = *os.gNode;
@@ -310,8 +462,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
         auto &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
-        //  The following will check the actual band width in each direction.
-        //  Not needed if the thresholding at the end of this routine is active.
+        // Per-direction bandwidth check
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
@@ -329,8 +480,19 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
     }
 }
 
-/** Perorm the required linear algebra operations in order to apply an
-operator component to a f-node in a n-dimensional tesor space. */
+/**
+ * @brief Perform the directional tensor contractions for one operator term.
+ *
+ * @param os Operator state (holds mapped buffers for in-place contractions).
+ *
+ * @details
+ * The contraction sequence computes, for each direction \f$ d \f$,
+ * \f$ G \leftarrow F^\top O^{(d)} \f$, with **accumulation** on the last
+ * direction. If a directional block is `nullptr`, an identity map is used
+ * (i.e., pure transposition).
+ *
+ * Both a BLAS path (disabled here) and an Eigen path are implemented.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
     T **aux = os.getAuxData();
     double **oData = os.getOperData();
@@ -382,6 +544,16 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperCo
     //#endif
 }
 
+/**
+ * @brief Ensure parent nodes exist up to the operator root (periodic worlds).
+ *
+ * @param tree Target/output tree.
+ *
+ * @details
+ * When operating in periodic settings, parent nodes above the root scale
+ * may be required for coarse contributions; this helper guarantees their
+ * presence prior to work scheduling.
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::touchParentNodes(MWTree<D, T> &tree) const {
     if (not manipulateOperator) {
         const auto oper_scale = this->oper->getOperatorRoot();
@@ -398,6 +570,16 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::touchParentNodes(
     }
 }
 
+/**
+ * @brief Create the initial list of target nodes to process.
+ *
+ * @param tree Target/output tree.
+ * @returns A vector of pointers to existing nodes to be processed.
+ *
+ * @details
+ * For periodic trees, parent nodes above the root are first touched to ensure
+ * consistency; then a flat node table is produced via `tree_utils::make_node_table`.
+ */
 template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::getInitialWorkVector(MWTree<D, T> &tree) const {
     auto *nodeVec = new MWNodeVector<D, T>;
     if (tree.isPeriodic()) touchParentNodes(tree);
@@ -405,6 +587,7 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ge
     return nodeVec;
 }
 
+// Explicit instantiations
 template class ConvolutionCalculator<1, double>;
 template class ConvolutionCalculator<2, double>;
 template class ConvolutionCalculator<3, double>;

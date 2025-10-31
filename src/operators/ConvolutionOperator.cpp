@@ -47,26 +47,6 @@
 
 namespace mrcpp {
 
-/**
- * @brief Construct a separable D-dimensional convolution operator from a 1D Gaussian expansion.
- *
- * The input kernel is a 1D Gaussian expansion (sum of Gauss terms). The implementation
- * projects each 1D Gaussian to a 1D function tree and then uses cross-correlations to
- * lift it into a 2D operator block; the full D-dimensional operator is assembled as a
- * separable product of these 1D blocks. The final separable rank equals kernel.size().
- *
- * @tparam D               Spatial dimension of the target operator.
- * @param mra              Multiresolution analysis defining the D-dimensional domain/basis.
- * @param kernel           1D Gaussian expansion whose terms become the separable factors.
- * @param prec             Target build precision for the operator (used for both kernel
- *                         projection and operator assembly with a small safety split).
- *
- * @details
- * Internally we choose `k_prec = prec / 10` (stricter) for fitting each 1D kernel term,
- * and `o_prec = prec` for assembling/operatorization, to keep the composed error within
- * the requested tolerance. After all factors are built, `initOperExp(kernel.size())`
- * finalizes the separable structure.
- */
 template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
                                             GaussExp<1> &kernel,
@@ -75,29 +55,14 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     int oldlevel = Printer::setPrintLevel(0);
 
     this->setBuildPrec(prec);
-    auto o_prec = prec;           // precision for operator assembly (2D blocks, transforms)
-    auto k_prec = prec / 10.0;    // stricter precision for 1D kernel projection
+    auto o_prec = prec;
+    auto k_prec = prec / 10.0;
     initialize(kernel, k_prec, o_prec);
-    this->initOperExp(kernel.size()); // separable rank = number of kernel terms
+    this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
 
-/**
- * @brief Construct a convolution operator with explicit root scale and reach.
- *
- * This variant allows overriding the default operator root scale and reach (stencil
- * half-width in levels). The rest of the pipeline is identical to the other ctor:
- * build 1D kernel function trees, lift to 2D operator blocks by cross-correlation,
- * transform/collapse, then finalize the separable expansion.
- *
- * @param mra      D-dimensional MRA.
- * @param kernel   1D Gaussian expansion (rank = kernel.size()).
- * @param prec     Target build precision; we use `k_prec = prec / 100` here to be extra
- *                 conservative when the reach is user-controlled.
- * @param root     Operator root scale.
- * @param reach    Operator reach (levels outward from root). Negative = auto from box.
- */
 template <int D>
 ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
                                             GaussExp<1> &kernel,
@@ -109,67 +74,39 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
 
     this->setBuildPrec(prec);
     auto o_prec = prec;
-    auto k_prec = prec / 100.0;  // even tighter kernel fit when reach is custom
+    auto k_prec = prec / 100.0;
     initialize(kernel, k_prec, o_prec);
     this->initOperExp(kernel.size());
 
     Printer::setPrintLevel(oldlevel);
 }
 
-/**
- * @brief Core build routine: from 1D Gaussian terms → 1D function trees → 2D operator blocks.
- *
- * Steps per Gaussian term:
- *  1) **Rescaling for D-dimensional separability**: adjust the coefficient so that the product
- *     of D identical 1D factors yields the original 1D amplitude in D-D composition.
- *     Concretely: `coef ← sign(coef) * |coef|^{1/D}`.
- *  2) **Projection to a 1D function tree** (@ref FunctionTree): build an empty grid sized for
- *     narrow Gaussians (build_grid), then project the analytic Gaussian into the tree with
- *     requested kernel precision `k_prec` (project).
- *  3) **Lifting to a 2D operator**: create a @ref CrossCorrelationCalculator from the 1D tree,
- *     then use @ref TreeBuilder to expand a 2D operator tree through cross-correlations
- *     (effectively computing the correlation between basis functions along one axis).
- *  4) **Wavelet transform & caching**: bottom-up transform, compute norms, and set up node cache.
- *
- * The produced 2D blocks are stored into `raw_exp`. Higher-level code composes D-D separable
- * operators from these blocks (e.g., via @ref MWOperator’s machinery).
- *
- * @param kernel 1D Gaussian expansion (input rank).
- * @param k_prec Precision for kernel projection to 1D trees.
- * @param o_prec Precision for operator building / assembly.
- */
 template <int D>
 void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
-    // Build the auxiliary 1D MRA for the kernel and fetch the D-D operator MRA
     auto k_mra = this->getKernelMRA();
     auto o_mra = this->getOperatorMRA();
 
-    TreeBuilder<2> builder;                       // builds 2D operator trees from calculators
-    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale()); // controls assembly precision / scale cap
+    TreeBuilder<2> builder;
+    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
     for (int i = 0; i < kernel.size(); i++) {
-        // --- (1) Adjust coefficient for separable D-fold composition ---
         auto *k_func = kernel.getFunc(i).copy();
-        // Raise absolute coefficient to 1/D and reapply sign to preserve signed kernels
         k_func->setCoef(std::copysign(std::pow(std::abs(k_func->getCoef()), 1.0 / D),
                                       k_func->getCoef()));
 
-        // --- (2) Project analytic Gaussian to a 1D function tree ---
         FunctionTree<1> k_tree(k_mra);
-        mrcpp::build_grid(k_tree, *k_func);      // Prepare an empty grid (fine where Gaussian is narrow)
-        mrcpp::project(k_prec, k_tree, *k_func); // Fit the Gaussian into the 1D multiresolution basis
-        delete k_func;                            // No longer needed; k_tree holds the discretization
+        mrcpp::build_grid(k_tree, *k_func);
+        mrcpp::project(k_prec, k_tree, *k_func);
+        delete k_func;
 
-        // --- (3) Lift to a 2D operator via cross-correlation ---
         CrossCorrelationCalculator calculator(k_tree);
         auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
-        builder.build(*o_tree, calculator, adaptor, -1); // Dense 2D operator block in MW format
+        builder.build(*o_tree, calculator, adaptor, -1);
 
-        // --- (4) Transform, normalize, and cache for application ---
         Timer trans_t;
-        o_tree->mwTransform(BottomUp);  // move to MW (scaling+wavelet) representation efficiently
-        o_tree->calcSquareNorm();       // useful for diagnostics / thresholding
-        o_tree->setupOperNodeCache();   // enable fast repeated applications
+        o_tree->mwTransform(BottomUp);
+        o_tree->calcSquareNorm();
+        o_tree->setupOperNodeCache();
         print::time(10, "Time transform", trans_t);
         print::separator(10, ' ');
 
@@ -177,27 +114,13 @@ void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, doub
     }
 }
 
-/**
- * @brief Build a 1D MRA used to discretize the kernel factors.
- *
- * The kernel MRA mirrors the scaling family used by the D-D operator MRA:
- *  - If the operator uses an interpolating basis of order s, the kernel basis is
- *    chosen as InterpolatingBasis with order `2*s + 1`.
- *  - If Legendre, we similarly pick a LegendreBasis of order `2*s + 1`.
- *
- * The box extent (reach) is derived from the D-D world box unless an explicit
- * operator reach was set. The same uniform scaling factor is used.
- *
- * @return A standalone 1D @ref MultiResolutionAnalysis matching the operator’s scaling family.
- */
 template <int D>
 MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
     const BoundingBox<D> &box = this->MRA.getWorldBox();
     const ScalingBasis &basis = this->MRA.getScalingBasis();
 
-    // Choose a kernel basis compatible with the operator basis.
     int type = basis.getScalingType();
-    int kern_order = 2 * basis.getScalingOrder() + 1; // (2s+1) ensures adequate quadrature/correlation support
+    int kern_order = 2 * basis.getScalingOrder() + 1;
 
     ScalingBasis *kern_basis = nullptr;
     if (type == Interpol) {
@@ -208,20 +131,16 @@ MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
         MSG_ABORT("Invalid scaling type");
     }
 
-    // Kernel root = operator root; reach defaults to the maximum box extent if negative.
     int root = this->oper_root;
-    int reach = this->oper_reach + 1; // +1 because the 1D kernel must cover neighbors used by correlations
+    int reach = this->oper_reach + 1;
     if (reach < 0) {
         for (int i = 0; i < D; i++) {
             if (box.size(i) > reach) reach = box.size(i);
         }
     }
 
-    // Build a 1D bounding box centered at zero:
-    // levels from -reach to +reach (total 2*reach) at the operator root scale.
     auto start_l = std::array<int, 1>{-reach};
     auto tot_l   = std::array<int, 1>{2 * reach};
-    // Uniform scaling factor (operators are implemented for uniform scales only)
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
     BoundingBox<1> kern_box(root, start_l, tot_l, sf);
 
@@ -230,7 +149,6 @@ MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
     return kern_mra;
 }
 
-// Explicit template instantiations for the supported dimensionalities.
 template class ConvolutionOperator<1>;
 template class ConvolutionOperator<2>;
 template class ConvolutionOperator<3>;

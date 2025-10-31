@@ -23,50 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file PoissonKernel.cpp
- * @brief Builds a Gaussian expansion approximation of the 3D Poisson kernel.
- *
- * @details
- * This implementation constructs a separated approximation to the radial
- * Poisson kernel
- * \f[
- *   \frac{1}{\lvert \mathbf r \rvert}
- * \f]
- * on a finite annulus \f$ r \in [r_{\min},\, r_{\max}] \f$ by means of a
- * finite sum of Gaussians
- * \f[
- *   \frac{1}{r} \;\approx\; \sum_{m=1}^{M} \beta_m \, e^{-\alpha_m r^2},
- * \f]
- * where the coefficients \f$ \{\alpha_m,\beta_m\} \f$ are obtained by
- * truncating and discretizing (via the trapezoidal rule) a suitable integral
- * representation of \f$ 1/r \f$ in logarithmic variables. The truncation
- * bounds \f$[s_1, s_2]\f$ and the step \f$h\f$ are chosen to meet a requested
- * relative accuracy \c epsilon on the normalized interval \f$[r_{\min}/r_{\max},\,1]\f$,
- * after which the expansion is rescaled back to \f$[r_{\min},\,r_{\max}]\f$.
- *
- * ### Inputs
- * - \c epsilon: Target relative error for the expansion (heuristic, affects
- *   the truncation window and step size).
- * - \c r_min, \c r_max: Inner/outer radii that define the interval of validity.
- *
- * ### Algorithm sketch
- * 1. Normalize the domain to \f$[r_0, 1]\f$ with \f$r_0 = r_{\min}/r_{\max}\f$ and set
- *    \f$r_1 = r_{\max}\f$ for subsequent rescaling.
- * 2. Determine auxiliary parameters \f$t_1, t_2\f$ such that the tails of the
- *    integral representation are below \c epsilon.
- * 3. Convert tails to truncation limits \f$s_1, s_2\f$ in logarithmic coordinates.
- * 4. Choose trapezoidal step size \f$h\f$ as a function of \c epsilon and compute
- *    the number of terms \f$M\f$.
- * 5. Form nodes \f$s_i = s_1 + i h\f$ and corresponding Gaussian parameters
- *    \f$\alpha_i, \beta_i\f$ (with endpoint halving for the trapezoid rule).
- * 6. Rescale \f$\alpha_i, \beta_i\f$ from the normalized interval back to
- *    \f$[r_{\min}, r_{\max}]\f$ and append each term to the @ref GaussExp.
- *
- * The resulting expansion length is capped by \c MaxSepRank; exceeding this
- * limit aborts construction.
- */
-
 #include "PoissonKernel.h"
 
 #include <cmath>
@@ -76,25 +32,6 @@
 
 namespace mrcpp {
 
-/**
- * @brief Construct a Gaussian expansion of the 3D Poisson kernel on \f$[r_{\min}, r_{\max}]\f$.
- *
- * @param epsilon Target relative accuracy for the expansion (heuristic).
- * @param r_min   Minimum radius of the interval of validity (\f$>0\f$).
- * @param r_max   Maximum radius of the interval of validity (\f$> r_{\min}\f$).
- *
- * @details
- * The method chooses truncation limits \f$s_1, s_2\f$ and a step size \f$h\f$
- * for a trapezoidal discretization so that the contribution of neglected tails
- * is below \c epsilon in the normalized variable. Each quadrature node yields
- * one Gaussian term. Endpoint weights are halved, as per the trapezoidal rule.
- *
- * The final expansion is rescaled to the physical interval by the mappings
- * \f$ \alpha \leftarrow \alpha / r_{\max}^2 \f$ and \f$ \beta \leftarrow \beta / r_{\max} \f$,
- * ensuring that the approximation targets the original (unscaled) radius.
- *
- * @note If the number of terms exceeds @c MaxSepRank, construction aborts.
- */
 PoissonKernel::PoissonKernel(double epsilon, double r_min, double r_max)
         : GaussExp<1>() {
     // Constructed on [rMin/rMax, 1.0], then rescaled to [rMin, rMax]

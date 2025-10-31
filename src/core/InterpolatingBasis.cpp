@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- *
- *  \date June 2, 2010
- *  \author Stig Rune Jensen \n
- *          CTCC, University of Tromsø
- *
- */
-
 #include "InterpolatingBasis.h"
 
 #include <cmath>
@@ -43,49 +34,20 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-
-/** @brief Initialise interpolating scaling basis.
- * 
- * @details Fills
- * std::vector<Polynomial> \b funcs
- * declared in the base class
- * @ref ScalingBasis
- * with the interpolating scaling functions
- * \f[
- *    \varphi_j(x)
- *    =
- *    \sqrt{ w_j } \sum_{m = 0}^k \phi_m(x_j) \phi_m(x)
- *    , \quad
- *    x \in (0, 1)
- *    , \quad
- *    j = 0, \ldots, k
- *    ,
- * \f]
- * where \f$ \phi_m \f$ are the Legendre scaling functions.
- * Here \f$ k \f$ is \b order declared in the base class.
- * 
- * @note These interpolating scaling functions are defined on the unit interval \f$ (0, 1) \f$.
- * 
- *
- * 
- */
 void InterpolatingBasis::initScalingBasis() {
     int qOrder = getQuadratureOrder();
-    int sOrder = getScalingOrder();     // sOrder = qOrder - 1
+    int sOrder = getScalingOrder();
 
     getQuadratureCache(qc);
     const VectorXd roots = qc.getRoots(qOrder);
-    const VectorXd wgts = qc.getWeights(qOrder);
+    const VectorXd wgts  = qc.getWeights(qOrder);
 
     std::vector<LegendrePoly> L_k;
     for (int k = 0; k < qOrder; k++) { L_k.push_back(LegendrePoly(k, 2.0, 1.0)); }
 
     for (int k = 0; k < qOrder; k++) {
-        // Can't add higher-order polynomials to lower-order ones, so I
-        // changed the order of the loop
         Polynomial I_k(L_k[sOrder]);
         I_k *= L_k[sOrder].evalf(roots(k)) * (2.0 * sOrder + 1);
-
         for (int i = qOrder - 2; i >= 0; i--) {
             double val = L_k[i].evalf(roots(k)) * (2.0 * i + 1);
             I_k.addInPlace(val, L_k[i]);
@@ -95,23 +57,11 @@ void InterpolatingBasis::initScalingBasis() {
     }
 }
 
-
-/** @brief In Progress by Evgueni...
- * 
- *
- * 
- */
 void InterpolatingBasis::calcQuadratureValues() {
     int q_order = getQuadratureOrder();
     for (int k = 0; k < q_order; k++) { this->quadVals(k, k) = 1.0; }
 }
 
-
-/** @brief In Progress by Evgueni...
- * 
- *
- * 
- */
 void InterpolatingBasis::calcCVMaps() {
     int q_order = getQuadratureOrder();
     getQuadratureCache(qc);

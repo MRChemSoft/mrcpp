@@ -32,10 +32,6 @@
 
 namespace mrcpp {
 
-/** @returns New PHOperator object
- *  @param[in] mra: Which MRA the operator is defined
- *  @param[in] order: Derivative order, defined for 1 and 2
- */
 template <int D>
 PHOperator<D>::PHOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra, mra.getRootScale(), -10) {
@@ -51,7 +47,7 @@ template <int D> void PHOperator<D>::initialize() {
     auto &basis = this->MRA.getScalingBasis();
     PHCalculator calculator(basis, this->order);
 
-    int bw = 1; // Operator bandwidth
+    int bw = 1;
     int max_scale = this->MRA.getMaxScale();
     BandWidthAdaptor adaptor(bw, max_scale);
 

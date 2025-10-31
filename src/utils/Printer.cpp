@@ -45,19 +45,6 @@ int Printer::printRank = 0;
 int Printer::printSize = 1;
 std::ostream *Printer::out = &std::cout;
 
-/** @brief Initialize print environment
- *
- *  @param[in] level: Desired print level of output
- *  @param[in] rank: MPI rank of current process
- *  @param[in] size: Total number of MPI processes
- *  @param[in] file: File name for printed output, will get "-{rank}.out" extension
- *
- *  @details Only print statements with lower printlevel than level will be
- *  displayed. If a file name is given, each process will print to a separate
- *  file called {file}-{rank}.out. If no file name is given, only processes
- *  which initialize the printer with rank=0 will print to screen. By default,
- *  all ranks initialize with rank=0, i.e. all ranks print to screen by default.
- */
 void Printer::init(int level, int rank, int size, const char *file) {
     printLevel = level;
     printRank = rank;
@@ -75,19 +62,13 @@ void Printer::init(int level, int rank, int size, const char *file) {
         }
     } else {
         if (printRank > 0) {
-            setPrintLevel(-1); // Higher ranks be quiet
+            setPrintLevel(-1);
         }
     }
     setScientific();
 }
 
-/** @brief Print information about MRCPP version and build configuration
- *
- * @param[in] level: Activation level for print statement
- *
- **/
 void print::environment(int level) {
-    // clang-format off
     if (level > Printer::getPrintLevel()) return;
 
     printout(level, std::endl);
@@ -124,28 +105,14 @@ void print::environment(int level) {
 
     printout(level, std::endl);
     print::separator(level, '-', 2);
-    // clang-format on
 }
 
-/** @brief Print a full line of a single character
- *
- * @param[in] level: Activation level for print statement
- * @param[in] c: Character to fill the line
- * @param[in] newlines: Number of extra newlines
- */
 void print::separator(int level, const char &c, int newlines) {
     if (level > Printer::getPrintLevel()) return;
     printout(level, std::string(Printer::getWidth(), c));
     for (int i = 0; i <= newlines; i++) printout(level, std::endl);
 }
 
-/** @brief Print a text header
- *
- * @param[in] level: Activation level for print statement
- * @param[in] txt: Header text
- * @param[in] newlines: Number of extra newlines
- * @param[in] c: Character to fill the first line
- */
 void print::header(int level, const std::string &txt, int newlines, const char &c) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -156,13 +123,6 @@ void print::header(int level, const std::string &txt, int newlines, const char &
     print::separator(level, '-', newlines);
 }
 
-/** @brief Print a footer with elapsed wall time
- *
- * @param[in] level: Activation level for print statement
- * @param[in] t: Timer to be evaluated
- * @param[in] newlines: Number of extra newlines
- * @param[in] c: Character to fill the last line
- */
 void print::footer(int level, const Timer &t, int newlines, const char &c) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -180,14 +140,6 @@ void print::footer(int level, const Timer &t, int newlines, const char &c) {
     print::separator(level, c, newlines);
 }
 
-/** @brief Print a scalar value, including unit
- *
- * @param[in] level: Activation level for print statement
- * @param[in] v: Scalar value to print
- * @param[in] unit: Unit of scalar
- * @param[in] p: Floating point precision
- * @param[in] sci: Use scientific notation
- */
 void print::value(int level, const std::string &txt, double v, const std::string &unit, int p, bool sci) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -210,14 +162,6 @@ void print::value(int level, const std::string &txt, double v, const std::string
     println(level, o.str());
 }
 
-/** @brief Print tree parameters (nodes, memory) and wall time
- *
- * @param[in] level: Activation level for print statement
- * @param[in] txt: Text string
- * @param[in] n: Number of tree nodes
- * @param[in] m: Memory usage (kB)
- * @param[in] t: Wall time (sec)
- */
 void print::tree(int level, const std::string &txt, int n, int m, double t) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -258,13 +202,6 @@ void print::tree(int level, const std::string &txt, int n, int m, double t) {
     println(level, o.str());
 }
 
-/** @brief Print tree parameters (nodes, memory) and wall time
- *
- * @param[in] level: Activation level for print statement
- * @param[in] txt: Text string
- * @param[in] tree: Tree to be printed
- * @param[in] timer: Timer to be evaluated
- */
 template <int D, typename T> void print::tree(int level, const std::string &txt, const MWTree<D, T> &tree, const Timer &timer) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -274,12 +211,6 @@ template <int D, typename T> void print::tree(int level, const std::string &txt,
     print::tree(level, txt, n, m, t);
 }
 
-/** @brief Print elapsed time from Timer
- *
- * @param[in] level: Activation level for print statement
- * @param[in] txt: Text string
- * @param[in] timer: Timer to be evaluated
- */
 void print::time(int level, const std::string &txt, const Timer &timer) {
     if (level > Printer::getPrintLevel()) return;
 
@@ -297,11 +228,6 @@ void print::time(int level, const std::string &txt, const Timer &timer) {
     println(level, o.str());
 }
 
-/** @brief Print the current memory usage of this process, obtained from system
- *
- * @param[in] level: Activation level for print statement
- * @param[in] txt: Text string
- */
 void print::memory(int level, const std::string &txt) {
     if (level > Printer::getPrintLevel()) return;
 

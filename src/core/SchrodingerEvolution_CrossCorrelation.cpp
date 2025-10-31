@@ -38,20 +38,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-
-/** @brief SchrodingerEvolution_CrossCorrelation constructor.
- *
- * @param[in] amount: the integer specifying the maximum amount of matrices \f$ C^k \f$
- *                    to be used in calculations
- * @param[in] k: the integer specifying the polynomial order
- * @param[in] t: the integer specifying the scaling basis type
- *
- * @details It checks if the order and type are meaningful and then reads matrices from a file.
- * By default the file has some information about the data stored,
- * so the first interger to read is describing the size of the documentation text.
- * 
- * 
- */
 SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int amount, int k, int t)
     : type(t), order(k), amount(amount)
 {
@@ -66,10 +52,8 @@ SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int
     }
 
     setCCCPath(details::find_filters());
-
     readCCCBin();
 }
-
 
 void SchrodingerEvolution_CrossCorrelation::setCCCPath(const std::string &lib) {
     switch (this->type) {
@@ -87,48 +71,24 @@ void SchrodingerEvolution_CrossCorrelation::setCCCPath(const std::string &lib) {
 void SchrodingerEvolution_CrossCorrelation::readCCCBin()
 {
     std::ifstream input_file(this->path.c_str(), std::ios::binary);
-
     if (not input_file) MSG_ABORT("Could not open cross correlation: " << this->path);
 
-    // Read the text length
     int text_length;
     input_file.read(reinterpret_cast<char*>(&text_length), sizeof(text_length));
 
-    // Read the Unicode characters
     std::vector<char32_t> unicode_chars(text_length);
     input_file.read(reinterpret_cast<char*>(unicode_chars.data()), sizeof(char32_t) * text_length);
 
-    // Read the amount of matrices
     int K;
     input_file.read(reinterpret_cast<char*>(&K), sizeof(K));
 
-    // Read the size/order of each matrix
     int order;
     input_file.read(reinterpret_cast<char*>(&order), sizeof(order));
 
-    // Read the matrices
     std::vector<Eigen::MatrixXd> C_even(K, Eigen::MatrixXd(order, order));
     auto data_amount = order * order * sizeof(double);
     for (auto& matrix : C_even) input_file.read(reinterpret_cast<char*>(matrix.data()), data_amount);
-/*
 
-    // Print the text length
-    std::cout << text_length << std::endl;
-    
-    // Print the text
-    for (char32_t c : unicode_chars) {
-        std::wcout << static_cast<wchar_t>(c);
-    }
-    // Print the matrices
-    std::cout << std::endl;
-    std::cout << "----------------------------------" << std::endl;
-    for (auto& matrix : C_even)
-    {
-        std::cout << matrix  << std::endl;
-        std::cout << "----------------------------------" << std::endl;
-    }
-*/
-    // Create matrix containing the appropriate amount of coefficients
     int Order = this->order + 1;
     for (int k = 0; k < this->amount; k++)
     {

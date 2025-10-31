@@ -23,22 +23,13 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- *
- *
- *  \date April 30, 2010
- *  \author Stig Rune Jensen  \n
- *          CTCC, University of Tromsø
- *
- *
- */
-
 #include "RepresentableFunction.h"
 #include "utils/Printer.h"
 
 namespace mrcpp {
 
-template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(const double *a, const double *b) {
+template <int D, typename T>
+RepresentableFunction<D, T>::RepresentableFunction(const double *a, const double *b) {
     if (a == nullptr or b == nullptr) {
         this->bounded = false;
         this->A = nullptr;
@@ -55,8 +46,8 @@ template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(
     }
 }
 
-/** Constructs a new function with same bounds as the input function */
-template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(const RepresentableFunction<D, T> &func) {
+template <int D, typename T>
+RepresentableFunction<D, T>::RepresentableFunction(const RepresentableFunction<D, T> &func) {
     if (func.isBounded()) {
         this->bounded = true;
         this->A = new double[D];
@@ -72,13 +63,14 @@ template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(
     }
 }
 
-/** Copies function, not bounds. Use copy constructor if you want an
- * identical function. */
-template <int D, typename T> RepresentableFunction<D, T> &RepresentableFunction<D, T>::operator=(const RepresentableFunction<D, T> &func) {
+template <int D, typename T>
+RepresentableFunction<D, T> &
+RepresentableFunction<D, T>::operator=(const RepresentableFunction<D, T> &func) {
     return *this;
 }
 
-template <int D, typename T> RepresentableFunction<D, T>::~RepresentableFunction() {
+template <int D, typename T>
+RepresentableFunction<D, T>::~RepresentableFunction() {
     if (this->isBounded()) {
         delete[] this->A;
         delete[] this->B;
@@ -87,7 +79,8 @@ template <int D, typename T> RepresentableFunction<D, T>::~RepresentableFunction
     this->B = nullptr;
 }
 
-template <int D, typename T> void RepresentableFunction<D, T>::setBounds(const double *a, const double *b) {
+template <int D, typename T>
+void RepresentableFunction<D, T>::setBounds(const double *a, const double *b) {
     if (a == nullptr or b == nullptr) { MSG_ERROR("Invalid arguments"); }
     if (not isBounded()) {
         this->bounded = true;
@@ -101,7 +94,8 @@ template <int D, typename T> void RepresentableFunction<D, T>::setBounds(const d
     }
 }
 
-template <int D, typename T> bool RepresentableFunction<D, T>::outOfBounds(const Coord<D> &r) const {
+template <int D, typename T>
+bool RepresentableFunction<D, T>::outOfBounds(const Coord<D> &r) const {
     if (not isBounded()) { return false; }
     for (int d = 0; d < D; d++) {
         if (r[d] < getLowerBound(d)) return true;

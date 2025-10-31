@@ -23,6 +23,30 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ * @file ABGVCalculator.cpp
+ * @brief Local block assembly for the Alpert–Beylkin–Gines–Vozovoi derivative operator.
+ *
+ * @details
+ * This module implements the calculator that fills the per-node matrix blocks for the
+ * ABGV derivative operator used in multiresolution form. It is consumed by a
+ * TreeBuilder to populate an OperatorTree with local stencil entries expressed in
+ * the chosen scaling basis (interpolating or Legendre).
+ *
+ * The assembly depends on:
+ * - the basis type and quadrature order,
+ * - precomputed endpoint values of basis functions on the reference interval [0,1],
+ * - a basis-dependent local derivative matrix K,
+ * - two boundary weights A and B that select central, forward, backward, or
+ *   semi-local differences.
+ *
+ * For each operator node the calculator determines the relative logical offset
+ * between interacting cells. Only three cases produce non-zero local couplings:
+ * left neighbor, same cell, and right neighbor. The four component blocks of the
+ * 2-by-2 cell coupling are then filled accordingly, rescaled to the current level,
+ * compressed to multiwavelet form, and cached with per-node norms.
+ */
+
 #include "ABGVCalculator.h"
 #include "core/InterpolatingBasis.h"
 #include "core/LegendreBasis.h"
@@ -35,6 +59,22 @@ using Eigen::VectorXd;
 
 namespace mrcpp {
 
+/**
+ * @brief Construct an ABGVCalculator and precompute basis-dependent tables.
+ *
+ * @param basis Scaling basis that defines quadrature order and function family.
+ * @param a     Left boundary weight that controls semi-local coupling.
+ * @param b     Right boundary weight that controls semi-local coupling.
+ *
+ * @details
+ * The constructor allocates and fills:
+ * - K: a kp1-by-kp1 local derivative matrix assembled on the reference cell,
+ * - valueZero: endpoint values phi_i(0) for all basis indices,
+ * - valueOne:  endpoint values phi_i(1) for all basis indices.
+ *
+ * The exact formulas are basis dependent and computed in calcKMatrix and
+ * calcValueVectors respectively.
+ */
 ABGVCalculator::ABGVCalculator(const ScalingBasis &basis, double a, double b)
         : A(a)
         , B(b) {
@@ -46,6 +86,18 @@ ABGVCalculator::ABGVCalculator(const ScalingBasis &basis, double a, double b)
     calcValueVectors(basis);
 }
 
+/**
+ * @brief Precompute endpoint values of scaling functions on [0, 1].
+ *
+ * @param basis Scaling basis.
+ *
+ * @details
+ * - Interpolating basis: values are obtained by direct evaluation at 0 and 1.
+ * - Legendre basis on [0, 1]: closed-form values are used.
+ *   For index i we set
+ *     valueOne(i)  = sqrt(2*i + 1),
+ *     valueZero(i) = (-1)^i * sqrt(2*i + 1).
+ */
 void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
@@ -72,6 +124,19 @@ void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
     }
 }
 
+/**
+ * @brief Assemble the local derivative matrix K on the reference cell.
+ *
+ * @param basis Scaling basis.
+ *
+ * @details
+ * The construction of K depends on the basis family:
+ * - Interpolating basis: K(i,j) = 2 * sqrt(w_j) * d(phi_i)/dx evaluated at x_j,
+ *   where (x_j, w_j) are Gauss–Legendre quadrature nodes and weights provided
+ *   by QuadratureCache. The factor 2 accounts for mapping from [-1,1] to [0,1].
+ * - Legendre basis: a closed-form sparse pattern is used where K(j,i) is non-zero
+ *   only if (i - j) is odd, in which case K(j,i) = 2 * sqrt(2i+1) * sqrt(2j+1).
+ */
 void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
     double sqrtCoef[kp1];
@@ -101,6 +166,27 @@ void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     }
 }
 
+/**
+ * @brief Fill the local operator block for a given operator node and finalize it.
+ *
+ * @param node Operator node to be populated.
+ *
+ * @details
+ * The node couples two 1D intervals at the same scale; its logical index encodes
+ * which pair is assembled. Let l = idx[1] - idx[0]. Three cases are handled:
+ *
+ * - l =  0: intra-cell coupling. All four sub-blocks are filled using endpoint
+ *   values and K, with boundary weights A and B selecting central or semi-local
+ *   behavior.
+ * - l = +1: right neighbor coupling. Only the block that mixes left and right
+ *   components is filled, proportional to B.
+ * - l = -1: left neighbor coupling. Only the symmetric block is filled,
+ *   proportional to A.
+ *
+ * After filling, all entries are scaled by 2^(n+1) where n = idx.getScale() to
+ * account for the derivative scaling at that level, then the node is transformed
+ * with compression, marked as having coefficients, and its norms are computed.
+ */
 void ABGVCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
 

@@ -48,7 +48,9 @@
 namespace mrcpp {
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                                            GaussExp<1> &kernel,
+                                            double prec)
         : MWOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
 
@@ -62,7 +64,11 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
 }
 
 template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
+ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                                            GaussExp<1> &kernel,
+                                            double prec,
+                                            int root,
+                                            int reach)
         : MWOperator<D>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
@@ -75,7 +81,8 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
-template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
+template <int D>
+void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
     auto k_mra = this->getKernelMRA();
     auto o_mra = this->getOperatorMRA();
 
@@ -83,18 +90,18 @@ template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, do
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
     for (int i = 0; i < kernel.size(); i++) {
-        // Rescale Gaussian for D-dim application
         auto *k_func = kernel.getFunc(i).copy();
-        k_func->setCoef(std::copysign(std::pow(std::abs(k_func->getCoef()), 1.0 / D), k_func->getCoef()));
+        k_func->setCoef(std::copysign(std::pow(std::abs(k_func->getCoef()), 1.0 / D),
+                                      k_func->getCoef()));
 
         FunctionTree<1> k_tree(k_mra);
-        mrcpp::build_grid(k_tree, *k_func);      // Generate empty grid to hold narrow Gaussian
-        mrcpp::project(k_prec, k_tree, *k_func); // Project Gaussian starting from the empty grid
+        mrcpp::build_grid(k_tree, *k_func);
+        mrcpp::project(k_prec, k_tree, *k_func);
         delete k_func;
 
         CrossCorrelationCalculator calculator(k_tree);
         auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
-        builder.build(*o_tree, calculator, adaptor, -1); // Expand 1D kernel into 2D operator
+        builder.build(*o_tree, calculator, adaptor, -1);
 
         Timer trans_t;
         o_tree->mwTransform(BottomUp);
@@ -107,7 +114,8 @@ template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, do
     }
 }
 
-template <int D> MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
+template <int D>
+MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
     const BoundingBox<D> &box = this->MRA.getWorldBox();
     const ScalingBasis &basis = this->MRA.getScalingBasis();
 
@@ -130,12 +138,12 @@ template <int D> MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA
             if (box.size(i) > reach) reach = box.size(i);
         }
     }
+
     auto start_l = std::array<int, 1>{-reach};
-    auto tot_l = std::array<int, 1>{2 * reach};
-    // Zero in argument since operators are only implemented
-    // for uniform scaling factor
+    auto tot_l   = std::array<int, 1>{2 * reach};
     auto sf = std::array<double, 1>{box.getScalingFactor(0)};
     BoundingBox<1> kern_box(root, start_l, tot_l, sf);
+
     MultiResolutionAnalysis<1> kern_mra(kern_box, *kern_basis);
     delete kern_basis;
     return kern_mra;

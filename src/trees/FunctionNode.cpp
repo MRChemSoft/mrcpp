@@ -42,14 +42,14 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** Function evaluation.
- * Evaluate all polynomials defined on the node. */
 template <int D, typename T> T FunctionNode<D, T>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
     // The 1.0 appearing in the if tests comes from the period is always 1.0
     // from the point of view of this function.
-    if (this->getMWTree().getRootBox().isPeriodic()) { periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic()); }
+    if (this->getMWTree().getRootBox().isPeriodic()) {
+        periodic::coord_manipulation<D>(r, this->getMWTree().getRootBox().getPeriodic());
+    }
 
     this->threadSafeGenChildren();
     int cIdx = this->getChildIndex(r);
@@ -87,11 +87,6 @@ template <int D, typename T> T FunctionNode<D, T>::evalScaling(const Coord<D> &r
     return two_n * result;
 }
 
-/** Function integration.
- *
- * Wrapper for function integration, that requires different methods depending
- * on scaling type. Integrates the function represented on the node on the
- * full support of the node. */
 template <int D, typename T> T FunctionNode<D, T>::integrate() const {
     if (not this->hasCoefs()) { return 0.0; }
     switch (this->getScalingType()) {
@@ -106,26 +101,12 @@ template <int D, typename T> T FunctionNode<D, T>::integrate() const {
     }
 }
 
-/** Function integration, Legendre basis.
- *
- * Integrates the function represented on the node on the full support of the
- * node. The Legendre basis is particularly easy to integrate, as the work is
- * already done when calculating its coefficients. The coefficients of the
- * node is defined as the projection integral
- *          s_i = int f(x)phi_i(x)dx
- * and since the first Legendre function is the constant 1, the first
- * coefficient is simply the integral of f(x). */
 template <int D, typename T> T FunctionNode<D, T>::integrateLegendre() const {
     double n = (D * this->getScale()) / 2.0;
     double two_n = std::pow(2.0, -n);
     return two_n * this->getCoefs()[0];
 }
 
-/** Function integration, Interpolating basis.
- *
- * Integrates the function represented on the node on the full support of the
- * node. A bit more involved than in the Legendre basis, as is requires some
- * coupling of quadrature weights. */
 template <int D, typename T> T FunctionNode<D, T>::integrateInterpolating() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
@@ -139,7 +120,6 @@ template <int D, typename T> T FunctionNode<D, T>::integrateInterpolating() cons
     Eigen::Matrix<T, Eigen::Dynamic, 1> coefs;
     this->getCoefs(coefs);
     for (int p = 0; p < D; p++) {
-
         int n = 0;
         for (int i = 0; i < kp1_p[D - p - 1]; i++) {
             for (int j = 0; j < qOrder; j++) {
@@ -157,11 +137,6 @@ template <int D, typename T> T FunctionNode<D, T>::integrateInterpolating() cons
     return two_n * sum;
 }
 
-/** Function integration, Interpolating basis.
- *
- * Integrates the function represented on the node on the full support of the
- * node. A bit more involved than in the Legendre basis, as is requires some
- * coupling of quadrature weights. */
 template <int D, typename T> T FunctionNode<D, T>::integrateValues() const {
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
@@ -234,12 +209,6 @@ template <int D, typename T> void FunctionNode<D, T>::getValues(Matrix<T, Eigen:
     }
 }
 
-/** get coefficients corresponding to absolute value of function
- *
- * Leaves the original coefficients unchanged.
- * Note that we mus use T and not double, even if the norms are double, because
- * the transforms expect T types.
- */
 template <int D, typename T> void FunctionNode<D, T>::getAbsCoefs(T *absCoefs) {
     T *coefsTmp = this->coefs;
     for (int i = 0; i < this->n_coefs; i++) absCoefs[i] = coefsTmp[i]; // copy
@@ -381,9 +350,6 @@ template <int D, typename T> void FunctionNode<D, T>::dealloc() {
     }
 }
 
-/** Update the coefficients of the node by a mw transform of the scaling
- * coefficients of the children. Option to overwrite or add up existing
- * coefficients. Specialized for D=3 below. */
 template <int D, typename T> void FunctionNode<D, T>::reCompress() {
     MWNode<D, T>::reCompress();
 }
@@ -408,14 +374,6 @@ template <> void FunctionNode<3>::reCompress() {
     }
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -433,14 +391,6 @@ template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const Fu
 #endif
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -467,14 +417,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -493,14 +435,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -519,14 +453,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, c
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -547,14 +473,6 @@ template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const Fu
 #endif
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -583,14 +501,6 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -611,14 +521,6 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 

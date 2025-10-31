@@ -66,7 +66,6 @@ OperatorStatistics::~OperatorStatistics() {
     delete totCompCount;
 }
 
-/** Sum all node counters from all threads. */
 void OperatorStatistics::flushNodeCounters() {
     for (int i = 0; i < this->nThreads; i++) {
         this->totFCount += this->fCount[i];
@@ -80,14 +79,14 @@ void OperatorStatistics::flushNodeCounters() {
     }
 }
 
-/** Increment g-node usage counter. Needed for load balancing. */
-template <int D, typename T> void OperatorStatistics::incrementGNodeCounters(const MWNode<D, T> &gNode) {
+template <int D, typename T>
+void OperatorStatistics::incrementGNodeCounters(const MWNode<D, T> &gNode) {
     int thread = mrcpp_get_thread_num();
     this->gCount[thread]++;
 }
 
-/** Increment operator application counter. */
-template <int D, typename T> void OperatorStatistics::incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt) {
+template <int D, typename T>
+void OperatorStatistics::incrementFNodeCounters(const MWNode<D, T> &fNode, int ft, int gt) {
     int thread = mrcpp_get_thread_num();
     this->fCount[thread]++;
     (*this->compCount[thread])(ft, gt) += 1;

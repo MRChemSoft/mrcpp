@@ -23,15 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- *
- *
- *  \date June 2, 2010
- *  \author Stig Rune Jensen \n
- *          CTCC, University of Tromsø
- *
- */
-
 #include "LegendreBasis.h"
 #include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
@@ -40,44 +31,14 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-
-/** @brief Initialise Legendre scaling basis.
- * 
- * @details Fills
- * std::vector<Polynomial> \b funcs
- * declared in the base class
- * @ref ScalingBasis
- * with the Legendre scaling functions
- * \f[
- *    \phi_j(x)
- *    =
- *    \sqrt{ 2j + 1 } P_j(2x - 1)
- *    , \quad
- *    x \in (0, 1)
- *    , \quad
- *    j = 0, \ldots, k
- *    ,
- * \f]
- * where \f$ P_j \f$ are standard Legendre polynomials.
- * Here \f$ k \f$ is \b order declared in the base class.
- * 
- * @note These Legendre scaling functions are defined on the unit interval \f$ (0, 1) \f$.
- * 
- */
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
         LegendrePoly L_k(k, 2.0, 1.0);
-        L_k *= std::sqrt(2.0 * k + 1.0); // exact normalization
+        L_k *= std::sqrt(2.0 * k + 1.0);
         this->funcs.push_back(L_k);
     }
 }
 
-
-/** @brief In Progress by Evgueni...
- * 
- *
- * 
- */
 void LegendreBasis::calcQuadratureValues() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
@@ -85,26 +46,25 @@ void LegendreBasis::calcQuadratureValues() {
 
     for (int k = 0; k < q_order; k++) {
         const Polynomial &poly = this->getFunc(k);
-        for (int i = 0; i < q_order; i++) { this->quadVals(i, k) = poly.evalf(pts(i)); }
+        for (int i = 0; i < q_order; i++) {
+            this->quadVals(i, k) = poly.evalf(pts(i));
+        }
     }
 }
 
-
-/** @brief In Progress by Evgueni...
- * 
- *
- * 
- */
 void LegendreBasis::calcCVMaps() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
-    const VectorXd &pts = qc.getRoots(q_order);
+    const VectorXd &pts  = qc.getRoots(q_order);
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
         const Polynomial &poly = this->getFunc(k);
-        for (int i = 0; i < q_order; i++) { this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i); }
+        for (int i = 0; i < q_order; i++) {
+            this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i);
+        }
     }
+
     this->cvMap = this->vcMap.inverse();
 }
 

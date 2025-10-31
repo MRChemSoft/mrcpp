@@ -41,7 +41,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** @brief Calculate \f$ m^e\f$ for integers (for convenience, not speed!) */
 int math_utils::ipow(int m, int e) {
     if (e < 0) MSG_ABORT("Exponent cannot be negative: " << e)
     int result = 1;
@@ -49,35 +48,18 @@ int math_utils::ipow(int m, int e) {
     return result;
 }
 
-/** @brief Compute the norm of a matrix given as a vector
- *
- * The norm of the matrix is computed by iterating the following operation:
- *	\f$ x_n = M^t \cdot M \cdot x_{n-1} \f$
- *
- *	The norm of the matrix is obtained as:
- *	 \f$ ||M|| \lim_{n \rightarrow \infty} ||x_n||/||x_{n-1}||\f$
- */
 double math_utils::matrix_norm_2(const MatrixXd &M) {
     return M.lpNorm<2>();
 }
 
-/** Compute the norm of a matrix given as a vector.
- *
- * The norm of the matrix is obtained by taking the column with the
- * largest norm.
- */
 double math_utils::matrix_norm_1(const MatrixXd &M) {
     return M.colwise().lpNorm<1>().maxCoeff();
 }
 
-/** Compute the infinity norm of a matrix given as a vector.
- * The norm of the matrix is obtained by taking the row with the largest norm.
- */
 double math_utils::matrix_norm_inf(const MatrixXd &M) {
     return M.rowwise().lpNorm<1>().maxCoeff();
 }
 
-/** Compute the binomial coefficient n!/((n-j)! j!) */
 double math_utils::binomial_coeff(int n, int j) {
     double binomial_n_j = 1.0;
     if (n < 0 || j < 0 || j > n) {
@@ -95,11 +77,10 @@ double math_utils::binomial_coeff(int n, int j) {
 
 VectorXd math_utils::get_binomial_coefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
-    for (int k = 0; k <= order; k++) { coefs[k] = math_utils::binomial_coeff(order, k); }
+    for (int k = 0; k <= (int)order; k++) { coefs[k] = math_utils::binomial_coeff(order, k); }
     return coefs;
 }
 
-/** Compute k! = GAMMA(k+1) for integer argument k */
 double math_utils::factorial(int n) {
     int k = 1;
     double fac_n = 1.0;
@@ -117,7 +98,6 @@ double math_utils::factorial(int n) {
     return fac_n;
 }
 
-/** Compute the tensor product of two matrices */
 MatrixXd math_utils::tensor_product(const MatrixXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
@@ -130,7 +110,6 @@ MatrixXd math_utils::tensor_product(const MatrixXd &A, const MatrixXd &B) {
     return tprod;
 }
 
-/** Compute the tensor product of a matrix and a vector */
 MatrixXd math_utils::tensor_product(const MatrixXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Ac = A.cols();
@@ -140,7 +119,6 @@ MatrixXd math_utils::tensor_product(const MatrixXd &A, const VectorXd &B) {
     return tprod;
 }
 
-/** Compute the tensor product of a matrix and a vector */
 MatrixXd math_utils::tensor_product(const VectorXd &A, const MatrixXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
@@ -150,7 +128,6 @@ MatrixXd math_utils::tensor_product(const VectorXd &A, const MatrixXd &B) {
     return tprod;
 }
 
-/** Compute the tensor product of a column vector and a row vector */
 MatrixXd math_utils::tensor_product(const VectorXd &A, const VectorXd &B) {
     int Ar = A.rows();
     int Br = B.rows();
@@ -159,20 +136,18 @@ MatrixXd math_utils::tensor_product(const VectorXd &A, const VectorXd &B) {
     return tprod;
 }
 
-/** Compute the tensor product of a vector and itself */
 void math_utils::tensor_self_product(const VectorXd &A, VectorXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) { tprod.segment(i * Ar, Ar) = A(i) * A; }
 }
 
-/** Compute the tensor product of a vector and itself */
 void math_utils::tensor_self_product(const VectorXd &A, MatrixXd &tprod) {
     int Ar = A.rows();
     for (int i = 0; i < Ar; i++) { tprod.block(i, 0, 1, Ar) = A(i) * A; }
 }
 
-/** Matrix multiplication of the filter with the input coefficients */
-template <typename T> void math_utils::apply_filter(T *out, T *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
+template <typename T>
+void math_utils::apply_filter(T *out, T *in, const MatrixXd &filter, int kp1, int kp1_dm1, double fac) {
     if constexpr (std::is_same<T, double>::value) {
         Map<MatrixXd> f(in, kp1, kp1_dm1);
         Map<MatrixXd> g(out, kp1_dm1, kp1);
@@ -193,11 +168,6 @@ template <typename T> void math_utils::apply_filter(T *out, T *in, const MatrixX
         NOT_IMPLEMENTED_ABORT;
 }
 
-/** Make a nD-representation from 1D-representations of separable functions.
- *
- * This method uses the "output" vector as initial input, in order to
- * avoid the use of temporaries.
- */
 void math_utils::tensor_expand_coefs(int dim, int dir, int kp1, int kp1_d, const MatrixXd &primitive, VectorXd &expanded) {
     if (dir < dim - 1) {
         int idx = math_utils::ipow(kp1, dir + 1);
@@ -234,30 +204,13 @@ void math_utils::tensor_expand_coords_3D(int kp1, const MatrixXd &primitive, Mat
     }
 }
 
-/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix
- *
- * @param A: matrix to diagonalize (not modified)
- * @param b: vector to store eigenvalues
- *
- * Returns the matrix of eigenvectors and stores the eigenvalues in the input vector.
- */
 ComplexMatrix math_utils::diagonalize_hermitian_matrix(const ComplexMatrix &A, DoubleVector &diag) {
     Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(A.cols());
     es.compute(A);
-    diag = es.eigenvalues();  // real
-    return es.eigenvectors(); // complex
+    diag = es.eigenvalues();
+    return es.eigenvectors();
 }
 
-/** @brief Compute the power of a Hermitian matrix
- *
- * @param A: matrix
- * @param b: exponent
- *
- * The matrix is first diagonalized, then the diagonal elements are raised
- * to the given power, and the diagonalization is reversed. Sanity check for
- * eigenvalues close to zero, necessary for negative exponents in combination
- * with slightly negative eigenvalues.
- */
 ComplexMatrix math_utils::hermitian_matrix_pow(const ComplexMatrix &A, double b) {
     DoubleVector diag;
     ComplexMatrix U = diagonalize_hermitian_matrix(A, diag);
@@ -273,15 +226,6 @@ ComplexMatrix math_utils::hermitian_matrix_pow(const ComplexMatrix &A, double b)
     return U * B * U.adjoint();
 }
 
-/** @brief Compute the eigenvalues and eigenvectors of a Hermitian matrix block
- *
- * @param A: matrix to diagonalize (updated in place)
- * @param U: matrix of eigenvectors
- * @param nstart: upper left corner of block
- * @param nsize: size of block
- *
- * Assumes that the given block is a proper Hermitian sub matrix.
- */
 void math_utils::diagonalize_block(ComplexMatrix &A, ComplexMatrix &U, int nstart, int nsize) {
     Eigen::SelfAdjointEigenSolver<ComplexMatrix> es(nsize);
     es.compute(A.block(nstart, nstart, nsize, nsize));
@@ -291,15 +235,15 @@ void math_utils::diagonalize_block(ComplexMatrix &A, ComplexMatrix &U, int nstar
     A.block(nstart, nstart, nsize, nsize) = ei_val.asDiagonal();
 }
 
-/** Calculate the distance between two points in n-dimensions */
-template <int D> double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
+template <int D>
+double math_utils::calc_distance(const Coord<D> &a, const Coord<D> &b) {
     double r = 0.0;
     for (int i = 0; i < D; i++) { r += std::pow(a[i] - b[i], 2.0); }
     return std::sqrt(r);
 }
 
-/** Calculate the cartesian_product A x B */
-template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<T> A, std::vector<T> B) {
+template <class T>
+std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<T> A, std::vector<T> B) {
     std::vector<std::vector<T>> output;
     for (auto &a : A) {
         for (auto &b : B) output.push_back(std::vector<T>{a, b});
@@ -307,8 +251,8 @@ template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std
     return output;
 }
 
-/** Calculate the cartesian product between a matrix l_A  and the vector B */
-template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<std::vector<T>> l_A, std::vector<T> B) {
+template <class T>
+std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<std::vector<T>> l_A, std::vector<T> B) {
     std::vector<std::vector<T>> output;
     for (auto A : l_A) {
         for (auto &b : B) {
@@ -320,9 +264,8 @@ template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std
     return output;
 }
 
-/** Calculate the cartesian product between A vector and itself with A repeater,
- ie. reapeat 4 is equal to the cartesian product A x A x A x A */
-template <class T> std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<T> A, int dim) {
+template <class T>
+std::vector<std::vector<T>> math_utils::cartesian_product(std::vector<T> A, int dim) {
     std::vector<std::vector<T>> output;
     if (dim < 0) MSG_ABORT("Dimension has to be 1 or greater")
     if (dim == 1) {

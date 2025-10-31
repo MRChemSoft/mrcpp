@@ -76,8 +76,6 @@ template <int D> void index_manipulation(NodeIndex<D> &idx, const std::array<boo
     }
 }
 
-// Assumes a coordiate for a function defined on the [-1, 1] periodic cell.
-// If r[i] is outside the unit-cell the function value is mapped to the unit-cell.
 template <int D> void coord_manipulation(Coord<D> &r, const std::array<bool, D> &periodic) {
     for (auto i = 0; i < D; i++) {
         r[i] *= 0.5;

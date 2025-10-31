@@ -23,40 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- * Overview
- * --------
- * Implementation of the *Legendre* scaling basis used by the multiwavelet
- * framework. In contrast to the interpolating basis, this basis consists of
- * (shifted/scaled) Legendre polynomials with exact L^2-normalization.
- *
- * Responsibilities of this file:
- *  - Build the list of scaling polynomials {P_k} up to the scaling order.
- *  - Evaluate these polynomials at Gaussian quadrature nodes to populate
- *    the quadrature value matrix (basis-at-nodes).
- *  - Construct the coefficient↔value maps using quadrature weights; here
- *    vcMap is assembled directly and cvMap is its matrix inverse.
- *
- * Notation:
- *  - LegendrePoly(k, 2.0, 1.0) represents the degree-k Legendre polynomial
- *    evaluated on an affine-mapped interval (handled by LegendrePoly).
- *  - getScalingOrder() returns the polynomial order "s".
- *  - getQuadratureOrder() returns the number of quadrature nodes "q".
- *  - funcs    : container of basis polynomials (in the base class).
- *  - quadVals : matrix of basis values at quadrature nodes (size q×(s+1)).
- *  - vcMap    : value→coefficient map built from basis values and weights.
- *  - cvMap    : inverse of vcMap (coefficient→value).
- */
-
-/*
- *
- *
- *  \date June 2, 2010
- *  \author Stig Rune Jensen \n
- *          CTCC, University of Tromsø
- *
- */
-
 #include "LegendreBasis.h"
 #include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
@@ -96,9 +62,9 @@ namespace mrcpp {
  */
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
-        LegendrePoly L_k(k, 2.0, 1.0);                 // degree-k Legendre (mapped)
-        L_k *= std::sqrt(2.0 * k + 1.0);               // exact normalization factor
-        this->funcs.push_back(L_k);                    // store in basis list
+        LegendrePoly L_k(k, 2.0, 1.0);
+        L_k *= std::sqrt(2.0 * k + 1.0);
+        this->funcs.push_back(L_k);
     }
 }
 
@@ -116,12 +82,12 @@ void LegendreBasis::initScalingBasis() {
 void LegendreBasis::calcQuadratureValues() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
-    const VectorXd &pts = qc.getRoots(q_order);        // x_i, i = 0..q-1
+    const VectorXd &pts = qc.getRoots(q_order);
 
     for (int k = 0; k < q_order; k++) {
-        const Polynomial &poly = this->getFunc(k);     // P_k
+        const Polynomial &poly = this->getFunc(k);
         for (int i = 0; i < q_order; i++) {
-            this->quadVals(i, k) = poly.evalf(pts(i)); // quadVals(i,k) = P_k(x_i)
+            this->quadVals(i, k) = poly.evalf(pts(i));
         }
     }
 }
@@ -148,10 +114,9 @@ void LegendreBasis::calcQuadratureValues() {
 void LegendreBasis::calcCVMaps() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
-    const VectorXd &pts  = qc.getRoots(q_order);       // x_i
-    const VectorXd &wgts = qc.getWeights(q_order);     // w_i
+    const VectorXd &pts  = qc.getRoots(q_order);
+    const VectorXd &wgts = qc.getWeights(q_order);
 
-    // Assemble vcMap(i,k) = P_k(x_i) * w_i
     for (int k = 0; k < q_order; k++) {
         const Polynomial &poly = this->getFunc(k);
         for (int i = 0; i < q_order; i++) {
@@ -159,7 +124,6 @@ void LegendreBasis::calcCVMaps() {
         }
     }
 
-    // Invert to obtain cvMap (coefficient→value).
     this->cvMap = this->vcMap.inverse();
 }
 

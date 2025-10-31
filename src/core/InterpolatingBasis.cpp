@@ -23,40 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- * Overview
- * --------
- * Implementation of the interpolating multiwavelet *scaling* basis setup.
- *
- * The goal of this class is to build a set of polynomials {I_k} such that
- * they are *interpolatory* with respect to a chosen Gaussian quadrature:
- *   • I_k evaluated at quadrature nodes (roots) forms an identity matrix.
- *   • The basis is normalized w.r.t. the quadrature weights.
- *
- * Key ingredients:
- *   - QuadratureCache supplies (roots, weights) for a given quadrature order q.
- *   - LegendrePoly(k, 2.0, 1.0) provides a scaled/shifted Legendre polynomial
- *     of degree k (the exact affine scaling is handled by LegendrePoly).
- *   - Each interpolating basis polynomial I_k is assembled as a linear
- *     combination of Legendre polynomials, then scaled by sqrt(weight_k) so
- *     that the quadrature-induced inner-product is normalized.
- *
- * Data members touched here (belonging to InterpolatingBasis):
- *   - funcs    : vector of Polynomial objects storing the scaling basis {I_k}.
- *   - quadVals : matrix of values of basis at quadrature nodes (made identity).
- *   - cvMap    : diagonal map from coefficient-space → value-space at nodes.
- *   - vcMap    : diagonal map from value-space at nodes → coefficient-space.
- */
-
-/*
- *
- *
- *  \date June 2, 2010
- *  \author Stig Rune Jensen \n
- *          CTCC, University of Tromsø
- *
- */
-
 #include "InterpolatingBasis.h"
 
 #include <cmath>
@@ -67,7 +33,6 @@
 using namespace Eigen;
 
 namespace mrcpp {
-
 /**
  * @brief Build the set of interpolating scaling polynomials {I_k}.
  *
@@ -122,33 +87,25 @@ void InterpolatingBasis::initScalingBasis() {
     const VectorXd roots = qc.getRoots(qOrder);   // size q
     const VectorXd wgts  = qc.getWeights(qOrder); // size q
 
-    // Precompute Legendre polynomials L_k (scaled/shifted variant).
+void InterpolatingBasis::initScalingBasis() {
+    int qOrder = getQuadratureOrder();
+    int sOrder = getScalingOrder();
+
+    getQuadratureCache(qc);
+    const VectorXd roots = qc.getRoots(qOrder);
+    const VectorXd wgts  = qc.getWeights(qOrder);
+
     std::vector<LegendrePoly> L_k;
     for (int k = 0; k < qOrder; k++) { L_k.push_back(LegendrePoly(k, 2.0, 1.0)); }
 
-    // Build one interpolating polynomial I_k for each quadrature node k.
     for (int k = 0; k < qOrder; k++) {
-        // Start from a copy of L_s. The comment explains the loop-order choice:
-        // We avoid "adding higher-order into lower-order"; begin at top degree.
         Polynomial I_k(L_k[sOrder]);
-
-        // Seed I_k with the value of L_s at the k-th node times (2s+1).
-        // This sets up the leading contribution at node k.
         I_k *= L_k[sOrder].evalf(roots(k)) * (2.0 * sOrder + 1);
-
-        // Accumulate lower degrees i = q-2 down to 0:
-        // Each step adds val * L_i, where val depends on L_i evaluated at
-        // the current node and the usual (2i+1) normalization factor.
         for (int i = qOrder - 2; i >= 0; i--) {
             double val = L_k[i].evalf(roots(k)) * (2.0 * i + 1);
             I_k.addInPlace(val, L_k[i]);
         }
-
-        // Normalize with the square root of the quadrature weight at node k,
-        // so that later the coefficient↔value maps are simple diagonal scalings.
         I_k *= std::sqrt(wgts[k]);
-
-        // Save the constructed interpolatory scaling function for node k.
         this->funcs.push_back(I_k);
     }
 }
@@ -187,8 +144,8 @@ void InterpolatingBasis::calcCVMaps() {
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
-        this->cvMap(k, k) = std::sqrt(1.0 / wgts(k)); // coeff → values
-        this->vcMap(k, k) = std::sqrt(wgts(k));       // values → coeff
+        this->cvMap(k, k) = std::sqrt(1.0 / wgts(k));
+        this->vcMap(k, k) = std::sqrt(wgts(k));
     }
 }
 

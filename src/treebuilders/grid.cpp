@@ -23,41 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file grid.cpp
- * @brief Utilities for constructing, copying, clearing, and refining
- *        multiresolution grids and functions.
- *
- * @details
- * This module provides a unified set of routines for:
- *
- * - **Uniform grid construction** by splitting all leaves a fixed number of times.
- * - **Analytic-driven/adaptive grid construction** using a
- *   #mrcpp::RepresentableFunction as a splitter oracle.
- * - **Gaussian-expansion–driven grid construction** that places resolution
- *   according to Gaussian positions and exponents (supports periodic and
- *   non-periodic worlds).
- * - **Copying grids** (structure only) and **copying functions** (coefficients)
- *   between trees with the same #mrcpp::MultiResolutionAnalysis.
- * - **Clearing** coefficients on an existing grid without altering its topology.
- * - **Refining** an existing grid either uniformly, by precision-driven
- *   wavelet criteria, by another reference tree, or by an analytic function.
- *
- * All routines operate on #mrcpp::FunctionTree objects (and component-wise on
- * #mrcpp::CompFunction where relevant). Behind the scenes, they use
- * #mrcpp::TreeBuilder with different adaptors:
- *
- * - #mrcpp::SplitAdaptor: unconditional splitting.
- * - #mrcpp::WaveletAdaptor: split by wavelet-based precision criterion.
- * - #mrcpp::AnalyticAdaptor: split by analytic visibility/zero checks.
- * - #mrcpp::CopyAdaptor: split to match an existing tree structure.
- *
- * @note Unless otherwise stated, all "build_grid" functions **extend** the
- *       current grid of the output tree; they do not clear it first. Use
- *       #copy_grid when you want the output to match another grid exactly
- *       (it clears first).
- */
-
 #include "grid.h"
 #include "AnalyticAdaptor.h"
 #include "CopyAdaptor.h"
@@ -73,46 +38,14 @@
 
 namespace mrcpp {
 
-/**
- * @brief Build an **empty** grid by uniform refinement.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out    Output tree whose grid is refined.
- * @param[in]  scales Number of uniform refinement sweeps to apply.
- *
- * @details
- * Performs `scales` iterations of unconditional splitting on **all** current
- * leaf nodes (using #mrcpp::SplitAdaptor). No coefficients are created; this
- * only modifies the grid topology.
- *
- * @note Starts from the existing grid of @p out and extends it.
- */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, int scales) {
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
     DefaultCalculator<D, T> calculator;
-    SplitAdaptor<D, T> adaptor(maxScale, true); // Splits all nodes
+    SplitAdaptor<D, T> adaptor(maxScale, true);
     for (auto n = 0; n < scales; n++) builder.build(out, calculator, adaptor, 1);
 }
 
-/**
- * @brief Build an **empty** grid guided by an analytic function (adaptive).
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out     Output tree whose grid will be extended.
- * @param[in]  inp     Analytic function used as a splitting oracle.
- * @param[in]  maxIter Maximum number of refinement iterations (-1 = unbounded).
- *
- * @details
- * Uses #mrcpp::AnalyticAdaptor to ask the analytic function @p inp whether a
- * node is visible at a given scale and whether it is identically zero on the
- * node interval. Nodes are split until convergence or @p maxIter is reached.
- *
- * @note Requires @p inp to implement `isVisibleAtScale()` and
- *       `isZeroOnInterval()`.
- */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const RepresentableFunction<D, T> &inp, int maxIter) {
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
@@ -122,25 +55,6 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, const Repr
     print::separator(10, ' ');
 }
 
-/**
- * @brief Build an **empty** grid guided by a Gaussian expansion (adaptive).
- *
- * @tparam D Spatial dimension.
- * @param[out] out     Output tree whose grid will be extended.
- * @param[in]  inp     Gaussian expansion.
- * @param[in]  maxIter Maximum number of refinement iterations (-1 = unbounded).
- *
- * @details
- * For a non-periodic world:
- *   iterates over all Gaussians in @p inp and drives refinement with
- *   #mrcpp::AnalyticAdaptor using each Gaussian's position and exponent.
- *
- * For a periodic world:
- *   copies and reuses the same logic via temporary Gaussian objects so that
- *   periodic replication is handled consistently.
- *
- * Higher exponents imply finer resolution near the Gaussian center.
- */
 template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, int maxIter) {
     if (!out.getMRA().getWorldBox().isPeriodic()) {
         auto maxScale = out.getMRA().getMaxScale();
@@ -152,7 +66,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
         }
     } else {
         auto period = out.getMRA().getWorldBox().getScalingFactors();
-        (void)period; // currently unused; kept to document intent
+        (void)period;
         for (auto i = 0; i < inp.size(); i++) {
             auto *gauss = inp.getFunc(i).copy();
             build_grid(out, *gauss, maxIter);
@@ -162,21 +76,6 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
     print::separator(10, ' ');
 }
 
-/**
- * @brief Build an **empty** grid by taking the union with another MW tree.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out     Output tree to be extended.
- * @param[in]  inp     Input tree whose structure drives refinement.
- * @param[in]  maxIter Maximum number of refinement iterations (-1 = unbounded).
- *
- * @details
- * Uses #mrcpp::CopyAdaptor to ensure that any node that exists (and has
- * children) in @p inp will also exist in @p out after the call.
- *
- * @warning @p out and @p inp must share the same #mrcpp::MultiResolutionAnalysis.
- */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     auto maxScale = out.getMRA().getMaxScale();
@@ -187,21 +86,6 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTr
     print::separator(10, ' ');
 }
 
-/**
- * @brief Build an **empty** grid by taking the union of several MW trees.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out     Output tree to be extended.
- * @param[in]  inp     Vector of (coef, tree) pairs.
- * @param[in]  maxIter Maximum number of refinement iterations (-1 = unbounded).
- *
- * @details
- * Uses #mrcpp::CopyAdaptor to extend @p out so that all nodes present in any
- * of the input trees are represented in the resulting grid (union).
- *
- * @warning All trees must share the same #mrcpp::MultiResolutionAnalysis as @p out.
- */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter) {
     for (auto i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
@@ -214,68 +98,24 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTr
     print::separator(10, ' ');
 }
 
-/**
- * @brief Convenience overload: build a grid from a list of tree pointers.
- */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter) {
     FunctionTreeVector<D, T> inp_vec;
     for (auto *t : inp) inp_vec.push_back({1.0, t});
     build_grid(out, inp_vec, maxIter);
 }
 
-/**
- * @brief Copy a function from one tree to the fixed grid of another.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out Output tree (grid must already exist).
- * @param[in]  inp Input tree (source of coefficients).
- *
- * @details
- * Traverses the **current leaves** of @p out and copies the corresponding
- * coefficients from @p inp where nodes align, using the addition kernel
- * with fixed grid (no refinement).
- *
- * @note Overwrites existing coefficients in @p out; does not modify its grid.
- */
 template <int D, typename T> void copy_func(FunctionTree<D, T> &out, FunctionTree<D, T> &inp) {
     FunctionTreeVector<D, T> tmp_vec;
     tmp_vec.push_back(std::make_tuple(1.0, &inp));
     add(-1.0, out, tmp_vec);
 }
 
-/**
- * @brief Make @p out's grid an exact copy of @p inp's grid (clears first).
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[out] out Output tree to be rebuilt.
- * @param[in]  inp Input tree supplying the grid structure.
- *
- * @details
- * Clears @p out completely (removes all nodes) and then extends its grid to
- * match @p inp using #build_grid(out, inp).
- *
- * @warning @p out and @p inp must share the same #mrcpp::MultiResolutionAnalysis.
- */
 template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     out.clear();
     build_grid(out, inp);
 }
 
-/**
- * @brief Component-wise grid copy for composite functions (clears first).
- *
- * @tparam D Spatial dimension.
- * @param[out] out Destination composite function.
- * @param[in]  inp Source composite function.
- *
- * @details
- * Recreates @p out with the same number of components and data parameters as
- * @p inp, then for each component copies the grid using the tree-based
- * #build_grid overload.
- */
 template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
     out.free();
     out.func_ptr->data = inp.func_ptr->data;
@@ -286,63 +126,23 @@ template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
     }
 }
 
-/**
- * @brief Clear coefficients on an existing grid (topology unchanged).
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[in,out] out Tree whose coefficients will be zeroed.
- *
- * @details
- * Uses #mrcpp::TreeBuilder::clear with #mrcpp::DefaultCalculator to reset
- * coefficients while preserving node structure.
- */
 template <int D, typename T> void clear_grid(FunctionTree<D, T> &out) {
     TreeBuilder<D, T> builder;
     DefaultCalculator<D, T> calculator;
     builder.clear(out, calculator);
 }
 
-/**
- * @brief Uniformly refine a grid and **transfer scaling coefficients**.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[in,out] out    Tree to refine.
- * @param[in]     scales Number of refinement sweeps.
- * @return Number of nodes that were split.
- *
- * @details
- * Splits all leaves `scales` times using #mrcpp::TreeBuilder::split with
- * coefficient transfer to children, so the function representation remains
- * unchanged while resolution increases.
- */
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, int scales) {
     auto nSplit = 0;
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
-    SplitAdaptor<D, T> adaptor(maxScale, true); // Splits all nodes
+    SplitAdaptor<D, T> adaptor(maxScale, true);
     for (auto n = 0; n < scales; n++) {
-        nSplit += builder.split(out, adaptor, true); // Transfers coefs to children
+        nSplit += builder.split(out, adaptor, true);
     }
     return nSplit;
 }
 
-/**
- * @brief Precision-driven refinement using wavelet criteria.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[in,out] out     Tree to refine.
- * @param[in]     prec    Precision target for split checks.
- * @param[in]     absPrec If true, use absolute precision; otherwise relative.
- * @return Number of nodes that were split.
- *
- * @details
- * Uses #mrcpp::WaveletAdaptor to test split conditions based on wavelet
- * coefficients against @p prec (absolute or relative). When splitting, scales
- * are updated by transferring coefficients to the children.
- */
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, double prec, bool absPrec) {
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
@@ -351,19 +151,6 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, double pre
     return nSplit;
 }
 
-/**
- * @brief Refine a grid to include all structure present in a reference tree.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[in,out] out Tree to refine (and receive coefficient transfer).
- * @param[in]     inp Reference tree that defines where @p out should split.
- * @return Number of nodes that were split.
- *
- * @details
- * Uses #mrcpp::CopyAdaptor to mirror structural refinement from @p inp into
- * @p out and transfers coefficients to children where splits occur.
- */
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA")
     auto maxScale = out.getMRA().getMaxScale();
@@ -373,20 +160,6 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, FunctionTr
     return nSplit;
 }
 
-/**
- * @brief Analytic-driven refinement using a representable function.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar coefficient type.
- * @param[in,out] out Tree to refine.
- * @param[in]     inp Analytic function to act as a split oracle.
- * @return Number of nodes that were split.
- *
- * @details
- * Uses #mrcpp::AnalyticAdaptor to request refinement where @p inp is visible
- * at scale and not identically zero on the cell. Coefficients are transferred
- * upon splitting so the represented function remains unchanged.
- */
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, const RepresentableFunction<D, T> &inp) {
     auto maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
@@ -394,8 +167,6 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, const Repr
     int nSplit = builder.split(out, adaptor, true);
     return nSplit;
 }
-
-// -------------------- explicit instantiations --------------------
 
 template void copy_grid(CompFunction<1> &out, CompFunction<1> &inp);
 template void copy_grid(CompFunction<2> &out, CompFunction<2> &inp);

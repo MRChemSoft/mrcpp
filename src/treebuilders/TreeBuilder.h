@@ -55,24 +55,24 @@ namespace mrcpp {
 template <int D, typename T>
 class TreeBuilder final {
 public:
-    /**
-     * @brief Adaptive build: iterate (calc → split) up to @p maxIter times.
-     *
-     * @param[in,out] tree       Target tree to (re)build/refine.
-     * @param[in,out] calculator Calculator used to fill coefficients/norms on the current grid.
-     * @param[in,out] adaptor    Refinement policy deciding which nodes to split.
-     * @param[in]     maxIter    Upper bound on calc/split passes (use a small integer; non-positive means 0 passes).
-     *
-     * @details
-     * The method performs:
-     *  - an initial @ref calc pass,
-     *  - up to `maxIter` refinement passes, each performing:
-     *      - `split(tree, adaptor, /*passCoefs=*/true)`
-     *      - `calc(tree, calculator)`
-     *  - any calculator post-processing hooks.
-     *
-     * Implementations typically stop early when `split` returns 0 (no new nodes).
-     */
+/**
+ * @brief Adaptive build: iterate (calc → split) up to @p maxIter times.
+ *
+ * @param[in,out] tree       Target tree to (re)build/refine.
+ * @param[in,out] calculator Calculator used to fill coefficients/norms on the current grid.
+ * @param[in,out] adaptor    Refinement policy deciding which nodes to split.
+ * @param[in]     maxIter    Upper bound on calc/split passes (use a small integer; non-positive means 0 passes).
+ *
+ * @details
+ * The method performs:
+ *  - an initial calc pass,
+ *  - up to @p maxIter refinement passes, each performing:
+ *      - split(tree, adaptor, passCoefs=true)
+ *      - calc(tree, calculator)
+ *  - any calculator post-processing hooks.
+ *
+ * Implementations typically stop early when split returns 0 (no new nodes).
+ */
     void build(MWTree<D, T> &tree,
                TreeCalculator<D, T> &calculator,
                TreeAdaptor<D, T> &adaptor,

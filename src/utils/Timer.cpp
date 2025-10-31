@@ -28,24 +28,15 @@
 
 namespace mrcpp {
 
-/** @returns New Timer object
- *  @param[in] start_timer: option to start timer immediately
- */
 Timer::Timer(bool start_timer) {
     if (start_timer) start();
 }
 
-/** @returns Copy of Timer object, including its current state
- *  @param[in] timer: Object to copy
- */
 Timer::Timer(const Timer &timer)
         : running(timer.running)
         , time_used(timer.time_used)
         , clock_start(timer.clock_start) {}
 
-/** @returns Copy of Timer object, including its current state
- *  @param[in] timer: Object to copy
- */
 Timer &Timer::operator=(const Timer &timer) {
     if (this != &timer) {
         this->running = timer.running;
@@ -55,28 +46,24 @@ Timer &Timer::operator=(const Timer &timer) {
     return *this;
 }
 
-/** @brief Start timer from zero */
 void Timer::start() {
     this->clock_start = now();
     this->time_used = 0.0;
     this->running = true;
 }
 
-/** @brief Resume timer from previous time */
 void Timer::resume() {
     if (this->running) MSG_WARN("Timer already running");
     this->clock_start = now();
     this->running = true;
 }
 
-/** @brief Stop timer */
 void Timer::stop() {
     if (not this->running) MSG_WARN("Timer not running");
     this->time_used += diffTime(now(), this->clock_start);
     this->running = false;
 }
 
-/** @returns Current elapsed time, in seconds */
 double Timer::elapsed() const {
     return (this->running) ? diffTime(now(), this->clock_start) : this->time_used;
 }

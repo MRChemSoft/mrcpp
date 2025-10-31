@@ -31,11 +31,6 @@
 
 namespace mrcpp {
 
-/** @brief SharedMemory constructor
- *
- *  @param[in] comm: Communicator sharing resources
- *  @param[in] sh_size: Memory size, in MB
- */
 template <typename T>
 SharedMemory<T>::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
         : sh_start_ptr(nullptr)
@@ -76,19 +71,6 @@ template <typename T> SharedMemory<T>::~SharedMemory() {
 #endif
 }
 
-/** @brief Send FunctionTree to a given MPI rank using blocking communication
- *
- *  @param[in] tree: FunctionTree to send
- *  @param[in] dst: MPI rank to send to
- *  @param[in] tag: unique identifier
- *  @param[in] comm: Communicator that defines ranks
- *  @param[in] nChunks: Number of memory chunks to send
- *
- *  @details The number of memory chunks must be known before we can send the
- *  tree. This can be specified in the last argument if known a priori, in order
- *  to speed up communication, otherwise it will be communicated in a separate
- *  step before the main communication.
- */
 template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
 #ifdef MRCPP_HAS_MPI
     auto &allocator = tree.getNodeAllocator();
@@ -108,19 +90,6 @@ template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, i
 #endif
 }
 
-/** @brief Receive FunctionTree from a given MPI rank using blocking communication
- *
- *  @param[in] tree: FunctionTree to write into
- *  @param[in] src: MPI rank to receive from
- *  @param[in] tag: unique identifier
- *  @param[in] comm: Communicator that defines ranks
- *  @param[in] nChunks: Number of memory chunks to receive
- *
- *  @details The number of memory chunks must be known before we can receive the
- *  tree. This can be specified in the last argument if known a priori, in order
- *  to speed up communication, otherwise it will be communicated in a separate
- *  step before the main communication.
- */
 template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm, int nChunks, bool coeff) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
@@ -146,16 +115,6 @@ template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, i
 #endif
 }
 
-/** @brief Share a FunctionTree among MPI processes that share the same physical memory
- *
- *  @param[in] tree: FunctionTree to write into
- *  @param[in] src: MPI rank that last updated the function
- *  @param[in] tag: unique identifier
- *  @param[in] comm: Communicator that defines ranks
- *
- *  @details This function should be called every time a shared function is
- *  updated, in order to update the local memory of each MPI process.
- */
 template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, int tag, mrcpp::mpi_comm comm) {
 #ifdef MRCPP_HAS_MPI
     Timer t1;

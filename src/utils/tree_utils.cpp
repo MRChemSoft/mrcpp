@@ -39,11 +39,6 @@
 
 namespace mrcpp {
 
-/** Calculate the threshold for the wavelet norm.
- *
- * Calculates the threshold that has to be met in the wavelet norm in order to
- * guarantee the precision in the function representation. Depends on the
- * square norm of the function and the requested relative accuracy. */
 template <int D, typename T> bool tree_utils::split_check(const MWNode<D, T> &node, double prec, double split_fac, bool abs_prec) {
     bool split = false;
     if (prec > 0.0) {
@@ -64,8 +59,6 @@ template <int D, typename T> bool tree_utils::split_check(const MWNode<D, T> &no
     return split;
 }
 
-/** Traverse tree along the Hilbert path and find nodes of any rankId.
- * Returns one nodeVector for the whole tree. GenNodes disregarded. */
 template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree, MWNodeVector<D, T> &table) {
     TreeIterator<D, T> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
@@ -81,8 +74,6 @@ template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree
     }
 }
 
-/** Traverse tree along the Hilbert path and find nodes of any rankId.
- * Returns one nodeVector per scale. GenNodes disregarded. */
 template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree, std::vector<MWNodeVector<D, T>> &table) {
     TreeIterator<D, T> it(tree, TopDown, Hilbert);
     it.setReturnGenNodes(false);
@@ -90,7 +81,6 @@ template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree
         MWNode<D, T> &node = it.getNode();
         if (node.getDepth() == 0) continue;
         int depth = node.getDepth() + tree.getNNegScales();
-        // Add one more element
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);
     }
@@ -98,18 +88,11 @@ template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree
     while (it.next()) {
         MWNode<D, T> &node = it.getNode();
         int depth = node.getDepth() + tree.getNNegScales();
-        // Add one more element
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);
     }
 }
 
-/** Make children scaling coefficients from parent
- * Other node info are not used/set
- * coeff_in are not modified.
- * The output is written directly into the 8 children scaling coefficients.
- * NB: ASSUMES that the children coefficients are separated by Children_Stride!
- */
 template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &tree, T *coeff_in, T *coeff_out, bool readOnlyScaling, int stride, bool b_overwrite) {
     int operation = Reconstruction;
     int kp1 = tree.getKp1();
@@ -127,8 +110,6 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
         ftlim = 1;
         ftlim2 = 2;
         ftlim3 = 4;
-        // NB: Careful: tmpcoeff tmpcoeff2 are not initialized to zero
-        // must not read these unitialized values!
     }
 
     overwrite = 0.0;
@@ -137,9 +118,6 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
     for (int gt = 0; gt < tDim; gt++) {
         T *out = tmpcoeff + gt * kp1_d;
         for (int ft = 0; ft < ftlim; ft++) {
-            // Operate in direction i only if the bits along other
-            // directions are identical. The bit of the direction we
-            // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
                 T *in = coeff_in + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
@@ -153,13 +131,10 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
     }
     if (D > 1) {
         i++;
-        mask = 2; // 1 << i;
+        mask = 2;
         for (int gt = 0; gt < tDim; gt++) {
             T *out = tmpcoeff2 + gt * kp1_d;
             for (int ft = 0; ft < ftlim2; ft++) {
-                // Operate in direction i only if the bits along other
-                // directions are identical. The bit of the direction we
-                // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
                     T *in = tmpcoeff + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
@@ -176,13 +151,10 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
         overwrite = 1.0;
         if (b_overwrite) overwrite = 0.0;
         i++;
-        mask = 4; // 1 << i;
+        mask = 4;
         for (int gt = 0; gt < tDim; gt++) {
-            T *out = coeff_out + gt * stride; // write right into children
+            T *out = coeff_out + gt * stride;
             for (int ft = 0; ft < ftlim3; ft++) {
-                // Operate in direction i only if the bits along other
-                // directions are identical. The bit of the direction we
-                // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
                     T *in = tmpcoeff2 + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
@@ -220,12 +192,6 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
 //    NOT_IMPLEMENTED_ABORT;
 //}
 
-/** Make parent from children scaling coefficients
- * Other node info are not used/set
- * coeff_in are not modified.
- * The output is read directly from the 8 children scaling coefficients.
- * NB: ASSUMES that the children coefficients are separated by Children_Stride!
- */
 template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *coeff_in, T *coeff_out, int stride) {
     int operation = Compression;
     int kp1 = tree.getKp1();
@@ -245,9 +211,6 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
     for (int gt = 0; gt < tDim; gt++) {
         T *out = coeff_out + gt * kp1_d;
         for (int ft = 0; ft < ftlim; ft++) {
-            // Operate in direction i only if the bits along other
-            // directions are identical. The bit of the direction we
-            // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
                 T *in = coeff_in + ft * stride;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
@@ -260,13 +223,10 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
         overwrite = 0.0;
     }
     i++;
-    mask = 2; // 1 << i;
+    mask = 2;
     for (int gt = 0; gt < tDim; gt++) {
         T *out = tmpcoeff + gt * kp1_d;
         for (int ft = 0; ft < ftlim2; ft++) {
-            // Operate in direction i only if the bits along other
-            // directions are identical. The bit of the direction we
-            // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
                 T *in = coeff_out + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
@@ -279,14 +239,10 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
         overwrite = 0.0;
     }
     i++;
-    mask = 4; // 1 << i;
+    mask = 4;
     for (int gt = 0; gt < tDim; gt++) {
         T *out = coeff_out + gt * kp1_d;
-        // T *out = coeff_out + gt * N_coeff;
         for (int ft = 0; ft < ftlim3; ft++) {
-            // Operate in direction i only if the bits along other
-            // directions are identical. The bit of the direction we
-            // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
                 T *in = tmpcoeff + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);

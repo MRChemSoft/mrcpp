@@ -87,14 +87,6 @@ void InterpolatingBasis::initScalingBasis() {
     const VectorXd roots = qc.getRoots(qOrder);   // size q
     const VectorXd wgts  = qc.getWeights(qOrder); // size q
 
-void InterpolatingBasis::initScalingBasis() {
-    int qOrder = getQuadratureOrder();
-    int sOrder = getScalingOrder();
-
-    getQuadratureCache(qc);
-    const VectorXd roots = qc.getRoots(qOrder);
-    const VectorXd wgts  = qc.getWeights(qOrder);
-
     std::vector<LegendrePoly> L_k;
     for (int k = 0; k < qOrder; k++) { L_k.push_back(LegendrePoly(k, 2.0, 1.0)); }
 

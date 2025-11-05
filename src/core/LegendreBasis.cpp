@@ -77,7 +77,6 @@ void LegendreBasis::initScalingBasis() {
  *  1) Obtain quadrature roots (points) of order q.
  *  2) For each basis polynomial P_k, evaluate it at all points x_i and store
  *     in the corresponding column k of quadVals.
->>>>>>> 797751c (documentation done insiede al core folder)
  */
 void LegendreBasis::calcQuadratureValues() {
     getQuadratureCache(qc);

@@ -39,8 +39,8 @@ namespace mrcpp {
 
 /**
  * @class MWNode
- * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Coefficient type (e.g. double, ComplexDouble).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  *
  * @brief Base class for Multiwavelet nodes
  *
@@ -53,8 +53,7 @@ namespace mrcpp {
  * nodes, pointer to the corresponding MWTree etc... See member and
  * data descriptions for details.
  *
- * @note
- * Nodes are created and managed by MWTree and specialized trees
+ * @note Nodes are created and managed by MWTree and specialized trees
  * (e.g., FunctionTree). Most users should not instantiate nodes
  * directly; instead, operate at the tree level.
  */
@@ -110,7 +109,7 @@ public:
 
     /**
      * @brief Test if the node is decending from a given NodeIndex, that is, if they have
-     * overlapping support.
+     * overlapping support
      * @param[in] idx the NodeIndex of the requested node
      */
     bool isAncestor(const NodeIndex<D> &idx) const;
@@ -153,7 +152,7 @@ public:
     /**
      * @brief Returns the quadrature points of this node
      *
-     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form
      *
      * @details The original quadrature points are fetched and then
      * dilated and translated. For each cartesian direction \f$ \alpha =
@@ -167,7 +166,7 @@ public:
     /**
      * @brief Returns the quadrature points of this node
      *
-     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form
      *
      * @details The original quadrature points are fetched and then
      * dilated and translated to match the quadrature points in the
@@ -183,7 +182,7 @@ public:
      * @brief Returns the quadrature points of this node
      *
      * @param[out] pts Expanded quadrature points in a \f$ d \times
-     * (k+1)^d \f$ matrix form.
+     * (k+1)^d \f$ matrix form
      *
      * @details The primitive quadrature points are used to obtain a
      * tensor-product representation collecting all \f$ (k+1)^d \f$
@@ -195,7 +194,7 @@ public:
      * @brief Returns the quadrature points of this node
      *
      * @param[out] pts Expanded quadrature points in a \f$ d \times
-     * 2^d(k+1)^d \f$ matrix form.
+     * 2^d(k+1)^d \f$ matrix form
      *
      * @details The primitive quadrature points of the children are used to obtain a
      * tensor-product representation collecting all \f$ 2^d (k+1)^d \f$
@@ -279,9 +278,9 @@ public:
     virtual void genParent();
 
     /**
-     * @brief Recursive deallocation of children and all their descendants.
+     * @brief Recursive deallocation of children and all their descendants
      *
-     * @details Leaves node as LeafNode and children[] as null pointer.
+     * @details Leaves node as LeafNode and children[] as null pointer
      */
     virtual void deleteChildren();
 
@@ -290,7 +289,7 @@ public:
 
     /**
      * @brief Coefficient-Value transform
-     * @param operation Forward (coef->value) or backward (value->coef).
+     * @param operation Forward (coef->value) or backward (value->coef)
      *
      * @details This routine transforms the scaling coefficients of the node to the
      * function values in the corresponding quadrature roots (of its children).
@@ -302,7 +301,7 @@ public:
 
     /**
      * @brief Multiwavelet transform
-     * @param operation compression (s0,s1->s,d) or reconstruction (s,d->s0,s1).
+     * @param operation Compression (s0,s1->s,d) or reconstruction (s,d->s0,s1)
      *
      * @details Application of the filters on one node to pass from a 0/1 (scaling
      * on child 0 and 1) representation to an s/d (scaling and
@@ -318,44 +317,53 @@ public:
      * is formally faster than the other algorithm, the separation of the
      * three dimensions prevent the possibility to use the norm of the
      * operator in order to discard a priori negligible contributions.
-     *
      */
     virtual void mwTransform(int operation);
 
     /**
-     * @brief Node-norm at an arbitrary index.
-     * @param idx Target index (may be at a finer scale).
-     * @return A node-wise norm consistent with the basis and scale.
+     * @brief Gives the norm (absolute value) of the node at the given NodeIndex
+     * @param[in] idx the NodeIndex of the requested node
+     *
+     * @details
+     * Recursive routine to find the node with a given NodeIndex. When an EndNode is
+     * found, do not generate any new node, but rather give the value of the norm
+     * assuming the function is uniformly distributed within the node.
      */
     double getNodeNorm(const NodeIndex<D> &idx) const;
 
-    /// @name Status flags
-    ///@{
-    bool hasParent() const { return (parent != nullptr) ? true : false; }
-    bool hasCoefs() const { return (this->status & FlagHasCoefs); }
-    bool isEndNode() const { return (this->status & FlagEndNode); }
-    bool isGenNode() const { return (this->status & FlagGenNode); }
-    bool isRootNode() const { return (this->status & FlagRootNode); }
-    bool isLeafNode() const { return not(this->status & FlagBranchNode); }
-    bool isAllocated() const { return (this->status & FlagAllocated); }
-    bool isBranchNode() const { return (this->status & FlagBranchNode); }
-    bool isLooseNode() const { return (this->status & FlagLooseNode); }
+    /*
+     * Getters and setters
+     */
+    bool hasParent() const { return (parent != nullptr) ? true : false; }   ///< @return Whether the node hsa a parent
+    bool hasCoefs() const { return (this->status & FlagHasCoefs); }         ///< @return Whether the node has coefficients
+    bool isEndNode() const { return (this->status & FlagEndNode); }         ///< @return Whether the node is an end node
+    bool isGenNode() const { return (this->status & FlagGenNode); }         ///< @return Whether the node is a generated node
+    bool isRootNode() const { return (this->status & FlagRootNode); }       ///< @return Whether the node is a root node
+    bool isLeafNode() const { return not(this->status & FlagBranchNode); }  ///< @return Whether the node is a leaf node
+    bool isAllocated() const { return (this->status & FlagAllocated); }     ///< @return Whether the node is fully allocated
+    bool isBranchNode() const { return (this->status & FlagBranchNode); }   ///< @return Whether the node is a leaf node
+    bool isLooseNode() const { return (this->status & FlagLooseNode); }     ///< @return Whether the node is a loose node
+
+    /**
+     * @brief Allows checking the state of a node against a state mask
+     * @param mask The status mask to compare against
+     * @return Whether the state of the node matches the given mask
+     */
     bool checkStatus(unsigned char mask) const { return (mask == (this->status & mask)); }
 
-    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }
-    void setIsEndNode() { SET_BITS(status, FlagEndNode); }
-    void setIsGenNode() { SET_BITS(status, FlagGenNode); }
-    void setIsRootNode() { SET_BITS(status, FlagRootNode); }
-    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }
-    void setIsAllocated() { SET_BITS(status, FlagAllocated); }
-    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }
-    void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }
-    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs); }
-    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }
-    void clearIsGenNode() { CLEAR_BITS(status, FlagGenNode); }
-    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }
-    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }
-    ///@}
+    void setHasCoefs() { SET_BITS(status, FlagHasCoefs | FlagAllocated); }  ///< @brief Marks the node as having coefficients
+    void setIsEndNode() { SET_BITS(status, FlagEndNode); }                  ///< @brief Marks the node as an end node
+    void setIsGenNode() { SET_BITS(status, FlagGenNode); }                  ///< @brief Marks the node as a generated node
+    void setIsRootNode() { SET_BITS(status, FlagRootNode); }                ///< @brief Marks the node as a root node
+    void setIsLeafNode() { CLEAR_BITS(status, FlagBranchNode); }            ///< @brief Marks the node as a leaf node
+    void setIsAllocated() { SET_BITS(status, FlagAllocated); }              ///< @brief Marks the node as allocated
+    void setIsBranchNode() { SET_BITS(status, FlagBranchNode); }            ///< @brief Marks the node as a leaf node
+    void setIsLooseNode() { SET_BITS(status, FlagLooseNode); }              ///< @brief Marks the node as a loose node
+    void clearHasCoefs() { CLEAR_BITS(status, FlagHasCoefs); }              ///< @brief Clears the mark for having coefficients
+    void clearIsEndNode() { CLEAR_BITS(status, FlagEndNode); }              ///< @brief Clears the mark for being an end node
+    void clearIsGenNode() { CLEAR_BITS(status, FlagGenNode); }              ///< @brief Clears the mark for being a generated node
+    void clearIsRootNode() { CLEAR_BITS(status, FlagRootNode); }            ///< @brief Clears the mark for being a root node
+    void clearIsAllocated() { CLEAR_BITS(status, FlagAllocated); }          ///< @brief Clears the mark for being allocated
 
     friend std::ostream &operator<<(std::ostream &o, const MWNode<D, T> &nd) { return nd.print(o); }
 
@@ -369,135 +377,363 @@ public:
     friend class FunctionNode<D, T>;
     friend class OperatorNode;
     friend class DerivativeCalculator<D, T>;
-    bool isComplex = false;               ///< Helper flag for mixed-real/complex workflows.
-    friend class FunctionTree<D, double>; ///< Allows complex trees to access real nodes when needed.
+    bool isComplex = false;                 // TODO put as one of the flags
+    friend class FunctionTree<D, double>;   // required if a ComplexDouble tree access a double node from another tree!
     friend class FunctionTree<D, ComplexDouble>;
-    int childSerialIx{-1};                ///< Index of first child in a serialized view, or -1 for leaves.
+    int childSerialIx{-1};                  ///< index of first child in a serial tree, or -1 for leaf nodes/end nodes
 
 protected:
-    // -------- Ownership and hierarchy --------
-    MWTree<D, T> *tree{nullptr};          ///< Tree the node belongs to.
-    MWNode<D, T> *parent{nullptr};        ///< Parent node (nullptr for roots).
-    MWNode<D, T> *children[1 << D];       ///< Array of 2^D children (valid if branch node).
+    MWTree<D, T> *tree{nullptr};            ///< Tree the node belongs to
+    MWNode<D, T> *parent{nullptr};          ///< Parent node (nullptr for root nodes)
+    MWNode<D, T> *children[1 << D];         ///< Array of 2^D children (valid if branch node)
 
-    // -------- Norms (cached) --------
-    double squareNorm{-1.0};              ///< Squared norm of all 2^D (k+1)^D coefficients.
-    double componentNorms[1 << D];        ///< Squared norms of the 2^D components.
-    double maxSquareNorm{-1.0};           ///< Maximum scaled squared norm among node and descendants.
-    double maxWSquareNorm{-1.0};          ///< Maximum scaled wavelet squared norm among node and descendants.
+    double squareNorm{-1.0};                ///< Squared norm of all 2^D (k+1)^D coefficients
+    double componentNorms[1 << D];          ///< Squared norms of the separated 2^D components
+    double maxSquareNorm{-1.0};             ///< Maximum squared norm among the node and descendants
+    double maxWSquareNorm{-1.0};            ///< Maximum wavelet squared norm among the node and descendants
+                                            ///< NB: must be set before used.
+    T *coefs{nullptr};                      ///< The 2^D (k+1)^D MW coefficients
+                                            ///< For example, in case of a one dimensional function \f$ f \f$
+                                            ///< this array equals \f$ s_0, \ldots, s_k, d_0, \ldots, d_k \f$,
+                                            ///< where scaling coefficients \f$ s_j = s_{jl}^n(f) \f$
+                                            ///< and wavelet coefficients \f$ d_j = d_{jl}^n(f) \f$.
+                                            ///< Here \f$ n, l \f$ are unique for every node.
+    int n_coefs{0};                         ///< Number of coefficients in @ref coefs.
 
-    // -------- Coefficients --------
-    T *coefs{nullptr};                    ///< Buffer of size 2^D (k+1)^D with MW coefficients.
-    int n_coefs{0};                       ///< Number of coefficients in @ref coefs.
+    int serialIx{-1};                       ///< Index in the serial tree
+    int parentSerialIx{-1};                 ///< Index of the parent in the serial tree, or -1 for root nodes
 
-    // -------- Serialization helpers --------
-    int serialIx{-1};                     ///< Index in the serial tree
-    int parentSerialIx{-1};               ///< Index of parent in the serial tree, or -1 for roots
+    NodeIndex<D> nodeIndex;                 ///< Scale and translation of this node.
+    HilbertPath<D> hilbertPath;             ///< Current Hilbert path state for child ordering.
 
-    // -------- Indexing and space-filling path --------
-    NodeIndex<D> nodeIndex;               ///< Scale and translation of this node.
-    HilbertPath<D> hilbertPath;           ///< Current Hilbert path state for child ordering.
-
-    // -------- Construction helpers --------
+    /**
+     * @brief MWNode default constructor
+     *
+     * @details Should be used only by NodeAllocator to obtain
+     *  virtual table pointers for the derived classes
+     */
     MWNode();
+
+    /**
+     * @brief MWNode constructor
+     * @param[in] tree The MWTree the root node belongs to
+     * @param[in] rIdx The integer specifying the corresponding root node
+     *
+     * @details Constructor for root nodes. It requires the corresponding
+     * MWTree and an integer to fetch the right NodeIndex.
+     */
     MWNode(MWTree<D, T> *tree, int rIdx);
+
+    /**
+     * @brief MWNode constructor
+     * @param[in] tree The MWTree the root node belongs to
+     * @param[in] idx The NodeIndex defining scale and translation of the node
+     *
+     * @details Constructor for an empty node, given the corresponding MWTree and NodeIndex
+     */
     MWNode(MWTree<D, T> *tree, const NodeIndex<D> &idx);
+
+    /**
+     * @brief MWNode constructor
+     * @param[in] parent Parent node
+     * @param[in] cIdx Child index of the current node
+     *
+     * @details Constructor for leaf nodes. It requires the corresponding
+     * parent and an integer to identify the correct child.
+     */
     MWNode(MWNode<D, T> *parent, int cIdx);
 
-    /// Free coefficient buffer and reset counters.
+    // Implemented in child classes
     virtual void dealloc();
 
-    /// Crop node based on precision; may trigger refinement.
+    /**
+     * @brief Recurse down until an EndNode is found, and then crop children below the given precision threshold
+     * @param prec The required precision
+     * @param splitFac Factor used in the split check (larger factor means tighter threshold for finer nodes)
+     * @param absPrec Flag to switch from relative (false) to absolute (true) precision.
+     * @return Whether the crop was successful
+     */
     bool crop(double prec, double splitFac, bool absPrec);
 
-    /// Initialize thread lock (when OpenMP is enabled).
+    /// @brief Initialize thread lock (when OpenMP is enabled).
     void initNodeLock() { MRCPP_INIT_OMP_LOCK(); }
 
-    /// Allocate coefficient buffer as `n_blocks * block_size`.
+    /**
+     * @brief Allocate the coefs vector
+     * @param n_blocks The number of blocks
+     * @param block_size The size of a block
+     *
+     * @details This is only used by loose nodes, because the loose nodes
+     * are not treated by the NodeAllocator class.
+     */
     virtual void allocCoefs(int n_blocks, int block_size);
 
-    /// Release coefficient buffer.
+    /**
+     * @brief Deallocate the coefs vector
+     *
+     * @details This is only used by loose nodes, because the loose nodes
+     * are not treated by the NodeAllocator class.
+     */
     virtual void freeCoefs();
 
-    /// Update cached maxima from descendants.
+    /**
+     * @brief recursively set maxSquaredNorm and maxWSquareNorm of parent and descendants
+     *
+     * @details
+     * normalization is such that a constant function gives constant value,
+     * i.e. *not* same normalization as a squareNorm
+     */
     void setMaxSquareNorm();
 
-    /// Invalidate cached maxima for this branch.
+    /// @brief Recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1
     void resetMaxSquareNorm();
 
-    /// Scaled total norm \f$ 2^{D n}\|c\|^2 \f$ (lazy).
+    /// @return The scaled square norm.
     double calcScaledSquareNorm() const { return std::pow(2.0, D * getScale()) * getSquareNorm(); }
 
-    /// Scaled wavelet norm \f$ 2^{D n}\|d\|^2 \f$ (lazy).
+    /// @return The scaled wavelet square norm.
     double calcScaledWSquareNorm() const { return std::pow(2.0, D * getScale()) * getWaveletNorm(); }
 
-    /// Component-wise norm computation hook.
+    /**
+     * @brief Calculate the norm of one component (NOT the squared norm!)
+     * @param i The component index
+     * @return The single component norm
+     */
     virtual double calcComponentNorm(int i) const;
 
-    /// Recompress local representation after edits.
+    /**
+     * @brief Update the coefficients of the node by a MW transform of the scaling
+     * coefficients of the children.
+     */
     virtual void reCompress();
 
-    /// Push coefficients from parent to all children.
+    /**
+     * @brief Forward MW transform from this node to its children
+     * @param overwrite If true, the coefficients of the children are
+     * overwritten. If false, the values are summed to the already present
+     * ones.
+     *
+     * @details It performs forward MW transform inserting the result
+     * directly in the right place for each child node. The children must
+     * already be present and its memory allocated for this to work
+     * properly.
+     */
     virtual void giveChildrenCoefs(bool overwrite = true);
 
-    /// Push coefficients from parent to a specific child.
+    /**
+     * @brief Forward MW transform to compute scaling coefficients of a single child
+     * @param[in] cIdx The child index
+     * @param[in] overwrite If true, the coefficients of the children are
+     * overwritten. If false, the values are summed to the already present
+     * ones.
+     *
+     * @details It performs forward MW transform in place on a loose
+     * node. The scaling coefficients of the selected child are then
+     * copied/summed in the correct child node.
+     */
     virtual void giveChildCoefs(int cIdx, bool overwrite = true);
 
-    /// Pull coefficients from children to parent.
+    /** @brief Backward MW transform to compute scaling/wavelet coefficients of a parent
+     *
+     * @details Takes a MWParent and generates coefficients, reverse operation from
+     * giveChildrenCoefs.
+     *
+     * @note This routine is only used in connection with Periodic Boundary Conditions
+     */
     virtual void giveParentCoefs(bool overwrite = true);
 
-    /// Rebuild local buffer from children (inverse of giveChildrenCoefs).
+    /**
+     * @brief Copy scaling coefficients from children to parent
+     *
+     * @details Takes the scaling coefficients of the children and stores
+     * them consecutively in the corresponding block of the parent,
+     * following the usual bitwise notation.
+     */
     virtual void copyCoefsFromChildren();
 
-    /// Child index for a target node index (same scale or finer).
+    /**
+     * @brief Routine to find the path along the tree
+     * @param[in] nIdx The sought after node through its NodeIndex
+     *
+     * @details Given the translation indices at the final scale, computes the child m
+     * to be followed at the current scale in oder to get to the requested
+     * node at the final scale. The result is the index of the child needed.
+     * The index is obtained by bit manipulation of of the translation indices.
+     */
     int getChildIndex(const NodeIndex<D> &nIdx) const;
 
-    /// Child index for a spatial coordinate.
+    /**
+     * @brief Routine to find the path along the tree
+     * @param[in] r The sought after node through the coordinates of a point in space
+     *
+     * @details Given a point in space, determines which child should be followed
+     * to get to the corresponding terminal node.
+     */
     int getChildIndex(const Coord<D> &r) const;
 
-    /// Whether two nodes lie in different branches (fast check).
+    /**
+     * @brief Fast check whether two nodes lie in different branches
+     * @param rhs The node to compare against
+     * @return true if two nodes lie in different branches
+     */
     bool diffBranch(const MWNode<D, T> &rhs) const;
 
-    /// Retrieve node owning coordinate @p r at given depth (may create).
+    /**
+     * @brief Node retriever that ALWAYS returns the requested node
+     *
+     * @param[in] r The coordinates of a point in the node
+     * @param depth The depth to descend
+     * @return The node at the given coordinates
+     *
+     * @details Recursive routine to find and return the node with a given NodeIndex.
+     * This routine always returns the appropriate node, and will generate nodes
+     * that does not exist. Recursion starts at this node and ASSUMES the
+     * requested node is in fact decending from this node.
+     */
     MWNode<D, T> *retrieveNode(const Coord<D> &r, int depth);
 
-    /// Retrieve node at index @p idx (may create).
+    /**
+     * @brief Node retriever that ALWAYS returns the requested node, possibly without coefs
+     * @param[in] idx The NodeIndex of the requested node
+     * @return The node at the given node index
+     *
+     * @details Recursive routine to find and return the node with a given NodeIndex. This
+     * routine always returns the appropriate node, and will generate nodes that
+     * does not exist. Recursion starts at this node and ASSUMES the requested
+     * node is in fact descending from this node.
+     * If create = true, the nodes are permanently added to the tree.
+     */
     MWNode<D, T> *retrieveNode(const NodeIndex<D> &idx, bool create = false);
 
-    /// Retrieve parent node for index @p idx (may create ancestors).
+    /**
+     * @brief Node retriever that ALWAYS returns the requested node
+     * @param[in] idx The NodeIndex of the requested node
+     * @return The node at the given node index
+     *
+     * @details Recursive routine to find and return the node with a given NodeIndex. This
+     * routine always returns the appropriate node, and will generate nodes that
+     * does not exist. Recursion starts at this node and ASSUMES the requested
+     * node is in fact related to this node.
+     *
+     * @warning This routine is NOT thread safe! Must be used within omp critical.
+     */
     MWNode<D, T> *retrieveParent(const NodeIndex<D> &idx);
 
-    /// Lookup without generation (const).
+    /**
+     * @brief Const version of node retriever that NEVER generates
+     * @param[in] idx The requested NodeIndex
+     * @returns The requested node
+     *
+     * @details Recursive routine to find and return the node with a given NodeIndex.
+     * This routine returns the appropriate Node, or a NULL pointer if
+     * the node does not exist, or if it is a GenNode. Recursion starts at at this
+     * node and ASSUMES the requested node is in fact decending from this node.
+     */
     const MWNode<D, T> *retrieveNodeNoGen(const NodeIndex<D> &idx) const;
 
-    /// Lookup without generation (mutable).
+    /**
+     * @brief Node retriever that NEVER generates.
+     * @param[in] idx The requested NodeIndex
+     * @returns The requested node
+     *
+     * @details Recursive routine to find and return the node with a given NodeIndex.
+     * This routine returns the appropriate Node, or a NULL pointer if
+     * the node does not exist, or if it is a GenNode. Recursion starts at at this
+     * node and ASSUMES the requested node is in fact decending from this node.
+     */
     MWNode<D, T> *retrieveNodeNoGen(const NodeIndex<D> &idx);
 
-    /// Find node or end node by coordinate (const).
+    /**
+     * @brief Node retriever that returns requested Node or EndNode (const version)
+     * @param[in] r The coordinates of a point in the node
+     * @param depth The depth to descend
+     * @return The node at the given coordinates
+     *
+     * @details Recursive routine to find and return the node given the
+     * coordinates of a point in space.  This routine returns the
+     * appropriate Node, or the EndNode on the path to the requested node,
+     * and will never create or return GenNodes.  Recursion starts at at
+     * this node and ASSUMES the requested node is in fact decending from
+     * this node.
+     */
     const MWNode<D, T> *retrieveNodeOrEndNode(const Coord<D> &r, int depth) const;
 
-    /// Find node or end node by coordinate (mutable).
+    /**
+     * @brief Node retriever that returns requested Node or EndNode
+     * @param[in] r The coordinates of a point in the node
+     * @param depth The depth to descend
+     * @return The node at the given coordinates
+     *
+     * @details Recursive routine to find and return the node given the
+     * coordinates of a point in space.  This routine returns the
+     * appropriate Node, or the EndNode on the path to the requested node,
+     * and will never create or return GenNodes.  Recursion starts at at
+     * this node and ASSUMES the requested node is in fact decending from
+     * this node.
+     */
     MWNode<D, T> *retrieveNodeOrEndNode(const Coord<D> &r, int depth);
 
-    /// Find node or end node by index (const).
+    /**
+     * @brief Node retriever that returns requested Node or EndNode (const version)
+     * @param[in] idx The NodeIndex of the requested node
+     * @return The requested node
+     *
+     * @details Recursive routine to find and return the node given the
+     * coordinates of a point in space.  This routine returns the
+     * appropriate Node, or the EndNode on the path to the requested node,
+     * and will never create or return GenNodes.  Recursion starts at at
+     * this node and ASSUMES the requested node is in fact decending from
+     * this node.
+     */
     const MWNode<D, T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx) const;
 
-    /// Find node or end node by index (mutable).
+    /**
+     * @brief Node retriever that returns requested Node or EndNode
+     * @param[in] idx The NodeIndex of the requested node
+     * @return The requested node
+     *
+     * @details Recursive routine to find and return the node given the
+     * coordinates of a point in space.  This routine returns the
+     * appropriate Node, or the EndNode on the path to the requested node,
+     * and will never create or return GenNodes.  Recursion starts at at
+     * this node and ASSUMES the requested node is in fact decending from
+     * this node.
+     */
     MWNode<D, T> *retrieveNodeOrEndNode(const NodeIndex<D> &idx);
 
-    /// Thread-safe child creation.
+    /**
+     * @brief Creates scaling coefficients of children
+     *
+     * @details If the node is a leaf node, it takes the scaling&wavelet
+     * coefficients of the parent and it generates the scaling
+     * coefficients for the children and stores
+     * them consecutively in the corresponding block of the parent,
+     * following the usual bitwise notation. The new node is permanently added to the tree.
+     */
     void threadSafeCreateChildren();
 
-    /// Thread-safe generation of children.
+    /**
+     * @brief Generates scaling coefficients of children
+     *
+     * @details If the node is a leaf node, it takes the scaling&wavelet
+     * coefficients of the parent and it generates the scaling
+     * coefficients for the children and stores
+     * them consecutively in the corresponding block of the parent,
+     * following the usual bitwise notation.
+     */
     void threadSafeGenChildren();
 
-    /// Remove nodes generated during adaptive build.
+
+    /// @brief Deallocation of all generated nodes
     void deleteGenerated();
 
-    /// Printable diagnostics for a node.
+    /**
+     * @brief Prints of the node content
+     * @param[in,out] o The output stream
+     */
     virtual std::ostream &print(std::ostream &o) const;
 
-    // --- Bit flags describing node state (see status member) ---
+    // Bit flags describing node state
     static const unsigned char FlagBranchNode = B8(00000001);
     static const unsigned char FlagGenNode    = B8(00000010);
     static const unsigned char FlagHasCoefs   = B8(00000100);

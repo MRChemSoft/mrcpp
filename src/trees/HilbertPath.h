@@ -28,21 +28,6 @@
 namespace mrcpp {
 
 /**
- * @file HilbertPath.h
- * @brief Lookup-based helper to traverse octree/quadtree children in Hilbert order.
- *
- * @details
- * A Hilbert curve traversal depends on an **orientation state** that changes
- * from parent to child. This lightweight class stores the current state and
- * provides constant-time conversions between:
- * - the **Hilbert child index** \f$h \in \{0,\dots,2^D-1\}\f$ for the
- *   current state, and
- * - the corresponding **Z-order (Morton) index** \f$z\f$,
- * as well as the **next orientation state** after descending to child \f$h\f$.
- *
- */
-
-/**
  * @class HilbertPath
  * @tparam D Spatial dimension (e.g., 2 for quadtree, 3 for octree).
  *

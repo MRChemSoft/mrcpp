@@ -23,23 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file OperatorTree.h
- * @brief Declaration of the multiwavelet operator tree (2D non-standard form).
- *
- * @details
- * An @ref mrcpp::OperatorTree stores a bivariate (D=2) operator in
- * multiwavelet (MW) **non-standard form**, i.e. split into corner blocks
- * \f$T, A, B, C\f$ at each scale. It provides:
- * - adaptive storage and traversal via the base @ref mrcpp::MWTree,
- * - optional **band-width screening** of corner blocks through @ref BandWidth,
- * - cached direct access to operator nodes to avoid repeated tree lookups, and
- * - MW up/down transforms specialized for operator data.
- *
- * Only trees built from **compatible** MRAs (same domain, order, and depth)
- * should be combined in further computations.
- */
-
 #pragma once
 
 #include <Eigen/Core>  // for Eigen::VectorXi
@@ -55,7 +38,7 @@ class OperatorNode;
 
 /**
  * @class OperatorTree
- * @brief Base class for 2D operator trees in non-standard form.
+ * @brief Base class for 2D operator trees in non-standard form
  *
  * @details
  * The tree is organized like any MW tree (roots/branches/leaves) but stores
@@ -66,91 +49,136 @@ class OperatorNode;
 class OperatorTree : public MWTree<2> {
 public:
     /**
-     * @brief Construct an operator tree.
-     * @param mra  Multi-resolution analysis (domain + basis) shared by the tree.
-     * @param np   “Norm precision” used when estimating/screening norms.
-     * @param name Optional diagnostic name.
+     * @brief Construct an operator tree
+     * @param[in] mra  Multi-resolution analysis (domain + basis) shared by the tree
+     * @param[in] np   “Norm precision” used when estimating/screening norms
+     * @param[in] name Optional diagnostic name
      */
     OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
 
     OperatorTree(const OperatorTree &tree) = delete;
     OperatorTree &operator=(const OperatorTree &tree) = delete;
 
-    /// Virtual destructor.
+    /// Virtual destructor
     virtual ~OperatorTree() override;
 
-    /// @return The precision value used for norm-based screening.
+    /// @return The precision value used for norm-based screening 
     double getNormPrecision() const { return this->normPrec; }
 
     /**
-     * @brief Release any existing @ref BandWidth object and set the pointer to null.
-     * @details Call this if the operator has changed and band widths must be recomputed.
+     * @brief Release any existing @ref BandWidth object and set the pointer to null
+     * @details Call this if the operator has changed and band widths must be recomputed
      */
     void clearBandWidth();
 
-    /**
-     * @brief Estimate per-depth band widths for the corner matrices.
-     * @param prec Threshold used when deciding if a component is significant.
-     *             If negative, the internal @ref getNormPrecision() is used.
-     * @details Populates the internally owned @ref BandWidth structure.
+    /** @brief Calculates band widths of the non-standard form matrices
+     *
+     * @param[in] prec: Precision used for thresholding
+     *
+     * @details It is starting from \f$ l = 0 \f$ and updating the band width value each time we encounter
+     * considerable value while keeping increasing \f$ l \f$, that stands for the distance to the diagonal
      */
     virtual void calcBandWidth(double prec = -1.0);
 
-    /**
-     * @brief Quick band-screening predicate.
-     * @param oTransl  Distance from the diagonal in translation space (|l\_bra−l\_ket|).
-     * @param o_depth  Depth/scale index where the test is performed.
-     * @param idx      Corner block selector: 0 = T, 1 = C, 2 = B, 3 = A (convention as used internally).
-     * @return @c true if @p oTransl is **outside** the currently stored band at @p o_depth for block @p idx.
-     * @note Requires a previously computed @ref BandWidth (see @ref calcBandWidth()).
+    /** @brief Checks if the distance to diagonal is bigger than the operator band width.
+     *
+     * @param[in] oTransl: distance to diagonal
+     * @param[in] o_depth: scaling order
+     * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.ì
+     *
+     * @returns True if \b oTransl is outside of the band and False otherwise
      */
     virtual bool isOutsideBand(int oTransl, int o_depth, int idx);
 
-    /**
-     * @brief Dampen/remove rough-scale numerical noise in the operator.
-     * @param trust_scale Scales finer (greater or equal to this) are trusted and preserved.
-     * @details Useful after building operators from noisy input data.
+    /** @brief Cleans up end nodes.
+     *
+     * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building).
+     *
+     * @details Traverses the tree and rewrites end nodes having branch node twins,
+     * i. e. identical with respect to scale and translation.
+     * This method is very handy, when an adaptive operator construction
+     * can make a significunt noise at low scaling depth.
+     * Its need comes from the fact that mwTransform up cannot override
+     * rubbish that can potentially stick to end nodes at a particular level,
+     * and as a result spread further up to the root with mwTransform.
      */
     void removeRoughScaleNoise(int trust_scale = 10);
 
     /**
-     * @brief Build cache tables for direct @ref OperatorNode access.
+     * @brief Make 1D lists, adressable from [-l, l] scale by scale, of operator node pointers for fast operator retrieval
+     * 
      * @details Populates @ref nodePtrStore and @ref nodePtrAccess to avoid repeated lookups.
+     * 
+     * @warning This method is not thread safe,
+     * since it projects missing operator nodes on the fly. Hence, it must NEVER
+     * be called within a parallel region, or all hell will break loose. This is
+     * not really a problem, but you have been warned.
      */
     void setupOperNodeCache();
 
-    /// @brief Clear the operator-node caches built by @ref setupOperNodeCache().
+    /// @brief Clear the operator-node caches built by @ref setupOperNodeCache()
     void clearOperNodeCache();
 
-    /// @return Mutable reference to the stored @ref BandWidth (must exist).
+    /// @return Mutable reference to the stored @ref BandWidth (must exist)
     BandWidth &getBandWidth() { return *this->bandWidth; }
-    /// @return Const reference to the stored @ref BandWidth (must exist).
+    /// @return Const reference to the stored @ref BandWidth (must exist)
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
     /**
-     * @brief Fast accessor to a node by (scale, diagonal distance).
-     * @param n Scale (depth measured from the root scale).
-     * @param l Distance to the diagonal (translation difference); l=0 hits the diagonal.
+     * @brief Fast accessor to a node by indices (scale, diagonal distance)
+     * 
+     * @param[in] n Scale (depth measured from the root scale).
+     * @param[in] l Distance to the diagonal (translation difference); l=0 hits the diagonal
+     * 
      * @return Reference to the requested @ref OperatorNode.
-     * @warning Valid only after calling @ref setupOperNodeCache().
+     * @warning Valid only after calling @ref setupOperNodeCache()
      */
     OperatorNode &getNode(int n, int l) {
         return *nodePtrAccess[n][l];
     }
-    /// Const overload of @ref getNode(int,int).
+    /// @overload
     const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
+
+
+
+
+
+       
+ 
     /**
-     * @brief Downward MW transform specialized for operator data.
-     * @param overwrite If @c true, child coefficients may overwrite parent storage.
+     * @brief Regenerate all s/d-coeffs by backtransformation, starting at the bottom and thus purifying all coefficients
+     * 
+     * @param overwrite If @c true, child coefficients may overwrite parent storage
+     * 
+     * @details Option to overwrite or add up existing
+     * coefficients of BranchNodes (can be used after operator application).
+     * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+     * of OperatorNorm is done using random vectors, which is non-deterministic
+     * in parallel. FunctionTrees should be fine.
+     */    
+    void mwTransformUp() override;
+
+
+    /**
+     * @brief Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs on coarser scales, starting at the rootNodes
+     * 
+     * @param overwrite If @c true, child coefficients may overwrite existing scaling coefficients
+     * 
+     * @details Option to overwrite or add up existing
+     * coefficients of BranchNodes (can be used after operator application).
+     * Reimplementation of MWTree::mwTransform() without OMP, as calculation
+     * of OperatorNorm is done using random vectors, which is non-deterministic
+     * in parallel. FunctionTrees should be fine.
      */
     void mwTransformDown(bool overwrite) override;
 
-    /// @brief Upward MW transform specialized for operator data.
-    void mwTransformUp() override;
 
-    // Bring MWTree overloads into scope.
+
+    
+    /// @overload
     using MWTree<2>::getNode;
+    /// @overload
     using MWTree<2>::findNode;
 
 protected:

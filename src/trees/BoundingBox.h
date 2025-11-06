@@ -36,61 +36,49 @@
 
 namespace mrcpp {
 
-/**
- * @file BoundingBox.h
- * @brief Declaration of the @ref BoundingBox domain descriptor.
- *
- * @details
- * The bounding box defines the computational “world” for multiresolution
- * trees. In \(D\) dimensions it is described by:
- * - a **corner index** (scale and integer translation),
- * - a **count of boxes** per dimension (all on the same scale),
- * - a **scaling factor** per dimension (physical unit lengths),
- * - and optional **periodic boundary conditions** per dimension.
- *
- * From these fundamental parameters, derived quantities such as unit
- * lengths, total box lengths and physical bounds are computed.
- */
-
-/**
+/** 
  * @class BoundingBox
- * @tparam D Spatial dimension (1, 2, or 3).
- * @brief Defines the \(D\)-dimensional computational domain (“world”).
+ * @tparam D Spatial dimension (1, 2, or 3)
  *
- * @details
- * The world is a Cartesian grid of equally-sized boxes at a given scale
- * \(n\). Each box has edge length \(2^{-n}\) in grid units, optionally
- * multiplied by a per-dimension scaling factor to reflect physical units.
- * The lower-back corner of the world is given by an integer translation
- * at the same scale. Periodicity can be enabled per dimension.
+ * @brief Class defining the computational domain
+ *
+ * @details The computational domain is made up of a collection of D-dimensional
+ * boxes on a particular length scale \f$ n \f$. The size of each box is then
+ * \f$ [2^{-n}]^D \f$, i.e. higher scale means smaller boxes, and the scale
+ * may be negative. The number of boxes can be different in each dimension
+ * \f$ [n_x, n_y, \dots] \f$, but they must all be on the same scale (size).
+ * Box translations relative to the world origin _must_ be an integer
+ * multiple of the given scale size \f$ 2^{-n} \f$.
  */
 template <int D> class BoundingBox {
 public:
-    /**
-     * @brief Construct a non-periodic world from symmetric or half-open bounds.
+    /** 
+     * @brief Constructor for BoundingBox object
+     * @param box [lower, upper] bound in all dimensions
      *
-     * @param box Two integers \{lower, upper\}. Supported forms are
-     *        \{0, L\} or \{-L, L\} with \(L>0\).
+     * @details Creates a box with appropriate root scale and scaling
+     * factor to fit the given bounds, which applies to _all_ dimensions.
+     * Root scale is chosen such that the scaling factor becomes 1 < sfac < 2.
      *
-     * @details
-     * Chooses a root scale so that the per-dimension scaling factor
-     * satisfies \(1 < \text{sfac} < 2\). The same bounds apply to all
-     * dimensions. Periodicity is disabled.
+     * @note Limitations: Box must be _either_ [0,L] _or_ [-L,L], with L a positive integer.
+     * This is the most general constructor, which will create a world with no periodic boundary conditions.
      */
     explicit BoundingBox(std::array<int, 2> box);
 
-    /**
-     * @brief Fully-specified constructor (all dimensions share the same scale).
+    /** 
+     * @brief Constructor for BoundingBox object
+     * @param n Length scale, default 0
+     * @param l Corner translation, default [0, 0, ...]
+     * @param nb Number of boxes, default [1, 1, ...]
+     * @param sf Scaling factor, default [1.0, 1.0, ...]
+     * @param pbc Periodic boundary conditions, default false
      *
-     * @param n   Root scale (can be negative).
-     * @param l   Integer translation (corner index) per dimension.
-     * @param nb  Number of boxes per dimension (non-zero positives will be used; zeros mean 1).
-     * @param sf  Scaling factor per dimension (non-positive entries are rejected).
-     * @param pbc If true, all dimensions are periodic.
-     *
-     * @details
-     * This is the most general constructor for rectangular worlds at a single
-     * multiresolution scale. Periodicity is global (all-or-nothing).
+     * @details Creates a box with given parameters. The parameter n defines the length scale, which, together with sf, determines the unit length of each side of the boxes by \f$ [2^{-n}]^D \f$.
+     * The parameter l defines the corner translation of the lower corner of the box relative to the world origin.
+     * The parameter nb defines the number of boxes in each dimension.
+     * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+     * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
+     * This constructor is used for work in periodic systems.
      */
     explicit BoundingBox(int n = 0,
                          const std::array<int, D> &l = {},
@@ -98,179 +86,237 @@ public:
                          const std::array<double, D> &sf = {},
                          bool pbc = false);
 
-    /**
-     * @brief Construct from a corner @ref NodeIndex and per-dimension sizes.
+    /** 
+     * @brief Constructor for BoundingBox objec
+     * @param idx index of the lower corner of the box
+     * @param nb Number of boxes, default [1, 1, ...]
+     * @param sf Scaling factor, default [1.0, 1.0, ...]
      *
-     * @param idx Corner node index (scale and integer translation).
-     * @param nb  Number of boxes per dimension.
-     * @param sf  Scaling factor per dimension.
-     *
-     * @details
-     * Periodicity is disabled. Useful when the corner is already known
-     * in multiresolution units.
+     * @details Creates a box with given parameters
+     * The parameter idx defines the index of the lower corner of the box relative to the world origin.
+     * The parameter nb defines the number of boxes in each dimension.
+     * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+     * This constructor creates a world with no periodic boundary conditions.
      */
     explicit BoundingBox(const NodeIndex<D> &idx,
                          const std::array<int, D> &nb = {},
                          const std::array<double, D> &sf = {});
 
-    /**
-     * @brief Construct periodic (all dimensions) world from scaling factors.
+    /** 
+     * @brief Constructor for BoundingBox object
+     * @param sf Scaling factor, default [1.0, 1.0, ...]
+     * @param pbc Periodic boundary conditions, default true
      *
-     * @param sf  Scaling factor per dimension.
-     * @param pbc If true, enables periodicity for all dimensions (default true).
+     * @details Creates a box with given parameters.
+     * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+     * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes all dimensions periodic.
+     * This construtor is used for work in periodic systems.
      */
     explicit BoundingBox(const std::array<double, D> &sf, bool pbc = true);
 
-    /**
-     * @brief Construct world with per-dimension periodicity flags.
+    /** 
+     * @brief Constructor for BoundingBox object
+     * @param sf Scaling factor, default [1.0, 1.0, ...]
+     * @param pbc Periodic boundary conditions, default true
      *
-     * @param sf  Scaling factor per dimension.
-     * @param pbc Periodicity flags per dimension.
+     * @details Creates a box with given parameters.
+     * The parameter sf defines the scaling factor, which determines the box translations around the origin, i.e. the amount of boxes around origin.
+     * The parameter pbc defines whether the world is periodic or not. In this constructor this value makes specific dimensions periodic.
+     * This is used for work in periodic systems.
      */
     BoundingBox(const std::array<double, D> &sf, std::array<bool, D> pbc);
 
-    /**
-     * @brief Copy constructor.
+    /** 
+     * @brief Copy constructor for BoundingBox object
+     * @param box Other BoundingBox object
+     *
+     * @details Creates a box identical to the input box paramter.
+     * This constructor uses all parameters from the other BoundingBox to create a new one.
      */
     BoundingBox(const BoundingBox<D> &box);
 
-    /**
-     * @brief Copy assignment.
+    /** 
+     * @brief Assignment operator overload for BoundingBox object
+     * @param box Other BoundingBox object
+     * @details Allocates all parameters in this BoundingBox to be that of the other BoundingBox.
+     * @return New BoundingBox object
      */
     BoundingBox<D> &operator=(const BoundingBox<D> &box);
 
-    /// Defaulted virtual destructor.
     virtual ~BoundingBox() = default;
 
     /**
-     * @name Equality
-     * @brief Compare corner and per-dimension box counts.
-     * @{
+     * @brief Equality: same corner index and per-dimension box counts
+     * @param box Other BoundingBox object
+     * @return True if equal, false otherwise
      */
     inline bool operator==(const BoundingBox<D> &box) const;
-    inline bool operator!=(const BoundingBox<D> &box) const;
-    /// @}
-
     /**
-     * @brief Convert a world-box index to a @ref NodeIndex at the root scale.
-     * @param bIdx Linear index of the box within the world.
-     * @return Corner node index for that box.
+     * @brief Inequality: differs in corner index or in any per-dimension box count
+     * @param box Other BoundingBox object
+     * @return True if not equal, false otherwise
+     */
+    inline bool operator!=(const BoundingBox<D> &box) const;
+
+    /** 
+     * @brief Fetches a NodeIndex object from a given box index
+     * @param bIdx The index of the box we want to fetch the cell index from
      *
-     * @note Specializations provide efficient versions for \(D=1\).
+     * @details During the adaptive refinement, each original box will contain an increasing number of smaller cells,
+     * each of which will be part of a specific node in the tree. These cells are divided adaptivelly. This function returns the NodeIndex
+     * object of the cell at the lower back corner of the box object indexed by bIdx.
+     * 
+     * @return The NodeIndex object of the index given as it is in the Multiresolutoin analysis
+     * @note Specialized for D=1 below
      */
     NodeIndex<D> getNodeIndex(int bIdx) const;
 
-    /**
-     * @brief Map a physical coordinate to the enclosing world-box index.
-     * @param r Physical coordinate (scaled by @ref getScalingFactors()).
-     * @return Linear index of the box, or -1 if outside and non-periodic.
+    /** 
+     * @brief Fetches the index of a box from a given coordinate
+     * @param r D-dimensional array representaing a coordinate in the simulation box
+     * @return The index value of the boxes in the position given as it is in the generated world
+     * @note Specialized for D=1 below
      */
     int getBoxIndex(Coord<D> r) const;
 
-    /**
-     * @brief Map a @ref NodeIndex to the enclosing world-box index.
-     * @param nIdx Node index (possibly at a finer scale).
-     * @return Linear index of the box, or -1 if outside or at coarser scale.
+    /** 
+     * @brief Fetches the index of a box from a given NodeIndex
+     * @param nIdx NodeIndex object, representing the node and its index in the adaptive tree
+     *
+     * @details During the multiresolution analysis the boxes will be divided into smaller boxes, which means that each individual box will be part of a specific node in the tree.
+     * Each node will get its own index value, but will still be part of one of the original boxes of the world.
+     * 
+     * @return The index value of the boxes in which the NodeIndex object is mapping to
+     * @note Specialized for D=1 below
      */
     int getBoxIndex(NodeIndex<D> nIdx) const;
 
-    /// @name Size and scale queries
-    /// @{
-    int size() const { return this->totBoxes; }                 ///< Total number of boxes.
-    int size(int d) const { return this->nBoxes[d]; }           ///< Number of boxes along dimension @p d.
-    int getScale() const { return this->cornerIndex.getScale(); } ///< Root scale \(n\).
-    /// @}
-
-    /// @name Geometry (per-dimension)
-    /// @{
-    double getScalingFactor(int d) const { return this->scalingFactor[d]; } ///< Physical scaling factor.
-    double getUnitLength(int d) const { return this->unitLengths[d]; }      ///< Unit length \(= \text{sfac}\cdot 2^{-n}\).
-    double getBoxLength(int d) const { return this->boxLengths[d]; }        ///< Total world length along @p d.
-    double getLowerBound(int d) const { return this->lowerBounds[d]; }      ///< Physical lower bound.
-    double getUpperBound(int d) const { return this->upperBounds[d]; }      ///< Physical upper bound.
-    /// @}
-
-    /// @name Periodicity
-    /// @{
-    bool isPeriodic() const { return details::are_any(this->periodic, true); } ///< Any dimension periodic?
-    const std::array<bool, D> &getPeriodic() const { return this->periodic; }  ///< Per-dimension flags.
-    /// @}
-
-    /// @name Bulk getters
-    /// @{
-    const Coord<D> &getUnitLengths() const { return this->unitLengths; }
-    const Coord<D> &getBoxLengths() const { return this->boxLengths; }
-    const Coord<D> &getLowerBounds() const { return this->lowerBounds; }
-    const Coord<D> &getUpperBounds() const { return this->upperBounds; }
-    const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }
-    const std::array<double, D> &getScalingFactors() const { return this->scalingFactor; }
-    /// @}
+    int size() const { return this->totBoxes; }                     ///< @return Total number of boxes
+    /**
+     * @param d Dimension index
+     * @return Number of boxes along dimension @p d
+     */
+    int size(int d) const { return this->nBoxes[d]; }
+    int getScale() const { return this->cornerIndex.getScale(); }   ///< @return Root scale \(n\)
 
     /**
-     * @brief Pretty-printer (human-readable).
+     * @param d Dimension index
+     * @return Scaling factor to scale this box by along dimension @p d
+     */
+    double getScalingFactor(int d) const { return this->scalingFactor[d]; }
+    /**
+     * @param d Dimension index
+     * @return Unit length along dimension @p d
+     */
+    double getUnitLength(int d) const { return this->unitLengths[d]; }
+    /**
+     * @param d Dimension index
+     * @return Box length along dimension @p d
+     */
+    double getBoxLength(int d) const { return this->boxLengths[d]; }
+    /**
+     * @param d Dimension index
+     * @return Lower bound of this box coordinates along dimension @p d
+     */
+    double getLowerBound(int d) const { return this->lowerBounds[d]; }
+    /**
+     * @param d Dimension index
+     * @return Upper bound of this box coordinates along dimension @p d
+     */
+    double getUpperBound(int d) const { return this->upperBounds[d]; }
+
+    bool isPeriodic() const { return details::are_any(this->periodic, true); } ///< @return Is any dimension periodic?
+    const std::array<bool, D> &getPeriodic() const { return this->periodic; }  ///< @return Periodicity flags per dimension
+
+    const Coord<D> &getUnitLengths() const { return this->unitLengths; }                    ///< @return The unit lengths
+    const Coord<D> &getBoxLengths() const { return this->boxLengths; }                      ///< @return The box lengths
+    const Coord<D> &getLowerBounds() const { return this->lowerBounds; }                    ///< @return The lower bounds of the coordinates of this box
+    const Coord<D> &getUpperBounds() const { return this->upperBounds; }                    ///< @return The upper bounds of the coordinates of this box
+    const NodeIndex<D> &getCornerIndex() const { return this->cornerIndex; }                ///< @return The corner index
+    const std::array<double, D> &getScalingFactors() const { return this->scalingFactor; }  ///< @return The scaling factors to scale this box by
+
+    /**
+     * @brief Stream output operator
+     * @param o Output stream
+     * @param box BoundingBox object
+     * @return Reference to output stream
      */
     friend std::ostream &operator<<(std::ostream &o, const BoundingBox<D> &box) { return box.print(o); }
 
 protected:
-    // ---------------- Fundamental parameters ----------------
+    // Fundamental parameters
+    NodeIndex<D> cornerIndex;               ///< Index defining the lower corner of the box
+    std::array<int, D> nBoxes{};            ///< Number of boxes in each dim, last entry total
+    std::array<double, D> scalingFactor{};  ///< Scaling factors to scale this box by, per dimension
+    std::array<bool, D> periodic{};         ///< Sets which dimension has Periodic boundary conditions
 
-    NodeIndex<D> cornerIndex;          ///< Lower-corner node (scale + integer translation).
-    std::array<int, D> nBoxes{};       ///< Number of boxes per dimension.
-    std::array<double, D> scalingFactor{}; ///< Physical scaling factors per dimension.
-    std::array<bool, D> periodic{};    ///< Periodicity flags per dimension.
+    // Derived parameters
 
-    // ---------------- Derived parameters ----------------
+    int totBoxes{1};       ///< Number of total boxes
+    Coord<D> unitLengths;  ///< 1/2^initialScale
+    Coord<D> boxLengths;   ///< Total length (unitLength times nBoxes)
+    Coord<D> lowerBounds;  ///< Box lower bound (not real)
+    Coord<D> upperBounds;  ///< Box upper bound (not real)
 
-    int totBoxes{1};       ///< Product of @ref nBoxes.
-    Coord<D> unitLengths;  ///< Per-dimension unit length (\( \text{sfac}\cdot 2^{-n} \)).
-    Coord<D> boxLengths;   ///< Total world length per dimension.
-    Coord<D> lowerBounds;  ///< Physical lower bounds.
-    Coord<D> upperBounds;  ///< Physical upper bounds.
-
-    /**
-     * @brief Set number of boxes per dimension.
-     * @param nb If an entry is zero, it is treated as one.
+    /** 
+     * @brief Sets the number of boxes in each dimension
+     * @param nb Number of boxes, default [1, 1, ...]
+     *
+     * @details For each dimentions D it sets the number of boxes in that dimension in the nBoxes array and the total amount of boxes in the world in the totBoxes variable.
+     * This just sets counters for the number of boxes in each dimension.
      */
     void setNBoxes(const std::array<int, D> &nb = {});
 
-    /**
-     * @brief Compute all derived parameters from fundamentals.
-     *
-     * @details
-     * Uses @ref cornerIndex, @ref nBoxes and @ref scalingFactor to fill
-     * unit lengths, box lengths and physical bounds.
+    /** 
+     * @brief Computes and sets all derived parameters
+     * 
+     * @details For all parameters that have been initialized in the constructor,
+     * this function will compute the necessary derived parameters in each dimension.
+     * The unit length is set to \a sfac \f$ \cdot 2^{-n} \f$ where \a sfac is the scaling factor (default 1.0) and n is the length scale.
+     * The unit length is the base unit which is used for the size and positioning of the boxes around origin.
+     * The boxLength is the total length of the box in each dimension, which is the unit length times the number of boxes in that dimension.
+     * The lowerBound is computed from the index of the lower corner of the box and the unit length.
+     * The upperBound is computed to be the lower corner plus the total length in that dimension.
      */
     void setDerivedParameters();
 
-    /**
-     * @brief Set scaling factors per dimension, validating positivity.
-     * @param sf Per-dimension scaling factors. Empty value means all ones.
+    /** 
+     * @brief Sets the scaling factors in each dimension
+     * @param sf Scaling factor, default [1.0, 1.0, ...]
+     * 
+     * @details This checks that the sf variable has sane values before assigning it to the member variable scalingFactor.
      */
     void setScalingFactors(const std::array<double, D> &sf);
 
-    /**
-     * @brief Set periodicity per dimension.
-     * @param periodic Flags per dimension.
+    /** 
+     * @brief Sets whether all dimensions are periodic
+     * @param pbc Boolean which is used to set all dimension to either periodic or not
+     *
+     * @details This fills in the periodic array with the values from the input.
      */
     void setPeriodic(std::array<bool, D> periodic);
 
-    /**
-     * @brief Set global periodicity (all-or-nothing).
-     * @param periodic If true, all dimensions are periodic.
+    /** 
+     * @brief Sets which dimensions are periodic
+     * @param pbc D-dimensional array holding boolean values for each dimension
+     *
+     * @details This fills in the periodic array with the values from the input array.
      */
     void setPeriodic(bool periodic);
 
     /**
-     * @brief Print a formatted summary to stream @p o.
+     * @brief Prints information about the BoundinBox object
+     * @param o Output stream variable which will be used to print the information
+     * 
+     * @details A function which prints information about the BoundingBox object.
+     * 
+     * @return The output stream variable
      */
     std::ostream &print(std::ostream &o) const;
 };
 
-// ---------------- Inline comparisons ----------------
+// Inline comparisons
 
-/**
- * @brief Equality: same corner index and per-dimension box counts.
- */
 template <int D> bool BoundingBox<D>::operator==(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return false;
     for (int d = 0; d < D; d++) {
@@ -279,9 +325,6 @@ template <int D> bool BoundingBox<D>::operator==(const BoundingBox<D> &box) cons
     return true;
 }
 
-/**
- * @brief Inequality: differs in corner index or in any per-dimension box count.
- */
 template <int D> bool BoundingBox<D>::operator!=(const BoundingBox<D> &box) const {
     if (getCornerIndex() != box.getCornerIndex()) return true;
     for (int d = 0; d < D; d++) {

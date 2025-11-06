@@ -23,23 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file MWTree.h
- * @brief Base template for multiwavelet (MW) tree data structures.
- *
- * @details
- * An MW tree stores a hierarchical collection of @ref MWNode "MWNode<D,T>"
- * objects arranged as a 2^D-ary tree over a @ref MultiResolutionAnalysis
- * (computational domain + basis). It provides:
- *   - ownership and construction of the root nodes (via @ref NodeBox),
- *   - navigation and on-demand generation of nodes,
- *   - bookkeeping of per-depth node counts,
- *   - utilities for MW transforms, norms, and end-node tables, and
- *   - access to a @ref NodeAllocator for memory management.
- *
- * This class is a base for both **function** and **operator** trees.
- */
-
 #pragma once
 
 #include <Eigen/Core>
@@ -59,280 +42,352 @@ class BankAccount;
 
 /**
  * @class MWTree
- * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Coefficient type (e.g. double, ComplexDouble).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  *
- * @brief Base class for MW tree structures (e.g., FunctionTree, OperatorTree).
+ * @brief Base class for Multiwavelet tree structures, such as FunctionTree and OperatorTree
  *
- * @details
- * A tree is defined over a @ref MultiResolutionAnalysis (MRA). The set of root
- * nodes is determined by the MRA world box. Each node has up to 2^D children.
- * Some accessors only *find* existing nodes, while others may *create* nodes
- * lazily (e.g., by splitting and transferring coefficients).
- *
- * ### Node retrieval semantics
- * - @ref findNode returns a pointer or `nullptr` if the node is missing.
- * - @ref getNode and @ref getNodeOrEndNode return a reference and can
- *   create intermediate nodes if requested (see parameters).
- *
- * ### Norms
- * @ref calcSquareNorm computes the global L2 norm (squared) either from
- * the existing coefficients only, or by visiting descendants when `deep=true`.
+ * @details The MWTree class is the base class for all tree structures
+ * needed for Multiwavelet calculations. The MWTree is a D-dimensional
+ * tree structure of MWNodes. The tree starts from a set of root nodes
+ * at a common given scale, defining the world box. The most common
+ * settings are either a single root node or \f$ 2^D \f$ root
+ * nodes. Other configurations are however allowed. For example, in 3D
+ * one could have a total of 12 root nodes (a 2x2x3 set of root
+ * nodes). Once the tree structure is generated, each node will have a
+ * parent node (except for the root nodes) and \f$ 2^D \f$ child nodes
+ * (except for leaf nodes). Most of the methods deal with traversing
+ * the tree structure in different ways to fetch specific nodes. Some
+ * of them will return a node present in the tree; some other methods
+ * will generate the required node on the fly using the MW transform;
+ * some methods will return an empty pointer if the node is not
+ * present. See specific methods for details.
  */
 template <int D, typename T> class MWTree {
 public:
     /**
-     * @brief Construct an empty tree bound to an MRA.
-     * @param mra Multi-resolution analysis (domain + basis).
-     * @param n   A short name for logging/printing.
-     *
-     * @post Root nodes are created according to the MRA world box.
-     *       No coefficients are computed; the tree is “undefined”.
-     */
+      * @brief MWTree constructor.
+      *
+      * @param[in] mra The multiresolution analysis object
+      * @param[in] n The name of the tree (only for printing purposes)
+      *
+      * @details Creates an empty tree object, containing only the set of
+      * root nodes. The information for the root node configuration to use
+      * is in the mra object which is passed to the constructor.
+      */
     MWTree(const MultiResolutionAnalysis<D> &mra, const std::string &n);
 
-    /// Non-copyable.
     MWTree(const MWTree<D, T> &tree) = delete;
-    /// Non-assignable.
     MWTree<D, T> &operator=(const MWTree<D, T> &tree) = delete;
 
-    /// Virtual destructor.
+    /// @brief MWTree destructor.
     virtual ~MWTree();
 
     /**
-     * @brief Set all existing node coefficients to zero (structure unchanged).
-     * @note Does not refine/coarsen the tree, only zeroes values.
+     * @brief Set the MW coefficients to zero, keeping the same tree structure
+     * 
+     * @details Keeps the node structure of the tree, even though the zero
+     * function is representable at depth zero. One should then use \ref cropTree to remove
+     * unnecessary nodes.
      */
     void setZero();
 
-    /**
-     * @brief Remove all nodes and reset to a freshly constructed state.
-     * @post Root nodes are recreated; end-node table and counters cleared.
+    /** @brief Remove all nodes in the tree
+     *
+     * @details Leaves the tree in the same state as after construction,
+     * i.e. undefined tree structure containing only root nodes without
+     * coefficients. The assigned memory, including branch and leaf
+     * nodes, (nodeChunks in NodeAllocator) is NOT released, but is
+     * immediately available to the new function.
      */
     void clear();
 
-    /** @name Norms */
-    ///@{
-    /// @return Global squared L2 norm of the representation (negative if undefined).
-    double getSquareNorm() const { return this->squareNorm; }
+    double getSquareNorm() const { return this->squareNorm; } ///< @return The squared L2 norm of the function
 
-    /**
-     * @brief Recompute the global squared L2 norm.
-     * @param deep If `true`, may traverse deeper to ensure accuracy.
+    /** @brief Calculate the squared norm \f$ ||f||^2_{\ldots} \f$ of a function represented as a tree.
+     *
+     * @details The norm is calculated using endNodes only. The specific
+     * type of norm which is computed will depend on the derived class.
      */
     void calcSquareNorm(bool deep = false);
 
-    /// @brief Mark the norm as undefined (sets it to -1).
-    void clearSquareNorm() { this->squareNorm = -1.0; }
-    ///@}
+    void clearSquareNorm() { this->squareNorm = -1.0; } //< @brief Mark the norm as undefined (sets it to -1)
 
-    /** @name Basis/structure parameters */
-    ///@{
-    /// @return Polynomial order k.
-    int getOrder() const { return this->order; }
-    /// @return k+1.
-    int getKp1() const { return this->order + 1; }
-    /// @return (k+1)^D.
-    int getKp1_d() const { return this->kp1_d; }
-    /// @return Spatial dimension D.
-    int getDim() const { return D; }
-    /// @return 2^D (number of children per internal node).
-    int getTDim() const { return (1 << D); }
-    /// @return Total number of nodes currently in the tree.
-    int getNNodes() const { return getNodeAllocator().getNNodes(); }
-    /// @return Number of records kept for negative-depth counts.
-    int getNNegScales() const { return this->nodesAtNegativeDepth.size(); }
-    /// @return Root scale (MRA world scale).
-    int getRootScale() const { return this->rootBox.getScale(); }
-    /// @return Number of depth levels for which counters are stored.
-    int getDepth() const { return this->nodesAtDepth.size(); }
-    /// @return Number of nodes counted at a given depth.
-    int getNNodesAtDepth(int i) const;
-    /// @return Approximate memory footprint of nodes (kB).
-    int getSizeNodes() const;
-    ///@}
-
-    /** @name MRA / root access */
-    ///@{
-    /// @return Mutable root-node container.
-    NodeBox<D, T> &getRootBox() { return this->rootBox; }
-    /// @return Const root-node container.
-    const NodeBox<D, T> &getRootBox() const { return this->rootBox; }
-    /// @return MRA bound to this tree.
-    const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }
-    ///@}
-
+    int getOrder() const { return this->order; }                            ///< @return Polynomial order k                
+    int getKp1() const { return this->order + 1; }                          ///< @return k+1     
+    int getKp1_d() const { return this->kp1_d; }                            ///< @return (k+1)^D
+    int getDim() const { return D; }                                        ///< @return The spatial dimension D
+    int getTDim() const { return (1 << D); }                                ///< @return 2^D (number of children per internal node)
+    int getNNodes() const { return getNodeAllocator().getNNodes(); }        ///< @return The total number of nodes in this tree
+    int getNNegScales() const { return this->nodesAtNegativeDepth.size(); } ///< @return The number of negative scales in this tree
+    int getRootScale() const { return this->rootBox.getScale(); }           ///< @return The root scale of this tree
+    int getDepth() const { return this->nodesAtDepth.size(); }              ///< @return The maximum depth of this tree
+    int getSizeNodes() const;                                               ///< @return The size of all MW coefficients in the tree (in kB)
     /**
-     * @brief Perform a multiresolution transform.
-     * @param type Transform kind (implementation-defined selector).
-     * @param overwrite If `true`, may reuse buffers for speed.
-     * @note Typical directions are “top-down” and “bottom-up”; see implementation.
+     * @brief Returns the total number of nodes in the tree, at given depth (not in use)
+     * @param i Tree depth (0 depth is the coarsest scale) to count
+     * @return Number of nodes at depth i
+     */
+    int getNNodesAtDepth(int i) const;
+
+    NodeBox<D, T> &getRootBox() { return this->rootBox; }                   ///< @return The container of nodes
+    const NodeBox<D, T> &getRootBox() const { return this->rootBox; }       ///< @return The container of nodes
+    const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }  ///< @return The MRA object used by this tree
+
+    /** 
+     * @brief Full Multiwavelet transform of the tree in either directions
+     *
+     * @param type TopDown (from roots to leaves) or BottomUp (from
+     * leaves to roots) which specifies the direction of the MW transform
+     * @param overwrite If true, the result will overwrite preexisting coefficients.
+     *
+     * @details It performs a Multiwavlet transform of the whole tree. The
+     * input parameters will specify the direction (upwards or downwards)
+     * and whether the result is added to the coefficients or it
+     * overwrites them. See the documentation for the #mwTransformUp
+     * and #mwTransformDown for details.
+     * \f[
+     * \pmatrix{
+     * s_{nl}\\
+     * d_{nl}
+     * }
+     * \rightleftarrows \pmatrix{
+     * s_{n+1,2l}\\
+     * s_{n+1,2l+1}
+     * }
+     * \f]
      */
     void mwTransform(int type, bool overwrite = true);
 
-    /** @name Naming */
-    ///@{
-    /// Set a short descriptive name (used in logs).
-    void setName(const std::string &n) { this->name = n; }
-    /// Get the current name.
-    const std::string &getName() const { return this->name; }
-    ///@}
-
-    /** @name Root-index helpers */
-    ///@{
-    /// @return Root-box index containing coordinate @p r, or -1 if out-of-bounds (non-periodic).
-    int getRootIndex(Coord<D> r) const { return this->rootBox.getBoxIndex(r); }
-    /// @return Root-box index containing node @p nIdx, or -1 if out-of-bounds (non-periodic).
-    int getRootIndex(NodeIndex<D> nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
-    ///@}
-
-    /** @name Node lookup / retrieval */
-    ///@{
     /**
-     * @brief Find an existing node.
-     * @param nIdx Target node index.
-     * @return Pointer to the node if present, otherwise `nullptr`.
-     * @warning Does not create nodes.
+     * @brief Set the name of the tree
+     * @param n The new name
+     */
+    void setName(const std::string &n) { this->name = n; }
+    const std::string &getName() const { return this->name; }   ///< @return The name of the tree
+
+    /**
+     * @param r Spatial coordinates
+     * @return The index of the root box containng r
+     */
+    int getRootIndex(Coord<D> r) const { return this->rootBox.getBoxIndex(r); }
+    /**
+     * @param nIdx Index of a node
+     * @return The index of the root box containng nIdx
+     */
+    int getRootIndex(NodeIndex<D> nIdx) const { return this->rootBox.getBoxIndex(nIdx); }
+
+    /**
+     * @brief Finds and returns the node pointer with the given NodeIndex
+     * @param nIdx The NodeIndex to search for
+     * 
+     * @details Recursive routine to find and return the node with a given
+     * NodeIndex. This routine returns the appropriate Node, or a NULL
+     * pointer if the node does not exist, or if it is a
+     * GenNode. Recursion starts at the appropriate rootNode.
+     * 
+     * @return Pointer to the required node.
      */
     MWNode<D, T> *findNode(NodeIndex<D> nIdx);
-
-    /// Const overload of @ref findNode.
+    /**
+     * @brief Finds and returns the node pointer with the given NodeIndex
+     * @param nIdx The NodeIndex to search for
+     * 
+     * @details Recursive routine to find and return the node with a given
+     * NodeIndex. This routine returns the appropriate Node, or a NULL
+     * pointer if the node does not exist, or if it is a
+     * GenNode. Recursion starts at the appropriate rootNode.
+     * 
+     * @return Pointer to the required node.
+     */
     const MWNode<D, T> *findNode(NodeIndex<D> nIdx) const;
 
     /**
-     * @brief Get a node by index, optionally creating it.
-     * @param nIdx Target node index.
-     * @param create If `true`, missing nodes may be generated on demand.
-     * @return Reference to the node.
+     * @brief Finds and returns the node reference with the given NodeIndex.
+     * @param nIdx The NodeIndex to search for
+     * @param create If true, previously non-existing nodes will be stored permanently in the tree
+     * 
+     * @details This routine ALWAYS returns the node you ask for. If the
+     * node does not exist, it will be generated by MW
+     * transform. Recursion starts at the appropriate rootNode and descends
+     * from this.
+     * 
+     * @return Reference to the required node.
+     * @note The nodes are permanently added to the tree if create = true.
      */
     MWNode<D, T> &getNode(NodeIndex<D> nIdx, bool create = false);
 
     /**
-     * @brief Get a node or the “closest” end node containing it.
-     * @param nIdx Target node index.
-     * @return Reference to an existing node; may be an end node if exact match is absent.
-     * @note Never creates new nodes.
+     * @brief Finds and returns the node (or EndNode) for the given NodeIndex.
+     * @param nIdx The NodeIndex to search for
+     *
+     * @details This routine returns the Node you ask for, or the EndNode
+     * on the path to the requested node, if the requested one is deeper
+     * than the leaf node ancestor. It will never create or return
+     * GenNodes.  Recursion starts at the appropriate rootNode and decends
+     * from this.
+     * 
+     * @return Reference to the required node or EndNode.
      */
     MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx);
-
-    /// Const overload of @ref getNodeOrEndNode(NodeIndex).
+    /**
+     * @brief Finds and returns the node (or EndNode) for the given NodeIndex.
+     * @param nIdx The NodeIndex to search for
+     *
+     * @details This routine returns the Node you ask for, or the EndNode
+     * on the path to the requested node, if the requested one is deeper
+     * than the leaf node ancestor. It will never create or return
+     * GenNodes.  Recursion starts at the appropriate rootNode and decends
+     * from this.
+     * 
+     * @return Reference to the required node or EndNode.
+     */
     const MWNode<D, T> &getNodeOrEndNode(NodeIndex<D> nIdx) const;
 
-    /**
-     * @brief Get a node by spatial coordinate.
-     * @param r     Spatial coordinate.
-     * @param depth Desired depth; if negative, use current deepest.
-     * @return Reference to the node; may create if required by the implementation.
+    /** 
+     * @brief Finds and returns the node at a given depth that contains a given coordinate.
+     *
+     * @param r Coordinates of an arbitrary point in space
+     * @param depth Requested node depth from root scale
+     *
+     * @details This routine ALWAYS returns the node you ask for, and will
+     * generate nodes that do not exist. Recursion starts at the
+     * appropriate rootNode and decends from this.
+     * 
+     * @return Reference to the required node.
      */
     MWNode<D, T> &getNode(Coord<D> r, int depth = -1);
 
-    /**
-     * @brief Get a node or containing end node by coordinate.
-     * @param r     Spatial coordinate.
-     * @param depth Desired depth; if negative, use current deepest.
-     * @return Reference to an existing node; may be an end node.
+    /** 
+     * @brief Finds and returns the node at a given depth that contains a given coordinate.
+     *
+     * @param r Coordinates of an arbitrary point in space
+     * @param depth Requested node depth from root scale.
+     *
+     * @details This routine returns the Node you ask for, or the EndNode on
+     * the path to the requested node, and will never create or return GenNodes.
+     * Recursion starts at the appropriate rootNode and decends from this.
+     * 
+     * @return Reference to the required node or EndNode.
      */
     MWNode<D, T> &getNodeOrEndNode(Coord<D> r, int depth = -1);
-
-    /// Const overload of @ref getNodeOrEndNode(Coord,int).
+    /** 
+     * @brief Finds and returns the node at a given depth that contains a given coordinate.
+     *
+     * @param r Coordinates of an arbitrary point in space
+     * @param depth Requested node depth from root scale.
+     *
+     * @details This routine returns the Node you ask for, or the EndNode on
+     * the path to the requested node, and will never create or return GenNodes.
+     * Recursion starts at the appropriate rootNode and decends from this.
+     * 
+     * @return Reference to the required node or EndNode.
+     */
     const MWNode<D, T> &getNodeOrEndNode(Coord<D> r, int depth = -1) const;
-    ///@}
 
-    /** @name End-node table */
-    ///@{
-    /// @return Number of nodes currently listed as “end nodes”.
-    int getNEndNodes() const { return this->endNodeTable.size(); }
-    /// @return Number of root nodes.
-    int getNRootNodes() const { return this->rootBox.size(); }
-
-    /// @return Mutable reference to i-th end node.
-    MWNode<D, T> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
-    /// @return Mutable reference to i-th root node.
-    MWNode<D, T> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
-
-    /// @return Const reference to i-th end node.
-    const MWNode<D, T> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
-    /// @return Const reference to i-th root node.
-    const MWNode<D, T> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
-    ///@}
-
-    /// @return `true` if the underlying world box has any periodic directions.
-    bool isPeriodic() const { return this->MRA.getWorldBox().isPeriodic(); }
+    int getNEndNodes() const { return this->endNodeTable.size(); }  ///< @return The number of end nodes
+    int getNRootNodes() const { return this->rootBox.size(); }      ///< @return The number of root nodes
 
     /**
-     * @brief Copy the current end-node table.
-     * @return New heap-allocated vector; caller takes ownership.
+     * @param i Index of the end node
+     * @return Reference to the i-th end node
+     */
+    MWNode<D, T> &getEndMWNode(int i) { return *this->endNodeTable[i]; }
+    /**
+     * @param i Index of the root node
+     * @return Reference to the i-th root node
+     */
+    MWNode<D, T> &getRootMWNode(int i) { return this->rootBox.getNode(i); }
+    /**
+     * @param i Index of the end node
+     * @return Reference to the i-th end node
+     */
+    const MWNode<D, T> &getEndMWNode(int i) const { return *this->endNodeTable[i]; }
+    /**
+     * @param i Index of the root node
+     * @return Reference to the i-th root node
+     */
+    const MWNode<D, T> &getRootMWNode(int i) const { return this->rootBox.getNode(i); }
+
+    bool isPeriodic() const { return this->MRA.getWorldBox().isPeriodic(); } ///< @return Whether the world is periodic
+
+    /** 
+     * @brief Returns the list of all EndNodes
+     * @details Copies the list of all EndNode pointers into a new vector and returns it.
+     * @return The copied end-node table.
      */
     MWNodeVector<D, T> *copyEndNodeTable();
+    MWNodeVector<D, T> *getEndNodeTable() { return &this->endNodeTable; } ///< @return The end-node table
 
-    /// @return Direct pointer to the internal end-node table.
-    MWNodeVector<D, T> *getEndNodeTable() { return &this->endNodeTable; }
-
-    /** @name Tree maintenance */
-    ///@{
-    /// Delete all root nodes and reset root structures.
+    /** 
+     * @brief Deletes all the nodes in the tree
+     * @details This method will recursively delete all the nodes,
+     * including the root nodes. Derived classes will call this method
+     * when the object is deleted.
+     */
     void deleteRootNodes();
-    /// Rebuild the end-node table by traversing the tree.
+    /** 
+     * @brief Recreate the endNodeTable
+     * @details the endNodeTable is first deleted and then rebuilt from
+     * scratch. It makes use of the TreeIterator to traverse the tree.
+     */
     void resetEndNodeTable();
-    /// Clear the end-node table without traversing.
+    /// @brief Clear the end-node table
     void clearEndNodeTable() { this->endNodeTable.clear(); }
-    ///@}
 
-    /** @name Node statistics (current tree) */
-    ///@{
-    /// Count branch (non-leaf) nodes; if depth < 0, count all depths.
+    //// @warning This method is currently not implemented.
     int countBranchNodes(int depth = -1);
-    /// Count leaf nodes; if depth < 0, count all depths.
+    //// @warning This method is currently not implemented.
     int countLeafNodes(int depth = -1);
-    /// Count allocated nodes; if depth < 0, count all depths.
+    //// @warning This method is currently not implemented.
     int countAllocNodes(int depth = -1);
-    /// Count nodes; if depth < 0, count all depths.
+    //// @warning This method is currently not implemented.
     int countNodes(int depth = -1);
-    ///@}
+    /// @brief Whether the tree coefficients are stored in the Bank
+    bool isLocal = false; 
 
-    /// If `true`, coefficients are stored externally (Bank); used by serialization tools.
-    bool isLocal = false;
-
-    /**
-     * @brief Map a node index to its serial index (when stored locally).
-     * @param nIdx Node index.
-     * @return Serial index, or a negative value if not present.
+    /** 
+     * @brief Gives serialIx of a node from its NodeIndex
+     * @param nIdx The NodeIndex of the node
+     *
+     * @details Gives a unique integer for each nodes corresponding to the position
+     * of the node in the serialized representation. Only works if isLocal == true.
+     * 
+     * @return The serial index of the node.
      */
     int getIx(NodeIndex<D> nIdx);
 
-    /**
-     * @brief Precompute per-node maxima used by some adaptive algorithms.
-     * @details Fills `maxSquareNorm` and `maxWSquareNorm` for all nodes.
+    /** 
+     * @brief Sets values for maxSquareNorm and maxWSquaredNorm in all nodes
+     * @details It defines the upper bound of the squared norm \f$
+     * ||f||^2_{\ldots} \f$ in this node or its descendents.
      */
     void makeMaxSquareNorms();
 
-    /** @name Allocator access */
-    ///@{
-    /// @return Mutable reference to the node allocator.
-    NodeAllocator<D, T> &getNodeAllocator() { return *this->nodeAllocator_p; }
-    /// @return Const reference to the node allocator.
-    const NodeAllocator<D, T> &getNodeAllocator() const { return *this->nodeAllocator_p; }
-    ///@}
+    NodeAllocator<D, T> &getNodeAllocator() { return *this->nodeAllocator_p; }              ///< @return Reference to the node allocator.
+    const NodeAllocator<D, T> &getNodeAllocator() const { return *this->nodeAllocator_p; }  ///< @return Reference to the node allocator.
 
-    /// Vector of final projected nodes (end nodes).
-    MWNodeVector<D, T> endNodeTable;
+    MWNodeVector<D, T> endNodeTable; ///< @brief Final projected nodes
 
     /**
-     * @brief Fetch coefficients of a specific node (when using a Bank).
-     * @param nIdx Node index.
-     * @param data Destination buffer of size (k+1)^D * 2^D.
+     * @brief Fetch coefficients of a specific node stored in Bank
+     * @param nIdx Node index
+     * @param[out] data The node coefficients are copied into this array
      */
     void getNodeCoeff(NodeIndex<D> nIdx, T *data);
 
-    /// @return Whether the tree is marked as conjugated (used by some ops).
-    bool conjugate() const { return this->conj; }
-    /// Set or clear the conjugation flag.
-    void setConjugate(bool conjug) { this->conj = conjug; }
-
-    /// Print tree summary to a stream.
+    bool conjugate() const { return this->conj; }           ///< @return Whether the tree is conjugated
+    void setConjugate(bool conjug) { this->conj = conjug; } ///< @param conjug Set whether the tree is conjugated
+    
+    /**
+     * @brief Print a formatted summary of the tree
+     * @param o The output stream
+     * @param tree The tree to print
+     * @return The output stream
+     */
     friend std::ostream &operator<<(std::ostream &o, const MWTree<D, T> &tree) { return tree.print(o); }
 
-    // Friends that require access to internals
+    // Friend classes
     friend class MWNode<D, T>;
     friend class FunctionNode<D, T>;
     friend class OperatorNode;
@@ -340,51 +395,76 @@ public:
     friend class NodeAllocator<D, T>;
 
 protected:
-    /** @name Immutable construction-time state */
-    ///@{
-    const MultiResolutionAnalysis<D> MRA; ///< Domain and basis.
+    // Parameters that are set in construction and should never change
+    const MultiResolutionAnalysis<D> MRA; ///< Domain and basis
 
-    const int order;   ///< Polynomial order k.
-    const int kp1_d;   ///< (k+1)^D.
-    ///@}
+    // Constant parameters that are derived internally
+    const int order;   ///< Polynomial order k
+    const int kp1_d;   ///< (k+1)^D
 
-    /// Map node index -> serial index (used by local/banked storage).
-    std::map<NodeIndex<D>, int> NodeIndex2serialIx;
+    std::map<NodeIndex<D>, int> NodeIndex2serialIx; ///< To store nodes serialIx 
 
-    /** @name User-settable metadata */
-    ///@{
-    std::string name; ///< Short name for diagnostics.
-    ///@}
+    // Parameters that are dynamic and can be set by user
+    std::string name; ///< Name of this tree
+    std::unique_ptr<NodeAllocator<D, T>> nodeAllocator_p{nullptr}; ///< Node allocator
 
-    /// Node memory allocator.
-    std::unique_ptr<NodeAllocator<D, T>> nodeAllocator_p{nullptr};
+    // Tree data
+    double squareNorm;                      ///< Global squared L2 norm (-1 if undefined).
+    NodeBox<D, T> rootBox;                  ///< The actual container of nodes
+    std::vector<int> nodesAtDepth;          ///< Node counter
+    std::vector<int> nodesAtNegativeDepth;  ///< Node counter
 
-    /** @name Tree data & counters */
-    ///@{
-    double squareNorm;                 ///< Global squared L2 norm (-1 if undefined).
-    NodeBox<D, T> rootBox;             ///< Container of root nodes.
-    std::vector<int> nodesAtDepth;     ///< Per-depth node counts (depth >= 0).
-    std::vector<int> nodesAtNegativeDepth; ///< For negative-depth bookkeeping.
-    ///@}
-
-    /** @name MW transforms (internals) */
-    ///@{
+    /** 
+     * @brief Regenerates all scaling coeffs by MW transformation of existing s/w-coeffs
+     * on coarser scales
+     * @param overwrite If true, the preexisting coefficients are overwritten
+     *
+     * @details The transformation starts at the rootNodes and proceeds
+     * recursively all the way to the leaf nodes. The existing scaling
+     * coefficeints will either be overwritten or added to. The latter
+     * operation is generally used after the operator application.
+     */
     virtual void mwTransformDown(bool overwrite);
-    virtual void mwTransformUp();
-    ///@}
 
-    /// Increment per-depth counters for a node at the given scale.
+    /** 
+     * @brief Regenerates all s/d-coeffs by backtransformation
+     *
+     * @details It starts at the bottom of the tree (scaling coefficients
+     * of the leaf nodes) and it generates the scaling and wavelet
+     * coefficients of the parent node. It then proceeds recursively all the
+     * way up to the root nodes. This is generally used after a function
+     * projection to purify the coefficients obtained by quadrature at
+     * coarser scales which are therefore not precise enough.
+     */
+    virtual void mwTransformUp();
+
+    /** 
+     * @brief Increments node counter by one for non-GenNodes
+     * @param scale Scale of the node
+     * @warning: This routine is not thread safe, and must NEVER be called
+     * outside a critical region in parallel. It's way, way too expensive to
+     * lock the tree, so don't even think about it.
+     */
     void incrementNodeCount(int scale);
-    /// Decrement per-depth counters for a node at the given scale.
+
+    /** 
+     * @brief Decrements node counter by one for non-GenNodes
+     * @param scale Scale of the node
+     * @warning: This routine is not thread safe, and must NEVER be called
+     * outside a critical region in parallel. It's way, way too expensive to
+     * lock the tree, so don't even think about it.
+     */
     void decrementNodeCount(int scale);
 
-    /// Optional external storage of coefficients.
-    BankAccount *NodesCoeff = nullptr;
+    BankAccount *NodesCoeff = nullptr; ///< Bank account for node coefficients
 
-    /// Conjugation flag for algorithms that need it.
-    bool conj{false};
+    bool conj{false}; ///< Whether the tree is conjugated
 
-    /// Print a formatted summary (override in derived classes if needed).
+    /** 
+     * @brief Prints a summary of the tree structure on the output file
+     * @param o The output stream
+     * @return The formatted output stream
+     */
     virtual std::ostream &print(std::ostream &o) const;
 };
 

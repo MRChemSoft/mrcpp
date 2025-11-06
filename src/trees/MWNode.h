@@ -38,154 +38,289 @@
 namespace mrcpp {
 
 /**
- * @file MWNode.h
- * @brief Base node for multiresolution (multiwavelet) trees.
- *
- * @details
- * A node stores scaling/wavelet coefficients for one cell at scale `n` and
- * translation `l` in `D` spatial dimensions. It also keeps structural
- * information (parent/children, Hilbert path, status flags) and provides
- * utilities to:
- *
- * - allocate/attach coefficient buffers,
- * - compute and cache norms (total, per-component, maximum scaled norms),
- * - perform CV/MW transforms on the node,
- * - navigate and generate parts of the tree (parents/children),
- * - fetch geometry (bounds, center) and quadrature/child evaluation points.
- *
- * This class is templated on spatial dimension `D` (1, 2, or 3) and on the
- * scalar type `T` (e.g., `double` or `ComplexDouble`).
- */
-
-/**
  * @class MWNode
  * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Scalar type of coefficients (e.g., double, ComplexDouble).
+ * @tparam T Coefficient type (e.g. double, ComplexDouble).
  *
- * @brief Base class for multiwavelet tree nodes.
+ * @brief Base class for Multiwavelet nodes
+ *
+ * @details A MWNode will contain the scaling and wavelet coefficients
+ * to represent functions or operators within a Multiwavelet
+ * framework. The nodes are multidimensional. The dimensionality is
+ * set through the template parameter D=1,2,3. In addition to the
+ * coefficients, the node contains metadata such as the scale, the
+ * translation index, the norm, pointers to parent node and child
+ * nodes, pointer to the corresponding MWTree etc... See member and
+ * data descriptions for details.
  *
  * @note
- * Nodes are created and managed by @ref MWTree and specialized trees
- * (e.g., @ref FunctionTree). Most users should not instantiate nodes
+ * Nodes are created and managed by MWTree and specialized trees
+ * (e.g., FunctionTree). Most users should not instantiate nodes
  * directly; instead, operate at the tree level.
  */
 template <int D, typename T>
 class MWNode {
 public:
     /**
-     * @brief Copy-construct a node.
-     * @param node      Source node.
-     * @param allocCoef If true, allocate a new coefficient buffer.
-     * @param SetCoef   If true and @p allocCoef is true, copy coefficients.
+     * @brief MWNode copy constructor
+     * @param[in] node  The original node
+     * @param allocCoef If true, allocate MW coefficients and copy from the original node
+     * @param SetCoef   If true and @p allocCoef is true, copy coefficients
+     *
+     * @details Creates loose nodes and optionally copy coefs. The node
+     * does not "belong" to the tree: It cannot be accessed by traversing
+     * the tree.
      */
     MWNode(const MWNode<D, T> &node, bool allocCoef = true, bool SetCoef = true);
 
     MWNode<D, T> &operator=(const MWNode<D, T> &node) = delete;
+
+    /// @brief Recursive deallocation of a node and all its decendants
     virtual ~MWNode();
 
-    /// @name Basis/order and topology queries
-    ///@{
-    int getKp1() const { return getMWTree().getKp1(); }
-    int getKp1_d() const { return getMWTree().getKp1_d(); }
-    int getOrder() const { return getMWTree().getOrder(); }
-    int getScalingType() const { return getMWTree().getMRA().getScalingBasis().getScalingType(); }
-    int getTDim() const { return (1 << D); }
-    int getDepth() const { return getNodeIndex().getScale() - getMWTree().getRootScale(); }
-    int getScale() const { return getNodeIndex().getScale(); }
-    int getNChildren() const { return (isBranchNode()) ? getTDim() : 0; }
-    int getSerialIx() const { return this->serialIx; }
-    void setSerialIx(int Ix) { this->serialIx = Ix; }
+    /*
+     * Getters and setters
+     */
+    int getOrder() const { return getMWTree().getOrder(); }                                         ///< @return Polynomial order k
+    int getKp1() const { return getMWTree().getKp1(); }                                             ///< @return k+1
+    int getKp1_d() const { return getMWTree().getKp1_d(); }                                         ///< @return (k+1)^D
+    int getScalingType() const { return getMWTree().getMRA().getScalingBasis().getScalingType(); }  ///< @return The type of scaling basis (Legendre or Interpol; see MRCPP/constants.h)
+    int getTDim() const { return (1 << D); }                                                        ///< @return 2^D (number of children per internal node)
+    int getDepth() const { return getNodeIndex().getScale() - getMWTree().getRootScale(); }         ///< @return The depth of this node
+    int getScale() const { return getNodeIndex().getScale(); }                                      ///< @return The scale of this node
+    int getNChildren() const { return (isBranchNode()) ? getTDim() : 0; }                           ///< @return The number of children of this node
+    int getSerialIx() const { return this->serialIx; }                                              ///< @return The index in the serial tree
+    void setSerialIx(int Ix) { this->serialIx = Ix; }                                               ///< @param Ix The index in the serial tree
 
-    const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }
-    const HilbertPath<D> &getHilbertPath() const { return this->hilbertPath; }
-    ///@}
+    const NodeIndex<D> &getNodeIndex() const { return this->nodeIndex; }                            ///< @return The index (scale and translation) for this node
+    const HilbertPath<D> &getHilbertPath() const { return this->hilbertPath; }                      // TODO document this
 
-    /// @name Geometry
-    ///@{
-    Coord<D> getCenter() const;
-    Coord<D> getUpperBounds() const;
-    Coord<D> getLowerBounds() const;
+    Coord<D> getCenter() const;         ///< @return The coordinates of the centre of the node
+    Coord<D> getUpperBounds() const;    ///< @return The upper bounds of the D-interval defining the node
+    Coord<D> getLowerBounds() const;    ///< @return The lower bounds of the D-interval defining the node
 
+    /**
+     * @brief Test if a given coordinate is within the boundaries of the node
+     * @param[in] r Point coordinates
+     */
     bool hasCoord(const Coord<D> &r) const;
-    ///@}
 
-    /// @name Structural relations
-    ///@{
+    /// @warning This method is currently not implemented.
     bool isCompatible(const MWNode<D, T> &node);
+
+    /**
+     * @brief Test if the node is decending from a given NodeIndex, that is, if they have
+     * overlapping support.
+     * @param[in] idx the NodeIndex of the requested node
+     */
     bool isAncestor(const NodeIndex<D> &idx) const;
+
+    /// @warning This method is currently not implemented.
     bool isDecendant(const NodeIndex<D> &idx) const;
-    ///@}
 
-    /// @name Norms
-    ///@{
-    double getSquareNorm() const { return this->squareNorm; }
-    double getMaxSquareNorm() const { return (maxSquareNorm > 0.0) ? maxSquareNorm : calcScaledSquareNorm(); }
-    double getMaxWSquareNorm() const { return (maxWSquareNorm > 0.0) ? maxWSquareNorm : calcScaledWSquareNorm(); }
+    double getSquareNorm() const { return this->squareNorm; }                                                       ///< @return Squared norm of all 2^D (k+1)^D coefficients
+    double getMaxSquareNorm() const { return (maxSquareNorm > 0.0) ? maxSquareNorm : calcScaledSquareNorm(); }      ///< @return Largest squared norm among itself and descendants.
+    double getMaxWSquareNorm() const { return (maxWSquareNorm > 0.0) ? maxWSquareNorm : calcScaledWSquareNorm(); }  ///< @return Largest wavelet squared norm among itself and descendants.
 
+    /**
+     * @brief Calculate and return the squared scaling norm
+     * @return The scaling norm
+    */
     double getScalingNorm() const;
+    /**
+     * @brief Calculate and return the squared wavelet norm
+     * @return The squared wavelet norm
+     */
     virtual double getWaveletNorm() const;
+    /**
+     * @param i The component index
+     * @return The squared norm of the component at the given index
+     */
     double getComponentNorm(int i) const { return this->componentNorms[i]; }
-    ///@}
 
-    /// @name Coefficients access
-    ///@{
-    int getNCoefs() const { return this->n_coefs; }
+    int getNCoefs() const { return this->n_coefs; }                 ///< @return The number of coefficients
+    /**
+     * @brief Wraps the MW coefficients into an Eigen vector object
+     * @param[out] c The coefficient matrix
+     */
     void getCoefs(Eigen::Matrix<T, Eigen::Dynamic, 1> &c) const;
-    void printCoefs() const;
 
-    T *getCoefs() { return this->coefs; }
-    const T *getCoefs() const { return this->coefs; }
-    ///@}
+    void printCoefs() const; ///< @brief Printout of node coefficients
 
-    /// @name Evaluation points (quadrature / children)
-    ///@{
+    T *getCoefs() { return this->coefs; }               ///< @return The 2^D (k+1)^D MW coefficients
+    const T *getCoefs() const { return this->coefs; }   ///< @return The 2^D (k+1)^D MW coefficients
+
+    /**
+     * @brief Returns the quadrature points of this node
+     *
+     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+     *
+     * @details The original quadrature points are fetched and then
+     * dilated and translated. For each cartesian direction \f$ \alpha =
+     * x,y,z... \f$ the set of quadrature points becomes \f$ x^\alpha_i =
+     * 2^{-n} (x_i + l^\alpha \f$. By taking all possible
+     * \f$(k+1)^d\f$ combinations, they will then define a d-dimensional
+     * grid of quadrature points.
+     */
     void getPrimitiveQuadPts(Eigen::MatrixXd &pts) const;
-    void getPrimitiveChildPts(Eigen::MatrixXd &pts) const;
-    void getExpandedQuadPts(Eigen::MatrixXd &pts) const;
-    void getExpandedChildPts(Eigen::MatrixXd &pts) const;
-    ///@}
 
-    /// @name Tree navigation (typed accessors)
-    ///@{
-    MWTree<D, T> &getMWTree() { return static_cast<MWTree<D, T> &>(*this->tree); }
-    MWNode<D, T> &getMWParent() { return static_cast<MWNode<D, T> &>(*this->parent); }
+    /**
+     * @brief Returns the quadrature points of this node
+     *
+     * @param[out] pts Quadrature points in a \f$ d \times (k+1) \f$ matrix form.
+     *
+     * @details The original quadrature points are fetched and then
+     * dilated and translated to match the quadrature points in the
+     * children of this node. For each cartesian direction \f$ \alpha = x,y,z... \f$
+     * the set of quadrature points becomes \f$ x^\alpha_i = 2^{-n-1} (x_i + 2 l^\alpha + t^\alpha) \f$, where \f$ t^\alpha =
+     * 0,1 \f$. By taking all possible \f$(k+1)^d\f$ combinations, they will
+     * then define a d-dimensional grid of quadrature points for the child
+     * nodes.
+     */
+    void getPrimitiveChildPts(Eigen::MatrixXd &pts) const;
+
+    /**
+     * @brief Returns the quadrature points of this node
+     *
+     * @param[out] pts Expanded quadrature points in a \f$ d \times
+     * (k+1)^d \f$ matrix form.
+     *
+     * @details The primitive quadrature points are used to obtain a
+     * tensor-product representation collecting all \f$ (k+1)^d \f$
+     * vectors of quadrature points.
+     */
+    void getExpandedQuadPts(Eigen::MatrixXd &pts) const;
+
+    /**
+     * @brief Returns the quadrature points of this node
+     *
+     * @param[out] pts Expanded quadrature points in a \f$ d \times
+     * 2^d(k+1)^d \f$ matrix form.
+     *
+     * @details The primitive quadrature points of the children are used to obtain a
+     * tensor-product representation collecting all \f$ 2^d (k+1)^d \f$
+     * vectors of quadrature points.
+     */
+    void getExpandedChildPts(Eigen::MatrixXd &pts) const;
+
+    MWTree<D, T> &getMWTree() { return static_cast<MWTree<D, T> &>(*this->tree); }              ///< @return The tree this node belongs to
+    MWNode<D, T> &getMWParent() { return static_cast<MWNode<D, T> &>(*this->parent); }          ///< @return The parent of this node
+
+    /**
+     * @param i The index of the child
+     * @return The child at the given index
+     */
     MWNode<D, T> &getMWChild(int i) { return static_cast<MWNode<D, T> &>(*this->children[i]); }
 
-    const MWTree<D, T> &getMWTree() const { return static_cast<const MWTree<D, T> &>(*this->tree); }
-    const MWNode<D, T> &getMWParent() const { return static_cast<const MWNode<D, T> &>(*this->parent); }
+    const MWTree<D, T> &getMWTree() const { return static_cast<const MWTree<D, T> &>(*this->tree); }                ///< @return The tree this node belongs to
+    const MWNode<D, T> &getMWParent() const { return static_cast<const MWNode<D, T> &>(*this->parent); }            ///< @return The parent of this node
+
+    /**
+     * @param i The index of the child
+     * @return The child at the given index
+     */
     const MWNode<D, T> &getMWChild(int i) const { return static_cast<const MWNode<D, T> &>(*this->children[i]); }
-    ///@}
 
-    /// @name Coefficients editing (block-wise)
-    ///@{
+    /// @brief Sets all MW coefficients and the norms to zero
     void zeroCoefs();
+
+    /**
+     * @brief Assigns values to a block of coefficients
+     * @param block The block index
+     * @param block_size Size of the block
+     * @param[in] c The input coefficients
+     *
+     * @details A block is typically containing one kind of coefficients
+     * (given scaling/wavelet in each direction). Its size is then \f$
+     * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+     */
     void setCoefBlock(int block, int block_size, const T *c);
+
+    /**
+     * @brief Adds values to a block of coefficients
+     * @param block The block index
+     * @param block_size Size of the block
+     * @param[in] c The input coefficients
+     *
+     * @details A block is typically containing one kind of coefficients
+     * (given scaling/wavelet in each direction). Its size is then \f$
+     * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+     */
     void addCoefBlock(int block, int block_size, const T *c);
+
+    /**
+     * @brief Sets values of a block of coefficients to zero
+     * @param[in] block The block index
+     * @param[in] block_size Size of the block
+     *
+     * @details A block is typically containing one kind of coefficients
+     * (given scaling/wavelet in each direction). Its size is then \f$
+     * (k+1)^D \f$ and the index is between 0 and \f$ 2^D-1 \f$.
+     */
     void zeroCoefBlock(int block, int block_size);
+
+    /**
+     * @brief Attach a set of coefficients to this node. Only used locally (the tree is not aware of this).
+     * @param[in] coefs The coefficients to attach
+     *
+     * @note The number of coefficients must remain the same.
+     */
     void attachCoefs(T *coefs);
-    ///@}
 
-    /// @name Norm bookkeeping
-    ///@{
-    void calcNorms();
-    void zeroNorms();
-    void clearNorms();
-    ///@}
+    void calcNorms();   ///< @brief Calculate and store square norm and component norms, if allocated.
+    void zeroNorms();   ///< @brief Set all norms to zero.
+    void clearNorms();  ///< @brief Set all norms to Undefined.
 
-    /// @name Topology modification
-    ///@{
+    /*
+     * Implemented in child classes
+     */
     virtual void createChildren(bool coefs);
     virtual void genChildren();
     virtual void genParent();
-    virtual void deleteChildren();
-    virtual void deleteParent();
-    ///@}
 
-    /// @name Local transforms
-    ///@{
-    virtual void cvTransform(int kind, bool firstchild = false);
-    virtual void mwTransform(int kind);
-    ///@}
+    /**
+     * @brief Recursive deallocation of children and all their descendants.
+     *
+     * @details Leaves node as LeafNode and children[] as null pointer.
+     */
+    virtual void deleteChildren();
+
+    /// @brief Recursive deallocation of parent and all their forefathers.
+    virtual void deleteParent();
+
+    /**
+     * @brief Coefficient-Value transform
+     * @param operation Forward (coef->value) or backward (value->coef).
+     *
+     * @details This routine transforms the scaling coefficients of the node to the
+     * function values in the corresponding quadrature roots (of its children).
+     *
+     * @note This routine assumes a 0/1 (scaling on child 0 and 1)
+     *       representation, instead of s/d (scaling and wavelet).
+     */
+    virtual void cvTransform(int operation, bool firstchild = false); // TODO document firstchild parameter
+
+    /**
+     * @brief Multiwavelet transform
+     * @param operation compression (s0,s1->s,d) or reconstruction (s,d->s0,s1).
+     *
+     * @details Application of the filters on one node to pass from a 0/1 (scaling
+     * on child 0 and 1) representation to an s/d (scaling and
+     * wavelet) representation. Bit manipulation is used in order to
+     * determine the correct filters and whether to apply them or just
+     * pass to the next couple of indexes. The starting coefficients are
+     * preserved until the application is terminated, then they are
+     * overwritten. With minor modifications this code can also be used
+     * for the inverse mw transform (just use the transpose filters) or
+     * for the application of an operator (using A, B, C and T parts of an
+     * operator instead of G1, G0, H1, H0). This is the version where the
+     * three directions are operated one after the other. Although this
+     * is formally faster than the other algorithm, the separation of the
+     * three dimensions prevent the possibility to use the norm of the
+     * operator in order to discard a priori negligible contributions.
+     *
+     */
+    virtual void mwTransform(int operation);
 
     /**
      * @brief Node-norm at an arbitrary index.
@@ -256,8 +391,8 @@ protected:
     int n_coefs{0};                       ///< Number of coefficients in @ref coefs.
 
     // -------- Serialization helpers --------
-    int serialIx{-1};                     ///< Index in a serialized traversal.
-    int parentSerialIx{-1};               ///< Serialized index of parent, or -1 for roots.
+    int serialIx{-1};                     ///< Index in the serial tree
+    int parentSerialIx{-1};               ///< Index of parent in the serial tree, or -1 for roots
 
     // -------- Indexing and space-filling path --------
     NodeIndex<D> nodeIndex;               ///< Scale and translation of this node.

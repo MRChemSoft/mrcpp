@@ -60,7 +60,7 @@ class BankAccount;
 /**
  * @class MWTree
  * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Coefficient scalar type (e.g. double, ComplexDouble).
+ * @tparam T Coefficient type (e.g. double, ComplexDouble).
  *
  * @brief Base class for MW tree structures (e.g., FunctionTree, OperatorTree).
  *
@@ -138,7 +138,7 @@ public:
     int getDim() const { return D; }
     /// @return 2^D (number of children per internal node).
     int getTDim() const { return (1 << D); }
-    /// @return Total number of nodes currently allocated in the tree.
+    /// @return Total number of nodes currently in the tree.
     int getNNodes() const { return getNodeAllocator().getNNodes(); }
     /// @return Number of records kept for negative-depth counts.
     int getNNegScales() const { return this->nodesAtNegativeDepth.size(); }

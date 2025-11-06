@@ -104,7 +104,7 @@ public:
     /** @return Const reference to the k-th basis polynomial φ_k. */
     const Polynomial &getFunc(int k) const { return this->funcs[k]; }
 
-    /** @return Family tag (Legendre or Interpol; see MRCPP/constants.h). */
+    /** @return The type of scaling basis (Legendre or Interpol; see MRCPP/constants.h) */
     int getScalingType() const { return this->type; }
     /** @return Polynomial order k. */
     int getScalingOrder() const { return this->order; }

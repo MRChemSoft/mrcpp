@@ -40,25 +40,25 @@ namespace mrcpp {
  * - the corresponding **Z-order (Morton) index** \f$z\f$,
  * as well as the **next orientation state** after descending to child \f$h\f$.
  *
- * The mappings are implemented via static lookup tables (declared here, defined
- * in the corresponding translation unit). The template parameter @p D is the
- * spatial dimension; typical values are 2 (quadtree) or 3 (octree).
  */
 
 /**
  * @class HilbertPath
  * @tparam D Spatial dimension (e.g., 2 for quadtree, 3 for octree).
  *
- * @brief Traverse the leaf nodes of a tree following the Hilbert space-filling curve.
+ * @brief Traverse the nodes of a tree following the Hilbert space-filling curve.
  *
- * @details
+ * @details The Hilbert curve is a continuous fractal space-filling curve that 
+ * has good locality properties. We use it to traverse the nodes of a tree.
  * Each node visit in a Hilbert traversal has an associated **state** that
- * determines how the children are ordered. Given the current state:
+ * determines how the children are ordered. Alternativly a Z-ordering can be used.
  * - @ref getZIndex maps a Hilbert child index to the corresponding Morton
  *   (Z-order) child index;
  * - @ref getHIndex performs the inverse mapping (Morton to Hilbert); and
  * - @ref getChildPath returns the orientation state to use after descending
  *   to a specific Hilbert child.
+ *
+ * The mappings are implemented via static lookup tables.
  */
 template <int D>
 class HilbertPath final {

@@ -32,22 +32,12 @@
 
 namespace mrcpp {
 
-/**
- * @file FunctionTreeVector.h
- * @brief Lightweight helpers for working with collections of FunctionTree objects.
- *
- * @details
- * Many high-level algorithms (addition, multiplication, dot products, etc.)
- * operate on *lists* of trees paired with a numeric coefficient. This header
- * provides two aliases for such lists and a few utility functions to manage
- * them without introducing additional container classes.
- */
 
 /**
  * @brief Alias for a weighted FunctionTree pointer.
  *
- * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Scalar type of the trees (defaults to double).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  *
  * @details
  * The tuple layout is:
@@ -62,23 +52,15 @@ using CoefsFunctionTree = std::tuple<T, FunctionTree<D, T> *>;
 /**
  * @brief Alias for a vector of weighted FunctionTree pointers.
  *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type (defaults to double).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  */
 template <int D, typename T = double>
 using FunctionTreeVector = std::vector<CoefsFunctionTree<D, T>>;
 
-/**
- * @brief Remove all entries from a FunctionTreeVector.
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in,out] fs     Vector to clear.
- * @param[in]     dealloc If true, delete each stored FunctionTree pointer
- *                        before clearing the vector.
- *
- * @note When @p dealloc is false (the default), this function does not
- *       take ownership of the pointers and will not delete them.
+/** @brief Remove all entries in the vector
+ *  @param[in] fs: Vector to clear
+ *  @param[in] dealloc: Option to free FunctionTree pointer before clearing
  */
 template <int D, typename T>
 void clear(FunctionTreeVector<D, T> &fs, bool dealloc = false) {
@@ -95,10 +77,11 @@ void clear(FunctionTreeVector<D, T> &fs, bool dealloc = false) {
 /**
  * @brief Compute the total number of nodes across all trees in the vector.
  *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in] fs Vector to inspect.
- * @return Sum of @c getNNodes() over all non-null trees.
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ * @param[in] fs Vector to fetch from
+ * 
+ * @returns Total number of nodes of all trees in the vector
  */
 template <int D, typename T>
 int get_n_nodes(const FunctionTreeVector<D, T> &fs) {
@@ -112,11 +95,12 @@ int get_n_nodes(const FunctionTreeVector<D, T> &fs) {
 
 /**
  * @brief Compute the total size of all trees in the vector (in kilobytes).
- *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in] fs Vector to inspect.
- * @return Sum of @c getSizeNodes() over all non-null trees.
+ * 
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ * @param[in] fs Vector to fetch from.
+ * 
+ * @returns Total size of all trees in the vector, in kB
  */
 template <int D, typename T>
 int get_size_nodes(const FunctionTreeVector<D, T> &fs) {
@@ -131,11 +115,12 @@ int get_size_nodes(const FunctionTreeVector<D, T> &fs) {
 /**
  * @brief Access the numeric coefficient at a given position.
  *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in] fs Vector to access.
- * @param[in] i  Zero-based position.
- * @return The coefficient stored at position @p i.
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ * @param[in] fs Vector to fetch from
+ * @param[in] i  Position in vector (zero-based)
+ * 
+ * @returns Numerical coefficient at given position in vector
  *
  * @pre @p i must be a valid index in @p fs.
  */
@@ -147,12 +132,13 @@ T get_coef(const FunctionTreeVector<D, T> &fs, int i) {
 /**
  * @brief Access the FunctionTree at a given position (non-const).
  *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in] fs Vector to access.
- * @param[in] i  Zero-based position.
- * @return Reference to the @c FunctionTree<D,T> at position @p i.
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ * @param[in] fs Vector to fetch from
+ * @param[in] i  Position in vector (zero-based)
  *
+ * @return FunctionTree at given position in vector
+ * 
  * @pre The pointer stored at position @p i must be non-null.
  */
 template <int D, typename T>
@@ -161,14 +147,15 @@ FunctionTree<D, T> &get_func(FunctionTreeVector<D, T> &fs, int i) {
 }
 
 /**
- * @brief Access the FunctionTree at a given position (const).
+ * @brief Access the FunctionTree at a given position (non-const).
  *
- * @tparam D Spatial dimension.
- * @tparam T Scalar type.
- * @param[in] fs Vector to access.
- * @param[in] i  Zero-based position.
- * @return Const reference to the @c FunctionTree<D,T> at position @p i.
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ * @param[in] fs Vector to fetch from
+ * @param[in] i  Position in vector (zero-based)
  *
+ * @return FunctionTree at given position in vector
+ * 
  * @pre The pointer stored at position @p i must be non-null.
  */
 template <int D, typename T>

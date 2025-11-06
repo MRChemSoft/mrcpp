@@ -42,15 +42,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** @returns New FunctionTree object
- *
- *  @param[in] mra: Which MRA the function is defined
- *  @param[in] sh_mem: Pointer to MPI shared memory block
- *
- *  @details Constructs an uninitialized tree, containing only empty root nodes.
- *  If a shared memory pointer is provided the tree will be allocated in this
- *  shared memory window, otherwise it will be local to each MPI process.
- */
+
 template <int D, typename T>
 FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem, const std::string &name)
         : MWTree<D, T>(mra, name)
@@ -107,11 +99,7 @@ template <int D, typename T> FunctionTree<D, T>::~FunctionTree() {
     if (this->getNNodes() > 0) this->deleteRootNodes();
 }
 
-/** @brief Read a previously stored tree assuming text/ASCII format,
- *   in a representation using MADNESS conventions for n, l and index order.
- * @param[in] file: File name
- * @note This tree must have the exact same MRA the one that was saved(?)
- */
+
 template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::string &file) {
     std::ifstream in(file);
     int NDIM, k;
@@ -285,10 +273,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     this->calcSquareNorm();
 }
 
-/** @brief Write the tree to disk in text/ASCII format in a representation
- *   using MADNESS conventions for n, l and index order.
- * @param[in] file: File name
- */
+
 template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::string &fname) {
     int nRoots = this->getRootBox().size();
     MWNode<D, T> **roots = this->getRootBox().getNodes();
@@ -357,9 +342,8 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
    }
     out.close();
 }
-/** @brief Write the tree structure to disk, for later use
- * @param[in] file: File name, will get ".tree" extension
- */
+
+
 template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string &file) {
     Timer t1;
 
@@ -383,10 +367,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTree(const std::string
     print::time(10, "Time write", t1);
 }
 
-/** @brief Read a previously stored tree structure from disk
- * @param[in] file: File name, will get ".tree" extension
- * @note This tree must have the exact same MRA the one that was saved
- */
+
 template <int D, typename T> void FunctionTree<D, T>::loadTree(const std::string &file) {
     Timer t1;
 
@@ -438,7 +419,7 @@ template <int D, typename T> T FunctionTree<D, T>::integrate() const {
     return jacobian * result;
 }
 
-/** @returns Integral of a representable function over the grid given by the tree */
+
 template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunction_M &f) {
     // traverse tree, and treat end nodes only
     std::vector<FunctionNode<3> *> stack; // node from this
@@ -473,20 +454,7 @@ template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunct
     return jacobian * result;
 }
 
-/** @returns Function value in a point, out of bounds returns zero
- *
- * @param[in] r: Cartesian coordinate
- *
- * @note This will only evaluate the _scaling_ part of the
- *       leaf nodes in the tree, which means that the function
- *       values will not be fully accurate.
- *       This is done to allow a fast and const function evaluation
- *       that can be done in OMP parallel. If you want to include
- *       also the _final_ wavelet part you can call the corresponding
- *       evalf_precise function, _or_ you can manually extend
- *       the MW grid by one level before evaluating, using
- *       `mrcpp::refine_grid(tree, 1)`
- */
+
 template <int D, typename T> T FunctionTree<D, T>::evalf(const Coord<D> &r) const {
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
@@ -511,16 +479,7 @@ template <int D, typename T> T FunctionTree<D, T>::evalf(const Coord<D> &r) cons
     return coef * result;
 }
 
-/** @returns Function value in a point, out of bounds returns zero
- *
- * @param[in] r: Cartesian coordinate
- *
- * @note This will evaluate the _true_ value (scaling + wavelet) of the
- *       leaf nodes in the tree. This requires an on-the-fly MW transform
- *       on the node which makes this function slow and non-const. If you
- *       need fast evaluation, use refine_grid(tree, 1) first, and then
- *       evalf.
- */
+
 template <int D, typename T> T FunctionTree<D, T>::evalf_precise(const Coord<D> &r) {
     // Handle potential scaling
     const auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
@@ -546,12 +505,7 @@ template <int D, typename T> T FunctionTree<D, T>::evalf_precise(const Coord<D> 
     return coef * result;
 }
 
-/** @brief In-place square of MW function representations, fixed grid
- *
- * @details The leaf node point values of the function will be in-place
- * squared, no grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::square() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
@@ -575,14 +529,7 @@ template <int D, typename T> void FunctionTree<D, T>::square() {
     this->calcSquareNorm();
 }
 
-/** @brief In-place power of MW function representations, fixed grid
- *
- * @param[in] p: Numerical power
- *
- * @details The leaf node point values of the function will be in-place raised
- * to the given power, no grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::power(double p) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 
@@ -606,14 +553,7 @@ template <int D, typename T> void FunctionTree<D, T>::power(double p) {
     this->calcSquareNorm();
 }
 
-/** @brief In-place multiplication by a scalar, fixed grid
- *
- * @param[in] c: Scalar coefficient
- *
- * @details The leaf node point values of the function will be
- * in-place multiplied by the given coefficient, no grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::rescale(T c) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) num_threads(mrcpp_get_num_threads())
@@ -633,7 +573,7 @@ template <int D, typename T> void FunctionTree<D, T>::rescale(T c) {
     this->calcSquareNorm();
 }
 
-/** @brief In-place rescaling by a function norm \f$ ||f||^{-1} \f$, fixed grid */
+
 template <int D, typename T> void FunctionTree<D, T>::normalize() {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     double sq_norm = this->getSquareNorm();
@@ -641,15 +581,7 @@ template <int D, typename T> void FunctionTree<D, T>::normalize() {
     this->rescale(1.0 / std::sqrt(sq_norm));
 }
 
-/** @brief In-place addition with MW function representations, fixed grid
- *
- * @param[in] c: Numerical coefficient of input function
- * @param[in] inp: Input function to add
- *
- * @details The input function will be added in-place on the current grid of
- * the function, i.e. no further grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::add(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
@@ -670,15 +602,7 @@ template <int D, typename T> void FunctionTree<D, T>::add(T c, FunctionTree<D, T
     this->calcSquareNorm();
     inp.deleteGenerated();
 }
-/** @brief In-place addition with MW function representations, fixed grid
- *
- * @param[in] c: Numerical coefficient of input function
- * @param[in] inp: Input function to add
- *
- * @details The input function will be added to the union of the current grid of
- * and input the function grid.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::add_inplace(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
@@ -701,15 +625,7 @@ template <int D, typename T> void FunctionTree<D, T>::add_inplace(T c, FunctionT
     inp.deleteGenerated();
 }
 
-/** @brief In-place addition of absolute values of MW function representations
- *
- * @param[in] c Numerical coefficient of input function
- * @param[in] inp Input function to add
- *
- * The absolute value of input function will be added in-place on the current grid of the output
- * function, i.e. no further grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::absadd(T c, FunctionTree<D, T> &inp) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
 #pragma omp parallel firstprivate(c) shared(inp) num_threads(mrcpp_get_num_threads())
@@ -736,15 +652,7 @@ template <int D, typename T> void FunctionTree<D, T>::absadd(T c, FunctionTree<D
     inp.deleteGenerated();
 }
 
-/** @brief In-place multiplication with MW function representations, fixed grid
- *
- * @param[in] c: Numerical coefficient of input function
- * @param[in] inp: Input function to multiply
- *
- * @details The input function will be multiplied in-place on the current grid
- * of the function, i.e. no further grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::multiply(T c, FunctionTree<D, T> &inp) {
     if (this->getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
@@ -772,14 +680,7 @@ template <int D, typename T> void FunctionTree<D, T>::multiply(T c, FunctionTree
     inp.deleteGenerated();
 }
 
-/** @brief In-place mapping with a predefined function f(x), fixed grid
- *
- * @param[in] fmap: mapping function
- *
- * @details The input function will be mapped in-place on the current grid
- * of the function, i.e. no further grid refinement.
- *
- */
+
 template <int D, typename T> void FunctionTree<D, T>::map(FMap<T, T> fmap) {
     if (this->getNGenNodes() != 0) MSG_ABORT("GenNodes not cleared");
     {
@@ -839,20 +740,7 @@ template <int D, typename T> std::ostream &FunctionTree<D, T>::print(std::ostrea
     return MWTree<D, T>::print(o);
 }
 
-/** @brief Reduce the precision of the tree by deleting nodes
- *
- * @param prec: New precision criterion
- * @param splitFac: Splitting factor: 1, 2 or 3
- * @param absPrec: Use absolute precision
- *
- * @details This will run the tree building algorithm in "reverse", starting
- * from the leaf nodes, and perform split checks on each node based on the given
- * precision and the local wavelet norm.
- *
- * @note The splitting factor appears in the threshold for the wavelet norm as
- * \f$ ||w|| < 2^{-sn/2} ||f|| \epsilon \f$. In principal, `s` should be equal
- * to the dimension; in practice, it is set to `s=1`.
- */
+
 template <int D, typename T> int FunctionTree<D, T>::crop(double prec, double splitFac, bool absPrec) {
     for (int i = 0; i < this->rootBox.size(); i++) {
         MWNode<D, T> &root = this->getRootMWNode(i);
@@ -864,10 +752,7 @@ template <int D, typename T> int FunctionTree<D, T>::crop(double prec, double sp
     return nChunks;
 }
 
-/** Traverse tree using BFS and returns an array with the address of the coefs.
- * Also returns an array with the corresponding indices defined as the
- * values of serialIx in refTree, and an array with the indices of the parent.
- * Set index -1 for nodes that are not present in refTree */
+
 template <int D, typename T>
 void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
                                          std::vector<int> &indices,
@@ -918,10 +803,7 @@ void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
     }
 }
 
-/** Traverse tree using DFS and reconstruct it using node info from the
- * reference tree and a list of coefficients.
- * It is the reference tree (refTree) which is traversed, but one does not descend
- * into children if the norm of the tree is smaller than absPrec. */
+
 template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D, double> &refTree, std::vector<T *> coefpVec, std::map<int, int> &ix2coef, double absPrec, const std::string &mode) {
     std::vector<MWNode<D, double> *> stack;
     std::map<int, MWNode<D, T> *> ix2node; // gives the nodes in this tree for a given ix
@@ -998,9 +880,7 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
     }
 }
 
-/** Traverse tree using DFS and append same nodes as another tree, without coefficients
- *  Note that we do not use coefficients, so it does not matter what is real or complex
- */
+
 template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D, double> &inTree) {
     std::vector<MWNode<D, double> *> instack; // node from inTree
     std::vector<MWNode<D, T> *> thisstack;    // node from this Tree
@@ -1039,7 +919,7 @@ template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D
     }
 }
 
-/** Traverse tree using DFS and append same nodes as another tree, without coefficients */
+
 template <int D, typename T> void FunctionTree<D, T>::appendTreeNoCoeff(MWTree<D, ComplexDouble> &inTree) {
     std::vector<MWNode<D, ComplexDouble> *> instack; // node from inTree
     std::vector<MWNode<D, T> *> thisstack;           // node from this Tree
@@ -1131,17 +1011,13 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
     return this->NodeIndex2serialIx.size();
 }
 
-/**  @brief Deep copy of tree
- *
- * @details Exact copy without any binding between old and new tree
- */
+
 template <int D, typename T> void FunctionTree<D, T>::deep_copy(FunctionTree<D, T> *out) {
     copy_grid(*out, *this);
     copy_func(*out, *this);
 }
 
-/**  @brief New tree with only real part
- */
+
 template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real() {
     FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
     out->setZero();
@@ -1165,8 +1041,7 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Real()
     return out;
 }
 
-/**  @brief New tree with only imaginary part
- */
+
 template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag() {
     FunctionTree<D, double> *out = new FunctionTree<D, double>(this->getMRA(), this->getName());
     out->setZero();
@@ -1188,10 +1063,6 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
     return out;
 }
 
-/*
- * From real to complex tree. Copy everything, and convert double to ComplexDouble for the coefficents.
- * Should use a deep_copy if generalized in the future.
- */
 
 template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&outTree) {
     delete outTree;

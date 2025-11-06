@@ -49,7 +49,7 @@ namespace mrcpp {
  * @class HilbertPath
  * @tparam D Spatial dimension (e.g., 2 for quadtree, 3 for octree).
  *
- * @brief Encapsulates the current Hilbert orientation state and child mappings.
+ * @brief Traverse the leaf nodes of a tree following the Hilbert space-filling curve.
  *
  * @details
  * Each node visit in a Hilbert traversal has an associated **state** that
@@ -63,15 +63,17 @@ namespace mrcpp {
 template <int D>
 class HilbertPath final {
 public:
-    /** @brief Default constructor; initializes to the canonical root state. */
+    /** 
+     * @brief Default constructor 
+     */
     HilbertPath() = default;
-
-    /** @brief Copy constructor. */
+    /** 
+     * @brief Copy constructor 
+     */
     HilbertPath(const HilbertPath<D> &p)
             : path(p.path) {}
-
     /**
-     * @brief Construct a child-state from a parent-state and a child index.
+     * @brief Construct a child path from a parent path and a child index.
      *
      * @param[in] p    Parent @ref HilbertPath state.
      * @param[in] cIdx Child index expressed in **Morton (Z-order)** for this parent.
@@ -85,34 +87,34 @@ public:
         int hIdx = p.getHIndex(cIdx);
         this->path = p.getChildPath(hIdx);
     }
-
-    /** @brief Assignment operator. */
+    /** 
+     * @brief Assignment operator 
+     */
     HilbertPath &operator=(const HilbertPath<D> &p) {
         this->path = p.path;
         return *this;
     }
-
-    /** @brief Return the current orientation state identifier. */
-    short int getPath() const { return this->path; }
-
+    short int getPath() const { return this->path; } ///< @return the current path */
     /**
-     * @brief Transition: state after descending to Hilbert child @p hIdx.
-     * @param[in] hIdx Child index in **Hilbert** order for the current state.
-     * @return Orientation state identifier for the child.
+     * @brief Get path index of selected child
+     *
+     * @param hIdx Child index in **Hilbert** order for the current state.
+     * @return Path index for the selected child
      */
     short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }
-
     /**
-     * @brief Map Hilbert child index to Morton (Z-order) child index.
-     * @param[in] hIdx Child index in **Hilbert** order for the current state.
-     * @return Corresponding **Morton** child index.
+     * @brief Map Hilbert child index to Morton (Z-order) child index
+     *
+     * @param hIdx Child index in **Hilbert** order
+     * @return **Morton** child index.
      */
     int getZIndex(int hIdx) const { return this->zTable[this->path][hIdx]; }
 
     /**
      * @brief Map Morton (Z-order) child index to Hilbert child index.
-     * @param[in] zIdx Child index in **Morton** order for the current state.
-     * @return Corresponding **Hilbert** child index.
+     *
+     * @param zIdx Child index in **Morton** order
+     * @return **Hilbert** child index
      */
     int getHIndex(int zIdx) const { return this->hTable[this->path][zIdx]; }
 
@@ -121,9 +123,9 @@ private:
     short int path{0};
 
     /**
-     * @name Lookup tables (declared here, defined in the .cpp)
+     * @name Lookup tables (declared in header, defined in the .cpp)
      * Each table has 2^D columns (up to 8 for D=3) and one row per state.
-     * @{
+     * 
      */
     static const short int pTable[][8]; ///< Next-state table: state × h -> state'
     static const int zTable[][8];       ///< Mapping: state × h -> z

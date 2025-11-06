@@ -29,87 +29,39 @@
 
 namespace mrcpp {
 
-/**
- * @file CornerOperatorTree.h
- * @brief Declaration of CornerOperatorTree, a specialization of OperatorTree
- *        for "corner" non-standard form operators.
+/** @class CornerOperatorTree
  *
- * @details
- * Many MRCPP operators are represented in non-standard form and decompose
- * into the four corner submatrices T, A, B, C. This helper class provides:
- * - computation of per-depth band widths for those corner blocks, and
- * - a fast band screen used during operator application.
+ * @brief Special case of OperatorTree class
  *
- * The band width information is stored in a BandWidth object owned by
- * the base class OperatorTree.
- *
- * @par Example
- * @code
- * CornerOperatorTree cot(mra, 10);            // maxDepth = 10
- * cot.calcBandWidth(1e-8);                    // build band widths with a threshold
- * bool within = cot.isOutsideBand(3, 4, 1);   // oTransl=3, o_depth=4, idx=1
- * @endcode
- */
-
-/**
- * @class CornerOperatorTree
- * @brief Operator tree for non-standard form corner matrices.
- *
- * @details
- * This final class only adds band-handling logic on top of @ref OperatorTree.
- * Construction and storage are inherited from the base class; the only
- * public operations exposed here are:
- * - @ref calcBandWidth to build/update the band widths, and
- * - @ref isOutsideBand for a quick test against the stored band.
+ * @details Tree structure of operators having corner matrices
+ * \f$ A, B, C \f$ in the non-standard form.
  */
 class CornerOperatorTree final : public OperatorTree {
 public:
-    /// Inherit the valid constructor(s) from OperatorTree.
+    /// Inherit the valid constructorfrom OperatorTree.
     using OperatorTree::OperatorTree;
 
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
     ~CornerOperatorTree() override = default;
 
-    /**
-     * @brief Compute per-depth band widths for the corner matrices.
+    /** 
+     * @brief Calculates band widths of the non-standard form matrices
+     * @param prec Precision used for thresholding
      *
-     * @param prec Threshold used when scanning matrix entries.
-     *             If negative, the implementation falls back to the
-     *             tree’s internal default (e.g. @c normPrec ).
-     *
-     * @details
-     * For each depth and for each corner component \f$\{T,A,B,C\}\f$,
-     * the routine scans along increasing distance from the diagonal and
-     * records the largest translation \f$\ell\f$ for which the component
-     * norm still exceeds the threshold. The resulting widths are stored
-     * in the underlying @ref BandWidth structure.
-     *
-     * @note Calling this will (re)allocate and overwrite the stored band
-     *       widths for the whole tree.
+     * @details It is starting from \f$ l = 2^n \f$ and updating the band width value each time we encounter
+     * considerable value while keeping decreasing down to \f$ l = 0 \f$, that stands for the distance to the diagonal.
+     * This procedure is repeated for each matrix \f$ A, B \f$ and \f$ C \f$.
      */
     void calcBandWidth(double prec = -1.0) override;
 
-    /**
-     * @brief Test an offset against the stored band width.
+    /** 
+     * @brief Checks if the distance to diagonal is lesser than the operator band width
+     * @param oTransl distance to diagonal
+     * @param o_depth scaling order
+     * @param idx index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$
      *
-     * @param oTransl Integer offset (translation) from the diagonal.
-     * @param o_depth Operator depth at which to query the band.
-     * @param idx     Corner component selector in \f$\{0,1,2,3\}\f$
-     *                corresponding to \f$\{T,A,B,C\}\f$.
-     *
-     * @return
-     * **true** if \f$|oTransl| < \mathrm{width}(o\_depth, idx)\f$,
-     * **false** otherwise.
-     *
-     * @details
-     * Despite the historical name, this method returns @b true when the
-     * offset lies @em inside the retained band (i.e., strictly smaller
-     * than the stored width). Callers typically use it as a quick screen
-     * to decide whether a sparse block needs to be applied.
-     *
-     * @warning This assumes @ref calcBandWidth has been called at least
-     *          once; otherwise widths may be unset or conservative.
+     * @returns True if @p oTransl is outside of the corner band (close to diagonal) and False otherwise.
      */
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;
 };

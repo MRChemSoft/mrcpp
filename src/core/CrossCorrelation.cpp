@@ -23,6 +23,16 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/*
+ *
+ *
+ *  \date Jul 18, 2009
+ *  \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *          CTCC, University of Tromsø
+ *
+ * \breif
+ */
+
 #include "CrossCorrelation.h"
 
 #include <fstream>
@@ -41,7 +51,6 @@ CrossCorrelation::CrossCorrelation(int k, int t)
         : type(t)
         , order(k) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order: " << this->order);
-
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -51,6 +60,7 @@ CrossCorrelation::CrossCorrelation(int k, int t)
     }
 
     setCCCPaths(details::find_filters());
+
     readCCCBin();
 }
 
@@ -59,7 +69,6 @@ CrossCorrelation::CrossCorrelation(int t, const MatrixXd &L, const MatrixXd &R)
         , order(L.cols() / 2 - 1) {
     if (this->order < 1 or this->order > MaxOrder) MSG_ABORT("Invalid cross correlation order, " << this->order);
     if (R.cols() != L.cols()) MSG_ABORT("Right and Left cross correlation have different order!");
-
     switch (this->type) {
         case (Interpol):
         case (Legendre):
@@ -97,14 +106,11 @@ void CrossCorrelation::readCCCBin() {
     int K = this->order + 1;
     this->Left = MatrixXd::Zero(K * K, 2 * K);
     this->Right = MatrixXd::Zero(K * K, 2 * K);
-
     double dL[2 * K];
     double dR[2 * K];
-
     for (int i = 0; i < K * K; i++) {
         L_fis.read((char *)dL, sizeof(double) * 2 * K);
         R_fis.read((char *)dR, sizeof(double) * 2 * K);
-
         for (int j = 0; j < 2 * K; j++) {
             if (std::abs(dL[j]) < MachinePrec) dL[j] = 0.0;
             if (std::abs(dR[j]) < MachinePrec) dR[j] = 0.0;

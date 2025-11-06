@@ -71,7 +71,6 @@ template <int D, typename T> bool CopyAdaptor<D, T>::splitNode(const MWNode<D, T
     return false;
 }
 
-// Explicit instantiations
 template class CopyAdaptor<1, double>;
 template class CopyAdaptor<2, double>;
 template class CopyAdaptor<3, double>;

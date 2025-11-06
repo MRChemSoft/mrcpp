@@ -100,6 +100,8 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
     Printer::setPrecision(oldprec);
 }
 
+/** Initialize the number of nodes formally within the bandwidth of an
+ operator. The band size is used for thresholding. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
@@ -112,6 +114,10 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     }
 }
 
+/** Calculate the number of nodes within the bandwidth
+ * of an operator. Currently this routine ignores the fact that
+ * there are edges on the world box, and thus over estimates
+ * the number of nodes. This is different from the previous version. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::calcBandSizeFactor(MatrixXi &bs, int depth, const BandWidth &bw) {
     for (int gt = 0; gt < this->nComp; gt++) {
         for (int ft = 0; ft < this->nComp; ft++) {
@@ -132,6 +138,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcBandSizeFacto
     bs(depth, this->nComp2) = bs.row(depth).maxCoeff();
 }
 
+/** Return a vector of nodes in F affected by O, given a node in G */
 template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::makeOperBand(const MWNode<D, T> &gNode, std::vector<NodeIndex<D>> &idx_band) {
     auto *band = new MWNodeVector<D, T>;
 
@@ -154,7 +161,7 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ma
         for (int i = 0; i < D; i++) {
             sIdx[i] = gIdx[i] - width;
             eIdx[i] = gIdx[i] + width;
-            // Consider world borders / periodic wrapping
+            // We need to consider the world borders
             int nboxes = fWorld.size(i) * (1 << o_depth);
             int c_i = cIdx[i] * (1 << o_depth);
             if (not periodic) {
@@ -172,8 +179,8 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ma
     return band;
 }
 
-template <int D, typename T>
-void ConvolutionCalculator<D, T>::fillOperBand(MWNodeVector<D, T> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim) {
+/** Recursively retrieve all reachable f-nodes within the bandwidth. */
+template <int D, typename T> void ConvolutionCalculator<D, T>::fillOperBand(MWNodeVector<D, T> *band, std::vector<NodeIndex<D>> &idx_band, NodeIndex<D> &idx, const int *nbox, int dim) {
     int l_start = idx[dim];
     for (int j = 0; j < nbox[dim]; j++) {
         // Recurse until dim == 0
@@ -225,13 +232,12 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     OperatorState<D, T> os(gNode, tmpCoefs);
     this->operStat.incrementGNodeCounters(gNode);
 
-    // Get all nodes in f within the bandwidth of O around g
+    // Get all nodes in f within the bandwith of O in g
     this->band_t[mrcpp_get_thread_num()]->resume();
     std::vector<NodeIndex<D>> idx_band;
     MWNodeVector<D, T> *fBand = makeOperBand(gNode, idx_band);
     this->band_t[mrcpp_get_thread_num()]->stop();
 
-    // Build target threshold (relative by default; may be scaled by precFunc)
     MWTree<D, T> &gTree = gNode.getMWTree();
     double gThrs = gTree.getSquareNorm();
     if (gThrs > 0.0) {
@@ -239,9 +245,9 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
         auto precFac = this->precFunc(gNode.getNodeIndex());
         gThrs = this->prec * precFac * std::sqrt(gThrs / nTerms);
     }
+
     os.gThreshold = gThrs;
 
-    // Scan band and apply screened operator terms
     this->calc_t[mrcpp_get_thread_num()]->resume();
     for (int n = 0; n < fBand->size(); n++) {
         MWNode<D, T> &fNode = *(*fBand)[n];
@@ -268,6 +274,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     delete fBand;
 }
 
+/** Apply each component (term) of the operator expansion to a node in f */
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
@@ -281,6 +288,13 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(Ope
     }
 }
 
+/** @brief Apply a single operator component (term) to a single f-node.
+ *
+ * @details Apply a single operator component (term) to a single f-node.
+ * Whether the operator actualy is applied is determined by a screening threshold.
+ * Here we make use of the sparcity of matrices \f$ A, B, C \f$.
+ *
+ */
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int i, OperatorState<D, T> &os) {
     MWNode<D, T> &gNode = *os.gNode;
     MWNode<D, T> &fNode = *os.fNode;
@@ -296,7 +310,8 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
         auto &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
-        // Per-direction bandwidth check
+        //  The following will check the actual band width in each direction.
+        //  Not needed if the thresholding at the end of this routine is active.
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
@@ -314,6 +329,8 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
     }
 }
 
+/** Perorm the required linear algebra operations in order to apply an
+operator component to a f-node in a n-dimensional tesor space. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
     T **aux = os.getAuxData();
     double **oData = os.getOperData();
@@ -388,7 +405,6 @@ template <int D, typename T> MWNodeVector<D, T> *ConvolutionCalculator<D, T>::ge
     return nodeVec;
 }
 
-// Explicit instantiations
 template class ConvolutionCalculator<1, double>;
 template class ConvolutionCalculator<2, double>;
 template class ConvolutionCalculator<3, double>;

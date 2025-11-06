@@ -42,7 +42,6 @@ double BoysFunction::evalf(const Coord<1> &r) const {
 
     int n = this->order;
     double x = r[0];
-
     auto f = [x, n](const Coord<1> &t) -> double {
         double t_2 = t[0] * t[0];
         double xt_2 = x * t_2;

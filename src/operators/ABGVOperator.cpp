@@ -33,6 +33,16 @@
 
 namespace mrcpp {
 
+/** @returns New ABGVOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] a: Left boundary condition
+ *  @param[in] b: Right boundary condition
+ *  @details Boundary parameters correspond to:
+ *  - `a=0.0` `b=0.0`: Strictly local "center" difference
+ *  - `a=0.5` `b=0.5`: Semi-local central difference
+ *  - `a=1.0` `b=0.0`: Semi-local forward difference
+ *  - `a=0.0` `b=1.0`: Semi-local backward difference
+ */
 template <int D>
 ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, double b)
         : DerivativeOperator<D>(mra, mra.getRootScale()) {
@@ -40,7 +50,7 @@ ABGVOperator<D>::ABGVOperator(const MultiResolutionAnalysis<D> &mra, double a, d
 }
 
 template <int D> void ABGVOperator<D>::initialize(double a, double b) {
-    int bw = 0;
+    int bw = 0; // Operator bandwidth
     if (std::abs(a) > MachineZero) bw = 1;
     if (std::abs(b) > MachineZero) bw = 1;
 

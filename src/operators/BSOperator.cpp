@@ -32,6 +32,10 @@
 
 namespace mrcpp {
 
+/** @returns New BSOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] order: Derivative order, defined for 1, 2 and 3
+ */
 template <int D>
 BSOperator<D>::BSOperator(const MultiResolutionAnalysis<D> &mra, int order)
         : DerivativeOperator<D>(mra, mra.getRootScale()) {
@@ -40,11 +44,11 @@ BSOperator<D>::BSOperator(const MultiResolutionAnalysis<D> &mra, int order)
 }
 
 template <int D> void BSOperator<D>::initialize() {
-    int bw = 1;
+    int bw = 1; // Operator bandwidth
     auto oper_mra = this->getOperatorMRA();
 
     TreeBuilder<2> builder;
-    BSCalculator    calculator(oper_mra.getScalingBasis(), this->order);
+    BSCalculator calculator(oper_mra.getScalingBasis(), this->order);
     BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
 
     auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);

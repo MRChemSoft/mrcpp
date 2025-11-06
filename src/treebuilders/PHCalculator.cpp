@@ -23,26 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file PHCalculator.cpp
- * @brief Populate piecewise-homogeneous (PH) derivative stencil blocks for
- *        2D MW nodes and apply them as local operators.
- *
- * @details
- * The PH operator is applied on a 2D tensor-product node and uses three
- * nearest-neighbour coupling blocks along the refinement line:
- *  - S_m1 : block coupling to the left child   (l = -1)
- *  - S_0  : block coupling to the same child   (l =  0)
- *  - S_p1 : block coupling to the right child  (l = +1)
- *
- * For a node at scale j, the coefficients are scaled by 2^{diff_order*(j+1)}
- * to account for the dyadic scaling of derivatives in multiresolution analysis.
- *
- * The block matrices are read from precomputed text files (see @ref readSMatrix)
- * that depend on the scaling basis (Legendre or Interpolating) and the
- * derivative order (currently n = 1 or 2).
- */
-
 #include "PHCalculator.h"
 
 #include <fstream>
@@ -92,7 +72,7 @@ void PHCalculator::readSMatrix(const ScalingBasis &basis, char n) {
         }
         if (kp1 == (basis.getScalingOrder() + 1)) {
             this->S_p1 = data.block(0 * kp1, 0, kp1, kp1);
-            this->S_0  = data.block(1 * kp1, 0, kp1, kp1);
+            this->S_0 = data.block(1 * kp1, 0, kp1, kp1);
             this->S_m1 = data.block(2 * kp1, 0, kp1, kp1);
             break;
         }
@@ -103,15 +83,15 @@ void PHCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
 
     const auto &idx = node.getNodeIndex();
-    int l = idx[1] - idx[0];          // neighbour offset along refinement line
-    int np1 = idx.getScale() + 1;     // j+1, used in dyadic derivative scaling
-    int kp1 = node.getKp1();          // k+1 (polynomial order + 1)
-    int kp1_d = node.getKp1_d();      // (k+1)^2, tile size per child
+    int l = idx[1] - idx[0];
+    int np1 = idx.getScale() + 1;
+    int kp1 = node.getKp1();
+    int kp1_d = node.getKp1_d();
     double two_np1 = std::pow(2.0, this->diff_order * np1);
     double *coefs = node.getCoefs();
 
     switch (l) {
-        case 1: // right neighbour: only S_{+1} contributes
+        case 1:
             for (int i = 0; i < kp1; i++) {
                 for (int j = 0; j < kp1; j++) {
                     int idx = i * kp1 + j;
@@ -119,18 +99,18 @@ void PHCalculator::calcNode(MWNode<2> &node) {
                 }
             }
             break;
-        case 0: // interior: stencil spans S_0 (diagonal) and S_{-1}, S_{+1}
+        case 0:
             for (int i = 0; i < kp1; i++) {
                 for (int j = 0; j < kp1; j++) {
                     int idx = i * kp1 + j;
-                    coefs[0 * kp1_d + idx] = two_np1 * this->S_0 (i, j);
+                    coefs[0 * kp1_d + idx] = two_np1 * this->S_0(i, j);
                     coefs[1 * kp1_d + idx] = two_np1 * this->S_m1(i, j);
                     coefs[2 * kp1_d + idx] = two_np1 * this->S_p1(i, j);
-                    coefs[3 * kp1_d + idx] = two_np1 * this->S_0 (i, j);
+                    coefs[3 * kp1_d + idx] = two_np1 * this->S_0(i, j);
                 }
             }
             break;
-        case -1: // left neighbour: only S_{-1} contributes
+        case -1:
             for (int i = 0; i < kp1; i++) {
                 for (int j = 0; j < kp1; j++) {
                     int idx = i * kp1 + j;
@@ -142,9 +122,9 @@ void PHCalculator::calcNode(MWNode<2> &node) {
             // When periodic do nothing, else it should never end up here.
             break;
     }
-    node.mwTransform(Compression); // convert to MW (wavelet) coefficients
-    node.setHasCoefs();            // mark coefficients present
-    node.calcNorms();              // update node/component norms
+    node.mwTransform(Compression);
+    node.setHasCoefs();
+    node.calcNorms();
 }
 
 } // namespace mrcpp

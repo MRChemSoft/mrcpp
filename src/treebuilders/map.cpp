@@ -38,13 +38,34 @@
 
 namespace mrcpp {
 
-template <int D>
-void map(double prec,
-         FunctionTree<D, double> &out,
-         FunctionTree<D, double> &inp,
-         FMap<double, double> fmap,
-         int maxIter,
-         bool absPrec) {
+/** @brief map a MW function onto another representations, adaptive grid
+ *
+ * @param[in] prec: Build precision of output function
+ * @param[out] out: Output function to be built
+ * @param[in] inp: Input function
+ * @param[in] fmap: mapping function
+ * @param[in] maxIter: Maximum number of refinement iterations in output tree
+ * @param[in] absPrec: Build output tree based on absolute precision
+ *
+ * @details The output function tree will be computed by mapping the input tree values through the fmap function,
+ * using the general algorithm:
+ * - Compute MW coefs on current grid
+ * - Refine grid where necessary based on `prec`
+ * - Repeat until convergence or `maxIter` is reached
+ * - `prec < 0` or `maxIter = 0` means NO refinement
+ * - `maxIter < 0` means no bound
+ *
+ * No assumption is made for how the mapping function looks. It is
+ * left to the end-user to guarantee that the mapping function does
+ * not lead to numerically unstable/inaccurate situations (e.g. divide
+ * by zero, overflow, etc...)
+ *
+ * @note This algorithm will start at whatever grid is present in the `out`
+ * tree when the function is called (this grid should however be EMPTY, e.i.
+ * no coefs).
+ *
+ */
+template <int D> void map(double prec, FunctionTree<D, double> &out, FunctionTree<D, double> &inp, FMap<double, double> fmap, int maxIter, bool absPrec) {
 
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, double> builder;

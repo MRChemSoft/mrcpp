@@ -47,33 +47,23 @@
 
 namespace mrcpp {
 
-CartesianConvolution::CartesianConvolution(const MultiResolutionAnalysis<3> &mra,
-                                           GaussExp<1> &kernel,
-                                           double prec)
+CartesianConvolution::CartesianConvolution(const MultiResolutionAnalysis<3> &mra, GaussExp<1> &kernel, double prec)
         : ConvolutionOperator<3>(mra)
         , sep_rank(kernel.size()) {
     int oldlevel = Printer::setPrintLevel(0);
 
-    // Configure precision: operator vs. kernel fit
     this->setBuildPrec(prec);
-    auto o_prec = prec;        // Operator assembly precision
-    auto k_prec = prec / 10.0; // Kernel fitting precision
+    auto o_prec = prec;
+    auto k_prec = prec / 10.0;
 
-    // Batch 0: monomial power {0}
     for (auto &k : kernel) k->setPow({0});
     this->initialize(kernel, k_prec, o_prec);
-
-    // Batch 1: monomial power {1}
     for (auto &k : kernel) k->setPow({1});
     this->initialize(kernel, k_prec, o_prec);
-
-    // Batch 2: monomial power {2}
     for (auto &k : kernel) k->setPow({2});
     this->initialize(kernel, k_prec, o_prec);
 
-    // Declare separable rank
     this->initOperExp(this->sep_rank);
-
     Printer::setPrintLevel(oldlevel);
 }
 

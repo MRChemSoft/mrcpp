@@ -143,6 +143,11 @@ template <int D> void GaussFunc<D>::multInPlace(const GaussFunc<D> &rhs) {
     this->setPow(newPow);
 }
 
+/** @brief Multiply two GaussFuncs
+ *  @param[in] this: Left hand side of multiply
+ *  @param[in] rhs: Right hand side of multiply
+ *  @returns New GaussPoly
+ */
 template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     GaussFunc<D> &lhs = *this;
     GaussPoly<D> result;
@@ -158,6 +163,10 @@ template <int D> GaussPoly<D> GaussFunc<D>::mult(const GaussFunc<D> &rhs) {
     return result;
 }
 
+/** @brief Multiply GaussFunc by scalar
+ *  @param[in] c: Scalar to multiply
+ *  @returns New GaussFunc
+ */
 template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
     GaussFunc<D> g = *this;
     g.coef *= c;
@@ -166,6 +175,9 @@ template <int D> GaussFunc<D> GaussFunc<D>::mult(double c) {
 
 template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     auto is_array = details::are_all_equal<D>(this->getExp());
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed.
 
     o << "Coef    : " << this->getCoef() << std::endl;
     if (!is_array) {
@@ -183,14 +195,25 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
     return o;
 }
 
+/** @brief Compute Coulomb repulsion energy between two GaussFuncs
+ *  @param[in] this: Left hand GaussFunc
+ *  @param[in] rhs: Right hand GaussFunc
+ *  @returns Coulomb energy
+ *
+ *  @note Both Gaussians must be normalized to unit charge
+ *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
+ */
 template <int D> double GaussFunc<D>::calcCoulombEnergy(const GaussFunc<D> &gf) const {
     NOT_IMPLEMENTED_ABORT;
 }
 
 template <> double GaussFunc<3>::calcCoulombEnergy(const GaussFunc<3> &gf) const {
 
+    // Checking if the elements in each exponent are constant
     if (!details::are_all_equal<3>(this->getExp()) or !details::are_all_equal<3>(gf.getExp())) NOT_IMPLEMENTED_ABORT;
 
+    // If they are constant the 0th element are assigned a value
+    // and the Coulomb Energy can be calculated
     auto p = this->getExp()[0];
     auto q = gf.getExp()[0];
 

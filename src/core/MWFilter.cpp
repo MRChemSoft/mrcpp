@@ -23,6 +23,16 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/*
+ *
+ *
+ *  \date Jul 8, 2009
+ *  \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *          CTCC, University of Tromsø
+ *
+ * \breif
+ */
+
 #include "MWFilter.h"
 
 #include <fstream>
@@ -198,19 +208,21 @@ void MWFilter::generateBlocks() {
 
     double dH[K];
     double dG[K];
+    /* read H0 and G0 from disk */
     this->G0 = Eigen::MatrixXd::Zero(K, K);
     this->H0 = Eigen::MatrixXd::Zero(K, K);
     for (int i = 0; i < K; i++) {
         H_fis.read((char *)dH, sizeof(double) * K);
         G_fis.read((char *)dG, sizeof(double) * K);
         for (int j = 0; j < K; j++) {
-            this->G0(i, j) = dG[j];
-            this->H0(i, j) = dH[j];
+            this->G0(i, j) = dG[j]; // G0
+            this->H0(i, j) = dH[j]; // H0
         }
     }
     G_fis.close();
     H_fis.close();
 
+    /* fill H1 and G1 according to symmetry */
     this->G1 = Eigen::MatrixXd::Zero(K, K);
     this->H1 = Eigen::MatrixXd::Zero(K, K);
     switch (this->type) {
@@ -237,5 +249,4 @@ void MWFilter::generateBlocks() {
     this->H0t = this->H0.transpose();
     this->H1t = this->H1.transpose();
 }
-
 } // namespace mrcpp

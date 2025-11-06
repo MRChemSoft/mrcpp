@@ -23,6 +23,16 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/*
+ *
+ *
+ *  \date Jul 26, 2009
+ *  \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *          CTCC, University of Tromsø
+ *
+ * \breif
+ */
+
 #include "QuadratureCache.h"
 #include "utils/Printer.h"
 

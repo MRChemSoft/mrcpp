@@ -41,7 +41,7 @@ namespace mrcpp {
 
 template <int D> double GaussExp<D>::defaultScreening = 10.0;
 
-template <int D> GaussExp<D>::GaussExp(int nTerms, double /*prec*/) {
+template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
     for (int i = 0; i < nTerms; i++) { this->funcs.push_back(nullptr); }
 }
 
@@ -64,6 +64,7 @@ template <int D> GaussExp<D>::~GaussExp() {
 
 template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
+    // screening = gexp.screening;
     this->funcs.clear();
     for (unsigned int i = 0; i < gexp.size(); i++) {
         if (gexp.funcs[i] == nullptr) {
@@ -210,7 +211,6 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussFunc<D> &g) {
     }
     return result;
 }
-
 template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
     int nTerms = this->size();
     GaussExp<D> result(nTerms);
@@ -239,17 +239,19 @@ template <int D> void GaussExp<D>::multInPlace(double d) {
 }
 
 template <int D> double GaussExp<D>::calcSquareNorm() const {
+    /* computing the squares */
     double norm = 0.0;
     for (int i = 0; i < this->size(); i++) {
         double nc = this->funcs[i]->calcSquareNorm();
         norm += nc;
     }
+    /* computing the double products */
     for (int i = 0; i < this->size(); i++) {
-        GaussExp<D> funcs_i = getFunc(i).asGaussExp();
+        GaussExp<D> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
         for (int fi = 0; fi < funcs_i.size(); fi++) {
             GaussFunc<D> &func_i = static_cast<GaussFunc<D> &>(funcs_i.getFunc(fi));
             for (int j = i + 1; j < this->size(); j++) {
-                GaussExp<D> funcs_j = getFunc(j).asGaussExp();
+                GaussExp<D> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
                 for (int fj = 0; fj < funcs_j.size(); fj++) {
                     GaussFunc<D> &func_j = static_cast<GaussFunc<D> &>(funcs_j.getFunc(fj));
                     double overlap = func_i.calcOverlap(func_j);
@@ -283,6 +285,40 @@ template <int D> void GaussExp<D>::setScreen(bool screen) {
     for (int i = 0; i < this->size(); i++) { this->funcs[i]->setScreen(screen); }
 }
 
+// Calculate the scaling and wavelet coefs of all the children, and do the
+// outer product to make the nD-scaling coefs. Since a Gaussian expansion
+// is not separable, we have to do the projection term by term.
+/*
+template<int D>
+void GaussExp<D>::calcWaveletCoefs(MWNode<D> &node) {
+    static const int tDim = 1 << D;
+    const ScalingBasis &sf = node.getMWTree().getScalingFunctions();
+    MatrixXd &scaling = node.getMWTree().getTmpScalingCoefs();
+    VectorXd &tmpvec = node.getMWTree().getTmpScalingVector();
+    int kp1 = node.getKp1();
+    int kp1_d = node.getKp1_d();
+    int inpos = kp1_d - kp1;
+    int scale = node.getNodeIndex().scale() + 1;
+    node.allocCoefs();
+    for (int child = 0; child < tDim; child++) {
+        int l[D];
+        node.calcChildTranslation(child, l);
+        for (int n = 0; n < this->size(); n++) {
+            if (this->getFunc(n).checkScreen(scale, l)) {
+                continue;
+            }
+            sf.calcScalingCoefs(this->getFunc(n), scale, l, scaling);
+            tmpvec.segment(inpos, kp1) = scaling.col(0);
+            math_utils::tensorExpandCoefs(D, 0, kp1, kp1_d, scaling, tmpvec);
+            node.getCoefs().segment(child * kp1_d, kp1_d) += tmpvec;
+        }
+    }
+    node.mwTransform(Compression);
+    node.setHasCoefs();
+    node.calcNorms();
+}
+*/
+
 template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
     if (screen < 0) { MSG_ERROR("Screening constant cannot be negative!"); }
     defaultScreening = screen;
@@ -297,6 +333,11 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
     return o;
 }
 
+/** @returns Coulomb repulsion energy between all pairs in GaussExp, including self-interaction
+ *
+ *  @note Each Gaussian must be normalized to unit charge
+ *  \f$ c = (\alpha/\pi)^{D/2} \f$ for this to be correct!
+ */
 template <int D> double GaussExp<D>::calcCoulombEnergy() const {
     NOT_IMPLEMENTED_ABORT
 }
@@ -304,11 +345,11 @@ template <int D> double GaussExp<D>::calcCoulombEnergy() const {
 template <> double GaussExp<3>::calcCoulombEnergy() const {
     double energy = 0.0;
     for (int i = 0; i < this->size(); i++) {
-        GaussExp<3> funcs_i = getFunc(i).asGaussExp();
+        GaussExp<3> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
         for (int fi = 0; fi < funcs_i.size(); fi++) {
             GaussFunc<3> &func_i = static_cast<GaussFunc<3> &>(funcs_i.getFunc(fi));
             for (int j = i; j < this->size(); j++) {
-                GaussExp<3> funcs_j = getFunc(j).asGaussExp();
+                GaussExp<3> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
                 for (int fj = 0; fj < funcs_j.size(); fj++) {
                     GaussFunc<3> &func_j = static_cast<GaussFunc<3> &>(funcs_j.getFunc(fj));
                     double c = 2.0;

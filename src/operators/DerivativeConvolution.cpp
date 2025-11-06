@@ -29,6 +29,12 @@
 
 namespace mrcpp {
 
+/** @returns New DerivativeConvolution object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] pr: Build precision, closeness to delta function
+ *  @details This will project a kernel of a single differentiated
+ *  gaussian with exponent sqrt(10/build_prec).
+ */
 template <int D>
 DerivativeConvolution<D>::DerivativeConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
         : ConvolutionOperator<D>(mra) {

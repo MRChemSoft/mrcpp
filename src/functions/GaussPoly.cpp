@@ -37,6 +37,12 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/** @returns New GaussPoly object
+ *  @param[in] beta: Exponent, \f$ e^{-\beta r^2} \f$
+ *  @param[in] alpha: Coefficient, \f$ \alpha e^{-r^2} \f$
+ *  @param[in] pos: Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+ *  @param[in] pow: Max polynomial degree, \f$ P_0(x), P_1(y), ... \f$
+ */
 template <int D>
 GaussPoly<D>::GaussPoly(double beta, double alpha, const Coord<D> &pos, const std::array<int, D> &power)
         : Gaussian<D>(beta, alpha, pos, power) {
@@ -79,6 +85,7 @@ GaussPoly<D>::GaussPoly(const GaussFunc<D> &gf)
         VectorXd coefs = VectorXd::Zero(order + 1);
         coefs[order] = 1.0;
         poly[d]->setCoefs(coefs);
+        // poly[d]->unsetBounds();
     }
 }
 
@@ -112,6 +119,7 @@ template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
     }
     double q2 = 0.0, p2 = 1.0;
     for (int d = 0; d < D; d++) {
+        // assert(this->poly[d]->getCheckBounds() == false);
         double q = r[d] - this->pos[d];
         q2 += this->alpha[d] * q * q;
         p2 *= poly[d]->evalf(r[d] - this->pos[d]);
@@ -120,9 +128,16 @@ template <int D> double GaussPoly<D>::evalf(const Coord<D> &r) const {
 }
 
 template <int D> double GaussPoly<D>::evalf1D(const double r, int d) const {
+    // NOTE!
+    //     This function evaluation will give the first dimension the full coef
+    //     amplitude, leaving all other directions with amplitude 1.0. This is to
+    //     avoid expensive d-root evaluation when distributing the amplitude
+    //     equally to all dimensions.
+
     if (this->getScreen()) {
         if ((r < this->A[d]) or (r > this->B[d])) { return 0.0; }
     }
+    // assert(this->poly[d]->getCheckBounds() == false);
     double q2 = 0.0, p2 = 1.0;
     double q = (r - this->pos[d]);
     q2 += q * q;
@@ -215,8 +230,41 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
 
 template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
     NOT_IMPLEMENTED_ABORT;
+    /*
+    GaussPoly<D> &lhs = *this;
+    GaussPoly<D> result;
+    result.multPureGauss(lhs, rhs);
+    for (int d = 0; d < D; d++) {
+        double newPos = result.getPos()[d];
+        int lhsPow = lhs.getPower(d);
+        Polynomial lhsPoly(lhsPow);
+        lhsPoly.clearCoefs();
+        for (int p = 0; p <= lhsPow; p++) {
+            Polynomial tmpPoly(newPos - lhs.getPos()[d], p);
+            tmpPoly *= lhs.getPolyCoefs(d)[p];
+            lhsPoly += tmpPoly;
+        }
+
+        int rhsPow = rhs.getPower(d);
+        Polynomial rhsPoly(rhsPow);
+        rhsPoly.clearCoefs();
+        for (int p = 0; p <= rhsPow; p++) {
+            Polynomial tmpPoly(newPos - rhs.getPos()[d], p);
+            tmpPoly *= rhs.getPolyCoefs(d)[p];
+            rhsPoly += tmpPoly;
+        }
+        Polynomial newPoly = lhsPoly * rhsPoly;
+        result.setPoly(d, newPoly);
+    }
+    result.setCoef(result.getCoef() * lhs.getCoef() * rhs.getCoef());
+    return result;
+    */
 }
 
+/** @brief Multiply GaussPoly by scalar
+ *  @param[in] c: Scalar to multiply
+ *  @returns New GaussPoly
+ */
 template <int D> GaussPoly<D> GaussPoly<D>::mult(double c) {
     GaussPoly<D> g = *this;
     g.coef *= c;
@@ -235,6 +283,11 @@ template <int D> void GaussPoly<D>::setPow(const std::array<int, D> &pow) {
     }
 }
 
+/** @brief Set polynomial in given dimension
+ *
+ *  @param[in] d: Cartesian direction
+ *  @param[in] poly: Polynomial to set
+ */
 template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
     if (this->poly[d] != nullptr) { delete this->poly[d]; }
     this->poly[d] = new Polynomial(poly);
@@ -243,6 +296,9 @@ template <int D> void GaussPoly<D>::setPoly(int d, Polynomial &poly) {
 
 template <int D> std::ostream &GaussPoly<D>::print(std::ostream &o) const {
     auto is_array = details::are_all_equal<D>(this->getExp());
+
+    // If all of the values in the exponential are the same only
+    // one is printed, else, all of them are printed
     o << "Coef    : " << this->getCoef() << std::endl;
     if (!is_array) {
         o << "Exp     : ";

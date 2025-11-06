@@ -7,8 +7,8 @@
  * This file is part of MRCPP.
  *
  * MRCPP is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * MRCPP is distributed in the hope that it will be useful,
@@ -23,6 +23,15 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/**
+ *
+ * \date Jun 7, 2009
+ * \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *         CTCC, University of Tromsø
+ *
+ *
+ */
+
 #include <cfloat>
 
 #include "Polynomial.h"
@@ -33,6 +42,8 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+/** Construct polynomial of order zero with given size and bounds.
+ * Includes default constructor. */
 Polynomial::Polynomial(int k, const double *a, const double *b)
         : RepresentableFunction<1, double>(a, b) {
     assert(k >= 0);
@@ -49,6 +60,7 @@ Polynomial::Polynomial(double c, int k, const double *a, const double *b)
     for (int i = 0; i <= k; i++) { this->coefs[i] *= std::pow(c, k - i); }
 }
 
+/** Construct polynomial with given coefficient vector and bounds. */
 Polynomial::Polynomial(const VectorXd &c, const double *a, const double *b)
         : RepresentableFunction<1>(a, b) {
     this->N = 1.0;
@@ -56,6 +68,7 @@ Polynomial::Polynomial(const VectorXd &c, const double *a, const double *b)
     setCoefs(c);
 }
 
+/** Makes a complete copy of the polynomial */
 Polynomial::Polynomial(const Polynomial &poly)
         : RepresentableFunction<1>(poly) {
     this->N = poly.N;
@@ -63,6 +76,7 @@ Polynomial::Polynomial(const Polynomial &poly)
     this->coefs = poly.coefs;
 }
 
+/** Copies only the function, not its bounds */
 Polynomial &Polynomial::operator=(const Polynomial &poly) {
     RepresentableFunction<1>::operator=(poly);
     this->N = poly.N;
@@ -71,6 +85,7 @@ Polynomial &Polynomial::operator=(const Polynomial &poly) {
     return *this;
 }
 
+/** Evaluate scaled and translated polynomial */
 double Polynomial::evalf(double x) const {
     if (isBounded()) {
         if (x < this->getScaledLowerBound()) return 0.0;
@@ -85,28 +100,35 @@ double Polynomial::evalf(double x) const {
     return y;
 }
 
+/** This returns the actual scaled lower bound */
 double Polynomial::getScaledLowerBound() const {
     if (not isBounded()) MSG_ERROR("Unbounded polynomial");
     return (1.0 / this->N * (this->A[0] + this->L));
 }
 
+/** This returns the actual scaled upper bound */
 double Polynomial::getScaledUpperBound() const {
     if (not isBounded()) MSG_ERROR("Unbounded polynomial");
     return (1.0 / this->N * (this->B[0] + this->L));
 }
 
+/** Divide by norm of (bounded) polynomial. */
 void Polynomial::normalize() {
     double sqNorm = calcSquareNorm();
     if (sqNorm < 0.0) MSG_ABORT("Cannot normalize polynomial");
     (*this) *= 1.0 / std::sqrt(sqNorm);
 }
 
+/** Compute the squared L2-norm of the (bounded) polynomial.
+ * Unbounded polynomials return -1.0. */
 double Polynomial::calcSquareNorm() {
     double sqNorm = -1.0;
     if (isBounded()) { sqNorm = this->innerProduct(*this); }
     return sqNorm;
 }
 
+/** Returns the order of the highest non-zero coef.
+ * NB: Not the length of the coefs vector. */
 int Polynomial::getOrder() const {
     int n = 0;
     for (int i = 0; i < this->coefs.size(); i++) {
@@ -115,11 +137,13 @@ int Polynomial::getOrder() const {
     return n;
 }
 
+/** Calculate P = c*P */
 Polynomial &Polynomial::operator*=(double c) {
     this->coefs = c * this->coefs;
     return *this;
 }
 
+/** Calculate P = P*Q */
 Polynomial &Polynomial::operator*=(const Polynomial &Q) {
     Polynomial &P = *this;
     if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same scale."); }
@@ -136,6 +160,7 @@ Polynomial &Polynomial::operator*=(const Polynomial &Q) {
     return P;
 }
 
+/** Calculate Q = c*P */
 Polynomial Polynomial::operator*(double c) const {
     const Polynomial &P = *this;
     Polynomial Q(P);
@@ -143,6 +168,8 @@ Polynomial Polynomial::operator*(double c) const {
     return Q;
 }
 
+/** Calculate R = P*Q.
+ * Returns unbounded polynomial. */
 Polynomial Polynomial::operator*(const Polynomial &Q) const {
     const Polynomial &P = *this;
     Polynomial R;
@@ -151,16 +178,19 @@ Polynomial Polynomial::operator*(const Polynomial &Q) const {
     return R;
 }
 
+/** Calculate P = P + Q. */
 Polynomial &Polynomial::operator+=(const Polynomial &Q) {
     this->addInPlace(1.0, Q);
     return *this;
 }
 
+/** Calculate P = P - Q. */
 Polynomial &Polynomial::operator-=(const Polynomial &Q) {
     this->addInPlace(-1.0, Q);
     return *this;
 }
 
+/** Calculate P = P + c*Q. */
 void Polynomial::addInPlace(double c, const Polynomial &Q) {
     Polynomial &P = *this;
     if (std::abs(P.getDilation() - Q.getDilation()) > MachineZero) { MSG_ERROR("Polynomials not defined on same scale."); }
@@ -178,6 +208,8 @@ void Polynomial::addInPlace(double c, const Polynomial &Q) {
     P.setCoefs(newCoefs);
 }
 
+/** Calculate R = P + c*Q, with a default c = 1.0.
+ * Returns unbounded polynomial. */
 Polynomial Polynomial::add(double c, const Polynomial &Q) const {
     const Polynomial &P = *this;
     Polynomial R;
@@ -186,6 +218,7 @@ Polynomial Polynomial::add(double c, const Polynomial &Q) const {
     return R;
 }
 
+/** Calculate Q = dP/dx */
 Polynomial Polynomial::calcDerivative() const {
     const Polynomial &P = *this;
     Polynomial Q(P);
@@ -193,6 +226,7 @@ Polynomial Polynomial::calcDerivative() const {
     return Q;
 }
 
+/** Calculate P = dP/dx */
 void Polynomial::calcDerivativeInPlace() {
     Polynomial &P = *this;
     int P_order = P.getOrder();
@@ -202,6 +236,7 @@ void Polynomial::calcDerivativeInPlace() {
     P.setCoefs(newCoefs);
 }
 
+/** Calculate indefinite integral Q = \int dP dx, integration constant set to zero */
 Polynomial Polynomial::calcAntiDerivative() const {
     const Polynomial &P = *this;
     Polynomial Q(P);
@@ -209,6 +244,7 @@ Polynomial Polynomial::calcAntiDerivative() const {
     return Q;
 }
 
+/** Calculate indefinite integral P = \int dP dx, integration constant set to zero */
 void Polynomial::calcAntiDerivativeInPlace() {
     Polynomial &P = *this;
     int P_order = P.getOrder();
@@ -220,6 +256,7 @@ void Polynomial::calcAntiDerivativeInPlace() {
     P.setCoefs(newCoefs);
 }
 
+/** Integrate the polynomial P on [a,b] analytically */
 double Polynomial::integrate(const double *a, const double *b) const {
     double lb = -DBL_MAX, ub = DBL_MAX;
     if (this->isBounded()) {
@@ -238,6 +275,7 @@ double Polynomial::integrate(const double *a, const double *b) const {
     return sfac * (antidiff.evalf(ub) - antidiff.evalf(lb));
 }
 
+/** Compute <P,Q> analytically on interval defined by the calling polynomial. */
 double Polynomial::innerProduct(const Polynomial &Q) const {
     const Polynomial &P = *this;
     if (not P.isBounded()) MSG_ERROR("Unbounded polynomial");

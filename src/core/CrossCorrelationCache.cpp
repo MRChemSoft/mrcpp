@@ -23,6 +23,16 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/*
+ *
+ *
+ *  \date Jul 18, 2009
+ *  \author Jonas Juselius <jonas.juselius@uit.no> \n
+ *          CTCC, University of Tromsø
+ *
+ * \breif
+ */
+
 #include "CrossCorrelationCache.h"
 #include "utils/Printer.h"
 
@@ -64,6 +74,7 @@ template <int T> const Eigen::MatrixXd &CrossCorrelationCache<T>::getLMatrix(int
     if (not hasId(order)) { load(order); }
     return ObjectCache<CrossCorrelation>::get(order).getLMatrix();
 }
+
 
 /** @brief Fetches the cross correlation coefficients.
  *

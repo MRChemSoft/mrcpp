@@ -29,6 +29,13 @@
 
 namespace mrcpp {
 
+/** @brief Constructor of the IdentityConvolution object
+ *  @returns New IdentityConvolution object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] prec: Build precision, closeness to delta function
+ *  @details This will project a kernel of a single gaussian with
+ *  exponent sqrt(10/build_prec).
+ */
 template <int D>
 IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec)
         : ConvolutionOperator<D>(mra) {
@@ -45,6 +52,19 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
+/** @brief Constructor of the IdentityConvolution object in case of Periodic Boundary Conditions (PBC)
+ *  @returns New IdentityConvolution object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] prec: Build precision, closeness to delta function
+ *  @param[in] root: root scale of operator.
+ *  @param[in] reach: width at root scale (applies to periodic boundary conditions)
+ *  @details This will project a kernel of a single gaussian with
+ *           exponent sqrt(10/build_prec). This version of the constructor
+ *           is used for calculations within periodic boundary conditions (PBC).
+ *           The \a root parameter is the coarsest negative scale at wich the operator
+ *           is applied. The \a reach parameter is the bandwidth of the operator at
+ *           the root scale. For details see \ref MWOperator
+ */
 template <int D>
 IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mra, double prec, int root, int reach)
         : ConvolutionOperator<D>(mra, root, reach) {
@@ -61,7 +81,6 @@ IdentityConvolution<D>::IdentityConvolution(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
-/* Explicit template instantiations */
 template class IdentityConvolution<1>;
 template class IdentityConvolution<2>;
 template class IdentityConvolution<3>;

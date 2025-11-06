@@ -23,6 +23,15 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
+/*
+ *
+ *
+ *  \date June 2, 2010
+ *  \author Stig Rune Jensen \n
+ *          CTCC, University of Tromsø
+ *
+ */
+
 #include "LegendreBasis.h"
 #include "QuadratureCache.h"
 #include "functions/LegendrePoly.h"
@@ -31,15 +40,9 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/**
- * @brief Initialize the Legendre scaling basis {P_k}_{k=0..s}.
- *
- * For each degree k up to the scaling order, construct a (shifted/scaled)
- * Legendre polynomial and multiply by sqrt(2k+1) to achieve exact L^2
- * normalization on the reference interval used by LegendrePoly.
- *
- * Effects:
- *  - Appends each normalized polynomial to this->funcs.
+
+/** @brief Initialise Legendre scaling basis.
+ * 
  * @details Fills
  * std::vector<Polynomial> \b funcs
  * declared in the base class
@@ -59,24 +62,21 @@ namespace mrcpp {
  * Here \f$ k \f$ is \b order declared in the base class.
  * 
  * @note These Legendre scaling functions are defined on the unit interval \f$ (0, 1) \f$.
+ * 
  */
 void LegendreBasis::initScalingBasis() {
     for (int k = 0; k < getScalingOrder() + 1; k++) {
         LegendrePoly L_k(k, 2.0, 1.0);
-        L_k *= std::sqrt(2.0 * k + 1.0);
+        L_k *= std::sqrt(2.0 * k + 1.0); // exact normalization
         this->funcs.push_back(L_k);
     }
 }
 
-/**
- * @brief Fill the matrix of basis values at Gaussian quadrature points.
+
+/** @brief In Progress by Evgueni...
+ * 
  *
- * quadVals(i, k) := P_k( x_i ),  where {x_i} are the q quadrature nodes.
- *
- * Steps:
- *  1) Obtain quadrature roots (points) of order q.
- *  2) For each basis polynomial P_k, evaluate it at all points x_i and store
- *     in the corresponding column k of quadVals.
+ * 
  */
 void LegendreBasis::calcQuadratureValues() {
     getQuadratureCache(qc);
@@ -85,44 +85,26 @@ void LegendreBasis::calcQuadratureValues() {
 
     for (int k = 0; k < q_order; k++) {
         const Polynomial &poly = this->getFunc(k);
-        for (int i = 0; i < q_order; i++) {
-            this->quadVals(i, k) = poly.evalf(pts(i));
-        }
+        for (int i = 0; i < q_order; i++) { this->quadVals(i, k) = poly.evalf(pts(i)); }
     }
 }
 
-/**
- * @brief Build the coefficient↔value maps using quadrature weights.
+
+/** @brief In Progress by Evgueni...
+ * 
  *
- * For the Legendre basis, we assemble vcMap directly via:
- *   vcMap(i, k) = P_k( x_i ) * w_i,
- * where {w_i} are the quadrature weights. This corresponds to the (discrete)
- * projection of the basis onto the quadrature nodes with weighting.
- *
- * Then we compute cvMap as the matrix inverse of vcMap:
- *   cvMap = (vcMap)^{-1}.
- *
- * Interpretation:
- *  - vcMap : value→coefficient (takes nodal values and produces coefficients)
- *  - cvMap : coefficient→value (evaluates coefficients back to nodal values)
- *
- * Note:
- *  - Unlike the interpolating basis (where maps are diagonal), for the
- *    Legendre basis vcMap is dense (q×q) and we invert it numerically.
+ * 
  */
 void LegendreBasis::calcCVMaps() {
     getQuadratureCache(qc);
     int q_order = getQuadratureOrder();
-    const VectorXd &pts  = qc.getRoots(q_order);
+    const VectorXd &pts = qc.getRoots(q_order);
     const VectorXd &wgts = qc.getWeights(q_order);
 
     for (int k = 0; k < q_order; k++) {
         const Polynomial &poly = this->getFunc(k);
-        for (int i = 0; i < q_order; i++) {
-            this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i);
-        }
+        for (int i = 0; i < q_order; i++) { this->vcMap(i, k) = poly.evalf(pts(i)) * wgts(i); }
     }
-
     this->cvMap = this->vcMap.inverse();
 }
 

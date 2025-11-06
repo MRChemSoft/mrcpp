@@ -26,16 +26,13 @@
 #include "BandWidth.h"
 #include "utils/Printer.h"
 
-#include <cassert>
-#include <iomanip>
-
 namespace mrcpp {
 
 BandWidth &BandWidth::operator=(const BandWidth &bw) = default;
 
 bool BandWidth::isEmpty(int depth) const {
-    if (depth > getDepth()) return true;
-    if (this->widths(depth, 4) < 0) return true;
+    if (depth > getDepth()) { return true; }
+    if (this->widths(depth, 4) < 0) { return true; }
     return false;
 }
 
@@ -44,7 +41,7 @@ void BandWidth::setWidth(int depth, int index, int wd) {
     assert(index >= 0 and index < 4);
     assert(wd >= 0);
     this->widths(depth, index) = wd;
-    if (wd > this->widths(depth, 4)) this->widths(depth, 4) = wd;
+    if (wd > this->widths(depth, 4)) { this->widths(depth, 4) = wd; }
 }
 
 std::ostream &BandWidth::print(std::ostream &o) const {

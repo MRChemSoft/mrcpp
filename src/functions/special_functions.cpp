@@ -25,22 +25,74 @@
 
 #include "special_functions.h"
 
+
 namespace mrcpp {
 
+
+/** @brief Free-particle time evolution on real line.
+ *
+ * @param[in] x: space coordinate in \f$ \mathbb R \f$.
+ * @param[in] x0: \f$ x_0 \f$ center of gaussian function at zero time moment.
+ * @param[in] t: time moment.
+ * @param[in] sigma: \f$ \sigma \f$ width of the initial gaussian wave.
+ *
+ * @details Analytical solution of a one dimensional free-particle
+ * movement
+ * \f[
+ *      \psi(x, t)
+ *      =
+ *      \sqrt{
+ *          \frac{ \sigma }{ 4it + \sigma }
+ *      }
+ *      e^{ - \frac { (x - x_0)^2 }{ 4it + \sigma } }
+ * \f]
+ * where \f$ t, \sigma > 0 \f$.
+ * 
+ * @returns The complex-valued wave function
+ * \f$ \psi(x, t) \f$
+ * at the specified space coordinate and time.
+ * 
+ * 
+ */
 std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma)
 {
-    std::complex<double> i(0.0, 1.0);
-    std::complex<double> denom = sigma + 4.0 * t * i;
-    std::complex<double> exponent = -((x - x0) * (x - x0)) / denom;
+    std::complex<double> i(0.0, 1.0);  // Imaginary unit
+    auto denominator = 4 * t * i + sigma;
+    std::complex<double> sqrt_denom = std::sqrt(denominator);
+    std::complex<double> exponent = -((x - x0) * (x - x0)) / denominator;
 
-    return std::sqrt(sigma) / std::sqrt(denom) * std::exp(exponent);
+    return std::sqrt(sigma) / sqrt_denom * std::exp(exponent);
 }
 
+
+
+/** @brief A smooth compactly supported non-negative function.
+ *
+ * @param[in] x: space coordinate in \f$ \mathbb R \f$.
+ * @param[in] a: the left support boundary.
+ * @param[in] b: the right support boundary.
+ *
+ * @details Smooth function on the real line \f$ \mathbb R \f$
+ * defined by the formula
+ * \f[
+ *      g_{a,b} (x) = \exp \left( - \frac{b - a}{(x - a)(b - x)} \right)
+ *      , \quad
+ *      a < x < b
+ * \f]
+ * and \f$ g_{a,b} (x) = 0 \f$ elsewhere.
+ * 
+ * @returns The non-negative value
+ * \f$ g_{a,b} (x) \f$
+ * at the specified space coordinate \f$ x \in \mathbb R \f$.
+ * 
+ * 
+ */
 double smooth_compact_function(double x, double a, double b) {
+    double res = 0;
     if (a < x && x < b) {
-        return std::exp((a - b) / ((x - a) * (b - x)));
+        res = exp((a - b) / (x - a) / (b - x));
     }
-    return 0.0;
+    return res;
 }
 
 } // namespace mrcpp

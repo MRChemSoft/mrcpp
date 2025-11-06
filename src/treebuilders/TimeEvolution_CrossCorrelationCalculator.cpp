@@ -33,6 +33,13 @@ using Eigen::VectorXd;
 
 namespace mrcpp {
 
+/** @param[in] node: ...
+ *  @details This will ... (work in progress)
+ *
+ *
+ *
+ *
+ */
 void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
@@ -54,9 +61,21 @@ void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.calcNorms();
 }
 
+/** @param[in] node: ...
+ *  @details This will ... (work in progress)
+ *
+ *
+ *
+ *
+ */
+// template <int T>
 void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
-    int t_dim = node.getTDim();
-    int kp1_d = node.getKp1_d();
+    // std::cout << node;
+    //  The scale of J power integrals:
+    // int scale = node.getScale() + 1;  //scale = n = (n - 1) + 1
+
+    int t_dim = node.getTDim();  // t_dim = 4
+    int kp1_d = node.getKp1_d(); // kp1_d = (k + 1)^2
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
@@ -70,15 +89,15 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
         int vec_o_segment_index = 0;
         for (int p = 0; p <= node.getOrder(); p++)
             for (int j = 0; j <= node.getOrder(); j++) {
+                // std::min(M, N)  could be used for breaking the following loop
+                // this->cross_correlation->Matrix.size() should be big enough a priori
                 for (int k = 0; 2 * k + p + j < J_power_inetgarls[l_b].size(); k++) {
                     double J;
                     if (this->imaginary)
                         J = J_power_inetgarls[l_b][2 * k + p + j].imag();
                     else
                         J = J_power_inetgarls[l_b][2 * k + p + j].real();
-
-                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) +=
-                        J * cross_correlation->Matrix[k](p, j);
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) += J * cross_correlation->Matrix[k](p, j); // by default eigen library reads a transpose matrix from a file
                 }
                 vec_o_segment_index++;
             }
@@ -86,7 +105,9 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
 
     double *coefs = node.getCoefs();
     for (int i = 0; i < t_dim * kp1_d; i++) {
+        // auto scaling_factor = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
         coefs[i] = vec_o(i);
+        // std::cout<< "coefs[i] = " << coefs[i] << std::endl;
     }
 }
 

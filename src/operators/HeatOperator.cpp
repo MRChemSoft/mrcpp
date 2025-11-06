@@ -29,6 +29,15 @@
 
 namespace mrcpp {
 
+/** @brief Constructor  of the HeatOperator object
+ *  @returns New HeatOperator object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] t: Time moment
+ *  @param[in] prec: Build precision
+ *  @details This will project a kernel of a single gaussian with
+ *  exponent \f$ 1/(4t) \f$.
+ *
+ */
 template <int D>
 HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec)
         : ConvolutionOperator<D>(mra) {
@@ -45,6 +54,22 @@ HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, d
     Printer::setPrintLevel(oldlevel);
 }
 
+/** @brief Constructor of the HeatOperator object in case of Periodic Boundary Conditions (PBC)
+ *  @returns New IdentityConvolution object
+ *  @param[in] mra: Which MRA the operator is defined
+ *  @param[in] t: Time moment
+ *  @param[in] prec: Build precision
+ *  @param[in] root: root scale of operator.
+ *  @param[in] reach: width at root scale (applies to periodic boundary conditions)
+ *  @details This will project a kernel of a single gaussian with
+ *           exponent \f$ 1/(4t) \f$.
+ *           This version of the constructor
+ *           is used for calculations within periodic boundary conditions (PBC).
+ *           The \a root parameter is the coarsest negative scale at wich the operator
+ *           is applied. The \a reach parameter is the bandwidth of the operator at
+ *           the root scale. For details see \ref MWOperator
+ *
+ */
 template <int D>
 HeatOperator<D>::HeatOperator(const MultiResolutionAnalysis<D> &mra, double t, double prec, int root, int reach)
         : ConvolutionOperator<D>(mra, root, reach) {

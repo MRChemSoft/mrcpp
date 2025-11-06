@@ -34,17 +34,15 @@ ScalingBasis::ScalingBasis(int k, int t)
     if (this->order < 0) MSG_ABORT("Invalid scaling order");
     int q_order = getQuadratureOrder();
     this->quadVals = Eigen::MatrixXd::Zero(q_order, q_order);
-    this->cvMap    = Eigen::MatrixXd::Zero(q_order, q_order);
-    this->vcMap    = Eigen::MatrixXd::Zero(q_order, q_order);
+    this->cvMap = Eigen::MatrixXd::Zero(q_order, q_order);
+    this->vcMap = Eigen::MatrixXd::Zero(q_order, q_order);
 }
 
 void ScalingBasis::evalf(const double *r, Eigen::MatrixXd &vals) const {
     if (vals.rows() != this->funcs.size()) MSG_ERROR("Invalid argument");
 
     for (int d = 0; d < vals.cols(); d++) {
-        for (int k = 0; k < vals.rows(); k++) {
-            vals(k, d) = getFunc(k).evalf(r[d]);
-        }
+        for (int k = 0; k < vals.rows(); k++) { vals(k, d) = getFunc(k).evalf(r[d]); }
     }
 }
 

@@ -38,8 +38,8 @@ namespace mrcpp {
  *
  * @details
  * A NodeIndex encodes the position of a node in a multiresolution tree by:
- * - an integer **scale** N (node size proportional to 2^{-N})
- * - D-dimensional **translation** vector L og integers
+ * - N: Scale of node stored as a short integer
+ * - L: D-dimensional translation vector of integers
  *
  * Provides helpers to obtain the parent/child indices, comparisons
  * (including a strict weak ordering for associative containers), and utilities
@@ -47,10 +47,6 @@ namespace mrcpp {
  * 
  * The usefulness of the class becomes evident when examining
  * the parallel algorithms for projection & friends
- *
- * @note
- * The scale is stored as a short integer; the translation is a D-dimensional
- * integer vector. The translation follows the standard dyadic refinement.
  */
 template <int D> class NodeIndex final {
 public:

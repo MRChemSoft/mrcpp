@@ -42,8 +42,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** Function evaluation.
- * Evaluate all polynomials defined on the node. */
 template <int D, typename T> T FunctionNode<D, T>::evalf(Coord<D> r) {
     if (not this->hasCoefs()) MSG_ERROR("Evaluating node without coefs");
 
@@ -87,11 +85,6 @@ template <int D, typename T> T FunctionNode<D, T>::evalScaling(const Coord<D> &r
     return two_n * result;
 }
 
-/** Function integration.
- *
- * Wrapper for function integration, that requires different methods depending
- * on scaling type. Integrates the function represented on the node on the
- * full support of the node. */
 template <int D, typename T> T FunctionNode<D, T>::integrate() const {
     if (not this->hasCoefs()) { return 0.0; }
     switch (this->getScalingType()) {
@@ -106,15 +99,6 @@ template <int D, typename T> T FunctionNode<D, T>::integrate() const {
     }
 }
 
-/** Function integration, Legendre basis.
- *
- * Integrates the function represented on the node on the full support of the
- * node. The Legendre basis is particularly easy to integrate, as the work is
- * already done when calculating its coefficients. The coefficients of the
- * node is defined as the projection integral
- *          s_i = int f(x)phi_i(x)dx
- * and since the first Legendre function is the constant 1, the first
- * coefficient is simply the integral of f(x). */
 template <int D, typename T> T FunctionNode<D, T>::integrateLegendre() const {
     double n = (D * this->getScale()) / 2.0;
     double two_n = std::pow(2.0, -n);
@@ -234,10 +218,9 @@ template <int D, typename T> void FunctionNode<D, T>::getValues(Matrix<T, Eigen:
     }
 }
 
-/** get coefficients corresponding to absolute value of function
- *
+/**
  * Leaves the original coefficients unchanged.
- * Note that we mus use T and not double, even if the norms are double, because
+ * Note that we must use T and not double, even if the norms are double, because
  * the transforms expect T types.
  */
 template <int D, typename T> void FunctionNode<D, T>::getAbsCoefs(T *absCoefs) {

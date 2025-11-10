@@ -360,35 +360,79 @@ template <int D> void CompFunction<D>::setCplx(FunctionTree<D, ComplexDouble> *t
  *
  */
 template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp) {
-
-    if (Ncomp() > 0 and inp.Ncomp() > 0 and Ncomp() != inp.Ncomp()) {
-        MSG_ABORT("Cannot add CompFunction with different number of components"<<" "<<Ncomp()<<" "<<inp.Ncomp());
-    }
-    if (getNNodes() == 0) alloc(inp.Ncomp());
-
-    for (int i = 0; i < inp.Ncomp(); i++) {
-        if (this->isreal() and inp.isreal() and (c.imag() < MachineZero)) {
-            // everything is real write as real
-            CompD[i]->add_inplace(c.real(), *inp.CompD[i]);
-        } else {
-            // write as complex
-            if (this->isreal()) {
-                // change type of output!
+    if (inp.getSquareNorm() < MachineZero) {
+        // nothing to add
+    } else if(this->getSquareNorm() < MachineZero) {
+        //copy
+        func_ptr->data = inp.func_ptr->data;
+        alloc(inp.Ncomp(), true);
+        for (int i = 0; i < inp.Ncomp(); i++) {
+            if(inp.isreal()) CompD[i]->add_inplace(c.real(), *inp.CompD[i]);
+            if(inp.iscomplex()) CompC[i]->add_inplace(c, *inp.CompC[i]);
+        }
+    } else {
+        // we must check if the result is real or complex
+        if (inp.isreal() and this->isreal() and c.imag() < MachineZero) {
+            if ((std::norm(func_ptr->data.c1[0]-inp.func_ptr->data.c1[0]) < MachineZero) and
+                c.imag() < MachineZero){
+                // real (possibly with complex c1)
+                for (int i = 0; i < inp.Ncomp(); i++) {
+                    CompD[i]->add_inplace(c.real(), *inp.CompD[i]);
+                }
+            }else if (func_ptr->data.c1[0].imag() > MachineZero or inp.func_ptr->data.c1[0].imag()  > MachineZero){
+                MSG_ABORT("Not implemented");
+            } else {
+                if(func_ptr->data.c1[0].real() > MachineZero){
+                    rescale(func_ptr->data.c1[0].real());
+                    for (int i = 1; i < Ncomp(); i++) {
+                        if (std::norm(func_ptr->data.c1[0]-func_ptr->data.c1[i]) > MachineZero)
+                            MSG_ABORT("different scaling not implemented");
+                        func_ptr->data.c1[i] = {1.0, 0.0};
+                    }
+                    func_ptr->data.c1[0] = {1.0, 0.0};
+                }
+                for (int i = 0; i < inp.Ncomp(); i++) {
+                    CompD[i]->add_inplace(c.real()*inp.func_ptr->data.c1[i].real(), *inp.CompD[i]);
+                }
+            }
+        } else if (inp.isreal() and this->isreal() and c.imag() > MachineZero) {
+            MSG_ABORT("Not implemented");
+        } else if( this->iscomplex() and inp.iscomplex()) {
+            if (std::norm(1.0 - func_ptr->data.c1[0]) > MachineZero) {
+                rescale(func_ptr->data.c1[0]);
+                for (int i = 1; i < Ncomp(); i++) {
+                    if (std::norm(func_ptr->data.c1[0]-func_ptr->data.c1[i]) > MachineZero)
+                        MSG_ABORT("different scaling not implemented");
+                    func_ptr->data.c1[i] = {1.0, 0.0};
+                }
+                func_ptr->data.c1[0] = {1.0, 0.0};
+            }
+            for (int i = 0; i < inp.Ncomp(); i++) {
+                CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *inp.CompC[i]);
+            }
+        } else if( this->isreal()) {
+            // we set as complex
+            for (int i = 0; i < Ncomp(); i++) {
                 CompD[i]->CopyTreeToComplex(CompC[i]);
                 delete CompD[i];
                 CompD[i] = nullptr;
-                func_ptr->iscomplex = 1;
-                func_ptr->isreal = 0;
             }
-            if (inp.iscomplex()) {
-                CompC[i]->add_inplace(c, *inp.CompC[i]);
-            } else {
-                // change type of input, only temporarily
-                inp.CompD[i]->CopyTreeToComplex(inp.CompC[i]);
-                CompC[i]->add_inplace(c, *inp.CompC[i]);
-                delete inp.CompC[i];
-                inp.CompC[i] = nullptr;
+            func_ptr->iscomplex = 1;
+            func_ptr->isreal = 0;
+            if (std::norm(1.0-func_ptr->data.c1[0]) > MachineZero) {
+                rescale(func_ptr->data.c1[0]);
+                for (int i = 1; i < Ncomp(); i++) {
+                    if (std::norm(func_ptr->data.c1[0]-func_ptr->data.c1[i]) > MachineZero)
+                        MSG_ABORT("different scaling not implemented");
+                    func_ptr->data.c1[i] = {1.0, 0.0};
+                }
+                func_ptr->data.c1[0] = {1.0, 0.0};
             }
+            for (int i = 0; i < inp.Ncomp(); i++) {
+                CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *inp.CompC[i]);
+            }
+        } else {
+            MSG_ABORT("Not implemented");
         }
     }
 }

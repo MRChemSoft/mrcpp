@@ -202,19 +202,16 @@ protected:
     ~FunctionNode() = default;
 
     /**
-     * @brief Function evaluation
-     * @param[in,out] r The sought after node through the coordinates of a point in space
+     * @brief Evaluate function at a point
+     * @param[in,out] r The point in space
      * @return The evaluated result of type @p T
      *
-     * @details Evaluate all polynomials defined on the child node found by
+     * @details Evaluate all polynomials defined on the node found by
      * @ref MWTree<D, T>::getChildIndex. Trigger an error if the node does not
-     * have coefficients, or failed to find the child node. For periodic
-     * systems, the coordinate r will be mapped to the [-1, 1] periodic cell if
-     * it is outside the unit cell, see @ref periodic::coord_manipulation.
+     * have coefficients. For periodic systems, the coordinate r will be mapped
+     * to the [-1, 1] periodic cell if it is outside the unit cell, see
+     * @ref periodic::coord_manipulation.
      */
-    //FIXME I guess the evaluation is performed for the child node, not this
-    //      node, because this routine calls getFuncChild(cIdx).evalScaling(r),
-    //      where cIdx = this->getChildIndex(r)
     T evalf(Coord<D> r);
 
     /**
@@ -224,10 +221,7 @@ protected:
      */
     T evalScaling(const Coord<D> &r) const;
 
-    /// @brief Deallocate the node and detach it from the tree it belongs to
-    //FIXME this routine calls dealloc of NodeAllocator, which frees the memory
-    //      of the node by calling ~MWNode() and it seems that coefficients are freed
-    //      only for LooseNode.
+    /// @brief Deallocate the node from the tree
     void dealloc() override;
 
     /**
@@ -236,10 +230,6 @@ protected:
      * @note There is a specialization for @p D = 3,
      * see @ref FunctionNode<3>::reCompress.
      */
-    //FIXME It is written in FunctionNode.cpp that, "Option to overwrite or add
-    //      up existing coefficients". Not sure what it means, in particular "add up
-    //      existing coefficients".
-    //FIXME not sure if @ref FunctionNode<3>::reCompress works
     void reCompress() override;
 
     /**
@@ -279,11 +269,6 @@ protected:
     T integrateValues() const;
 };
 
-//FIXME All comments of dot_scaling() are exactly the same in FunctionNode.cpp,
-//      a bit boilerplate. But another important thing is the conjugate is actually
-//      taken for bra and ket in case of complex values, instead of only bra.
-//FIXME Comments of dot_wavelet() have the same problem.
-
 /**
  * @brief Inner product of the functions represented by the scaling basis of
  * the nodes
@@ -295,6 +280,7 @@ protected:
  * basis on the node on the full support of the nodes. The scaling basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
 
@@ -309,7 +295,7 @@ template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const Fu
  * basis on the node on the full support of the nodes. The scaling basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugates of bra and ket will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
@@ -324,7 +310,7 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
  * basis on the node on the full support of the nodes. The scaling basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugate of bra will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
 
@@ -339,7 +325,7 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
  * basis on the node on the full support of the nodes. The scaling basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugate of ket will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
@@ -355,6 +341,7 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, c
  * basis on the node on the full support of the nodes. The wavelet basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket);
 
@@ -369,7 +356,7 @@ template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const Fu
  * basis on the node on the full support of the nodes. The wavelet basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugates of bra and ket will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket);
 
@@ -384,7 +371,7 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
  * basis on the node on the full support of the nodes. The wavelet basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugate of bra will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket);
 
@@ -399,7 +386,7 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
  * basis on the node on the full support of the nodes. The wavelet basis is
  * fully orthonormal, and the inner product is simply the dot product of the
  * coefficient vectors. Assumes the nodes have identical support.
- * @note Conjugate of ket will be taken.
+ * @note Conjugate of bra will be taken in case of complex values.
  */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket);
 

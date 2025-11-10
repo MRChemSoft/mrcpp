@@ -364,9 +364,6 @@ template <int D, typename T> void FunctionNode<D, T>::dealloc() {
     }
 }
 
-/** Update the coefficients of the node by a mw transform of the scaling
- * coefficients of the children. Option to overwrite or add up existing
- * coefficients. Specialized for D=3 below. */
 template <int D, typename T> void FunctionNode<D, T>::reCompress() {
     MWNode<D, T>::reCompress();
 }
@@ -391,14 +388,6 @@ template <> void FunctionNode<3>::reCompress() {
     }
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -416,14 +405,6 @@ template <int D> double dot_scaling(const FunctionNode<D, double> &bra, const Fu
 #endif
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -450,14 +431,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -476,14 +449,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the scaling basis of the nodes.
- *
- * Integrates the product of the functions represented by the scaling basis on
- * the node on the full support of the nodes. The scaling basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     assert(bra.hasCoefs());
     assert(ket.hasCoefs());
@@ -502,14 +467,6 @@ template <int D> ComplexDouble dot_scaling(const FunctionNode<D, double> &bra, c
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -530,14 +487,6 @@ template <int D> double dot_wavelet(const FunctionNode<D, double> &bra, const Fu
 #endif
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -566,14 +515,6 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> &bra, const FunctionNode<D, double> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 
@@ -594,14 +535,6 @@ template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, ComplexDouble> 
     return result;
 }
 
-/** Inner product of the functions represented by the wavelet basis of the nodes.
- *
- * Integrates the product of the functions represented by the wavelet basis on
- * the node on the full support of the nodes. The wavelet basis is fully
- * orthonormal, and the inner product is simply the dot product of the
- * coefficient vectors. Assumes the nodes have identical support.
- * NB: will take conjugate of bra in case of complex values.
- */
 template <int D> ComplexDouble dot_wavelet(const FunctionNode<D, double> &bra, const FunctionNode<D, ComplexDouble> &ket) {
     if (bra.isGenNode() or ket.isGenNode()) return 0.0;
 

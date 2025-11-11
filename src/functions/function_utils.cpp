@@ -38,24 +38,7 @@ template <int D> double function_utils::calc_overlap(const GaussFunc<D> &a, cons
     return S;
 }
 
-/**  Compute the monodimensional overlap integral between two
- gaussian distributions by means of the Obara-Saika recursiive
- scheme
 
- \f[ S_{ij} = \int_{-\infty}^{+\infty} \,\mathrm{d} x
- (x-x_a)^{p_a}
- (x-x_b)^{p_b}
- e^{-c_a (x-x_a)^2}
- e^{-c_b (x-x_b)^2}\f]
-
- @param power_a \f$ p_a     \f$
- @param power_b \f$ p_b     \f$
- @param pos_a   \f$ x_a     \f$
- @param pos_b   \f$ x_b     \f$
- @param expo_a  \f$ c_a \f$
- @param expo_b  \f$ c_b \f$
-
- */
 double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b) {
     int i, j;
     double expo_p, mu, pos_p, x_ab, x_pa, x_pb, s_00;

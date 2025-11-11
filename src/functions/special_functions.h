@@ -30,59 +30,53 @@
 
 namespace mrcpp {
 
-/**
- * # Free-particle Gaussian propagation (analytic form)
+/** @brief Free-particle time evolution on real line.
  *
- * @brief Analytic solution \f$\psi(x,t)\f$ of the 1D free-particle Schrödinger equation
- *        for a Gaussian initially centered at \f$x_0\f$ with width parameter \f$\sigma>0\f$.
+ * @param[in] x: space coordinate in \f$ \mathbb R \f$.
+ * @param[in] x0: \f$ x_0 \f$ center of gaussian function at zero time moment.
+ * @param[in] t: time moment.
+ * @param[in] sigma: \f$ \sigma \f$ width of the initial gaussian wave.
  *
- * This declaration corresponds to the definition in `special_functions.cpp`. The solution used is
+ * @details Analytical solution of a one dimensional free-particle
+ * movement
  * \f[
- *   \psi(x,t)
- *   =
- *   \sqrt{\frac{\sigma}{\,\sigma + 4\, i\, t\,}}\;
- *   \exp\!\left(-\,\frac{(x-x_0)^2}{\,\sigma + 4\, i\, t\,}\right),
+ *      \psi(x, t)
+ *      =
+ *      \sqrt{
+ *          \frac{ \sigma }{ 4it + \sigma }
+ *      }
+ *      e^{ - \frac { (x - x_0)^2 }{ 4it + \sigma } }
  * \f]
- * which matches the conventional free propagator with units chosen such that \f$\hbar=1\f$
- * and mass \f$m=\tfrac12\f$ (hence the factor \f$4it\f$ in the denominator).
- *
- * @param x     Real-space coordinate \f$x \in \mathbb{R}\f$.
- * @param x0    Initial center \f$x_0\f$ of the Gaussian at \f$t=0\f$.
- * @param t     Time \f$t \in \mathbb{R}\f$.
- * @param sigma Positive width parameter \f$\sigma>0\f$ of the initial Gaussian.
- *
- * @return Complex value of \f$\psi(x,t)\f$ at the requested point.
- *
- * @note The complex square root in the prefactor is taken on the principal branch
- *       by `std::sqrt(std::complex<double>)`.
- * @note For \f$t=0\f$, the expression reduces to \f$\psi(x,0)=\exp\!\big(-\tfrac{(x-x_0)^2}{\sigma}\big)\f$.
+ * where \f$ t, \sigma > 0 \f$.
+ * 
+ * @returns The complex-valued wave function
+ * \f$ \psi(x, t) \f$
+ * at the specified space coordinate and time.
+ * 
+ * 
  */
 std::complex<double> free_particle_analytical_solution(double x, double x0, double t, double sigma);
 
-/**
- * # Smooth compactly supported bump
+/** @brief A smooth compactly supported non-negative function.
  *
- * @brief A smooth (\f$C^\infty\f$) non-negative function supported on the open interval \f$(a,b)\f$.
+ * @param[in] x: space coordinate in \f$ \mathbb R \f$.
+ * @param[in] a: the left support boundary.
+ * @param[in] b: the right support boundary.
  *
- * The function is defined by
+ * @details Smooth function on the real line \f$ \mathbb R \f$
+ * defined by the formula
  * \f[
- *   g_{a,b}(x) =
- *   \begin{cases}
- *     \exp\!\Big(-\dfrac{b-a}{(x-a)(b-x)}\Big), & a < x < b,\\[6pt]
- *     0, & \text{otherwise},
- *   \end{cases}
+ *      g_{a,b} (x) = \exp \left( - \frac{b - a}{(x - a)(b - x)} \right)
+ *      , \quad
+ *      a < x < b
  * \f]
- * and vanishes to **all orders** at the endpoints \f$a\f$ and \f$b\f$.
- *
- * @param x Real-space coordinate \f$x \in \mathbb{R}\f$.
- * @param a Left endpoint of support (default `0`).
- * @param b Right endpoint of support (default `1`).
- *
- * @return The value \f$g_{a,b}(x)\f$.
- *
- * @note If \f$a \ge b\f$, the function is identically zero for all \f$x\f$.
- * @warning Near the endpoints, the denominator \f$(x-a)(b-x)\f$ becomes small;
- *          the exponent is large and negative so the result underflows smoothly to zero.
+ * and \f$ g_{a,b} (x) = 0 \f$ elsewhere.
+ * 
+ * @returns The non-negative value
+ * \f$ g_{a,b} (x) \f$
+ * at the specified space coordinate \f$ x \in \mathbb R \f$.
+ * 
+ * 
  */
 double smooth_compact_function(double x, double a = 0, double b = 1);
 

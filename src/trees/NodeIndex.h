@@ -124,6 +124,7 @@ public:
     /*
      * Getters and setters
      */
+
     int getScale() const { return this->N; }                            ///< @return Scale of node
     std::array<int, D> getTranslation() const { return this->L; }       ///< @return Full translation vector
     void setScale(int n) { this->N = static_cast<short int>(n); }       ///< @param n Scale of node

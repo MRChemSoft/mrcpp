@@ -34,67 +34,26 @@ namespace mrcpp {
 
 /**
  * @class AnalyticFunction
- * @tparam D Spatial dimension (1, 2, 3, …).
- * @tparam T Numeric value type (defaults to double).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  *
- * @brief Thin adapter that turns a C++ callable `std::function<T(const Coord<D>&)>`
- *        into a @ref RepresentableFunction suitable for MRCPP algorithms.
- *
- * Motivation
- * ----------
- * Many MRCPP routines operate on the abstract interface `RepresentableFunction<D,T>`
- * (which provides domain bounds and an `evalf()` method). `AnalyticFunction` lets
- * users plug in any analytic lambda or function pointer without writing a full
- * derived class.
- *
- * Domain handling
- * ---------------
- * The base class @ref RepresentableFunction stores lower/upper bounds for each
- * coordinate dimension. `AnalyticFunction::evalf` first checks
- * `RepresentableFunction::outOfBounds(r)` and **returns 0** for points outside
- * the domain; otherwise it forwards to the user-supplied callable.
- *
- * Typical usage
- * -------------
- * @code
- * using F = AnalyticFunction<2>;
- * std::vector<double> a = {0.0, 0.0};
- * std::vector<double> b = {1.0, 2.0};
- * F f(
- *   [](const Coord<2>& x) -> double {
- *       // x[0] = x, x[1] = y
- *       return std::sin(x[0]) * std::exp(-x[1]);
- *   },
- *   a, b
- * );
- * Coord<2> p; p[0] = 0.3; p[1] = 1.5;
- * double v = f.evalf(p); // evaluates lambda if p within [a,b]
- * @endcode
- *
- * Thread-safety
- * -------------
- * `AnalyticFunction` itself holds only an immutable std::function after construction.
- * It is safe to call `evalf` concurrently *iff your callable is thread-safe* and
- * does not mutate shared state.
+ * @brief Implementation of @ref RepresentableFunction for the datatype double
  */
 template <int D, typename T = double>
 class AnalyticFunction : public RepresentableFunction<D, T> {
 public:
-    /** @brief Default constructor; leaves the callable empty. */
+    /** @brief Default constructor; leaves the callable empty */
     AnalyticFunction() = default;
 
-    /** @brief Virtual destructor to match the base class interface. */
+    /** @brief Virtual destructor to match the base class interface */
     ~AnalyticFunction() override = default;
 
     /**
-     * @brief Construct with a callable and optional raw-pointer bounds.
+     * @brief Constructor with raw pointers for the bounds
      *
-     * @param f   Callable of signature `T(const Coord<D>&)`.
-     * @param a   Optional pointer to an array of D lower bounds (can be nullptr).
-     * @param b   Optional pointer to an array of D upper bounds (can be nullptr).
-     *
-     * The bounds are forwarded to the @ref RepresentableFunction base; if both
-     * are nullptr the base uses its defaults (implementation-defined).
+     * @param f   The analytic function which is evaluated in this class
+     * @param a   Optional raw pointer to an array of D lower bounds (can be nullptr)
+     * @param b   Optional raw pointer to an array of D upper bounds (can be nullptr)
      */
     AnalyticFunction(std::function<T(const Coord<D> &r)> f,
                      const double *a = nullptr,
@@ -103,14 +62,11 @@ public:
             , func(f) {}
 
     /**
-     * @brief Construct with a callable and STL vector bounds.
+     * @brief Overload constructor with std::vector for the bounds
      *
-     * @param f Callable of signature `T(const Coord<D>&)`.
-     * @param a Vector of D lower bounds.
-     * @param b Vector of D upper bounds.
-     *
-     * Convenience overload that forwards raw pointers of the vectors to the
-     * other constructor. The vectors must have length D.
+     * @param f  The analytic function which is evaluated in this class
+     * @param a  Vector of D lower bounds.
+     * @param b  Vector of D upper bounds.
      */
     AnalyticFunction(std::function<T(const Coord<D> &r)> f,
                      const std::vector<double> &a,
@@ -118,24 +74,18 @@ public:
             : AnalyticFunction(f, a.data(), b.data()) {}
 
     /**
-     * @brief Replace the underlying callable at runtime.
-     *
-     * @param f New callable `T(const Coord<D>&)`.
-     *
-     * No synchronization is performed; if other threads may call `evalf`
-     * concurrently, arrange external synchronization.
+     * @brief Set the analytic function to be evaluated
+     * @param f New analytic function
      */
     void set(std::function<T(const Coord<D> &r)> f) { this->func = f; }
 
     /**
-     * @brief Evaluate the function at coordinate @p r.
+     * @brief Evaluate the analytic function at coordinate @p r.
+     * @param r Coordinate where to evaluate the function
      *
-     * Behavior:
-     *  - If @p r lies outside the domain bounds (per `outOfBounds(r)`), return 0.
-     *  - Otherwise, return `func(r)`.
-     *
-     * @note Returning 0 outside the domain is consistent with how many MRCPP
-     *       integrators and projectors treat functions on bounded supports.
+     * @details Checks if the point is within bounds before evaluating
+     * 
+     * @return The function value at point @p r
      */
     T evalf(const Coord<D> &r) const override {
         T val = T(0);
@@ -144,14 +94,7 @@ public:
     }
 
 protected:
-    /**
-     * @brief Stored analytic callable.
-     *
-     * The signature uses `Coord<D>` (MRCPP’s fixed-size coordinate array).
-     * The callable should be side-effect free or externally synchronized if
-     * used from multiple threads.
-     */
-    std::function<T(const Coord<D> &r)> func;
+    std::function<T(const Coord<D> &r)> func; ///< User-provided analytic function 
 };
 
 } // namespace mrcpp

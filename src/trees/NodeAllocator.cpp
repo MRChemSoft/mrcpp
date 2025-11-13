@@ -128,10 +128,6 @@ template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coe
     // return value is index of first new node
     auto sIdx = this->topStack;
 
-    // we require that the index for first child is a multiple of 2**D
-    // so that we can find the sibling rank using rank=sIdx%(2**D)
-    if (sIdx % nNodes != 0) MSG_WARN("Warning: recommended number of siblings is 2**D");
-
     // fill stack status
     auto &status = this->stackStatus;
     for (int i = sIdx; i < sIdx + nNodes; i++) {

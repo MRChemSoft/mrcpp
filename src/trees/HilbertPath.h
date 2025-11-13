@@ -27,31 +27,95 @@
 
 namespace mrcpp {
 
-template <int D> class HilbertPath final {
+/**
+ * @class HilbertPath
+ * @tparam D Spatial dimension (e.g., 2 for quadtree, 3 for octree).
+ *
+ * @brief Traverse the nodes of a tree following the Hilbert space-filling curve.
+ *
+ * @details The Hilbert curve is a continuous fractal space-filling curve that 
+ * has good locality properties. We use it to traverse the nodes of a tree.
+ * Each node visit in a Hilbert traversal has an associated **state** that
+ * determines how the children are ordered. Alternativly a Z-ordering can be used.
+ * - @ref getZIndex maps a Hilbert child index to the corresponding Morton
+ *   (Z-order) child index;
+ * - @ref getHIndex performs the inverse mapping (Morton to Hilbert); and
+ * - @ref getChildPath returns the orientation state to use after descending
+ *   to a specific Hilbert child.
+ *
+ * The mappings are implemented via static lookup tables.
+ */
+template <int D>
+class HilbertPath final {
 public:
+    /** 
+     * @brief Default constructor 
+     */
     HilbertPath() = default;
+    /** 
+     * @brief Copy constructor 
+     */
     HilbertPath(const HilbertPath<D> &p)
             : path(p.path) {}
+    /**
+     * @brief Construct a child path from a parent path and a child index.
+     *
+     * @param[in] p    Parent @ref HilbertPath state.
+     * @param[in] cIdx Child index expressed in **Morton (Z-order)** for this parent.
+     *
+     * @details
+     * The provided @p cIdx is first converted to the corresponding **Hilbert**
+     * index for the parent state, then the next orientation state is selected
+     * via the transition table.
+     */
     HilbertPath(const HilbertPath<D> &p, int cIdx) {
         int hIdx = p.getHIndex(cIdx);
         this->path = p.getChildPath(hIdx);
     }
+    /** 
+     * @brief Assignment operator 
+     */
     HilbertPath &operator=(const HilbertPath<D> &p) {
         this->path = p.path;
         return *this;
     }
-
-    short int getPath() const { return this->path; }
+    short int getPath() const { return this->path; } ///< @return the current path */
+    /**
+     * @brief Get path index of selected child
+     *
+     * @param hIdx Child index in **Hilbert** order for the current state.
+     * @return Path index for the selected child
+     */
     short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }
-
+    /**
+     * @brief Map Hilbert child index to Morton (Z-order) child index
+     *
+     * @param hIdx Child index in **Hilbert** order
+     * @return **Morton** child index.
+     */
     int getZIndex(int hIdx) const { return this->zTable[this->path][hIdx]; }
+
+    /**
+     * @brief Map Morton (Z-order) child index to Hilbert child index.
+     *
+     * @param zIdx Child index in **Morton** order
+     * @return **Hilbert** child index
+     */
     int getHIndex(int zIdx) const { return this->hTable[this->path][zIdx]; }
 
 private:
+    /// Current Hilbert orientation state (table row selector).
     short int path{0};
-    static const short int pTable[][8];
-    static const int zTable[][8];
-    static const int hTable[][8];
+
+    /**
+     * @name Lookup tables (declared in header, defined in the .cpp)
+     * Each table has 2^D columns (up to 8 for D=3) and one row per state.
+     * 
+     */
+    static const short int pTable[][8]; ///< Next-state table: state × h -> state'
+    static const int zTable[][8];       ///< Mapping: state × h -> z
+    static const int hTable[][8];       ///< Mapping: state × z -> h
+    /** @} */
 };
 
 } // namespace mrcpp

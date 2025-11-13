@@ -22,6 +22,7 @@
  * For information on the complete list of contributors to MRCPP, see:
  * <https://mrcpp.readthedocs.io/>
  */
+
 #include "TimeEvolutionOperator.h"
 
 #include "core/InterpolatingBasis.h"
@@ -37,32 +38,39 @@
 #include "treebuilders/TreeBuilder.h"
 #include "treebuilders/grid.h"
 #include "treebuilders/project.h"
+#include "treebuilders/TimeEvolution_CrossCorrelationCalculator.h"
 
 #include "trees/BandWidth.h"
 #include "trees/CornerOperatorTree.h"
 #include "trees/FunctionTreeVector.h"
+#include "trees/OperatorNode.h"
 
 #include "utils/Printer.h"
 #include "utils/Timer.h"
 #include "utils/math_utils.h"
 
-#include "treebuilders/TimeEvolution_CrossCorrelationCalculator.h"
-
-#include "trees/OperatorNode.h"
+#include <cmath>
+#include <map>
+#include <memory>
 
 namespace mrcpp {
 
+/* ========================= TimeEvolutionOperator ========================= */
+
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                                                double prec, double time, int finest_scale,
-                                                bool imaginary, int max_Jpower)
-: ConvolutionOperator<D>(mra, mra.getRootScale(), -10)
-{
+                                                double prec,
+                                                double time,
+                                                int finest_scale,
+                                                bool imaginary,
+                                                int max_Jpower)
+    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
-    // OWN the correlation tables (no dangling pointers)
-    cross_correlation_ = std::make_unique<SchrodingerEvolution_CrossCorrelation>(
+    // Allocate on heap and keep the pointer (header currently uses raw pointer)
+    // NOTE: this will be freed when/if you change the header to use unique_ptr
+    this->cross_correlation = new SchrodingerEvolution_CrossCorrelation(
         30, mra.getOrder(), mra.getScalingBasis().getScalingType()
     );
 
@@ -74,14 +82,15 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
-                                                double prec, double time,
-                                                bool imaginary, int max_Jpower)
-: ConvolutionOperator<D>(mra, mra.getRootScale(), -10)
-{
+                                                double prec,
+                                                double time,
+                                                bool imaginary,
+                                                int max_Jpower)
+    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
-    cross_correlation_ = std::make_unique<SchrodingerEvolution_CrossCorrelation>(
+    this->cross_correlation = new SchrodingerEvolution_CrossCorrelation(
         30, mra.getOrder(), mra.getScalingBasis().getScalingType()
     );
 
@@ -93,30 +102,29 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 
 template <int D>
 void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_Jpower) {
-    const int N = 18;
+    const int N = 18; // adaptive depth cap
 
-    const double o_prec = this->build_prec;
-    const auto   o_mra  = this->getOperatorMRA();
+    double o_prec = this->build_prec;
+    auto   o_mra  = this->getOperatorMRA();
 
     auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
 
     std::map<int, JpowerIntegrals*> J;
     for (int n = 0; n <= N + 1; ++n)
-        J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower);
+        J[n] = new JpowerIntegrals(time * std::pow(4.0, n), n, max_Jpower);
 
-    // pass a NON-dangling pointer
-    TimeEvolution_CrossCorrelationCalculator calculator(J, cross_correlation_.get(), imaginary);
+    TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
+
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true);
-
     TreeBuilder<2> builder;
     builder.build(*o_tree, calculator, adaptor, N);
 
+    // Postprocess
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
     o_tree->removeRoughScaleNoise();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
@@ -127,8 +135,8 @@ void TimeEvolutionOperator<D>::initialize(double time, bool imaginary, int max_J
 
 template <int D>
 void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool imaginary, int max_Jpower) {
-    const double o_prec = this->build_prec;
-    const auto   o_mra  = this->getOperatorMRA();
+    double o_prec = this->build_prec;
+    auto   o_mra  = this->getOperatorMRA();
 
     TreeBuilder<2> builder;
     SplitAdaptor<2> uniform(o_mra.getMaxScale(), true);
@@ -138,18 +146,18 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
 
     std::map<int, JpowerIntegrals*> J;
     for (int n = 0; n <= N + 1; ++n)
-        J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
+        J[n] = new JpowerIntegrals(time * std::pow(4.0, n), n, max_Jpower, threshold);
 
-    TimeEvolution_CrossCorrelationCalculator calculator(J, cross_correlation_.get(), imaginary);
+    TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation, imaginary);
 
     auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
     builder.build(*o_tree, calculator, uniform, N);
 
+    // Postprocess
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
@@ -158,26 +166,24 @@ void TimeEvolutionOperator<D>::initialize(double time, int finest_scale, bool im
     for (int n = 0; n <= N + 1; ++n) delete J[n];
 }
 
-template <int D>
-void TimeEvolutionOperator<D>::initializeSemiUniformly(double time, bool imaginary, int max_Jpower) {
-    MSG_ERROR("Not implemented yet method.");
-}
-
-template class TimeEvolutionOperator<1>;
-template class TimeEvolutionOperator<2>;
-template class TimeEvolutionOperator<3>;
-
-// ----------------- SmoothDerivative -----------------
+/* ========================= Optional: SmoothDerivative =========================
+   NOTE:
+   The derivative calculator (and its MWNode/indices) is written for 2D.
+   If you use it, keep it 2D-only, or generalize the calculator to ND.
+   The implementation below is kept as in your version but with the safe
+   TreeBuilder usage and without forcing invalid template instantiations.
+*/
 
 template <int D>
 SmoothDerivative<D>::SmoothDerivative(const MultiResolutionAnalysis<D> &mra,
-                                      double prec, double cut_off, int max_Jpower)
-: ConvolutionOperator<D>(mra, mra.getRootScale(), -10)
-{
+                                      double prec,
+                                      double cut_off,
+                                      int max_Jpower)
+    : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
-    cross_correlation_ = std::make_unique<SchrodingerEvolution_CrossCorrelation>(
+    this->cross_correlation = new SchrodingerEvolution_CrossCorrelation(
         30, mra.getOrder(), mra.getScalingBasis().getScalingType()
     );
 
@@ -191,8 +197,8 @@ template <int D>
 void SmoothDerivative<D>::initialize(double cut_off, int max_Jpower) {
     const int N = 18;
 
-    const double o_prec = this->build_prec;
-    const auto   o_mra  = this->getOperatorMRA();
+    double o_prec = this->build_prec;
+    auto   o_mra  = this->getOperatorMRA();
 
     auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
 
@@ -200,18 +206,18 @@ void SmoothDerivative<D>::initialize(double cut_off, int max_Jpower) {
     for (int n = 0; n <= N + 1; ++n)
         J[n] = new DerivativePowerIntegrals(cut_off, n, max_Jpower);
 
-    DerivativeCrossCorrelationCalculator calculator(J, cross_correlation_.get());
+    DerivativeCrossCorrelationCalculator calculator(J, this->cross_correlation);
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), true);
 
-    TreeBuilder<2> builder;
+    TreeBuilder<2> builder;                   // calculators are 2D
     builder.build(*o_tree, calculator, adaptor, N);
 
+    // Postprocess
     Timer trans_t;
     o_tree->mwTransform(BottomUp);
     o_tree->removeRoughScaleNoise();
     o_tree->calcSquareNorm();
     o_tree->setupOperNodeCache();
-
     print::time(10, "Time transform", trans_t);
     print::separator(10, ' ');
 
@@ -220,8 +226,12 @@ void SmoothDerivative<D>::initialize(double cut_off, int max_Jpower) {
     for (int n = 0; n <= N + 1; ++n) delete J[n];
 }
 
-template class SmoothDerivative<1>;
+/* Explicit instantiations actually used */
+template class TimeEvolutionOperator<1>;
+template class TimeEvolutionOperator<2>;
+template class TimeEvolutionOperator<3>;
+
+/* If you only use the derivative in 2D, instantiate only <2>. */
 template class SmoothDerivative<2>;
-template class SmoothDerivative<3>;
 
 } // namespace mrcpp

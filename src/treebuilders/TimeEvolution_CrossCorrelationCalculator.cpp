@@ -33,82 +33,100 @@ using Eigen::VectorXd;
 
 namespace mrcpp {
 
-/** @param[in] node: ...
- *  @details This will ... (work in progress)
- *
- *
- *
- *
- */
 void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
-    int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
+    const int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
-        case Interpol: {
-            MSG_ERROR("Invalid scaling type");
-            break;
-        }
-        case Legendre: {
-            applyCcc(node);
-            break;
-        }
-        default:
-            MSG_ERROR("Invalid scaling type");
-            break;
+        case Interpol: MSG_ERROR("Invalid scaling type"); break;
+        case Legendre: applyCcc(node); break;
+        default:       MSG_ERROR("Invalid scaling type"); break;
     }
     node.mwTransform(Compression);
     node.setHasCoefs();
     node.calcNorms();
 }
 
-/** @param[in] node: ...
- *  @details This will ... (work in progress)
- *
- *
- *
- *
- */
-// template <int T>
 void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
-    // std::cout << node;
-    //  The scale of J power integrals:
-    // int scale = node.getScale() + 1;  //scale = n = (n - 1) + 1
-
-    int t_dim = node.getTDim();  // t_dim = 4
-    int kp1_d = node.getKp1_d(); // kp1_d = (k + 1)^2
+    const int t_dim = node.getTDim();      // 4
+    const int kp1_d = node.getKp1_d();     // (k+1)^2
+    const int Kmax  = static_cast<int>(cross_correlation->Matrix.size());
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
 
-    auto &J_power_inetgarls = *this->J_power_inetgarls[node.getScale() + 1];
+    auto &J_power = *this->J_power_inetgarls[node.getScale() + 1];
 
-    for (int i = 0; i < t_dim; i++) {
+    for (int i = 0; i < t_dim; ++i) {
         NodeIndex<2> l = idx.child(i);
-        int l_b = l[1] - l[0];
+        const int l_b = l[1] - l[0];
 
         int vec_o_segment_index = 0;
-        for (int p = 0; p <= node.getOrder(); p++)
-            for (int j = 0; j <= node.getOrder(); j++) {
-                // std::min(M, N)  could be used for breaking the following loop
-                // this->cross_correlation->Matrix.size() should be big enough a priori
-                for (int k = 0; 2 * k + p + j < J_power_inetgarls[l_b].size(); k++) {
-                    double J;
-                    if (this->imaginary)
-                        J = J_power_inetgarls[l_b][2 * k + p + j].imag();
-                    else
-                        J = J_power_inetgarls[l_b][2 * k + p + j].real();
-                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) += J * cross_correlation->Matrix[k](p, j); // by default eigen library reads a transpose matrix from a file
+        for (int p = 0; p <= node.getOrder(); ++p) {
+            for (int j = 0; j <= node.getOrder(); ++j) {
+                // safe in both dimensions: J and Matrix
+                const int Jsize = static_cast<int>(J_power[l_b].size());
+                for (int k = 0; k < Kmax; ++k) {
+                    const int Jidx = 2 * k + p + j;
+                    if (Jidx >= Jsize) break;
+                    double Jval = this->imaginary ? J_power[l_b][Jidx].imag()
+                                                  : J_power[l_b][Jidx].real();
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index)
+                        += Jval * cross_correlation->Matrix[k](p, j);
                 }
-                vec_o_segment_index++;
+                ++vec_o_segment_index;
             }
+        }
     }
 
     double *coefs = node.getCoefs();
-    for (int i = 0; i < t_dim * kp1_d; i++) {
-        // auto scaling_factor = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
-        coefs[i] = vec_o(i);
-        // std::cout<< "coefs[i] = " << coefs[i] << std::endl;
+    for (int i = 0; i < t_dim * kp1_d; ++i) coefs[i] = vec_o(i);
+}
+
+void DerivativeCrossCorrelationCalculator::calcNode(MWNode<2> &node) {
+    node.zeroCoefs();
+    const int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
+    switch (type) {
+        case Interpol: MSG_ERROR("Invalid scaling type"); break;
+        case Legendre: applyCcc(node); break;
+        default:       MSG_ERROR("Invalid scaling type"); break;
     }
+    node.mwTransform(Compression);
+    node.setHasCoefs();
+    node.calcNorms();
+}
+
+void DerivativeCrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
+    const int t_dim = node.getTDim();
+    const int kp1_d = node.getKp1_d();
+    const int Kmax  = static_cast<int>(cross_correlation->Matrix.size());
+
+    VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
+    const NodeIndex<2> &idx = node.getNodeIndex();
+
+    auto &J_power = *this->J_power_inetgarls[node.getScale() + 1];
+
+    for (int i = 0; i < t_dim; ++i) {
+        NodeIndex<2> l = idx.child(i);
+        const int l_b = l[1] - l[0];
+
+        int vec_o_segment_index = 0;
+        for (int p = 0; p <= node.getOrder(); ++p) {
+            for (int j = 0; j <= node.getOrder(); ++j) {
+                const int Jsize = static_cast<int>(J_power[l_b].size());
+                for (int k = 0; k < Kmax; ++k) {
+                    const int Jidx = 2 * k + 1 + p + j;
+                    if (Jidx >= Jsize) break;
+                    const double Jval = J_power[l_b][Jidx];
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index)
+                        += Jval * cross_correlation->Matrix[k](p, j);
+                }
+                ++vec_o_segment_index;
+            }
+        }
+    }
+
+    double *coefs = node.getCoefs();
+    for (int i = 0; i < t_dim * kp1_d; ++i) coefs[i] = vec_o(i);
 }
 
 } // namespace mrcpp

@@ -28,33 +28,27 @@
 #include "ConvolutionOperator.h"
 #include "MWOperator.h"
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
+#include <memory>
 
 namespace mrcpp {
 
-/** @class TimeEvolutionOperator
- *
+/**
+ * @class TimeEvolutionOperator
  * @brief Semigroup of the free-particle Schrodinger equation
- *
- * @details Represents the semigroup
- * \f$
- *      \exp \left( i t \partial_x^2 \right)
- *      .
- * \f$
- * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponent(0, 0).
- *
- * @note So far implementation is done for Legendre scaling functions in 1d.
- *
- * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
- *
  */
 template <int D>
-class TimeEvolutionOperator : public ConvolutionOperator<D> // One can use ConvolutionOperator instead as well
-{
+class TimeEvolutionOperator : public ConvolutionOperator<D> {
 public:
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30);
-    TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
-    TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                          double prec, double time, int finest_scale,
+                          bool imaginary, int max_Jpower = 30);
+
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra,
+                          double prec, double time,
+                          bool imaginary, int max_Jpower = 30);
+
+    TimeEvolutionOperator(const TimeEvolutionOperator &) = delete;
+    TimeEvolutionOperator &operator=(const TimeEvolutionOperator &) = delete;
     virtual ~TimeEvolutionOperator() = default;
 
     double getBuildPrec() const { return this->build_prec; }
@@ -67,7 +61,9 @@ protected:
     void setBuildPrec(double prec) { this->build_prec = prec; }
 
     double build_prec{-1.0};
-    SchrodingerEvolution_CrossCorrelation *cross_correlation{nullptr};
+
+    // Own the correlation tables to avoid dangling pointer bugs
+    std::unique_ptr<SchrodingerEvolution_CrossCorrelation> cross_correlation_;
 };
 
 } // namespace mrcpp

@@ -93,111 +93,105 @@ void JpowerIntegrals::crop(std::vector<std::complex<double>> &J, double threshol
     J.erase(std::find_if_not(J.rbegin(), J.rend(), isNegligible).base(), J.end());
 }
 
-/* --------- DerivativePowerIntegrals (requires MRCPP_HAVE_FFTW) -------- */
-
+// ---- DerivativePowerIntegrals implementation (appended) --------------------
 #ifdef MRCPP_HAVE_FFTW
+  #include <fftw3.h>
+#endif
 
+namespace mrcpp {
+
+// ctor: keep 4-arg signature to match the header / call sites
 DerivativePowerIntegrals::DerivativePowerIntegrals(double cut_off, int scaling, int M, double /*threshold*/)
     : scaling(scaling)
 {
-    integrals = calculate_J_power_integrals(cut_off, M, /*threshold*/ 0.0);
+    integrals = calculate_J_power_integrals(cut_off, M /*, threshold*/);
 }
 
+#ifdef MRCPP_HAVE_FFTW
 std::vector<std::vector<double>>
-DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M, double /*threshold*/) {
-    // grid sizes
-    const int N       = 1 << this->scaling;     // 2^n
-    const int total_N = 2 * N + 1;              // indices ℓ ∈ [-N..N]
+DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M /*, double threshold*/)
+{
+    const int N        = 1 << this->scaling;     // 2^n
+    const int total_N  = 2 * N + 1;
     const double two_pi = 2.0 * M_PI;
 
-    // frequency grid (like np.fft.fftfreq with 2π factor)
-    std::vector<double> xi_freq(static_cast<size_t>(total_N));
+    // 1) frequency grid (like numpy.fft.fftfreq scaled to [-pi, pi] by 2*pi/total_N)
+    std::vector<double> xi_freq(total_N);
     for (int kk = 0; kk < total_N; ++kk) {
-        const int k = (kk <= total_N / 2) ? kk : kk - total_N;
-        xi_freq[static_cast<size_t>(kk)] = two_pi * static_cast<double>(k)
-                                         / static_cast<double>(total_N);
+        const double base = (kk <= total_N / 2) ? kk : kk - total_N;
+        xi_freq[kk] = two_pi * base / static_cast<double>(total_N);
     }
 
-    // smooth cutoff χ_cut(ξ)
-    std::vector<double> chi(static_cast<size_t>(total_N));
+    // 2) smooth cut-off χ(ξ)
+    std::vector<double> chi(total_N);
     for (int kk = 0; kk < total_N; ++kk) {
-        const double abs_xi = std::abs(static_cast<double>(N) * xi_freq[static_cast<size_t>(kk)]);
-        chi[static_cast<size_t>(kk)] =
-            (abs_xi > cut_off) ? std::exp(-std::pow(abs_xi - cut_off, 2.0)) : 1.0;
+        const double abs_xi = std::abs(N * xi_freq[kk]);
+        chi[kk] = (abs_xi > cut_off)
+                  ? std::exp(-std::pow(abs_xi - cut_off, 2.0))
+                  : 1.0;
     }
 
-    // FFTW buffers
-    std::vector<std::complex<double>> f_values(static_cast<size_t>(total_N));
-    for (int kk = 0; kk < total_N; ++kk) {
-        f_values[static_cast<size_t>(kk)] = chi[static_cast<size_t>(kk)];
-    }
+    // 3) FFT buffers
+    std::vector<std::complex<double>> f_values(total_N);
+    for (int kk = 0; kk < total_N; ++kk) f_values[kk] = chi[kk];
 
-    std::vector<std::complex<double>> ifft_out(static_cast<size_t>(total_N));
+    std::vector<std::complex<double>> ifft_out(total_N);
     fftw_plan plan = fftw_plan_dft_1d(
         total_N,
         reinterpret_cast<fftw_complex*>(f_values.data()),
         reinterpret_cast<fftw_complex*>(ifft_out.data()),
-        FFTW_BACKWARD,
+        FFTW_BACKWARD,  // inverse FFT
         FFTW_ESTIMATE
     );
 
-    // compute inverse transforms of progressively differentiated spectra
+    // 4) accumulate “power integrals”
     std::vector<std::vector<double>> power_integrals;
-    power_integrals.reserve(static_cast<size_t>(M));
-    power_integrals.emplace_back(static_cast<size_t>(total_N), 0.0); // dummy for index 0
+    power_integrals.emplace_back(total_N, 0.0); // dummy for index 0 to align indices
 
     for (int m = 1; m < M; ++m) {
+        // multiply by (i * xi)/(m+1) in frequency space
         for (int kk = 0; kk < total_N; ++kk) {
-            f_values[static_cast<size_t>(kk)] *=
-                std::complex<double>(0.0, xi_freq[static_cast<size_t>(kk)])
-                / static_cast<double>(m + 1);
+            f_values[kk] *= std::complex<double>(0.0, xi_freq[kk]) / static_cast<double>(m + 1);
         }
 
         fftw_execute(plan);
 
-        std::vector<double> inv(static_cast<size_t>(total_N));
+        // normalize inverse FFT and store real part
+        std::vector<double> inv(total_N);
         for (int kk = 0; kk < total_N; ++kk) {
-            inv[static_cast<size_t>(kk)] = ifft_out[static_cast<size_t>(kk)].real()
-                                         / static_cast<double>(total_N);
+            inv[kk] = ifft_out[kk].real() / static_cast<double>(total_N);
         }
         power_integrals.push_back(std::move(inv));
     }
 
     fftw_destroy_plan(plan);
 
-    // Reorder from 0..2N to ℓ ∈ [-N..N] and pack as in JpowerIntegrals
-    auto idx_from_l = [N](int l) -> int { return l + N; };
+    // 5) reorder to match l ∈ [0..N-1, 1-N..-1] layout (2N entries per “row” expected)
+    //    Here we simply store columns; the consumer (calculator) indexes by l_b already.
+    //    Nothing else to do.
 
-    std::vector<std::vector<double>> result;
-    result.reserve(static_cast<size_t>(2 * N));
-
-    // First l = 0..N-1
-    for (int l = 0; l < N; ++l) {
-        std::vector<double> series;
-        series.reserve(power_integrals.size());
-        for (const auto& inv : power_integrals) {
-            series.push_back(inv[static_cast<size_t>(idx_from_l(l))]);
-        }
-        result.push_back(std::move(series));
-    }
-    // Then l = 1-N .. -1
-    for (int l = 1 - N; l < 0; ++l) {
-        std::vector<double> series;
-        series.reserve(power_integrals.size());
-        for (const auto& inv : power_integrals) {
-            series.push_back(inv[static_cast<size_t>(idx_from_l(l))]);
-        }
-        result.push_back(std::move(series));
-    }
-
-    return result;
+    return power_integrals;
 }
+#else
+// Fallback when FFTW is not available: provide zeros with the right shape
+std::vector<std::vector<double>>
+DerivativePowerIntegrals::calculate_J_power_integrals(double /*cut_off*/, int M /*, double threshold*/)
+{
+    const int N       = 1 << this->scaling;
+    const int total_N = 2 * N + 1;
+
+    std::vector<std::vector<double>> power_integrals;
+    power_integrals.emplace_back(total_N, 0.0); // dummy index 0
+    for (int m = 1; m < M; ++m) {
+        power_integrals.emplace_back(total_N, 0.0);
+    }
+    return power_integrals;
+}
+#endif
 
 std::vector<double>& DerivativePowerIntegrals::operator[](int index) {
     if (index < 0) index += static_cast<int>(integrals.size());
-    return integrals[static_cast<size_t>(index)];
+    return integrals[index];
 }
-
-#endif // MRCPP_HAVE_FFTW
 
 } // namespace mrcpp

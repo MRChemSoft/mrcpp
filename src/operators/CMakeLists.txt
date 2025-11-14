@@ -15,6 +15,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonKernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolutionOperator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SmoothDerivative.cpp
   )
 
 get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
@@ -40,6 +41,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/PoissonKernel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/PoissonOperator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/TimeEvolutionOperator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/SmoothDerivative.h
   )
 
 # Sets install directory for all the headers in the list

@@ -236,48 +236,6 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
     for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
-
-template <int D> void SmoothDerivative<D>::initialize(double cut_off, int max_Jpower) {
-    // cap depth to avoid overshooting the MRA (a common cause of out-of-bounds)
-    constexpr int N_cap = 18;
-
-    const double o_prec = this->build_prec;
-    const auto   o_mra  = this->getOperatorMRA();
-    const int    N      = std::min(N_cap, o_mra.getMaxScale());
-
-    // Use CornerOperatorTree here (it supports the post-processing calls below)
-    auto o_tree = std::make_unique<CornerOperatorTree>(o_mra, o_prec);
-
-    // Build the table of derivative power integrals at scales 0..N+1
-    std::map<int, DerivativePowerIntegrals*> J;
-    for (int n = 0; n <= N + 1; ++n) {
-        J[n] = new DerivativePowerIntegrals(cut_off, n, max_Jpower);
-    }
-
-    // Calculator & adaptor
-    DerivativeCrossCorrelationCalculator calculator(J, this->cross_correlation);
-    OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale(), /*split_wrt_prec=*/true);
-
-    // Standard 2D builder (same as TimeEvolutionOperator)
-    TreeBuilder<2> builder;
-    builder.build(*o_tree, calculator, adaptor, N);
-
-    // Postprocess to make the operator functional (same sequence you use elsewhere)
-    Timer trans_t;
-    o_tree->mwTransform(BottomUp);
-    o_tree->removeRoughScaleNoise();
-    o_tree->calcSquareNorm();
-    o_tree->setupOperNodeCache();
-    print::time(10, "Time transform", trans_t);
-    print::separator(10, ' ');
-
-    // Store the tree
-    this->raw_exp.push_back(std::move(o_tree));
-
-    // Cleanup
-    for (int n = 0; n <= N + 1; ++n) delete J[n];
-}
-
 template class TimeEvolutionOperator<1>;
 template class TimeEvolutionOperator<2>;
 template class TimeEvolutionOperator<3>;

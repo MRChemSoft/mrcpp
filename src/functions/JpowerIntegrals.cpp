@@ -93,14 +93,8 @@ void JpowerIntegrals::crop(std::vector<std::complex<double>> &J, double threshol
     J.erase(std::find_if_not(J.rbegin(), J.rend(), isNegligible).base(), J.end());
 }
 
-// ---- DerivativePowerIntegrals implementation (appended) --------------------
-#ifdef MRCPP_HAVE_FFTW
-  #include <fftw3.h>
-#endif
+// ---- DerivativePowerIntegrals implementation --------------------------------
 
-namespace mrcpp {
-
-// ctor: keep 4-arg signature to match the header / call sites
 DerivativePowerIntegrals::DerivativePowerIntegrals(double cut_off, int scaling, int M, double /*threshold*/)
     : scaling(scaling)
 {
@@ -115,14 +109,14 @@ DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M /*, 
     const int total_N  = 2 * N + 1;
     const double two_pi = 2.0 * M_PI;
 
-    // 1) frequency grid (like numpy.fft.fftfreq scaled to [-pi, pi] by 2*pi/total_N)
+    // Frequency grid (like numpy.fft.fftfreq, scaled by 2π/total_N)
     std::vector<double> xi_freq(total_N);
     for (int kk = 0; kk < total_N; ++kk) {
         const double base = (kk <= total_N / 2) ? kk : kk - total_N;
         xi_freq[kk] = two_pi * base / static_cast<double>(total_N);
     }
 
-    // 2) smooth cut-off χ(ξ)
+    // Smooth cutoff χ(ξ)
     std::vector<double> chi(total_N);
     for (int kk = 0; kk < total_N; ++kk) {
         const double abs_xi = std::abs(N * xi_freq[kk]);
@@ -131,7 +125,7 @@ DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M /*, 
                   : 1.0;
     }
 
-    // 3) FFT buffers
+    // FFT buffers
     std::vector<std::complex<double>> f_values(total_N);
     for (int kk = 0; kk < total_N; ++kk) f_values[kk] = chi[kk];
 
@@ -144,12 +138,12 @@ DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M /*, 
         FFTW_ESTIMATE
     );
 
-    // 4) accumulate “power integrals”
+    // Accumulate “power integrals”
     std::vector<std::vector<double>> power_integrals;
-    power_integrals.emplace_back(total_N, 0.0); // dummy for index 0 to align indices
+    power_integrals.emplace_back(total_N, 0.0); // dummy index 0 to align with 1..M-1
 
     for (int m = 1; m < M; ++m) {
-        // multiply by (i * xi)/(m+1) in frequency space
+        // multiply by (i * ξ)/(m+1) in frequency space
         for (int kk = 0; kk < total_N; ++kk) {
             f_values[kk] *= std::complex<double>(0.0, xi_freq[kk]) / static_cast<double>(m + 1);
         }
@@ -165,15 +159,10 @@ DerivativePowerIntegrals::calculate_J_power_integrals(double cut_off, int M /*, 
     }
 
     fftw_destroy_plan(plan);
-
-    // 5) reorder to match l ∈ [0..N-1, 1-N..-1] layout (2N entries per “row” expected)
-    //    Here we simply store columns; the consumer (calculator) indexes by l_b already.
-    //    Nothing else to do.
-
     return power_integrals;
 }
 #else
-// Fallback when FFTW is not available: provide zeros with the right shape
+// Fallback when FFTW is not available: correct shape, zeros
 std::vector<std::vector<double>>
 DerivativePowerIntegrals::calculate_J_power_integrals(double /*cut_off*/, int M /*, double threshold*/)
 {
@@ -182,9 +171,9 @@ DerivativePowerIntegrals::calculate_J_power_integrals(double /*cut_off*/, int M 
 
     std::vector<std::vector<double>> power_integrals;
     power_integrals.emplace_back(total_N, 0.0); // dummy index 0
-    for (int m = 1; m < M; ++m) {
+    for (int m = 1; m < M; ++m)
         power_integrals.emplace_back(total_N, 0.0);
-    }
+
     return power_integrals;
 }
 #endif
@@ -193,5 +182,6 @@ std::vector<double>& DerivativePowerIntegrals::operator[](int index) {
     if (index < 0) index += static_cast<int>(integrals.size());
     return integrals[index];
 }
+
 
 } // namespace mrcpp

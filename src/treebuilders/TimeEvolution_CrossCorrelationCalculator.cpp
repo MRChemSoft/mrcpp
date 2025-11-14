@@ -151,54 +151,64 @@ void DerivativeCrossCorrelationCalculator::calcNode(MWNode<2> &node) {
 }
 
 void DerivativeCrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
-    const int t_dim  = node.getTDim();    // 4
-    const int kp1_d  = node.getKp1_d();   // (k+1)^2
+    const int t_dim  = node.getTDim();   // 4
+    const int kp1_d  = node.getKp1_d();  // (k+1)^2
+    const int order  = node.getOrder();
     const int scaleK = node.getScale() + 1;
 
-    // --- defensive guards (outside of any OpenMP structured block) ---
+    // --- defensive guards (no OpenMP structured block here) ---
     auto it = this->J_power_inetgarls.find(scaleK);
     if (it == this->J_power_inetgarls.end() || it->second == nullptr) {
-        // nothing to add; leave coefficients as zero and return
+        // nothing to add; coefficients remain zero
         return;
     }
-    const DerivativePowerIntegrals &Jtab = *(it->second);
+    // Non-const: operator[] on DerivativePowerIntegrals is non-const
+    DerivativePowerIntegrals &Jtab = *(it->second);
+
     if (this->cross_correlation == nullptr || this->cross_correlation->Matrix.empty()) {
         return;
     }
+    const int Kmax_tables = static_cast<int>(this->cross_correlation->Matrix.size());
 
     Eigen::VectorXd vec_o = Eigen::VectorXd::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
 
     for (int i = 0; i < t_dim; ++i) {
-        NodeIndex<2> l = idx.child(i);
+        const NodeIndex<2> l = idx.child(i);
         const int l_b = l[1] - l[0];  // may be negative; operator[] handles that
 
-        int vec_o_segment_index = 0;
-        for (int p = 0; p <= node.getOrder(); ++p) {
-            for (int j = 0; j <= node.getOrder(); ++j) {
+        int pos = i * kp1_d;          // starting index in vec_o for this child
+        for (int p = 0; p <= order; ++p) {
+            for (int j = 0; j <= order; ++j, ++pos) {
 
-                // Sum over k: J_{2k+1+p+j} * C_{jp}^{2k}
-                // Stop when J series runs out OR when cross-correlation tables end.
-                const int Jsize = static_cast<int>(Jtab[l_b].size());
-                const int Kmax  = static_cast<int>(this->cross_correlation->Matrix.size());
+                // J row for this spatial offset
+                const std::vector<double> &Jrow = Jtab[l_b];
+                const int Jsize = static_cast<int>(Jrow.size());
+                // Sum over k with odd index in J: jm = 2k + 1 + p + j
+                // Stop when J series runs out or correlation tables end.
+                int maxK_from_J = (Jsize - 1 - (1 + p + j)) / 2;  // floor
+                if (maxK_from_J < 0) continue;
 
-                for (int k = 0; ; ++k) {
+                int maxK = maxK_from_J;
+                if (maxK >= Kmax_tables) maxK = Kmax_tables - 1;
+                if (maxK < 0) continue;
+
+                for (int k = 0; k <= maxK; ++k) {
                     const int jm = 2 * k + 1 + p + j;
-                    if (jm >= Jsize || k >= Kmax) break;
-
-                    double J = Jtab[l_b][jm];
-                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index)
-                        += J * this->cross_correlation->Matrix[k](p, j);
+                    // optional shape guard if Matrix[k] may be smaller than (order+1)x(order+1)
+                    if (p >= this->cross_correlation->Matrix[k].rows() ||
+                        j >= this->cross_correlation->Matrix[k].cols()) {
+                        continue;
+                    }
+                    vec_o[pos] += Jrow[jm] * this->cross_correlation->Matrix[k](p, j);
                 }
-
-                ++vec_o_segment_index;
             }
         }
     }
 
     // write back to node coefficients
     double *coefs = node.getCoefs();
-    for (int n = 0; n < t_dim * kp1_d; ++n) coefs[n] = vec_o(n);
+    for (int n = 0; n < t_dim * kp1_d; ++n) coefs[n] = vec_o[n];
 }
 
 

@@ -41,6 +41,49 @@ target_link_libraries(mrcpp
     $<BUILD_INTERFACE:$<$<TARGET_EXISTS:MPI::MPI_CXX>:MPI::MPI_CXX>>
   )
 
+# --- Optional FFTW3 backend (src/CMakeLists.txt) -----------------------------
+option(MRCPP_USE_FFTW "Link MRCPP to FFTW3 (optional)" OFF)
+
+if(MRCPP_USE_FFTW)
+  # Try official CMake package first
+  find_package(FFTW3 QUIET COMPONENTS fftw3 fftw3_threads)
+
+  # Fallback: pkg-config (common on Homebrew/Linux)
+  if(NOT TARGET FFTW3::fftw3)
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(FFTW3_PC QUIET IMPORTED_TARGET GLOBAL fftw3)
+      pkg_check_modules(FFTW3_THR_PC QUIET IMPORTED_TARGET GLOBAL fftw3_threads)
+    endif()
+  endif()
+
+  # Link to the mrcpp target
+  if(TARGET FFTW3::fftw3)
+    target_link_libraries(mrcpp PUBLIC FFTW3::fftw3)
+    if(TARGET FFTW3::fftw3_threads)
+      find_package(OpenMP QUIET)
+      if(OpenMP_CXX_FOUND)
+        target_link_libraries(mrcpp PUBLIC FFTW3::fftw3_threads OpenMP::OpenMP_CXX)
+        target_compile_definitions(mrcpp PUBLIC MRCPP_FFTW_THREADS)
+      endif()
+    endif()
+  elseif(FFTW3_PC_FOUND)
+    target_link_libraries(mrcpp PUBLIC PkgConfig::FFTW3_PC)
+    if(FFTW3_THR_PC_FOUND)
+      find_package(OpenMP QUIET)
+      if(OpenMP_CXX_FOUND)
+        target_link_libraries(mrcpp PUBLIC PkgConfig::FFTW3_THR_PC OpenMP::OpenMP_CXX)
+        target_compile_definitions(mrcpp PUBLIC MRCPP_FFTW_THREADS)
+      endif()
+    endif()
+  else()
+    message(FATAL_ERROR "MRCPP_USE_FFTW=ON but FFTW3 was not found (CMake and pkg-config).")
+  endif()
+
+  # Expose a define so code can #ifdef it
+  target_compile_definitions(mrcpp PUBLIC MRCPP_HAVE_FFTW)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(functions)
 add_subdirectory(operators)

@@ -28,26 +28,25 @@
 #include "trees/MWNode.h"
 #include "utils/Printer.h"
 
-#include <algorithm>
-#include <cmath>
-
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 namespace mrcpp {
 
-/* ----------------------------- Time evolution ----------------------------- */
+/*=====================  TimeEvolution_CrossCorrelationCalculator  =====================*/
 
 void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
-        case Interpol:
+        case Interpol: {
             MSG_ERROR("Invalid scaling type");
             break;
-        case Legendre:
+        }
+        case Legendre: {
             applyCcc(node);
             break;
+        }
         default:
             MSG_ERROR("Invalid scaling type");
             break;
@@ -58,65 +57,90 @@ void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
 }
 
 void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
-    const int t_dim  = node.getTDim();   // 4
-    const int kp1_d  = node.getKp1_d();  // (k+1)^2
-    const int kmax   = node.getOrder();
+    // Dimensions
+    const int t_dim = node.getTDim();        // 4
+    const int kp1_d = node.getKp1_d();       // (k+1)^2
+    const int order = node.getOrder();
+
+    // Safety checks to avoid segfaults
+    if (!this->cross_correlation) {
+        MSG_ERROR("cross_correlation pointer is null");
+        return;
+    }
+    const int C_blocks = static_cast<int>(this->cross_correlation->Matrix.size());
+    if (C_blocks <= 0) {
+        MSG_ERROR("cross_correlation->Matrix is empty");
+        return;
+    }
+
+    // Fetch the integrals for this scale (+1 as per your design)
+    const int scale_key = node.getScale() + 1;
+    auto itS = this->J_power_inetgarls.find(scale_key);
+    if (itS == this->J_power_inetgarls.end() || !(itS->second)) {
+        MSG_ERROR("Missing JpowerIntegrals for scale key " << scale_key);
+        return;
+    }
+    auto &J_power_integrals_at_scale = *(itS->second);
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
-
-    // J at level (scale + 1)
-    auto &Jlvl = *this->J_power_inetgarls[node.getScale() + 1];
-    const size_t span = Jlvl.size(); // number of l-shifts available (2N-1)
-
     const NodeIndex<2> &idx = node.getNodeIndex();
 
-    for (int i = 0; i < t_dim; ++i) {
+    for (int i = 0; i < t_dim; i++) {
         NodeIndex<2> l = idx.child(i);
-        int l_b = l[1] - l[0];
+        int l_b = l[1] - l[0];  // index into the per-shift table
 
-        // wrap to [0, span)
-        size_t l_idx = (l_b >= 0) ? static_cast<size_t>(l_b)
-                                  : static_cast<size_t>(span + l_b);
-        if (l_idx >= span) continue;
+        // Get the vector of complex J for this shift; operator[] handles negatives
+        auto &J_vec = J_power_integrals_at_scale[l_b];
+        const int Jsz = static_cast<int>(J_vec.size());
 
-        const auto &Jvec = Jlvl[l_idx];          // std::vector<std::complex<double>>
-        const int Jlen   = static_cast<int>(Jvec.size());
-        const int K_avail = static_cast<int>(this->cross_correlation->Matrix.size()) - 1;
-
-        int pos = 0;
-        for (int p = 0; p <= kmax; ++p) {
-            for (int j = 0; j <= kmax; ++j, ++pos) {
-                // m = 2k + p + j  < Jlen  => k ≤ (Jlen-1 - p - j)/2
-                int K_by_J = (Jlen - 1 - p - j) / 2;
-                int Kuse   = std::min(K_by_J, K_avail);
-                if (Kuse < 0) continue;
-
-                for (int k = 0; k <= Kuse; ++k) {
-                    const int m = 2 * k + p + j;
-                    double J = this->imaginary ? Jvec[m].imag() : Jvec[m].real();
-                    vec_o.segment(i * kp1_d, kp1_d)(pos) +=
-                        J * this->cross_correlation->Matrix[k](p, j);
+        int vec_o_segment_index = 0;
+        for (int p = 0; p <= order; p++) {
+            for (int j = 0; j <= order; j++) {
+                // Bound on k from the J table: 2*k + p + j < Jsz
+                int maxK_from_J = (Jsz - 1 - (p + j)) / 2; // floor
+                if (maxK_from_J < 0) {
+                    ++vec_o_segment_index;
+                    continue; // nothing to add for this (p,j)
                 }
+
+                // Also bound by number of correlation blocks available
+                int maxK = std::min(maxK_from_J, C_blocks - 1);
+
+                // Accumulate
+                for (int k = 0; k <= maxK; ++k) {
+                    const int Jindex = 2 * k + p + j;
+                    double Jval = this->imaginary ? J_vec[Jindex].imag() : J_vec[Jindex].real();
+
+                    // Guard the matrix block shape (should be KxK); Eigen will assert if out-of-bounds
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) +=
+                        Jval * cross_correlation->Matrix[k](p, j);
+                }
+                ++vec_o_segment_index;
             }
         }
     }
 
+    // Write coefficients back
     double *coefs = node.getCoefs();
-    for (int n = 0; n < t_dim * kp1_d; ++n) coefs[n] = vec_o(n);
+    for (int i = 0; i < t_dim * kp1_d; i++) {
+        coefs[i] = vec_o(i);
+    }
 }
 
-/* ------------------------------ Derivative -------------------------------- */
+/*=====================  DerivativeCrossCorrelationCalculator  =====================*/
 
 void DerivativeCrossCorrelationCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
-        case Interpol:
+        case Interpol: {
             MSG_ERROR("Invalid scaling type");
             break;
-        case Legendre:
+        }
+        case Legendre: {
             applyCcc(node);
             break;
+        }
         default:
             MSG_ERROR("Invalid scaling type");
             break;
@@ -127,49 +151,75 @@ void DerivativeCrossCorrelationCalculator::calcNode(MWNode<2> &node) {
 }
 
 void DerivativeCrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
-    const int t_dim  = node.getTDim();   // 4
-    const int kp1_d  = node.getKp1_d();  // (k+1)^2
-    const int kmax   = node.getOrder();
+#pragma omp critical
+{
+    // Dimensions
+    const int t_dim = node.getTDim();        // 4
+    const int kp1_d = node.getKp1_d();       // (k+1)^2
+    const int order = node.getOrder();
+
+    // Safety checks to avoid segfaults
+    if (!this->cross_correlation) {
+        MSG_ERROR("cross_correlation pointer is null");
+        return;
+    }
+    const int C_blocks = static_cast<int>(this->cross_correlation->Matrix.size());
+    if (C_blocks <= 0) {
+        MSG_ERROR("cross_correlation->Matrix is empty");
+        return;
+    }
+
+    // Fetch the integrals for this scale (+1 as per your design)
+    const int scale_key = node.getScale() + 1;
+    auto itS = this->J_power_inetgarls.find(scale_key);
+    if (itS == this->J_power_inetgarls.end() || !(itS->second)) {
+        MSG_ERROR("Missing DerivativePowerIntegrals for scale key " << scale_key);
+        return;
+    }
+    auto &J_power_integrals_at_scale = *(itS->second);
 
     VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
-
-    auto &Jlvl = *this->J_power_inetgarls[node.getScale() + 1]; // DerivativePowerIntegrals
-    const size_t span = Jlvl.size();
-
     const NodeIndex<2> &idx = node.getNodeIndex();
 
-    for (int i = 0; i < t_dim; ++i) {
+    for (int i = 0; i < t_dim; i++) {
         NodeIndex<2> l = idx.child(i);
-        int l_b = l[1] - l[0];
+        int l_b = l[1] - l[0];  // shift index
 
-        size_t l_idx = (l_b >= 0) ? static_cast<size_t>(l_b)
-                                  : static_cast<size_t>(span + l_b);
-        if (l_idx >= span) continue;
+        // For derivative case we have a vector<double> per shift
+        auto &J_vec = J_power_integrals_at_scale[l_b];
+        const int Jsz = static_cast<int>(J_vec.size());
 
-        const auto &Jvec = Jlvl[l_idx];     // std::vector<double>, indexed by m
-        const int Jlen   = static_cast<int>(Jvec.size());
-        const int K_avail = static_cast<int>(this->cross_correlation->Matrix.size()) - 1;
-
-        int pos = 0;
-        for (int p = 0; p <= kmax; ++p) {
-            for (int j = 0; j <= kmax; ++j, ++pos) {
-                // m = 2k + 1 + p + j < Jlen => k ≤ (Jlen - 2 - p - j) / 2
-                int K_by_J = (Jlen - 2 - p - j) / 2;
-                int Kuse   = std::min(K_by_J, K_avail);
-                if (Kuse < 0) continue;
-
-                for (int k = 0; k <= Kuse; ++k) {
-                    const int m = 2 * k + 1 + p + j; // odd index for derivative
-                    double J = Jvec[m];
-                    vec_o.segment(i * kp1_d, kp1_d)(pos) +=
-                        J * this->cross_correlation->Matrix[k](p, j);
+        int vec_o_segment_index = 0;
+        for (int p = 0; p <= order; p++) {
+            for (int j = 0; j <= order; j++) {
+                // Bound from the J table: 2*k + 1 + p + j < Jsz
+                int maxK_from_J = (Jsz - 2 - (p + j)) / 2; // floor
+                if (maxK_from_J < 0) {
+                    ++vec_o_segment_index;
+                    continue; // nothing to add for this (p,j)
                 }
+
+                // Also bound by number of correlation blocks available
+                int maxK = std::min(maxK_from_J, C_blocks - 1);
+
+                for (int k = 0; k <= maxK; ++k) {
+                    const int Jindex = 2 * k + 1 + p + j;
+                    const double Jval = J_vec[Jindex];
+
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) +=
+                        Jval * cross_correlation->Matrix[k](p, j);
+                }
+                ++vec_o_segment_index;
             }
         }
     }
 
+    // Write coefficients back
     double *coefs = node.getCoefs();
-    for (int n = 0; n < t_dim * kp1_d; ++n) coefs[n] = vec_o(n);
+    for (int i = 0; i < t_dim * kp1_d; i++) {
+        coefs[i] = vec_o(i);
+    }
+} // omp critical
 }
 
 } // namespace mrcpp

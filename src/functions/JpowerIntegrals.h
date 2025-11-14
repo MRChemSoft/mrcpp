@@ -34,116 +34,45 @@ namespace mrcpp {
 
 /** @class JpowerIntegrals
  *
- * @brief A class needed for construction Schrodinger time evolution operator
- *
- * @details A two dimensional array consisting of integrals \f$ J_m \f$ as follows.
- * Our main operator has the following expansion
- * \f[
- *   \left[ \sigma_l^{\mathfrak n} \right]_{pj}
- *   (a)
- *   =
- *   \sum_{k = 0}^{\infty}
- *   C_{jp}^{2k}
- *   \widetilde J_{2k + j + p}(l, a)
- *   ,
- * \f]
- * where \f$ a = t \mathfrak N^2 = t 4^{\mathfrak n} \f$
- * and
- * \f[
- *     \widetilde J_m
- *     =
- *     \frac
- *     {
- *         I_m
- *         e^{ i \frac {\pi}4 (m - 1) }
- *     }
- *     {
- *         2 \pi ( m + 2 )!
- *     }
- *     =
- *     \frac
- *     {
- *         e^{ i \frac {\pi}4 (m - 1) }
- *     }
- *     {
- *         2 \pi ( m + 2 )!
- *     }
- *     \int_{\mathbb R}
- *     \exp
- *     \left(
- *         \rho l \exp \left( i \frac \pi 4 \right) - a \rho^2
- *     \right)
- *     \rho^m
- *     d \rho
- * \f]
- * satisfying the following relation
- * \f[
- *     \widetilde J_{m+1}
- *     =
- *     \frac
- *     {
- *         il
- *     }
- *     {
- *         2a (m + 3)
- *     }
- *     \widetilde J_m
- *     +
- *     \frac {im}{2a(m + 2)(m + 3)}
- *     \widetilde J_{m-1}
- *     =
- *     \frac
- *     {
- *         i
- *     }
- *     {
- *         2a (m + 3)
- *     }
- *     \left(
- *         l
- *         \widetilde J_m
- *         +
- *         \frac {m}{(m + 2)}
- *         \widetilde J_{m-1}
- *     \right)
- *     , \quad
- *     m = 0, 1, 2, \ldots,
- * \f]
- * with \f$ \widetilde J_{-1} = 0 \f$ and
- * \f[
- * \label{power_integral_0}
- *     \widetilde J_0
- *     =
- *     \frac{ e^{ -i \frac{\pi}4 } }{ 4 \sqrt{ \pi a } }
- *     \exp
- *     \left(
- *         \frac{il^2}{4a}
- *     \right)
- *     .
- * \f]
- *
- *  
+ * @brief A class needed for construction of the Schrödinger time-evolution operator
  */
-class JpowerIntegrals
-{
+class JpowerIntegrals {
 public:
-    /// @brief creates an array of power integrals
-    /// @param a : parameter a
-    /// @param scaling : scaling level
-    /// @param M : maximum amount of integrals for each l
-    /// @param threshold : lower limit for neglecting the integrals
-    /// @details The array is orginised as a vector ordered as \f$l = 0, 1, 2, \ldots, 2^n - 1, 1 - 2^n, 2 - 2^n, \ldots, -2, -1 \f$.
+    /// Create the table of power integrals
+    /// The array is organised as l = 0,1,...,2^n-1, 1-2^n, 2-2^n, ..., -2, -1
     JpowerIntegrals(double a, int scaling, int M, double threshold = 1.0e-15);
-    //JpowerIntegrals(const JpowerIntegrals& other);
 
-    
-    int scaling;  //it is probably not used
+    int scaling;  // may be unused
     std::vector<std::vector<std::complex<double>>> integrals;
 
-    std::vector<std::complex<double>> & operator[](int index);
+    std::vector<std::complex<double>> &operator[](int index);
+
 private:
     std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold);
-    void crop(std::vector<std::complex<double>> & J, double threshold);
+    void crop(std::vector<std::complex<double>> &J, double threshold);
+};
+
+/** @class DerivativePowerIntegrals
+ *
+ * @brief Power-integral table used by the smooth-derivative operator.
+ *
+ * Implementation uses an FFT-based construction in the .cpp (FFTW is included
+ * there under MRCPP_HAVE_FFTW). Header intentionally does not include fftw3.h.
+ */
+class DerivativePowerIntegrals {
+public:
+    /// Build the table for a given scaling level and cutoff
+    DerivativePowerIntegrals(double cut_off, int scaling, int M, double threshold = 1.0e-15);
+
+    int scaling;
+    // same l-indexing convention as JpowerIntegrals; entries are real-valued
+    std::vector<std::vector<double>> integrals;
+
+    // Access by l in [-2^n+1, ..., 2^n-1] (negative l mapped to the tail)
+    std::vector<double> &operator[](int index);
+
+private:
+    std::vector<std::vector<double>> calculate_J_power_integrals(double cut_off, int M, double threshold);
 };
 
 } // namespace mrcpp

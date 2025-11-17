@@ -23,22 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * @file NodeAllocator.h
- * @brief Chunked allocator for MWNode objects and their coefficient storage.
- *
- * @details
- * The allocator handles:
- *  - contiguous chunk allocation for **nodes** and **coefficients**,
- *  - a simple stack-like free list for fast allocation/deallocation,
- *  - optional backing via a shared memory block (@ref SharedMemory),
- *  - utility routines for compaction (@ref compress) and reassembly
- *    after structural edits, and
- *  - query helpers for chunk sizes and usage.
- *
- * It is used by both @ref FunctionTree and @ref OperatorTree.
- */
-
 #pragma once
 
 #include <vector>
@@ -50,10 +34,10 @@ namespace mrcpp {
 
 /**
  * @class NodeAllocator
- * @tparam D Spatial dimension (1, 2, or 3).
- * @tparam T Scalar coefficient type (e.g., double, ComplexDouble).
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
  *
- * @brief Chunked memory manager for @ref MWNode objects and their coefficients.
+ * @brief Chunked memory manager for @ref MWNode objects and their coefficients
  *
  * @details
  * Nodes and their coefficient arrays are organized in **chunks** to reduce
@@ -70,22 +54,30 @@ namespace mrcpp {
 template <int D, typename T> class NodeAllocator final {
 public:
     /**
-     * @brief Construct an allocator bound to an operator tree.
-     * @param tree           Owning @ref OperatorTree instance.
-     * @param mem            Optional shared-memory provider for coefficients (may be `nullptr`).
-     * @param coefsPerNode   Number of coefficients per node.
-     * @param nodesPerChunk  Maximum number of nodes per chunk.
+     * @brief Construct an allocator bound to a function tree
+     * @param[in] tree           Owning @ref FunctionTree instance
+     * @param[in] mem            Optional shared-memory provider for coefficients (may be `nullptr`)
+     * @param[in] coefsPerNode   Number of coefficients per node
+     * @param[in] nodesPerChunk  Maximum number of nodes per chunk
+     * 
+     * @details Reserves space for chunk pointers to avoid excessive reallocation,
+     * but does not allocate any chunks until needed.
+     */
+    NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
+
+
+    /**
+     * @brief Construct an allocator bound to an operator tree
+     * @param[in] tree           Owning @ref OperatorTree instance
+     * @param[in] mem            Optional shared-memory provider for coefficients (may be `nullptr`)
+     * @param[in] coefsPerNode   Number of coefficients per node
+     * @param[in] nodesPerChunk  Maximum number of nodes per chunk
+     * 
+     * @details Reserves space for chunk pointers to avoid excessive reallocation,
+     * but does not allocate any chunks until needed.
      */
     NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
 
-    /**
-     * @brief Construct an allocator bound to a function tree.
-     * @param tree           Owning @ref FunctionTree instance.
-     * @param mem            Optional shared-memory provider for coefficients (may be `nullptr`).
-     * @param coefsPerNode   Number of coefficients per node.
-     * @param nodesPerChunk  Maximum number of nodes per chunk.
-     */
-    NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
 
     /// Non-copyable.
     NodeAllocator(const NodeAllocator<D, T> &tree) = delete;
@@ -95,92 +87,123 @@ public:
     /// Destructor; releases all owned chunks (nodes and coefficients).
     ~NodeAllocator();
 
+
     /**
-     * @brief Allocate a consecutive block of nodes.
-     * @param nNodes Number of nodes to allocate.
-     * @param coefs  If `true`, also ensure coefficient storage is available.
-     * @return Serial index (`sIdx`) of the first newly allocated node.
-     *
+     * @brief Get pointer to a node object by serial index
+     * @param[in] sIdx Serial index of the node
+     * @return Pointer to the @ref MWNode instance.
+     */
+    MWNode<D, T> *getNode_p(int sIdx);
+
+
+    /**
+     * @brief Get pointer to the coefficient array for a node
+     * @param[in] sIdx Serial index of the node
+     * @return Pointer to 'T[coefsPerNode]' or 'nullptr' if unavailable.
+     */
+    T *getCoef_p(int sIdx);
+
+
+
+    /**
+     * @brief Allocate a consecutive block of nodes
+     * @param[in] nNodes Number of nodes to allocate
+     * @param[in] coefs  If 'true', also ensure coefficient storage is available
+     * @return Serial index ('sIdx') of the first newly allocated node (the top of the stack)
+     * 
+     * @details Allocates a block of @p nNodes consecutive nodes, returning 
+     * the serial index of the first node in the block. If `coefs` is true,
+     * coefficient arrays are also allocated for each node. If there is not
+     * enough space in existing chunks, new chunks are allocated to satisfy
+     * the request
+     * 
+     * @warning Does not initialize the node objects; caller is responsible
+     * for placement-new or similar
+     * 
+     * @warning If insufficient space is available, and allocation of new
+     * chunks fails, an exception is thrown and no nodes are allocated.
+     * 
+     * @throw std::bad_alloc if memory allocation fails.
+     * @throw std::runtime_error if insufficient space is available after
+     *         attempting to allocate new chunks.
      * @note May grow the underlying chunk arrays if space is exhausted.
      */
     int alloc(int nNodes, bool coefs = true);
 
     /**
-     * @brief Deallocate a node at serial index.
-     * @param sIdx Serial index of the node to free.
+     * @brief Deallocate a node at serial index
+     * @param[in] sIdx Serial index of the node to free
+     * @details Marks the node at serial index @p sIdx as free for future
+     * allocations. Does not destroy the node object or its coefficient array.
+     * It also updates the number of allocated nodes.
      *
      * @warning Does not shrink chunks; it only marks the slot as free.
+     *
+     * @throw std::out_of_range if @p sIdx is invalid.
      */
     void dealloc(int sIdx);
 
     /**
-     * @brief Deallocate coefficient arrays for all nodes.
+     * @brief Deallocate coefficient arrays for all nodes
      * @note Node objects remain allocated; only their coefficient buffers are freed.
      */
     void deallocAllCoeff();
 
     /**
-     * @brief Pre-allocate a number of chunks.
-     * @param nChunks Number of chunks to append.
-     * @param coefs   If `true`, allocate coefficient chunks as well.
+     * @brief Pre-allocate a number of chunks
+     * @param[in] nChunks Number of chunks to append
+     * @param[in] coefs   If 'true', allocate coefficient chunks as well
      *
-     * @details Useful to avoid repeated growth when the final size is known.
+     * @details It reinitializes the allocator, allocating @p nChunks chunks
+     * (both nodes and coefficients, if @p coefs is true). It resized the
+     * stackStatus vectors with the new total capacity, and resets the
+     * allocation stack.
+     * 
+     * @note This method clears any previously allocated nodes and
+     * their coefficient buffers.
+     *
+     * @throw If nChunks <= 0
      */
     void init(int nChunks, bool coefs = true);
 
     /**
-     * @brief Compact allocated nodes to reduce fragmentation.
-     * @return Number of nodes moved during compaction.
+     * @brief Fill all holes in the chunks with occupied nodes, then remove all empty chunks
+     * @return Number of nodes deleted during compaction
      *
      * @details After compaction, serial indices may change internally; users
-     * should refresh any external mappings that depend on `sIdx`.
+     * should refresh any external mappings that depend on 'sIdx'.
      */
     int compress();
 
-    /**
-     * @brief Rebuild internal pointers after external moves/shuffling.
-     * @details Typically invoked after operations that reorder nodes without
-     * using @ref compress.
-     */
-    void reassemble();
-
-    /**
+     /**
      * @brief Drop trailing unused chunks to release memory.
-     * @return Number of chunks deleted.
+     * @return Number of chunks deleted
+     * 
+     * @details Scans chunks from the end towards the beginning, deleting any
+     * chunks that are completely unused. Stops when a chunk with at least
+     * one occupied node is found.
      */
     int deleteUnusedChunks();
 
-    /** @name Introspection */
-    ///@{
-    /// @return Number of nodes currently in use (allocated and not freed).
-    int getNNodes() const { return this->nNodes; }
-    /// @return Number of coefficients per node.
-    int getNCoefs() const { return this->coefsPerNode; }
-    /// @return Total number of allocated node chunks.
-    int getNChunks() const { return this->nodeChunks.size(); }
-    /// @return Number of chunks currently used by active nodes.
-    int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; }
-    /// @return Size in bytes of one node chunk (nodes only).
-    int getNodeChunkSize() const { return this->maxNodesPerChunk * this->sizeOfNode; }
-    /// @return Size in bytes of one coefficient chunk.
-    int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(T); }
-    /// @return Maximum number of nodes that fit in a single chunk.
-    int getMaxNodesPerChunk() const { return this->maxNodesPerChunk; }
-    ///@}
-
     /**
-     * @brief Get pointer to the coefficient array for a node.
-     * @param sIdx Serial index of the node.
-     * @return Pointer to `T[coefsPerNode]` or `nullptr` if unavailable.
+     * @brief Traverse tree and redefine pointer, counter and tables
+     * @details Typically invoked after operations that reorder nodes without
+     * using @ref compress 
      */
-    T *getCoef_p(int sIdx);
+    void reassemble();
 
-    /**
-     * @brief Get pointer to a node object by serial index.
-     * @param sIdx Serial index of the node.
-     * @return Pointer to the @ref MWNode instance.
-     */
-    MWNode<D, T> *getNode_p(int sIdx);
+
+
+    
+    int getNNodes() const { return this->nNodes; } ///< @return Number of nodes currently in use (allocated and not freed).
+    int getNCoefs() const { return this->coefsPerNode; } ///< @return Number of coefficients per node.
+    int getNChunks() const { return this->nodeChunks.size(); } ///< @return Total number of allocated node chunks.
+    int getNChunksUsed() const { return (this->topStack + this->maxNodesPerChunk - 1) / this->maxNodesPerChunk; } ///< @return Number of chunks currently used by active nodes.
+    int getNodeChunkSize() const { return this->maxNodesPerChunk * this->sizeOfNode; } ///< @return Size in bytes of one node chunk (nodes only).
+    int getCoefChunkSize() const { return this->maxNodesPerChunk * this->coefsPerNode * sizeof(T); } ///< @return Size in bytes of one coefficient chunk.
+    int getMaxNodesPerChunk() const { return this->maxNodesPerChunk; } ///< @return Maximum number of nodes that fit in a single chunk.
+
+
 
     /// @return Pointer to the i-th coefficient chunk (contiguous block).
     T *getCoefChunk(int i) { return this->coefChunks[i]; }

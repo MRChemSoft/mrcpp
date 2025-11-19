@@ -32,62 +32,36 @@
 
 namespace mrcpp {
 
-/** @class GaussFunc
- *  @tparam D Spatial dimension (1,2,3,…).
+/** 
+ * @class GaussFunc
+ * @tparam D Spatial dimension (1, 2, or 3)
  *
- *  @brief Single Cartesian Gaussian primitive (optionally with monomial powers)
- *  in D dimensions.
+ * @brief Gaussian function in D dimensions with a simple monomial in front
  *
- *  Mathematical form
- *  -----------------
- *  In D dimensions the function is separable:
- *  \f[
- *     G(\mathbf{x})
- *     = \alpha \prod_{d=0}^{D-1} (x_d - R_d)^{p_d}\,
- *       \exp\!\big(-\beta_d\,(x_d - R_d)^2\big),
- *  \f]
- *  where:
- *  - \f$ \alpha \f$ is a scalar coefficient (amplitude),
- *  - \f$ \mathbf{R} = (R_0,\dots,R_{D-1}) \f$ is the center,
- *  - \f$ \mathbf{p} = (p_0,\dots,p_{D-1}) \f$ are non-negative integers (Cartesian powers),
- *  - \f$ \boldsymbol{\beta} = (\beta_0,\dots,\beta_{D-1}) \f$ are positive exponents; they
- *    can be isotropic (\f$\beta_d=\beta\f$) or anisotropic (per-axis).
+ * - Monodimensional Gaussian (GaussFunc<1>):
+ * \f$ g(x) = \alpha (x-x_0)^a e^{-\beta (x-x_0)^2} \f$
  *
- *  Relationship to @ref Gaussian
- *  -----------------------------
- *  This class *derives* from @ref Gaussian<D>, which stores the common state
- *  (coefficient, center, exponents, powers) and provides a polymorphic interface.
- *  @c GaussFunc implements operations specific to “pure Gaussian × monomial”
- *  terms (e.g., evaluation, in-place multiplication with same-center terms).
- *
- *  Typical usage
- *  -------------
- *  - Build analytic functions and evaluate them at given points (@ref evalf).
- *  - Construct @ref GaussExp<D> (expansions) by appending multiple @c GaussFunc.
- *  - Form products using @ref mult (returns @ref GaussPoly) or scale by a scalar.
- *  - Differentiate analytically with respect to a coordinate (@ref differentiate).
+ * - Multidimensional Gaussian (GaussFunc<D>):
+ * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 template <int D> class GaussFunc : public Gaussian<D> {
 public:
-    /** @name Constructors
-     *  @{
-     */
-    /** @brief Construct with isotropic exponent.
-     *  @param beta   Isotropic exponent \f$\beta\f$ (used on all axes).
-     *  @param alpha  Coefficient \f$\alpha\f$.
-     *  @param pos    Center \f$\mathbf{R}\f$ (defaults to origin).
-     *  @param pow    Powers \f$\mathbf{p}\f$ (defaults to all zeros).
-     *
-     *  This forwards to the @ref Gaussian<D> base constructor.
+    /** 
+     * @brief Constructor which forwads to the Gaussian<D> constructor
+     * @param beta      Exponent, \f$ e^{-\beta r^2} \f$
+     * @param alpha     Coefficient, \f$ \alpha e^{-r^2} \f$
+     * @param[in] pos   Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+     * @param[in] pow   Monomial power, \f$ x^{pow[0]}, y^{pow[1]}, ... \f$
      */
     GaussFunc(double beta, double alpha, const Coord<D> &pos = {}, const std::array<int, D> &pow = {})
             : Gaussian<D>(beta, alpha, pos, pow) {}
 
-    /** @brief Construct with anisotropic exponents (per-axis @p beta).
-     *  @param beta   Array of exponents \f$(\beta_0,\dots,\beta_{D-1})\f$.
-     *  @param alpha  Coefficient \f$\alpha\f$.
-     *  @param pos    Center \f$\mathbf{R}\f$.
-     *  @param pow    Powers \f$\mathbf{p}\f$.
+    /** 
+     * @brief Constructor which forwads to the Gaussian<D> constructor
+     * @param[in] beta  List of exponents, \f$ e^{-\beta r^2} \f$
+     * @param alpha     Coefficient, \f$ \alpha e^{-r^2} \f$
+     * @param[in] pos   Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+     * @param[in] pow   Monomial power, \f$ x^{pow[0]}, y^{pow[1]}, ... \f$
      */
     GaussFunc(const std::array<double, D> &beta,
               double alpha,
@@ -95,79 +69,121 @@ public:
               const std::array<int, D> &pow = {})
             : Gaussian<D>(beta, alpha, pos, pow) {}
 
-    /** @brief Copy constructor (shallow copy of POD members, as expected). */
+    /// @brief Copy constructor.
     GaussFunc(const GaussFunc<D> &gf)
             : Gaussian<D>(gf) {}
-    /** @brief Deleted assignment for safety (use copy-construct as needed). */
-    GaussFunc<D> &operator=(const GaussFunc<D> &rhs) = delete;
-    /** @brief Polymorphic copier (virtual constructor idiom). */
-    Gaussian<D> *copy() const override;
-    /** @} */
 
-    /** @name Physics / analysis helpers
-     *  @{
+    GaussFunc<D> &operator=(const GaussFunc<D> &rhs) = delete;
+
+    /**
+     * @brief Performs a deep copy
+     * @return Pointer to a new GaussFunc<D> copy of this instance
      */
-    /** @brief Coulomb repulsion with another Gaussian (specialized for D=3).
-     *  @details For D=3 and isotropic exponents, a closed form using Boys @f$F_0@f$ is used.
-     *           Other D are not implemented and trigger a runtime abort.
+    Gaussian<D> *copy() const override;
+    
+    /** 
+     * @brief Compute Coulomb repulsion energy between this GaussFunc and another
+     * @param gf Other GaussFunc
+     * @return Coulomb energy
+     * 
+     * @note Implemented only for D = 3
+     * @note Both Gaussians must be normalized to unit charge
+     * \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
      */
     double calcCoulombEnergy(const GaussFunc<D> &rhs) const;
 
-    /** @brief \f$\|G\|_2^2 = \int |G|^2 \, d\mathbf{x}\f$ (separable product of 1D integrals). */
-    double calcSquareNorm() const override;
-    /** @} */
-
-    /** @name Evaluation
-     *  @{
+    /**
+     * @brief Calculates the squared norm of this GaussFunc
+     * @return The squared norm
      */
-    /** @brief Full D-dimensional evaluation at coordinate @p r. */
+    double calcSquareNorm() const override;
+
+    /**
+     * @brief Evaluate the gaussian f(r) at a D-dimensional coordinate
+     * @param r Point (Coord<D>) in physical space in the MRA box
+     * @return Function value f(r).
+     */
     double evalf(const Coord<D> &r) const override;
 
-    /** @brief 1D factor evaluation for axis @p dir (used in separable algorithms). */
-    double evalf1D(double r, int dir) const override;
-    /** @} */
-
-    /** @name Transformations and algebra
-     *  @{
+    /**
+     * @brief Evaluate the *1D* separable factor along axis @p dim
+     * @param r   Coordinate along axis @p dim
+     * @param dim Axis index in [0, D-1].
+     * 
+     * @return The value of the 1D Gaussian factor g_dim(r), dim = {0, .., D-1} -> x,y,z...
      */
-    /** @brief Wrap this single Gaussian as a length-1 Gaussian expansion. */
+    double evalf1D(double r, int dir) const override;
+
+    /**
+     * @brief Convert this GaussFunc to a GaussExp object
+     * @return A GaussExp<D> representing this GaussFunc
+     */
     GaussExp<D> asGaussExp() const override;
 
-    /** @brief Analytic derivative w.r.t. @p dir, returns a @ref GaussPoly<D>. */
+    /**
+     * @brief Analytic derivative d/dx_dir (Cartesian direction) of the GaussFunc
+     * @param dir Axis index in [0, D-1]
+     *
+     * @return A GaussPoly<D> representing the derivative (polynomial×Gaussian)
+     */
     GaussPoly<D> differentiate(int dir) const override;
 
-    /** @brief In-place product with another Gaussian at the *same center*.
-     *  @details Exponents and powers add; coefficients multiply.
-     *           Fails fast if centers differ (cannot keep a pure GaussFunc).
+    /**
+     * @brief Multiplies this GaussFunc in-place with another GaussFunc
+     * @param rhs The GaussFunc to multiply with
+     * @note The result is stored in this GaussFunc, thus overwriting its previous values
      */
     void multInPlace(const GaussFunc<D> &rhs);
-    /** @brief Alias for @ref multInPlace. */
+
+    /**
+     * @brief Operator overload forwarding to multInPlace
+     * @param rhs The GaussFunc to multiply with
+     */
     void operator*=(const GaussFunc<D> &rhs) { multInPlace(rhs); }
 
-    /** @brief Product with another Gaussian (same or different center).
-     *  @details Returns a @ref GaussPoly<D> (Gaussian times polynomial) obtained by
-     *           completing the square and combining monomial factors. */
+    /** 
+     * @brief Multiply another GaussFunc with this GaussFunc
+     * @param rhs Other GaussFunc
+     * @return Resulting GaussPoly<D>
+     */
     GaussPoly<D> mult(const GaussFunc<D> &rhs);
 
-    /** @brief Scalar multiplication (returns a scaled copy). */
+    /** 
+     * @brief Multiply this GaussFunc with a scalar
+     * @param c Scalar to multiply
+     * @returns Resulting GaussFunc<D>
+     */
     GaussFunc<D> mult(double c);
 
-    /** @brief Operator overloads forwarding to the methods above. */
-    GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
-    GaussFunc<D> operator*(double c) { return this->mult(c); }
-    /** @} */
-
-    /** @name Power setters
-     *  @{
+    /**
+     * @brief Operator overload forwarding to mult
+     * @param rhs The GaussFunc to multiply with
+     * @return Resulting GaussPoly<D>
      */
-    /** @brief Set a single Cartesian power component @p power on axis @p d. */
+    GaussPoly<D> operator*(const GaussFunc<D> &rhs) { return this->mult(rhs); }
+
+    /**
+     * @brief Operator overload forwarding to mult
+     * @param rhs Scalar to multiply with
+     * @return Resulting GaussFunc<D>
+     */
+    GaussFunc<D> operator*(double c) { return this->mult(c); }
+
+    /**
+     * @brief Set the power in dimension d
+     * @param d Dimension index
+     * @param power Power to set
+     */
     void setPow(int d, int power) override { this->power[d] = power; }
-    /** @brief Set the full power vector \f$\mathbf{p}\f$. */
+
+    /**
+     * @brief Set the powers in all dimensions
+     * @param power Array of powers to set
+     */
     void setPow(const std::array<int, D> &power) override { this->power = power; }
-    /** @} */
 
 private:
-    /** @brief Pretty-printer used by stream insertion (see implementation). */
+    /// @brief Print GaussFunc to output stream
     std::ostream &print(std::ostream &o) const override;
 };
 

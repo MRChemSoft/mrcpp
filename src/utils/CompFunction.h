@@ -258,22 +258,15 @@ public:
     ///@{
     /** @brief Return a copy of the current metadata. */
     CompFunctionData<D> data() const { return func_ptr->data; }
-    int Ncomp() const { return func_ptr->data.Ncomp; }         ///< Number of components.
-    int rank() const { return func_ptr->data.rank; }           ///< External index/rank.
-    int conj() const { return func_ptr->data.conj; }           ///< Soft conjugation flag.
-    int isreal() const { return func_ptr->data.isreal; }       ///< Real storage flag.
-    int iscomplex() const { return func_ptr->data.iscomplex; } ///< Complex storage flag.
-    ///@}
-
-    /** @name Mutators for storage type flags */
-    ///@{
-    /** @brief Declare that this function stores real-valued components. */
-    void defreal() { func_ptr->data.isreal = 1; }
-    /** @brief Declare that this function stores complex-valued components. */
-    void defcomplex() { func_ptr->data.iscomplex = 1; }
-    ///@}
-
-    /** @return 1 if using shared-memory storage. */
+    int Ncomp() const { return func_ptr->data.Ncomp; }         // number of components defined
+    int rank() const { return func_ptr->data.rank; }           // rank (index) if part of a vector
+    int conj() const { return func_ptr->data.conj; }           // soft conjugate
+    int isreal() const { return func_ptr->data.isreal; }       // T=double
+    int iscomplex() const { return func_ptr->data.iscomplex; } // T=DoubleComplex
+    void defreal() { func_ptr->data.isreal = 1;                // define as real
+                     func_ptr->data.iscomplex = 0;}
+    void defcomplex() { func_ptr->data.isreal = 0;             // define as complex
+                        func_ptr->data.iscomplex = 1;}
     int share() const { return func_ptr->data.shared; }
 
     /** @return Per-component chunk counts (used for MPI shipping). */

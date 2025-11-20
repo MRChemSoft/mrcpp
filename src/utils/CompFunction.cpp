@@ -336,7 +336,6 @@ template <int D> const FunctionTree<D, ComplexDouble> &CompFunction<D>::complex(
 /* for backwards compatibility */
 template <int D> void CompFunction<D>::setReal(FunctionTree<D, double> *tree, int i) {
     func_ptr->isreal = 1;
-    // if (CompD[i] != nullptr) delete CompD[i];
     CompD[i] = tree;
     if (tree != nullptr) {
         func_ptr->Ncomp = std::max(Ncomp(), i + 1);
@@ -347,7 +346,6 @@ template <int D> void CompFunction<D>::setReal(FunctionTree<D, double> *tree, in
 
 template <int D> void CompFunction<D>::setCplx(FunctionTree<D, ComplexDouble> *tree, int i) {
     func_ptr->iscomplex = 1;
-    // if (CompC[i] != nullptr) delete CompC[i];
     CompC[i] = tree;
     if (tree != nullptr) {
         func_ptr->Ncomp = std::max(Ncomp(), i + 1);
@@ -363,23 +361,34 @@ template <int D> void CompFunction<D>::setCplx(FunctionTree<D, ComplexDouble> *t
  */
 template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp) {
 
-    if (Ncomp() < inp.Ncomp()) {
-        func_ptr->data = inp.func_ptr->data;
-        alloc(inp.Ncomp(), true);
+    if (Ncomp() > 0 and inp.Ncomp() > 0 and Ncomp() != inp.Ncomp()) {
+        MSG_ABORT("Cannot add CompFunction with different number of components"<<" "<<Ncomp()<<" "<<inp.Ncomp());
     }
+    if (getNNodes() == 0) alloc(inp.Ncomp());
 
     for (int i = 0; i < inp.Ncomp(); i++) {
-        if (inp.isreal() and c.imag() < MachineZero) {
+        if (this->isreal() and inp.isreal() and (c.imag() < MachineZero)) {
+            // everything is real write as real
             CompD[i]->add_inplace(c.real(), *inp.CompD[i]);
         } else {
+            // write as complex
             if (this->isreal()) {
+                // change type of output!
                 CompD[i]->CopyTreeToComplex(CompC[i]);
                 delete CompD[i];
                 CompD[i] = nullptr;
-                func_ptr->iscomplex = true;
-                func_ptr->isreal = false;
+                func_ptr->iscomplex = 1;
+                func_ptr->isreal = 0;
             }
-            CompC[i]->add_inplace(c, *inp.CompC[i]);
+            if (inp.iscomplex()) {
+                CompC[i]->add_inplace(c, *inp.CompC[i]);
+            } else {
+                // change type of input, only temporarily
+                inp.CompD[i]->CopyTreeToComplex(inp.CompC[i]);
+                CompC[i]->add_inplace(c, *inp.CompC[i]);
+                delete inp.CompC[i];
+                inp.CompC[i] = nullptr;
+            }
         }
     }
 }
@@ -580,6 +589,7 @@ template <int D> void make_density(CompFunction<D> &out, CompFunction<D> inp, do
         for (int i = 0; i < out.Ncomp(); i++) {
             out.CompD[i] = out.CompC[i]->Real();
             delete out.CompC[i];
+            out.CompC[i] = nullptr;
         }
         out.func_ptr->isreal = 1;
         out.func_ptr->iscomplex = 0;
@@ -649,6 +659,8 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                     out.func_ptr->isreal = 0;
                     delete out.CompD[comp];
                     delete out.CompC[comp];
+                    out.CompD[comp] = nullptr;
+                    out.CompC[comp] = nullptr;
                     if (!out_allocated) out.alloc(out.Ncomp());
                     build_grid(*out.CompC[comp], *inp_a.CompC[comp]);
                     build_grid(*out.CompC[comp], *inp_b.CompC[comp]);
@@ -880,7 +892,10 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
     int N = Phi.size();
     int M = Psi.size();
     for (int i = 0; i < M; i++) {
-        for (int j = 0; j < 4; j++) delete Psi[i].CompD[j];
+        for (int j = 0; j < 4; j++) {
+            delete Psi[i].CompD[j];
+            Psi[i].CompD[j] = nullptr;
+        }
         Psi[i].func_ptr->isreal = 0;
         Psi[i].func_ptr->iscomplex = 1;
     }

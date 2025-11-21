@@ -23,8 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-
-
 #include "GaussExp.h"
 #include "Gaussian.h"
 
@@ -33,8 +31,6 @@ namespace mrcpp {
 // Forward declaration only: definition is provided in function_utils.cpp.
 // Keeping this here avoids heavy includes and potential include cycles.
 namespace function_utils {
-template <int D>
-
 /**  
  * @brief Compute the monodimensional overlap integral between two
  * gaussian distributions by means of the Obara-Saika recursive
@@ -53,9 +49,9 @@ template <int D>
  * @param expo_a  \f$ c_a \f$
  * @param expo_b  \f$ c_b \f$
  *
- * @return The value of the overlap integral as a d
+ * @return The value of the overlap integral as a double
  */
-double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b)
+double ObaraSaika_ab(int power_a, int power_b, double pos_a, double pos_b, double expo_a, double expo_b);
 
 /**
  * @brief Compute the overlap integral between two Gaussian functions.
@@ -65,13 +61,7 @@ double function_utils::ObaraSaika_ab(int power_a, int power_b, double pos_a, dou
  *
  * @return The value of the overlap integral
  */
-double calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b);
-
-
-
-
-
-
+template <int D> double calc_overlap(const GaussFunc<D> &a, const GaussFunc<D> &b);
 } // namespace function_utils
 
 } // namespace mrcpp

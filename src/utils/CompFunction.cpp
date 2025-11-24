@@ -125,6 +125,8 @@ CompFunction<D> CompFunction<D>::paramCopy(bool alloc) const {
     CompFunction<D> out(func_ptr->data, alloc);
     // we do not copy tree sizes:
     for (int i = 0; i < 4; i++) out.func_ptr->data.Nchunks[i] = 0;
+    // we do not copy the multiplicative scalar coefficient:
+    for (int i = 0; i < 4; i++) out.func_ptr->data.c1[i] = 1.0;
     return out;
 }
 

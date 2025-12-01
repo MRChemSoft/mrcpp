@@ -187,6 +187,15 @@ template <int D> ComplexDouble CompFunction<D>::integrate() const {
     return integral;
 }
 
+template <int D> ComplexDouble CompFunction<D>::integrate(int dim, bool greater) const {
+    ComplexDouble integral;
+    if (isreal())
+        integral = CompD[0]->integrate(dim, greater);
+    else
+        integral = CompC[0]->integrate(dim, greater);
+    return integral;
+}
+
 template <int D> double CompFunction<D>::norm() const {
     double norm = getSquareNorm();
     if (norm > 0.0) norm = std::sqrt(norm);

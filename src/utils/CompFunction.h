@@ -126,7 +126,7 @@ public:
 
     CompFunction paramCopy(bool alloc = false) const;
     ComplexDouble integrate() const;
-    ComplexDouble integrate(int dim, bool greater) const;
+    ComplexDouble integrate(int dim, bool largerSide) const;
     double norm() const;
     double getSquareNorm() const;
     void alloc(int nalloc = 1, bool zero = true);

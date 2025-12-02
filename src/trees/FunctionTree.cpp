@@ -435,15 +435,18 @@ template <int D, typename T> T FunctionTree<D, T>::integrate() const {
     return jacobian * result;
 }
 
-/** @returns Integral of the function over parts of the computational domain */
-template <int D, typename T> T FunctionTree<D, T>::integrate(int dim, bool greater) const {
-
+/** 
+ * @brief Integrate over half of the space
+ * @param dim Dimension along which to split
+ * @param largerSide If true, integrate over the larger side (x>0 if dim=0)
+ * @return Integral of the function over parts of the computational domain */
+template <int D, typename T> T FunctionTree<D, T>::integrate(int dim, bool largerSide) const {
     T result = 0.0;
     for (int i = 0; i < this->rootBox.size(); i++) {
         const FunctionNode<D, T> &fNode = getRootFuncNode(i);
-        if (fNode.getUpperBounds()[dim] <= 0.0 && not greater)
+        if (fNode.getUpperBounds()[dim] <= 0.0 && not largerSide)
             result += fNode.integrate();
-        if (fNode.getLowerBounds()[dim] >= 0.0 && greater)
+        if (fNode.getLowerBounds()[dim] >= 0.0 && largerSide)
             result += fNode.integrate();
     }
   

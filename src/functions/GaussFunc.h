@@ -47,7 +47,7 @@ namespace mrcpp {
 template <int D> class GaussFunc : public Gaussian<D> {
 public:
     /** 
-     * @brief Constructor which forwads to the Gaussian<D> constructor
+     * @brief Constructor which forwards to the Gaussian<D> constructor
      * @param beta      Exponent, \f$ e^{-\beta r^2} \f$
      * @param alpha     Coefficient, \f$ \alpha e^{-r^2} \f$
      * @param[in] pos   Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
@@ -57,7 +57,7 @@ public:
             : Gaussian<D>(beta, alpha, pos, pow) {}
 
     /** 
-     * @brief Constructor which forwads to the Gaussian<D> constructor
+     * @brief Constructor which forwards to the Gaussian<D> constructor
      * @param[in] beta  List of exponents, \f$ e^{-\beta r^2} \f$
      * @param alpha     Coefficient, \f$ \alpha e^{-r^2} \f$
      * @param[in] pos   Position \f$ (x - pos[0]), (y - pos[1]), ... \f$

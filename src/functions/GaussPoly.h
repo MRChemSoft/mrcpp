@@ -35,225 +35,200 @@
 
 namespace mrcpp {
 
-/** @class GaussPoly
+/** 
+ * @class GaussPoly
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * 
+ * @brief Gaussian function in D dimensions with a general polynomial in front
  *
- * @brief Polynomial–Gaussian in D dimensions (separable form).
+ * - Monodimensional Gaussian (GaussPoly<1>):
  *
- * Concept
- * -------
- * GaussPoly represents functions of the form
- * \f[
- *   f(\mathbf x) \;=\; c \;\prod_{d=1}^{D}\; P_d(x_d - x^{(0)}_d)\,
- *                      \exp\!\big(-\alpha_d\,(x_d - x^{(0)}_d)^2\big),
- * \f]
- * i.e. a per–dimension polynomial factor times an anisotropic Gaussian.
- * The per–axis polynomials \f$P_d\f$ are stored as owned pointers
- * `Polynomial* poly[d]`.  This class derives from @ref Gaussian to reuse
- * storage for coefficient `coef`, exponents `alpha[d]`, and center `pos[d]`.
+ * \f$ g(x) = \alpha P(x-x_0) e^{-\beta (x-x_0)^2} \f$
  *
- * Key features
- * ------------
- * - Exact evaluation in 1D/ND (see evalf / evalf1D).
- * - Exact L2–norm via expansion into a sum of monomial–Gaussians
- *   (@ref asGaussExp + analytic overlaps).
- * - Algebraic utilities (scalar and poly products; some are intentionally
- *   left unimplemented to avoid accidental heavy symbolic work).
+ * - Multidimensional Gaussian (GaussFunc<D>):
  *
- * Ownership
- * ---------
- * The `poly[d]` pointers are owned by the GaussPoly instance (deep-copied
- * in copy-operations and destroyed in the destructor).
- *
- * Relation to GaussFunc
- * ---------------------
- * A @ref GaussFunc corresponds to the special case where each `P_d(t)=t^{k_d}`
- * is a monomial.  A GaussPoly can be expanded to a sum of GaussFunc terms
- * (tensor product of monomials) with @ref asGaussExp.
+ * \f$ G(x) = \prod_{d=1}^D g^d(x^d) \f$
  */
 
 template <int D> class GaussPoly : public Gaussian<D> {
 public:
-    /** @name Constructors & Lifetime
-     *  @{
-     */
-
-    /** @brief Construct an isotropic GaussPoly with optional per-axis degrees.
+    /** 
+     * @brief Constructor
      *
-     * @param[in] alpha  Exponent parameter (isotropic): \f$ \alpha_d \equiv \alpha \f$.
-     * @param[in] coef   Global amplitude \f$ c \f$.
-     * @param[in] pos    Center \f$ x^{(0)} \f$ per dimension.
-     * @param[in] power  Maximum polynomial degree per dimension (order of @ref Polynomial).
-     *
-     * Initializes each `poly[d]` as a Polynomial of degree `power[d]`
-     * (if any non-zero degree is requested), otherwise keeps it nullptr.
-     * The Gaussian base class stores `(coef, alpha, pos, power)`.
+     * @param beta Exponent, \f$ e^{-\beta r^2} \f$
+     * @param alpha Coefficient, \f$ \alpha e^{-r^2} \f$
+     * @param[in] pos Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+     * @param[in] pow Max polynomial degree, \f$ P_0(x), P_1(y), ... \f$
      */
     GaussPoly(double alpha = 0.0, double coef = 1.0, const Coord<D> &pos = {}, const std::array<int, D> &power = {});
 
-    /** @brief Construct an anisotropic GaussPoly (per-axis exponents).
+    /** 
+     * @brief Constructor
      *
-     * @param[in] alpha  Per-axis exponents \f$ \{\alpha_d\}_{d=1}^D \f$.
-     * @param[in] coef   Global amplitude.
-     * @param[in] pos    Center per dimension.
-     * @param[in] power  Maximum polynomial degree per dimension.
-     *
-     * Same allocation policy for `poly[d]` as in the isotropic constructor.
+     * @param[in] beta List of exponents, \f$ e^{-\beta r^2} \f$
+     * @param alpha Coefficient, \f$ \alpha e^{-r^2} \f$
+     * @param[in] pos Position \f$ (x - pos[0]), (y - pos[1]), ... \f$
+     * @param[in] pow Max polynomial degree, \f$ P_0(x), P_1(y), ... \f$
      */
     GaussPoly(const std::array<double, D> &alpha,
               double coef,
               const Coord<D> &pos = {},
               const std::array<int, D> &power = {});
 
-    /** @brief Deep-copy ctor (also clones per-axis polynomials). */
+    /// @brief Copy constructor.
     GaussPoly(const GaussPoly<D> &gp);
 
-    /** @brief Build GaussPoly from a @ref GaussFunc (monomial×Gaussian).
-     *
-     * Creates per-axis polynomials equal to the corresponding monomials,
-     * i.e. `P_d(t) = t^{power[d]}`.
+    /** 
+     * @brief Construct from a GaussFunc
+     * @param[in] gf: GaussFunc to convert
      */
     GaussPoly(const GaussFunc<D> &gf);
 
-    /** @brief Disable copy-assignment (explicit semantic/ownership choice). */
     GaussPoly<D> &operator=(const GaussPoly<D> &gp) = delete;
 
-    /** @brief Polymorphic clone (deep copy). */
+    /**
+     * @brief Performs a deep copy
+     * @return Pointer to a new GaussFunc<D> copy of this instance
+     */
     Gaussian<D> *copy() const override;
 
-    /** @brief Destructor; releases owned Polynomial pointers. */
     ~GaussPoly();
 
-    /** @} */
-
-    /** @name Math & Evaluation
-     *  @{
-     */
-
-    /** @brief Exact L2-norm squared \f$ \|f\|_2^2 \f$.
-     *
-     * Implementation:
-     * 1) Expand to a sum of monomial Gaussians (@ref asGaussExp).
-     * 2) Sum analytic overlaps of all pairs (Obara–Saika), see
-     *    `function_utils::calc_overlap`.
+    /**
+     * @brief Calculates the squared norm of this GaussFunc
+     * @return The squared norm
      */
     double calcSquareNorm() const override;
 
-    /** @brief Evaluate \f$ f(\mathbf x) \f$ at a point (D-D). */
+    /**
+     * @brief Evaluate the gaussian f(r) at a D-dimensional coordinate
+     * @param r Point (Coord<D>) in physical space in the MRA box
+     * @return Function value f(r).
+     */
     double evalf(const Coord<D> &r) const override;
 
-    /** @brief Evaluate the 1D factor in dimension `dim` at coordinate `r`.
-     *
-     * The convention (consistent with other classes): the global amplitude
-     * `coef` is applied only in `dim==0` so that a tensor product across
-     * dimensions yields the correct global amplitude once.
+    /**
+     * @brief Evaluate the *1D* separable factor along axis @p dim
+     * @param r   Coordinate along axis @p dim
+     * @param dim Axis index in [0, D-1].
+     * 
+     * @return The value of the 1D Gaussian factor g_dim(r), dim = {0, .., D-1} -> x,y,z...
      */
     double evalf1D(double r, int dim) const override;
 
-    /** @brief Expand into a sum of @ref GaussFunc terms (tensor of monomials).
-     *
-     * Produces \f$ \prod_d P_d \f$ as a sum of monomials and attaches the same
-     * Gaussian envelope.  This is used both for integration and algebra.
+    /**
+     * @brief Convert this GaussPoly to a GaussExp object
+     * @return A GaussExp<D> representing this GaussPoly
      */
     GaussExp<D> asGaussExp() const override;
 
-    /** @brief Analytic derivative in Cartesian direction `dir`.
-     *
-     * @note The implementation may throw/abort if not provided for GaussPoly.
-     *       (The .cpp currently marks this as NOT_IMPLEMENTED.)
-     */
+    /// @warning This method is currently not implemented.
     GaussPoly differentiate(int dir) const override;
 
-    /** @} */
-
-    /** @name Algebra
-     *  @{
-     */
-
-    /** @brief In-place product with another GaussPoly (same center/envelope).
-     *
-     * @warning Not implemented in the current source (will abort if called).
-     */
+    /// @warning This method is currently not implemented.
     void multInPlace(const GaussPoly<D> &rhs);
 
     /** @brief In-place product operator (delegates to @ref multInPlace). */
     void operator*=(const GaussPoly<D> &rhs) { multInPlace(rhs); }
 
-    /** @brief Symbolic product, returns a new GaussPoly.
-     *
-     * @warning Not implemented in the current source (will abort if called).
-     */
+    /// @warning This method is currently not implemented.
     GaussPoly<D> mult(const GaussPoly<D> &rhs);
 
-    /** @brief Multiply by scalar (returns a copy). */
+    /** 
+     * @brief Multiply this GaussPoly with a scalar
+     * @param c Scalar to multiply
+     * @returns Resulting GaussPoly<D>
+     */
     GaussPoly<D> mult(double c);
 
-    /** @brief Operator sugar for @ref mult(const GaussPoly&). */
+    /**
+     * @brief Operator overload forwarding to mult
+     * @param rhs The GaussPoly to multiply with
+     * @return Resulting GaussPoly<D>
+     * @warning @ref mult is currently not implemented.
+     */
     GaussPoly<D> operator*(const GaussPoly<D> &rhs) { return mult(rhs); }
 
-    /** @brief Operator sugar for @ref mult(double). */
+    /**
+     * @brief Operator overload forwarding to mult
+     * @param rhs Scalar to multiply with
+     * @return Resulting GaussPoly<D>
+     */
     GaussPoly<D> operator*(double c) { return mult(c); }
 
-    /** @} */
-
-    /** @name Accessors (per-axis polynomials)
-     *  @{
+    /**
+     * @brief Returns the polynomial coefficients in a specified dimension
+     * @param i Dimension index
+     * @return The Eigen vector of coefficients
      */
-
-    /** @brief Read-only access to coefficient vector of polynomial in dim `i`. */
     const Eigen::VectorXd &getPolyCoefs(int i) const { return poly[i]->getCoefs(); }
 
-    /** @brief Mutable access to coefficient vector of polynomial in dim `i`. */
+    /** 
+     * @brief Returns the polynomial coefficients in a specified dimension
+     * @param i Dimension index
+     * @return The Eigen vector of coefficients
+     */
     Eigen::VectorXd &getPolyCoefs(int i) { return poly[i]->getCoefs(); }
 
-    /** @brief Read-only access to polynomial object in dim `i`. */
+    /**
+     * @brief Returns the Polynomial in a specified dimension
+     * @param i Dimension index
+     * @return The Polynomial reference
+     */
     const Polynomial &getPoly(int i) const { return *poly[i]; }
 
-    /** @brief Mutable access to polynomial object in dim `i`. */
+    /** 
+     * @brief Returns the Polynomial in a specified dimension
+     * @param i Dimension index
+     * @return The Polynomial reference
+     */
     Polynomial &getPoly(int i) { return *poly[i]; }
 
-    /** @} */
-
-    /** @name Mutators (structure/shape)
-     *  @{
+    /**
+     * @brief Set the power in dimension d
+     * @param d Dimension index
+     * @param power Power to set
      */
-
-    /** @brief Set polynomial degree in one dimension (reallocates @ref Polynomial). */
     void setPow(int d, int pow) override;
 
-    /** @brief Set polynomial degrees in all dimensions (reallocates). */
+    /**
+     * @brief Set the powers in all dimensions
+     * @param power Array of powers to set
+     */
     void setPow(const std::array<int, D> &pow) override;
 
-    /** @brief Replace polynomial in dimension `d` with a copy of `poly`.
-     *
-     * Updates the stored per-axis degree to `poly.getOrder()`.
-     * Ownership remains with this GaussPoly (deep copy).
+    /** 
+     * @brief Set polynomial in given dimension
+     * @param d Cartesian direction
+     * @param[in] poly Polynomial to set
      */
     void setPoly(int d, Polynomial &poly);
 
-    /** @} */
-
 private:
-    /** @brief Owned per-axis polynomials \f$P_d\f$ (nullptr if unused). */
-    Polynomial *poly[D];
+    Polynomial *poly[D]; ///< Per-axis polynomial factors
 
-    /** @brief Helper (recursive): enumerate all monomial power combinations
-     *         and collect combined coefficients (raw C-array version).
-     *
-     * Used by @ref asGaussExp to create the full tensor expansion.  On the
-     * recursion leaf it pushes:
-     *  - a newly allocated `int[D]` with the current powers, and
-     *  - the corresponding scalar coefficient (product of axis coefficients,
-     *    times the global amplitude).
+    /**
+     * @brief Recursive helper function to fill coefficient and power vectors for all terms
+     * @param[out] coefs Vector to fill with coefficients
+     * @param[out] power Vector to fill with power arrays
+     * @param pow Current power array being built
+     * @param dir Current dimension being processed
      */
     void fillCoefPowVector(std::vector<double> &coefs, std::vector<int *> &power, int pow[D], int dir) const;
 
-    /** @brief Helper (recursive): same as above, with std::array accumulator. */
+    /**
+     * @brief Recursive helper function to fill coefficient and power vectors for all terms
+     * @param[out] coefs Vector to fill with coefficients
+     * @param[out] power Vector to fill with power arrays
+     * @param pow Current power array being built
+     * @param dir Current dimension being processed
+     */
     void fillCoefPowVector(std::vector<double> &coefs,
                            std::vector<int *> &power,
                            std::array<int, D> &pow,
                            int dir) const;
 
-    /** @brief Pretty-print (polynomial degrees, coefficients, envelope). */
+    /// @brief Print GaussFunc to output stream
     std::ostream &print(std::ostream &o) const override;
 };
 

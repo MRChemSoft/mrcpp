@@ -382,7 +382,7 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
             }else if (func_ptr->data.c1[0].imag() > MachineZero or inp.func_ptr->data.c1[0].imag()  > MachineZero){
                 MSG_ABORT("Not implemented");
             } else {
-                if(func_ptr->data.c1[0].real() > MachineZero){
+                if(std::abs(1.0 - func_ptr->data.c1[0].real()) > MachineZero){
                     rescale(func_ptr->data.c1[0].real());
                     for (int i = 1; i < Ncomp(); i++) {
                         if (std::norm(func_ptr->data.c1[0]-func_ptr->data.c1[i]) > MachineZero)

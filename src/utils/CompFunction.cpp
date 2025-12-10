@@ -187,12 +187,6 @@ template <int D> ComplexDouble CompFunction<D>::integrate() const {
     return integral;
 }
 
-/**
- * @brief Integrate over half of the space
- * @param dim Dimension along which to split
- * @param largerSide If true, integrate over the larger side (x>0 if dim=0)
- * @return ComplexDouble Resulting integral
- */
 template <int D> ComplexDouble CompFunction<D>::integrate(int dim, bool largerSide) const {
     ComplexDouble integral;
     if (isreal())

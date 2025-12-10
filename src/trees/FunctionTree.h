@@ -62,7 +62,15 @@ public:
     ~FunctionTree() override;
 
     T integrate() const;
+
+    /** 
+     * @brief Integrate over half of the space
+     * @param dim Dimension along which to split
+     * @param largerSide If true, integrate over the larger side (x>0 if dim=0)
+     * @return Integral of the function over parts of the computational domain
+     */
     T integrate(int dim, bool largerSide) const;
+    
     double integrateEndNodes(RepresentableFunction_M &f);
     T evalf_precise(const Coord<D> &r);
     T evalf(const Coord<D> &r) const override;

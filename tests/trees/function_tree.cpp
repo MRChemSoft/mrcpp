@@ -57,6 +57,7 @@ template <int D> void testZeroFunction() {
         }
         THEN("its squared norm is zero") { REQUIRE(tree.getSquareNorm() == Catch::Approx(0.0)); }
         THEN("it integrates to zero") { REQUIRE(tree.integrate() == Catch::Approx(0.0)); }
+        THEN("half of it integrates to zero") { REQUIRE(tree.integrate(0, true) == Catch::Approx(0.0)); }
         THEN("the dot product with itself is zero") { REQUIRE(dot(tree, tree) == Catch::Approx(0.0)); }
     }
     finalize(&mra);

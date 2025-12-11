@@ -35,8 +35,6 @@
 
 namespace mrcpp {
 
-#define GAUSS_EXP_PREC 1.e-10
-
 /** @class GaussExp
  *
  * @brief Gaussian expansion in D dimensions
@@ -53,7 +51,7 @@ namespace mrcpp {
 
 template <int D> class GaussExp : public RepresentableFunction<D, double> {
 public:
-    GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
+    GaussExp(int nTerms = 0);
     GaussExp(const GaussExp<D> &gExp);
     GaussExp &operator=(const GaussExp<D> &gExp);
     ~GaussExp() override;

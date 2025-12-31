@@ -437,14 +437,14 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
     }
 }
 
-template <int D> int CompFunction<D>::crop(double prec) {
+template <int D> int CompFunction<D>::crop(double prec, bool absPrec) {
     if (prec < 0.0) return 0;
     int nChunksremoved = 0;
     for (int i = 0; i < Ncomp(); i++) {
         if (isreal()) {
-            nChunksremoved += CompD[i]->crop(prec, 1.0, false);
+            nChunksremoved += CompD[i]->crop(prec, 1.0, absPrec);
         } else {
-            nChunksremoved += CompC[i]->crop(prec, 1.0, false);
+            nChunksremoved += CompC[i]->crop(prec, 1.0, absPrec);
         }
     }
     return nChunksremoved;

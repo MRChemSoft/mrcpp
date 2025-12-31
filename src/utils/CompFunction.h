@@ -136,7 +136,7 @@ public:
     const int getRank() const { return func_ptr->rank; };
     void add(ComplexDouble c, CompFunction<D> inp);
 
-    int crop(double prec);
+    int crop(double prec, bool absPrec = true);
     void rescale(ComplexDouble c);
     void free();
     int getSizeNodes() const;

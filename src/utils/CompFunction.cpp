@@ -1031,6 +1031,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             // 4a) make a dense contiguous matrix with the coefficient from all the orbitals using node n
             std::vector<int> orbjVec; // to remember which orbital correspond to each orbVec.size();
+            if (node2orbVec.count(node_ix) == 0) continue;
             if (node2orbVec[node_ix].size() <= 0) continue;
             csize = sizecoeffW;
             if (parindexVec_ref[n] < 0) csize = sizecoeff; // for root nodes we include scaling coeff
@@ -1038,6 +1039,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
             int shift = sizecoeff - sizecoeffW; // to copy only wavelet part
             if (parindexVec_ref[n] < 0) shift = 0;
             ComplexMatrix coeffBlock(csize, node2orbVec[node_ix].size());
+
             for (int j : node2orbVec[node_ix]) { // loop over indices of the orbitals using this node
                 int orb_node_ix = orb2node[j][node_ix];
                 for (int k = 0; k < csize; k++) coeffBlock(k, orbjVec.size()) = coeffVec[j][orb_node_ix][k + shift];
@@ -1319,6 +1321,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             // 4a) make a dense contiguous matrix with the coefficient from all the orbitals using node n
             std::vector<int> orbjVec; // to remember which orbital correspond to each orbVec.size();
+            if (node2orbVec.count(node_ix) == 0) continue;
             if (node2orbVec[node_ix].size() <= 0) continue;
             csize = sizecoeffW;
             if (parindexVec_ref[n] < 0) csize = sizecoeff; // for root nodes we include scaling coeff
@@ -1680,6 +1683,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
         for (int n = 0; n < max_n; n++) {
             MWNode<D> node(*(refNodes[n]), false);
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
+            if (node2orbVec.count(node_ix) == 0) continue;
 
             // 3a) make values for f at this node
             // 3a1) get coordinates of quadrature points for this node
@@ -2001,6 +2005,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
             int csize;
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             std::vector<int> orbVec;       // identifies which orbitals use this node
+            if (serial and node2orbVec.count(node_ix) == 0) continue;
             if (serial and node2orbVec[node_ix].size() <= 0) continue;
             if (parindexVec_ref[n] < 0)
                 csize = sizecoeff;
@@ -2149,6 +2154,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
             int csize;
             int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
             std::vector<int> orbVec;       // identifies which orbitals use this node
+            if (serial and node2orbVec.count(node_ix) == 0) continue;
             if (serial and node2orbVec[node_ix].size() <= 0) continue;
             if (parindexVec_ref[n] < 0)
                 csize = sizecoeff;
@@ -2361,6 +2367,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                 csize = sizecoeffW;
             if (serial) {
                 int node_ix = indexVec_ref[n];      // SerialIx for this node in the reference tree
+                if (node2orbVecBra.count(node_ix) == 0) continue;
+                if (node2orbVecKet.count(node_ix) == 0) continue;
                 int shift = sizecoeff - sizecoeffW; // to copy only wavelet part
                 ComplexMatrix coeffBlockBra(csize, node2orbVecBra[node_ix].size());
                 ComplexMatrix coeffBlockKet(csize, node2orbVecKet[node_ix].size());
@@ -2587,6 +2595,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                 csize = sizecoeffW;
             if (serial) {
                 int node_ix = indexVec_ref[n];      // SerialIx for this node in the reference tree
+                if (node2orbVecBra.count(node_ix) == 0) continue;
+                if (node2orbVecKet.count(node_ix) == 0) continue;
                 int shift = sizecoeff - sizecoeffW; // to copy only wavelet part
                 DoubleMatrix coeffBlockBra(csize, node2orbVecBra[node_ix].size());
                 DoubleMatrix coeffBlockKet(csize, node2orbVecKet[node_ix].size());

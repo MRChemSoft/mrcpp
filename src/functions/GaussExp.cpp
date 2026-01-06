@@ -41,7 +41,7 @@ namespace mrcpp {
 
 template <int D> double GaussExp<D>::defaultScreening = 10.0;
 
-template <int D> GaussExp<D>::GaussExp(int nTerms, double prec) {
+template <int D> GaussExp<D>::GaussExp(int nTerms) {
     for (int i = 0; i < nTerms; i++) { this->funcs.push_back(nullptr); }
 }
 

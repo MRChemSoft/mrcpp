@@ -106,11 +106,11 @@ void CrossCorrelation::readCCCBin() {
     int K = this->order + 1;
     this->Left = MatrixXd::Zero(K * K, 2 * K);
     this->Right = MatrixXd::Zero(K * K, 2 * K);
-    double dL[2 * K];
-    double dR[2 * K];
+    std::vector<double> dL(2 * K);
+    std::vector<double> dR(2 * K);
     for (int i = 0; i < K * K; i++) {
-        L_fis.read((char *)dL, sizeof(double) * 2 * K);
-        R_fis.read((char *)dR, sizeof(double) * 2 * K);
+        L_fis.read(reinterpret_cast<char *>(dL.data()), sizeof(double) * 2 * K);
+        R_fis.read(reinterpret_cast<char *>(dR.data()), sizeof(double) * 2 * K);
         for (int j = 0; j < 2 * K; j++) {
             if (std::abs(dL[j]) < MachinePrec) dL[j] = 0.0;
             if (std::abs(dR[j]) < MachinePrec) dR[j] = 0.0;

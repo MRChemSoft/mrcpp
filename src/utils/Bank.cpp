@@ -8,8 +8,10 @@ namespace mrcpp {
 using namespace Eigen;
 using namespace std;
 
-int metadata_block[3]; // can add more metadata in future
-int const size_metadata = 3;
+#ifdef MRCPP_HAS_MPI
+    int metadata_block[3]; // can add more metadata in future
+    int const size_metadata = 3;
+#endif
 
 Bank::~Bank() {
     // delete all data and accounts
@@ -57,7 +59,9 @@ std::map<int, std::map<int, OrbBlock_struct> *> get_orbid2block;   // to get blo
 
 std::map<int, mem_struct *> mem;
 
+#ifdef MRCPP_HAS_MPI
 int const MIN_SCALE = -999; // Smaller than smallest scale
+#endif
 int naccounts = 0;
 
 void Bank::open() {

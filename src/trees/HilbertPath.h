@@ -42,10 +42,10 @@ public:
     }
 
     short int getPath() const { return this->path; }
-    short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }
+    short int getChildPath(int hIdx) const;
 
-    int getZIndex(int hIdx) const { return this->zTable[this->path][hIdx]; }
-    int getHIndex(int zIdx) const { return this->hTable[this->path][zIdx]; }
+    int getZIndex(int hIdx) const;
+    int getHIndex(int zIdx) const;
 
 private:
     short int path{0};

@@ -52,7 +52,6 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
     const double exp_prec = 1.0e-4;
     const double proj_prec = 1.0e-3;
     const double ccc_prec = 1.0e-3;
-    const double band_prec = 1.0e-3;
 
     const int n = -3;
     const int k = 5;

@@ -130,7 +130,7 @@ template <int D, typename T> T FunctionNode<D, T>::integrateInterpolating() cons
     int qOrder = this->getKp1();
     getQuadratureCache(qc);
     const VectorXd &weights = qc.getWeights(qOrder);
-    double sqWeights[qOrder];
+    std::vector<double> sqWeights(qOrder);
     for (int i = 0; i < qOrder; i++) sqWeights[i] = std::sqrt(weights[i]);
 
     int kp1_p[D];
@@ -170,7 +170,7 @@ template <int D, typename T> T FunctionNode<D, T>::integrateValues() const {
     this->getCoefs(coefs);
     int ncoefs = coefs.size();
     int ncoefChild = ncoefs / (1 << D);
-    T cc[ncoefChild];
+    std::vector<T> cc(ncoefChild);
     // factorize out the children
     for (int i = 0; i < ncoefChild; i++) cc[i] = coefs[i];
     for (int j = 1; j < (1 << D); j++)

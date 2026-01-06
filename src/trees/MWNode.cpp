@@ -346,13 +346,9 @@ template <int D, typename T> void MWNode<D, T>::giveChildrenCoefs(bool overwrite
  * copied/summed in the correct child node.
  */
 template <int D, typename T> void MWNode<D, T>::giveChildCoefs(int cIdx, bool overwrite) {
-
     MWNode<D, T> node_i = *this;
-
     node_i.mwTransform(Reconstruction);
-
     int kp1_d = this->getKp1_d();
-    int nChildren = this->getTDim();
 
     if (this->children[cIdx] == nullptr) MSG_ABORT("Child does not exist!");
     MWNode<D, T> &child = getMWChild(cIdx);
@@ -457,8 +453,8 @@ template <int D, typename T> void MWNode<D, T>::cvTransform(int operation, bool 
 
     auto sb = this->getMWTree().getMRA().getScalingBasis();
     const MatrixXd &S = sb.getCVMap(operation);
-    T o_vec[nCoefs];
-    T *out_vec = o_vec;
+    std::vector<T> o_vec(nCoefs);
+    T *out_vec = o_vec.data();
     T *in_vec = this->coefs;
 
     int nChildren = this->getTDim();
@@ -566,8 +562,8 @@ template <int D, typename T> void MWNode<D, T>::mwTransform(int operation) {
     const MWFilter &filter = getMWTree().getMRA().getFilter();
     double overwrite = 0.0;
 
-    T o_vec[nCoefs];
-    T *out_vec = o_vec;
+    std::vector<T> o_vec(nCoefs);
+    T *out_vec = o_vec.data();
     T *in_vec = this->coefs;
 
     for (int i = 0; i < D; i++) {
@@ -1259,7 +1255,6 @@ template <int D, typename T> std::ostream &MWNode<D, T>::print(std::ostream &o) 
  * i.e. *not* same normalization as a squareNorm
  */
 template <int D, typename T> void MWNode<D, T>::setMaxSquareNorm() {
-    auto n = this->getScale();
     this->maxWSquareNorm = calcScaledWSquareNorm();
     this->maxSquareNorm = calcScaledSquareNorm();
 
@@ -1275,7 +1270,6 @@ template <int D, typename T> void MWNode<D, T>::setMaxSquareNorm() {
 /** @brief recursively reset maxSquaredNorm and maxWSquareNorm of parent and descendants to value -1
  */
 template <int D, typename T> void MWNode<D, T>::resetMaxSquareNorm() {
-    auto n = this->getScale();
     this->maxSquareNorm = -1.0;
     this->maxWSquareNorm = -1.0;
     if (not this->isEndNode()) {

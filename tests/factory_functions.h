@@ -129,7 +129,6 @@ void initialize(mrcpp::GaussFunc<D> **func) {
     double beta = 1.0e4;
     double alpha = std::pow(beta / mrcpp::pi, D / 2.0);
     double pos_data[3] = {-0.2, 0.5, 1.0};
-    const auto pow = std::array<int, D>{};
 
     auto pos = mrcpp::details::convert_to_std_array<double, D>(pos_data);
 

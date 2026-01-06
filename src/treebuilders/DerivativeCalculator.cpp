@@ -90,8 +90,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D,
     // if (this->oper->getMaxBandWidth() > 1) MSG_ABORT("Only implemented for zero bw");
     outNode.zeroCoefs();
     int nComp = (1 << D);
-    T tmpCoefs[outNode.getNCoefs()];
-    OperatorState<D, T> os(outNode, tmpCoefs);
+    std::vector<T> tmpCoefs(outNode.getNCoefs());
+    OperatorState<D, T> os(outNode, tmpCoefs.data());
 
     os.setFNode(inpNode);
     os.setFIndex(inpNode.nodeIndex);
@@ -116,8 +116,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D,
     gNode.zeroCoefs();
 
     int nComp = (1 << D);
-    T tmpCoefs[gNode.getNCoefs()];
-    OperatorState<D, T> os(gNode, tmpCoefs);
+    std::vector<T> tmpCoefs(gNode.getNCoefs());
+    OperatorState<D, T> os(gNode, tmpCoefs.data());
     this->operStat.incrementGNodeCounters(gNode);
 
     // Get all nodes in f within the bandwith of O in g
@@ -182,11 +182,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator_bw0(
     // cout<<" applyOperator "<<endl;
     MWNode<D, T> &gNode = *os.gNode;
     MWNode<D, T> &fNode = *os.fNode;
-    const NodeIndex<D> &fIdx = *os.fIdx;
-    const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
 
-    double oNorm = 1.0;
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
@@ -218,7 +215,6 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator(Oper
     const NodeIndex<D> &gIdx = gNode.getNodeIndex();
     int depth = gNode.getDepth();
 
-    double oNorm = 1.0;
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
@@ -236,8 +232,6 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator(Oper
 
         const OperatorNode &oNode = oTree.getNode(depth, oTransl);
         int oIdx = os.getOperIndex(d);
-        double ocn = oNode.getComponentNorm(oIdx);
-        oNorm *= ocn;
         if (this->applyDir == d) {
             oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
         } else {

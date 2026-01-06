@@ -94,10 +94,6 @@ double OperatorNode::calcComponentNorm(int i) const {
  *
  */
 MatrixXd OperatorNode::getComponent(int i) {
-    int depth = getDepth();
-    double prec = getOperTree().getNormPrecision();
-    double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
-
     VectorXd coef_vec;
     this->getCoefs(coef_vec);
 

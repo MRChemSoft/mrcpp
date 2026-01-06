@@ -118,8 +118,8 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
     int kp1_dm1 = math_utils::ipow(kp1, D - 1);
     const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
-    T tmpcoeff[kp1_d * tDim];
-    T tmpcoeff2[kp1_d * tDim];
+    std::vector<T> tmpcoeff(kp1_d * tDim);
+    std::vector<T> tmpcoeff2(kp1_d * tDim);
     int ftlim = tDim;
     int ftlim2 = tDim;
     int ftlim3 = tDim;
@@ -135,7 +135,7 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
     int i = 0;
     int mask = 1;
     for (int gt = 0; gt < tDim; gt++) {
-        T *out = tmpcoeff + gt * kp1_d;
+        T *out = tmpcoeff.data() + gt * kp1_d;
         for (int ft = 0; ft < ftlim; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
@@ -155,13 +155,13 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
         i++;
         mask = 2; // 1 << i;
         for (int gt = 0; gt < tDim; gt++) {
-            T *out = tmpcoeff2 + gt * kp1_d;
+            T *out = tmpcoeff2.data() + gt * kp1_d;
             for (int ft = 0; ft < ftlim2; ft++) {
                 // Operate in direction i only if the bits along other
                 // directions are identical. The bit of the direction we
                 // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
-                    T *in = tmpcoeff + ft * kp1_d;
+                    T *in = tmpcoeff.data() + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -184,7 +184,7 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
                 // directions are identical. The bit of the direction we
                 // operate on determines the appropriate filter/operator
                 if ((gt | mask) == (ft | mask)) {
-                    T *in = tmpcoeff2 + ft * kp1_d;
+                    T *in = tmpcoeff2.data() + ft * kp1_d;
                     int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                     const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 
@@ -201,8 +201,8 @@ template <int D, typename T> void tree_utils::mw_transform(const MWTree<D, T> &t
 
     if (D < 3) {
         T *out;
-        if (D == 1) out = tmpcoeff;
-        if (D == 2) out = tmpcoeff2;
+        if (D == 1) out = tmpcoeff.data();
+        if (D == 2) out = tmpcoeff2.data();
         if (b_overwrite) {
             for (int j = 0; j < tDim; j++) {
                 for (int i = 0; i < kp1_d; i++) { coeff_out[i + j * stride] = out[i + j * kp1_d]; }
@@ -234,7 +234,7 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
     int kp1_dm1 = math_utils::ipow(kp1, 2);
     const MWFilter &filter = tree.getMRA().getFilter();
     double overwrite = 0.0;
-    T tmpcoeff[kp1_d * tDim];
+    std::vector<T> tmpcoeff(kp1_d * tDim);
 
     int ftlim = tDim;
     int ftlim2 = tDim;
@@ -262,7 +262,7 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
     i++;
     mask = 2; // 1 << i;
     for (int gt = 0; gt < tDim; gt++) {
-        T *out = tmpcoeff + gt * kp1_d;
+        T *out = tmpcoeff.data() + gt * kp1_d;
         for (int ft = 0; ft < ftlim2; ft++) {
             // Operate in direction i only if the bits along other
             // directions are identical. The bit of the direction we
@@ -288,7 +288,7 @@ template <typename T> void tree_utils::mw_transform_back(MWTree<3, T> &tree, T *
             // directions are identical. The bit of the direction we
             // operate on determines the appropriate filter/operator
             if ((gt | mask) == (ft | mask)) {
-                T *in = tmpcoeff + ft * kp1_d;
+                T *in = tmpcoeff.data() + ft * kp1_d;
                 int filter_index = 2 * ((gt >> i) & 1) + ((ft >> i) & 1);
                 const Eigen::MatrixXd &oper = filter.getSubFilter(filter_index, operation);
 

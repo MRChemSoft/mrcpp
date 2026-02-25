@@ -23,37 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/**
- * # Polynomial (interface)
- *
- * A light-weight, *affine-mapped* univariate polynomial used throughout MRCPP.
- * Internally, a polynomial is represented in the auxiliary variable
- *
- *   \f$ q = N\,x - L \f$
- *
- * where `N` is a dilation and `L` a translation. Coefficients are stored
- * in **ascending** powers of `q`, i.e. `coefs[k]` multiplies \f$q^k\f$.
- *
- * The class supports:
- * - optional finite **bounds** (via the @ref RepresentableFunction base);
- *   values outside the bounds evaluate to 0.
- * - algebra (sum, product, scalar scale) **within the same affine map**
- *   (same `N` and `L`).
- * - analytical **derivatives**, **antiderivatives**, **inner products**
- *   and **definite integrals**.
- *
- * ## Affine operations (N, L)
- * - `setDilation`, `setTranslation` overwrite the affine map.
- * - `dilate(n)` changes the current map as `N ← N*n`.
- * - `translate(l)` applies an external x-translation by `l`, which in the
- *   internal map becomes `L ← L + N*l` so that the *external* shift is by `l`.
- *
- * ## Order vs. size
- * - `size()` returns the raw length of the coefficient vector.
- * - `getOrder()` returns the highest index whose coefficient is numerically
- *   non-zero (trims trailing ~0 entries defined by `MachineZero`).
- */
-
 #pragma once
 
 #include <vector>
@@ -64,195 +33,237 @@
 
 namespace mrcpp {
 
+/**
+ * @class Polynomial
+ * 
+ * @brief Base class for general polynomials
+ * 
+ * @details The Polynomial class(es) are not implemented in the
+ * most efficient manner, because they are only evaluated a fixed
+ * number of times in a few predefined points, and all other
+ * evaluations are done by linear transformations. PolynomialCache
+ * implements the fast, and static const versions of the various
+ * 4Polynomials.
+ */
 class Polynomial : public RepresentableFunction<1, double> {
 public:
-    /** @name Constructors
-     *  @{
+    /**
+     * @brief Construct polynomial of order zero with given bounds
+     * @param k Order of the polynomial
+     * @param a Lower bound in x as raw pointer
+     * @param b Upper bound in x as raw pointer
      */
-    /** @brief Zero polynomial of order @p k on optional bounds [a,b]. */
     Polynomial(int k = 0, const double *a = nullptr, const double *b = nullptr);
-    /** @overload */
+
+    /**
+     * @brief Construct polynomial of order k with given bounds
+     * @param k Order of the polynomial
+     * @param a Lower bound in x as vector
+     * @param b Upper bound in x as vector
+     */
     Polynomial(int k, const std::vector<double> &a, const std::vector<double> &b)
             : Polynomial(k, a.data(), b.data()) {}
-    /** @brief From coefficient vector (ascending powers in q) and optional bounds. */
-    Polynomial(const Eigen::VectorXd &c, const double *a = nullptr, const double *b = nullptr);
-    /** @overload */
-    Polynomial(const Eigen::VectorXd &c, const std::vector<double> &a, const std::vector<double> &b)
-            : Polynomial(c, a.data(), b.data()) {}
+
     /**
-     * @brief Constructs the binomial expansion of \f$(x-c)^k\f$ with optional bounds.
-     *
-     * Coefficients are filled using the binomial theorem; the internal map is
-     * initialized to the identity (`N=1, L=0`).
+     * @brief Construct polynomial with given coefficient, order and bounds
+     * @param c Coefficient of the polynomial
+     * @param k Order of the polynomial
+     * @param a Lower bound in x as raw pointer
+     * @param b Upper bound in x as raw pointer
      */
     Polynomial(double c, int k = 0, const double *a = nullptr, const double *b = nullptr);
-    /** @overload */
+
+    /**
+     * @brief Construct polynomial with given coefficient, order and bounds
+     * @param c Coefficient of the polynomial
+     * @param k Order of the polynomial
+     * @param a Lower bound in x as vector
+     * @param b Upper bound in x as vector
+     */
     Polynomial(double c, int k, const std::vector<double> &a, const std::vector<double> &b)
             : Polynomial(c, k, a.data(), b.data()) {}
-    /** @brief Deep copy (including bounds and affine map). */
-    Polynomial(const Polynomial &poly);
-    /** @brief Deep copy assignment (including bounds and affine map). */
-    Polynomial &operator=(const Polynomial &poly);
-    virtual ~Polynomial() = default;
-    /** @} */
 
-    /** @name Evaluation
-     *  @{
-     */
     /**
-     * @brief Evaluate at external coordinate \f$x\f$.
-     *
-     * If the polynomial has active bounds, returns `0` outside the bounded
-     * interval (in x). Internally evaluates the q-series with
-     * \f$q = N x - L\f$.
+     * @brief Construct polynomial with given coefficient vector and bounds
+     * @param c Coefficient vector
+     * @param a Lower bound in x as raw pointer
+     * @param b Upper bound in x as raw pointer
+     */
+    Polynomial(const Eigen::VectorXd &c, const double *a = nullptr, const double *b = nullptr);
+
+    /**
+     * @brief Construct polynomial with given coefficient vector and bounds
+     * @param c Coefficient vector
+     * @param a Lower bound in x as vector
+     * @param b Upper bound in x as vector
+     */
+    Polynomial(const Eigen::VectorXd &c, const std::vector<double> &a, const std::vector<double> &b)
+            : Polynomial(c, a.data(), b.data()) {}
+
+    /** @brief Copy constructor */    
+    Polynomial(const Polynomial &poly);
+    /** @brief Assignment operator, copies oly the function, not its bounds */
+    Polynomial &operator=(const Polynomial &poly);
+    /** @brief Virtual destructor */
+    virtual ~Polynomial() = default;
+
+    /**
+     * @brief Evaluate scaled and translated polynomial
+     * @param x External evaluation point
+     * @return The polynomial value at x
      */
     double evalf(double x) const;
-    /** @brief Convenience overload using a @ref Coord wrapper. */
-    double evalf(const Coord<1> &r) const { return evalf(r[0]); }
-    /** @} */
-
-    /** @name Bounds mapped to x
-     *  @{
-     */
-    /** @brief Lower bound in x corresponding to the internal bound in q. */
-    double getScaledLowerBound() const;
-    /** @brief Upper bound in x corresponding to the internal bound in q. */
-    double getScaledUpperBound() const;
-    /** @} */
-
-    /** @name Norms
-     *  @{
-     */
-    /** @brief L2-normalize on current (finite) bounds; no-op if unbounded. */
-    void normalize();
+    
     /**
-     * @brief Squared L2 norm on current bounds.
-     * @return \f$\|P\|^2\f$ if bounded; `-1` if unbounded.
+     * @brief Evaluate scaled and translated polynomial at a given point
+     * @param r 1D-Cartesian coordinate
+     * @return The polynomial value at r
+     */
+    double evalf(const Coord<1> &r) const { return evalf(r[0]); }
+
+    double getScaledLowerBound() const; ///< @return The actual scaled lower bound
+    double getScaledUpperBound() const; ///< @return The actual scaled upper bound
+
+    void normalize(); ///< @brief Divide by norm of (bounded) polynomial
+
+    /**
+     * @brief Calculated squared L2 norm of the (bounded) polynomial
+     * @return Squared L2 norm, -1 if unbounded
      */
     double calcSquareNorm();
-    /** @} */
 
-    /** @name Affine map (q = N x - L)
-     *  @{
-     */
-    double getTranslation() const { return this->L; } ///< Current L (translation in q-map).
-    double getDilation()   const { return this->N; } ///< Current N (dilation in q-map).
+    double getTranslation() const { return this->L; }           ///< @return Current translation
+    double getDilation()   const { return this->N; }            ///< @return Current dilation
 
-    void setDilation(double n)    { this->N = n; }                 ///< Overwrite N.
-    void setTranslation(double l) { this->L = l; }                 ///< Overwrite L.
-    void dilate(double n)         { this->N *= n; }                ///< Scale N in place.
+    void setDilation(double n)    { this->N = n; }              ///< @brief Set dilation factor N
+    void setTranslation(double l) { this->L = l; }              ///< @brief Set translation L
+    void dilate(double n)         { this->N *= n; }             ///< @brief Dilate by factor n
+    void translate(double l)      { this->L += this->N * l; }   ///< @brief Translate by l
+
+    int size() const { return this->coefs.size(); }             ///< @return The size of the coefficient vector
+    int getOrder() const;                                       ///< @return The order of the highest non-zero coefficient
+    
+    void clearCoefs() { this->coefs = Eigen::VectorXd::Zero(1); }               ///< @brief Clear all coefficients
+    void setZero() { this->coefs = Eigen::VectorXd::Zero(this->coefs.size()); } ///< @brief Set all coefficients to zero
+    void setCoefs(const Eigen::VectorXd &c) { this->coefs = c; }                ///< @brief Replace the coefficient vector with a new one
+
+    Eigen::VectorXd &getCoefs() { return this->coefs; }                 ///< @return The coefficient vector                 
+    const Eigen::VectorXd &getCoefs() const { return this->coefs; }     ///< @return The coefficient vector (const version)
+
     /**
-     * @brief External x-translation by @p l.
-     *
-     * Adjusts the internal map as \f$L \leftarrow L + N\,l\f$ so that
-     * \f$q = N(x+l) - L_\text{old} = N x - (L_\text{old}-N l)\f$.
+     * @brief Calculates the derivative \f$ Q = dP/dx \f$ of this polynomial
+     * @return The derivative polynomial Q
      */
-    void translate(double l)      { this->L += this->N * l; }
-    /** @} */
-
-    /** @name Coefficients and order
-     *  @{
-     */
-    int size() const { return this->coefs.size(); } ///< Raw length of the coefficient vector (q-powers).
-    /**
-     * @brief Highest non-negligible power (polynomial degree).
-     *
-     * Scans from low to high and returns the largest index whose coefficient
-     * magnitude exceeds `MachineZero`. May be smaller than `size()-1`.
-     */
-    int getOrder() const;
-    /** @brief Replace coefficients with a single zero (reset to degree 0). */
-    void clearCoefs() { this->coefs = Eigen::VectorXd::Zero(1); }
-    /** @brief Zero all current coefficients (preserve vector length). */
-    void setZero() { this->coefs = Eigen::VectorXd::Zero(this->coefs.size()); }
-    /** @brief Overwrite the coefficient vector (ascending powers in q). */
-    void setCoefs(const Eigen::VectorXd &c) { this->coefs = c; }
-
-    /** @brief Mutable access to the coefficient vector. */
-    Eigen::VectorXd &getCoefs() { return this->coefs; }
-    /** @brief Const access to the coefficient vector. */
-    const Eigen::VectorXd &getCoefs() const { return this->coefs; }
-    /** @} */
-
-    /** @name Calculus
-     *  @{
-     */
-    /** @brief Returns \f$ P' \f$ (derivative w.r.t. x). */
     Polynomial calcDerivative() const;
-    /** @brief Returns an antiderivative \f$ Q \f$ with \f$Q(0)=0\f$. */
+
+    /**
+     * @brief Calculates the indefinite integral \f$ Q = \int P\,dx \f$ of this polynomial, with constant = 0
+     * @return The indefinite integral polynomial Q
+     */
     Polynomial calcAntiDerivative() const;
 
-    /** @brief In-place derivative \f$ P \leftarrow P' \f$. */
-    void calcDerivativeInPlace();
-    /** @brief In-place antiderivative \f$ P \leftarrow \int P\,dx \f$, constant = 0. */
-    void calcAntiDerivativeInPlace();
-    /** @} */
-
-    /** @name Integration & inner product
-     *  @{
-     */
     /**
-     * @brief Analytic definite integral \f$\int_a^b P(x)\,dx\f$.
-     *
-     * - If the polynomial has internal bounds, integrates over the
-     *   intersection with \f$[a,b]\f$ (if `a`/`b` are provided).
-     * - If unbounded, both `a` and `b` must be provided.
+     * @brief Calculates the derivative \f$ P \leftarrow dP/dx \f$ of this polynomial in-place
+     * @details Replaces the current polynomial with its derivative, i.e. \f$ P \leftarrow dP/dx \f$.
+     */
+    void calcDerivativeInPlace();
+    
+    /**
+     * @brief Calculates the indefinite integral \f$ P \leftarrow \int P\,dx \f$ of this polynomial in-place, with constant = 0
+     * @details Replaces the current polynomial with its indefinite integral, i.e. \f$ P \leftarrow \int P\,dx \f$, with integration constant set to zero.
+     */
+    void calcAntiDerivativeInPlace();
+
+    /**
+     * @brief Calculates the analytical integral of P on [a, b]
+     * @param a Lower bound of the integration interval, defaults to the polynomial's lower bound
+     * @param b Upper bound of the integration interval, defaults to the polynomial's upper bound
+     * @return The integral of P on [a, b]
      */
     double integrate(const double *a = 0, const double *b = 0) const;
+ 
     /**
-     * @brief Inner product \f$\langle P,Q\rangle = \int P(x)Q(x)\,dx\f$ over P's bounds.
-     *
-     * Requires `*this` to be bounded. The product is formed algebraically and
-     * integrated over the same interval.
+     * @brief Analytically calculates the inner product of this polynomial with another one
+     * @param Q The other polynomial
+     * @return The inner product of the two polynomials
      */
-    double innerProduct(const Polynomial &p) const;
-    /** @} */
+    double innerProduct(const Polynomial &Q) const;
 
-    /** @name Algebra (same affine map required)
-     *  @{
-     */
     /**
-     * @brief Fused add: \f$ P \leftarrow P + c\,Q \f$.
-     *
-     * @note Both operands must have the same `(N,L)`; this is enforced in the
-     * implementation and will error out if violated.
+     * @brief In-place sum \f$ P \leftarrow P + c\,Q \f$.
+     * @param c Scalar multiplier for Q
+     * @param Q The polynomial to be added to P
      */
     void addInPlace(double c, const Polynomial &Q);
-    /** @brief Returns \f$ R = P + c\,Q \f$ (operands unchanged). */
+
+    /**
+     * @brief Sum \f$ R = P + c\,Q \f$.
+     * @param c Scalar multiplier for Q
+     * @param Q The polynomial to be added to P
+     * @return The resulting polynomial
+     */
     Polynomial add(double c, const Polynomial &Q) const;
 
-    /** @brief Scalar product \f$ Q = c\,P \f$. */
+    /** 
+     * @brief Scalar product of Polynomial with c
+     * @param c The scalar multiplier
+     * @return The resulting polynomial
+     */
     Polynomial operator*(double c) const;
+
     /**
-     * @brief Polynomial product \f$ R = P\cdot Q \f$.
-     *
-     * @note Requires same `(N,L)` affine map in the implementation.
+     * @brief Product of two Polynomials
+     * @param Q The other polynomial
+     * @return The resulting (unbounded) polynomial
      */
     Polynomial operator*(const Polynomial &Q) const;
 
-    /** @brief Sum \f$ P+Q \f$ (convenience). */
+    /**
+     * @brief Sum two Polynomials
+     * @param Q The other polynomial
+     * @return The resulting polynomial
+     */
     Polynomial operator+(const Polynomial &Q) const { return add(1.0, Q); }
-    /** @brief Difference \f$ P-Q \f$ (convenience). */
+    
+    /**
+     * @brief Difference of two Polynomials
+     * @param Q The other polynomial
+     * @return The resulting polynomial
+     */
     Polynomial operator-(const Polynomial &Q) const { return add(-1.0, Q); }
 
-    /** @brief In-place scalar scale: \f$ P \leftarrow c\,P \f$. */
-    Polynomial &operator*=(double c);
     /**
-     * @brief In-place product: \f$ P \leftarrow P\cdot Q \f$.
-     *
-     * @note Requires same `(N,L)` affine map in the implementation.
+     * @brief In-place scalar product.
+     * @param c The scalar multiplier
+     * @return Reference to the modified polynomial
+     */
+    Polynomial &operator*=(double c);
+    
+    /**
+     * @brief In-place product of two Polynomials
+     * @param Q The other polynomial
+     * @return Reference to the modified polynomial
      */
     Polynomial &operator*=(const Polynomial &Q);
-    /** @brief In-place sum: \f$ P \leftarrow P+Q \f$. */
+
+    /**
+     * @brief In-place sum of two Polynomials
+     * @param Q The other polynomial
+     * @return Reference to the modified polynomial
+     */
     Polynomial &operator+=(const Polynomial &Q);
-    /** @brief In-place difference: \f$ P \leftarrow P-Q \f$. */
+
+    /**
+     * @brief In-place difference of two Polynomials
+     * @param Q The other polynomial
+     * @return Reference to the modified polynomial
+     */
     Polynomial &operator-=(const Polynomial &Q);
-    /** @} */
 
 protected:
-    double N;              ///< Dilation in the internal map \f$q = N x - L\f$.
-    double L;              ///< Translation in the internal map \f$q = N x - L\f$.
-    Eigen::VectorXd coefs; ///< Coefficients for ascending powers of \f$q\f$.
+    double N;              ///< Dilation coefficient
+    double L;              ///< Translation coefficient
+    Eigen::VectorXd coefs; ///< Expansion coefficients
 };
 
 } // namespace mrcpp

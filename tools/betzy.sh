@@ -19,7 +19,7 @@ else
     ./setup --prefix=${install_dir} --omp --mpi --cxx=mpicxx ${build_dir} && \
     cd ${build_dir} && \
     make && \
-    OMP_NUM_THREADS=1 ctest -L unit --output-on-failure && \
+    OMP_NUM_THREADS=1 ctest --output-on-failure && \
     make install
 fi
 

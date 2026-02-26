@@ -25,7 +25,7 @@ else
     srun --cpus-per-task=4 --mem-per-cpu=2G --time=01:00:00 --account=$account bash -c \
     "source ${mrcpp_dir}/tools/olivia.env ; \
     make -j4 ; \
-    OMP_NUM_THREADS=4 ctest -L unit --output-on-failure ; \
+    OMP_NUM_THREADS=4 ctest --output-on-failure ; \
     make install -j4"
 fi
 

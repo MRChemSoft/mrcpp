@@ -80,7 +80,6 @@ template <int D> void testMapping() {
 
     const double ref_int = ref_tree.integrate();
     const double ref_norm = ref_tree.getSquareNorm();
-    const double inp_int = inp_tree.integrate();
     const double inp_norm = inp_tree.getSquareNorm();
 
     FMap<double, double> fmap = [](double val) { return val * val; };

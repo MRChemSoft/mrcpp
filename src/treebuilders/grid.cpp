@@ -113,7 +113,6 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
-        auto period = out.getMRA().getWorldBox().getScalingFactors();
         for (auto i = 0; i < inp.size(); i++) {
             auto *gauss = inp.getFunc(i).copy();
             build_grid(out, *gauss, maxIter);

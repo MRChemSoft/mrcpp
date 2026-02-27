@@ -72,7 +72,6 @@ template <int D> void testConstructors() {
     }
 
     SECTION("Parent constructor") {
-        int i = D;
         auto cIdx = nIdx->parent();
         REQUIRE(cIdx.getScale() == (nIdx->getScale() - 1));
     }

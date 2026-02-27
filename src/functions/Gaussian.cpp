@@ -194,7 +194,6 @@ template <int D> GaussExp<D> Gaussian<D>::periodify(const std::array<double, D> 
         auto needed_cells_vec = std::vector<int>();
         for (auto i = 0; i < D; i++) {
             auto upper_bound = pos[i] + x_std;
-            auto lower_bound = pos[i] - x_std;
             // number of cells upp and down relative to the center of the Gaussian
             needed_cells_vec.push_back(std::ceil(upper_bound / period[i]));
         }

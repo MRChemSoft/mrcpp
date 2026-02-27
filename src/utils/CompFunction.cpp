@@ -1517,7 +1517,6 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec) {
 void save_nodes(CompFunctionVector &Phi, FunctionTree<3> &refTree, BankAccount &account, int sizes) {
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
-    int max_nNodes = refTree.getNNodes();
     std::vector<double *> coeffVec;
     std::vector<ComplexDouble *> coeffVec_cplx;
     std::vector<double> scalefac;
@@ -1594,7 +1593,6 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
     // refine_grid(refTree, f); //to test
     mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
 
-    int kp1 = refTree.getKp1();
     int kp1_d = refTree.getKp1_d();
     int nCoefs = refTree.getTDim() * kp1_d;
 
@@ -1688,7 +1686,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             // 3a) make values for f at this node
             // 3a1) get coordinates of quadrature points for this node
             Eigen::MatrixXd pts; // Eigen::Zero(D, nCoefs);
-            double fval[nCoefs];
+            std::vector<double> fval(nCoefs);
             Coord<D> r;
             double *originalCoef = nullptr;
             MWNode<3> *Fnode = nullptr;
@@ -1709,7 +1707,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                 } else {
                     originalCoef = Fnode->getCoefs();
                     for (int j = 0; j < nCoefs; j++) fval[j] = originalCoef[j];
-                    Fnode->attachCoefs(fval); // note that each thread has its own copy
+                    Fnode->attachCoefs(fval.data()); // note that each thread has its own copy
                     Fnode->mwTransform(Reconstruction);
                     Fnode->cvTransform(Forward);
                 }
@@ -1755,8 +1753,6 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
         }
     } else {
         // MPI
-        int count1 = 0;
-        int count2 = 0;
         TaskManager tasks(max_n);
         for (int nn = 0; nn < max_n; nn++) {
             int n = tasks.next_task();
@@ -1766,7 +1762,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             // 3a1) get coordinates of quadrature points for this node
             Eigen::MatrixXd pts;           // Eigen::Zero(D, nCoefs);
             node.getExpandedChildPts(pts); // TODO: use getPrimitiveChildPts (less cache).
-            double fval[nCoefs];
+            std::vector<double> fval(nCoefs);
             Coord<D> r;
             MWNode<D> Fnode(*(refNodes[n]), false);
             if (Func == nullptr) {
@@ -1776,17 +1772,15 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                 }
             } else {
                 int nIdx = Func->real().getIx(node.getNodeIndex());
-                count1++;
                 if (nIdx < 0) {
                     // use the function f instead of Func
-                    count2++;
                     for (int j = 0; j < nCoefs; j++) {
                         for (int d = 0; d < D; d++) r[d] = pts(d, j);
                         fval[j] = f.evalf(r);
                     }
                 } else {
-                    Func->real().getNodeCoeff(nIdx, fval); // fetch coef from Bank
-                    Fnode.attachCoefs(fval);
+                    Func->real().getNodeCoeff(nIdx, fval.data()); // fetch coef from Bank
+                    Fnode.attachCoefs(fval.data());
                     Fnode.mwTransform(Reconstruction);
                     Fnode.cvTransform(Forward);
                 }
@@ -1994,7 +1988,6 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
     }
 
     // 3) make dot product for all the nodes and accumulate into S
-    int ibank = 0;
 #pragma omp parallel if (serial)
     {
         ComplexMatrix S_omp = ComplexMatrix::Zero(N, N); // copy for each thread
@@ -2143,7 +2136,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
     }
 
     // 3) make dot product for all the nodes and accumulate into S
-    int ibank = 0;
 #pragma omp parallel if (serial)
     {
         ComplexMatrix S_omp = ComplexMatrix::Zero(N, N); // copy for each thread
@@ -2349,7 +2341,6 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     int totsiz = 0;
     int totget = 0;
     int mxtotsiz = 0;
-    int ibank = 0;
     // the omp crashes sometime for unknown reasons?
 #pragma omp parallel if (serial)
     {
@@ -2578,7 +2569,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
     int totsiz = 0;
     int totget = 0;
     int mxtotsiz = 0;
-    int ibank = 0;
 #pragma omp parallel if (serial)
     {
         DoubleMatrix S_omp = DoubleMatrix::Zero(N, M); // copy for each thread
@@ -2729,6 +2719,7 @@ template ComplexDouble dot(CompFunction<3> bra, CompFunction<3> ket);
 template void project(CompFunction<3> &out, RepresentableFunction<3, double> &f, double prec);
 template void project(CompFunction<3> &out, RepresentableFunction<3, ComplexDouble> &f, double prec);
 template void multiply(CompFunction<3> &out, CompFunction<3> inp_a, CompFunction<3> inp_b, double prec, bool absPrec, bool useMaxNorms, bool conjugate);
+template void multiply(double prec, CompFunction<3> &out, double coef, CompFunction<3> inp_a, CompFunction<3> inp_b, int maxIter = -1, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
 template void multiply(CompFunction<3> &out, FunctionTree<3, double> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0, bool conjugate);

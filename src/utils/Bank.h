@@ -77,7 +77,10 @@ private:
     void clear_bank();
     void remove_account(int account); // remove the content and the account
 
+    #ifdef MRCPP_HAS_MPI
     long long totcurrentsize = 0ll;                     // number of kB used by all accounts
+    long long maxsize = 0;                              // max total deposited data size (without containers)
+    #endif
     std::vector<int> accounts;                          // open bank accounts
     std::map<int, std::vector<deposit> *> get_deposits; // gives deposits of an account
     std::map<int, std::map<int, int> *> get_id2ix;
@@ -85,7 +88,6 @@ private:
     std::map<int, std::vector<queue_struct> *> get_queue;            // gives deposits of an account
     std::map<int, std::map<int, std::vector<int>> *> get_readytasks; // used by task manager
     std::map<int, long long> currentsize;                            // total deposited data size (without containers)
-    long long maxsize = 0;                                           // max total deposited data size (without containers)
 };
 
 class BankAccount {

@@ -223,7 +223,6 @@ SCENARIO("Polynomials can be added and multiplied", "[poly_arithmetics], [polyno
             Polynomial R;
             R = P * Q;
             THEN("The coefficients of R are known") {
-                VectorXd &cr = R.getCoefs();
                 REQUIRE(R.getCoefs()[0] == Catch::Approx(0.0));
                 REQUIRE(R.getCoefs()[1] == Catch::Approx(0.0));
                 REQUIRE(R.getCoefs()[2] == Catch::Approx(1.0));

@@ -206,14 +206,14 @@ void MWFilter::generateBlocks() {
 
     int K = this->order + 1;
 
-    double dH[K];
-    double dG[K];
+    std::vector<double> dH(K);
+    std::vector<double> dG(K);
     /* read H0 and G0 from disk */
     this->G0 = Eigen::MatrixXd::Zero(K, K);
     this->H0 = Eigen::MatrixXd::Zero(K, K);
     for (int i = 0; i < K; i++) {
-        H_fis.read((char *)dH, sizeof(double) * K);
-        G_fis.read((char *)dG, sizeof(double) * K);
+        H_fis.read(reinterpret_cast<char *>(dH.data()), sizeof(double) * K);
+        G_fis.read(reinterpret_cast<char *>(dG.data()), sizeof(double) * K);
         for (int j = 0; j < K; j++) {
             this->G0(i, j) = dG[j]; // G0
             this->H0(i, j) = dH[j]; // H0

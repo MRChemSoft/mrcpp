@@ -372,17 +372,17 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
         }
     } else {
         // we must check if the result is real or complex
-        if (inp.isreal() and this->isreal() and c.imag() < MachineZero) {
+        if (inp.isreal() and this->isreal() and abs(c.imag()) < MachineZero) {
             if ((std::norm(func_ptr->data.c1[0]-inp.func_ptr->data.c1[0]) < MachineZero) and
-                c.imag() < MachineZero){
+                abs(c.imag()) < MachineZero){
                 // real (possibly with complex c1)
                 for (int i = 0; i < inp.Ncomp(); i++) {
                     CompD[i]->add_inplace(c.real(), *inp.CompD[i]);
                 }
-            }else if (func_ptr->data.c1[0].imag() > MachineZero or inp.func_ptr->data.c1[0].imag()  > MachineZero){
+            }else if (abs(func_ptr->data.c1[0].imag()) > MachineZero or abs(inp.func_ptr->data.c1[0].imag())  > MachineZero){
                 MSG_ABORT("Not implemented");
             } else {
-                if(std::abs(1.0 - func_ptr->data.c1[0].real()) > MachineZero){
+                if(abs(1.0 - func_ptr->data.c1[0].real()) > MachineZero){
                     rescale(func_ptr->data.c1[0].real());
                     for (int i = 1; i < Ncomp(); i++) {
                         if (std::norm(func_ptr->data.c1[0]-func_ptr->data.c1[i]) > MachineZero)
@@ -395,7 +395,7 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                     CompD[i]->add_inplace(c.real()*inp.func_ptr->data.c1[i].real(), *inp.CompD[i]);
                 }
             }
-        } else if (inp.isreal() and this->isreal() and c.imag() > MachineZero) {
+        } else if (inp.isreal() and this->isreal() and abs(c.imag()) > MachineZero) {
             MSG_ABORT("Not implemented");
         } else if( this->iscomplex() and inp.iscomplex()) {
             if (std::norm(1.0 - func_ptr->data.c1[0]) > MachineZero) {
@@ -564,7 +564,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
     out.func_ptr->data.shared = share; // we don' inherit the shareness
     bool iscomplex = false;
     for (int i = 0; i < inp.size(); i++)
-        if (inp[i].iscomplex() or c[i].imag() > MachineZero) iscomplex = true;
+        if (inp[i].iscomplex() or abs(c[i].imag()) > MachineZero) iscomplex = true;
     if (iscomplex) {
         out.func_ptr->data.iscomplex = 1;
         out.func_ptr->data.isreal = 0;

@@ -564,7 +564,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
     out.func_ptr->data.shared = share; // we don' inherit the shareness
     bool iscomplex = false;
     for (int i = 0; i < inp.size(); i++)
-        if (inp[i].iscomplex() or c[i].imag() > MachineZero) iscomplex = true;
+        if (inp[i].iscomplex() or abs(c[i].imag()) > MachineZero) iscomplex = true;
     if (iscomplex) {
         out.func_ptr->data.iscomplex = 1;
         out.func_ptr->data.isreal = 0;

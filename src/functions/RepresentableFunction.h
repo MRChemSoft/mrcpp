@@ -95,14 +95,15 @@ public:
             : RepresentableFunction(a.data(), b.data()) {}
 
     /**
-     * @brief Copy-construct, including bounds if present.
+     * @brief Constructs a new function with same bounds as the input function.
      *
-     * Deep-copies `A` and `B` when `func` is bounded; otherwise remains unbounded.
+     * Detects if the function is bounded, if so, deep-copies the bounds.
+     * If not then the new function is also unbounded.
      */
     RepresentableFunction(const RepresentableFunction<D, T> &func);
 
     /**
-     * @brief Assignment operator (base).
+     * @brief Copies function, not bounds. Use copy constructor if you want an identical function
      *
      * The base implementation **does not** copy bounds and simply returns `*this`.
      * Derived classes may extend this behavior to copy additional state.
@@ -141,6 +142,8 @@ public:
      *
      * After this call, @ref isBounded returns `false` and @ref outOfBounds
      * will always return `false`.
+     * 
+     * @warning This function is not implemented yet
      */
     void clearBounds();
 

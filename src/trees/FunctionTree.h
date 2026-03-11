@@ -66,10 +66,10 @@ public:
     /** 
      * @brief Integrate over half of the space
      * @param dim Dimension along which to split
-     * @param largerSide If true, integrate over the larger side (x>0 if dim=0)
+     * @param positiveSide If true, integrate over the positive side (x>0 if dim=0)
      * @return Integral of the function over parts of the computational domain
      */
-    T integrate(int dim, bool largerSide) const;
+    T integrateSide(int dim, bool positiveSide) const;
     
     double integrateEndNodes(RepresentableFunction_M &f);
     T evalf_precise(const Coord<D> &r);

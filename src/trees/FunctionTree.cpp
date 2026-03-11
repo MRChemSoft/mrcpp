@@ -435,13 +435,13 @@ template <int D, typename T> T FunctionTree<D, T>::integrate() const {
     return jacobian * result;
 }
 
-template <int D, typename T> T FunctionTree<D, T>::integrate(int dim, bool largerSide) const {
+template <int D, typename T> T FunctionTree<D, T>::integrateSide(int dim, bool positiveSide) const {
     T result = 0.0;
     for (int i = 0; i < this->rootBox.size(); i++) {
         const FunctionNode<D, T> &fNode = getRootFuncNode(i);
-        if (fNode.getLowerBounds()[dim] == this->rootBox.getLowerBound(dim) && not largerSide)
+        if (fNode.getLowerBounds()[dim] == this->rootBox.getLowerBound(dim) && not positiveSide)
             result += fNode.integrate();
-        if (fNode.getUpperBounds()[dim] == this->rootBox.getUpperBound(dim) && largerSide)
+        if (fNode.getUpperBounds()[dim] == this->rootBox.getUpperBound(dim) && positiveSide)
             result += fNode.integrate();
     }
   

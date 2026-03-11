@@ -187,12 +187,12 @@ template <int D> ComplexDouble CompFunction<D>::integrate() const {
     return integral;
 }
 
-template <int D> ComplexDouble CompFunction<D>::integrate(int dim, bool largerSide) const {
+template <int D> ComplexDouble CompFunction<D>::integrateSide(int dim, bool positiveSide) const {
     ComplexDouble integral;
     if (isreal())
-        integral = CompD[0]->integrate(dim, largerSide);
+        integral = CompD[0]->integrateSide(dim, positiveSide);
     else
-        integral = CompC[0]->integrate(dim, largerSide);
+        integral = CompC[0]->integrateSide(dim, positiveSide);
     return integral;
 }
 

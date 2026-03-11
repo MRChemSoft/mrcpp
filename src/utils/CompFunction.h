@@ -130,10 +130,10 @@ public:
     /**
      * @brief Integrate over half of the space
      * @param dim Dimension along which to split
-     * @param largerSide If true, integrate over the larger side (x>0 if dim=0)
+     * @param positiveSide If true, integrate over the positive side (x>0 if dim=0)
      * @return Resulting integral
      */
-    ComplexDouble integrate(int dim, bool largerSide) const;
+    ComplexDouble integrateSide(int dim, bool positiveSide) const;
     
     double norm() const;
     double getSquareNorm() const;

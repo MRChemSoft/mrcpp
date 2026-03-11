@@ -268,12 +268,11 @@ public:
     void defcomplex() { func_ptr->data.isreal = 0;             // define as complex
                         func_ptr->data.iscomplex = 1;}
     int share() const { return func_ptr->data.shared; }
+    /** @return Per-component chunk counts (used for MPI shipping). */
     int *Nchunks() const { return func_ptr->data.Nchunks; } // number of chunks of each component tree
     ComplexDouble getFac() const { return func_ptr->data.c1[0]; } // returns the overall multiplicative factor
     void setFac(ComplexDouble fac) { func_ptr->data.c1[0] = fac; } // sets the overall multiplicative factor
 
-    /** @return Per-component chunk counts (used for MPI shipping). */
-    int *Nchunks() const { return func_ptr->data.Nchunks; }
 
     /**
      * @brief Copy metadata and optionally allocate components (without copying tree data).

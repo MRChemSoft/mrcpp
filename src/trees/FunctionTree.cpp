@@ -275,9 +275,6 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
 
 
 template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::string &fname) {
-    int nRoots = this->getRootBox().size();
-    MWNode<D, T> **roots = this->getRootBox().getNodes();
-
     std::ofstream out(fname);
     out << std::setprecision(14);
     out << D << std::endl;
@@ -291,7 +288,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
     int ncoefs = 1;
     for (int d = 0; d < D; d++) ncoefs *= kp1;
     int Tdim = std::pow(2, D);
-    T values[ncoefs * Tdim];
+    std::vector<T> values(ncoefs * Tdim);
 
     int nout = this->endNodeTable.size();
     out << Tdim * nout << std::endl; // could output only scaling coeff?
@@ -319,7 +316,7 @@ template <int D, typename T> void FunctionTree<D, T>::saveTreeTXT(const std::str
         MWNode<D, T> *node = &(this->getNode(idx, false));
 	T *coefs = node->getCoefs();
 	for (int i = 0; i < ncoefs * Tdim; i++) values[i] = coefs[i];
-	node->attachCoefs(values);
+	    node->attachCoefs(values.data());
         int n = idx.getScale();
         node->mwTransform(Reconstruction);
         node->cvTransform(Forward);
@@ -424,7 +421,6 @@ template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunct
     // traverse tree, and treat end nodes only
     std::vector<FunctionNode<3> *> stack; // node from this
     for (int i = 0; i < this->getRootBox().size(); i++) stack.push_back(&(this->getRootFuncNode(i)));
-    int basis = getMRA().getScalingBasis().getScalingType();
     double result = 0.0;
     while (stack.size() > 0) {
         FunctionNode<3> *Node = stack.back();
@@ -437,9 +433,9 @@ template <> double FunctionTree<3, double>::integrateEndNodes(RepresentableFunct
             double *coefs = Node->getCoefs(); // save position of coeff, but do not use them!
             // The data in fmat is not organized so that two consecutive points are stored after each other in memory, so needs to copy before mwtransform, cannot use memory adress directly.
             int nc = fmat.cols();
-            double cc[nc];
+            std::vector<double> cc(nc);
             for (int i = 0; i < nc; i++) cc[i] = fmat(0, i);
-            Node->attachCoefs(cc);
+            Node->attachCoefs(cc.data());
             result += Node->integrateValues();
             Node->attachCoefs(coefs); // put back original coeff
         }
@@ -765,8 +761,6 @@ void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
     indices.clear();
     parent_indices.clear();
     max_index = 0;
-    int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
-    int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
     std::vector<MWNode<D, double> *> refstack; // nodes from refTree
     std::vector<MWNode<D, T> *> thisstack;     // nodes from this Tree
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
@@ -976,7 +970,6 @@ template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
         for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
         while (stack.size() > stack_p) {
             MWNode<3, double> *Node = stack[stack_p++];
-            int id = 0;
             NodesCoeff->put_data(Node->getNodeIndex(), sizecoeff, Node->getCoefs());
             for (int i = 0; i < Node->getNChildren(); i++) { stack.push_back(Node->children[i]); }
         }
@@ -999,7 +992,6 @@ template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
         for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) { stack.push_back(this->getRootBox().getNodes()[rIdx]); }
         while (stack.size() > stack_p) {
             MWNode<3, ComplexDouble> *Node = stack[stack_p++];
-            int id = 0;
             NodesCoeff->put_data(Node->getNodeIndex(), sizecoeff, Node->getCoefs());
             for (int i = 0; i < Node->getNChildren(); i++) { stack.push_back(Node->children[i]); }
         }
@@ -1066,7 +1058,6 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
 
 template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref = 0.0;
     outTree = new FunctionTree<3, ComplexDouble>(this->getMRA());
     std::vector<MWNode<3, double> *> instack;         // node from this
     std::vector<MWNode<3, ComplexDouble> *> outstack; // node from outTree
@@ -1075,7 +1066,6 @@ template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, Comp
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
         outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
     }
-    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees
@@ -1106,7 +1096,6 @@ template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, Comp
 
 template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref = 0.0;
     outTree = new FunctionTree<2, ComplexDouble>(this->getMRA());
     std::vector<MWNode<2, double> *> instack;         // node from this
     std::vector<MWNode<2, ComplexDouble> *> outstack; // node from outTree
@@ -1115,7 +1104,6 @@ template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, Comp
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
         outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
     }
-    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees
@@ -1146,7 +1134,6 @@ template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, Comp
 
 template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&outTree) {
     delete outTree;
-    double ref = 0.0;
     outTree = new FunctionTree<1, ComplexDouble>(this->getMRA());
     std::vector<MWNode<1, double> *> instack;         // node from this
     std::vector<MWNode<1, ComplexDouble> *> outstack; // node from outTree
@@ -1155,7 +1142,6 @@ template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, Comp
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
         outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
     }
-    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees
@@ -1187,7 +1173,6 @@ template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, Comp
 // for testing
 template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double> *&outTree) {
     delete outTree;
-    double ref = 0.0;
     // FunctionTree<3, double>* inTree = this;
     outTree = new FunctionTree<3, double>(this->getMRA());
     std::vector<MWNode<3, double> *> instack;  // node from this
@@ -1197,7 +1182,6 @@ template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
         outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
     }
-    int nNodes = std::min(this->getNNodes(), this->getNodeAllocator().getMaxNodesPerChunk());
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees

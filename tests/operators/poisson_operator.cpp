@@ -50,7 +50,6 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
     const double exp_prec = 1.0e-4;
     const double proj_prec = 1.0e-3;
     const double ccc_prec = 1.0e-3;
-    const double band_prec = 1.0e-3;
 
     const int n = -3;
     const int k = 5;
@@ -161,7 +160,6 @@ TEST_CASE("Apply Periodic Poisson' operator", "[apply_periodic_Poisson], [poisso
 
     // 2.0*pi periodic in all dirs // UPDATE ME
     auto scaling_factor = std::array<double, 3>{pi, pi, pi};
-    auto periodic = true;
 
     auto corner = std::array<int, 3>{-1, -1, -1};
     auto boxes = std::array<int, 3>{2, 2, 2};

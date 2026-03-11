@@ -35,8 +35,6 @@
 
 namespace mrcpp {
 
-#define GAUSS_EXP_PREC 1.e-10
-
 /**
  * @class GaussExp
  * @tparam D Spatial dimension (1, 2, or 3)
@@ -66,7 +64,7 @@ public:
      *
      * @note After construction, populate GTFs via @ref setFunc or @ref append.
      */
-    GaussExp(int nTerms = 0, double prec = GAUSS_EXP_PREC);
+    GaussExp(int nTerms = 0);
 
     /// @brief Deep-copy constructor (clones every GTF via virtual copy())
     GaussExp(const GaussExp<D> &gExp);

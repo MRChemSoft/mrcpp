@@ -334,8 +334,8 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, Funct
 
     double result = 0.0;
     int ncoef = bra.getKp1_d() * bra.getTDim();
-    T valA[ncoef];
-    T valB[ncoef];
+    std::vector<T> valA(ncoef);
+    std::vector<T> valB(ncoef);
     int nNodes = bra.getNEndNodes();
 
     for (int n = 0; n < nNodes; n++) {
@@ -345,8 +345,8 @@ template <int D, typename T> double node_norm_dot(FunctionTree<D, T> &bra, Funct
             // convert to interpolating coef, take abs, convert back
             FunctionNode<D, T> *mwNode = static_cast<FunctionNode<D, T> *>(ket.findNode(idx));
             if (mwNode == nullptr) MSG_ABORT("Trees must have same grid");
-            node.getAbsCoefs(valA);
-            mwNode->getAbsCoefs(valB);
+            node.getAbsCoefs(valA.data());
+            mwNode->getAbsCoefs(valB.data());
             for (int i = 0; i < ncoef; i++) result += std::norm(valA[i] * valB[i]);
         } else {
             // approximate by product of node norms

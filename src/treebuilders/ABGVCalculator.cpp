@@ -48,7 +48,7 @@ ABGVCalculator::ABGVCalculator(const ScalingBasis &basis, double a, double b)
 
 void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
-    double sqrtCoef[kp1];
+    std::vector<double> sqrtCoef(kp1);
     for (int i = 0; i < kp1; i++) { sqrtCoef[i] = std::sqrt(2.0 * i + 1.0); }
 
     switch (basis.getScalingType()) {
@@ -74,7 +74,7 @@ void ABGVCalculator::calcValueVectors(const ScalingBasis &basis) {
 
 void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     int kp1 = basis.getQuadratureOrder();
-    double sqrtCoef[kp1];
+    std::vector<double> sqrtCoef(kp1);
     for (int i = 0; i < kp1; i++) { sqrtCoef[i] = std::sqrt(2.0 * i + 1.0); }
     getQuadratureCache(qCache);
     const VectorXd &roots = qCache.getRoots(kp1);
@@ -105,7 +105,6 @@ void ABGVCalculator::calcNode(MWNode<2> &node) {
     node.zeroCoefs();
 
     const auto &idx = node.getNodeIndex();
-    int l = idx[1] - idx[0];
     int np1 = idx.getScale() + 1;
     int kp1 = node.getKp1();
     int kp1_d = node.getKp1_d();

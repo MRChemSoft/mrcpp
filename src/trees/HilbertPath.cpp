@@ -114,6 +114,21 @@ const int HilbertPath<3>::hTable[12][8] = {
     {4,5,7,6,3,2,0,1}
 };
 
+template <int D>
+short int HilbertPath<D>::getChildPath(int hIdx) const {
+    return pTable[this->path][hIdx];
+}
+
+template <int D>
+int HilbertPath<D>::getZIndex(int hIdx) const {
+    return zTable[this->path][hIdx];
+}
+
+template <int D>
+int HilbertPath<D>::getHIndex(int zIdx) const {
+    return hTable[this->path][zIdx];
+}
+
 // clang-format on
 
 template class HilbertPath<1>;

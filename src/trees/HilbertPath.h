@@ -86,22 +86,21 @@ public:
      * @param hIdx Child index in **Hilbert** order for the current state.
      * @return Path index for the selected child
      */
-    short int getChildPath(int hIdx) const { return this->pTable[this->path][hIdx]; }
+    short int getChildPath(int hIdx) const;
     /**
      * @brief Map Hilbert child index to Morton (Z-order) child index
      *
      * @param hIdx Child index in **Hilbert** order
      * @return **Morton** child index.
      */
-    int getZIndex(int hIdx) const { return this->zTable[this->path][hIdx]; }
-
+    int getZIndex(int hIdx) const;
     /**
      * @brief Map Morton (Z-order) child index to Hilbert child index.
      *
      * @param zIdx Child index in **Morton** order
      * @return **Hilbert** child index
      */
-    int getHIndex(int zIdx) const { return this->hTable[this->path][zIdx]; }
+    int getHIndex(int zIdx) const;
 
 private:
     /// Current Hilbert orientation state (table row selector).

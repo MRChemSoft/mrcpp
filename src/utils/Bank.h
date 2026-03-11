@@ -228,36 +228,27 @@ private:
     /** @brief Remove all accounts and deposits (global reset). */
     void clear_bank();
 
+    #ifdef MRCPP_HAS_MPI
+    long long totcurrentsize = 0ll;                     ///< Sum of all account sizes (kB).                 
+    long long maxsize = 0;                              ///< max total deposited data size (without containers)
+    #endif
     /**
      * @brief Remove a single account and its content.
      * @param account Account id to erase.
      */
     void remove_account(int account);
-
-    // ---- Accounting & indices ----
-    long long totcurrentsize = 0ll;                     ///< Sum of all account sizes (kB).
     std::vector<int> accounts;                          ///< Active account ids.
-
-    /** Map: account id → vector of deposits. */
-    std::map<int, std::vector<deposit> *> get_deposits;
-
-    /** Map: account id → (item id → index in deposits vector). */
+    std::map<int, std::vector<deposit> *> get_deposits; ///< gives deposits of an account
     std::map<int, std::map<int, int> *> get_id2ix;
 
     /** Map: account id → (queue id → index in queue vector). */
     std::map<int, std::map<int, int> *> get_id2qu;
-
-    /** Map: account id → queue collection (task-ready queues). */
-    std::map<int, std::vector<queue_struct> *> get_queue;
-
-    /** Map: account id → (i → vector of j ready items). */
-    std::map<int, std::map<int, std::vector<int>> *> get_readytasks;
-
-    /** Map: account id → current size in kB (without container overhead). */
-    std::map<int, long long> currentsize;
-
-    /** Peak total size (kB) observed since last reset. */
-    long long maxsize = 0;
+  /** Map: account id → queue collection (task-ready queues). */
+    std::map<int, std::vector<queue_struct> *> get_queue;            // gives deposits of an account
+  /** Map: account id → (i → vector of j ready items). */
+    std::map<int, std::map<int, std::vector<int>> *> get_readytasks; // used by task manager
+   /** Map: account id → current size in kB (without container overhead). */
+    std::map<int, long long> currentsize;                            // total deposited data size (without containers)
 };
 
 /**

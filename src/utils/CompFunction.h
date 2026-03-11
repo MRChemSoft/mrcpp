@@ -268,6 +268,9 @@ public:
     void defcomplex() { func_ptr->data.isreal = 0;             // define as complex
                         func_ptr->data.iscomplex = 1;}
     int share() const { return func_ptr->data.shared; }
+    int *Nchunks() const { return func_ptr->data.Nchunks; } // number of chunks of each component tree
+    ComplexDouble getFac() const { return func_ptr->data.c1[0]; } // returns the overall multiplicative factor
+    void setFac(ComplexDouble fac) { func_ptr->data.c1[0] = fac; } // sets the overall multiplicative factor
 
     /** @return Per-component chunk counts (used for MPI shipping). */
     int *Nchunks() const { return func_ptr->data.Nchunks; }
@@ -339,7 +342,7 @@ public:
      * @param prec Relative (or absolute) precision threshold.
      * @return Number of removed nodes or a non-negative status.
      */
-    int crop(double prec);
+    int crop(double prec, bool absPrec = true);
 
     /**
      * @brief Multiply the entire function by a complex scalar in-place.

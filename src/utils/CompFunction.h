@@ -289,9 +289,16 @@ public:
     ComplexDouble integrate() const;
 
     /**
+     * @brief Integrate over half of the space
+     * @param dim Dimension along which to split
+     * @param positiveSide If true, integrate over the positive side (x>0 if dim=0)
+     * @return Resulting integral
+     */
+    ComplexDouble integrateSide(int dim, bool positiveSide) const;
+    /**
      * @brief L2 norm of the function.
      * @return \f$\|f\|_2\f$ as a double.
-     */
+     */    
     double norm() const;
 
     /**

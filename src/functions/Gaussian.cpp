@@ -171,16 +171,7 @@ template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
     return S;
 }
 
-/** @brief Generates a GaussExp that is semi-periodic around a unit-cell
- *
- * @returns Semi-periodic version of a Gaussian around a unit-cell
- * @param[in] period: The period of the unit cell
- * @param[in] nStdDev: Number of standard diviations covered in each direction. Default 4.0
- *
- * @details nStdDev = 1, 2, 3 and 4 ensures atleast 68.27%, 95.45%, 99.73% and 99.99% of the
- * integral is conserved with respect to the integration limits.
- *
- */
+
 template <int D> GaussExp<D> Gaussian<D>::periodify(const std::array<double, D> &period, double nStdDev) const {
     GaussExp<D> gauss_exp;
     auto pos_vec = std::vector<Coord<D>>();

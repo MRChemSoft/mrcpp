@@ -42,12 +42,10 @@ namespace mrcpp {
 
 using LegendreCache = ObjectCache<LegendrePoly>;
 
-/** Legendre polynomial constructed on [-1,1] and
- * scaled by n and translated by l */
 LegendrePoly::LegendrePoly(int k, double n, double l)
         : Polynomial(k) {
     // Since we create Legendre polynomials recursively on [-1,1]
-    // we cache all lower order polynomilas for future use.
+    // we cache all lower order polynomials for future use.
     LegendreCache &Cache = LegendreCache::getInstance();
     if (k >= 1) {
         if (not Cache.hasId(k - 1)) {
@@ -63,7 +61,6 @@ LegendrePoly::LegendrePoly(int k, double n, double l)
     dilate(n);
 }
 
-/** Compute Legendre polynomial coefs on interval [-1,1] */
 void LegendrePoly::computeLegendrePolynomial(int k) {
     assert(this->size() >= k);
     if (k == 0) {
@@ -91,9 +88,6 @@ void LegendrePoly::computeLegendrePolynomial(int k) {
     }
 }
 
-/** Calculate the value of an n:th order Legendre polynominal in x, including
- * the first derivative.
- */
 Vector2d LegendrePoly::firstDerivative(double x) const {
     double c1, c2, c4, ym, yp, y;
     double dy, dyp, dym;
@@ -139,9 +133,6 @@ Vector2d LegendrePoly::firstDerivative(double x) const {
     return val;
 }
 
-/** Calculate the value of an n:th order Legendre polynominal in x, including
- * first and second derivatives.
- */
 Vector3d LegendrePoly::secondDerivative(double x) const {
     NOT_IMPLEMENTED_ABORT;
     double c1, c2, c4, ym, yp, y, d2y;

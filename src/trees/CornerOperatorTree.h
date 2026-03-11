@@ -35,16 +35,34 @@ namespace mrcpp {
  *
  * @details Tree structure of operators having corner matrices
  * \f$ A, B, C \f$ in the non-standard form.
- *
  */
 class CornerOperatorTree final : public OperatorTree {
 public:
-    using OperatorTree::OperatorTree; // Import the single valid constructor from OperatorTree
+    /// Inherit the valid constructorfrom OperatorTree.
+    using OperatorTree::OperatorTree;
+
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
     ~CornerOperatorTree() override = default;
 
+    /** 
+     * @brief Calculates band widths of the non-standard form matrices
+     * @param prec Precision used for thresholding
+     *
+     * @details It is starting from \f$ l = 2^n \f$ and updating the band width value each time we encounter
+     * considerable value while keeping decreasing down to \f$ l = 0 \f$, that stands for the distance to the diagonal.
+     * This procedure is repeated for each matrix \f$ A, B \f$ and \f$ C \f$.
+     */
     void calcBandWidth(double prec = -1.0) override;
+
+    /** 
+     * @brief Checks if the distance to diagonal is lesser than the operator band width
+     * @param oTransl distance to diagonal
+     * @param o_depth scaling order
+     * @param idx index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$
+     *
+     * @returns True if @p oTransl is outside of the corner band (close to diagonal) and False otherwise.
+     */
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;
 };
 

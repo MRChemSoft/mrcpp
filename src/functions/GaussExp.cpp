@@ -333,11 +333,6 @@ template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
     return o;
 }
 
-/** @returns Coulomb repulsion energy between all pairs in GaussExp, including self-interaction
- *
- *  @note Each Gaussian must be normalized to unit charge
- *  \f$ c = (\alpha/\pi)^{D/2} \f$ for this to be correct!
- */
 template <int D> double GaussExp<D>::calcCoulombEnergy() const {
     NOT_IMPLEMENTED_ABORT
 }

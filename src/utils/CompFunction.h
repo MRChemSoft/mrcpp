@@ -126,6 +126,15 @@ public:
 
     CompFunction paramCopy(bool alloc = false) const;
     ComplexDouble integrate() const;
+
+    /**
+     * @brief Integrate over half of the space
+     * @param dim Dimension along which to split
+     * @param positiveSide If true, integrate over the positive side (x>0 if dim=0)
+     * @return Resulting integral
+     */
+    ComplexDouble integrateSide(int dim, bool positiveSide) const;
+    
     double norm() const;
     double getSquareNorm() const;
     void alloc(int nalloc = 1, bool zero = true);

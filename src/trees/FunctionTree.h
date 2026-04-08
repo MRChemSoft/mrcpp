@@ -57,6 +57,11 @@ public:
     FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name)
             : FunctionTree(mra, nullptr, name) {}
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem = nullptr, const std::string &name = "nn");
+    template <typename U = T,
+              typename = std::enable_if_t<std::is_same_v<U, ComplexDouble>>>
+    FunctionTree(const FunctionTree<D, double> &realTree,
+                 const FunctionTree<D, double> &imagTree,
+                 SharedMemory<T> *sh_mem, const std::string &name);
     FunctionTree(const FunctionTree<D, T> &tree) = delete;
     FunctionTree<D, T> &operator=(const FunctionTree<D, T> &tree) = delete;
     ~FunctionTree() override;

@@ -31,6 +31,7 @@
 #include "NodeAllocator.h"
 
 #include "treebuilders/grid.h"
+#include "treebuilders/add.h"
 #include "utils/Bank.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -54,7 +55,8 @@ namespace mrcpp {
 template <int D, typename T>
 FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem, const std::string &name)
         : MWTree<D, T>(mra, name)
-        , RepresentableFunction<D, T>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
+        , RepresentableFunction<D, T>(mra.getWorldBox().getLowerBounds().data(),
+                                      mra.getWorldBox().getUpperBounds().data()) {
     int nodesPerChunk = 2048; // Large chunks are required for not leading to memory fragmentation (32 MB on "Betzy" 2023)
     // nodesPerChunk is same for real and complex trees: the size (in MB) of the complex chunks are twice as large
     int coefsGenNodes = this->getKp1_d();
@@ -65,6 +67,22 @@ FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMe
     this->resetEndNodeTable();
 }
 
+template <int D, typename T>
+template <typename U, typename>
+FunctionTree<D, T>::FunctionTree(const FunctionTree<D, double> &realTree,
+                                 const FunctionTree<D, double> &imagTree,
+                                 SharedMemory<T> *sh_mem,
+                                 const std::string &name)
+    : FunctionTree(realTree.getMRA(), name)
+{
+    std::cout << "YEAH" << std::endl;
+    FunctionTree<D, T> realTemp = FunctionTree(realTree.getMRA(), name);
+    FunctionTree<D, T> imagTemp = FunctionTree(realTree.getMRA(), name);
+    realTree.CopyTreeToComplex(realTemp);
+    imagTree.CopyTreeToComplex(imagTemp);
+    add(-1, this, 1, realTemp, 1i, imagTemp);
+}
+    
 template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();

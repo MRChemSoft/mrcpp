@@ -69,18 +69,17 @@ FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMe
 
 template <int D, typename T>
 template <typename U, typename>
-FunctionTree<D, T>::FunctionTree(const FunctionTree<D, double> &realTree,
-                                 const FunctionTree<D, double> &imagTree,
+FunctionTree<D, T>::FunctionTree(FunctionTree<D, double> &realTree,
+                                 FunctionTree<D, double> &imagTree,
                                  SharedMemory<T> *sh_mem,
                                  const std::string &name)
-    : FunctionTree(realTree.getMRA(), name)
+    : FunctionTree(realTree.getMRA(), sh_mem, name)
 {
-    std::cout << "YEAH" << std::endl;
-    FunctionTree<D, T> realTemp = FunctionTree(realTree.getMRA(), name);
-    FunctionTree<D, T> imagTemp = FunctionTree(realTree.getMRA(), name);
-    realTree.CopyTreeToComplex(realTemp);
-    imagTree.CopyTreeToComplex(imagTemp);
-    add(-1, this, 1, realTemp, 1i, imagTemp);
+    static_assert(std::is_same_v<T, ComplexDouble>, "This constructor requires T = ComplexDouble");
+    std::unique_ptr<FunctionTree<D, ComplexDouble>> real_p(realTree.CopyTreeToComplex());
+    std::unique_ptr<FunctionTree<D, ComplexDouble>> imag_p(imagTree.CopyTreeToComplex());
+    this->add_inplace(ComplexDouble(1.0, 0.0), *real_p);
+    this->add_inplace(ComplexDouble(0.0, 1.0), *imag_p);
 }
     
 template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
@@ -1317,5 +1316,25 @@ template FunctionTree<3, ComplexDouble>* FunctionTree<3, double>::CopyTreeToComp
 template FunctionTree<1, double>* FunctionTree<1, double>::CopyTreeToReal<double, void>();
 template FunctionTree<2, double>* FunctionTree<2, double>::CopyTreeToReal<double, void>();
 template FunctionTree<3, double>* FunctionTree<3, double>::CopyTreeToReal<double, void>();
+template FunctionTree<3, ComplexDouble>::FunctionTree(
+    FunctionTree<3, double>&,
+    FunctionTree<3, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
+
+template FunctionTree<2, ComplexDouble>::FunctionTree(
+    FunctionTree<2, double>&,
+    FunctionTree<2, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
+
+template FunctionTree<1, ComplexDouble>::FunctionTree(
+    FunctionTree<1, double>&,
+    FunctionTree<1, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
 
 } // namespace mrcpp

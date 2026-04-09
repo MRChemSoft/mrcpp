@@ -55,7 +55,7 @@ template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(
     }
 }
 
-/** Constructs a new function with same bounds as the input function */
+
 template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(const RepresentableFunction<D, T> &func) {
     if (func.isBounded()) {
         this->bounded = true;
@@ -72,8 +72,7 @@ template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(
     }
 }
 
-/** Copies function, not bounds. Use copy constructor if you want an
- * identical function. */
+
 template <int D, typename T> RepresentableFunction<D, T> &RepresentableFunction<D, T>::operator=(const RepresentableFunction<D, T> &func) {
     return *this;
 }

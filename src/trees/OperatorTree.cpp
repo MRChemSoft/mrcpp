@@ -98,14 +98,7 @@ void OperatorTree::clearBandWidth() {
     this->bandWidth = nullptr;
 }
 
-/** @brief Calculates band widths of the non-standard form matrices.
- *
- * @param[in] prec: Precision used for thresholding
- *
- * @details It is starting from \f$ l = 0 \f$ and updating the band width value each time we encounter
- * considerable value while keeping increasing \f$ l \f$, that stands for the distance to the diagonal.
- *
- */
+
 void OperatorTree::calcBandWidth(double prec) {
     if (this->bandWidth == nullptr) clearBandWidth();
     this->bandWidth = new BandWidth(getDepth());
@@ -133,32 +126,12 @@ void OperatorTree::calcBandWidth(double prec) {
     println(100, "\nOperator BandWidth" << *this->bandWidth);
 }
 
-/** @brief Checks if the distance to diagonal is bigger than the operator band width.
- *
- * @param[in] oTransl: distance to diagonal
- * @param[in] o_depth: scaling order
- * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
- *
- * @returns True if \b oTransl is outside of the band and False otherwise.
- *
- */
+
 bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) {
     return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
 }
 
-/** @brief Cleans up end nodes.
- *
- * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building).
- *
- * @details Traverses the tree and rewrites end nodes having branch node twins,
- * i. e. identical with respect to scale and translation.
- * This method is very handy, when an adaptive operator construction
- * can make a significunt noise at low scaling depth.
- * Its need comes from the fact that mwTransform up cannot override
- * rubbish that can potentially stick to end nodes at a particular level,
- * and as a result spread further up to the root with mwTransform.
- *
- */
+
 void OperatorTree::removeRoughScaleNoise(int trust_scale) {
     MWNode<2> *p_rubbish;     // possibly inexact end node
     MWNode<2> *p_counterpart; // exact branch node
@@ -191,12 +164,7 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
     }
 }
 
-/** Make 1D lists, adressable from [-l, l] scale by scale, of operator node
- * pointers for fast operator retrieval. This method is not thread safe,
- * since it projects missing operator nodes on the fly. Hence, it must NEVER
- * be called within a parallel region, or all hell will break loose. This is
- * not really a problem, but you have been warned.
- */
+// NOT THREAD SAFE
 void OperatorTree::setupOperNodeCache() {
     int nScales = this->nodesAtDepth.size();
     int rootScale = this->getRootScale();
@@ -245,12 +213,7 @@ void OperatorTree::clearOperNodeCache() {
     }
 }
 
-/** Regenerate all s/d-coeffs by backtransformation, starting at the bottom and
- * thus purifying all coefficients. Option to overwrite or add up existing
- * coefficients of BranchNodes (can be used after operator application).
- * Reimplementation of MWTree::mwTransform() without OMP, as calculation
- * of OperatorNorm is done using random vectors, which is non-deterministic
- * in parallel. FunctionTrees should be fine. */
+
 void OperatorTree::mwTransformUp() {
     std::vector<MWNodeVector<2>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);
@@ -264,12 +227,7 @@ void OperatorTree::mwTransformUp() {
     }
 }
 
-/** Regenerate all scaling coeffs by MW transformation of existing s/w-coeffs
- * on coarser scales, starting at the rootNodes. Option to overwrite or add up
- * existing scaling coefficients (can be used after operator application).
- * Reimplementation of MWTree::mwTransform() without OMP, as calculation
- * of OperatorNorm is done using random vectors, which is non-deterministic
- * in parallel. FunctionTrees should be fine. */
+
 void OperatorTree::mwTransformDown(bool overwrite) {
     std::vector<MWNodeVector<2>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);

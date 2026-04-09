@@ -215,7 +215,6 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
     std::fill(this->stackStatus.begin() + oldsize, this->stackStatus.end(), 0);
 }
 
-/** Fill all holes in the chunks with occupied nodes, then remove all empty chunks */
 template <int D, typename T> int NodeAllocator<D, T>::compress() {
     MRCPP_SET_OMP_LOCK();
     int nNodes = (1 << D);
@@ -358,7 +357,7 @@ template <int D, typename T> int NodeAllocator<D, T>::findNextOccupied(int sIdx)
     return sIdx;
 }
 
-/** Traverse tree and redefine pointer, counter and tables. */
+
 template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
     MRCPP_SET_OMP_LOCK();
     this->nNodes = 0;

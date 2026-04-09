@@ -30,35 +30,56 @@
 
 namespace mrcpp {
 
-template <int D, typename T> class AdditionCalculator final : public TreeCalculator<D, T> {
+/**
+ * @class AdditionCalculator
+ * @tparam D Spatial dimension (1, 2, or 3)
+ * @tparam T Coefficient type (e.g. double, ComplexDouble)
+ *
+ * @brief Calculator for summing over multiple FunctionTrees.
+ */
+template <int D, typename T>
+class AdditionCalculator final : public TreeCalculator<D, T> {
 public:
+    /**
+     * @brief Construct an addition calculator over a set of input trees
+     *
+     * @param inp[in]   Vector of (coefficient, tree) pairs to be summed
+     * @param conjugate Conjugation flag for complex types
+     */
     AdditionCalculator(const FunctionTreeVector<D, T> &inp, bool conjugate = false)
             : sum_vec(inp)
             , conj(conjugate) {}
 
 private:
-    FunctionTreeVector<D, T> sum_vec;
-    bool conj;
+    FunctionTreeVector<D, T> sum_vec;   ///< FunctionTrees to sum over
+    bool conj;                          ///< Conjugation flag for complex types
 
+    /**
+     * @brief Accumulate coefficients for a single output node
+     * @param[in,out] node_o Target node whose coefficients are replaced by the sum matching input nodes
+     */
     void calcNode(MWNode<D, T> &node_o) override {
         node_o.zeroCoefs();
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         T *coefs_o = node_o.getCoefs();
+
         for (int i = 0; i < this->sum_vec.size(); i++) {
             T c_i = get_coef(this->sum_vec, i);
             FunctionTree<D, T> &func_i = get_func(this->sum_vec, i);
+
             // This generates missing nodes
             const MWNode<D, T> &node_i = func_i.getNode(idx);
             const T *coefs_i = node_i.getCoefs();
             int n_coefs = node_i.getNCoefs();
+
             if constexpr (std::is_same<T, ComplexDouble>::value) {
                 if (func_i.conjugate() xor conj) {
-                    for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * std::conj(coefs_i[j]); }
+                    for (int j = 0; j < n_coefs; j++) coefs_o[j] += c_i * std::conj(coefs_i[j]);
                 } else {
-                    for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
+                    for (int j = 0; j < n_coefs; j++) coefs_o[j] += c_i * coefs_i[j];
                 }
             } else {
-                for (int j = 0; j < n_coefs; j++) { coefs_o[j] += c_i * coefs_i[j]; }
+                for (int j = 0; j < n_coefs; j++) coefs_o[j] += c_i * coefs_i[j];
             }
         }
         node_o.setHasCoefs();

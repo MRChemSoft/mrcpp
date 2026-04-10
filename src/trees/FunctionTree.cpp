@@ -1206,9 +1206,8 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
  */
 template <int D, typename T>
 template <typename U, typename>
-void FunctionTree<D, T>::CopyTreeToComplex(FunctionTree<D, ComplexDouble> *&outTree) {
-    delete outTree;
-    outTree = new FunctionTree<3, ComplexDouble>(this->getMRA());
+FunctionTree<D, ComplexDouble>* FunctionTree<D, T>::CopyTreeToComplex() {
+    auto* outTree = new FunctionTree<D, ComplexDouble>(this->getMRA());
     std::vector<MWNode<3, double> *> instack;         // node from this
     std::vector<MWNode<3, ComplexDouble> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
@@ -1242,15 +1241,15 @@ void FunctionTree<D, T>::CopyTreeToComplex(FunctionTree<D, ComplexDouble> *&outT
     }
     outTree->calcSquareNorm();
     outTree->calcSquareNorm(true);
+    return outTree;
 }
 
 // for testing
 template <int D, typename T>
 template <typename U, typename>
-void FunctionTree<D, T>::CopyTreeToReal(FunctionTree<D, double> *&outTree) {
-    delete outTree;
+FunctionTree<D, double>* FunctionTree<D, T>::CopyTreeToReal() {
     // FunctionTree<3, double>* inTree = this;
-    outTree = new FunctionTree<3, double>(this->getMRA());
+    auto* outTree = new FunctionTree<D, double>(this->getMRA());
     std::vector<MWNode<3, double> *> instack;  // node from this
     std::vector<MWNode<3, double> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
@@ -1283,6 +1282,7 @@ void FunctionTree<D, T>::CopyTreeToReal(FunctionTree<D, double> *&outTree) {
             outTree->endNodeTable.push_back(outNode);
         }
     }
+    return outTree;
 }
 
 template class FunctionTree<1, double>;

@@ -422,7 +422,7 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
         } else if( this->isreal()) {
             // we set as complex
             for (int i = 0; i < Ncomp(); i++) {
-                CompD[i]->CopyTreeToComplex(CompC[i]);
+                CompC[i] = CompD[i]->CopyTreeToComplex();
                 delete CompD[i];
                 CompD[i] = nullptr;
             }
@@ -468,7 +468,7 @@ template <int D> void CompFunction<D>::rescale(ComplexDouble c) {
                 CompC[i]->rescale(c);
             } else {
                 if (abs(c.imag()) > MachineZero) { // works only only for NComp==1)
-                    CompD[i]->CopyTreeToComplex(CompC[i]);
+                    CompC[i] = CompD[i]->CopyTreeToComplex();
                     delete CompD[i];
                     CompD[i] = nullptr;
                     func_ptr->iscomplex = true;
@@ -502,7 +502,7 @@ template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> 
     if (inp.getNNodes() == 0) return;
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) {
-            inp.CompD[i]->CopyTreeToComplex(out.CompC[i]);
+            out.CompC[i] = inp.CompD[i]->CopyTreeToComplex();
         } else {
             inp.CompC[i]->deep_copy(out.CompC[i]);
         }
@@ -603,7 +603,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
             FunctionTreeVector<D, ComplexDouble> fvec; // one component vector
             for (int i = 0; i < inp.size(); i++) {
                 if (inp[i].isreal()) {
-                    inp[i].CompD[comp]->CopyTreeToComplex(inp[i].CompC[comp]);
+                    inp[i].CompC[comp] = inp[i].CompD[comp]->CopyTreeToComplex();
                     delete inp[i].CompD[comp];
                     inp[i].CompD[comp] = nullptr;
                     inp[i].func_ptr->iscomplex = true;
@@ -695,12 +695,12 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             bool inp_aisReal = inp_a.isreal();
             bool inp_bisReal = inp_b.isreal();
             if (inp_aisReal) {
-                inp_a.CompD[comp]->CopyTreeToComplex(inp_a.CompC[comp]);
+                inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
                 inp_a.func_ptr->iscomplex = true;
                 inp_a.func_ptr->isreal = false;
             }
             if (inp_bisReal) {
-                inp_b.CompD[comp]->CopyTreeToComplex(inp_b.CompC[comp]);
+                inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
                 inp_b.func_ptr->iscomplex = true;
                 inp_b.func_ptr->isreal = false;
             }
@@ -722,7 +722,7 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                     // Adaptive grid
                     if (out.CompD[comp] != nullptr) { // NB: func_ptr has alreadybeen overwritten!
                         if (out.CompD[comp]->getNNodes() > 0) {
-                            out.CompD[comp]->CopyTreeToComplex(out.CompC[comp]);
+                            out.CompC[comp] = out.CompD[comp]->CopyTreeToComplex();
                             out.func_ptr->iscomplex = 1;
                             out.func_ptr->isreal = 0;
                             delete out.CompD[comp];
@@ -2246,13 +2246,13 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         // temporary solution: copy as complex trees
         if (braisreal) {
             for (int i = 0; i < Bra.size(); i++) {
-                Bra[i].CompD[0]->CopyTreeToComplex(Bra[i].CompC[0]);
+                Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
                 Bra[i].func_ptr->iscomplex = 1;
             }
         }
         if (ketisreal) {
             for (int i = 0; i < Ket.size(); i++) {
-                Ket[i].CompD[0]->CopyTreeToComplex(Ket[i].CompC[0]);
+                Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
                 Ket[i].func_ptr->iscomplex = 1;
             }
         }

@@ -131,10 +131,10 @@ public:
     FunctionTree<D, double> *Imag();
     template <typename U = T,
               typename = std::enable_if_t<std::is_same_v<U, double>>>
-        void CopyTreeToComplex(FunctionTree<D, ComplexDouble> *&out);
+        FunctionTree<D, ComplexDouble>* CopyTreeToComplex();
      template <typename U = T,
               typename = std::enable_if_t<std::is_same_v<U, double>>>
-       void CopyTreeToReal(FunctionTree<D, double> *&out); // for testing
+       FunctionTree<D, double>* CopyTreeToReal(); // for testing
 
 protected:
     std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};

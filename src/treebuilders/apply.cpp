@@ -430,7 +430,7 @@ template <int D> void apply(CompFunction<D> &out, DerivativeOperator<D> &oper, C
                 } else {
                     if (inp.isreal()) {
                         apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
-                        out.CompD[icomp]->CopyTreeToComplex(out.CompC[ocomp]);
+                        out.CompC[ocomp] = out.CompD[ocomp]->CopyTreeToComplex();
                         out.func_ptr->isreal = 0;
                         out.func_ptr->iscomplex = 1;
                     } else {

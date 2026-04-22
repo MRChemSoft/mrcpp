@@ -170,7 +170,6 @@ public:
     std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
 };
 
-template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp);
 template <int D> void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp);
 template <int D> void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp);
 template <int D> void add(CompFunction<D> &out, ComplexDouble a, 

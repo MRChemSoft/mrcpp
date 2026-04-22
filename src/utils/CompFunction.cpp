@@ -425,6 +425,8 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 CompC[i] = CompD[i]->CopyTreeToComplex();
                 delete CompD[i];
                 CompD[i] = nullptr;
+                inp.func_ptr->isreal = 0;
+                inp.func_ptr->iscomplex = 1;
             }
             func_ptr->iscomplex = 1;
             func_ptr->isreal = 0;
@@ -677,21 +679,15 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             bool inp_bisReal = inp_b.isreal();
             if (inp_aisReal) {
                 inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
-<<<<<<< HEAD
                 delete inp_a.CompD[comp];
                 inp_a.CompD[comp] = nullptr;
-=======
->>>>>>> 6eb1704 (Updates all calls of CopyTreeToComplex)
                 inp_a.func_ptr->iscomplex = true;
                 inp_a.func_ptr->isreal = false;
             }
             if (inp_bisReal) {
                 inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
-<<<<<<< HEAD
                 delete inp_b.CompD[comp];
                 inp_b.CompD[comp] = nullptr;
-=======
->>>>>>> 6eb1704 (Updates all calls of CopyTreeToComplex)
                 inp_b.func_ptr->iscomplex = true;
                 inp_b.func_ptr->isreal = false;
             }

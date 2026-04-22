@@ -13,7 +13,7 @@
  * NComp is the number of components. If Ncomp>0, the corresponding trees must exist (can be only empty roots).
  * The other trees should be set to nullptr.
  * The trees and data can be shared among several CompFunction; this is managed automatically by "std::make_shared"
- * Normally the CompFunction must be eiher real or complex (or none if noe is defined anyway).
+ * Normally the CompFunction must be eiher real or complex (or none if none is defined anyway).
  * Though it is allowed in some cases to have both and the code should preferably allow this. (It is used temporary
  * when we need a Complex type, but the trees are real: the tree is then copied as a complex tree in the same CompFunction).
  * TreePtr (aka func_ptr) is the part potentially shared with others with "std::make_shared". It contains the pointers to the trees.
@@ -425,6 +425,8 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 CompC[i] = CompD[i]->CopyTreeToComplex();
                 delete CompD[i];
                 CompD[i] = nullptr;
+                inp.func_ptr->isreal = 0;
+                inp.func_ptr->iscomplex = 1;
             }
             func_ptr->iscomplex = 1;
             func_ptr->isreal = 0;
@@ -503,6 +505,10 @@ template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> 
     for (int i = 0; i < inp.Ncomp(); i++) {
         if (inp.isreal()) {
             out.CompC[i] = inp.CompD[i]->CopyTreeToComplex();
+            delete inp.CompD[i];
+            inp.CompD[i] = nullptr;
+            inp.func_ptr->iscomplex = true;
+            inp.func_ptr->isreal = false;
         } else {
             inp.CompC[i]->deep_copy(out.CompC[i]);
         }
@@ -696,11 +702,15 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             bool inp_bisReal = inp_b.isreal();
             if (inp_aisReal) {
                 inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
+                delete inp_a.CompD[comp];
+                inp_a.CompD[comp] = nullptr;
                 inp_a.func_ptr->iscomplex = true;
                 inp_a.func_ptr->isreal = false;
             }
             if (inp_bisReal) {
                 inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
+                delete inp_b.CompD[comp];
+                inp_b.CompD[comp] = nullptr;
                 inp_b.func_ptr->iscomplex = true;
                 inp_b.func_ptr->isreal = false;
             }
@@ -2247,13 +2257,19 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         if (braisreal) {
             for (int i = 0; i < Bra.size(); i++) {
                 Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
+                delete Bra[i].CompD[0];
+                Bra[i].CompD[0] = nullptr;
                 Bra[i].func_ptr->iscomplex = 1;
+                Bra[i].func_ptr->isreal = 0;
             }
         }
         if (ketisreal) {
             for (int i = 0; i < Ket.size(); i++) {
                 Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
+                delete Ket[i].CompD[0];
+                Ket[i].CompD[0] = nullptr;
                 Ket[i].func_ptr->iscomplex = 1;
+                Ket[i].func_ptr->isreal = 0;
             }
         }
     }

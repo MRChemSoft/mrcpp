@@ -425,8 +425,6 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 CompC[i] = CompD[i]->CopyTreeToComplex();
                 delete CompD[i];
                 CompD[i] = nullptr;
-                inp.func_ptr->isreal = 0;
-                inp.func_ptr->iscomplex = 1;
             }
             func_ptr->iscomplex = 1;
             func_ptr->isreal = 0;

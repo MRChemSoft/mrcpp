@@ -1204,12 +1204,12 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
  * From real to complex tree. Copy everything, and convert double to ComplexDouble for the coefficents.
  * Should use a deep_copy if generalized in the future.
  */
-
-template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&outTree) {
-    delete outTree;
-    outTree = new FunctionTree<3, ComplexDouble>(this->getMRA());
-    std::vector<MWNode<3, double> *> instack;         // node from this
-    std::vector<MWNode<3, ComplexDouble> *> outstack; // node from outTree
+template <int D, typename T>
+template <typename U, typename>
+FunctionTree<D, ComplexDouble>* FunctionTree<D, T>::CopyTreeToComplex() {
+    auto* outTree = new FunctionTree<D, ComplexDouble>(this->getMRA());
+    std::vector<MWNode<D, double> *> instack;         // node from this
+    std::vector<MWNode<D, ComplexDouble> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
@@ -1218,9 +1218,9 @@ template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, Comp
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees
-        MWNode<3, ComplexDouble> *outNode = outstack.back();
+        MWNode<D, ComplexDouble> *outNode = outstack.back();
         outstack.pop_back();
-        MWNode<3, double> *inNode = instack.back();
+        MWNode<D, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
         double *incoefs = inNode->getCoefs();
@@ -1241,91 +1241,17 @@ template <> void FunctionTree<3, double>::CopyTreeToComplex(FunctionTree<3, Comp
     }
     outTree->calcSquareNorm();
     outTree->calcSquareNorm(true);
-}
-
-template <> void FunctionTree<2, double>::CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&outTree) {
-    delete outTree;
-    outTree = new FunctionTree<2, ComplexDouble>(this->getMRA());
-    std::vector<MWNode<2, double> *> instack;         // node from this
-    std::vector<MWNode<2, ComplexDouble> *> outstack; // node from outTree
-    outTree->clearEndNodeTable();
-    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
-        instack.push_back(this->getRootBox().getNodes()[rIdx]);
-        outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
-    }
-    int ncoefs = this->getNodeAllocator().getNCoefs();
-    while (instack.size() > 0) {
-        // inNode and outNode are the same node in space, but on different trees
-        MWNode<2, ComplexDouble> *outNode = outstack.back();
-        outstack.pop_back();
-        MWNode<2, double> *inNode = instack.back();
-        instack.pop_back();
-        // copy coefficients:
-        double *incoefs = inNode->getCoefs();
-        ComplexDouble *outcoefs = outNode->getCoefs();
-        for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
-        outNode->setHasCoefs();
-        outNode->calcNorms();
-
-        if (inNode->getNChildren() > 0) {
-            if (outNode->getNChildren() < inNode->getNChildren()) outNode->createChildren(true);
-            for (int i = 0; i < inNode->getNChildren(); i++) {
-                instack.push_back(inNode->children[i]);
-                outstack.push_back(outNode->children[i]);
-            }
-        } else {
-            outTree->endNodeTable.push_back(outNode);
-        }
-    }
-    outTree->calcSquareNorm();
-    outTree->calcSquareNorm(true);
-}
-
-template <> void FunctionTree<1, double>::CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&outTree) {
-    delete outTree;
-    outTree = new FunctionTree<1, ComplexDouble>(this->getMRA());
-    std::vector<MWNode<1, double> *> instack;         // node from this
-    std::vector<MWNode<1, ComplexDouble> *> outstack; // node from outTree
-    outTree->clearEndNodeTable();
-    for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
-        instack.push_back(this->getRootBox().getNodes()[rIdx]);
-        outstack.push_back(outTree->getRootBox().getNodes()[rIdx]);
-    }
-    int ncoefs = this->getNodeAllocator().getNCoefs();
-    while (instack.size() > 0) {
-        // inNode and outNode are the same node in space, but on different trees
-        MWNode<1, ComplexDouble> *outNode = outstack.back();
-        outstack.pop_back();
-        MWNode<1, double> *inNode = instack.back();
-        instack.pop_back();
-        // copy coefficients:
-        double *incoefs = inNode->getCoefs();
-        ComplexDouble *outcoefs = outNode->getCoefs();
-        for (int i = 0; i < ncoefs; i++) outcoefs[i] = incoefs[i];
-        outNode->setHasCoefs();
-        outNode->calcNorms();
-
-        if (inNode->getNChildren() > 0) {
-            if (outNode->getNChildren() < inNode->getNChildren()) outNode->createChildren(true);
-            for (int i = 0; i < inNode->getNChildren(); i++) {
-                instack.push_back(inNode->children[i]);
-                outstack.push_back(outNode->children[i]);
-            }
-        } else {
-            outTree->endNodeTable.push_back(outNode);
-        }
-    }
-    outTree->calcSquareNorm();
-    outTree->calcSquareNorm(true);
+    return outTree;
 }
 
 // for testing
-template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double> *&outTree) {
-    delete outTree;
-    // FunctionTree<3, double>* inTree = this;
-    outTree = new FunctionTree<3, double>(this->getMRA());
-    std::vector<MWNode<3, double> *> instack;  // node from this
-    std::vector<MWNode<3, double> *> outstack; // node from outTree
+template <int D, typename T>
+template <typename U, typename>
+FunctionTree<D, double>* FunctionTree<D, T>::CopyTreeToReal() {
+    // FunctionTree<D, double>* inTree = this;
+    auto* outTree = new FunctionTree<D, double>(this->getMRA());
+    std::vector<MWNode<D, double> *> instack;  // node from this
+    std::vector<MWNode<D, double> *> outstack; // node from outTree
     outTree->clearEndNodeTable();
     for (int rIdx = 0; rIdx < this->getRootBox().size(); rIdx++) {
         instack.push_back(this->getRootBox().getNodes()[rIdx]);
@@ -1334,9 +1260,9 @@ template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>
     int ncoefs = this->getNodeAllocator().getNCoefs();
     while (instack.size() > 0) {
         // inNode and outNode are the same node in space, but on different trees
-        MWNode<3, double> *outNode = outstack.back();
+        MWNode<D, double> *outNode = outstack.back();
         outstack.pop_back();
-        MWNode<3, double> *inNode = instack.back();
+        MWNode<D, double> *inNode = instack.back();
         instack.pop_back();
         // copy coefficients:
         double *incoefs = inNode->getCoefs();
@@ -1356,6 +1282,7 @@ template <> void FunctionTree<3, double>::CopyTreeToReal(FunctionTree<3, double>
             outTree->endNodeTable.push_back(outNode);
         }
     }
+    return outTree;
 }
 
 template class FunctionTree<1, double>;
@@ -1365,5 +1292,12 @@ template class FunctionTree<3, double>;
 template class FunctionTree<1, ComplexDouble>;
 template class FunctionTree<2, ComplexDouble>;
 template class FunctionTree<3, ComplexDouble>;
+
+template FunctionTree<1, ComplexDouble>* FunctionTree<1, double>::CopyTreeToComplex<double, void>();
+template FunctionTree<2, ComplexDouble>* FunctionTree<2, double>::CopyTreeToComplex<double, void>();
+template FunctionTree<3, ComplexDouble>* FunctionTree<3, double>::CopyTreeToComplex<double, void>();
+template FunctionTree<1, double>* FunctionTree<1, double>::CopyTreeToReal<double, void>();
+template FunctionTree<2, double>* FunctionTree<2, double>::CopyTreeToReal<double, void>();
+template FunctionTree<3, double>* FunctionTree<3, double>::CopyTreeToReal<double, void>();
 
 } // namespace mrcpp

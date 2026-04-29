@@ -129,10 +129,12 @@ public:
     void deep_copy(FunctionTree<D, T> *out);
     FunctionTree<D, double> *Real();
     FunctionTree<D, double> *Imag();
-    void CopyTreeToComplex(FunctionTree<3, ComplexDouble> *&out);
-    void CopyTreeToComplex(FunctionTree<2, ComplexDouble> *&out);
-    void CopyTreeToComplex(FunctionTree<1, ComplexDouble> *&out);
-    void CopyTreeToReal(FunctionTree<3, double> *&out); // for testing
+    template <typename U = T,
+              typename = std::enable_if_t<std::is_same_v<U, double>>>
+        FunctionTree<D, ComplexDouble>* CopyTreeToComplex();
+     template <typename U = T,
+              typename = std::enable_if_t<std::is_same_v<U, double>>>
+       FunctionTree<D, double>* CopyTreeToReal(); // for testing
 
 protected:
     std::unique_ptr<NodeAllocator<D, T>> genNodeAllocator_p{nullptr};

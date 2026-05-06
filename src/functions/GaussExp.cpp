@@ -45,7 +45,7 @@ template <int D> GaussExp<D>::GaussExp(int nTerms) {
     for (int i = 0; i < nTerms; i++) { this->funcs.push_back(nullptr); }
 }
 
-template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) {
+template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) : RepresentableFunction<D, double>(gexp) {
     screening = gexp.screening;
     for (unsigned int i = 0; i < gexp.size(); i++) {
         Gaussian<D> *gauss = gexp.funcs[i]->copy();

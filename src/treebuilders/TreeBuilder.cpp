@@ -111,7 +111,7 @@ template <int D, typename T> int TreeBuilder<D, T>::split(MWTree<D, T> &tree, Tr
     MWNodeVector<D, T> *workVec = tree.copyEndNodeTable();
     adaptor.splitNodeVector(newVec, *workVec);
     if (passCoefs) {
-        for (int i = 0; i < workVec->size(); i++) {
+        for (size_t i = 0; i < workVec->size(); i++) {
             MWNode<D, T> &node = *(*workVec)[i];
             if (node.isBranchNode()) { node.giveChildrenCoefs(true); }
         }
@@ -149,7 +149,7 @@ template <int D, typename T> void TreeBuilder<D, T>::calc(MWTree<D, T> &tree, Tr
 
 template <int D, typename T> double TreeBuilder<D, T>::calcScalingNorm(const MWNodeVector<D, T> &vec) const {
     double sNorm = 0.0;
-    for (int i = 0; i < vec.size(); i++) {
+    for (size_t i = 0; i < vec.size(); i++) {
         const MWNode<D, T> &node = *vec[i];
         if (node.getDepth() >= 0) sNorm += node.getScalingNorm();
     }
@@ -158,7 +158,7 @@ template <int D, typename T> double TreeBuilder<D, T>::calcScalingNorm(const MWN
 
 template <int D, typename T> double TreeBuilder<D, T>::calcWaveletNorm(const MWNodeVector<D, T> &vec) const {
     double wNorm = 0.0;
-    for (int i = 0; i < vec.size(); i++) {
+    for (size_t i = 0; i < vec.size(); i++) {
         const MWNode<D, T> &node = *vec[i];
         if (node.getDepth() >= 0) wNorm += node.getWaveletNorm();
     }

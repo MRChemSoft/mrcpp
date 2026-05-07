@@ -91,7 +91,7 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
             for (int j = 0; j <= node.getOrder(); j++) {
                 // std::min(M, N)  could be used for breaking the following loop
                 // this->cross_correlation->Matrix.size() should be big enough a priori
-                for (int k = 0; 2 * k + p + j < J_power_inetgarls[l_b].size(); k++) {
+                for (size_t k = 0; 2 * k + p + j < J_power_inetgarls[l_b].size(); k++) {
                     double J;
                     if (this->imaginary)
                         J = J_power_inetgarls[l_b][2 * k + p + j].imag();

@@ -565,7 +565,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
     out.func_ptr->data = inp[0].func_ptr->data;
     out.func_ptr->data.shared = share; // we don' inherit the shareness
     bool iscomplex = false;
-    for (int i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (inp[i].iscomplex() or abs(c[i].imag()) > MachineZero) iscomplex = true;
     if (iscomplex) {
         out.func_ptr->data.iscomplex = 1;
@@ -575,7 +575,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
     for (int comp = 0; comp < inp[0].Ncomp(); comp++) {
         if (not iscomplex) {
             FunctionTreeVector<D, double> fvec; // one component vector
-            for (int i = 0; i < inp.size(); i++) {
+            for (size_t i = 0; i < inp.size(); i++) {
                 if (std::norm(c[i]) < thrs) continue;
                 if (inp[i].getNNodes() == 0 or inp[i].CompD[comp]->getSquareNorm() < thrs) continue;
                 fvec.push_back(std::make_tuple(c[i].real(), inp[i].CompD[comp]));
@@ -594,7 +594,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
             }
         } else {
             FunctionTreeVector<D, ComplexDouble> fvec; // one component vector
-            for (int i = 0; i < inp.size(); i++) {
+            for (size_t i = 0; i < inp.size(); i++) {
                 if (inp[i].isreal()) {
                     inp[i].CompC[comp] = inp[i].CompD[comp]->CopyTreeToComplex();
                     delete inp[i].CompD[comp];
@@ -921,7 +921,7 @@ CompFunctionVector::CompFunctionVector(int N)
     vecMRA = defaultCompMRA<3>;
 }
 void CompFunctionVector::distribute() {
-    for (int i = 0; i < this->size(); i++) (*this)[i].func_ptr->rank = i;
+    for (size_t i = 0; i < this->size(); i++) (*this)[i].func_ptr->rank = i;
 }
 
 /** @brief Make a linear combination of functions
@@ -1066,8 +1066,8 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
 
             // 4c) rotate this node
             ComplexMatrix Un(orbjVec.size(), orbiVec.size()); // chunk of U, with reorganized indices
-            for (int i = 0; i < orbiVec.size(); i++) {        // loop over rotated orbitals
-                for (int j = 0; j < orbjVec.size(); j++) { Un(j, i) = U(orbjVec[j], orbiVec[i]); }
+            for (size_t i = 0; i < orbiVec.size(); i++) {        // loop over rotated orbitals
+                for (size_t j = 0; j < orbjVec.size(); j++) { Un(j, i) = U(orbjVec[j], orbiVec[i]); }
             }
             ComplexMatrix rotatedCoeff(csize, orbiVec.size());
             // HERE IT HAPPENS!
@@ -1078,7 +1078,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
             // for now we allocate in buffer, in future could be directly allocated in the final trees
             double thres = prec * prec * scalefac_ref[n] * scalefac_ref[n];
             // make all norms:
-            for (int i = 0; i < orbiVec.size(); i++) {
+            for (size_t i = 0; i < orbiVec.size(); i++) {
                 // check if parent must be split
                 if (parindexVec_ref[n] == -1 or split_serial(orbiVec[i], ix2coef_ref[parindexVec_ref[n]])) {
                     // mark this node for this orbital for later split
@@ -1150,8 +1150,8 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
             ComplexMatrix Un(orbjVec.size(), orbiVec.size());
             ComplexMatrix rotatedCoeff(csize, orbiVec.size());
 
-            for (int i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
-                for (int j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
+            for (size_t i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
+                for (size_t j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
                     Un(j, i) = U(orbjVec[j], orbiVec[i]);
                 }
             }
@@ -1162,7 +1162,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
 
             // 3c) find which orbitals need to further refine this node, and store rotated node (after each other while
             // in cache).
-            for (int i = 0; i < orbiVec.size(); i++) { // loop over rotated orbitals
+            for (size_t i = 0; i < orbiVec.size(); i++) { // loop over rotated orbitals
                 needsplit[orbiVec[i]] = -1.0;          // default, do not split
                 // check if this node/orbital needs further refinement
                 double wnorm = 0.0;
@@ -1203,7 +1203,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                 nodesRotated.get_orbblock(j, dataVec, nodeidVec, ibank);
                 if (nodeidVec.size() > 0) pointerstodelete.push_back(dataVec);
                 int shift = 0;
-                for (int n = 0; n < nodeidVec.size(); n++) {
+                for (size_t n = 0; n < nodeidVec.size(); n++) {
                     assert(nodeidVec[n] - max_ix >= 0);                // unrotated nodes have been deleted
                     assert(ix2coef.count(nodeidVec[n] - max_ix) == 0); // each nodeid treated once
                     ix2coef[nodeidVec[n] - max_ix] = ix++;
@@ -1355,8 +1355,8 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 
             // 4c) rotate this node
             DoubleMatrix Un(orbjVec.size(), orbiVec.size()); // chunk of U, with reorganized indices
-            for (int i = 0; i < orbiVec.size(); i++) {       // loop over rotated orbitals
-                for (int j = 0; j < orbjVec.size(); j++) { Un(j, i) = std::real(U(orbjVec[j], orbiVec[i])); }
+            for (size_t i = 0; i < orbiVec.size(); i++) {       // loop over rotated orbitals
+                for (size_t j = 0; j < orbjVec.size(); j++) { Un(j, i) = std::real(U(orbjVec[j], orbiVec[i])); }
             }
             DoubleMatrix rotatedCoeff(csize, orbiVec.size());
             // HERE IT HAPPENS!
@@ -1366,7 +1366,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             // for now we allocate in buffer, in future could be directly allocated in the final trees
             double thres = prec * prec * scalefac_ref[n] * scalefac_ref[n];
             // make all norms:
-            for (int i = 0; i < orbiVec.size(); i++) {
+            for (size_t i = 0; i < orbiVec.size(); i++) {
                 // check if parent must be split
                 if (parindexVec_ref[n] == -1 or split_serial(orbiVec[i], ix2coef_ref[parindexVec_ref[n]])) {
                     // mark this node for this orbital for later split
@@ -1438,8 +1438,8 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             DoubleMatrix Un(orbjVec.size(), orbiVec.size());
             DoubleMatrix rotatedCoeff(csize, orbiVec.size());
 
-            for (int i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
-                for (int j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
+            for (size_t i = 0; i < orbiVec.size(); i++) {     // loop over included rotated real and imag part of orbitals
+                for (size_t j = 0; j < orbjVec.size(); j++) { // loop over input orbital, possibly imaginary parts
                     Un(j, i) = std::real(U(orbjVec[j], orbiVec[i]));
                 }
             }
@@ -1449,7 +1449,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
 
             // 3c) find which orbitals need to further refine this node, and store rotated node (after each other while
             // in cache).
-            for (int i = 0; i < orbiVec.size(); i++) { // loop over rotated orbitals
+            for (size_t i = 0; i < orbiVec.size(); i++) { // loop over rotated orbitals
                 needsplit[orbiVec[i]] = -1.0;          // default, do not split
                 // check if this node/orbital needs further refinement
                 double wnorm = 0.0;
@@ -1493,7 +1493,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 nodesRotated.get_orbblock(j, dataVec, nodeidVec, ibank);
                 if (nodeidVec.size() > 0) pointerstodelete.push_back(dataVec);
                 int shift = 0;
-                for (int n = 0; n < nodeidVec.size(); n++) {
+                for (size_t n = 0; n < nodeidVec.size(); n++) {
                     assert(nodeidVec[n] - max_ix >= 0);                // unrotated nodes have been deleted
                     assert(ix2coef.count(nodeidVec[n] - max_ix) == 0); // each nodeid treated once
                     ix2coef[nodeidVec[n] - max_ix] = ix++;
@@ -1743,7 +1743,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             }
 
             // 3f) save multiplied nodes
-            for (int i = 0; i < orbjVec.size(); i++) {
+            for (size_t i = 0; i < orbjVec.size(); i++) {
 #pragma omp critical
                 {
                     ix2coef[orbjVec[i]][node_ix] = coeffpVec[orbjVec[i]].size();
@@ -1799,7 +1799,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
             coeffBlock.conservativeResize(Eigen::NoChange, orbjVec.size()); // keep only used part
             DoubleMatrix MultipliedCoeff(nCoefs, orbjVec.size());
             // 3c) transform to grid
-            for (int j = 0; j < orbjVec.size(); j++) { // TODO: transform all j at once ?
+            for (size_t j = 0; j < orbjVec.size(); j++) { // TODO: transform all j at once ?
                 // TODO: select only nodes that are end nodes?
                 node.attachCoefs(coeffBlock.col(j).data());
                 node.mwTransform(Reconstruction);
@@ -1862,7 +1862,7 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
                 nodesMultiplied.get_orbblock(j, dataVec, nodeidVec, ibank);
                 if (nodeidVec.size() > 0) pointerstodelete.push_back(dataVec);
                 int shift = 0;
-                for (int n = 0; n < nodeidVec.size(); n++) {
+                for (size_t n = 0; n < nodeidVec.size(); n++) {
                     assert(nodeidVec[n] - max_ix >= 0);                // unmultiplied nodes have been deleted
                     assert(ix2coef.count(nodeidVec[n] - max_ix) == 0); // each nodeid treated once
                     ix2coef[nodeidVec[n] - max_ix] = ix++;
@@ -2024,8 +2024,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                 if (orbVec.size() > 0) {
                     ComplexMatrix S_temp(orbVec.size(), orbVec.size());
                     S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
-                    for (int i = 0; i < orbVec.size(); i++) {
-                        for (int j = 0; j < orbVec.size(); j++) {
+                    for (size_t i = 0; i < orbVec.size(); i++) {
+                        for (size_t j = 0; j < orbVec.size(); j++) {
                             if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                 BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2041,8 +2041,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                     ComplexMatrix S_temp(orbVec.size(), orbVec.size());
                     coeffBlock.conservativeResize(Eigen::NoChange, orbVec.size());
                     S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
-                    for (int i = 0; i < orbVec.size(); i++) {
-                        for (int j = 0; j < orbVec.size(); j++) {
+                    for (size_t i = 0; i < orbVec.size(); i++) {
+                        for (size_t j = 0; j < orbVec.size(); j++) {
                             if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                 BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2172,8 +2172,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 if (orbVec.size() > 0) {
                     ComplexMatrix S_temp(orbVec.size(), orbVec.size());
                     S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
-                    for (int i = 0; i < orbVec.size(); i++) {
-                        for (int j = 0; j < orbVec.size(); j++) {
+                    for (size_t i = 0; i < orbVec.size(); i++) {
+                        for (size_t j = 0; j < orbVec.size(); j++) {
                             if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                 BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2189,8 +2189,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                     DoubleMatrix S_temp(orbVec.size(), orbVec.size());
                     coeffBlock.conservativeResize(Eigen::NoChange, orbVec.size());
                     S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
-                    for (int i = 0; i < orbVec.size(); i++) {
-                        for (int j = 0; j < orbVec.size(); j++) {
+                    for (size_t i = 0; i < orbVec.size(); i++) {
+                        for (size_t j = 0; j < orbVec.size(); j++) {
                             if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                 BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2242,7 +2242,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     if (braisreal or ketisreal) {
         // temporary solution: copy as complex trees
         if (braisreal) {
-            for (int i = 0; i < Bra.size(); i++) {
+            for (size_t i = 0; i < Bra.size(); i++) {
                 Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
                 delete Bra[i].CompD[0];
                 Bra[i].CompD[0] = nullptr;
@@ -2251,7 +2251,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
             }
         }
         if (ketisreal) {
-            for (int i = 0; i < Ket.size(); i++) {
+            for (size_t i = 0; i < Ket.size(); i++) {
                 Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
                 delete Ket[i].CompD[0];
                 Ket[i].CompD[0] = nullptr;
@@ -2400,8 +2400,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                         S_temp.noalias() = coeffBlockBra * coeffBlockKet.transpose();
                     } else
                         MSG_ABORT("Unexpected case");
-                    for (int i = 0; i < orbVecBra.size(); i++) {
-                        for (int j = 0; j < orbVecKet.size(); j++) {
+                    for (size_t i = 0; i < orbVecBra.size(); i++) {
+                        for (size_t j = 0; j < orbVecKet.size(); j++) {
                             if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                 Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2433,8 +2433,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                     } else
                         MSG_ABORT("Unexpected case");
 
-                    for (int i = 0; i < orbVecBra.size(); i++) {
-                        for (int j = 0; j < orbVecKet.size(); j++) {
+                    for (size_t i = 0; i < orbVecBra.size(); i++) {
+                        for (size_t j = 0; j < orbVecKet.size(); j++) {
                             if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                 Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2475,7 +2475,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
     // restore input
     if (braisreal) {
-        for (int i = 0; i < Bra.size(); i++) {
+        for (size_t i = 0; i < Bra.size(); i++) {
             delete Bra[i].CompC[0];
             Bra[i].CompC[0] = nullptr;
             Bra[i].func_ptr->iscomplex = 0;
@@ -2483,7 +2483,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         }
     }
     if (ketisreal) {
-        for (int i = 0; i < Ket.size(); i++) {
+        for (size_t i = 0; i < Ket.size(); i++) {
             delete Ket[i].CompC[0];
             Ket[i].CompC[0] = nullptr;
             Ket[i].func_ptr->iscomplex = 0;
@@ -2619,8 +2619,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                     DoubleMatrix S_temp(orbVecBra.size(), orbVecKet.size());
                     S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
 
-                    for (int i = 0; i < orbVecBra.size(); i++) {
-                        for (int j = 0; j < orbVecKet.size(); j++) {
+                    for (size_t i = 0; i < orbVecBra.size(); i++) {
+                        for (size_t j = 0; j < orbVecKet.size(); j++) {
                             if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                 Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                 continue;
@@ -2642,8 +2642,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                     coeffBlockBra.conservativeResize(Eigen::NoChange, orbVecBra.size());
                     coeffBlockKet.conservativeResize(Eigen::NoChange, orbVecKet.size());
                     S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
-                    for (int i = 0; i < orbVecBra.size(); i++) {
-                        for (int j = 0; j < orbVecKet.size(); j++) {
+                    for (size_t i = 0; i < orbVecBra.size(); i++) {
+                        for (size_t j = 0; j < orbVecKet.size(); j++) {
                             if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                 Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                 continue;

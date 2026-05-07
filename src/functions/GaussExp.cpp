@@ -47,7 +47,7 @@ template <int D> GaussExp<D>::GaussExp(int nTerms) {
 
 template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) : RepresentableFunction<D, double>(gexp) {
     screening = gexp.screening;
-    for (unsigned int i = 0; i < gexp.size(); i++) {
+    for (int i = 0; i < gexp.size(); i++) {
         Gaussian<D> *gauss = gexp.funcs[i]->copy();
         this->funcs.push_back(gauss);
     }
@@ -66,7 +66,7 @@ template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
     // screening = gexp.screening;
     this->funcs.clear();
-    for (unsigned int i = 0; i < gexp.size(); i++) {
+    for (int i = 0; i < gexp.size(); i++) {
         if (gexp.funcs[i] == nullptr) {
             this->funcs.push_back(nullptr);
         } else {
@@ -84,14 +84,14 @@ template <int D> double GaussExp<D>::evalf(const Coord<D> &r) const {
 }
 
 template <int D> bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
-    for (unsigned int i = 0; i < this->size(); i++) {
+    for (int i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) { return false; }
     }
     return true;
 }
 
 template <int D> bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
-    for (unsigned int i = 0; i < this->size(); i++) {
+    for (int i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isZeroOnInterval(lb, ub)) { return false; }
     }
     return true;

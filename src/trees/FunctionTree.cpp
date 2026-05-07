@@ -972,7 +972,7 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
         MWNode<D, double> *refNode = stack.back(); // node in the reference tree refTree
         stack.pop_back();
         assert(ix2coef.count(refNode->getSerialIx()) > 0);
-        size_t ix = ix2coef[refNode->getSerialIx()];
+        int ix = ix2coef[refNode->getSerialIx()];
         MWNode<D, T> *node = ix2node[ix]; // corresponding node in this tree
         // copy coefficients into this tree
         int size = sizecoefW;
@@ -986,7 +986,7 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
             }
         } else {
             // only wavelets are defined in coefVec. Scaling part set below, when creating children
-            if (ix < coefpVec.size() and ix >= 0) {
+            if (ix < static_cast<int>(coefpVec.size()) and ix >= 0) {
                 for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = coefpVec[ix][k];
             } else {
                 // we do not have W coefficients. Set them to zero

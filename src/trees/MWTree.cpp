@@ -523,7 +523,7 @@ template <int D, typename T> std::ostream &MWTree<D, T>::print(std::ostream &o) 
     o << "  nodes: " << this->getNNodes() << std::endl;
     o << "  endNodes: " << this->endNodeTable.size() << std::endl;
     o << "  nodes per scale: " << std::endl;
-    for (size_t i = this->nodesAtNegativeDepth.size() - 1; i >= 0; i--) { o << "    scale=" << -(i + this->getRootScale() + 1) << "  nodes=" << this->nodesAtNegativeDepth[i] << std::endl; }
+    for (int i = static_cast<int>(this->nodesAtNegativeDepth.size()) - 1; i >= 0; i--) { o << "    scale=" << -(i + this->getRootScale() + 1) << "  nodes=" << this->nodesAtNegativeDepth[i] << std::endl; }
     for (size_t i = 0; i < this->nodesAtDepth.size(); i++) { o << "    scale=" << i + this->getRootScale() << "  nodes=" << this->nodesAtDepth[i] << std::endl; }
     return o;
 }

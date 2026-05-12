@@ -23,9 +23,6 @@
  * <https://mrcpp.readthedocs.io/>
  */
 
-/*
- */
-
 #include "GaussQuadrature.h"
 #include "MRCPP/constants.h"
 #include "MRCPP/macros.h"
@@ -36,13 +33,6 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-/** Constructor for Gauss-Legendre quadrature.
- *
- * \param order Polynominal order
- * \param a Lower bound of validity
- * \param b Upper bound of validity
- * \param intervals Number of intervals to divde |a-b| into
- */
 GaussQuadrature::GaussQuadrature(int k, double a, double b, int inter) {
     this->order = k;
     this->A = a;
@@ -82,10 +72,6 @@ void GaussQuadrature::setIntervals(int i) {
     calcScaledPtsWgts();
 }
 
-/** Calculate scaled distribution of roots for Gauss-Legendre
- * quadrature on on ]a,b[. The number of quadrature points on the interval
- * is scale*(order+1).
- */
 void GaussQuadrature::rescaleRoots(VectorXd &rts, double a, double b, int inter) const {
     // length of one block
     double transl = (b - a) / (double)inter;
@@ -103,10 +89,6 @@ void GaussQuadrature::rescaleRoots(VectorXd &rts, double a, double b, int inter)
     }
 }
 
-/** Calculate scaled distribution of weights for Gauss-Legendre
- * quadrature on on ]a,b[. The number of quadrature points on the interval
- * is scale*(order+1).
- */
 void GaussQuadrature::rescaleWeights(VectorXd &wgts, double a, double b, int inter) const {
     // length of one block
     double transl = (b - a) / (double)inter;
@@ -124,10 +106,6 @@ void GaussQuadrature::rescaleWeights(VectorXd &wgts, double a, double b, int int
     }
 }
 
-/** Calculate scaled distribution of points and weights for Gauss-Legendre
- * quadrature on on ]a,b[. The number of quadrature points on the interval
- * is scale*(order+1).
- */
 void GaussQuadrature::calcScaledPtsWgts() {
     // length of one block
     double transl = (this->B - this->A) / (double)this->intervals;
@@ -146,14 +124,6 @@ void GaussQuadrature::calcScaledPtsWgts() {
     }
 }
 
-/** Calulate distribution of points and weights for Guass-Legendre quadrature on
- * ]-1,1[.
- *
- * Find quadrature points and weights by solving for the roots of
- * Legendre polynomials using Newtons method. Using double precison the
- * maximum stable order is currently set to 13. Return 1 on success, 0 on failure.
- *
- */
 int GaussQuadrature::calcGaussPtsWgts() {
     int K;
     if (this->order % 2 == 0) {
@@ -192,7 +162,6 @@ int GaussQuadrature::calcGaussPtsWgts() {
     return 1;
 }
 
-/** Integrate a 1D-function f(x) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
     double isum = 0.e0;
     Coord<1> r;
@@ -203,7 +172,6 @@ double GaussQuadrature::integrate(RepresentableFunction<1> &func) const {
     return isum;
 }
 
-/** Integrate a 2D-function f(x1, x2) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
     Coord<2> r;
     double isum = 0.e0;
@@ -219,7 +187,6 @@ double GaussQuadrature::integrate(RepresentableFunction<2> &func) const {
     return isum;
 }
 
-/** Integrate a 3D-function f(x1, x2, x3) using quadrature */
 double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
     Coord<3> r;
 
@@ -241,11 +208,6 @@ double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
     return isum;
 }
 
-/** Integrate a ND-function f(x1,...), allowing for different
- * quadrature in each dimension.
- *
- * This function has been implemented using a recursive algorithm.
- */
 double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) const {
     NOT_IMPLEMENTED_ABORT;
     NEEDS_TESTING

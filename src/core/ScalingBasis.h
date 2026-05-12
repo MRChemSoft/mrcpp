@@ -35,125 +35,93 @@ namespace mrcpp {
 
 /**
  * @class ScalingBasis
- * @brief Abstract base for scaling-function families (Legendre, Interpolating).
+ * @brief Abstract base class for 1D scaling-function families used in the multiwavelet basis
  *
- * What this class represents
- * --------------------------
- * A *scaling basis* is a finite set of 1D polynomials {φ_k}_{k=0..order}
- * that span the scaling space at level 0 for a given multiwavelet family.
- * Concrete families (e.g., LegendreBasis, InterpolatingBasis) derive from
- * this class and:
- *   • construct and store the polynomials in `funcs`,
- *   • populate the evaluation matrix at quadrature nodes `quadVals`,
- *   • build coefficient↔value conversion maps `cvMap` / `vcMap`.
+ * @details
+ * A scaling basis is a finite set of polynomials \f$ \{\varphi_k\}_{k=0}^{q-1} \f$ with \f$ q = \text{order}+1 \f$
+ * that span the scaling space at level 0 for a chosen multiwavelet family.
+ * Concrete families (LegendreBasis, InterpolatingBasis) derive from this class, construct and store the
+ * polynomials in #funcs, populate the evaluation matrix #quadVals at quadrature nodes, and build the
+ * coefficient-to-value map #cvMap and its inverse #vcMap.
+ * The family is identified by #type (Legendre or Interpol as defined in constants.h) and the polynomial
+ * degree by #order.
  *
- * Dimensions and conventions
- * --------------------------
- * - order := polynomial degree cutoff (≥ 0).
- * - Quadrature order q = order + 1 (one node per basis function).
- * - `quadVals` is q×q with layout: rows = nodes, cols = basis index.
- * - `cvMap`  maps coefficient vectors → nodal values (Forward).
- * - `vcMap`  maps nodal values → coefficient vectors (Backward).
- *
- * Responsibilities provided here
- * ------------------------------
- * - Store family `type` (Legendre or Interpol, defined in constants.h) and `order`.
- * - Provide access to basis polynomials and to the conversion matrices.
- * - Offer a generic evaluator to sample the basis at arbitrary points.
- * - Define equality operators (same family and order).
- *
- * Notes for implementers of derived classes
- * -----------------------------------------
- * - Call the base ctor with (k, t). It sizes `quadVals`, `cvMap`, `vcMap`
- *   to q×q zeros; you must fill them in your implementation (.cpp).
- * - Push back exactly q polynomials into `funcs` in the order k = 0..order.
+ * @note Derived classes must call the base constructor, which allocates \f$ q \times q \f$ zero matrices for
+ * #quadVals, #cvMap, and #vcMap, and then fill those structures before returning from their own constructor
  */
 class ScalingBasis {
 public:
     /**
-     * @brief Construct a base scaling space descriptor.
-     * @param k Polynomial order (k ≥ 0).
-     * @param t Family tag (e.g., Legendre or Interpol).
+     * @brief Construct a scaling basis descriptor
+     * @param k Polynomial order (k ≥ 0)
+     * @param t Family tag (e.g., Legendre or Interpol, as defined in constants.h)
      *
-     * Effects (implemented in the .cpp):
-     *  - Stores @p t, @p k.
-     *  - Allocates q×q zero matrices for `quadVals`, `cvMap`, and `vcMap`,
-     *    where q = k + 1.
-     *  - Derived classes then fill these structures.
+     * @details Stores @p k and @p t, then allocates \f$ q \times q \f$ zero matrices for #quadVals,
+     * #cvMap, and #vcMap, where \f$ q = k + 1 \f$. Derived classes fill these matrices in their own
+     * constructor body.
      */
     ScalingBasis(int k, int t);
     virtual ~ScalingBasis() = default;
 
     /**
-     * @brief Evaluate all basis polynomials at D sample points.
-     * @param r    Pointer to array of D abscissas.
-     * @param vals Output matrix of size (q × D) with
-     *             vals(k, d) = φ_k( r[d] ), k = 0..q-1.
+     * @brief Evaluate all basis polynomials at an array of sample points
+     * @param[in]  r    Pointer to an array of D abscissas
+     * @param[out] vals Output matrix of size \f$ q \times D \f$ with
+     *                  \f$ \text{vals}(k,d) = \varphi_k(r_d) \f$ for \f$ k = 0,\ldots,q-1 \f$
      *
-     * Precondition:
-     *  - vals.rows() == funcs.size() == q.
+     * @details Iterates over each column of @p vals (one per sample point) and evaluates all \f$ q \f$
+     * basis polynomials stored in #funcs. Useful for projecting or evaluating on arbitrary nodes, not
+     * only at the quadrature nodes.
      *
-     * Remarks:
-     *  - Column-major Eigen storage is irrelevant here; we just fill entries.
-     *  - Useful for projecting/evaluating on arbitrary nodes (not only quadrature).
+     * @note Requires @p vals.rows() == @p q
      */
     void evalf(const double *r, Eigen::MatrixXd &vals) const;
 
-    /** @return Mutable reference to the k-th basis polynomial φ_k. */
+    /** @return Mutable reference to the k-th basis polynomial φ_k */
     Polynomial &getFunc(int k) { return this->funcs[k]; }
-    /** @return Const reference to the k-th basis polynomial φ_k. */
+    /** @return Const reference to the k-th basis polynomial φ_k */
     const Polynomial &getFunc(int k) const { return this->funcs[k]; }
 
     /** @return The type of scaling basis (Legendre or Interpol; see MRCPP/constants.h) */
     int getScalingType() const { return this->type; }
-    /** @return Polynomial order k. */
+    /** @return Polynomial order k */
     int getScalingOrder() const { return this->order; }
-    /** @return Quadrature order q = k + 1 (one node per basis function). */
+    /** @return Quadrature order q = k + 1 (one node per basis function) */
     int getQuadratureOrder() const { return this->order + 1; }
 
-    /** @return Matrix of basis values at quadrature nodes (q × q). */
+    /** @return Matrix of basis values at quadrature nodes (q × q) */
     const Eigen::MatrixXd &getQuadratureValues() const { return this->quadVals; }
 
     /**
-     * @brief Access the coefficient/value conversion map.
-     * @param operation Use `Forward` (from constants.h) for coeff→value,
-     *                  anything else selects value→coeff.
-     * @return const reference to `cvMap` (Forward) or `vcMap` (Backward).
+     * @brief Return the coefficient-to-value or value-to-coefficient conversion map
+     * @param operation Pass @c Forward (from constants.h) to obtain #cvMap (coefficients → nodal values);
+     *                  any other value returns #vcMap (nodal values → coefficients)
+     * @return Const reference to the selected \f$ q \times q \f$ conversion matrix
      */
     const Eigen::MatrixXd &getCVMap(int operation) const;
 
-    /** @brief Equality iff same family type and polynomial order. */
+    /** @brief Return true if both bases have the same family type and polynomial order */
     bool operator==(const ScalingBasis &basis) const;
-    /** @brief Inequality iff family type or polynomial order differs. */
+    /** @brief Return true if the bases differ in family type or polynomial order */
     bool operator!=(const ScalingBasis &basis) const;
 
-    /**
-     * @brief Stream print helper (delegates to virtual print()).
-     * Prints order and a human-readable family name.
-     */
+    /** @brief Stream output operator; delegates to the virtual print() helper */
     friend std::ostream &operator<<(std::ostream &o, const ScalingBasis &bas) { return bas.print(o); }
 
 protected:
-    /** @brief Family tag (Legendre or Interpol). */
-    const int type;
-    /** @brief Polynomial order k. */
-    const int order;
+    const int type;  ///< Family tag (Legendre or Interpol; see constants.h)
+    const int order; ///< Polynomial order k (so \f$ q = k+1 \f$ nodes are used)
 
-    /** @brief Basis values at quadrature points: quadVals(i,k) = φ_k(x_i). */
-    Eigen::MatrixXd quadVals; // function values at quadrature pts
+    Eigen::MatrixXd quadVals; ///< Basis values at quadrature nodes: \f$ \text{quadVals}(i,k) = \varphi_k(x_i) \f$ (size \f$ q \times q \f$)
+    Eigen::MatrixXd cvMap;    ///< Coefficient-to-value map (size \f$ q \times q \f$): maps coefficient vectors to nodal values
+    Eigen::MatrixXd vcMap;    ///< Value-to-coefficient map (size \f$ q \times q \f$): maps nodal values to coefficient vectors
 
-    /** @brief Coefficient → value (at nodes) linear map (q × q). */
-    Eigen::MatrixXd cvMap;    // coef-value transformation matrix
-
-    /** @brief Value (at nodes) → coefficient linear map (q × q). */
-    Eigen::MatrixXd vcMap;    // value-coef transformation matrix
-
-    /** @brief List of basis polynomials φ_0..φ_k (size q). */
-    std::vector<Polynomial> funcs;
+    std::vector<Polynomial> funcs; ///< Basis polynomials \f$ \varphi_0,\ldots,\varphi_k \f$ (size \f$ q \f$)
 
     /**
-     * @brief Polymorphic pretty-printer called by operator<<.
-     * Concrete bases may override to append family-specific info.
+     * @brief Polymorphic pretty-printer invoked by operator<<
+     * @param[in,out] o Output stream
+     * @return Reference to @p o after writing order and family name
      */
     std::ostream &print(std::ostream &o) const;
 };

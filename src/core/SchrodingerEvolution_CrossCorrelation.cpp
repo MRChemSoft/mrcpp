@@ -39,19 +39,6 @@ using namespace Eigen;
 namespace mrcpp {
 
 
-/** @brief SchrodingerEvolution_CrossCorrelation constructor.
- *
- * @param[in] amount: the integer specifying the maximum amount of matrices \f$ C^k \f$
- *                    to be used in calculations
- * @param[in] k: the integer specifying the polynomial order
- * @param[in] t: the integer specifying the scaling basis type
- *
- * @details It checks if the order and type are meaningful and then reads matrices from a file.
- * By default the file has some information about the data stored,
- * so the first interger to read is describing the size of the documentation text.
- * 
- * 
- */
 SchrodingerEvolution_CrossCorrelation::SchrodingerEvolution_CrossCorrelation(int amount, int k, int t)
     : type(t), order(k), amount(amount)
 {

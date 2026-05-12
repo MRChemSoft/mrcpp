@@ -31,175 +31,153 @@
 
 namespace mrcpp {
 
-/**
- * @brief Maximum supported Gauss-Legendre order (per sub-interval).
- *
- * Implementation uses Newton iterations on Legendre polynomials in double
- * precision and is tuned for numerical stability up to this limit.
- */
+/** @brief Maximum supported Gauss-Legendre order per sub-interval */
 const int MaxGaussOrder = 42;
 
-/**
- * @brief Convergence tolerance for Newton's method when locating roots.
- */
+/** @brief Convergence tolerance for Newton's method when locating Gauss roots */
 static const double EPS = 3.0e-12;
 
-/**
- * @brief Safety cap on Newton iterations per root.
- */
+/** @brief Maximum number of Newton iterations allowed per root */
 static const int NewtonMaxIter = 10;
 
-/**
- * @brief Hard cap for a not-yet-implemented generic N-D integrator scaffold.
- * (Kept for legacy/planning; current code provides explicit 1D/2D/3D.)
- */
+/** @brief Dimension cap reserved for a planned N-D integrator (not yet implemented) */
 static const int MaxQuadratureDim = 7;
 
 /**
  * @class GaussQuadrature
- * @brief Composite Gauss–Legendre quadrature on [A,B] with equal sub-intervals.
+ * @brief Composite Gauss–Legendre quadrature rule on \f$ [A,B] \f$ divided into equal sub-intervals
  *
- * What it represents
- * ------------------
- * A parameterized Gauss–Legendre rule over a (possibly partitioned) interval:
- *   - order      : number of Gauss nodes per sub-interval,
- *   - intervals  : number of equal pieces tiling [A,B],
- *   - roots      : all nodes over [A,B] for the composite rule (size npts),
- *   - weights    : corresponding weights (size npts).
+ * @details
+ * The rule stores @p order Gauss nodes and weights per sub-interval and replicates them over @p intervals
+ * equal pieces of \f$ [A,B] \f$, giving a total of \f$ \text{npts} = \text{order} \times \text{intervals} \f$
+ * nodes. The canonical (unscaled) nodes and weights on \f$ [-1,1] \f$ are kept internally so that the
+ * composite rule can be rebuilt quickly when the bounds or interval count change via setBounds() or
+ * setIntervals(). Integration of RepresentableFunction objects in 1D, 2D, and 3D is provided as
+ * tensor-product sums.
  *
- * In addition, it stores the canonical (unscaled) Gauss nodes/weights on [-1,1]
- * so the rule can be remapped quickly if [A,B] or 'intervals' changes.
- *
- * Typical usage
- * -------------
- *   GaussQuadrature g(q, a, b, m);  // q = order, [a,b] bounds, m sub-intervals
- *   auto val1 = g.integrate(f1D);
- *   auto val2 = g.integrate(f2D);   // tensor-product rule (q*m in each axis)
- *
- * Notes
- * -----
- *  - “Composite” means we replicate the same order-q rule on each of the
- *    'intervals' equal sub-intervals, then sum the contributions.
- *  - setBounds() / setIntervals() preserve the canonical [-1,1] rule and
- *    rebuild the scaled (roots,weights) for the new configuration.
+ * @see QuadratureCache for the singleton that caches GaussQuadrature objects by order
  */
 class GaussQuadrature final {
 public:
     /**
-     * @brief Construct a Gauss–Legendre quadrature rule.
-     * @param k      Order (nodes per sub-interval), 0 ≤ k ≤ MaxGaussOrder.
-     * @param a      Lower bound A (default -1).
-     * @param b      Upper bound B (default  1).
-     * @param inter  Number of equal sub-intervals (default 1, must be ≥ 1).
+     * @brief Construct a composite Gauss–Legendre quadrature rule
+     * @param k     Number of nodes per sub-interval (\f$ 0 \leq k \leq \f$ MaxGaussOrder)
+     * @param a     Lower integration bound (default \f$ -1 \f$)
+     * @param b     Upper integration bound (default \f$ 1 \f$; must satisfy \f$ a < b \f$)
+     * @param inter Number of equal sub-intervals (default 1; must be \f$ \geq 1 \f$)
      *
-     * Effects (see .cpp):
-     *  - Builds canonical nodes/weights on [-1,1] via Newton’s method.
-     *  - Scales/replicates them to fill (roots,weights) over [A,B].
+     * @details Computes canonical nodes and weights on \f$ [-1,1] \f$ via Newton’s method on Legendre
+     * polynomials (using symmetric pairing to halve the work), then scales and replicates them over
+     * the @p inter sub-intervals of \f$ [a,b] \f$
      */
     GaussQuadrature(int k, double a = -1.0, double b = 1.0, int inter = 1);
 
     /**
-     * @name Tensor-product integration helpers
-     * @{
-     * @brief Integrate a RepresentableFunction using the prepared rule.
-     *
-     * 1D:   ∑_i w_i f(x_i)
-     * 2D:   ∑_i ∑_j w_i w_j f(x_i, x_j)
-     * 3D:   ∑_i ∑_j ∑_k w_i w_j w_k f(x_i, x_j, x_k)
+     * @brief Integrate a 1D RepresentableFunction: \f$ \sum_i w_i f(x_i) \f$
+     * @param[in] func The function to integrate
+     * @return Numerical integral
      */
     double integrate(RepresentableFunction<1> &func) const;
+    /**
+     * @brief Integrate a 2D RepresentableFunction via tensor-product rule:
+     *        \f$ \sum_i \sum_j w_i w_j f(x_i, x_j) \f$
+     * @param[in] func The function to integrate
+     * @return Numerical integral
+     */
     double integrate(RepresentableFunction<2> &func) const;
+    /**
+     * @brief Integrate a 3D RepresentableFunction via tensor-product rule:
+     *        \f$ \sum_i \sum_j \sum_k w_i w_j w_k f(x_i, x_j, x_k) \f$
+     * @param[in] func The function to integrate
+     * @return Numerical integral
+     */
     double integrate(RepresentableFunction<3> &func) const;
-    /** @} */
 
     /**
-     * @brief Set the number of equal sub-intervals and rebuild (roots,weights).
-     * @param i New number of sub-intervals (≥ 1).
+     * @brief Update the number of sub-intervals and rebuild the composite rule
+     * @param i New number of sub-intervals (\f$ \geq 1 \f$)
      *
-     * Reallocates global arrays to size npts = order * intervals and remaps
-     * the canonical [-1,1] rule accordingly.
+     * @details Resizes #roots and #weights to \f$ \text{order} \times i \f$ and recomputes
+     * the scaled nodes and weights over \f$ [A,B] \f$
      */
     void setIntervals(int i);
 
     /**
-     * @brief Set integration bounds [a,b] and rebuild (roots,weights).
-     * @param a Lower bound
-     * @param b Upper bound (must satisfy a < b)
+     * @brief Update the integration bounds and rebuild the composite rule
+     * @param a New lower bound (must satisfy \f$ a < b \f$)
+     * @param b New upper bound
      */
     void setBounds(double a, double b);
 
-    /** @return Number of sub-intervals tiling [A,B]. */
+    /** @return Number of sub-intervals tiling [A,B] */
     int getIntervals() const { return this->intervals; }
-    /** @return Upper bound B. */
+    /** @return Upper bound B */
     double getUpperBound() const { return this->B; }
-    /** @return Lower bound A. */
+    /** @return Lower bound A */
     double getLowerBound() const { return this->A; }
 
-    /** @return Composite-rule nodes over [A,B] (size npts). */
+    /** @return Composite-rule nodes over [A,B] (size npts) */
     const Eigen::VectorXd &getRoots() const { return this->roots; }
-    /** @return Composite-rule weights over [A,B] (size npts). */
+    /** @return Composite-rule weights over [A,B] (size npts) */
     const Eigen::VectorXd &getWeights() const { return this->weights; }
 
-    /** @return Canonical Gauss nodes on [-1,1] (size order). */
+    /** @return Canonical Gauss nodes on [-1,1] (size order) */
     const Eigen::VectorXd &getUnscaledRoots() const { return this->unscaledRoots; }
-    /** @return Canonical Gauss weights on [-1,1] (size order). */
+    /** @return Canonical Gauss weights on [-1,1] (size order) */
     const Eigen::VectorXd &getUnscaledWeights() const { return this->unscaledWeights; }
 
 protected:
-    // ---- Parameters describing the rule ----
-    int order;        ///< Nodes per sub-interval (q)
-    double A;         ///< Lower integration bound
-    double B;         ///< Upper integration bound
-    int intervals;    ///< Number of equal sub-intervals tiling [A,B]
-    int npts;         ///< Total nodes = order * intervals
+    int order;     ///< Number of Gauss nodes per sub-interval
+    double A;      ///< Lower integration bound
+    double B;      ///< Upper integration bound
+    int intervals; ///< Number of equal sub-intervals tiling \f$ [A,B] \f$
+    int npts;      ///< Total number of nodes: \f$ \text{order} \times \text{intervals} \f$
 
-    // ---- Scaled (composite) rule on [A,B] ----
-    Eigen::VectorXd roots;          ///< All nodes over [A,B] (size npts)
-    Eigen::VectorXd weights;        ///< All weights over [A,B] (size npts)
+    Eigen::VectorXd roots;          ///< All composite-rule nodes over \f$ [A,B] \f$ (size #npts)
+    Eigen::VectorXd weights;        ///< All composite-rule weights over \f$ [A,B] \f$ (size #npts)
 
-    // ---- Canonical rule on [-1,1] ----
-    Eigen::VectorXd unscaledRoots;   ///< Nodes on [-1,1] (size 'order')
-    Eigen::VectorXd unscaledWeights; ///< Weights on [-1,1] (size 'order')
+    Eigen::VectorXd unscaledRoots;   ///< Canonical Gauss nodes on \f$ [-1,1] \f$ (size #order)
+    Eigen::VectorXd unscaledWeights; ///< Canonical Gauss weights on \f$ [-1,1] \f$ (size #order)
 
     /**
-     * @brief Map canonical nodes onto [a,b] replicated over @p inter blocks.
-     * @param rts   Output vector of length inter*order.
-     * @param a,b   Interval bounds.
-     * @param inter Number of sub-intervals (default 1).
-     *
-     * Each block is an affine image of [-1,1] with width (b-a)/inter.
+     * @brief Map the canonical nodes from \f$ [-1,1] \f$ onto @p inter equal blocks of \f$ [a,b] \f$
+     * @param[out] rts  Output vector of length \f$ \text{inter} \times \text{order} \f$
+     * @param      a    Lower bound of the target interval
+     * @param      b    Upper bound of the target interval
+     * @param      inter Number of sub-intervals (default 1)
      */
     void rescaleRoots(Eigen::VectorXd &rts, double a, double b, int inter = 1) const;
 
     /**
-     * @brief Map canonical weights onto [a,b] replicated over @p inter blocks.
-     * @param wgts  Output vector of length inter*order.
-     * @param a,b   Interval bounds.
-     * @param inter Number of sub-intervals (default 1).
+     * @brief Map the canonical weights from \f$ [-1,1] \f$ onto @p inter equal blocks of \f$ [a,b] \f$
+     * @param[out] wgts Output vector of length \f$ \text{inter} \times \text{order} \f$
+     * @param      a    Lower bound of the target interval
+     * @param      b    Upper bound of the target interval
+     * @param      inter Number of sub-intervals (default 1)
      *
-     * Weights scale by the Jacobian of the affine mapping (factor 0.5*(b-a)/inter).
+     * @details Each weight is scaled by the Jacobian \f$ \tfrac{b-a}{2\,\text{inter}} \f$
      */
     void rescaleWeights(Eigen::VectorXd &wgts, double a, double b, int inter = 1) const;
 
     /**
-     * @brief Rebuild (roots,weights) on [A,B] for the current 'intervals'.
+     * @brief Rebuild #roots and #weights on \f$ [A,B] \f$ using the current #intervals value
      *
-     * Uses the stored canonical (unscaled) rule and performs replication.
+     * @details Applies rescaleRoots() and rescaleWeights() using the stored canonical rule
      */
     void calcScaledPtsWgts();
 
     /**
-     * @brief Compute canonical Gauss–Legendre nodes/weights on [-1,1].
-     * @return 1 on success; 0 if Newton iteration failed to converge.
+     * @brief Compute canonical Gauss–Legendre nodes and weights on \f$ [-1,1] \f$
+     * @return 1 on success; 0 if Newton iteration failed to converge for any root
      *
-     * Uses Newton’s method on Legendre polynomials with symmetric pairing:
-     * computes half the roots in (0,1) and reflects them about 0.
+     * @details Uses Newton’s method on Legendre polynomials. Exploits symmetry about \f$ x=0 \f$
+     * to compute only half the nodes, then reflects them.
      */
     int calcGaussPtsWgts();
 
     /**
-     * @brief Planned recursive N-D integration (not implemented).
-     * @return No return; aborts at runtime if called.
+     * @brief Placeholder for a future recursive N-D integrator
+     * @return This method aborts at runtime; it is not yet implemented
      */
     double integrate_nd(RepresentableFunction<3> &func, int axis = 0) const;
 };

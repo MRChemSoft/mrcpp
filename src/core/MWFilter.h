@@ -36,180 +36,137 @@ namespace mrcpp {
 
 /**
  * @class MWFilter
- * @brief Container for a 2K×2K multiwavelet filter bank and its block views.
+ * @brief Container for the \f$ 2K \times 2K \f$ multiwavelet filter matrix and its \f$ K \times K \f$ sub-blocks
  *
- * High-level
- * ----------
- * An MWFilter represents the matrix of a 1D multiwavelet transform for a given
- * polynomial order and family (type). With K = order + 1, the full transform
- * matrix has size 2K × 2K and is organized into four K × K blocks:
+ * @details
+ * An MWFilter represents the 1D multiwavelet transform matrix for a given polynomial order \f$ k \f$ and
+ * scaling-basis family. With \f$ K = k+1 \f$, the full transform matrix is \f$ 2K \times 2K \f$ and is
+ * partitioned into four \f$ K \times K \f$ blocks:
+ * \f[
+ *   \mathbf{F} = \begin{pmatrix} G_0 & G_1 \\ H_0 & H_1 \end{pmatrix}
+ * \f]
+ * where \f$ G_0, H_0 \f$ are read from binary tables on disk and \f$ G_1, H_1 \f$ are derived by
+ * family-specific symmetry relations. Transposes of all four blocks are precomputed for the compression
+ * (adjoint) direction. Construct from (order, type) to load data from disk, or from a pre-built
+ * \f$ 2K \times 2K \f$ matrix to slice sub-blocks without file I/O.
  *
- *     filter = [ G0  G1 ]   (top row: scaling channel)
- *              [ H0  H1 ]   (bottom row: wavelet channel)
- *
- * In the implementation (.cpp), G0/H0 are loaded from binary tables and
- * G1/H1 are derived by family-specific symmetry relations. Transposes of the
- * four blocks are also precomputed for the compression direction.
- *
- * Usage model
- * -----------
- * - Construct from (order, type) → loads data from disk and builds blocks.
- * - Construct from a given 2K×2K matrix → slices into blocks (no I/O).
- * - Multiply vectors/matrices with the transform or its transpose using
- *   apply()/applyInverse().
- * - Query individual K×K subfilters for compression or reconstruction.
- *
- * Notes on 'type'
- * ---------------
- * 'type' identifies the filter family (e.g., Interpol or Legendre). The exact
- * integer codes are defined elsewhere in MRCPP and validated in the .cpp.
- *
- * Dimension conventions
- * ---------------------
- * - order = k, K = k + 1
- * - Full transform: 2K × 2K (acts on 2K-length vectors / 2K-row matrices).
+ * @see FilterCache for the process-wide singleton that caches MWFilter objects by order
  */
 class MWFilter final {
 public:
     /**
-     * @brief Construct from order and family type; loads blocks from disk.
-     * @param k Polynomial order (k ≥ 0; with library-defined upper bound).
-     * @param t Filter family/type tag (e.g., Interpol or Legendre).
+     * @brief Construct from polynomial order and filter family; loads sub-blocks from disk
+     * @param k Polynomial order (\f$ k \geq 0 \f$, up to the library-defined MaxOrder)
+     * @param t Filter family/type tag (Interpol or Legendre; validated at runtime)
      *
-     * Side effects (see .cpp):
-     *  - Locates binary tables on disk (family+order dependent).
-     *  - Reads G0 and H0, synthesizes G1 and H1 by symmetry.
-     *  - Assembles the full 2K×2K matrix 'filter'.
+     * @details Locates binary tables on disk using the MRCPP filter library root, reads \f$ G_0 \f$ and
+     * \f$ H_0 \f$, synthesizes \f$ G_1 \f$ and \f$ H_1 \f$ by family-specific symmetry, precomputes
+     * transposed sub-blocks, and assembles the full \f$ 2K \times 2K \f$ matrix #filter.
      */
     MWFilter(int k, int t);
 
     /**
-     * @brief Construct directly from a full 2K×2K matrix (no I/O).
-     * @param t    Filter family/type tag.
-     * @param data Full transform matrix of size 2K×2K.
+     * @brief Construct directly from a pre-built \f$ 2K \times 2K \f$ matrix without file I/O
+     * @param t    Filter family/type tag
+     * @param[in] data Full transform matrix of size \f$ 2K \times 2K \f$
      *
-     * The order is inferred as K = data.cols()/2, order = K - 1.
-     * The four K×K blocks (and their transposes) are sliced from @p data.
+     * @details The polynomial order is inferred as \f$ k = \text{data.cols()}/2 - 1 \f$.
+     * The four \f$ K \times K \f$ sub-blocks and their transposes are sliced from @p data.
      */
     MWFilter(int t, const Eigen::MatrixXd &data);
 
     /**
-     * @name Apply the transform / its transpose
-     * @{
-     *
-     * @brief Apply the forward/reconstruction transform: data ← filter * data.
-     * Overloads exist for Eigen::MatrixXd and Eigen::VectorXd.
-     *
-     * @brief Apply the inverse/compression transform: data ← filter^T * data.
-     * Overloads exist for Eigen::MatrixXd and Eigen::VectorXd.
-     *
-     * Precondition:
-     *  - data.rows() must equal filter.cols() (i.e., 2K).
+     * @brief Apply the reconstruction transform in-place: \f$ \mathbf{d} \leftarrow \mathbf{F}\,\mathbf{d} \f$
+     * @param[in,out] data Matrix or vector of size \f$ 2K \times \cdot \f$ (rows must equal \f$ 2K \f$)
      */
     void apply(Eigen::MatrixXd &data) const;
+    /** @brief Apply the reconstruction transform in-place (vector overload) */
     void apply(Eigen::VectorXd &data) const;
+    /**
+     * @brief Apply the compression (adjoint) transform in-place: \f$ \mathbf{d} \leftarrow \mathbf{F}^T\,\mathbf{d} \f$
+     * @param[in,out] data Matrix or vector of size \f$ 2K \times \cdot \f$
+     */
     void applyInverse(Eigen::MatrixXd &data) const;
+    /** @brief Apply the compression (adjoint) transform in-place (vector overload) */
     void applyInverse(Eigen::VectorXd &data) const;
-    /** @} */
 
-    /** @return Polynomial order k (so K = k + 1). */
+    /** @return Polynomial order k (so K = k + 1) */
     int getOrder() const { return this->order; }
 
-    /** @return Filter family/type code. */
+    /** @return Filter family/type code */
     int getType() const { return this->type; }
 
-    /** @return Const reference to the full 2K×2K transform matrix. */
+    /** @return Const reference to the full 2K×2K transform matrix */
     const Eigen::MatrixXd &getFilter() const { return this->filter; }
 
     /**
-     * @brief Return one of the four K×K subfilters.
-     * @param i    Block index in the chosen operation's order (0..3).
-     * @param oper Operation selector (direction), defaults to 0.
+     * @brief Return one of the four \f$ K \times K \f$ sub-blocks selected by operation and index
+     * @param i    Sub-block index (0–3)
+     * @param oper Operation selector: Reconstruction returns \f$(H_0,G_0,H_1,G_1)\f$ for
+     *             \f$ i=0,1,2,3 \f$; Compression returns the transposed forms
+     *             \f$(H_0^T,H_1^T,G_0^T,G_1^T)\f$
+     * @return Const reference to the requested sub-block matrix
      *
-     * Semantics (see .cpp):
-     *  - For Reconstruction: blocks returned in order (H0, G0, H1, G1).
-     *  - For Compression:    transposed blocks (H0^T, H1^T, G0^T, G1^T).
-     *
-     * The actual enum/integer values for 'oper' (e.g., Reconstruction/Compression)
-     * are defined elsewhere (constants header). This method aborts on invalid
-     * @p i or @p oper.
+     * @note Aborts if @p i or @p oper is out of range
      */
     const Eigen::MatrixXd &getSubFilter(int i, int oper = 0) const;
 
     /**
-     * @brief Shorthand: return the i-th compression subfilter (transposed form).
-     *        Order: i=0→H0^T, 1→H1^T, 2→G0^T, 3→G1^T.
+     * @brief Return the @p i-th compression sub-block (transposed form)
+     * @param i Index in \f$\{0,1,2,3\}\f$ selecting \f$H_0^T, H_1^T, G_0^T, G_1^T\f$ respectively
+     * @return Const reference to the selected transposed sub-block
      */
     const Eigen::MatrixXd &getCompressionSubFilter(int i) const;
 
     /**
-     * @brief Shorthand: return the i-th reconstruction subfilter (direct form).
-     *        Order: i=0→H0, 1→G0, 2→H1, 3→G1.
+     * @brief Return the @p i-th reconstruction sub-block (direct form)
+     * @param i Index in \f$\{0,1,2,3\}\f$ selecting \f$H_0, G_0, H_1, G_1\f$ respectively
+     * @return Const reference to the selected sub-block
      */
     const Eigen::MatrixXd &getReconstructionSubFilter(int i) const;
 
 protected:
-    /**
-     * @brief Filter family/type tag (e.g., Interpol, Legendre).
-     */
-    int type;
+    int type;  ///< Filter family/type tag (Interpol or Legendre; see constants.h)
+    int order; ///< Polynomial order \f$ k \f$ (so \f$ K = k+1 \f$)
+    int dim;   ///< Auxiliary dimension (reserved; currently unused)
 
-    /**
-     * @brief Polynomial order k (K = k + 1).
-     */
-    int order;
-
-    /**
-     * @brief Auxiliary dimension (reserved; may be unused in current code).
-     */
-    int dim;
-
-    /**
-     * @name Stored matrices
-     * @{
-     * @brief Full transform and its K×K sub-blocks (+ transposes).
-     *
-     * Layout: filter = [ G0  G1 ]
-     *                 [ H0  H1 ]
-     */
-    Eigen::MatrixXd filter; ///< Full MW-transformation matrix
-    Eigen::MatrixXd G0;
-    Eigen::MatrixXd G1;
-    Eigen::MatrixXd H0;
-    Eigen::MatrixXd H1;
-    // Transpose
-    Eigen::MatrixXd G0t;
-    Eigen::MatrixXd G1t;
-    Eigen::MatrixXd H0t;
-    Eigen::MatrixXd H1t;
-    /** @} */
+    Eigen::MatrixXd filter; ///< Full \f$ 2K \times 2K \f$ MW transform matrix
+    Eigen::MatrixXd G0;     ///< Scaling sub-block (top-left, size \f$ K \times K \f$)
+    Eigen::MatrixXd G1;     ///< Scaling sub-block (top-right, size \f$ K \times K \f$)
+    Eigen::MatrixXd H0;     ///< Wavelet sub-block (bottom-left, size \f$ K \times K \f$)
+    Eigen::MatrixXd H1;     ///< Wavelet sub-block (bottom-right, size \f$ K \times K \f$)
+    Eigen::MatrixXd G0t;    ///< Transpose of \f$ G_0 \f$
+    Eigen::MatrixXd G1t;    ///< Transpose of \f$ G_1 \f$
+    Eigen::MatrixXd H0t;    ///< Transpose of \f$ H_0 \f$
+    Eigen::MatrixXd H1t;    ///< Transpose of \f$ H_1 \f$
 
 private:
     /**
-     * @brief Compose on-disk paths to H0/G0 tables (family- and order-specific).
+     * @brief Compose the on-disk paths to the \f$ H_0 \f$ and \f$ G_0 \f$ binary tables
+     * @param[in] lib Root directory of the MRCPP filter library
      *
-     * Implemented in the .cpp; uses a discovered filter library root.
-     * Sets #H_path and #G_path accordingly.
+     * @details Sets #H_path and #G_path based on #type and #order using family-specific naming conventions
      */
     void setFilterPaths(const std::string &lib);
 
     /**
-     * @brief Slice #filter into sub-blocks and compute their transposes.
+     * @brief Slice #filter into the four \f$ K \times K \f$ sub-blocks and compute their transposes
      *
-     * Used in the constructor that takes a full matrix.
+     * @details Used by the matrix-constructor to populate #G0, #G1, #H0, #H1 and their transposed counterparts
      */
     void fillFilterBlocks();
 
     /**
-     * @brief Load H0/G0 from disk, synthesize H1/G1 by symmetry, and
-     *        precompute transposes. Populates #G0,#G1,#H0,#H1 and their ^T.
+     * @brief Load \f$ G_0 \f$ and \f$ H_0 \f$ from disk, synthesize \f$ G_1 \f$ and \f$ H_1 \f$ by symmetry,
+     * and precompute all transposed sub-blocks
+     *
+     * @details Family-specific symmetry relations (Interpol vs. Legendre) determine how \f$ G_1 \f$ and
+     * \f$ H_1 \f$ are derived from the loaded sub-blocks
      */
     void generateBlocks();
 
-    /** @brief Absolute file path to the H0 table. */
-    std::string H_path;
-    /** @brief Absolute file path to the G0 table. */
-    std::string G_path;
+    std::string H_path; ///< Absolute path to the binary \f$ H_0 \f$ table file
+    std::string G_path; ///< Absolute path to the binary \f$ G_0 \f$ table file
 };
 
 } // namespace mrcpp

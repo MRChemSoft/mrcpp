@@ -34,114 +34,91 @@ namespace mrcpp {
 
 /**
  * @def getObjectCache(T, X)
- * @brief Convenience macro to bind a local reference @p X to the singleton
- *        instance of ObjectCache<T>.
+ * @brief Bind a local reference @p X to the singleton ObjectCache<T>
  *
- * Expands to:
- *   ObjectCache<T> &X = ObjectCache<T>::getInstance();
- *
- * Example:
- *   getObjectCache(MyType, cache);
- *   if (!cache.hasId(id)) cache.load(id);
- *   MyType& obj = cache.get(id);
+ * @details Expands to <tt>ObjectCache<T> &X = ObjectCache<T>::getInstance()</tt>
  */
 #define getObjectCache(T, X) ObjectCache<T> &X = ObjectCache<T>::getInstance();
 
 /**
  * @class ObjectCache
- * @tparam T  The object type to be cached (owned via raw pointer).
+ * @tparam T The object type to be cached (owned via raw pointer)
+ * @brief Lightweight, integer-indexed singleton cache with optional OpenMP locking and memory accounting
  *
- * @brief A lightweight, index-addressed cache with singleton access,
- *        optional OpenMP locking, and simple memory accounting.
+ * @details
+ * Stores pointers to objects of type @p T in a sparse vector indexed by integer id. One global instance
+ * per @p T exists via the Meyers singleton (getInstance()). Virtual hooks load(), unload(), and get() can
+ * be overridden by derived caches (e.g., FilterCache, ScalingCache) for on-demand construction.
  *
- * High-level
- * ----------
- * - Stores pointers to objects of type T in a sparse, integer-indexed array.
- * - One global instance per T (Meyers singleton via getInstance()).
- * - Provides virtual hooks `load(id)`, `unload(id)`, `get(id)` for derived
- *   caches to specialize on-demand construction and retrieval.
- * - Tracks approximate memory usage per entry and in total.
+ * The base class initializes an OpenMP lock for the destructor cleanup path, but the load/get/unload
+ * methods themselves are not automatically locked; derived classes are responsible for guarding
+ * first-time insertions with MRCPP_SET_OMP_LOCK / MRCPP_UNSET_OMP_LOCK.
  *
- * Thread-safety
- * -------------
- * - The base class initializes an OpenMP lock (if MRCPP_HAS_OMP), and its
- *   destructor clears under that lock. However, *load/get/unload* here are not
- *   automatically locked; derived classes are expected to guard first-time
- *   construction (see FilterCache, ScalingCache, etc.).
- *
- * Ownership & lifetime
- * --------------------
- * - The cache owns stored objects: `unload(id)` deletes them.
- * - `clear()` unloads all present entries.
- * - Copy/assignment are deleted to enforce singleton semantics.
- *
- * Indexing model
- * --------------
- * - `highWaterMark` tracks the largest index ever seen.
- * - Vectors `objs` and `mem` grow to accommodate new ids; gaps are filled with
- *   `nullptr` and `0`. Presence is tested with `hasId(id)`.
- *
- * Memory accounting
- * -----------------
- * - `mem[id]` holds an approximate byte size for entry `id` (provided by the
- *   caller when inserting via `load(id, T*, memory)`).
- * - `memLoaded` sums the sizes of currently loaded entries.
+ * The cache takes ownership of inserted objects: unload() deletes them and clear() unloads all entries.
+ * Approximate memory usage per entry is tracked in the #mem vector and summed in #memLoaded.
+ * Copy and assignment are deleted to enforce singleton semantics.
  */
 template <class T> class ObjectCache {
 public:
-    /** @brief Singleton accessor (one cache per T). */
+    /** @brief Singleton accessor (one cache per T) */
     static ObjectCache<T> &getInstance();
-    /** @brief Unload and delete all loaded objects. */
+    /** @brief Unload and delete all loaded objects */
     virtual void clear();
 
     /**
-     * @brief On-demand loader hook. Default impl is a no-op; derived caches
-     *        should override to construct and insert the object for @p id.
+     * @brief On-demand loader hook (no-op in base class)
+     * @param id Integer key for the object to load
+     *
+     * @details Derived caches override this to construct and insert the object at @p id
      */
     virtual void load(int id);
 
     /**
-     * @brief Insert an already-constructed object pointer at index @p id.
-     * @param id     Integer key.
-     * @param new_o  Ownership-transferred pointer to T.
-     * @param memory Approximate size in bytes (for accounting).
+     * @brief Insert an already-constructed object at index @p id
+     * @param id      Integer key
+     * @param[in] new_o   Ownership-transferred pointer to @p T
+     * @param memory  Approximate byte size (added to #memLoaded)
      *
-     * Expands internal storage if needed. If an object is already present
-     * at @p id, this is a no-op.
+     * @details Grows internal storage if @p id exceeds the current capacity. If an object is already
+     * present at @p id the call is a no-op.
      */
     void load(int id, T *new_o, int memory);
 
     /**
-     * @brief Remove and delete the object at @p id (if present).
-     *        Updates memory accounting. Virtual to allow specialization.
+     * @brief Remove and delete the object at @p id
+     * @param id Integer key of the entry to remove
+     *
+     * @details Subtracts the entry's accounted memory from #memLoaded. Emits a warning if the slot
+     * is already empty.
      */
     virtual void unload(int id);
 
     /**
-     * @brief Retrieve a reference to the loaded object at @p id.
-     *        Emits errors if @p id is invalid or if no object is loaded.
+     * @brief Retrieve the object at @p id by reference
+     * @param id Integer key
+     * @return Reference to the stored object
+     *
+     * @note Emits an error if @p id is negative or if the slot is empty
      */
     virtual T &get(int id);
 
     /**
-     * @brief Check whether an object is present at @p id.
-     * @return true if id ≤ highWaterMark and objs[id] != nullptr.
+     * @brief Test whether an object is present at @p id
+     * @param id Integer key
+     * @return @c true if @p id ≤ #highWaterMark and the slot is non-null
      */
     bool hasId(int id);
 
-    /** @return Number of slots allocated (including empty/null slots). */
+    /** @return Number of slots allocated (including empty/null slots) */
     int getNObjs() { return this->objs.size(); }
-    /** @return Total accounted memory over loaded entries. */
+    /** @return Total accounted memory over loaded entries */
     int getMem() { return this->memLoaded; }
-    /** @return Accounted memory for a specific @p id (0 if empty). */
+    /** @return Accounted memory for a specific @p id (0 if empty) */
     int getMem(int id) { return this->mem[id]; }
 
 protected:
     /**
-     * @brief Protected ctor initializes slot 0, memory 0, and OMP lock.
-     *
-     * Slot 0 is reserved/initialized so that valid ids can start at 1 if
-     * desired, but the cache also happily accepts id=0.
+     * @brief Protected constructor; initializes slot 0, memory accounting, and the OpenMP lock
      */
     ObjectCache() {
         this->objs.push_back(nullptr);
@@ -150,9 +127,7 @@ protected:
     }
 
     /**
-     * @brief Destructor clears the cache under lock and destroys the lock.
-     *
-     * Ensures that concurrent threads do not race during teardown.
+     * @brief Destructor; clears all entries under the OpenMP lock and destroys the lock
      */
     virtual ~ObjectCache() {
         MRCPP_SET_OMP_LOCK();
@@ -166,19 +141,15 @@ protected:
     ObjectCache<T> &operator=(ObjectCache<T> const &oc) = delete;
 
 #ifdef MRCPP_HAS_OMP
-    /** @brief OpenMP lock for derived-class synchronized sections. */
+    /** @brief OpenMP lock for derived-class synchronized sections */
     omp_lock_t omp_lock;
 #endif
 
 private:
-    /** @brief Largest index ever used (inclusive). */
-    int highWaterMark{0};
-    /** @brief Sum of accounted memory over loaded entries. */
-    int memLoaded{0};      ///< memory occupied by loaded objects
-    /** @brief Sparse vector of owned pointers; nullptr denotes empty slot. */
-    std::vector<T *> objs; ///< objects store
-    /** @brief Per-slot memory accounting (0 if empty). */
-    std::vector<int> mem;  ///< mem per object
+    int highWaterMark{0};   ///< Largest index ever stored (inclusive)
+    int memLoaded{0};       ///< Total accounted memory (bytes) over all currently loaded entries
+    std::vector<T *> objs;  ///< Sparse array of owned pointers; nullptr denotes an empty slot
+    std::vector<int> mem;   ///< Per-slot memory estimate in bytes (0 for empty slots)
 };
 
 } // namespace mrcpp

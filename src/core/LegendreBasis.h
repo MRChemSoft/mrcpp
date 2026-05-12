@@ -31,58 +31,32 @@
 
 namespace mrcpp {
 
-/** @class LegendreBasis
+/**
+ * @class LegendreBasis
+ * @brief Legendre multiwavelet scaling basis as defined by Alpert, SIAM J. Math. Anal. 24(1), 246 (1993)
  *
- * @brief Legendre scaling functions as defined by Alpert,
- * SIAM J Math Anal 24 (1), 246 (1993).
+ * @details
+ * Represents the Legendre scaling functions used as the scaling space in the multiwavelet framework.
+ * The basis functions are orthonormalized shifted Legendre polynomials:
+ * \f[
+ *   \varphi_j(x) = \sqrt{2j+1}\,P_j(2x-1), \quad x \in (0,1), \quad j = 0,\ldots,k.
+ * \f]
+ * In contrast to the interpolating basis, the coefficient-to-value map (built from evaluations at
+ * quadrature nodes) is dense. The constructor calls the base ScalingBasis(k, Legendre) to tag the
+ * family and size the matrices, then populates #funcs, #quadVals, #cvMap, and #vcMap via the three
+ * private helpers initScalingBasis(), calcQuadratureValues(), and calcCVMaps().
  *
- * High-level overview
- * -------------------
- * LegendreBasis represents the *Legendre scaling functions* used as a scaling
- * space in the multiwavelet framework. In contrast to an *interpolating* basis,
- * here the basis functions are (shifted/scaled) Legendre polynomials with
- * exact L² normalization. This choice leads to dense coefficient↔value maps
- * (built from evaluations at quadrature nodes), but offers orthogonality and
- * well-understood approximation properties.
- *
- * Relationship to the class hierarchy
- * -----------------------------------
- * - Inherits from @ref ScalingBasis, which provides:
- *     • storage for basis polynomials (e.g. `funcs`),
- *     • quadrature order and data,
- *     • matrices for basis evaluated at quadrature nodes (`quadVals`),
- *     • conversion maps between coefficient and nodal value spaces
- *       (`cvMap` and `vcMap`).
- *
- * What the constructor does
- * -------------------------
- * The constructor takes the polynomial order `k` (with typical bounds 1 < k < 40)
- * and:
- *   1) calls the base `ScalingBasis(k, Legendre)` to set the family/tag,
- *   2) `initScalingBasis()` to build the list of normalized Legendre polynomials
- *      up to degree `k`,
- *   3) `calcQuadratureValues()` to evaluate the basis at quadrature nodes,
- *   4) `calcCVMaps()` to assemble value→coefficient (`vcMap`) using quadrature
- *      weights and then compute coefficient→value (`cvMap`) as its inverse.
- *
- * Notes
- * -----
- * - The actual construction details are implemented in the corresponding .cpp:
- *     • `initScalingBasis()` multiplies P_k by √(2k+1) for exact normalization.
- *     • `calcQuadratureValues()` fills `quadVals(i,k) = P_k(x_i)`.
- *     • `calcCVMaps()` sets `vcMap(i,k) = P_k(x_i) * w_i` and inverts it.
+ * @see InterpolatingBasis for the cardinal (interpolatory) alternative
  */
 
 class LegendreBasis final : public ScalingBasis {
 public:
-    /** @returns New LegendreBasis object
-     * @param[in] k: Polynomial order of basis, `1 < k < 40`
+    /**
+     * @brief Construct a Legendre scaling basis of polynomial order @p k
+     * @param k Polynomial order (typical range \f$ 1 < k < 40 \f$)
      *
-     * Construction sequence:
-     *  - `ScalingBasis(k, Legendre)` tags this as a Legendre-family scaling basis.
-     *  - `initScalingBasis()` builds normalized Legendre polynomials {P_0..P_k}.
-     *  - `calcQuadratureValues()` evaluates the basis at Gaussian nodes.
-     *  - `calcCVMaps()` creates value↔coefficient maps using quadrature weights.
+     * @details Tags the basis as Legendre-family, builds the \f$ q = k+1 \f$ normalized Legendre
+     * polynomials, evaluates them at Gauss nodes to fill #quadVals, and assembles #vcMap and #cvMap
      */
     LegendreBasis(int k)
             : ScalingBasis(k, Legendre) {
@@ -92,11 +66,23 @@ public:
     }
 
 private:
-    /** @brief Build and store the normalized Legendre polynomials up to degree k. */
+    /**
+     * @brief Build and store the normalized Legendre scaling functions up to degree k
+     *
+     * @details Fills the base-class container @c funcs with
+     * \f[
+     *   \phi_j(x) = \sqrt{2j+1}\,P_j(2x-1),
+     *   \quad x \in (0,1),\quad j = 0,\ldots,k,
+     * \f]
+     * where \f$ P_j \f$ are standard Legendre polynomials and \f$ k \f$ is the
+     * polynomial order declared in @ref ScalingBasis
+     *
+     * @note The Legendre scaling functions are defined on the unit interval \f$ (0,1) \f$
+     */
     void initScalingBasis();
-    /** @brief Fill the matrix of basis values at quadrature nodes. */
+    /** @brief Fill the matrix of basis values at quadrature nodes */
     void calcQuadratureValues();
-    /** @brief Assemble value→coefficient map and its inverse (coeff→value). */
+    /** @brief Assemble value→coefficient map and its inverse (coeff→value) */
     void calcCVMaps();
 };
 

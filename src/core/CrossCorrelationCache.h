@@ -35,20 +35,16 @@ namespace mrcpp {
 
 /**
  * @def getCrossCorrelationCache(T, X)
- * @brief Convenience macro to obtain a named reference to the singleton cache.
+ * @brief Bind a local reference @p X to the singleton CrossCorrelationCache<T>
  *
- * Expands to:
- *   CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()
- *
- * Example:
- *   getCrossCorrelationCache(Interpol, ccc);
- *   const auto& L = ccc.getLMatrix(order);
+ * @details Expands to <tt>CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()</tt>
+ * Example: <tt>getCrossCorrelationCache(Interpol, ccc); const auto& L = ccc.getLMatrix(order);</tt>
  */
 #define getCrossCorrelationCache(T, X) CrossCorrelationCache<T> &X = CrossCorrelationCache<T>::getInstance()
 
 /**
  * @class CrossCorrelationCache
- * @brief Thread-safe cache for @ref CrossCorrelation objects, keyed by order.
+ * @brief Thread-safe cache for @ref CrossCorrelation objects, keyed by order
  *
  * This cache avoids repeatedly loading the (potentially large) left/right
  * cross-correlation matrices from disk. One cache instance exists per filter
@@ -61,12 +57,12 @@ namespace mrcpp {
  *  - Actual loading and synchronization details are implemented in the
  *    corresponding .cpp; OpenMP locks guard first-time insertions.
  *
- * @tparam T Filter family tag (int constant), e.g. Interpol or Legendre.
+ * @tparam T Filter family tag (int constant), e.g. Interpol or Legendre
  */
 template <int T> class CrossCorrelationCache final : public ObjectCache<CrossCorrelation> {
 public:
     /**
-     * @brief Access the unique cache instance for the template family @p T.
+     * @brief Access the unique cache instance for the template family @p T
      *
      * Uses a function-local static (Meyers singleton). Thread-safe in C++11+.
      */
@@ -76,7 +72,7 @@ public:
     }
 
     /**
-     * @brief Ensure that the entry for @p order is present in the cache.
+     * @brief Ensure that the entry for @p order is present in the cache
      *
      * If absent, constructs a new @ref CrossCorrelation(order, type) and
      * inserts it. See .cpp for locking and memory accounting.
@@ -84,28 +80,35 @@ public:
     void load(int order) override;
 
     /**
-     * @brief Retrieve the cached @ref CrossCorrelation for @p order.
+     * @brief Retrieve the cached @ref CrossCorrelation for @p order
      *
      * Loads on demand if missing. Returns a reference owned by the cache.
      */
     CrossCorrelation &get(int order) override;
 
     /**
-     * @brief Convenience accessor for the Left matrix of a given order.
-     *
-     * Triggers lazy load if needed, then returns a const reference.
+     * @brief Convenience accessor returning the Left cross-correlation matrix for a given order
+     * @param order Polynomial order k
+     * @return Const reference to the left matrix (lazy-loads the entry if absent)
      */
     const Eigen::MatrixXd &getLMatrix(int order);
 
     /**
-     * @brief Convenience accessor for the Right matrix of a given order.
+     * @brief Convenience accessor returning the Right cross-correlation matrix for a given order
+     * @param order Polynomial order \f$ k \f$
+     * @return Const reference to the right cross-correlation coefficient matrix (lazy-loads if absent)
      *
-     * Triggers lazy load if needed, then returns a const reference.
+     * @details The right matrix collects the cross-correlation coefficients
+     * \f[
+     *   C^{(+)}_{ijp} = \int_0^1 dz \int_0^1 dx\, \phi_i(x)\, \phi_j(x-z)\, \phi_p(z)
+     * \f]
+     * with \f$ i,j = 0,\ldots,k \f$ and \f$ p = 0,\ldots,2k+1 \f$, arranged row-wise with the
+     * flattened \f$(i,j)\f$ index as the row and \f$ p \f$ as the column index
      */
     const Eigen::MatrixXd &getRMatrix(int order);
 
     /**
-     * @brief Filter family/type code associated with this cache.
+     * @brief Filter family/type code associated with this cache
      *
      * Set in the private constructor based on the template parameter @p T.
      * (E.g., Interpol or Legendre.)
@@ -113,22 +116,12 @@ public:
     int getType() const { return this->type; }
 
 protected:
-    /**
-     * @brief Filter family/type code (matches template parameter @p T).
-     */
-    int type;
-
-    /**
-     * @brief Base path to filter/correlation library on disk.
-     *
-     * Reserved for potential use by loaders. Actual path resolution is
-     * currently handled inside CrossCorrelation (see details::find_filters()).
-     */
-    std::string libPath; ///< Base path to filter library
+    int type;           ///< Filter family/type code matching template parameter @p T (e.g., Interpol or Legendre)
+    std::string libPath; ///< Reserved base path for the filter library (path resolution is currently delegated to CrossCorrelation)
 
 private:
     /**
-     * @brief Private constructor enforces the singleton pattern.
+     * @brief Private constructor enforces the singleton pattern
      *
      * Initializes @ref type based on T; see .cpp for validation.
      */

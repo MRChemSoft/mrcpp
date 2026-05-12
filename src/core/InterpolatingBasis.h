@@ -29,53 +29,30 @@
 
 namespace mrcpp {
 
-/** @class InterpolatingBasis
+/**
+ * @class InterpolatingBasis
+ * @brief Interpolating multiwavelet scaling basis as defined by Alpert et al., J. Comput. Phys. 182, 149 (2002)
  *
- * @brief Interpolating scaling functions as defined by Alpert etal,
- * J Comp Phys 182, 149-190 (2002).
+ * @details
+ * Represents the interpolatory scaling functions for the multiwavelet framework. These functions satisfy the
+ * cardinal property \f$ \varphi_j(x_i) = \delta_{ij} \f$ at the Gauss quadrature nodes \f$ \{x_i\} \f$,
+ * which makes projection and evaluation particularly efficient. The coefficient-to-value and
+ * value-to-coefficient maps are diagonal. The constructor calls ScalingBasis(k, Interpol) to tag the family
+ * and allocate storage, then fills #funcs, #quadVals, #cvMap, and #vcMap via initScalingBasis(),
+ * calcQuadratureValues(), and calcCVMaps().
  *
- * High-level overview
- * -------------------
- * InterpolatingBasis represents the *interpolatory scaling functions* used in
- * the multiwavelet framework. These functions are constructed so that:
- *   • they interpolate at Gaussian quadrature nodes (cardinal property),
- *   • the quadrature-induced inner product is simple/diagonal,
- *   • they form the scaling space for the chosen polynomial order.
- *
- * Relationship to the hierarchy:
- *   - Inherits from ScalingBasis, which provides common functionality for
- *     scaling-function families (orders, quadrature data, storage for basis
- *     polynomials, value/coefficient maps, etc.).
- *   - The constructor finalizes initialization by calling three private
- *     helpers:
- *        1) initScalingBasis()     — build the interpolating polynomials,
- *        2) calcQuadratureValues() — fill values at quadrature nodes,
- *        3) calcCVMaps()           — build coefficient↔value diagonal maps.
- *
- * Mathematical context (very short):
- *   - Follows the construction in Alpert (2002) for interpolatory multiwavelets,
- *     where basis functions {I_k} satisfy I_k(x_j) = δ_{k,j} at quadrature nodes
- *     {x_j}. This makes projection/evaluation particularly efficient.
+ * @see LegendreBasis for the orthonormal (non-cardinal) alternative
  */
 
 class InterpolatingBasis final : public ScalingBasis {
 public:
-    /** @returns New InterpolatingBasis object
-     * @param[in] k: Polynomial order of basis, `1 < k < 40`
+    /**
+     * @brief Construct an interpolating scaling basis of polynomial order @p k
+     * @param k Polynomial order (typical range \f$ 1 < k < 40 \f$)
      *
-     * What happens in the constructor:
-     *  - Calls the ScalingBasis base constructor with (k, Interpol), which
-     *    sets the family/type to “Interpolating”.
-     *  - initScalingBasis(): constructs the set of interpolating polynomials
-     *    (stored in the base's internal container, typically `funcs`).
-     *  - calcQuadratureValues(): sets the basis evaluation matrix at nodes to
-     *    the identity (cardinality property).
-     *  - calcCVMaps(): builds diagonal conversion maps between coefficient
-     *    vectors and values at quadrature nodes using the quadrature weights.
-     *
-     * Precondition:
-     *  - k must be within the supported range of the library (checked by the
-     *    base class). Typical limits are 1 < k < 40 as noted here.
+     * @details Tags the basis as interpolating-family, builds the cardinal polynomials satisfying
+     * \f$ \varphi_j(x_i) = \delta_{ij} \f$, sets #quadVals to the identity matrix, and assembles
+     * the diagonal #cvMap and #vcMap from quadrature weights
      */
     InterpolatingBasis(int k)
             : ScalingBasis(k, Interpol) {
@@ -86,31 +63,31 @@ public:
 
 private:
     /**
-     * @brief Construct the interpolatory scaling polynomials {I_k}.
+     * @brief Build and store the interpolating scaling functions up to degree @p k
      *
-     * Implementation details (in .cpp):
-     *  - Uses Gaussian quadrature roots/weights of order q.
-     *  - Expands I_k in a Legendre polynomial basis and enforces I_k(x_j)=δ_{kj}.
-     *  - Applies sqrt(weight) normalization so that the induced inner product
-     *    is diagonal and the cv/vc maps become simple scalings.
+     * @details Fills #funcs with
+     * \f[
+     *   \varphi_j(x) = \sqrt{w_j} \sum_{m=0}^{k} \phi_m(x_j)\,\phi_m(x), \quad x \in (0,1), \quad j = 0,\ldots,k,
+     * \f]
+     * where \f$ \phi_m \f$ are the Legendre scaling functions and \f$ w_j \f$ are the Gauss quadrature weights.
+     * The resulting functions satisfy the cardinal property \f$ \varphi_j(x_i) = \delta_{ij} \f$ at the
+     * Gauss nodes \f$ \{x_i\} \f$.
      */
     void initScalingBasis();
 
     /**
-     * @brief Fill the basis-at-nodes matrix.
+     * @brief Set #quadVals to the identity matrix
      *
-     * For an interpolating basis, evaluating the k-th basis at node j yields
-     * δ_{kj}. The implementation sets the diagonal entries to 1 (identity).
+     * @details Exploits the cardinal property: evaluating \f$ \varphi_k \f$ at node \f$ x_j \f$ gives
+     * \f$ \delta_{kj} \f$, so the evaluation matrix is the \f$ q \times q \f$ identity
      */
     void calcQuadratureValues();
 
     /**
-     * @brief Build coefficient↔value diagonal maps using quadrature weights.
+     * @brief Assemble the diagonal coefficient-to-value and value-to-coefficient maps
      *
-     * - cvMap(k,k) = sqrt(1 / w_k)  (coefficients → values at nodes)
-     * - vcMap(k,k) = sqrt(w_k)      (values at nodes → coefficients)
-     *
-     * These maps are exact inverses due to the chosen normalization.
+     * @details Sets \f$ \text{cvMap}(k,k) = 1/\sqrt{w_k} \f$ and \f$ \text{vcMap}(k,k) = \sqrt{w_k} \f$,
+     * which are exact inverses of each other under the chosen normalization
      */
     void calcCVMaps();
 };

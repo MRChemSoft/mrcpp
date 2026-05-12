@@ -159,7 +159,7 @@ public:
 
     // NB: All below should be revised. Now only for backwards compatibility to ComplexFunction class
 
-    void free(int type) { free(); }
+    void free(int type) { (void)type; free(); }
     bool hasReal() const { return isreal(); }
     bool hasImag() const { return iscomplex(); }
     bool isShared() const { return share(); }

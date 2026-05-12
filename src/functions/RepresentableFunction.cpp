@@ -75,6 +75,7 @@ template <int D, typename T> RepresentableFunction<D, T>::RepresentableFunction(
 /** Copies function, not bounds. Use copy constructor if you want an
  * identical function. */
 template <int D, typename T> RepresentableFunction<D, T> &RepresentableFunction<D, T>::operator=(const RepresentableFunction<D, T> &func) {
+    (void)func;
     return *this;
 }
 

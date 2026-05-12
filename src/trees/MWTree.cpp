@@ -462,10 +462,12 @@ template <int D, typename T> void MWTree<D, T>::resetEndNodeTable() {
 }
 
 template <int D, typename T> int MWTree<D, T>::countBranchNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
 }
 
 template <int D, typename T> int MWTree<D, T>::countLeafNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    int nNodes = 0;
     //    TreeIterator<D, T> it(*this);
@@ -482,6 +484,7 @@ template <int D, typename T> int MWTree<D, T>::countLeafNodes(int depth) {
 
 /* Traverse tree and count nodes belonging to this rank. */
 template <int D, typename T> int MWTree<D, T>::countNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D, T> it(*this);
     //    int count = 0;
@@ -499,6 +502,7 @@ template <int D, typename T> int MWTree<D, T>::countNodes(int depth) {
 
 /* Traverse tree and count nodes with allocated coefficients. */
 template <int D, typename T> int MWTree<D, T>::countAllocNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D, T> it(*this);
     //    int count = 0;

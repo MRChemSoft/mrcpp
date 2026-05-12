@@ -264,6 +264,8 @@ void finalize() {
 void barrier(MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     MPI_Barrier(comm);
+#else
+    (void)comm;
 #endif
 }
 
@@ -306,6 +308,9 @@ void allreduce_vector(IntVector &vec, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = vec.size();
     MPI_Allreduce(MPI_IN_PLACE, vec.data(), N, MPI_INT, MPI_SUM, comm);
+#else
+    (void)vec;
+    (void)comm;
 #endif
 }
 
@@ -314,6 +319,9 @@ void allreduce_vector(DoubleVector &vec, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = vec.size();
     MPI_Allreduce(MPI_IN_PLACE, vec.data(), N, MPI_DOUBLE, MPI_SUM, comm);
+#else
+    (void)vec;
+    (void)comm;
 #endif
 }
 
@@ -322,6 +330,9 @@ void allreduce_vector(ComplexVector &vec, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = vec.size();
     MPI_Allreduce(MPI_IN_PLACE, vec.data(), N, MPI_C_DOUBLE_COMPLEX, MPI_SUM, comm);
+#else
+    (void)vec;
+    (void)comm;
 #endif
 }
 
@@ -330,6 +341,9 @@ void allreduce_matrix(IntMatrix &mat, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = mat.size();
     MPI_Allreduce(MPI_IN_PLACE, mat.data(), N, MPI_INT, MPI_SUM, comm);
+#else
+    (void)mat;
+    (void)comm;
 #endif
 }
 
@@ -338,6 +352,9 @@ void allreduce_matrix(DoubleMatrix &mat, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = mat.size();
     MPI_Allreduce(MPI_IN_PLACE, mat.data(), N, MPI_DOUBLE, MPI_SUM, comm);
+#else
+    (void)mat;
+    (void)comm;
 #endif
 }
 
@@ -346,6 +363,9 @@ void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     int N = mat.size();
     MPI_Allreduce(MPI_IN_PLACE, mat.data(), N, MPI_C_DOUBLE_COMPLEX, MPI_SUM, comm);
+#else
+    (void)mat;
+    (void)comm;
 #endif
 }
 
@@ -366,6 +386,11 @@ void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm)
         else
             mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
     }
+#else
+    (void)func;
+    (void)dst;
+    (void)tag;
+    (void)comm;
 #endif
 }
 
@@ -382,6 +407,11 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
         else
             mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
     }
+#else
+    (void)func;
+    (void)src;
+    (void)tag;
+    (void)comm;
 #endif
 }
 
@@ -395,6 +425,10 @@ void share_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
             else
                 mrcpp::share_tree(*func.CompC[comp], src, tag, comm);
         }
+#else
+        (void)src;
+        (void)tag;
+        (void)comm;
 #endif
     }
 }
@@ -438,6 +472,10 @@ void reduce_function(double prec, CompFunction<3> &func, MPI_Comm comm) {
         fac *= 2;
     }
     MPI_Barrier(comm);
+#else
+    (void)prec;
+    (void)func;
+    (void)comm;
 #endif
 }
 
@@ -479,6 +517,9 @@ template <typename T> void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, 
         fac *= 2;
     }
     MPI_Barrier(comm);
+#else
+    (void)tree;
+    (void)comm;
 #endif
 }
 
@@ -498,6 +539,8 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 #ifdef MRCPP_HAS_MPI
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#else
+    (void)comm;
 #endif
 }
 
@@ -518,6 +561,8 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 #ifdef MRCPP_HAS_MPI
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
+#else
+    (void)comm;
 #endif
 }
 
@@ -550,6 +595,9 @@ void broadcast_function(CompFunction<3> &func, MPI_Comm comm) {
         fac /= 2;
     }
     MPI_Barrier(comm);
+#else
+    (void)func;
+    (void)comm;
 #endif
 }
 
@@ -582,6 +630,9 @@ template <typename T> void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
         fac /= 2;
     }
     MPI_Barrier(comm);
+#else
+    (void)tree;
+    (void)comm;
 #endif
 }
 

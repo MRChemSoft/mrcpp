@@ -530,6 +530,10 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
 }
 
 template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, const ComplexDouble (*metric)[4]) {
+    (void)out;
+    (void)oper;
+    (void)inp;
+    (void)metric;
     MSG_ABORT("not implemented");
 }
 
@@ -539,6 +543,10 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
     divergence(out, oper, inp_vec);
 }
 template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, const ComplexDouble (*metric)[4]) {
+    (void)out;
+    (void)oper;
+    (void)inp;
+    (void)metric;
     MSG_ABORT("not implemented");
 }
 

@@ -298,16 +298,21 @@ template <int D, typename T> void Plotter<D, T>::writeData(const Eigen::MatrixXd
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeCube(const std::array<int, 3> &npts, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
+    (void)npts;
+    (void)values;
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeNodeGrid(const MWNode<D, T> &node, const std::string &color) {
+    (void)node;
+    (void)color;
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeGrid(const MWTree<D, T> &tree) {
+    (void)tree;
     NOT_IMPLEMENTED_ABORT
 }
 

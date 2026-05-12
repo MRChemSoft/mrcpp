@@ -176,10 +176,12 @@ template <int D> GaussExp<D> GaussPoly<D>::asGaussExp() const {
 }
 
 template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) const {
+    (void)dir;
     NOT_IMPLEMENTED_ABORT;
 }
 
 template <int D> void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
+    (void)rhs;
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -229,6 +231,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
 }
 
 template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
+    (void)rhs;
     NOT_IMPLEMENTED_ABORT;
     /*
     GaussPoly<D> &lhs = *this;

@@ -777,6 +777,9 @@ template <int D> void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, Rep
  */
 template <int D> void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine, bool conjugate) {
     MSG_ABORT("Not implemented");
+    (void)f;
+    (void)prec;
+    (void)nrefine;
     if (inp_a.Ncomp() > 1) MSG_ABORT("Not implemented");
     if (inp_a.iscomplex() != 1) MSG_ABORT("Not implemented");
     if (conjugate) MSG_ABORT("Not implemented");
@@ -2713,6 +2716,7 @@ void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket
  *
  */
 template <int D> void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket) {
+    (void) prec;
     ComplexDouble overlap = dot(Bra, Ket);
     double sq_norm = Ket.getSquareNorm();
     for (int i = 0; i < Bra.Ncomp(); i++) {

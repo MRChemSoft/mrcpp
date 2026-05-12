@@ -73,6 +73,10 @@ NodeAllocator<2>::NodeAllocator(OperatorTree *tree, SharedMemory<double> *mem, i
 }
 
 template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk) {
+    (void)tree;
+    (void)mem;
+    (void)coefsPerNode;
+    (void)nodesPerChunk;
     NOT_REACHED_ABORT;
 }
 

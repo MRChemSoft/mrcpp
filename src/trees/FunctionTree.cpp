@@ -75,6 +75,7 @@ FunctionTree<D, T>::FunctionTree(FunctionTree<D, double> &realTree,
                                  const std::string &name)
     : FunctionTree(realTree.getMRA(), sh_mem, name)
 {
+    this->setZero();
     static_assert(std::is_same_v<T, ComplexDouble>, "This constructor requires T = ComplexDouble");
     std::unique_ptr<FunctionTree<D, ComplexDouble>> real_p(realTree.CopyTreeToComplex());
     std::unique_ptr<FunctionTree<D, ComplexDouble>> imag_p(imagTree.CopyTreeToComplex());
@@ -1256,6 +1257,7 @@ FunctionTree<D, ComplexDouble>* FunctionTree<D, T>::CopyTreeToComplex() {
             outTree->endNodeTable.push_back(outNode);
         }
     }
+
     outTree->calcSquareNorm();
     outTree->calcSquareNorm(true);
     return outTree;

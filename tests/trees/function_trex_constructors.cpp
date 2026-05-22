@@ -18,7 +18,7 @@ namespace function_tree_constructors {
     void testComplexConstructorFromTwoRealTrees();
 
 
-    SCENARIO("FunctionTree basic constructor", "[function_tree_ctor_basic][function_trex_constructors][trees]") {
+    SCENARIO("FunctionTree basic constructor", "[function_trex_constructors]") {
         GIVEN("a 1D real FunctionTree") { testBasicConstructor<1, double>(); }
         GIVEN("a 2D real FunctionTree") { testBasicConstructor<2, double>(); }
         GIVEN("a 3D real FunctionTree") { testBasicConstructor<3, double>(); }
@@ -28,7 +28,7 @@ namespace function_tree_constructors {
         GIVEN("a 3D complex FunctionTree") { testBasicConstructor<3, ComplexDouble>(); }
         }
 
-    SCENARIO("FunctionTree named constructor", "[function_tree_ctor_name][function_trex_constructors][trees]") {
+    SCENARIO("FunctionTree named constructor", "[function_trex_constructors]") {
         GIVEN("a 1D real FunctionTree with explicit name") { testNamedConstructor<1, double>(); }
         GIVEN("a 2D real FunctionTree with explicit name") { testNamedConstructor<2, double>(); }
         GIVEN("a 3D real FunctionTree with explicit name") { testNamedConstructor<3, double>(); }
@@ -38,7 +38,7 @@ namespace function_tree_constructors {
         GIVEN("a 3D complex FunctionTree with explicit name") { testNamedConstructor<3, ComplexDouble>(); }
     }
 
-    SCENARIO("FunctionTree shared-memory constructor with nullptr", "[function_trex_ctor_shmem][function_tree_constructors][trees]") {
+    SCENARIO("FunctionTree shared-memory constructor with nullptr", "[function_tree_constructors]") {
         GIVEN("a 1D real FunctionTree with explicit nullptr shared memory") { testSharedMemoryConstructor<1, double>(); }
         GIVEN("a 2D real FunctionTree with explicit nullptr shared memory") { testSharedMemoryConstructor<2, double>(); }
         GIVEN("a 3D real FunctionTree with explicit nullptr shared memory") { testSharedMemoryConstructor<3, double>(); }
@@ -49,7 +49,7 @@ namespace function_tree_constructors {
     }
 
     SCENARIO("Construct complex FunctionTree from two real FunctionTrees",
-             "[function_tree_complex_constructor], [function_tree], [function_trex_constructors], [trees]") {
+             "[function_trex_constructors]") {
         GIVEN("two real trees in 1D") { testComplexConstructorFromTwoRealTrees<1>(); }
         GIVEN("two real trees in 2D") { testComplexConstructorFromTwoRealTrees<2>(); }
         GIVEN("two real trees in 3D") { testComplexConstructorFromTwoRealTrees<3>(); }

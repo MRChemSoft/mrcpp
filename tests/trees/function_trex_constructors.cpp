@@ -75,9 +75,10 @@ namespace function_tree_constructors {
         }
 /*
         THEN("the tree starts undefined, with negative square norm") {
-            REQUIRE(tree.getSquareNorm() < 0.0);
+            REQUIRE(tree.getx'SquareNorm() < 0.0);
         }
-*(// Note: The above test is currently disabled to check if his is the one that fails in the CI pipeline. If it is, we can investigate further and decide whether to fix or remove this test.)
+*/ 
+//Note: The above test is currently disabled to check if his is the one that fails in the CI pipeline. If it is, we can investigate further and decide whether to fix or remove this test.)
         finalize(&mra);
     }
 

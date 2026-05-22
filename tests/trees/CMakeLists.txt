@@ -2,7 +2,7 @@ target_sources(mrcpp-tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/band_width.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bounding_box.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/function_tree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/function_tree_constructors.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/function_trex_constructors.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mw_tree.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/node_box.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/node_index.cpp
@@ -16,4 +16,4 @@ add_Catch_test(NAME mw_tree                    LABELS mw_tree)
 add_Catch_test(NAME node_box                   LABELS node_box)
 add_Catch_test(NAME node_index                 LABELS node_index)
 add_Catch_test(NAME tree_io                    LABELS tree_io)
-add_Catch_test(NAME function_tree_constructors LABELS function_trex_constructors)
+add_Catch_test(NAME function_trex_constructors LABELS function_trex_constructors)

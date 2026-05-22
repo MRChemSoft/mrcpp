@@ -10,7 +10,7 @@ target_sources(mrcpp-tests PRIVATE
     )
 
 add_Catch_test(NAME band_width                 LABELS "band_width;short")
-add_Catch_test(NAME bounding_box               LABELS "bounding_box";short")
+add_Catch_test(NAME bounding_box               LABELS "bounding_box;short")
 add_Catch_test(NAME function_tree              LABELS "function_tree;short")
 add_Catch_test(NAME mw_tree                    LABELS "mw_tree;short")
 add_Catch_test(NAME node_box                   LABELS "node_box;short")

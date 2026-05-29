@@ -54,9 +54,43 @@ namespace mrcpp {
 
 template <int D, typename T> class FunctionTree final : public MWTree<D, T>, public RepresentableFunction<D, T> {
 public:
-    FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name)
+
+/**
+ * @brief Constructor
+ * @returns New FunctionTree object
+ *
+ *  @param[in] mra: Which MRA the function is defined
+ *  @param[in] name: Name of the tree
+ *
+ *  @details Constructs an uninitialized tree, containing only empty root nodes.
+ *  Nonshared memory is used for the tree, which means that the tree is allocated locally.
+ */     FunctionTree(const MultiResolutionAnalysis<D> &mra, const std::string &name)
             : FunctionTree(mra, nullptr, name) {}
+/**
+ * @brief Constructor
+ * @returns New FunctionTree object
+ *
+ *  @param[in] mra: Which MRA the function is defined
+ *  @param[in] sh_mem: Pointer to MPI shared memory block
+ *  @param[in] name: Name of the tree
+ *
+ *  @details Constructs an uninitialized tree, containing only empty root nodes.
+ *  If a shared memory pointer is provided the tree will be allocated in this
+ *  shared memory window, otherwise it will be local to each MPI process.
+ */    
     FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem = nullptr, const std::string &name = "nn");
+/**
+ * @brief Constructor (complex version only)
+ * @returns New FunctionTree object
+ *
+ *  @param[in] mra: Which MRA the function is defined
+ *  @param[in] sh_mem: Pointer to MPI shared memory block
+ *  @param[in] name: Name of the tree
+ *
+ *  @details Constructs a complex tree, given two real trees which define the real and imaginary parts of the complex function.
+ *  If a shared memory pointer is provided the tree will be allocated in this
+ *  shared memory window, otherwise it will be local to each MPI process.
+ */    
     template <typename U = T,
               typename = std::enable_if_t<std::is_same_v<U, ComplexDouble>>>
     FunctionTree(FunctionTree<D, double> &realTree,

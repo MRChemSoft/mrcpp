@@ -31,6 +31,7 @@
 #include "NodeAllocator.h"
 
 #include "treebuilders/grid.h"
+#include "treebuilders/add.h"
 #include "utils/Bank.h"
 #include "utils/Printer.h"
 #include "utils/Timer.h"
@@ -54,7 +55,8 @@ namespace mrcpp {
 template <int D, typename T>
 FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMemory<T> *sh_mem, const std::string &name)
         : MWTree<D, T>(mra, name)
-        , RepresentableFunction<D, T>(mra.getWorldBox().getLowerBounds().data(), mra.getWorldBox().getUpperBounds().data()) {
+        , RepresentableFunction<D, T>(mra.getWorldBox().getLowerBounds().data(),
+                                      mra.getWorldBox().getUpperBounds().data()) {
     int nodesPerChunk = 2048; // Large chunks are required for not leading to memory fragmentation (32 MB on "Betzy" 2023)
     // nodesPerChunk is same for real and complex trees: the size (in MB) of the complex chunks are twice as large
     int coefsGenNodes = this->getKp1_d();
@@ -65,6 +67,22 @@ FunctionTree<D, T>::FunctionTree(const MultiResolutionAnalysis<D> &mra, SharedMe
     this->resetEndNodeTable();
 }
 
+template <int D, typename T>
+template <typename U, typename>
+FunctionTree<D, T>::FunctionTree(FunctionTree<D, double> &realTree,
+                                 FunctionTree<D, double> &imagTree,
+                                 SharedMemory<T> *sh_mem,
+                                 const std::string &name)
+    : FunctionTree(realTree.getMRA(), sh_mem, name)
+{
+    this->setZero();
+    static_assert(std::is_same_v<T, ComplexDouble>, "This constructor requires T = ComplexDouble");
+    std::unique_ptr<FunctionTree<D, ComplexDouble>> real_p(realTree.CopyTreeToComplex());
+    std::unique_ptr<FunctionTree<D, ComplexDouble>> imag_p(imagTree.CopyTreeToComplex());
+    this->add_inplace(ComplexDouble(1.0, 0.0), *real_p);
+    this->add_inplace(ComplexDouble(0.0, 1.0), *imag_p);
+}
+    
 template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
@@ -1239,6 +1257,7 @@ FunctionTree<D, ComplexDouble>* FunctionTree<D, T>::CopyTreeToComplex() {
             outTree->endNodeTable.push_back(outNode);
         }
     }
+
     outTree->calcSquareNorm();
     outTree->calcSquareNorm(true);
     return outTree;
@@ -1299,5 +1318,25 @@ template FunctionTree<3, ComplexDouble>* FunctionTree<3, double>::CopyTreeToComp
 template FunctionTree<1, double>* FunctionTree<1, double>::CopyTreeToReal<double, void>();
 template FunctionTree<2, double>* FunctionTree<2, double>::CopyTreeToReal<double, void>();
 template FunctionTree<3, double>* FunctionTree<3, double>::CopyTreeToReal<double, void>();
+template FunctionTree<3, ComplexDouble>::FunctionTree(
+    FunctionTree<3, double>&,
+    FunctionTree<3, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
+
+template FunctionTree<2, ComplexDouble>::FunctionTree(
+    FunctionTree<2, double>&,
+    FunctionTree<2, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
+
+template FunctionTree<1, ComplexDouble>::FunctionTree(
+    FunctionTree<1, double>&,
+    FunctionTree<1, double>&,
+    SharedMemory<ComplexDouble>*,
+    const std::string&
+);
 
 } // namespace mrcpp

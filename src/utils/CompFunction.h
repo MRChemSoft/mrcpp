@@ -168,6 +168,7 @@ public:
     FunctionTree<D, double> &imag(int i = 0);             // does not make sense now
     const FunctionTree<D, double> &imag(int i = 0) const; // does not make sense now
     std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
+    void upgradeToComplex();
 };
 
 template <int D> void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp);

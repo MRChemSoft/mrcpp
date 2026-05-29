@@ -65,5 +65,12 @@ int main(int argc, char **argv) {
     mrcpp::print::value(0, "Square norm", sq_norm);
     mrcpp::print::footer(0, timer, 2);
 
+    mrcpp::FunctionTree<D,ComplexDouble> result = mrcpp::FunctionTree<D, ComplexDouble>(f_tree_1, f_tree_2);
+
+    mrcpp::Coord<3> r{ 0.0, 0.0, 0.0};
+    auto val = result.evalf(r);
+    mrcpp::print::complex_value(0, "Value of cplx fcn at origin", val);
+    
+    
     return 0;
 }

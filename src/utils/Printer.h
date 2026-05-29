@@ -35,6 +35,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <complex>
 
 namespace mrcpp {
 
@@ -126,6 +127,7 @@ void header(int level, const std::string &txt, int newlines = 0, const char &c =
 void footer(int level, const Timer &timer, int newlines = 0, const char &c = '=');
 void memory(int level, const std::string &txt);
 void value(int level, const std::string &txt, double v, const std::string &unit = "", int p = -1, bool sci = true);
+void complex_value(int level, const std::string &txt, std::complex<double> v, const std::string &unit = "", int p = -1, bool sci = true);
 void time(int level, const std::string &txt, const Timer &timer);
 void tree(int level, const std::string &txt, int n, int m, double t);
 template <int D, typename T> void tree(int level, const std::string &txt, const MWTree<D, T> &tree, const Timer &timer);

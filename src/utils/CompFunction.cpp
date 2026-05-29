@@ -445,7 +445,17 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
         }
     }
 }
-
+    
+template <int D> void CompFunction<D>::upgradeToComplex(){
+    for (int i = 0; i < Ncomp(); i++) {
+        CompC[i] = CompD[i]->CopyTreeToComplex();
+        delete CompD[i];
+        CompD[i] = nullptr;
+    }
+    func_ptr->iscomplex = 1;
+    func_ptr->isreal = 0;
+}
+    
 template <int D> int CompFunction<D>::crop(double prec, bool absPrec) {
     if (prec < 0.0) return 0;
     int nChunksremoved = 0;
@@ -462,6 +472,8 @@ template <int D> int CompFunction<D>::crop(double prec, bool absPrec) {
 /** @brief In place multiply with scalar. Fully in-place.*/
 template <int D> void CompFunction<D>::rescale(ComplexDouble c) {
     bool need_to_rescale = not(isShared()) or mpi::share_master();
+    bool need_complex_functions = ((abs(c.imag()) > MachineZero) and isreal());
+    if(need_complex_functions) upgradeToComplex();
     if (need_to_rescale) {
         for (int i = 0; i < Ncomp(); i++) {
             if (iscomplex()) {

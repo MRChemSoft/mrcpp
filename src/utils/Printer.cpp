@@ -210,6 +210,36 @@ void print::value(int level, const std::string &txt, double v, const std::string
     println(level, o.str());
 }
 
+/** @brief Print a scalar value, including unit
+ *
+ * @param[in] level: Activation level for print statement
+ * @param[in] v: Complex number to print
+ * @param[in] unit: Unit of scalar
+ * @param[in] p: Floating point precision
+ * @param[in] sci: Use scientific notation
+ */
+void print::complex_value(int level, const std::string &txt, std::complex<double> v, const std::string &unit, int p, bool sci) {
+    if (level > Printer::getPrintLevel()) return;
+
+    if (p < 0) p = Printer::getPrecision();
+    auto line_width = Printer::getWidth() - 2;
+    auto txt_width = line_width / 2;
+    auto unit_width = txt_width / 3;
+    auto val_width = line_width - (txt_width + unit_width);
+    auto n_spaces = std::max(0, txt_width - static_cast<int>(txt.size()));
+
+    std::stringstream o;
+    o << " " << txt;
+    o << std::string(n_spaces, ' ');
+    o << std::setw(unit_width) << unit;
+    if (sci) {
+        o << std::setw(val_width) << std::setprecision(p) << std::scientific << v;
+    } else {
+        o << std::setw(val_width) << std::setprecision(p) << std::fixed << v;
+    }
+    println(level, o.str());
+}
+
 /** @brief Print tree parameters (nodes, memory) and wall time
  *
  * @param[in] level: Activation level for print statement

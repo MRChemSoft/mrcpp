@@ -196,7 +196,7 @@ template <int D, typename T> void MWTree<D, T>::mwTransformDown(bool overwrite) 
     tree_utils::make_node_table(*this, nodeTable);
 #pragma omp parallel shared(nodeTable) num_threads(mrcpp_get_num_threads())
     {
-        for (int n = 0; n < nodeTable.size(); n++) {
+        for (size_t n = 0; n < nodeTable.size(); n++) {
             int n_nodes = nodeTable[n].size();
 #pragma omp for schedule(guided)
             for (int i = 0; i < n_nodes; i++) {
@@ -284,9 +284,9 @@ template <int D, typename T> void MWTree<D, T>::decrementNodeCount(int scale) {
 template <int D, typename T> int MWTree<D, T>::getNNodesAtDepth(int depth) const {
     int N = 0;
     if (depth < 0) {
-        if (this->nodesAtNegativeDepth.size() >= -depth) N = this->nodesAtNegativeDepth[-depth];
+        if (this->nodesAtNegativeDepth.size() >= static_cast<size_t>(-depth)) N = this->nodesAtNegativeDepth[-depth];
     } else {
-        if (this->nodesAtDepth.size() > depth) N = this->nodesAtDepth[depth];
+        if (this->nodesAtDepth.size() > static_cast<size_t>(depth)) N = this->nodesAtDepth[depth];
     }
     return N;
 }
@@ -462,10 +462,12 @@ template <int D, typename T> void MWTree<D, T>::resetEndNodeTable() {
 }
 
 template <int D, typename T> int MWTree<D, T>::countBranchNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
 }
 
 template <int D, typename T> int MWTree<D, T>::countLeafNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    int nNodes = 0;
     //    TreeIterator<D, T> it(*this);
@@ -482,6 +484,7 @@ template <int D, typename T> int MWTree<D, T>::countLeafNodes(int depth) {
 
 /* Traverse tree and count nodes belonging to this rank. */
 template <int D, typename T> int MWTree<D, T>::countNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D, T> it(*this);
     //    int count = 0;
@@ -499,6 +502,7 @@ template <int D, typename T> int MWTree<D, T>::countNodes(int depth) {
 
 /* Traverse tree and count nodes with allocated coefficients. */
 template <int D, typename T> int MWTree<D, T>::countAllocNodes(int depth) {
+    (void)depth;
     NOT_IMPLEMENTED_ABORT;
     //    TreeIterator<D, T> it(*this);
     //    int count = 0;
@@ -523,8 +527,8 @@ template <int D, typename T> std::ostream &MWTree<D, T>::print(std::ostream &o) 
     o << "  nodes: " << this->getNNodes() << std::endl;
     o << "  endNodes: " << this->endNodeTable.size() << std::endl;
     o << "  nodes per scale: " << std::endl;
-    for (int i = this->nodesAtNegativeDepth.size() - 1; i >= 0; i--) { o << "    scale=" << -(i + this->getRootScale() + 1) << "  nodes=" << this->nodesAtNegativeDepth[i] << std::endl; }
-    for (int i = 0; i < this->nodesAtDepth.size(); i++) { o << "    scale=" << i + this->getRootScale() << "  nodes=" << this->nodesAtDepth[i] << std::endl; }
+    for (int i = static_cast<int>(this->nodesAtNegativeDepth.size()) - 1; i >= 0; i--) { o << "    scale=" << -(i + this->getRootScale() + 1) << "  nodes=" << this->nodesAtNegativeDepth[i] << std::endl; }
+    for (size_t i = 0; i < this->nodesAtDepth.size(); i++) { o << "    scale=" << i + this->getRootScale() << "  nodes=" << this->nodesAtDepth[i] << std::endl; }
     return o;
 }
 

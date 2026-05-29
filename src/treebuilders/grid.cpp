@@ -171,7 +171,7 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTr
  *
  */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter) {
-    for (auto i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     auto maxScale = out.getMRA().getMaxScale();

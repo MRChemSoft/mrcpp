@@ -59,7 +59,7 @@ private:
 
     OperatorStatistics operStat;
     std::vector<Eigen::MatrixXi *> bandSizes;
-    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
+    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { (void)idx; return 1.0; };
 
     static const int nComp = (1 << D);
     static const int nComp2 = (1 << D) * (1 << D);

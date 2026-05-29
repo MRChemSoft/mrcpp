@@ -239,7 +239,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
     in.close();
     // transform all nodes from quadrature point values to scaling coefficients
     for (int n = nmax; n > -1; n--) {
-        for (int i = 0; i < NodeTable[n].size(); i++) {
+        for (size_t i = 0; i < NodeTable[n].size(); i++) {
             MWNode<D, T> *node = NodeTable[n][i];
             node->cvTransform(Backward);
             node->calcNorms();
@@ -249,7 +249,7 @@ template <int D, typename T> void FunctionTree<D, T>::loadTreeTXT(const std::str
 
     // Transform into scaling and wavelets, starting by leaf nodes and copying scaling into parents
     for (int n = nmax; n > -1; n--) {
-        for (int i = 0; i < NodeTable[n].size(); i++) {
+        for (size_t i = 0; i < NodeTable[n].size(); i++) {
             MWNode<D, T> *node = NodeTable[n][i];
             if (mp[node->getSerialIx()] == nChildren) {
                 // node complete: transform into scaling and wavelets
@@ -920,7 +920,7 @@ void FunctionTree<D, T>::makeCoeffVector(std::vector<T *> &coefs,
         refstack.push_back(refTree.getRootBox().getNodes()[rIdx]);
         thisstack.push_back(this->getRootBox().getNodes()[rIdx]);
     }
-    int stack_p = 0;
+    size_t stack_p = 0;
     while (thisstack.size() > stack_p) {
         // refNode and thisNode are the same node in space, but on different trees
         MWNode<D, T> *thisNode = thisstack[stack_p];
@@ -986,7 +986,7 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
             }
         } else {
             // only wavelets are defined in coefVec. Scaling part set below, when creating children
-            if (ix < coefpVec.size() and ix >= 0) {
+            if (ix < static_cast<int>(coefpVec.size()) and ix >= 0) {
                 for (int k = 0; k < size; k++) node->getCoefs()[k + this->getKp1_d()] = coefpVec[ix][k];
             } else {
                 // we do not have W coefficients. Set them to zero
@@ -1121,7 +1121,7 @@ template <int D, typename T> void FunctionTree<D, T>::deleteGeneratedParents() {
 template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
     if (this->isLocal) MSG_INFO("Tree is already in local representation");
     NodesCoeff = new BankAccount; // NB: must be a collective call!
-    int stack_p = 0;
+    size_t stack_p = 0;
     if (mpi::wrk_rank == 0) {
         int sizecoeff = (1 << 3) * this->getKp1_d();
         std::vector<MWNode<3, double> *> stack; // nodes from this Tree
@@ -1142,7 +1142,7 @@ template <> int FunctionTree<3, double>::saveNodesAndRmCoeff() {
 template <> int FunctionTree<3, ComplexDouble>::saveNodesAndRmCoeff() {
     if (this->isLocal) MSG_INFO("Tree is already in local representation");
     NodesCoeff = new BankAccount; // NB: must be a collective call!
-    int stack_p = 0;
+    size_t stack_p = 0;
     if (mpi::wrk_rank == 0) {
         int sizecoeff = (1 << 3) * this->getKp1_d();
         sizecoeff *= 2;                                // double->ComplexDouble. Saved as twice as many doubles

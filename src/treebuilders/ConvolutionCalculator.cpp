@@ -61,7 +61,7 @@ template <int D, typename T> ConvolutionCalculator<D, T>::~ConvolutionCalculator
     clearTimers();
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
-    for (int i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
+    for (size_t i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
 }
 
 template <int D, typename T> void ConvolutionCalculator<D, T>::initTimers() {
@@ -248,7 +248,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     os.gThreshold = gThrs;
 
     this->calc_t[mrcpp_get_thread_num()]->resume();
-    for (int n = 0; n < fBand->size(); n++) {
+    for (size_t n = 0; n < fBand->size(); n++) {
         MWNode<D, T> &fNode = *(*fBand)[n];
         NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);

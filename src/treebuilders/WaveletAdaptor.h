@@ -46,7 +46,7 @@ protected:
     bool absPrec;
     double prec;
     double splitFac;
-    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { return 1.0; };
+    std::function<double(const NodeIndex<D> &idx)> precFunc = [](const NodeIndex<D> &idx) { (void)idx; return 1.0; };
 
     bool splitNode(const MWNode<D, T> &node) const override {
         auto precFac = this->precFunc(node.getNodeIndex()); // returns 1.0 by default

@@ -46,6 +46,8 @@ std::vector<std::complex<double>> &JpowerIntegrals::operator[](int index) {
 std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M, double threshold) {
     using namespace std::complex_literals;
 
+    (void)threshold;
+
     std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
     std::complex<double> beta(0, 0.5 / a);
     auto alpha = static_cast<double>(l) * beta;

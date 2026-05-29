@@ -470,6 +470,9 @@ int Bank::clearAccount(int account, int iclient, MPI_Comm comm) {
     closeAccount(account);
     return openAccount(iclient, comm);
 #else
+    (void)account;
+    (void)iclient;
+    (void)comm;
     return 1;
 #endif
 }
@@ -518,6 +521,8 @@ void Bank::remove_account(int account) {
     for (double *c_p : mem[account]->chunk_p) delete[] c_p;
     mem.erase(account);
     currentsize.erase(account);
+#else
+    (void)account;
 #endif
 }
 
@@ -544,6 +549,9 @@ int Bank::openAccount(int iclient, MPI_Comm comm) {
     } else {
         MPI_Bcast(account_id, 1, MPI_INT, 0, comm);
     }
+#else
+    (void)iclient;
+    (void)comm;
 #endif
     return account_id[0];
 }
@@ -580,6 +588,10 @@ int Bank::openTaskManager(int ntasks, int iclient, MPI_Comm comm) {
     } else {
         MPI_Bcast(&account_id, 1, MPI_INT, 0, comm);
     }
+#else
+    (void)ntasks;
+    (void)iclient;
+    (void)comm;
 #endif
     return account_id;
 }
@@ -592,6 +604,8 @@ void Bank::closeAccount(int account_id) {
     messages[0] = CLOSE_ACCOUNT;
     messages[1] = account_id;
     for (int i = 0; i < bank_size; i++) MPI_Send(messages, 2, MPI_INT, bankmaster[i], 0, comm_bank);
+#else
+    (void)account_id;
 #endif
 }
 
@@ -603,6 +617,8 @@ void Bank::closeTaskManager(int account_id) {
     messages[0] = CLOSE_ACCOUNT;
     messages[1] = account_id;
     MPI_Send(messages, 2, MPI_INT, task_bank, 0, comm_bank);
+#else
+    (void)account_id;
 #endif
 }
 
@@ -667,6 +683,10 @@ int BankAccount::get_func(int id, CompFunction<3> &func, int wait) {
         MPI_Send(messages, 3, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
         recv_function(func, bankmaster[id % bank_size], 1, comm_bank);
     }
+#else
+    (void)id;
+    (void)func;
+    (void)wait;
 #endif
     return 1;
 }
@@ -689,6 +709,9 @@ int BankAccount::get_func_del(int id, CompFunction<3> &orb) {
     } else {
         return 0;
     }
+#else
+    (void)id;
+    (void)orb;
 #endif
     return 1;
 }
@@ -703,6 +726,9 @@ int BankAccount::put_func(int id, CompFunction<3> &func) {
     messages[2] = id;
     MPI_Send(messages, 3, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     send_function(func, bankmaster[id % bank_size], 1, comm_bank);
+#else
+    (void)id;
+    (void)func;
 #endif
     return 1;
 }
@@ -720,6 +746,10 @@ int BankAccount::put_data(int id, int size, double *data) {
     messages[4] = MIN_SCALE; // to indicate that it is defined by id
     MPI_Send(messages, 5, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#else
+    (void)id;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -737,6 +767,10 @@ int BankAccount::put_data(int id, int size, ComplexDouble *data) {
     messages[4] = MIN_SCALE; // to indicate that it is defined by id
     MPI_Send(messages, 5, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#else
+    (void)id;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -756,6 +790,10 @@ int BankAccount::put_data(NodeIndex<3> nIdx, int size, double *data) {
     int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
     MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#else
+    (void)nIdx;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -775,6 +813,10 @@ int BankAccount::put_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
     int id = std::abs(nIdx.getTranslation(0) + nIdx.getTranslation(1) + nIdx.getTranslation(2));
     MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank);
+#else
+    (void)nIdx;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -790,6 +832,10 @@ int BankAccount::get_data(int id, int size, double *data) {
     messages[3] = MIN_SCALE;
     MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#else
+    (void)id;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -806,6 +852,10 @@ int BankAccount::get_data(int id, int size, ComplexDouble *data) {
     MPI_Send(messages, 4, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     // fetch as twice as many doubles
     MPI_Recv(data, size * 2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#else
+    (void)id;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -825,6 +875,10 @@ int BankAccount::get_data(NodeIndex<3> nIdx, int size, double *data) {
     messages[6] = nIdx.getTranslation(2);
     MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#else
+    (void)nIdx;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -845,6 +899,10 @@ int BankAccount::get_data(NodeIndex<3> nIdx, int size, ComplexDouble *data) {
     MPI_Send(messages, 7, MPI_INT, bankmaster[id % bank_size], 0, comm_bank);
     // fetch as twice as many doubles
     MPI_Recv(data, size * 2, MPI_DOUBLE, bankmaster[id % bank_size], 1, comm_bank, &status);
+#else
+    (void)nIdx;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -861,6 +919,11 @@ int BankAccount::put_nodedata(int id, int nodeid, int size, double *data) {
     messages[4] = size;   // size of this data
     MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
     MPI_Send(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 1, comm_bank);
+#else
+    (void)id;
+    (void)nodeid;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -878,6 +941,11 @@ int BankAccount::put_nodedata(int id, int nodeid, int size, ComplexDouble *data)
     messages[4] = 2 * size; // size of this data
     MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
     MPI_Send(data, 2 * size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 1, comm_bank);
+#else
+    (void)id;
+    (void)nodeid;
+    (void)size;
+    (void)data;
 #endif
     return 1;
 }
@@ -895,6 +963,12 @@ int BankAccount::get_nodedata(int id, int nodeid, int size, double *data, std::v
     messages[4] = size;   // expected size of data
     MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)id;
+    (void)nodeid;
+    (void)size;
+    (void)data;
+    (void)idVec;
 #endif
     return 1;
 }
@@ -912,6 +986,12 @@ int BankAccount::get_nodedata(int id, int nodeid, int size, ComplexDouble *data,
     messages[4] = size;   // expected size of data
     MPI_Send(messages, 5, MPI_INT, bankmaster[nodeid % bank_size], 0, comm_bank);
     MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)id;
+    (void)nodeid;
+    (void)size;
+    (void)data;
+    (void)idVec;
 #endif
     return 1;
 }
@@ -932,6 +1012,10 @@ int BankAccount::get_nodeblock(int nodeid, double *data, std::vector<int> &idVec
     int size = metadata_block[2];
     if (size > 0) MPI_Recv(idVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
     if (size > 0) MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)nodeid;
+    (void)data;
+    (void)idVec;
 #endif
     return 1;
 }
@@ -952,6 +1036,10 @@ int BankAccount::get_nodeblock(int nodeid, ComplexDouble *data, std::vector<int>
     int size = metadata_block[2];
     if (size > 0) MPI_Recv(idVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
     if (size > 0) MPI_Recv(data, size, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)nodeid;
+    (void)data;
+    (void)idVec;
 #endif
     return 1;
 }
@@ -973,6 +1061,11 @@ int BankAccount::get_orbblock(int orbid, double *&data, std::vector<int> &nodeid
     if (totsize > 0) MPI_Recv(nodeidVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
     data = new double[totsize];
     if (totsize > 0) MPI_Recv(data, totsize, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)orbid;
+    (void)data;
+    (void)nodeidVec;
+    (void)bankstart;
 #endif
     return 1;
 }
@@ -994,6 +1087,11 @@ int BankAccount::get_orbblock(int orbid, ComplexDouble *&data, std::vector<int> 
     if (totsize > 0) MPI_Recv(nodeidVec.data(), metadata_block[1], MPI_INT, bankmaster[nodeid % bank_size], 2, comm_bank, &status);
     data = new ComplexDouble[totsize / 2];
     if (totsize > 0) MPI_Recv(data, totsize, MPI_DOUBLE, bankmaster[nodeid % bank_size], 3, comm_bank, &status);
+#else
+    (void)orbid;
+    (void)data;
+    (void)nodeidVec;
+    (void)bankstart;
 #endif
     return 1;
 }
@@ -1062,6 +1160,9 @@ void TaskManager::put_readytask(int i, int j) {
     messages[2] = i;
     messages[3] = j;
     MPI_Send(messages, message_size, MPI_INT, task_bank, 0, comm_bank);
+#else
+    (void)i;
+    (void)j;
 #endif
 }
 
@@ -1075,6 +1176,9 @@ void TaskManager::del_readytask(int i, int j) {
     messages[2] = i;
     messages[3] = j;
     MPI_Send(messages, message_size, MPI_INT, task_bank, 0, comm_bank);
+#else
+    (void)i;
+    (void)j;
 #endif
 }
 
@@ -1095,6 +1199,9 @@ std::vector<int> TaskManager::get_readytask(int i, int del) {
         readytasks.resize(nready);
         MPI_Recv(readytasks.data(), nready, MPI_INT, task_bank, 845, comm_bank, &status);
     }
+#else
+    (void)i;
+    (void)del;
 #endif
     return readytasks;
 }

@@ -128,7 +128,7 @@ template <int D, typename T> void DerivativeCalculator<D, T>::calcNode(MWNode<D,
 
     this->calc_t[mrcpp_get_thread_num()].resume();
 
-    for (int n = 0; n < fBand.size(); n++) {
+    for (size_t n = 0; n < fBand.size(); n++) {
         MWNode<D, T> &fNode = *fBand[n];
         NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);

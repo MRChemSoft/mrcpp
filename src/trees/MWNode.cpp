@@ -368,6 +368,7 @@ template <int D, typename T> void MWNode<D, T>::giveChildCoefs(int cIdx, bool ov
  * \warning This routine is only used in connection with Periodic Boundary Conditions
  */
 template <int D, typename T> void MWNode<D, T>::giveParentCoefs(bool overwrite) {
+    (void)overwrite;
     MWNode<D, T> node = *this;
     MWNode<D, T> &parent = getMWParent();
     int kp1_d = this->getKp1_d();
@@ -692,6 +693,7 @@ template <int D, typename T> bool MWNode<D, T>::crop(double prec, double splitFa
 }
 
 template <int D, typename T> void MWNode<D, T>::createChildren(bool coefs) {
+    (void)coefs;
     NOT_REACHED_ABORT;
 }
 
@@ -1187,6 +1189,7 @@ template <int D, typename T> bool MWNode<D, T>::hasCoord(const Coord<D> &r) cons
 /** Testing if nodes are compatible wrt NodeIndex and Tree (order, rootScale,
  * relPrec, etc). */
 template <int D, typename T> bool MWNode<D, T>::isCompatible(const MWNode<D, T> &node) {
+    (void)node;
     NOT_IMPLEMENTED_ABORT;
     //    if (nodeIndex != node.nodeIndex) {
     //        println(0, "nodeIndex mismatch" << std::endl);
@@ -1216,6 +1219,7 @@ template <int D, typename T> bool MWNode<D, T>::isAncestor(const NodeIndex<D> &i
 }
 
 template <int D, typename T> bool MWNode<D, T>::isDecendant(const NodeIndex<D> &idx) const {
+    (void)idx;
     NOT_IMPLEMENTED_ABORT;
 }
 

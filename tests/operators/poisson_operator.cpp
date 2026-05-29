@@ -95,7 +95,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                 TreeBuilder<2> builder;
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
 
-                for (int i = 0; i < kern_vec.size(); i++) {
+                for (size_t i = 0; i < kern_vec.size(); i++) {
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 

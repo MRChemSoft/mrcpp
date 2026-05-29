@@ -82,6 +82,7 @@ void OperatorStatistics::flushNodeCounters() {
 
 /** Increment g-node usage counter. Needed for load balancing. */
 template <int D, typename T> void OperatorStatistics::incrementGNodeCounters(const MWNode<D, T> &gNode) {
+    (void)gNode;
     int thread = mrcpp_get_thread_num();
     this->gCount[thread]++;
 }

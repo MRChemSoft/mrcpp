@@ -218,10 +218,10 @@ template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, Co
 
     // The local precision will be scaled by the maxNorm of the
     // corresponding node(s) in the precTrees vector.
-    for (int i = 0; i < precTrees.size(); i++) get_func(precTrees, i).makeMaxSquareNorms();
+    for (size_t i = 0; i < precTrees.size(); i++) get_func(precTrees, i).makeMaxSquareNorms();
     auto precFunc = [&precTrees](const NodeIndex<D> &idx) -> double {
         auto maxNorm = (precTrees.size()) ? 0.0 : 1.0;
-        for (int i = 0; i < precTrees.size(); i++) {
+        for (size_t i = 0; i < precTrees.size(); i++) {
             auto &pNode = get_func(precTrees, i).getNode(idx);
             maxNorm = std::max(maxNorm, std::sqrt(pNode.getMaxSquareNorm()));
         }
@@ -513,7 +513,7 @@ std::vector<CompFunction<3> *> gradient(DerivativeOperator<3> &oper, CompFunctio
  */
 template <int D, typename T> void divergence(FunctionTree<D, T> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> &inp) {
     if (inp.size() != D) MSG_ABORT("Dimension mismatch");
-    for (auto i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     FunctionTreeVector<D, T> tmp_vec;
@@ -530,6 +530,10 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
 }
 
 template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, FunctionTreeVector<D, T> *inp, const ComplexDouble (*metric)[4]) {
+    (void)out;
+    (void)oper;
+    (void)inp;
+    (void)metric;
     MSG_ABORT("not implemented");
 }
 
@@ -539,6 +543,10 @@ template <int D, typename T> void divergence(FunctionTree<D, T> &out, Derivative
     divergence(out, oper, inp_vec);
 }
 template <int D, typename T> void divergence(CompFunction<D> &out, DerivativeOperator<D> &oper, std::vector<FunctionTree<D, T> *> *inp, const ComplexDouble (*metric)[4]) {
+    (void)out;
+    (void)oper;
+    (void)inp;
+    (void)metric;
     MSG_ABORT("not implemented");
 }
 

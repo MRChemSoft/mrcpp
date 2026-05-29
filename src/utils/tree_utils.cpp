@@ -89,7 +89,7 @@ template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree
     while (it.nextParent()) {
         MWNode<D, T> &node = it.getNode();
         if (node.getDepth() == 0) continue;
-        int depth = node.getDepth() + tree.getNNegScales();
+        size_t depth = node.getDepth() + tree.getNNegScales();
         // Add one more element
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);
@@ -97,7 +97,7 @@ template <int D, typename T> void tree_utils::make_node_table(MWTree<D, T> &tree
     it.init(tree);
     while (it.next()) {
         MWNode<D, T> &node = it.getNode();
-        int depth = node.getDepth() + tree.getNNegScales();
+        size_t depth = node.getDepth() + tree.getNNegScales();
         // Add one more element
         if (depth + 1 > table.size()) table.push_back(MWNodeVector<D, T>());
         table[depth].push_back(&node);

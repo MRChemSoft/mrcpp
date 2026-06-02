@@ -71,18 +71,18 @@ template <int D, typename T> void map(double prec, FunctionTree<D, T> &out, Func
     TreeBuilder<D, T> builder;
     WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
     MapCalculator<D, T> calculator(fmap, inp);
- 
+
     builder.build(out, calculator, adaptor, maxIter);
- 
+
     Timer trans_t;
     out.mwTransform(BottomUp);
     out.calcSquareNorm();
     trans_t.stop();
- 
+
     Timer clean_t;
     inp.deleteGenerated();
     clean_t.stop();
- 
+
     print::time(10, "Time transform", trans_t);
     print::time(10, "Time cleaning", clean_t);
     print::separator(10, ' ');

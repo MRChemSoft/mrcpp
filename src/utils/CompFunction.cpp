@@ -1,3 +1,28 @@
+/*
+ * MRCPP, a numerical library based on multiresolution analysis and
+ * the multiwavelet basis which provide low-scaling algorithms as well as
+ * rigorous error control in numerical computations.
+ * Copyright (C) 2021 Stig Rune Jensen, Jonas Juselius, Luca Frediani and contributors.
+ *
+ * This file is part of MRCPP.
+ *
+ * MRCPP is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MRCPP is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MRCPP.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * For information on the complete list of contributors to MRCPP, see:
+ * <https://mrcpp.readthedocs.io/>
+ */
+
 #include "CompFunction.h"
 #include "Bank.h"
 #include "Printer.h"
@@ -502,6 +527,24 @@ template class CompFunction<1>;
 template class CompFunction<2>;
 template class CompFunction<3>;
 
+/** @brief Deep copy that changes type from real to complex
+ *
+ * Deep copy: makes an exact copy with type complex from a real input
+ */
+template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp) {
+    out.func_ptr->data = inp.func_ptr->data;
+    out.defcomplex();
+    out.func_ptr->data.isreal = 0;
+    out.alloc(inp.Ncomp());
+    if (inp.getNNodes() == 0) return;
+    for (int i = 0; i < inp.Ncomp(); i++) {
+        if (inp.isreal()) {
+            out.CompC[i] = inp.CompD[i]->CopyTreeToComplex();
+        } else {
+            inp.CompC[i]->deep_copy(out.CompC[i]);
+        }
+    }
+}
 
 /** @brief Deep copy
  *
@@ -687,17 +730,14 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             // if one of the input is real, we simply make a new complex copy of it
             bool inp_aisReal = inp_a.isreal();
             bool inp_bisReal = inp_b.isreal();
+            // Here, we keep the real trees of the inputs, as well as creating the complex ones, to avoid copying the trees back after multiplication. We restore the original state of the inputs after multiplication.
             if (inp_aisReal) {
                 inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
-                delete inp_a.CompD[comp];
-                inp_a.CompD[comp] = nullptr;
                 inp_a.func_ptr->iscomplex = true;
                 inp_a.func_ptr->isreal = false;
             }
             if (inp_bisReal) {
                 inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
-                delete inp_b.CompD[comp];
-                inp_b.CompD[comp] = nullptr;
                 inp_b.func_ptr->iscomplex = true;
                 inp_b.func_ptr->isreal = false;
             }
@@ -737,7 +777,7 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
                 }
             }
-            // restore original tree
+            // restore original tree by deleting the temporary complex tree. The real tree still exists, but is not used in the multiplication.
             if (inp_aisReal) {
                 delete inp_a.CompC[comp];
                 inp_a.CompC[comp] = nullptr;
@@ -2241,11 +2281,11 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
     bool ketisreal = !Ket[0].iscomplex();
     if (braisreal or ketisreal) {
         // temporary solution: copy as complex trees
+        // Here, we keep the real trees of the inputs, as well as creating the complex ones, to avoid copying the trees back after computing the overlap matrix.
+        // We restore the original state of the inputs after multiplication.
         if (braisreal) {
             for (int i = 0; i < Bra.size(); i++) {
                 Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
-                delete Bra[i].CompD[0];
-                Bra[i].CompD[0] = nullptr;
                 Bra[i].func_ptr->iscomplex = 1;
                 Bra[i].func_ptr->isreal = 0;
             }
@@ -2253,8 +2293,6 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         if (ketisreal) {
             for (int i = 0; i < Ket.size(); i++) {
                 Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
-                delete Ket[i].CompD[0];
-                Ket[i].CompD[0] = nullptr;
                 Ket[i].func_ptr->iscomplex = 1;
                 Ket[i].func_ptr->isreal = 0;
             }
@@ -2473,7 +2511,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         for (int j = 0; j < M; j++) { S(i, j) *= std::conj(FacBra[i]) * FacKet[j]; }
     }
 
-    // restore input
+    // restore original tree by deleting the temporary complex tree. The real tree still exists, but is not used in the computation.
     if (braisreal) {
         for (int i = 0; i < Bra.size(); i++) {
             delete Bra[i].CompC[0];

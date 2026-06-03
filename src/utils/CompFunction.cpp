@@ -2774,6 +2774,7 @@ template void multiply(CompFunction<3> &out, FunctionTree<3, double> &inp_a, Rep
 template void multiply(CompFunction<3> &out, FunctionTree<3, ComplexDouble> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, double> &f, double prec, int nrefine = 0, bool conjugate);
 template void multiply(CompFunction<3> &out, CompFunction<3> &inp_a, RepresentableFunction<3, ComplexDouble> &f, double prec, int nrefine = 0, bool conjugate);
+template void CopyToComplex(CompFunction<3> &out, const CompFunction<3> &inp);
 template void deep_copy(CompFunction<3> *out, const CompFunction<3> &inp);
 template void deep_copy(CompFunction<3> &out, const CompFunction<3> &inp);
 template void add(CompFunction<3> &out, ComplexDouble a, CompFunction<3> inp_a, ComplexDouble b, CompFunction<3> inp_b, double prec, bool conjugate);

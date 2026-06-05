@@ -374,7 +374,7 @@ template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
     MWNode<D, T> **roots = rootbox.getNodes();
 
     std::stack<MWNode<D, T> *> stack;
-    for (int rIdx = 0; rIdx < rootbox.size(); rIdx++) {
+    for (size_t rIdx = 0; rIdx < rootbox.size(); rIdx++) {
         auto *root_p = getNodeNoLock(rIdx);
         assert(root_p != nullptr);
         stack.push(root_p);

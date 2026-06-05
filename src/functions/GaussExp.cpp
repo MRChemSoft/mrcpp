@@ -47,14 +47,14 @@ template <int D> GaussExp<D>::GaussExp(int nTerms) {
 
 template <int D> GaussExp<D>::GaussExp(const GaussExp<D> &gexp) : RepresentableFunction<D, double>(gexp) {
     screening = gexp.screening;
-    for (int i = 0; i < gexp.size(); i++) {
+    for (size_t i = 0; i < gexp.size(); i++) {
         Gaussian<D> *gauss = gexp.funcs[i]->copy();
         this->funcs.push_back(gauss);
     }
 }
 
 template <int D> GaussExp<D>::~GaussExp() {
-    for (int i = 0; i < size(); i++) {
+    for (size_t i = 0; i < size(); i++) {
         if (this->funcs[i] != nullptr) {
             delete this->funcs[i];
             this->funcs[i] = nullptr;
@@ -66,7 +66,7 @@ template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
     if (&gexp == this) return *this;
     // screening = gexp.screening;
     this->funcs.clear();
-    for (int i = 0; i < gexp.size(); i++) {
+    for (size_t i = 0; i < gexp.size(); i++) {
         if (gexp.funcs[i] == nullptr) {
             this->funcs.push_back(nullptr);
         } else {
@@ -79,26 +79,26 @@ template <int D> GaussExp<D> &GaussExp<D>::operator=(const GaussExp<D> &gexp) {
 
 template <int D> double GaussExp<D>::evalf(const Coord<D> &r) const {
     double val = 0.0;
-    for (int i = 0; i < this->size(); i++) { val += this->getFunc(i).evalf(r); }
+    for (size_t i = 0; i < this->size(); i++) { val += this->getFunc(i).evalf(r); }
     return val;
 }
 
 template <int D> bool GaussExp<D>::isVisibleAtScale(int scale, int nPts) const {
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isVisibleAtScale(scale, nPts)) { return false; }
     }
     return true;
 }
 
 template <int D> bool GaussExp<D>::isZeroOnInterval(const double *lb, const double *ub) const {
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         if (not this->getFunc(i).isZeroOnInterval(lb, ub)) { return false; }
     }
     return true;
 }
 
 template <int D> void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double c) {
-    if (i < 0 or i > (this->size() - 1)) {
+    if (i < 0 or i > (static_cast<int>(this->size()) - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
@@ -109,7 +109,7 @@ template <int D> void GaussExp<D>::setFunc(int i, const GaussPoly<D> &g, double 
 }
 
 template <int D> void GaussExp<D>::setFunc(int i, const GaussFunc<D> &g, double c) {
-    if (i < 0 or i > (this->size() - 1)) {
+    if (i < 0 or i > (static_cast<int>(this->size()) - 1)) {
         MSG_ERROR("Index out of bounds!");
         return;
     }
@@ -125,7 +125,7 @@ template <int D> void GaussExp<D>::append(const Gaussian<D> &g) {
 }
 
 template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
-    for (int i = 0; i < g.size(); i++) {
+    for (size_t i = 0; i < g.size(); i++) {
         Gaussian<D> *gp = g.getFunc(i).copy();
         this->funcs.push_back(gp);
     }
@@ -134,7 +134,7 @@ template <int D> void GaussExp<D>::append(const GaussExp<D> &g) {
 template <int D> GaussExp<D> GaussExp<D>::differentiate(int dir) const {
     assert(dir >= 0 and dir < D);
     GaussExp<D> result;
-    for (int i = 0; i < this->size(); i++) result.append(this->getFunc(i).differentiate(dir));
+    for (size_t i = 0; i < this->size(); i++) result.append(this->getFunc(i).differentiate(dir));
     return result;
 }
 
@@ -143,11 +143,11 @@ template <int D> GaussExp<D> GaussExp<D>::add(GaussExp<D> &g) {
     GaussExp<D> sum = GaussExp<D>(nsum);
 
     int n = 0;
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         sum.funcs[n] = this->funcs[i]->copy();
         n++;
     }
-    for (int i = 0; i < g.size(); i++) {
+    for (size_t i = 0; i < g.size(); i++) {
         sum.funcs[n] = g.funcs[i]->copy();
         n++;
     }
@@ -158,15 +158,15 @@ template <int D> GaussExp<D> GaussExp<D>::add(GaussExp<D> &g) {
 template <int D> GaussExp<D> GaussExp<D>::add(Gaussian<D> &g) {
     int nsum = this->size() + 1;
     GaussExp<D> sum = GaussExp<D>(nsum);
-    for (int n = 0; n < this->size(); n++) { sum.funcs[n] = this->getFunc(n).copy(); }
+    for (size_t n = 0; n < this->size(); n++) { sum.funcs[n] = this->getFunc(n).copy(); }
     sum.funcs[this->size()] = g.copy();
     return sum;
 }
 
 template <int D> GaussExp<D> GaussExp<D>::mult(GaussExp<D> &gexp) {
     GaussExp<D> result;
-    for (int i = 0; i < this->size(); i++) {
-        for (int j = 0; j < gexp.size(); j++) {
+    for (size_t i = 0; i < this->size(); i++) {
+        for (size_t j = 0; j < gexp.size(); j++) {
             if (auto *f = dynamic_cast<GaussFunc<D> *>(this->funcs[i])) {
                 if (auto *g = dynamic_cast<GaussFunc<D> *>(gexp.funcs[j])) {
                     GaussPoly<D> newTerm = (*g) * (*f);
@@ -230,29 +230,29 @@ template <int D> GaussExp<D> GaussExp<D>::mult(GaussPoly<D> &g) {
 
 template <int D> GaussExp<D> GaussExp<D>::mult(double d) {
     GaussExp<D> prod = *this;
-    for (int i = 0; i < this->size(); i++) prod.funcs[i]->multConstInPlace(d);
+    for (size_t i = 0; i < this->size(); i++) prod.funcs[i]->multConstInPlace(d);
     return prod;
 }
 
 template <int D> void GaussExp<D>::multInPlace(double d) {
-    for (int i = 0; i < this->size(); i++) this->funcs[i]->multConstInPlace(d);
+    for (size_t i = 0; i < this->size(); i++) this->funcs[i]->multConstInPlace(d);
 }
 
 template <int D> double GaussExp<D>::calcSquareNorm() const {
     /* computing the squares */
     double norm = 0.0;
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         double nc = this->funcs[i]->calcSquareNorm();
         norm += nc;
     }
     /* computing the double products */
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         GaussExp<D> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
-        for (int fi = 0; fi < funcs_i.size(); fi++) {
+        for (size_t fi = 0; fi < funcs_i.size(); fi++) {
             GaussFunc<D> &func_i = static_cast<GaussFunc<D> &>(funcs_i.getFunc(fi));
-            for (int j = i + 1; j < this->size(); j++) {
+            for (size_t j = i + 1; j < this->size(); j++) {
                 GaussExp<D> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
-                for (int fj = 0; fj < funcs_j.size(); fj++) {
+                for (size_t fj = 0; fj < funcs_j.size(); fj++) {
                     GaussFunc<D> &func_j = static_cast<GaussFunc<D> &>(funcs_j.getFunc(fj));
                     double overlap = func_i.calcOverlap(func_j);
                     norm += 2.0 * overlap;
@@ -265,7 +265,7 @@ template <int D> double GaussExp<D>::calcSquareNorm() const {
 
 template <int D> void GaussExp<D>::normalize() {
     double norm = std::sqrt(this->calcSquareNorm());
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         double coef = this->funcs[i]->getCoef();
         this->funcs[i]->setCoef(coef / norm);
     }
@@ -273,7 +273,7 @@ template <int D> void GaussExp<D>::normalize() {
 
 template <int D> void GaussExp<D>::calcScreening(double nStdDev) {
     screening = nStdDev;
-    for (int i = 0; i < this->size(); i++) { this->funcs[i]->calcScreening(nStdDev); }
+    for (size_t i = 0; i < this->size(); i++) { this->funcs[i]->calcScreening(nStdDev); }
 }
 
 template <int D> void GaussExp<D>::setScreen(bool screen) {
@@ -282,7 +282,7 @@ template <int D> void GaussExp<D>::setScreen(bool screen) {
     } else {
         this->screening = -std::abs(this->screening);
     }
-    for (int i = 0; i < this->size(); i++) { this->funcs[i]->setScreen(screen); }
+    for (size_t i = 0; i < this->size(); i++) { this->funcs[i]->setScreen(screen); }
 }
 
 // Calculate the scaling and wavelet coefs of all the children, and do the
@@ -326,7 +326,7 @@ template <int D> void GaussExp<D>::setDefaultScreening(double screen) {
 
 template <int D> std::ostream &GaussExp<D>::print(std::ostream &o) const {
     o << "Gaussian expansion: " << size() << " terms" << std::endl;
-    for (int i = 0; i < size(); i++) {
+    for (size_t i = 0; i < size(); i++) {
         o << "Term" << std::setw(3) << i << " :" << std::endl;
         o << getFunc(i) << std::endl << std::endl;
     }
@@ -344,13 +344,13 @@ template <int D> double GaussExp<D>::calcCoulombEnergy() const {
 
 template <> double GaussExp<3>::calcCoulombEnergy() const {
     double energy = 0.0;
-    for (int i = 0; i < this->size(); i++) {
+    for (size_t i = 0; i < this->size(); i++) {
         GaussExp<3> funcs_i = getFunc(i).asGaussExp(); // Make sure all entries are GaussFunc
-        for (int fi = 0; fi < funcs_i.size(); fi++) {
+        for (size_t fi = 0; fi < funcs_i.size(); fi++) {
             GaussFunc<3> &func_i = static_cast<GaussFunc<3> &>(funcs_i.getFunc(fi));
-            for (int j = i; j < this->size(); j++) {
+            for (size_t j = i; j < this->size(); j++) {
                 GaussExp<3> funcs_j = getFunc(j).asGaussExp(); // Make sure all entries are GaussFunc
-                for (int fj = 0; fj < funcs_j.size(); fj++) {
+                for (size_t fj = 0; fj < funcs_j.size(); fj++) {
                     GaussFunc<3> &func_j = static_cast<GaussFunc<3> &>(funcs_j.getFunc(fj));
                     double c = 2.0;
                     if (i == j) c = 1.0;

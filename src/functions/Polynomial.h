@@ -76,7 +76,7 @@ public:
     void dilate(double n) { this->N *= n; }
     void translate(double l) { this->L += this->N * l; }
 
-    int size() const { return this->coefs.size(); } ///< Length of coefs vector
+    size_t size() const { return this->coefs.size(); } ///< Length of coefs vector
     int getOrder() const;
     void clearCoefs() { this->coefs = Eigen::VectorXd::Zero(1); }
     void setZero() { this->coefs = Eigen::VectorXd::Zero(this->coefs.size()); }

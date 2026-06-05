@@ -82,7 +82,7 @@ template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, do
     TreeBuilder<2> builder;
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
-    for (int i = 0; i < kernel.size(); i++) {
+    for (size_t i = 0; i < kernel.size(); i++) {
         // Rescale Gaussian for D-dim application
         auto *k_func = kernel.getFunc(i).copy();
         k_func->setCoef(std::copysign(std::pow(std::abs(k_func->getCoef()), 1.0 / D), k_func->getCoef()));

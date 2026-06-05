@@ -49,7 +49,7 @@ public:
     MWOperator &operator=(const MWOperator &oper) = delete;
     virtual ~MWOperator() = default;
 
-    int size() const { return this->oper_exp.size(); }
+    size_t size() const { return this->oper_exp.size(); }
     int getMaxBandWidth(int depth = -1) const;
     const std::vector<int> &getMaxBandWidths() const { return this->band_max; }
 

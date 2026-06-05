@@ -436,11 +436,11 @@ template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     o.precision(6);
     std::string rootColor = " 1 1 1 0 ";
     std::string color = " 0 0 1 1 ";
-    for (auto i = 0; i < tree.getRootBox().size(); i++) {
+    for (size_t i = 0; i < tree.getRootBox().size(); i++) {
         const MWNode<3> &rootNode = tree.getRootMWNode(i);
         writeNodeGrid(rootNode, rootColor);
     }
-    for (auto i = 0; i < tree.getNEndNodes(); i++) {
+    for (int i = 0; i < tree.getNEndNodes(); i++) {
         const MWNode<3> &node = tree.getEndMWNode(i);
         writeNodeGrid(node, color);
     }

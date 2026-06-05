@@ -103,7 +103,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
 /** Initialize the number of nodes formally within the bandwidth of an
  operator. The band size is used for thresholding. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
-    for (int i = 0; i < this->oper->size(); i++) {
+    for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
         const OperatorTree &oTree = this->oper->getComponent(i, 0);
         const BandWidth &bw = oTree.getBandWidth();
@@ -277,7 +277,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
-    for (int i = 0; i < this->oper->size(); i++) {
+    for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension
         const OperatorTree &ot = this->oper->getComponent(i, 0);
         const BandWidth &bw = ot.getBandWidth();

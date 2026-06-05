@@ -101,9 +101,9 @@ template <int D> Gaussian<D> *GaussPoly<D>::copy() const {
 template<int D> double GaussPoly<D>::calcSquareNorm() const {
     GaussExp<D> this_exp = this->asGaussExp();
     double norm = 0.0;
-    for (int i = 0; i < this_exp.size(); i++) {
+    for (size_t i = 0; i < this_exp.size(); i++) {
         auto func_i = static_cast<GaussFunc<D> &>(this_exp.getFunc(i));
-        for (int j = 0; j < this_exp.size(); j++) {
+        for (size_t j = 0; j < this_exp.size(); j++) {
             auto func_j = static_cast<GaussFunc<D> &>(this_exp.getFunc(j));
             norm += function_utils::calc_overlap(func_i, func_j);
         }

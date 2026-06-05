@@ -74,7 +74,7 @@ template <int D, typename T> MWTree<D, T>::~MWTree() {
  * when the object is deleted.
  */
 template <int D, typename T> void MWTree<D, T>::deleteRootNodes() {
-    for (int i = 0; i < this->rootBox.size(); i++) {
+    for (size_t i = 0; i < this->rootBox.size(); i++) {
         MWNode<D, T> &root = this->getRootMWNode(i);
         root.deleteChildren();
         root.dealloc();
@@ -91,7 +91,7 @@ template <int D, typename T> void MWTree<D, T>::deleteRootNodes() {
  * immediately available to the new function.
  */
 template <int D, typename T> void MWTree<D, T>::clear() {
-    for (int i = 0; i < this->rootBox.size(); i++) {
+    for (size_t i = 0; i < this->rootBox.size(); i++) {
         MWNode<D, T> &root = this->getRootMWNode(i);
         root.deleteChildren();
         root.clearHasCoefs();
@@ -540,7 +540,7 @@ template <int D, typename T> std::ostream &MWTree<D, T>::print(std::ostream &o) 
 template <int D, typename T> void MWTree<D, T>::makeMaxSquareNorms() {
     NodeBox<D, T> &rBox = this->getRootBox();
     MWNode<D, T> **roots = rBox.getNodes();
-    for (int rIdx = 0; rIdx < rBox.size(); rIdx++) {
+    for (size_t rIdx = 0; rIdx < rBox.size(); rIdx++) {
         // recursively set value of children and descendants
         roots[rIdx]->setMaxSquareNorm();
     }

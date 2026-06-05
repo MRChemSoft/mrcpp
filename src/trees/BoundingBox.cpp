@@ -455,7 +455,7 @@ template <> int BoundingBox<1>::getBoxIndex(NodeIndex<1> nIdx) const {
     if (relScale < 0) return -1;
 
     int bIdx = (l >> relScale) - cl;
-    if (bIdx < 0 or bIdx >= this->size()) {
+    if (bIdx < 0 or bIdx >= static_cast<int>(this->size())) {
         return -1;
     } else {
         return bIdx;

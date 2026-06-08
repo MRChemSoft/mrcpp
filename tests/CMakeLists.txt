@@ -1,4 +1,4 @@
-find_package( Catch2 3.0.1 CONFIG)
+find_package( Catch2 3.8.0 CONFIG)
 if( NOT Catch2_FOUND )
   message( STATUS "Could NOT Find Catch2 (Building v3.8.0 Locally)" )
   include( FetchContent )

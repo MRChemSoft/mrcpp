@@ -30,7 +30,7 @@
 #include "functions/GaussPoly.h"
 #include "treebuilders/WaveletAdaptor.h"
 #include "treebuilders/grid.h"
-#include "treebuilders/map.h"
+#include "treebuilders/treeMap.h"
 #include "treebuilders/project.h"
 
 using namespace mrcpp;
@@ -87,7 +87,7 @@ template <int D> void testMapping() {
     WHEN("the function is mapped") {
         FunctionTree<D> out_tree(*mra);
 
-        map(prec, out_tree, inp_tree, fmap);
+        treeMap(prec, out_tree, inp_tree, fmap);
 
         THEN("the MW map equals the analytic map") {
             double out_int = out_tree.integrate();
@@ -171,7 +171,7 @@ template <int D> void testComplexMapping() {
 
     WHEN("the complex function is mapped") {
         FunctionTree<D, ComplexDouble> out_tree(*mra);
-        map(prec, out_tree, inp_tree, fmap);
+        treeMap(prec, out_tree, inp_tree, fmap);
         THEN("the MW map equals the analytic map") {
             ComplexDouble out_int = out_tree.integrate();
             double out_norm = out_tree.getSquareNorm();

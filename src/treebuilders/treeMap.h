@@ -30,6 +30,6 @@
 namespace mrcpp {
 template <int D, typename T> class FunctionTree;
 
-template <int D, typename T> void map(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, FMap<T, T> fmap, int maxIter = -1, bool absPrec = false);
+template <int D, typename T> void treeMap(double prec, FunctionTree<D, T> &out, FunctionTree<D, T> &inp, FMap<T, T> fmap, int maxIter = -1, bool absPrec = false);
 
 } // namespace mrcpp

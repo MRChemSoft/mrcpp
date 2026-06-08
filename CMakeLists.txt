@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(MRCPP LANGUAGES CXX)
 
 # Suppress warning for policy CMP0177
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+if(CMP0177)
     cmake_policy(SET CMP0177 OLD)
 endif()
 

@@ -13,7 +13,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/add.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/apply.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/grid.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/map.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/treeMap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/multiply.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/project.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/complex_apply.cpp
@@ -48,7 +48,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/add.h
   ${CMAKE_CURRENT_SOURCE_DIR}/apply.h
   ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/map.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/treeMap.h
   ${CMAKE_CURRENT_SOURCE_DIR}/multiply.h
   ${CMAKE_CURRENT_SOURCE_DIR}/project.h
   ${CMAKE_CURRENT_SOURCE_DIR}/complex_apply.h

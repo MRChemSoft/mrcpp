@@ -85,7 +85,7 @@ met.
 .. doxygenfunction:: mrcpp::square(double prec, FunctionTree<D> &out, FunctionTree<D> &tree, int maxIter, bool absPrec)
 .. doxygenfunction:: mrcpp::power(double prec, FunctionTree<D> &out, FunctionTree<D> &tree, double pow, int maxIter, bool absPrec)
 .. doxygenfunction:: mrcpp::dot(double prec, FunctionTree<D> &out, FunctionTreeVector<D> &inp_a, FunctionTreeVector<D> &inp_b, int maxIter, bool absPrec)
-.. doxygenfunction:: mrcpp::map(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int maxIter, bool absPrec)
+.. doxygenfunction:: mrcpp::treeMap(double prec, FunctionTree<D> &out, FunctionTree<D> &inp, FMap fmap, int maxIter, bool absPrec)
 
 Creating undefined FunctionTrees
 ++++++++++++++++++++++++++++++++

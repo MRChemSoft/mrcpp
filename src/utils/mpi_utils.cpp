@@ -60,6 +60,9 @@ SharedMemory<T>::SharedMemory(mrcpp::mpi_comm comm, int sh_size)
     MPI_Win_fence(0, this->sh_win);
     this->sh_max_ptr = this->sh_start_ptr + qsize / sizeof(T);
     this->sh_end_ptr = this->sh_start_ptr;
+#else
+    (void)comm;
+    (void)sh_size;
 #endif
 }
 
@@ -105,6 +108,13 @@ template <int D, typename T> void send_tree(FunctionTree<D, T> &tree, int dst, i
         if (coeff) MPI_Send(allocator.getCoefChunk(iChunk), allocator.getCoefChunkSize(), MPI_BYTE, dst, tag + iChunk + 1001, comm);
     }
     println(10, " Time send                   " << std::setw(30) << t1.elapsed());
+#else
+    (void)tree;
+    (void)dst;
+    (void)tag;
+    (void)comm;
+    (void)nChunks;
+    (void)coeff;
 #endif
 }
 
@@ -143,6 +153,13 @@ template <int D, typename T> void recv_tree(FunctionTree<D, T> &tree, int src, i
     Timer t2;
     allocator.reassemble();
     println(10, " Time rewrite pointers       " << std::setw(30) << t2.elapsed());
+#else
+    (void)tree;
+    (void)src;
+    (void)tag;
+    (void)comm;
+    (void)nChunks;
+    (void)coeff;
 #endif
 }
 
@@ -194,6 +211,11 @@ template <int D, typename T> void share_tree(FunctionTree<D, T> &tree, int src, 
         }
     }
     println(10, " Time share                  " << std::setw(30) << t1.elapsed());
+#else
+    (void)tree;
+    (void)src;
+    (void)tag;
+    (void)comm;
 #endif
 }
 template class SharedMemory<double>;

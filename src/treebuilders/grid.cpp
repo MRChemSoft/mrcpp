@@ -108,12 +108,12 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
         auto maxScale = out.getMRA().getMaxScale();
         TreeBuilder<D> builder;
         DefaultCalculator<D> calculator;
-        for (auto i = 0; i < inp.size(); i++) {
+        for (size_t i = 0; i < inp.size(); i++) {
             AnalyticAdaptor<D> adaptor(inp.getFunc(i), maxScale);
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
-        for (auto i = 0; i < inp.size(); i++) {
+        for (size_t i = 0; i < inp.size(); i++) {
             auto *gauss = inp.getFunc(i).copy();
             build_grid(out, *gauss, maxIter);
             delete gauss;
@@ -171,7 +171,7 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTr
  *
  */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter) {
-    for (auto i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     auto maxScale = out.getMRA().getMaxScale();

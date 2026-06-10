@@ -2,10 +2,15 @@
 # Copyright (c) 2015-2020 by Radovan Bast, Roberto Di Remigio, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
 # project name
 project(MRCPP LANGUAGES CXX)
+
+# Suppress warning for policy CMP0177
+if(CMP0177)
+    cmake_policy(SET CMP0177 OLD)
+endif()
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)

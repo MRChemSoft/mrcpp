@@ -161,9 +161,9 @@ template <int D> double Gaussian<D>::calcOverlap(const Gaussian<D> &inp) const {
     const auto &ket_exp = inp.asGaussExp();   // Make sure all entries are GaussFunc
 
     double S = 0.0;
-    for (int i = 0; i < bra_exp.size(); i++) {
+    for (size_t i = 0; i < bra_exp.size(); i++) {
         const auto &bra_i = static_cast<const GaussFunc<D> &>(bra_exp.getFunc(i));
-        for (int j = 0; j < ket_exp.size(); j++) {
+        for (size_t j = 0; j < ket_exp.size(); j++) {
             const auto &ket_j = static_cast<const GaussFunc<D> &>(ket_exp.getFunc(j));
             S += function_utils::calc_overlap(bra_i, ket_j);
         }

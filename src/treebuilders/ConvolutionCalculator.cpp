@@ -61,7 +61,7 @@ template <int D, typename T> ConvolutionCalculator<D, T>::~ConvolutionCalculator
     clearTimers();
     this->operStat.flushNodeCounters();
     println(10, this->operStat);
-    for (int i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
+    for (size_t i = 0; i < this->bandSizes.size(); i++) { delete this->bandSizes[i]; }
 }
 
 template <int D, typename T> void ConvolutionCalculator<D, T>::initTimers() {
@@ -103,7 +103,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
 /** Initialize the number of nodes formally within the bandwidth of an
  operator. The band size is used for thresholding. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
-    for (int i = 0; i < this->oper->size(); i++) {
+    for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
         const OperatorTree &oTree = this->oper->getComponent(i, 0);
         const BandWidth &bw = oTree.getBandWidth();
@@ -248,7 +248,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
     os.gThreshold = gThrs;
 
     this->calc_t[mrcpp_get_thread_num()]->resume();
-    for (int n = 0; n < fBand->size(); n++) {
+    for (size_t n = 0; n < fBand->size(); n++) {
         MWNode<D, T> &fNode = *(*fBand)[n];
         NodeIndex<D> &fIdx = idx_band[n];
         os.setFNode(fNode);
@@ -277,7 +277,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::calcNode(MWNode<D
 template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(OperatorState<D, T> &os) {
     double fNorm = os.fNode->getComponentNorm(os.ft);
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
-    for (int i = 0; i < this->oper->size(); i++) {
+    for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension
         const OperatorTree &ot = this->oper->getComponent(i, 0);
         const BandWidth &bw = ot.getBandWidth();

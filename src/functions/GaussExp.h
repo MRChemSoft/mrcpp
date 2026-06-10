@@ -95,7 +95,7 @@ public:
     const std::array<int, D> &getPower(int i) const { return this->funcs[i]->getPower(); }
     const std::array<double, D> &getPos(int i) const { return this->funcs[i]->getPos(); }
 
-    int size() const { return this->funcs.size(); }
+    size_t size() const { return this->funcs.size(); }
     Gaussian<D> &getFunc(int i) { return *this->funcs[i]; }
     const Gaussian<D> &getFunc(int i) const { return *this->funcs[i]; }
 

@@ -298,16 +298,21 @@ template <int D, typename T> void Plotter<D, T>::writeData(const Eigen::MatrixXd
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeCube(const std::array<int, 3> &npts, const Eigen::Matrix<T, Eigen::Dynamic, 1> &values) {
+    (void)npts;
+    (void)values;
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeNodeGrid(const MWNode<D, T> &node, const std::string &color) {
+    (void)node;
+    (void)color;
     NOT_IMPLEMENTED_ABORT
 }
 
 // Specialized for D=3 below
 template <int D, typename T> void Plotter<D, T>::writeGrid(const MWTree<D, T> &tree) {
+    (void)tree;
     NOT_IMPLEMENTED_ABORT
 }
 
@@ -431,11 +436,11 @@ template <> void Plotter<3>::writeGrid(const MWTree<3> &tree) {
     o.precision(6);
     std::string rootColor = " 1 1 1 0 ";
     std::string color = " 0 0 1 1 ";
-    for (auto i = 0; i < tree.getRootBox().size(); i++) {
+    for (size_t i = 0; i < tree.getRootBox().size(); i++) {
         const MWNode<3> &rootNode = tree.getRootMWNode(i);
         writeNodeGrid(rootNode, rootColor);
     }
-    for (auto i = 0; i < tree.getNEndNodes(); i++) {
+    for (int i = 0; i < tree.getNEndNodes(); i++) {
         const MWNode<3> &node = tree.getEndMWNode(i);
         writeNodeGrid(node, color);
     }

@@ -91,7 +91,7 @@ template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, T a,
  *
  */
 template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool conjugate) {
-    for (auto i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
@@ -108,7 +108,7 @@ template <int D, typename T> void add(double prec, FunctionTree<D, T> &out, Func
     trans_t.stop();
 
     Timer clean_t;
-    for (int i = 0; i < inp.size(); i++) {
+    for (size_t i = 0; i < inp.size(); i++) {
         FunctionTree<D, T> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }

@@ -16,9 +16,9 @@ Building the code
 Prerequisites
 -------------
 
-* g++-5.4 or later (``std=c++14``)
-* `CMake <http://cmake.org>`_ version 3.11 or higher.
-* `Eigen <http://eigen.tuxfamily.org>`_ version 3.3 or higher.
+* GNU-11.2, Clang-14.0 or IntelLLVM-2022.1 (or later) compilers (C++17 standard)
+* `CMake <http://cmake.org>`_ version 3.22 or higher.
+* `Eigen <http://eigen.tuxfamily.org>`_ version 3.4.
 * BLAS (optional)
 
 
@@ -31,7 +31,7 @@ Eigen3, which will be downloaded at configure time unless it is already
 available on the system. If you have a local version *not* under the system
 path, you can point to it before running ``setup``::
 
-    $ export EIGEN3_ROOT=/path/to/eigen3
+    $ export EIGEN3_DIR=<path_to_eigen3>/share/eigen3/cmake
     $ ./setup [options] [<builddir>]
 
 The setup script will create a directory called *<builddir>* (default ``build``)

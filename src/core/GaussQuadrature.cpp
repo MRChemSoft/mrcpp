@@ -247,6 +247,8 @@ double GaussQuadrature::integrate(RepresentableFunction<3> &func) const {
  * This function has been implemented using a recursive algorithm.
  */
 double GaussQuadrature::integrate_nd(RepresentableFunction<3> &func, int axis) const {
+    (void)func;
+    (void)axis;
     NOT_IMPLEMENTED_ABORT;
     NEEDS_TESTING
 

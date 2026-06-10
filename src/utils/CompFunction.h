@@ -166,7 +166,7 @@ public:
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setCplx(FunctionTree<D, ComplexDouble> *tree, int i = 0);
     void setRank(int i) { func_ptr->rank = i; };
-    const int getRank() const { return func_ptr->rank; };
+    int getRank() const { return func_ptr->rank; };
     void add(ComplexDouble c, CompFunction<D> inp);
 
     int crop(double prec, bool absPrec = true);
@@ -184,7 +184,7 @@ public:
 
     // NB: All below should be revised. Now only for backwards compatibility to ComplexFunction class
 
-    void free(int type) { free(); }
+    void free(int type) { (void)type; free(); }
     bool hasReal() const { return isreal(); }
     bool hasImag() const { return iscomplex(); }
     bool isShared() const { return share(); }

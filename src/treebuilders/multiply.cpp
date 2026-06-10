@@ -102,7 +102,7 @@ void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp
  *
  */
 template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
-    for (auto i = 0; i < inp.size(); i++)
+    for (size_t i = 0; i < inp.size(); i++)
         if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
     int maxScale = out.getMRA().getMaxScale();
@@ -110,7 +110,7 @@ template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out,
     MultiplicationCalculator<D, T> calculator(inp, conjugate);
 
     if (useMaxNorms) {
-        for (int i = 0; i < inp.size(); i++) get_func(inp, i).makeMaxSquareNorms();
+        for (size_t i = 0; i < inp.size(); i++) get_func(inp, i).makeMaxSquareNorms();
         MultiplicationAdaptor<D, T> adaptor(prec, maxScale, inp);
         builder.build(out, calculator, adaptor, maxIter);
     } else {
@@ -124,7 +124,7 @@ template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out,
     trans_t.stop();
 
     Timer clean_t;
-    for (int i = 0; i < inp.size(); i++) {
+    for (size_t i = 0; i < inp.size(); i++) {
         FunctionTree<D, T> &tree = get_func(inp, i);
         tree.deleteGenerated();
     }
@@ -254,7 +254,7 @@ template <int D, typename T> void dot(double prec, FunctionTree<D, T> &out, Func
     if (inp_a.size() != inp_b.size()) MSG_ABORT("Input length mismatch");
 
     FunctionTreeVector<D, T> tmp_vec;
-    for (int d = 0; d < inp_a.size(); d++) {
+    for (size_t d = 0; d < inp_a.size(); d++) {
         T coef_a = get_coef(inp_a, d);
         T coef_b = get_coef(inp_b, d);
         FunctionTree<D, T> &tree_a = get_func(inp_a, d);

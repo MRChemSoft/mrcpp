@@ -74,7 +74,7 @@ template <int D, typename T> NodeBox<D, T>::~NodeBox() {
 
 template <int D, typename T> void NodeBox<D, T>::deleteNodes() {
     if (this->nodes == nullptr) { return; }
-    for (int n = 0; n < this->size(); n++) { clearNode(n); }
+    for (size_t n = 0; n < this->size(); n++) { clearNode(n); }
     delete[] this->nodes;
     this->nodes = nullptr;
 }

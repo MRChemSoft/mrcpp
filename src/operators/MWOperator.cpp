@@ -33,7 +33,7 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D> void MWOperator<D>::initOperExp(int M) {
-    if (this->raw_exp.size() < M) MSG_ABORT("Incompatible raw expansion");
+    if (this->raw_exp.size() < static_cast<size_t>(M)) MSG_ABORT("Incompatible raw expansion");
     this->oper_exp.clear();
     for (int m = 0; m < M; m++) {
         std::array<OperatorTree *, D> otrees;
@@ -47,14 +47,14 @@ template <int D> void MWOperator<D>::initOperExp(int M) {
 }
 
 template <int D> OperatorTree &MWOperator<D>::getComponent(int i, int d) {
-    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
     if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
     if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
     return *this->oper_exp[i][d];
 }
 
 template <int D> const OperatorTree &MWOperator<D>::getComponent(int i, int d) const {
-    if (i < 0 or i >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
     if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
     if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
     return *this->oper_exp[i][d];
@@ -64,7 +64,7 @@ template <int D> int MWOperator<D>::getMaxBandWidth(int depth) const {
     int maxWidth = -1;
     if (depth < 0) {
         maxWidth = *std::max_element(this->band_max.begin(), this->band_max.end());
-    } else if (depth < this->band_max.size()) {
+    } else if (static_cast<size_t>(depth) < this->band_max.size()) {
         maxWidth = this->band_max[depth];
     }
     return maxWidth;

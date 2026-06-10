@@ -73,6 +73,10 @@ NodeAllocator<2>::NodeAllocator(OperatorTree *tree, SharedMemory<double> *mem, i
 }
 
 template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk) {
+    (void)tree;
+    (void)mem;
+    (void)coefsPerNode;
+    (void)nodesPerChunk;
     NOT_REACHED_ABORT;
 }
 
@@ -99,14 +103,14 @@ template <int D, typename T> T *NodeAllocator<D, T>::getCoef_p(int sIdx) {
 }
 
 template <int D, typename T> MWNode<D, T> *NodeAllocator<D, T>::getNodeNoLock(int sIdx) {
-    if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
+    if (sIdx < 0 or static_cast<size_t>(sIdx) >= this->stackStatus.size()) return nullptr;
     int chunk = sIdx / this->maxNodesPerChunk; // which chunk
     int cIdx = sIdx % this->maxNodesPerChunk;  // position in chunk
     return this->nodeChunks[chunk] + cIdx;
 }
 
 template <int D, typename T> T *NodeAllocator<D, T>::getCoefNoLock(int sIdx) {
-    if (sIdx < 0 or sIdx >= this->stackStatus.size()) return nullptr;
+    if (sIdx < 0 or static_cast<size_t>(sIdx) >= this->stackStatus.size()) return nullptr;
     int chunk = sIdx / this->maxNodesPerChunk; // which chunk
     int idx = sIdx % this->maxNodesPerChunk;   // position in chunk
     return this->coefChunks[chunk] + idx * this->coefsPerNode;
@@ -121,7 +125,7 @@ template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coe
     if (chunkOverflow) this->topStack = this->maxNodesPerChunk * ((this->topStack + nNodes - 1) / this->maxNodesPerChunk);
 
     // append chunk if necessary
-    int chunk = this->topStack / this->maxNodesPerChunk;
+    size_t chunk = this->topStack / this->maxNodesPerChunk;
     bool needNewChunk = (chunk >= this->nodeChunks.size());
     if (needNewChunk) appendChunk(coefs);
 
@@ -146,7 +150,7 @@ template <int D, typename T> int NodeAllocator<D, T>::alloc(int nNodes, bool coe
 
 template <int D, typename T> void NodeAllocator<D, T>::dealloc(int sIdx) {
     MRCPP_SET_OMP_LOCK();
-    if (sIdx < 0 or sIdx >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
+    if (sIdx < 0 or static_cast<size_t>(sIdx) >= this->stackStatus.size()) MSG_ABORT("Invalid serial index: " << sIdx);
     auto *node_p = getNodeNoLock(sIdx);
     node_p->~MWNode();
     this->stackStatus[sIdx] = 0;      // mark as available
@@ -219,7 +223,7 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
 template <int D, typename T> int NodeAllocator<D, T>::compress() {
     MRCPP_SET_OMP_LOCK();
     int nNodes = (1 << D);
-    if (this->maxNodesPerChunk * this->nodeChunks.size() <= getTree().getNNodes() + this->maxNodesPerChunk + nNodes - 1) {
+    if (this->maxNodesPerChunk * this->nodeChunks.size() <= static_cast<size_t>(getTree().getNNodes() + this->maxNodesPerChunk + nNodes - 1)) {
         MRCPP_UNSET_OMP_LOCK();
         return 0; // nothing to compress
     }
@@ -370,7 +374,7 @@ template <int D, typename T> void NodeAllocator<D, T>::reassemble() {
     MWNode<D, T> **roots = rootbox.getNodes();
 
     std::stack<MWNode<D, T> *> stack;
-    for (int rIdx = 0; rIdx < rootbox.size(); rIdx++) {
+    for (size_t rIdx = 0; rIdx < rootbox.size(); rIdx++) {
         auto *root_p = getNodeNoLock(rIdx);
         assert(root_p != nullptr);
         stack.push(root_p);

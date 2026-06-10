@@ -73,8 +73,17 @@ protected:
     double *A; ///< Lower bound, NULL if unbounded
     double *B; ///< Upper bound, Null if unbounded
 
-    virtual bool isVisibleAtScale(int scale, int nQuadPts) const { return true; }
-    virtual bool isZeroOnInterval(const double *a, const double *b) const { return false; }
+    virtual bool isVisibleAtScale(int scale, int nQuadPts) const {
+        (void)scale;
+        (void)nQuadPts;
+        return true;
+    }
+
+    virtual bool isZeroOnInterval(const double *a, const double *b) const {
+        (void)a;
+        (void)b;
+        return false;
+    }
 };
 
 /*

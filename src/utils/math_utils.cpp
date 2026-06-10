@@ -95,7 +95,7 @@ double math_utils::binomial_coeff(int n, int j) {
 
 VectorXd math_utils::get_binomial_coefs(unsigned int order) {
     VectorXd coefs = VectorXd::Ones(order + 1);
-    for (int k = 0; k <= order; k++) { coefs[k] = math_utils::binomial_coeff(order, k); }
+    for (unsigned int k = 0; k <= order; k++) { coefs[k] = math_utils::binomial_coeff(order, k); }
     return coefs;
 }
 

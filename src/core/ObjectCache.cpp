@@ -44,6 +44,7 @@ template <class T> void ObjectCache<T>::clear() {
 }
 
 template <class T> void ObjectCache<T>::load(int id) {
+    (void)id;
     MSG_INFO("This routine does nothing in this class.");
 }
 

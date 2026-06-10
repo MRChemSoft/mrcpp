@@ -39,7 +39,7 @@ ScalingBasis::ScalingBasis(int k, int t)
 }
 
 void ScalingBasis::evalf(const double *r, Eigen::MatrixXd &vals) const {
-    if (vals.rows() != this->funcs.size()) MSG_ERROR("Invalid argument");
+    if (static_cast<size_t>(vals.rows()) != this->funcs.size()) MSG_ERROR("Invalid argument");
 
     for (int d = 0; d < vals.cols(); d++) {
         for (int k = 0; k < vals.rows(); k++) { vals(k, d) = getFunc(k).evalf(r[d]); }

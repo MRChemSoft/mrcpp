@@ -1,9 +1,9 @@
 version: 2
 
 variables:
-  ubuntu-2004: &ubuntu-2004
+  ubuntu-2404: &ubuntu-2404
     docker:
-      - image: ghcr.io/mrchemsoft/metamr/circleci_ubuntu-20.04:sha-343e011
+      - image: ghcr.io/mrchemsoft/metamr/circleci_ubuntu-24.04:sha-2b5887e
         name: tsubame
         user: merzbow
     working_directory: ~/mrcpp
@@ -55,14 +55,14 @@ variables:
 
 jobs:
   serial-py3:
-    <<: *ubuntu-2004
+    <<: *ubuntu-2404
     steps:
       - checkout
       - *configure-serial
       - *build
       - *tests
   omp-py3:
-    <<: *ubuntu-2004
+    <<: *ubuntu-2404
     environment:
       - OMP_NUM_THREADS: '2'
     steps:
@@ -71,7 +71,7 @@ jobs:
       - *build
       - *tests
   mpi-py3:
-    <<: *ubuntu-2004
+    <<: *ubuntu-2404
     steps:
       - checkout
       - *configure-mpi

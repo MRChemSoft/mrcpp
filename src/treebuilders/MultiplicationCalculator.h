@@ -44,7 +44,7 @@ private:
         const NodeIndex<D> &idx = node_o.getNodeIndex();
         T *coefs_o = node_o.getCoefs();
         for (int j = 0; j < node_o.getNCoefs(); j++) { coefs_o[j] = 1.0; }
-        for (int i = 0; i < this->prod_vec.size(); i++) {
+        for (size_t i = 0; i < this->prod_vec.size(); i++) {
             T c_i = get_coef(this->prod_vec, i);
             FunctionTree<D, T> &func_i = get_func(this->prod_vec, i);
             // This generates missing nodes

@@ -101,9 +101,9 @@ template <int D> Gaussian<D> *GaussPoly<D>::copy() const {
 template<int D> double GaussPoly<D>::calcSquareNorm() const {
     GaussExp<D> this_exp = this->asGaussExp();
     double norm = 0.0;
-    for (int i = 0; i < this_exp.size(); i++) {
+    for (size_t i = 0; i < this_exp.size(); i++) {
         auto func_i = static_cast<GaussFunc<D> &>(this_exp.getFunc(i));
-        for (int j = 0; j < this_exp.size(); j++) {
+        for (size_t j = 0; j < this_exp.size(); j++) {
             auto func_j = static_cast<GaussFunc<D> &>(this_exp.getFunc(j));
             norm += function_utils::calc_overlap(func_i, func_j);
         }
@@ -176,10 +176,12 @@ template <int D> GaussExp<D> GaussPoly<D>::asGaussExp() const {
 }
 
 template <int D> GaussPoly<D> GaussPoly<D>::differentiate(int dir) const {
+    (void)dir;
     NOT_IMPLEMENTED_ABORT;
 }
 
 template <int D> void GaussPoly<D>::multInPlace(const GaussPoly<D> &rhs) {
+    (void)rhs;
     NOT_IMPLEMENTED_ABORT;
 }
 
@@ -229,6 +231,7 @@ void GaussPoly<D>::fillCoefPowVector(std::vector<double> &coefs,
 }
 
 template <int D> GaussPoly<D> GaussPoly<D>::mult(const GaussPoly<D> &rhs) {
+    (void)rhs;
     NOT_IMPLEMENTED_ABORT;
     /*
     GaussPoly<D> &lhs = *this;

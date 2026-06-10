@@ -204,6 +204,7 @@ template <int D> std::ostream &GaussFunc<D>::print(std::ostream &o) const {
  *  \f$ \alpha = (\beta/\pi)^{D/2} \f$ for this to be correct!
  */
 template <int D> double GaussFunc<D>::calcCoulombEnergy(const GaussFunc<D> &gf) const {
+    (void)gf;
     NOT_IMPLEMENTED_ABORT;
 }
 

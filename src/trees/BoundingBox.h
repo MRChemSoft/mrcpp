@@ -67,7 +67,7 @@ public:
     int getBoxIndex(Coord<D> r) const;
     int getBoxIndex(NodeIndex<D> nIdx) const;
 
-    int size() const { return this->totBoxes; }
+    size_t size() const { return this->totBoxes; }
     int size(int d) const { return this->nBoxes[d]; }
     int getScale() const { return this->cornerIndex.getScale(); }
     double getScalingFactor(int d) const { return this->scalingFactor[d]; }

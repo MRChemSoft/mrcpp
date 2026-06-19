@@ -41,12 +41,12 @@ namespace mrcpp {
  * This procedure is repeated for each matrix \f$ A, B \f$ and \f$ C \f$.
  *
  */
-void CornerOperatorTree::calcBandWidth(double prec) {
-    if (this->bandWidth == nullptr) clearBandWidth();
-    this->bandWidth = new BandWidth(getDepth());
+template <typename T> void CornerOperatorTree<T>::calcBandWidth(double prec) {
+    if (this->bandWidth == nullptr) this->clearBandWidth();
+    this->bandWidth = new BandWidth(this->getDepth());
 
     VectorXi max_transl;
-    getMaxTranslations(max_transl);
+    this->getMaxTranslations(max_transl);
 
     if (prec < 0.0) prec = this->normPrec;
     double thrs = std::max(MachinePrec, prec / 10.0); // should be enough due to oscillating behaviour of corner matrix elements (it's affected by polynomial order)
@@ -58,7 +58,7 @@ void CornerOperatorTree::calcBandWidth(double prec) {
 
         while (not done) {
             done = true;
-            MWNode<2> *node = findNode(NodeIndex<2>(depth, {l, 0}));
+            MWNode<2, T> *node = this->findNode(NodeIndex<2>(depth, {l, 0}));
             for (int k = 1; k < 4; k++) {
                 if ((node != nullptr) && (node->getComponentNorm(k) > thrs)) {
                     this->bandWidth->setWidth(depth, k, l);
@@ -80,8 +80,11 @@ void CornerOperatorTree::calcBandWidth(double prec) {
  * @returns True if \b oTransl is outside of the corner band (close to diagonal) and False otherwise.
  *
  */
-bool CornerOperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) {
+template <typename T> bool CornerOperatorTree<T>::isOutsideBand(int oTransl, int o_depth, int idx) {
     return abs(oTransl) < this->bandWidth->getWidth(o_depth, idx);
 }
+ 
+template class CornerOperatorTree<double>;
+template class CornerOperatorTree<ComplexDouble>;
 
 } // namespace mrcpp

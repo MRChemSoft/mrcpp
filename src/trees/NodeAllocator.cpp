@@ -56,7 +56,7 @@ NodeAllocator<D, T>::NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *me
 }
 
 template <>
-NodeAllocator<2>::NodeAllocator(OperatorTree *tree, SharedMemory<double> *mem, int coefsPerNode, int nodesPerChunk)
+NodeAllocator<2>::NodeAllocator(OperatorTree<double> *tree, SharedMemory<double> *mem, int coefsPerNode, int nodesPerChunk)
         : coefsPerNode(coefsPerNode)
         , maxNodesPerChunk(nodesPerChunk)
         , tree_p(tree)
@@ -65,14 +65,28 @@ NodeAllocator<2>::NodeAllocator(OperatorTree *tree, SharedMemory<double> *mem, i
     this->nodeChunks.reserve(100);
     this->coefChunks.reserve(100);
 
-    OperatorNode tmp;
+    OperatorNode<double> tmp;
     this->cvptr = *(char **)(&tmp);
-    this->sizeOfNode = sizeof(OperatorNode);
+    this->sizeOfNode = sizeof(OperatorNode<double>);
 
     MRCPP_INIT_OMP_LOCK();
 }
 
-template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk) {
+template <>
+NodeAllocator<2, ComplexDouble>::NodeAllocator(OperatorTree<ComplexDouble> *tree, SharedMemory<ComplexDouble> *mem, int coefsPerNode, int nodesPerChunk)
+        : coefsPerNode(coefsPerNode)
+        , maxNodesPerChunk(nodesPerChunk)
+        , tree_p(tree)
+        , shmem_p(mem) {
+    this->nodeChunks.reserve(100);
+    this->coefChunks.reserve(100);
+    OperatorNode<ComplexDouble> tmp;
+    this->cvptr = *(char **)(&tmp);
+    this->sizeOfNode = sizeof(OperatorNode<ComplexDouble>);
+    MRCPP_INIT_OMP_LOCK();
+}
+
+template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree<T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk) {
     NOT_REACHED_ABORT;
 }
 

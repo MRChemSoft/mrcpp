@@ -65,6 +65,9 @@ void tensor_self_product(const Eigen::VectorXd &A, Eigen::MatrixXd &B);
 double matrix_norm_inf(const Eigen::MatrixXd &M);
 double matrix_norm_1(const Eigen::MatrixXd &M);
 double matrix_norm_2(const Eigen::MatrixXd &M);
+double matrix_norm_inf(const Eigen::MatrixXcd &M);
+double matrix_norm_1(const Eigen::MatrixXcd &M);
+double matrix_norm_2(const Eigen::MatrixXcd &M);
 
 template <typename T> void apply_filter(T *out, T *in, const Eigen::MatrixXd &filter, int kp1, int kp1_dm1, double fac);
 

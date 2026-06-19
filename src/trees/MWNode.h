@@ -161,9 +161,9 @@ public:
     friend class NodeAllocator<D, T>;
     friend class MWTree<D, T>;
     friend class FunctionTree<D, T>;
-    friend class OperatorTree;
+    template <typename U> friend class OperatorTree;
     friend class FunctionNode<D, T>;
-    friend class OperatorNode;
+    template <typename U> friend class OperatorNode;
     friend class DerivativeCalculator<D, T>;
     bool isComplex = false;               // TODO put as one of the flags
     friend class FunctionTree<D, double>; // required if a ComplexDouble tree access a double node from another tree!

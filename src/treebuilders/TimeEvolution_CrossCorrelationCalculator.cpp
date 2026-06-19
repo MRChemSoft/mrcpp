@@ -27,6 +27,9 @@
 #include "trees/FunctionTree.h"
 #include "trees/MWNode.h"
 #include "utils/Printer.h"
+#include "utils/math_utils.h"
+
+#include <type_traits>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -40,7 +43,8 @@ namespace mrcpp {
  *
  *
  */
-void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
+template <typename T>
+void TimeEvolution_CrossCorrelationCalculator<T>::calcNode(MWNode<2, T> &node) {
     node.zeroCoefs();
     int type = node.getMWTree().getMRA().getScalingBasis().getScalingType();
     switch (type) {
@@ -69,7 +73,8 @@ void TimeEvolution_CrossCorrelationCalculator::calcNode(MWNode<2> &node) {
  *
  */
 // template <int T>
-void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
+template <typename T>
+void TimeEvolution_CrossCorrelationCalculator<T>::applyCcc(MWNode<2, T> &node) {
     // std::cout << node;
     //  The scale of J power integrals:
     // int scale = node.getScale() + 1;  //scale = n = (n - 1) + 1
@@ -77,7 +82,7 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
     int t_dim = node.getTDim();  // t_dim = 4
     int kp1_d = node.getKp1_d(); // kp1_d = (k + 1)^2
 
-    VectorXd vec_o = VectorXd::Zero(t_dim * kp1_d);
+    Eigen::Matrix<T, Eigen::Dynamic, 1> vec_o = Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero(t_dim * kp1_d);
     const NodeIndex<2> &idx = node.getNodeIndex();
 
     auto &J_power_inetgarls = *this->J_power_inetgarls[node.getScale() + 1];
@@ -92,23 +97,30 @@ void TimeEvolution_CrossCorrelationCalculator::applyCcc(MWNode<2> &node) {
                 // std::min(M, N)  could be used for breaking the following loop
                 // this->cross_correlation->Matrix.size() should be big enough a priori
                 for (int k = 0; 2 * k + p + j < J_power_inetgarls[l_b].size(); k++) {
-                    double J;
-                    if (this->imaginary)
-                        J = J_power_inetgarls[l_b][2 * k + p + j].imag();
-                    else
-                        J = J_power_inetgarls[l_b][2 * k + p + j].real();
-                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) += J * cross_correlation->Matrix[k](p, j); // by default eigen library reads a transpose matrix from a file
+                    T J;
+                    if constexpr (std::is_same_v<T, ComplexDouble>) {
+                        J = J_power_inetgarls[l_b][2 * k + p + j]; // full complex coefficient: cos + i*sin
+                    } else {
+                        if (this->imaginary)
+                            J = J_power_inetgarls[l_b][2 * k + p + j].imag();
+                        else
+                            J = J_power_inetgarls[l_b][2 * k + p + j].real();
+                    }
+                    vec_o.segment(i * kp1_d, kp1_d)(vec_o_segment_index) += J * cross_correlation->Matrix[k](p, j);
                 }
                 vec_o_segment_index++;
             }
     }
 
-    double *coefs = node.getCoefs();
+    T *coefs = node.getCoefs();
     for (int i = 0; i < t_dim * kp1_d; i++) {
         // auto scaling_factor = node.getMWTree().getMRA().getWorldBox().getScalingFactor(0);
         coefs[i] = vec_o(i);
         // std::cout<< "coefs[i] = " << coefs[i] << std::endl;
     }
 }
+
+template class TimeEvolution_CrossCorrelationCalculator<double>;
+template class TimeEvolution_CrossCorrelationCalculator<ComplexDouble>;
 
 } // namespace mrcpp

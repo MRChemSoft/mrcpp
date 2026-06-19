@@ -37,9 +37,9 @@ namespace mrcpp {
  * \f$ A, B, C \f$ in the non-standard form.
  *
  */
-class CornerOperatorTree final : public OperatorTree {
+template <typename T> class CornerOperatorTree final : public OperatorTree<T> {
 public:
-    using OperatorTree::OperatorTree; // Import the single valid constructor from OperatorTree
+    using OperatorTree<T>::OperatorTree; // Import the single valid constructor from OperatorTree
     CornerOperatorTree(const CornerOperatorTree &tree) = delete;
     CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
     ~CornerOperatorTree() override = default;
@@ -47,5 +47,4 @@ public:
     void calcBandWidth(double prec = -1.0) override;
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;
 };
-
 } // namespace mrcpp

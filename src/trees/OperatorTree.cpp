@@ -35,8 +35,9 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name)
-        : MWTree<2>(mra, name)
+template <typename T>
+OperatorTree<T>::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name)
+        : MWTree<2, T>(mra, name)
         , normPrec(np)
         , bandWidth(nullptr)
         , nodePtrStore(nullptr)
@@ -45,12 +46,12 @@ OperatorTree::OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, con
 
     int nodesPerChunk = 1024;
     int coefsPerNode = this->getTDim() * this->getKp1_d();
-    this->nodeAllocator_p = std::make_unique<NodeAllocator<2>>(this, nullptr, coefsPerNode, nodesPerChunk);
+    this->nodeAllocator_p = std::make_unique<NodeAllocator<2, T>>(this, nullptr, coefsPerNode, nodesPerChunk);
     this->allocRootNodes();
     this->resetEndNodeTable();
 }
 
-void OperatorTree::allocRootNodes() {
+template <typename T> void OperatorTree<T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
 
@@ -61,10 +62,10 @@ void OperatorTree::allocRootNodes() {
     auto *coef_p = allocator.getCoef_p(sIdx);
     auto *root_p = allocator.getNode_p(sIdx);
 
-    MWNode<2> **roots = rootbox.getNodes();
+    MWNode<2, T> **roots = rootbox.getNodes();
     for (int rIdx = 0; rIdx < nRoots; rIdx++) {
         // construct into allocator memory
-        new (root_p) OperatorNode(this, rIdx);
+        new (root_p) OperatorNode<T>(this, rIdx);
         roots[rIdx] = root_p;
 
         root_p->serialIx = sIdx;
@@ -87,13 +88,13 @@ void OperatorTree::allocRootNodes() {
     }
 }
 
-OperatorTree::~OperatorTree() {
+template <typename T> OperatorTree<T>::~OperatorTree() {
     clearOperNodeCache();
     clearBandWidth();
     this->deleteRootNodes();
 }
 
-void OperatorTree::clearBandWidth() {
+template <typename T> void OperatorTree<T>::clearBandWidth() {
     if (this->bandWidth != nullptr) delete this->bandWidth;
     this->bandWidth = nullptr;
 }
@@ -106,9 +107,9 @@ void OperatorTree::clearBandWidth() {
  * considerable value while keeping increasing \f$ l \f$, that stands for the distance to the diagonal.
  *
  */
-void OperatorTree::calcBandWidth(double prec) {
+template <typename T> void OperatorTree<T>::calcBandWidth(double prec) {
     if (this->bandWidth == nullptr) clearBandWidth();
-    this->bandWidth = new BandWidth(getDepth());
+    this->bandWidth = new BandWidth(this->getDepth());
 
     VectorXi max_transl;
     getMaxTranslations(max_transl);
@@ -119,7 +120,7 @@ void OperatorTree::calcBandWidth(double prec) {
         bool done = false;
         while (not done) {
             done = true;
-            MWNode<2> &node = getNode(depth, l);
+            MWNode<2, T> &node = getNode(depth, l);
             double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
             for (int k = 0; k < 4; k++) {
                 if (node.getComponentNorm(k) > thrs) {
@@ -142,7 +143,7 @@ void OperatorTree::calcBandWidth(double prec) {
  * @returns True if \b oTransl is outside of the band and False otherwise.
  *
  */
-bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) {
+template <typename T> bool OperatorTree<T>::isOutsideBand(int oTransl, int o_depth, int idx) {
     return abs(oTransl) > this->bandWidth->getWidth(o_depth, idx);
 }
 
@@ -159,9 +160,9 @@ bool OperatorTree::isOutsideBand(int oTransl, int o_depth, int idx) {
  * and as a result spread further up to the root with mwTransform.
  *
  */
-void OperatorTree::removeRoughScaleNoise(int trust_scale) {
-    MWNode<2> *p_rubbish;     // possibly inexact end node
-    MWNode<2> *p_counterpart; // exact branch node
+template <typename T> void OperatorTree<T>::removeRoughScaleNoise(int trust_scale) {
+    MWNode<2, T> *p_rubbish;     // possibly inexact end node
+    MWNode<2, T> *p_counterpart; // exact branch node
     for (int n = (this->getDepth() - 2 < trust_scale) ? this->getDepth() - 2 : trust_scale; n > this->getRootScale(); n--) {
         int N = 1 << n;
         for (int m = 0; m < N; m++)
@@ -179,10 +180,10 @@ void OperatorTree::removeRoughScaleNoise(int trust_scale) {
     }
 }
 
-void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
+template <typename T> void OperatorTree<T>::getMaxTranslations(VectorXi &maxTransl) {
     int nScales = this->nodesAtDepth.size();
     maxTransl = VectorXi::Zero(nScales);
-    TreeIterator<2> it(*this);
+    TreeIterator<2, T> it(*this);
     while (it.next()) {
         int n = it.getNode().getDepth();
         const NodeIndex<2> &l = it.getNode().getNodeIndex();
@@ -197,11 +198,11 @@ void OperatorTree::getMaxTranslations(VectorXi &maxTransl) {
  * be called within a parallel region, or all hell will break loose. This is
  * not really a problem, but you have been warned.
  */
-void OperatorTree::setupOperNodeCache() {
+template <typename T> void OperatorTree<T>::setupOperNodeCache() {
     int nScales = this->nodesAtDepth.size();
     int rootScale = this->getRootScale();
-    this->nodePtrStore = new OperatorNode **[nScales];
-    this->nodePtrAccess = new OperatorNode **[nScales];
+    this->nodePtrStore = new OperatorNode<T> **[nScales];
+    this->nodePtrAccess = new OperatorNode<T> **[nScales];
     VectorXi max_transl;
     getMaxTranslations(max_transl);
     for (int n = 0; n < nScales; n++) {
@@ -209,12 +210,12 @@ void OperatorTree::setupOperNodeCache() {
         int n_transl = max_transl[n];
         int n_nodes = 2 * n_transl + 1;
 
-        auto **nodes = new OperatorNode *[n_nodes];
+        auto **nodes = new OperatorNode<T> *[n_nodes];
         int j = 0;
         for (int i = n_transl; i >= 0; i--) {
             NodeIndex<2> idx(scale, {0, i});
             // Generated OperatorNodes are still OperatorNodes
-            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode<T> *>(&MWTree<2, T>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -223,7 +224,7 @@ void OperatorTree::setupOperNodeCache() {
         }
         for (int i = 1; i <= n_transl; i++) {
             NodeIndex<2> idx(scale, {i, 0});
-            if (auto *oNode = dynamic_cast<OperatorNode *>(&MWTree<2>::getNode(idx))) {
+            if (auto *oNode = dynamic_cast<OperatorNode<T> *>(&MWTree<2, T>::getNode(idx))) {
                 nodes[j] = oNode;
                 j++;
             } else {
@@ -237,9 +238,9 @@ void OperatorTree::setupOperNodeCache() {
     this->resetEndNodeTable();
 }
 
-void OperatorTree::clearOperNodeCache() {
+template <typename T> void OperatorTree<T>::clearOperNodeCache() {
     if (this->nodePtrStore != nullptr) {
-        for (int i = 0; i < getDepth(); i++) { delete[] this->nodePtrStore[i]; }
+        for (int i = 0; i < this->getDepth(); i++) { delete[] this->nodePtrStore[i]; }
         delete[] this->nodePtrStore;
         delete[] this->nodePtrAccess;
     }
@@ -251,14 +252,14 @@ void OperatorTree::clearOperNodeCache() {
  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
  * of OperatorNorm is done using random vectors, which is non-deterministic
  * in parallel. FunctionTrees should be fine. */
-void OperatorTree::mwTransformUp() {
-    std::vector<MWNodeVector<2>> nodeTable;
+template <typename T> void OperatorTree<T>::mwTransformUp() {
+    std::vector<MWNodeVector<2, T>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);
     int start = nodeTable.size() - 2;
     for (int n = start; n >= 0; n--) {
         int nNodes = nodeTable[n].size();
         for (int i = 0; i < nNodes; i++) {
-            MWNode<2> &node = *nodeTable[n][i];
+            MWNode<2, T> &node = *nodeTable[n][i];
             if (node.isBranchNode()) { node.reCompress(); }
         }
     }
@@ -270,21 +271,24 @@ void OperatorTree::mwTransformUp() {
  * Reimplementation of MWTree::mwTransform() without OMP, as calculation
  * of OperatorNorm is done using random vectors, which is non-deterministic
  * in parallel. FunctionTrees should be fine. */
-void OperatorTree::mwTransformDown(bool overwrite) {
-    std::vector<MWNodeVector<2>> nodeTable;
+template <typename T> void OperatorTree<T>::mwTransformDown(bool overwrite) {
+    std::vector<MWNodeVector<2, T>> nodeTable;
     tree_utils::make_node_table(*this, nodeTable);
     for (auto &n : nodeTable) {
         int n_nodes = n.size();
         for (int i = 0; i < n_nodes; i++) {
-            MWNode<2> &node = *n[i];
+            MWNode<2, T> &node = *n[i];
             if (node.isBranchNode()) { node.giveChildrenCoefs(overwrite); }
         }
     }
 }
 
-std::ostream &OperatorTree::print(std::ostream &o) const {
+template <typename T> std::ostream &OperatorTree<T>::print(std::ostream &o) const {
     o << std::endl << "*OperatorTree: " << this->name << std::endl;
-    return MWTree<2>::print(o);
-}
+    return MWTree<2, T>::print(o);
+} 
+
+template class OperatorTree<double>;
+template class OperatorTree<ComplexDouble>;
 
 } // namespace mrcpp

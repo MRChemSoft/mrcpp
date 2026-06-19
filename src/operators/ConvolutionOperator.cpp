@@ -47,9 +47,9 @@
 
 namespace mrcpp {
 
-template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
-        : MWOperator<D>(mra, mra.getRootScale(), -10) {
+template <int D, typename T>
+ConvolutionOperator<D, T>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec)
+        : MWOperator<D, T>(mra, mra.getRootScale(), -10) {
     int oldlevel = Printer::setPrintLevel(0);
 
     this->setBuildPrec(prec);
@@ -61,9 +61,9 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
-template <int D>
-ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
-        : MWOperator<D>(mra, root, reach) {
+template <int D, typename T>
+ConvolutionOperator<D, T>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach)
+        : MWOperator<D, T>(mra, root, reach) {
     int oldlevel = Printer::setPrintLevel(0);
 
     this->setBuildPrec(prec);
@@ -75,11 +75,11 @@ ConvolutionOperator<D>::ConvolutionOperator(const MultiResolutionAnalysis<D> &mr
     Printer::setPrintLevel(oldlevel);
 }
 
-template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
+template <int D, typename T> void ConvolutionOperator<D, T>::initialize(GaussExp<1> &kernel, double k_prec, double o_prec) {
     auto k_mra = this->getKernelMRA();
     auto o_mra = this->getOperatorMRA();
 
-    TreeBuilder<2> builder;
+    TreeBuilder<2, T> builder;
     OperatorAdaptor adaptor(o_prec, o_mra.getMaxScale());
 
     for (int i = 0; i < kernel.size(); i++) {
@@ -93,7 +93,7 @@ template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, do
         delete k_func;
 
         CrossCorrelationCalculator calculator(k_tree);
-        auto o_tree = std::make_unique<OperatorTree>(o_mra, o_prec);
+        auto o_tree = std::make_unique<OperatorTree<T>>(o_mra, o_prec);
         builder.build(*o_tree, calculator, adaptor, -1); // Expand 1D kernel into 2D operator
 
         Timer trans_t;
@@ -107,7 +107,7 @@ template <int D> void ConvolutionOperator<D>::initialize(GaussExp<1> &kernel, do
     }
 }
 
-template <int D> MultiResolutionAnalysis<1> ConvolutionOperator<D>::getKernelMRA() const {
+template <int D, typename T> MultiResolutionAnalysis<1> ConvolutionOperator<D, T>::getKernelMRA() const {
     const BoundingBox<D> &box = this->MRA.getWorldBox();
     const ScalingBasis &basis = this->MRA.getScalingBasis();
 

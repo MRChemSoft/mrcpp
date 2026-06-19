@@ -34,7 +34,7 @@ namespace mrcpp {
 
 template <int D, typename T> class FunctionTree;
 template <int D> class DerivativeOperator;
-template <int D> class ConvolutionOperator;
+template <int D, typename T> class ConvolutionOperator;
 
 constexpr ComplexDouble  defaultMetric [4][4] ={{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
 

@@ -30,37 +30,37 @@
 
 namespace mrcpp {
 
-class OperatorNode final : public MWNode<2> {
+template <typename T> class OperatorNode final : public MWNode<2, T> {
 public:
-    OperatorTree &getOperTree() { return static_cast<OperatorTree &>(*this->tree); }
-    OperatorNode &getOperParent() { return static_cast<OperatorNode &>(*this->parent); }
-    OperatorNode &getOperChild(int i) { return static_cast<OperatorNode &>(*this->children[i]); }
+    OperatorTree<T> &getOperTree() { return static_cast<OperatorTree<T> &>(*this->tree); }
+    OperatorNode<T> &getOperParent() { return static_cast<OperatorNode<T> &>(*this->parent); }
+    OperatorNode<T> &getOperChild(int i) { return static_cast<OperatorNode<T> &>(*this->children[i]); }
 
-    const OperatorTree &getOperTree() const { return static_cast<const OperatorTree &>(*this->tree); }
-    const OperatorNode &getOperParent() const { return static_cast<const OperatorNode &>(*this->parent); }
-    const OperatorNode &getOperChild(int i) const { return static_cast<const OperatorNode &>(*this->children[i]); }
+    const OperatorTree<T> &getOperTree() const { return static_cast<const OperatorTree<T> &>(*this->tree); }
+    const OperatorNode<T> &getOperParent() const { return static_cast<const OperatorNode<T> &>(*this->parent); }
+    const OperatorNode<T> &getOperChild(int i) const { return static_cast<const OperatorNode<T> &>(*this->children[i]); }
 
     void createChildren(bool coefs) override;
     void genChildren() override;
     void deleteChildren() override;
 
-    friend class OperatorTree;
-    friend class NodeAllocator<2>;
+    friend class OperatorTree<T>;
+    friend class NodeAllocator<2, T>;
 
 protected:
     OperatorNode()
-            : MWNode<2>(){};
-    OperatorNode(MWTree<2> *tree, int rIdx)
-            : MWNode<2>(tree, rIdx){};
-    OperatorNode(MWNode<2> *parent, int cIdx)
-            : MWNode<2>(parent, cIdx){};
+            : MWNode<2, T>(){};
+    OperatorNode(MWTree<2, T> *tree, int rIdx)
+            : MWNode<2, T>(tree, rIdx){};
+    OperatorNode(MWNode<2, T> *parent, int cIdx)
+            : MWNode<2, T>(parent, cIdx){};
     OperatorNode(const OperatorNode &node) = delete;
     OperatorNode &operator=(const OperatorNode &node) = delete;
     ~OperatorNode() = default;
 
     void dealloc() override;
     double calcComponentNorm(int i) const override;
-    Eigen::MatrixXd getComponent(int i);
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> getComponent(int i);
 };
 
 } // namespace mrcpp

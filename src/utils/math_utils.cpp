@@ -76,6 +76,17 @@ double math_utils::matrix_norm_1(const MatrixXd &M) {
 double math_utils::matrix_norm_inf(const MatrixXd &M) {
     return M.rowwise().lpNorm<1>().maxCoeff();
 }
+double math_utils::matrix_norm_2(const Eigen::MatrixXcd &M) {
+    return M.lpNorm<2>();
+}
+
+double math_utils::matrix_norm_1(const Eigen::MatrixXcd &M) {
+    return M.colwise().lpNorm<1>().maxCoeff();
+}
+
+double math_utils::matrix_norm_inf(const Eigen::MatrixXcd &M) {
+    return M.rowwise().lpNorm<1>().maxCoeff();
+}
 
 /** Compute the binomial coefficient n!/((n-j)! j!) */
 double math_utils::binomial_coeff(int n, int j) {

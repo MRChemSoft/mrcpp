@@ -187,8 +187,8 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator_bw0(
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        const OperatorTree &oTree = this->oper->getComponent(0, d);
-        const OperatorNode &oNode = oTree.getNode(depth, 0);
+        const OperatorTree<double> &oTree = this->oper->getComponent(0, d);
+        const OperatorNode<double> &oNode = oTree.getNode(depth, 0);
         int oIdx = os.getOperIndex(d);
         if (this->applyDir == d) {
             oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
@@ -218,7 +218,7 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator(Oper
     double **oData = os.getOperData();
 
     for (int d = 0; d < D; d++) {
-        const OperatorTree &oTree = this->oper->getComponent(0, d);
+        const OperatorTree<double> &oTree = this->oper->getComponent(0, d);
 
         int oTransl = fIdx[d] - gIdx[d];
 
@@ -230,7 +230,7 @@ template <int D, typename T> void DerivativeCalculator<D, T>::applyOperator(Oper
         int w = oTree.getBandWidth().getWidth(depth, idx);
         if (abs(oTransl) > w) { return; }
 
-        const OperatorNode &oNode = oTree.getNode(depth, oTransl);
+        const OperatorNode<double> &oNode = oTree.getNode(depth, oTransl);
         int oIdx = os.getOperIndex(d);
         if (this->applyDir == d) {
             oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;

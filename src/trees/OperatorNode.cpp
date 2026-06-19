@@ -33,7 +33,7 @@ using namespace Eigen;
 
 namespace mrcpp {
 
-void OperatorNode::dealloc() {
+template <typename T> void OperatorNode<T>::dealloc() {
     int sIdx = this->serialIx;
     this->serialIx = -1;
     this->parentSerialIx = -1;
@@ -53,18 +53,18 @@ void OperatorNode::dealloc() {
  * (TODO: needs to be more presiced).
  *
  */
-double OperatorNode::calcComponentNorm(int i) const {
-    int depth = getDepth();
-    double prec = getOperTree().getNormPrecision();
+template <typename T> double OperatorNode<T>::calcComponentNorm(int i) const {
+    int depth = this->getDepth();
+    double prec = this->getOperTree().getNormPrecision();
     double thrs = std::max(MachinePrec, prec / (8.0 * (1 << depth)));
 
-    VectorXd coef_vec;
+    Matrix<T, Dynamic, 1> coef_vec;
     this->getCoefs(coef_vec);
 
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
-    const MatrixXd comp_mat = MatrixXd::Map(comp_vec.data(), kp1, kp1); // one can use MatrixXd OperatorNode::getComponent(int i)
+    const Matrix<T, Dynamic, 1> comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
+    const Matrix<T, Dynamic, Dynamic> comp_mat = Matrix<T, Dynamic, Dynamic>::Map(comp_vec.data(), kp1, kp1); // one can use getComponent(int i)
 
     double norm = 0.0;
     double vecNorm = comp_vec.norm();
@@ -93,17 +93,17 @@ double OperatorNode::calcComponentNorm(int i) const {
  * For example, \f$ \alpha_l^n = \text{getComponent}(3) \f$.
  *
  */
-MatrixXd OperatorNode::getComponent(int i) {
-    VectorXd coef_vec;
+template <typename T> Matrix<T, Dynamic, Dynamic> OperatorNode<T>::getComponent(int i) {
+    Matrix<T, Dynamic, 1> coef_vec;
     this->getCoefs(coef_vec);
 
     int kp1 = this->getKp1();
     int kp1_d = this->getKp1_d();
-    const VectorXd &comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
-    return MatrixXd::Map(comp_vec.data(), kp1, kp1);
+    const Matrix<T, Dynamic, 1> comp_vec = coef_vec.segment(i * kp1_d, kp1_d);
+    return Matrix<T, Dynamic, Dynamic>::Map(comp_vec.data(), kp1, kp1);
 }
 
-void OperatorNode::createChildren(bool coefs) {
+template <typename T> void OperatorNode<T>::createChildren(bool coefs) {
     if (this->isBranchNode()) MSG_ABORT("Node already has children");
     auto &allocator = this->getOperTree().getNodeAllocator();
 
@@ -117,7 +117,7 @@ void OperatorNode::createChildren(bool coefs) {
     this->childSerialIx = sIdx;
     for (int cIdx = 0; cIdx < nChildren; cIdx++) {
         // construct into allocator memory
-        new (child_p) OperatorNode(this, cIdx);
+        new (child_p) OperatorNode<T>(this, cIdx);
         this->children[cIdx] = child_p;
 
         child_p->serialIx = sIdx;
@@ -141,14 +141,16 @@ void OperatorNode::createChildren(bool coefs) {
     this->clearIsEndNode();
 }
 
-void OperatorNode::genChildren() {
+template <typename T> void OperatorNode<T>::genChildren() {
     this->createChildren(true);
     this->giveChildrenCoefs();
 }
 
-void OperatorNode::deleteChildren() {
-    MWNode<2>::deleteChildren();
+template <typename T> void OperatorNode<T>::deleteChildren() {
+    MWNode<2, T>::deleteChildren();
     this->setIsEndNode();
 }
 
+template class OperatorNode<double>;
+template class OperatorNode<ComplexDouble>;
 } // namespace mrcpp

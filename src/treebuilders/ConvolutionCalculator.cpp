@@ -105,7 +105,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     for (int i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
-        const OperatorTree &oTree = this->oper->getComponent(i, 0);
+        const OperatorTree<double> &oTree = this->oper->getComponent(i, 0);
         const BandWidth &bw = oTree.getBandWidth();
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
@@ -279,7 +279,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(Ope
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
     for (int i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension
-        const OperatorTree &ot = this->oper->getComponent(i, 0);
+        const OperatorTree<double> &ot = this->oper->getComponent(i, 0);
         const BandWidth &bw = ot.getBandWidth();
         if (os.getMaxDeltaL() > bw.getMaxWidth(o_depth)) { continue; }
         os.fThreshold = getBandSizeFactor(i, o_depth, os) * fNorm;
@@ -316,7 +316,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
         int idx = (a << 1) + b;
         if (oTree.isOutsideBand(oTransl, o_depth, idx)) { return; }
 
-        const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
+        const OperatorNode<double> &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);
         oNorm *= oNode.getComponentNorm(oIdx);
         oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;

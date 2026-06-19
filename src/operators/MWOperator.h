@@ -39,7 +39,7 @@ namespace mrcpp {
  * @details Fixme
  *
  */
-template <int D> class MWOperator {
+template <int D, typename T = double> class MWOperator {
 public:
     MWOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
             : oper_root(root)
@@ -59,24 +59,24 @@ public:
     int getOperatorRoot() const { return this->oper_root; }
     int getOperatorReach() const { return this->oper_reach; }
 
-    OperatorTree &getComponent(int i, int d);
-    const OperatorTree &getComponent(int i, int d) const;
+    OperatorTree<T> &getComponent(int i, int d);
+    const OperatorTree<T> &getComponent(int i, int d) const;
 
-    std::array<OperatorTree *, D> &operator[](int i) { return this->oper_exp[i]; }
-    const std::array<OperatorTree *, D> &operator[](int i) const { return this->oper_exp[i]; }
+    std::array<OperatorTree<T> *, D> &operator[](int i) { return this->oper_exp[i]; }
+    const std::array<OperatorTree<T> *, D> &operator[](int i) const { return this->oper_exp[i]; }
 
 protected:
     int oper_root;
     int oper_reach;
     MultiResolutionAnalysis<D> MRA;
-    std::vector<std::array<OperatorTree *, D>> oper_exp;
-    std::vector<std::unique_ptr<OperatorTree>> raw_exp;
+    std::vector<std::array<OperatorTree<T> *, D>> oper_exp;
+    std::vector<std::unique_ptr<OperatorTree<T>>> raw_exp;
     std::vector<int> band_max;
 
     MultiResolutionAnalysis<2> getOperatorMRA() const;
 
     void initOperExp(int M);
-    void assign(int i, int d, OperatorTree *oper) { this->oper_exp[i][d] = oper; }
+    void assign(int i, int d, OperatorTree<T> *oper) { this->oper_exp[i][d] = oper; }
 };
 
 } // namespace mrcpp

@@ -47,8 +47,8 @@ namespace mrcpp {
  * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
  *
  */
-template <int D>
-class TimeEvolutionOperator : public ConvolutionOperator<D> // One can use ConvolutionOperator instead as well
+template <int D, typename T = double>
+class TimeEvolutionOperator : public ConvolutionOperator<D, T> // One can use ConvolutionOperator instead as well
 {
 public:
     TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);

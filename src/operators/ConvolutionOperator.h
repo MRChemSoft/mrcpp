@@ -59,7 +59,7 @@ namespace mrcpp {
  * namely, when \f$ \alpha_m, \beta_m \f$ are calculated.
  *
  */
-template <int D> class ConvolutionOperator : public MWOperator<D> {
+template <int D, typename T> class ConvolutionOperator : public MWOperator<D, T> {
 public:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec);
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, GaussExp<1> &kernel, double prec, int root, int reach);
@@ -71,9 +71,9 @@ public:
 
 protected:
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra)
-            : MWOperator<D>(mra, mra.getRootScale(), -10) {}
+            : MWOperator<D, T>(mra, mra.getRootScale(), -10) {}
     ConvolutionOperator(const MultiResolutionAnalysis<D> &mra, int root, int reach)
-            : MWOperator<D>(mra, root, reach) {}
+            : MWOperator<D, T>(mra, root, reach) {}
 
     void initialize(GaussExp<1> &kernel, double k_prec, double o_prec);
     void setBuildPrec(double prec) { this->build_prec = prec; }

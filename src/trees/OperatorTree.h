@@ -30,12 +30,12 @@
 
 namespace mrcpp {
 
-class OperatorTree : public MWTree<2> {
+template <typename T> class OperatorTreeT : public MWTree<2, T> {
 public:
-    OperatorTree(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
-    OperatorTree(const OperatorTree &tree) = delete;
-    OperatorTree &operator=(const OperatorTree &tree) = delete;
-    virtual ~OperatorTree() override;
+    OperatorTreeT(const MultiResolutionAnalysis<2> &mra, double np, const std::string &name = "nn");
+    OperatorTreeT(const OperatorTreeT &tree) = delete;
+    OperatorTreeT &operator=(const OperatorTreeT &tree) = delete;
+    virtual ~OperatorTreeT() override;
 
     double getNormPrecision() const { return this->normPrec; }
 
@@ -50,23 +50,23 @@ public:
     BandWidth &getBandWidth() { return *this->bandWidth; }
     const BandWidth &getBandWidth() const { return *this->bandWidth; }
 
-    OperatorNode &getNode(int n, int l) {
+    OperatorNodeT<T> &getNode(int n, int l) {
         return *nodePtrAccess[n][l];
     } ///< TODO: It has to be specified more.
       ///< \b l is distance to the diagonal.
-    const OperatorNode &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
+    const OperatorNodeT<T> &getNode(int n, int l) const { return *nodePtrAccess[n][l]; }
 
     void mwTransformDown(bool overwrite) override;
     void mwTransformUp() override;
 
-    using MWTree<2>::getNode;
-    using MWTree<2>::findNode;
+    using MWTree<2, T>::getNode;
+    using MWTree<2, T>::findNode;
 
 protected:
     const double normPrec;
     BandWidth *bandWidth;
-    OperatorNode ***nodePtrStore;  ///< Avoids tree lookups
-    OperatorNode ***nodePtrAccess; ///< Center (l=0) of node list
+    OperatorNodeT<T> ***nodePtrStore;  ///< Avoids tree lookups
+    OperatorNodeT<T> ***nodePtrAccess; ///< Center (l=0) of node list
 
     void allocRootNodes();
     void getMaxTranslations(Eigen::VectorXi &maxTransl);

@@ -122,5 +122,4 @@ void TimeEvolution_CrossCorrelationCalculator<T>::applyCcc(MWNode<2, T> &node) {
 
 template class TimeEvolution_CrossCorrelationCalculator<double>;
 template class TimeEvolution_CrossCorrelationCalculator<ComplexDouble>;
-
 } // namespace mrcpp

@@ -113,6 +113,7 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
             builder.build(out, calculator, adaptor, maxIter);
         }
     } else {
+        auto period = out.getMRA().getWorldBox().getScalingFactors();
         for (auto i = 0; i < inp.size(); i++) {
             auto *gauss = inp.getFunc(i).copy();
             build_grid(out, *gauss, maxIter);
@@ -142,8 +143,15 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
  *
  */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter) {
+    // MSG_INFO("tut4 " << &(out.getMRA()));
+    // auto tutb = inp.getMRA();
+    // MSG_INFO("tut4.2");
+    // auto tuta = out.getMRA();
+    // MSG_INFO("tut4.3");
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+    // MSG_INFO("tut4.5");
     auto maxScale = out.getMRA().getMaxScale();
+    // MSG_INFO("tut5");
     TreeBuilder<D, T> builder;
     CopyAdaptor<D, T> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D, T> calculator;
@@ -227,17 +235,23 @@ template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTre
  *
  * @param[out] out: Output to be built
  * @param[in] inp: Input
+ * @param[in] n_comp: Number of components to copy, if `-1` it will copy all components of the input
  *
  * @note The difference from the corresponding `build_grid` function is that
  * this will first clear the grid of the `out` function, while `build_grid`
  * will _extend_ the existing grid.
+ * @note n_comp is used to avoid building grids in compFunctions that are defined as one component only (e.g. Densities),
+ * in the case that inp defines a multicomponent object (e.g. spinors).
  *
  */
-template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp) {
+template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp, int nComp) {
+    int nAlloc = nComp; //number of components to allocate for out 
+    if (nComp < 1) nAlloc = inp.Ncomp(); //default value: out.Ncomp() = inp.Ncomp()
     out.free();
     out.func_ptr->data = inp.func_ptr->data;
-    out.alloc(inp.Ncomp());
-    for (int i = 0; i < inp.Ncomp(); i++) {
+    out.func_ptr->data.Ncomp = nAlloc; //if nComp > 0, we've copied the wrong Ncomp for out in the line above and need to reset it here
+    out.alloc(nAlloc);
+    for (int i = 0; i < nAlloc; i++) {
         if (inp.isreal()) build_grid(*out.CompD[i], *inp.CompD[i]);
         if (inp.iscomplex()) build_grid(*out.CompC[i], *inp.CompC[i]);
     }
@@ -343,9 +357,9 @@ template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, const Repr
     return nSplit;
 }
 
-template void copy_grid(CompFunction<1> &out, CompFunction<1> &inp);
-template void copy_grid(CompFunction<2> &out, CompFunction<2> &inp);
-template void copy_grid(CompFunction<3> &out, CompFunction<3> &inp);
+template void copy_grid(CompFunction<1> &out, CompFunction<1> &inp, int n_comp);
+template void copy_grid(CompFunction<2> &out, CompFunction<2> &inp, int n_comp);
+template void copy_grid(CompFunction<3> &out, CompFunction<3> &inp, int n_comp);
 
 template void build_grid<1, double>(FunctionTree<1, double> &out, int scales);
 template void build_grid<2, double>(FunctionTree<2, double> &out, int scales);

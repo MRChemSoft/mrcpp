@@ -54,7 +54,9 @@ template <int D> void ABGVOperator<D>::initialize(double a, double b) {
     if (std::abs(a) > MachineZero) bw = 1;
     if (std::abs(b) > MachineZero) bw = 1;
 
+    
     auto oper_mra = this->getOperatorMRA();
+    oper_mra.getScalingBasis();
 
     TreeBuilder<2> builder;
     ABGVCalculator calculator(oper_mra.getScalingBasis(), a, b);
@@ -62,6 +64,7 @@ template <int D> void ABGVOperator<D>::initialize(double a, double b) {
 
     auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
+    
 
     Timer trans_t;
     o_tree->calcSquareNorm();

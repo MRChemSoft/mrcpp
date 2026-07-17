@@ -39,7 +39,7 @@ template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTr
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, std::vector<FunctionTree<D, T> *> &inp, int maxIter = -1);
 template <int D, typename T> void copy_func(FunctionTree<D, T> &out, FunctionTree<D, T> &inp);
 template <int D, typename T> void copy_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp);
-template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp);
+template <int D> void copy_grid(CompFunction<D> &out, CompFunction<D> &inp, int n_comp = 0);
 template <int D, typename T> void clear_grid(FunctionTree<D, T> &out);
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, int scales);
 template <int D, typename T> int refine_grid(FunctionTree<D, T> &out, double prec, bool absPrec = false);

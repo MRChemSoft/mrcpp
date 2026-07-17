@@ -80,6 +80,7 @@ template <int D, typename T> void MWTree<D, T>::deleteRootNodes() {
         root.dealloc();
         this->rootBox.clearNode(i);
     }
+    // MSG_INFO("Root Nodes ="<< this->nodesAtDepth[0] << " branch nodes="<<this->nodesAtDepth.size());
 }
 
 /** @brief Remove all nodes in the tree

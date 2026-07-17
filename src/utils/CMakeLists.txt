@@ -12,6 +12,7 @@ target_sources(mrcpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Bank.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/parallel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompFunction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/spinor_utils.cpp
   )
 
 get_filename_component(_dirname ${CMAKE_CURRENT_LIST_DIR} NAME)
@@ -29,6 +30,7 @@ list(APPEND ${_dirname}_h
   ${CMAKE_CURRENT_SOURCE_DIR}/Bank.h
   ${CMAKE_CURRENT_SOURCE_DIR}/parallel.h
   ${CMAKE_CURRENT_SOURCE_DIR}/CompFunction.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/spinor_utils.h
   )
 
 # Sets install directory for all the headers in the list

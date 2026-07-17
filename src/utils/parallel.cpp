@@ -349,11 +349,30 @@ void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm) {
 #endif
 }
 
+/** @brief Returns the max of a value among all MPI ranks
+ *  Needed for instance to compute the number of components of CompFunctions in a vector.
+ */
+int allreduce_max(int local, MPI_Comm comm) {
+    int result = local;
+#ifdef MRCPP_HAS_MPI
+    MPI_Allreduce(&local, &result, 1, MPI_INT, MPI_MAX, comm);
+#endif
+    return result;
+}
+
 // send a component function with MPI
 void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     for (int i = 0; i < func.Ncomp(); i++) {
-        // make sure that Nchunks is up to date
+        // make sure that Nchunks is up to date; a component that has never been
+        // allocated (e.g. an orbital placeholder that hasn't been populated yet,
+        // as happens when disjoin()/adjoin() reassign ownership before the real
+        // data has been computed) has a null CompD/CompC and carries no data.
+        bool has_data = func.isreal() ? (func.CompD[i] != nullptr) : (func.CompC[i] != nullptr);
+        if (!has_data) {
+            func.Nchunks()[i] = 0;
+            continue;
+        }
         if (func.isreal())
             func.Nchunks()[i] = func.CompD[i]->getNChunks();
         else
@@ -361,6 +380,7 @@ void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm)
     }
     MPI_Send(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
     for (int i = 0; i < func.Ncomp(); i++) {
+        if (func.Nchunks()[i] == 0) continue;
         if (func.isreal())
             mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
         else
@@ -373,10 +393,20 @@ void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm)
 void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
     MPI_Status status;
-    int func_ncomp_in = func.Ncomp();
     MPI_Recv(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
     for (int i = 0; i < func.Ncomp(); i++) {
-        if (func_ncomp_in <= i) func.alloc(i + 1);
+        if (func.Nchunks()[i] == 0) {
+            // Sender has no data for this component (e.g. an orbital that hasn't been
+            // populated yet). Leave it null here too instead of allocating a stray
+            // empty tree - real data will be filled in later once it's actually computed.
+            continue;
+        }
+        // Allocate if this component's tree doesn't exist yet. Checking Ncomp() against i
+        // is not sufficient: a freshly-constructed placeholder orbital already reports its
+        // final Ncomp from construction (metadata only), while CompD/CompC stay null until
+        // real data is actually received for the first time.
+        bool has_tree = func.isreal() ? (func.CompD[i] != nullptr) : (func.CompC[i] != nullptr);
+        if (!has_tree) func.alloc(i + 1);
         if (func.isreal())
             mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
         else
@@ -502,23 +532,37 @@ template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 }
 
 /** @brief make union tree without coeff and send to all
+ * AI description of this function's goal:  
+ * Its job is to build a union grid — a FunctionTree topology with no coefficients — that covers every grid point that exists in any orbital in the input vector Phi. In MPI mode it does this in three steps: each rank contributes the
+ * nodes it owns, rank 0 collects them all (reduce), then broadcasts the merged result back to everyone.
+ * 
+ * @param comp: component index to generate the grid from
  */
-template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm) {
+template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, vector<CompFunction<3>> &Phi, MPI_Comm comm, int comp) {
     /* 1) make union grid of own orbitals
        2) make union grid with others orbitals (sent to rank zero)
        3) rank zero broadcast func to everybody
      */
+    if (comp<0 or comp>3) comp = 0;
 
-    int N = Phi.size();
+     int N = Phi.size();
+    //  MSG_INFO("start size=" << N)
     for (int j = 0; j < N; j++) {
+        // MSG_INFO("loop " << j <<  " || is real? " << Phi[j].isreal() << " || real exists? " << &Phi[j].CompD[0] << " "<< &Phi[j].CompD[1] <<  " || is complex? " << Phi[j].iscomplex() << " || complex exists? " << &Phi[j].CompC[0] << " "<< &Phi[j].CompC[1])
         if (not my_func(j)) continue;
-        if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
-        if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
+        // MSG_INFO("bim")
+        // if (Phi[j].isreal()) tree.appendTreeNoCoeff(*Phi[j].CompD[0]);
+        if (Phi[j].isreal() and Phi[j].CompD[comp]!=nullptr) tree.appendTreeNoCoeff(*Phi[j].CompD[comp]); //WARNING: It might be worth updating to generate the grid from other components
+        // MSG_INFO("tut")
+        // if (Phi[j].iscomplex()) tree.appendTreeNoCoeff(*Phi[j].CompC[0]);
+        if (Phi[j].iscomplex() and Phi[j].CompC[comp]!=nullptr) tree.appendTreeNoCoeff(*Phi[j].CompC[comp]);
     }
+    // MSG_INFO("Mid")
 #ifdef MRCPP_HAS_MPI
     mrcpp::mpi::reduce_Tree_noCoeff(tree, comm_wrk);
     mrcpp::mpi::broadcast_Tree_noCoeff(tree, comm_wrk);
 #endif
+    // MSG_INFO("End")
 }
 
 /** @brief Distribute rank zero function to all ranks */
@@ -588,12 +632,12 @@ template <typename T> void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 template void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
 template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<FunctionTree<3, double>> &Phi, MPI_Comm comm);
 template void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, MPI_Comm comm);
-template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm);
+template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, double> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm, int comp=0);
 
 template void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
 template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<FunctionTree<3, ComplexDouble>> &Phi, MPI_Comm comm);
 template void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, MPI_Comm comm);
-template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm);
+template void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, ComplexDouble> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm, int comp=0);
 
 } // namespace mpi
 } // namespace mrcpp

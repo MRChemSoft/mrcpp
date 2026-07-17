@@ -58,7 +58,7 @@ template <typename T> void reduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, 
 template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, std::vector<FunctionTree<3, T>> &Phi, MPI_Comm comm);
 template <typename T> void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, MPI_Comm comm);
 
-template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm);
+template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm, int comp=0);
 
 void allreduce_vector(IntVector &vec, MPI_Comm comm);
 void allreduce_vector(DoubleVector &vec, MPI_Comm comm);
@@ -66,6 +66,7 @@ void allreduce_vector(ComplexVector &vec, MPI_Comm comm);
 void allreduce_matrix(IntMatrix &vec, MPI_Comm comm);
 void allreduce_matrix(DoubleMatrix &mat, MPI_Comm comm);
 void allreduce_matrix(ComplexMatrix &mat, MPI_Comm comm);
+int allreduce_max(int local, MPI_Comm comm);
 
 } // namespace mpi
 

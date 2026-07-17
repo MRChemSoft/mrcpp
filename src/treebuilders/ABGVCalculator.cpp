@@ -80,7 +80,6 @@ void ABGVCalculator::calcKMatrix(const ScalingBasis &basis) {
     const VectorXd &roots = qCache.getRoots(kp1);
     const VectorXd &weights = qCache.getWeights(kp1);
     VectorXd sqrtWeights = weights.array().sqrt();
-
     switch (basis.getScalingType()) {
         case Interpol:
             for (int i = 0; i < kp1; i++) {

@@ -93,6 +93,7 @@ public:
     NodeBox<D, T> &getRootBox() { return this->rootBox; }
     const NodeBox<D, T> &getRootBox() const { return this->rootBox; }
     const MultiResolutionAnalysis<D> &getMRA() const { return this->MRA; }
+    // const MultiResolutionAnalysis<D> &setMRA() { return this->MRA; }
 
     void mwTransform(int type, bool overwrite = true);
 

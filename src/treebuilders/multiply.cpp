@@ -72,6 +72,7 @@ namespace mrcpp {
 template <int D, typename T>
 void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp_a, FunctionTree<D, T> &inp_b, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
     FunctionTreeVector<D, T> tmp_vec;
+    // MSG_INFO("inpa " << &inp_a << " inpb " << &inp_b);
     tmp_vec.push_back({c, &inp_a});
     tmp_vec.push_back({1.0, &inp_b});
     multiply(prec, out, tmp_vec, maxIter, absPrec, useMaxNorms, conjugate);
@@ -102,26 +103,34 @@ void multiply(double prec, FunctionTree<D, T> &out, T c, FunctionTree<D, T> &inp
  *
  */
 template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out, FunctionTreeVector<D, T> &inp, int maxIter, bool absPrec, bool useMaxNorms, bool conjugate) {
-    for (auto i = 0; i < inp.size(); i++)
-        if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
 
+    for (int i = 0; i < inp.size(); i++){
+        // MSG_INFO("bim 1 b "<< i)
+        if (out.getMRA() != get_func(inp, i).getMRA()) MSG_ABORT("Incompatible MRA");
+    }
+    // MSG_INFO("bim 2");
     int maxScale = out.getMRA().getMaxScale();
     TreeBuilder<D, T> builder;
     MultiplicationCalculator<D, T> calculator(inp, conjugate);
 
+    // MSG_INFO("bim 3");
     if (useMaxNorms) {
+        // MSG_INFO("max norms")
         for (int i = 0; i < inp.size(); i++) get_func(inp, i).makeMaxSquareNorms();
         MultiplicationAdaptor<D, T> adaptor(prec, maxScale, inp);
         builder.build(out, calculator, adaptor, maxIter);
     } else {
+        // MSG_INFO("not max norms")
         WaveletAdaptor<D, T> adaptor(prec, maxScale, absPrec);
         builder.build(out, calculator, adaptor, maxIter);
     }
+    // MSG_INFO("bim 4");
 
     Timer trans_t;
     out.mwTransform(BottomUp);
     out.calcSquareNorm();
     trans_t.stop();
+    // MSG_INFO("out norm");
 
     Timer clean_t;
     for (int i = 0; i < inp.size(); i++) {
@@ -129,6 +138,7 @@ template <int D, typename T> void multiply(double prec, FunctionTree<D, T> &out,
         tree.deleteGenerated();
     }
     clean_t.stop();
+    // MSG_INFO("bim 6");
 
     print::time(10, "Time transform", trans_t);
     print::time(10, "Time cleaning", clean_t);

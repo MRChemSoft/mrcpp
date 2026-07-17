@@ -32,6 +32,10 @@ using namespace Eigen;
 
 namespace mrcpp {
 
+
+// ---- Structure to hold the data of the CompFunction ----
+// This structure holds the data of the CompFunction, such as the number of components, rank, conjugate, etc.
+// It is used to define the properties of the multicomponent function.
 template <int D> struct CompFunctionData {
     // additional data that describe the overall multicomponent function (defined by user):
     // occupancy, quantum number, norm, etc.
@@ -46,14 +50,15 @@ template <int D> struct CompFunctionData {
     double CompFd2{0.0};
     double CompFd3{0.0};
     // additional data that describe each component (defined by user):
-    // occupancy, quantum number, norm, etc.
+    // occupancy, quantum number, spin, etc.
     // Note: defined with fixed size to ease copying and MPI send
     int n1[4]{0, 0, 0, 0}; // 0: neutral. otherwise different values are orthogonal to each other (product = 0)
     int n2[4]{0, 0, 0, 0};
     int n3[4]{0, 0, 0, 0};
     int n4[4]{0, 0, 0, 0};
-    // multiplicative scalar for the function. So far only actively used to take care of imag factor in momentum operator.
+    // multiplicative scalar for the function. 
     ComplexDouble c1[4]{{1.0, 0.0}, {1.0, 0.0}, {1.0, 0.0}, {1.0, 0.0}};
+    // data to contain occupancy numbers, for example.
     double d1[4]{0.0, 0.0, 0.0, 0.0};
     double d2[4]{0.0, 0.0, 0.0, 0.0};
     double d3[4]{0.0, 0.0, 0.0, 0.0};
@@ -70,6 +75,8 @@ template <int D> struct CompFunctionData {
     int Nchunks[4]{0, 0, 0, 0}; // number of chunks of each component tree
 };
 
+
+// --- Class to hold the pointer to the tree and the data of the CompFunction ---
 template <int D> class TreePtr final {
 public:
     explicit TreePtr(bool share)
@@ -116,12 +123,17 @@ protected:
     SharedMemory<ComplexDouble> *shared_mem_cplx;
 };
 
+// --- Class to hold the CompFunction ---
+// This class is a multicomponent function that can hold multiple components, each represented by a FunctionTree.
+// It is used to represent spinors in a general way, or other multicomponent functions.
 template <int D> class CompFunction {
 public:
     CompFunction(MultiResolutionAnalysis<D> &mra);
+    CompFunction(MultiResolutionAnalysis<D> &mra, int nComponents);
     CompFunction();
-    CompFunction(int n1);
-    CompFunction(int n1, bool share);
+    CompFunction(int n1, int nComponents = 1);
+    // CompFunction(std::string spin, int nComponents = 1, std::string spin_type="Large"); 
+    CompFunction(int n1, bool share, int nComponents = 1);
     CompFunction(const CompFunctionData<D> &indata, bool alloc = false);
     CompFunction(const CompFunction<D> &compfunc);
     CompFunction(CompFunction<D> &&compfunc);
@@ -131,6 +143,7 @@ public:
     FunctionTree<D, double> **CompD;        //  = func_ptr->real so that we can use name CompD instead of func_ptr.real
     FunctionTree<D, ComplexDouble> **CompC; // = func_ptr->cplx
 
+    std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
     std::string name;
 
     // additional data that describe each component (defined by user):
@@ -147,7 +160,7 @@ public:
     int share() const { return func_ptr->data.shared; }
     int *Nchunks() const { return func_ptr->data.Nchunks; } // number of chunks of each component tree
     ComplexDouble getFac() const { return func_ptr->data.c1[0]; } // returns the overall multiplicative factor
-    void setFac(ComplexDouble fac) { func_ptr->data.c1[0] = fac; } // sets the overall multiplicative factor
+    void setFac(ComplexDouble fac, int i = 0) { func_ptr->data.c1[i] = fac; } // sets the overall multiplicative factor
 
     CompFunction paramCopy(bool alloc = false) const;
     ComplexDouble integrate() const;
@@ -161,11 +174,13 @@ public:
     ComplexDouble integrateSide(int dim, bool positiveSide) const;  //LUCA: This should rather become a utility function instead of being a member function, as it is not required for the "exsistence" of the CompFunction, but only a specific operation on it. 
     double norm() const;
     double getSquareNorm() const;
+    void calcSquareNorm();
     void alloc(int nalloc = 1, bool zero = true);
-    void alloc_comp(int i = 0); // allocate one specific component
+    void alloc_comp(int i = 0, bool zero = true); // allocate one specific component
     void setReal(FunctionTree<D, double> *tree, int i = 0);
     void setCplx(FunctionTree<D, ComplexDouble> *tree, int i = 0);
     void setRank(int i) { func_ptr->rank = i; };
+    void setNcomp(int i) {func_ptr->data.Ncomp = i;};
     const int getRank() const { return func_ptr->rank; };
     void add(ComplexDouble c, CompFunction<D> inp);
 
@@ -192,12 +207,13 @@ public:
     void dagger();
     FunctionTree<D, double> &imag(int i = 0);             // does not make sense now
     const FunctionTree<D, double> &imag(int i = 0) const; // does not make sense now
-    std::shared_ptr<mrcpp::TreePtr<D>> func_ptr;
+    
     void upgradeToComplex();
 };
 
 template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp);
 template <int D> void deep_copy(CompFunction<D> *out, const CompFunction<D> &inp);
+// void CopyToComplex(CompFunction<3> &out, const CompFunction<3> &inp);
 template <int D> void deep_copy(CompFunction<D> &out, const CompFunction<D> &inp);
 template <int D> void add(CompFunction<D> &out, ComplexDouble a, 
                           CompFunction<D> inp_a, ComplexDouble b, 
@@ -224,33 +240,48 @@ template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, double> &in
 template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, 
                                RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine = 0, 
                                bool conjugate = false);
-template <int D> void make_density(CompFunction<D> &out, CompFunction<D> inp, double prec);
-template <int D> ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket);
+template <int D> void make_density(CompFunction<D> &out, CompFunction<D> &inp, double prec, std::vector<bool> contrib = std::vector<bool>(4, true)); 
+//multiplication rules for Potentials on spinors or other exclusively single component functions with CompFunctions
+template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, FunctionTree<D, double> &inp_b, double prec, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
+template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, FunctionTree<D, ComplexDouble> &inp_b, double prec, bool absPrec = false, bool useMaxNorms = false, bool conjugate = false);
+template <int D> ComplexDouble dot(const CompFunction<D> &bra,const CompFunction<D> &ket);
 template <int D> double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket);
-void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec); //LUCA Why is this only defined for D=3? It should be defined for any D.
+void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec, int comp = 0); //LUCA Why is this only defined for D=3? It should be defined for any D.
 void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec); //overload of project is not always recognized by the compiler
-void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec);
+void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec, int comp = 0);
 void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec); //overload of project is not always recognized by the compiler
-template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec);
-template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec);
+template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec, int nComp = 1);
+template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec, int nComp = 1);
 template <int D> void orthogonalize(double prec, CompFunction<D> &Bra, CompFunction<D> &Ket);
 
+// --- Class to hold a vector of CompFunction ---
+// This class can be used to represent a collection of CompFunction objects, for instance the set of spinors representing the orbitals of an atom/molecule.
 class CompFunctionVector : public std::vector<CompFunction<3>> {//LUCA: Why is this only defined for D=3? It should be defined for any D.
 public:
     CompFunctionVector(int N = 0);
-    MultiResolutionAnalysis<3> *vecMRA;
+    std::shared_ptr<MultiResolutionAnalysis<3>> vecMRA;
     void distribute();
+
+    // CompFunction<3> operator[](int i) const;
 };
+
+// void project(CompFunctionVector &out, std::function<double(const Coord<3> &r)> f, int index, double prec);
 
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, double prec = -1.0);
 void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector &Psi, double prec = -1.0);
-void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1);
-CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CompFunction<3> *Func = nullptr, int nrefine = 1, bool all = false);
+// void rotate(CompFunctionVector &Phiin, const ComplexMatrix &U, CompFunctionVector &Psiout, double prec = -1.0);
+void save_nodes(CompFunctionVector &Phi, mrcpp::FunctionTree<3, double> &refTree, BankAccount &account, int sizes = -1, int comp = 1);
+// CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec = -1.0, CompFunction<3> *Func = nullptr, int nrefine = 1, bool all = false);
+// CompFunctionVector multiply_one_comp(CompFunctionVector &Phi, RepresentableFunction<3> &f, double prec, CompFunction<3> *Func, int nrefine=0, bool all = false, int comp=0);
+
 void SetdefaultMRA(MultiResolutionAnalysis<3> *MRA);
 ComplexVector dot(CompFunctionVector &Bra, CompFunctionVector &Ket);
 ComplexMatrix calc_lowdin_matrix(CompFunctionVector &Phi);
+
+
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet);
 ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &Ket);
 void orthogonalize(double prec, CompFunctionVector &Bra, CompFunctionVector &Ket);
 
+// void add(CompFunctionVector &out, ComplexVector c, CompFunctionVector &inp);
 } // namespace mrcpp

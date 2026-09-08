@@ -67,49 +67,31 @@ namespace mrcpp {
  * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
  */
 template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time)
-        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) // One can use ConvolutionOperator instead as well
-{
+TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower)
+        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
+    if (max_Jpower <= 0) MSG_ABORT("max_Jpower must be positive");
+    if (finest_scale != Adaptive and finest_scale < mra.getRootScale()) MSG_ABORT("finest_scale is above the root scale");
+
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
 
+    // The first argument counts cross-correlation matrices, not power integrals:
+    // applyCcc consumes one matrix per two power-integral orders, so 30 covers
+    // max_Jpower up to 60. It is deliberately not tied to max_Jpower.
     SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType());
     this->cross_correlation = &cross_correlation;
 
-    initialize(time, 30);
+    // Adaptive is the sentinel for "no uniform scale given".
+    if (finest_scale == Adaptive) {
+        initialize(time, max_Jpower);
+    } else {
+        initialize(time, finest_scale, max_Jpower);
+    }
     this->cross_correlation = nullptr; // the object above dies with this scope
 
     this->initOperExp(1); // one separable term
     Printer::setPrintLevel(oldlevel);
 }
-
-/** @brief A uniform constructor for TimeEvolutionOperator class.
- *
- * @param[in] mra: MRA.
- * @param[in] prec: precision.
- * @param[in] time: the time moment (step).
- * @param[in] finest_scale: the operator tree is constructed uniformly down to this scale.
- * @param[in] max_Jpower: maximum amount of power integrals used.
- *
- * @details Constructs the complete complex Schrodinger semigroup on a uniform grid.
- *
- */
-template <int D>
-TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower)
-        : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
-    int oldlevel = Printer::setPrintLevel(0);
-    this->setBuildPrec(prec);
-
-    SchrodingerEvolution_CrossCorrelation cross_correlation(30, mra.getOrder(), mra.getScalingBasis().getScalingType());
-    this->cross_correlation = &cross_correlation;
-
-    initialize(time, finest_scale, max_Jpower);
-    this->cross_correlation = nullptr; // the object above dies with this scope
-
-    this->initOperExp(1);
-    Printer::setPrintLevel(oldlevel);
-}
-
 /** @brief Creates the complex operator
  *
  * @details Adaptive down to scale \f$ N = 18 \f$.

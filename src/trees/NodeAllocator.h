@@ -42,7 +42,7 @@ namespace mrcpp {
 
 template <int D, typename T> class NodeAllocator final {
 public:
-    NodeAllocator(OperatorTree *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
+    NodeAllocator(OperatorTree<T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
     NodeAllocator(FunctionTree<D, T> *tree, SharedMemory<T> *mem, int coefsPerNode, int nodesPerChunk);
     NodeAllocator(const NodeAllocator<D, T> &tree) = delete;
     NodeAllocator<D, T> &operator=(const NodeAllocator<D, T> &tree) = delete;

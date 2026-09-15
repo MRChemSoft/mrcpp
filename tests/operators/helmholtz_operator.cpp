@@ -101,7 +101,7 @@ TEST_CASE("Helmholtz' kernel", "[init_helmholtz], [helmholtz_operator], [mw_oper
                     FunctionTree<1> &kern_tree = get_func(K, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
-                    auto oper_tree = std::make_unique<OperatorTree>(oper_mra, ccc_prec);
+                    auto oper_tree = std::make_unique<OperatorTree<double>>(oper_mra, ccc_prec);
                     builder.build(*oper_tree, calculator, adaptor, -1);
                     oper_tree->setupOperNodeCache();
 

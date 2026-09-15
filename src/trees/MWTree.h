@@ -150,7 +150,7 @@ public:
 
     friend class MWNode<D, T>;
     friend class FunctionNode<D, T>;
-    friend class OperatorNode;
+    friend class OperatorNode<T>;
     friend class TreeBuilder<D, T>;
     friend class NodeAllocator<D, T>;
 

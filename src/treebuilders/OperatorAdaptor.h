@@ -29,13 +29,13 @@
 
 namespace mrcpp {
 
-class OperatorAdaptor final : public WaveletAdaptor<2> {
+template <typename T = double> class OperatorAdaptor final : public WaveletAdaptor<2, T> {
 public:
     OperatorAdaptor(double pr, int ms, bool ap = false)
-            : WaveletAdaptor<2>(pr, ms, ap) {}
+            : WaveletAdaptor<2, T>(pr, ms, ap) {}
 
 protected:
-    bool splitNode(const MWNode<2> &node) const override {
+    bool splitNode(const MWNode<2, T> &node) const override {
         const auto &idx = node.getNodeIndex();
         bool chkTransl = (idx[0] == 0 or idx[1] == 0);
 

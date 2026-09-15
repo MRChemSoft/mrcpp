@@ -56,7 +56,7 @@ template <int D> class MultiResolutionAnalysis;
 
 template <int D, typename T = double> class MWTree;
 template <int D, typename T = double> class FunctionTree;
-class OperatorTree;
+template <typename T> class OperatorTree;
 
 template <int D, typename T = double> class NodeAllocator;
 
@@ -64,7 +64,7 @@ template <int D, typename T = double> class MWNode;
 template <int D, typename T = double> class FunctionNode;
 template <int D = 3> class CompFunction;
 class ComplexFunction;
-class OperatorNode;
+template <typename T> class OperatorNode;
 
 template <int D> class IdentityConvolution;
 template <int D> class DerivativeConvolution;

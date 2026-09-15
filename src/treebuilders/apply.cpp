@@ -24,6 +24,8 @@
  */
 
 #include "apply.h"
+
+#include <type_traits>
 #include "ConvolutionCalculator.h"
 #include "CopyAdaptor.h"
 #include "DefaultCalculator.h"
@@ -67,6 +69,9 @@ template <int D, typename T> void apply_on_unit_cell(bool inside, double prec, F
  */
 template <int D, typename T> void apply(double prec, FunctionTree<D, T> &out, ConvolutionOperator<D> &oper, FunctionTree<D, T> &inp, int maxIter, bool absPrec) {
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
+    if constexpr (std::is_same<T, double>::value) {
+        if (oper.iscomplex()) MSG_ABORT("Complex operator on a real function tree: project the input as ComplexDouble first");
+    }
 
     Timer pre_t;
     oper.calcBandWidths(prec);
@@ -122,10 +127,18 @@ template <int D> void apply(double prec, CompFunction<D> &out, ConvolutionOperat
     for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
         for (int ocomp = 0; ocomp < 4; ocomp++) {
             if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                if (inp.isreal()) {
+                if (inp.isreal() and oper.isreal()) {
                     if (out.CompD[ocomp] == nullptr) out.alloc_comp(ocomp);
                     apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                     if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp].real()); }
+                } else if (inp.isreal()) {
+                    // Promote a real input before applying a complex operator,
+                    // as the DerivativeOperator overload below does
+                    out.defcomplex();
+                    if (out.CompC[ocomp] == nullptr) out.alloc_comp(ocomp);
+                    std::unique_ptr<FunctionTree<D, ComplexDouble>> inp_c(inp.CompD[icomp]->CopyTreeToComplex());
+                    apply(prec, *out.CompC[ocomp], oper, *inp_c, maxIter, absPrec);
+                    if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompC[ocomp]->rescale(metric[icomp][ocomp]); }
                 } else {
                     if (out.CompC[ocomp] == nullptr) out.alloc_comp(ocomp);
                     apply(prec, *out.CompC[ocomp], oper, *inp.CompC[icomp], maxIter, absPrec);

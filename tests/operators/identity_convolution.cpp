@@ -83,7 +83,7 @@ TEST_CASE("Initialize identity convolution operator", "[init_identity], [identit
                 OperatorAdaptor adaptor(ccc_prec, oper_mra.getMaxScale());
                 CrossCorrelationCalculator calculator(kern_tree);
 
-                OperatorTree oper_tree(oper_mra, ccc_prec);
+                OperatorTree<double> oper_tree(oper_mra, ccc_prec);
                 builder.build(oper_tree, calculator, adaptor, -1);
                 oper_tree.setupOperNodeCache();
 

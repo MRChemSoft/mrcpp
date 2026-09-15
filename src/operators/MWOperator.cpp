@@ -33,30 +33,64 @@ using namespace Eigen;
 namespace mrcpp {
 
 template <int D> void MWOperator<D>::initOperExp(int M) {
-    if (this->raw_exp.size() < static_cast<size_t>(M)) MSG_ABORT("Incompatible raw expansion");
-    this->oper_exp.clear();
-    for (int m = 0; m < M; m++) {
-        std::array<OperatorTree *, D> otrees;
-        otrees.fill(nullptr);
-        this->oper_exp.push_back(otrees);
-    }
+    // The expansion is held in one scalar or the other, never both.
+    if (not this->raw_exp.empty() and not this->raw_exp_cplx.empty()) MSG_ABORT("Both a real and a complex raw expansion");
 
-    // Sets up an isotropic operator with the first M raw terms in all direction
-    for (int i = 0; i < M; i++)
-        for (int d = 0; d < D; d++) assign(i, d, this->raw_exp[i].get());
+    if (iscomplex()) {
+        if (this->raw_exp_cplx.size() < static_cast<size_t>(M)) MSG_ABORT("Incompatible raw expansion");
+        this->oper_exp_cplx.clear();
+        this->oper_exp.clear();
+        for (int m = 0; m < M; m++) {
+            std::array<OperatorTree<ComplexDouble> *, D> otrees;
+            otrees.fill(nullptr);
+            this->oper_exp_cplx.push_back(otrees);
+        }
+        for (int i = 0; i < M; i++)
+            for (int d = 0; d < D; d++) assign(i, d, this->raw_exp_cplx[i].get());
+    } else {
+        if (this->raw_exp.size() < static_cast<size_t>(M)) MSG_ABORT("Incompatible raw expansion");
+        this->oper_exp.clear();
+        this->oper_exp_cplx.clear();
+        for (int m = 0; m < M; m++) {
+            std::array<OperatorTree<double> *, D> otrees;
+            otrees.fill(nullptr);
+            this->oper_exp.push_back(otrees);
+        }
+        for (int i = 0; i < M; i++)
+            for (int d = 0; d < D; d++) assign(i, d, this->raw_exp[i].get());
+    }
 }
 
-template <int D> OperatorTree &MWOperator<D>::getComponent(int i, int d) {
-    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
-    if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
-    if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
+template <int D> const BandWidth &MWOperator<D>::getBandWidth(int i, int d) const {
+    if (iscomplex()) return getComponentCplx(i, d).getBandWidth();
+    return getComponent(i, d).getBandWidth();
+}
+
+template <int D> OperatorTree<ComplexDouble> &MWOperator<D>::getComponentCplx(int i, int d) {
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp_cplx.size()) MSG_ABORT("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ABORT("Index out of bounds");
+    if (this->oper_exp_cplx[i][d] == nullptr) MSG_ABORT("Invalid component");
+    return *this->oper_exp_cplx[i][d];
+}
+
+template <int D> const OperatorTree<ComplexDouble> &MWOperator<D>::getComponentCplx(int i, int d) const {
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp_cplx.size()) MSG_ABORT("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ABORT("Index out of bounds");
+    if (this->oper_exp_cplx[i][d] == nullptr) MSG_ABORT("Invalid component");
+    return *this->oper_exp_cplx[i][d];
+}
+
+template <int D> OperatorTree<double> &MWOperator<D>::getComponent(int i, int d) {
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ABORT("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ABORT("Dimension out of bounds");
+    if (this->oper_exp[i][d] == nullptr) MSG_ABORT("Invalid component");
     return *this->oper_exp[i][d];
 }
 
-template <int D> const OperatorTree &MWOperator<D>::getComponent(int i, int d) const {
-    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ERROR("Index out of bounds");
-    if (d < 0 or d >= D) MSG_ERROR("Dimension out of bounds");
-    if (this->oper_exp[i][d] == nullptr) MSG_ERROR("Invalid component");
+template <int D> const OperatorTree<double> &MWOperator<D>::getComponent(int i, int d) const {
+    if (i < 0 or static_cast<size_t>(i) >= this->oper_exp.size()) MSG_ABORT("Index out of bounds");
+    if (d < 0 or d >= D) MSG_ABORT("Dimension out of bounds");
+    if (this->oper_exp[i][d] == nullptr) MSG_ABORT("Invalid component");
     return *this->oper_exp[i][d];
 }
 
@@ -73,35 +107,46 @@ template <int D> int MWOperator<D>::getMaxBandWidth(int depth) const {
 template <int D> void MWOperator<D>::clearBandWidths() {
     for (auto &i : this->oper_exp)
         for (int d = 0; d < D; d++) i[d]->clearBandWidth();
+    for (auto &i : this->oper_exp_cplx)
+        for (int d = 0; d < D; d++) i[d]->clearBandWidth();
 }
 
 template <int D> void MWOperator<D>::calcBandWidths(double prec) {
     int maxDepth = 0;
     // First compute BandWidths and find depth of the deepest component
-    for (auto &i : this->oper_exp) {
-        for (int d = 0; d < D; d++) {
-            OperatorTree &oTree = *i[d];
-            oTree.calcBandWidth(prec);
-            const BandWidth &bw = oTree.getBandWidth();
-            int depth = bw.getDepth();
-            if (depth > maxDepth) maxDepth = depth;
+    auto calc_depth = [&](auto &exp) {
+        for (auto &i : exp) {
+            for (int d = 0; d < D; d++) {
+                auto &oTree = *i[d];
+                oTree.calcBandWidth(prec);
+                const BandWidth &bw = oTree.getBandWidth();
+                int depth = bw.getDepth();
+                if (depth > maxDepth) maxDepth = depth;
+            }
         }
-    }
+    };
+    calc_depth(this->oper_exp);
+    calc_depth(this->oper_exp_cplx);
+
     this->band_max = std::vector<int>(maxDepth + 1, -1);
 
     // Find the largest effective bandwidth at each scale
-    for (auto &i : this->oper_exp) {
-        for (int d = 0; d < D; d++) {
-            const OperatorTree &oTree = *i[d];
-            const BandWidth &bw = oTree.getBandWidth();
-            for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
-                for (int j = 0; j < 4; j++) {          // component loop
-                    int w = bw.getWidth(n, j);
-                    if (w > this->band_max[n]) this->band_max[n] = w;
+    auto fold_widths = [&](const auto &exp) {
+        for (const auto &i : exp) {
+            for (int d = 0; d < D; d++) {
+                const auto &oTree = *i[d];
+                const BandWidth &bw = oTree.getBandWidth();
+                for (int n = 0; n <= bw.getDepth(); n++) { // scale loop
+                    for (int j = 0; j < 4; j++) {          // component loop
+                        int w = bw.getWidth(n, j);
+                        if (w > this->band_max[n]) this->band_max[n] = w;
+                    }
                 }
             }
         }
-    }
+    };
+    fold_widths(this->oper_exp);
+    fold_widths(this->oper_exp_cplx);
     println(20, "  Maximum bandwidths:");
     for (auto bw : this->band_max) println(20, bw);
     println(20, std::endl);

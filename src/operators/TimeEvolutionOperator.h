@@ -51,8 +51,28 @@ template <int D>
 class TimeEvolutionOperator : public ConvolutionOperator<D> // One can use ConvolutionOperator instead as well
 {
 public:
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30);
-    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30);
+    /// @brief Pass as `finest_scale` to refine adaptively instead of uniformly.
+    static constexpr int Adaptive = -1;
+
+    /** @brief Semigroup \f$ \exp(i t \partial_x^2) \f$.
+     *
+     * @param[in] finest_scale: uniform refinement down to this scale;
+     * `Adaptive` (the default) refines adaptively.
+     * @param[in] max_Jpower: number of power integrals used in the expansion.
+     * Construction cost is linear in this and there is no negligibility
+     * truncation, so the series is always computed in full. Convergence is
+     * slower for *small* time steps, since the recurrence coefficients scale
+     * as 1/(time*4^n): measured at order 4 and prec 1e-7, six powers suffice
+     * for time steps down to 1e-3, and the default leaves ample margin.
+     *
+     * @note Applying this to a real `FunctionTree` aborts; project the input as
+     * `ComplexDouble` first, or let the `CompFunction` overload promote it.
+     */
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale = Adaptive, int max_Jpower = 30);
+
+    /// @brief Rejects the legacy signatures carrying the removed `imaginary` argument.
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, bool imaginary, int max_Jpower = 30) = delete;
+    TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, bool imaginary, int max_Jpower = 30) = delete;
     TimeEvolutionOperator(const TimeEvolutionOperator &oper) = delete;
     TimeEvolutionOperator &operator=(const TimeEvolutionOperator &oper) = delete;
     virtual ~TimeEvolutionOperator() = default;
@@ -60,9 +80,9 @@ public:
     double getBuildPrec() const { return this->build_prec; }
 
 protected:
-    void initialize(double time, int finest_scale, bool imaginary, int max_Jpower);
-    void initialize(double time, bool imaginary, int max_Jpower);
-    void initializeSemiUniformly(double time, bool imaginary, int max_Jpower);
+    void initialize(double time, int finest_scale, int max_Jpower);
+    void initialize(double time, int max_Jpower);
+    void initializeSemiUniformly(double time, int max_Jpower);
 
     void setBuildPrec(double prec) { this->build_prec = prec; }
 

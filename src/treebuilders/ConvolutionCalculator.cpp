@@ -24,6 +24,8 @@
  */
 
 #include "ConvolutionCalculator.h"
+
+#include <type_traits>
 #include "operators/ConvolutionOperator.h"
 #include "operators/OperatorState.h"
 #include "trees/BandWidth.h"
@@ -105,8 +107,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::printTimers() con
 template <int D, typename T> void ConvolutionCalculator<D, T>::initBandSizes() {
     for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension!
-        const OperatorTree &oTree = this->oper->getComponent(i, 0);
-        const BandWidth &bw = oTree.getBandWidth();
+        const BandWidth &bw = this->oper->getBandWidth(i, 0);
         auto *bsize = new MatrixXi(this->maxDepth, this->nComp2 + 1);
         bsize->setZero();
         for (int j = 0; j < this->maxDepth; j++) { calcBandSizeFactor(*bsize, j, bw); }
@@ -279,8 +280,7 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperComp(Ope
     int o_depth = os.fNode->getScale() - this->oper->getOperatorRoot();
     for (size_t i = 0; i < this->oper->size(); i++) {
         // IMPORTANT: only 0-th dimension
-        const OperatorTree &ot = this->oper->getComponent(i, 0);
-        const BandWidth &bw = ot.getBandWidth();
+        const BandWidth &bw = this->oper->getBandWidth(i, 0);
         if (os.getMaxDeltaL() > bw.getMaxWidth(o_depth)) { continue; }
         os.fThreshold = getBandSizeFactor(i, o_depth, os) * fNorm;
         applyOperator(i, os);
@@ -304,9 +304,12 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
 
     double oNorm = 1.0;
     double **oData = os.getOperData();
+    ComplexDouble **oData_cplx = os.getOperDataCplx();
+
+    // Select the active coefficient representation.
+    const bool oper_cplx = this->oper->iscomplex();
 
     for (int d = 0; d < D; d++) {
-        auto &oTree = this->oper->getComponent(i, d);
         int oTransl = fIdx[d] - gIdx[d];
 
         //  The following will check the actual band width in each direction.
@@ -314,12 +317,23 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::applyOperator(int
         int a = (os.gt & (1 << d)) >> d;
         int b = (os.ft & (1 << d)) >> d;
         int idx = (a << 1) + b;
-        if (oTree.isOutsideBand(oTransl, o_depth, idx)) { return; }
-
-        const OperatorNode &oNode = oTree.getNode(o_depth, oTransl);
         int oIdx = os.getOperIndex(d);
-        oNorm *= oNode.getComponentNorm(oIdx);
-        oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
+
+        if (oper_cplx) {
+            auto &oTree = this->oper->getComponentCplx(i, d);
+            if (oTree.isOutsideBand(oTransl, o_depth, idx)) { return; }
+            const OperatorNode<ComplexDouble> &oNode = oTree.getNode(o_depth, oTransl);
+            oNorm *= oNode.getComponentNorm(oIdx);
+            oData[d] = nullptr;
+            oData_cplx[d] = const_cast<ComplexDouble *>(oNode.getCoefs()) + oIdx * os.kp1_2;
+        } else {
+            auto &oTree = this->oper->getComponent(i, d);
+            if (oTree.isOutsideBand(oTransl, o_depth, idx)) { return; }
+            const OperatorNode<double> &oNode = oTree.getNode(o_depth, oTransl);
+            oNorm *= oNode.getComponentNorm(oIdx);
+            oData[d] = const_cast<double *>(oNode.getCoefs()) + oIdx * os.kp1_2;
+            oData_cplx[d] = nullptr;
+        }
     }
     double upperBound = oNorm * os.fThreshold;
     if (upperBound > os.gThreshold) {
@@ -333,6 +347,7 @@ operator component to a f-node in a n-dimensional tesor space. */
 template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperComp(OperatorState<D, T> &os) {
     T **aux = os.getAuxData();
     double **oData = os.getOperData();
+    ComplexDouble **oData_cplx = os.getOperDataCplx();
     /*
 #ifdef HAVE_BLAS
     double mult = 0.0;
@@ -363,11 +378,22 @@ template <int D, typename T> void ConvolutionCalculator<D, T>::tensorApplyOperCo
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> f(aux[i], os.kp1, os.kp1_dm1);
         Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>> g(aux[i + 1], os.kp1_dm1, os.kp1);
         if (oData[i] != nullptr) {
-            Eigen::Map<MatrixXd> op(oData[i], os.kp1, os.kp1);
+            Eigen::Map<const MatrixXd> op(oData[i], os.kp1, os.kp1);
             if (i == D - 1) { // Last dir: Add up into g
                 g.noalias() += f.transpose() * op;
             } else {
                 g.noalias() = f.transpose() * op;
+            }
+        } else if (oData_cplx[i] != nullptr) {
+            if constexpr (std::is_same<T, ComplexDouble>::value) {
+                Eigen::Map<const Eigen::MatrixXcd> op(oData_cplx[i], os.kp1, os.kp1);
+                if (i == D - 1) {
+                    g.noalias() += f.transpose() * op;
+                } else {
+                    g.noalias() = f.transpose() * op;
+                }
+            } else {
+                NOT_REACHED_ABORT; // guarded in apply: real tree, complex operator
             }
         } else {
             // Identity operator in direction i

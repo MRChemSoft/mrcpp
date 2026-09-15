@@ -2,10 +2,12 @@
 #include "MRCPP/Plotter"
 #include "functions/special_functions.h"
 #include "operators/TimeEvolutionOperator.h"
-#include "treebuilders/complex_apply.h"
+#include "treebuilders/apply.h"
 #include <MRCPP/MWOperators>
 #include <MRCPP/Printer>
 #include <MRCPP/Timer>
+
+#include <memory>
 
 const auto min_scale = 0;
 const auto max_depth = 25;
@@ -56,11 +58,9 @@ int main(int argc, char **argv) {
     mrcpp::print::header(0, "Building operator");
     mrcpp::print::footer(0, timer, 2);
 
-    // Time evolution operatror Exp(delta_t)
-    mrcpp::TimeEvolutionOperator<1> ReExp(MRA, prec, delta_t, finest_scale, false);
-    println(0, ReExp.getComponent(0, 0));
-    mrcpp::TimeEvolutionOperator<1> ImExp(MRA, prec, delta_t, finest_scale, true);
-    println(0, ImExp.getComponent(0, 0));
+    // Time evolution operator Exp(delta_t)
+    mrcpp::TimeEvolutionOperator<1> Exp(MRA, prec, delta_t, finest_scale);
+    println(0, Exp.getComponentCplx(0, 0));
 
     mrcpp::print::header(0, "Preparing analytical solution");
     mrcpp::print::footer(0, timer, 2);
@@ -70,56 +70,31 @@ int main(int argc, char **argv) {
     double x0 = 0.5;
 
     // Functions f(x) = psi(x, t1) and g(x) = psi(x, t2)
-    auto Re_f = [sigma, x0, t = t1](const mrcpp::Coord<1> &r) -> double { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).real(); };
-    auto Im_f = [sigma, x0, t = t1](const mrcpp::Coord<1> &r) -> double { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).imag(); };
-    auto Re_g = [sigma, x0, t = t2](const mrcpp::Coord<1> &r) -> double { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).real(); };
-    auto Im_g = [sigma, x0, t = t2](const mrcpp::Coord<1> &r) -> double { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma).imag(); };
+    auto f = [sigma, x0, t = t1](const mrcpp::Coord<1> &r) -> ComplexDouble { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma); };
+    auto g = [sigma, x0, t = t2](const mrcpp::Coord<1> &r) -> ComplexDouble { return mrcpp::free_particle_analytical_solution(r[0], x0, t, sigma); };
 
     // Projecting functions
-    mrcpp::FunctionTree<1> Re_f_tree(MRA);
-    mrcpp::project<1, double>(prec, Re_f_tree, Re_f);
-    mrcpp::FunctionTree<1> Im_f_tree(MRA);
-    mrcpp::project<1, double>(prec, Im_f_tree, Im_f);
-    mrcpp::FunctionTree<1> Re_g_tree(MRA);
-    mrcpp::project<1, double>(prec, Re_g_tree, Re_g);
-    mrcpp::FunctionTree<1> Im_g_tree(MRA);
-    mrcpp::project<1, double>(prec, Im_g_tree, Im_g);
+    mrcpp::FunctionTree<1, ComplexDouble> f_tree(MRA);
+    mrcpp::project<1, ComplexDouble>(prec, f_tree, f);
+    mrcpp::FunctionTree<1, ComplexDouble> g_tree(MRA);
+    mrcpp::project<1, ComplexDouble>(prec, g_tree, g);
 
-    // Output function trees
-    mrcpp::FunctionTree<1> Re_fout_tree(MRA);
-    mrcpp::FunctionTree<1> Im_fout_tree(MRA);
-
-    // Complex objects for use in apply()
-    mrcpp::ComplexObject<mrcpp::ConvolutionOperator<1>> E(ReExp, ImExp);
-    mrcpp::ComplexObject<mrcpp::FunctionTree<1>> input(Re_f_tree, Im_f_tree);
-    mrcpp::ComplexObject<mrcpp::FunctionTree<1>> output(Re_fout_tree, Im_fout_tree);
+    // Output function tree
+    mrcpp::FunctionTree<1, ComplexDouble> fout_tree(MRA);
 
     mrcpp::print::header(0, "Applying operator");
     mrcpp::print::footer(0, timer, 2);
 
     // Apply operator Exp(delta_t) f(x)
-    mrcpp::apply(prec, output, E, input);
+    mrcpp::apply<1, ComplexDouble>(prec, fout_tree, Exp, f_tree, -1, false);
 
     mrcpp::print::header(0, "Checking the result on analytical solution");
     mrcpp::print::footer(0, timer, 2);
 
     // Check g(x) = Exp(delta_t) f(x)
-    mrcpp::FunctionTree<1> Re_error(MRA); // = Re_fout_tree - Re_g_tree
-    mrcpp::FunctionTree<1> Im_error(MRA); // = Im_fout_tree - Im_g_tree
-
-    // Re_error = Re_fout_tree - Re_g_tree
-    add(prec, Re_error, 1.0, Re_fout_tree, -1.0, Re_g_tree);
-    auto Re_integral = Re_error.integrate();
-    auto Re_sq_norm = Re_error.getSquareNorm();
-    mrcpp::print::value(0, "Integral of    Re(Exp(delta_t) f(x) - g(x)) =", Re_integral);
-    mrcpp::print::value(0, "Square norm of Re(Exp(delta_t) f(x) - g(x)) =", Re_sq_norm);
-
-    // Im_error = Im_fout_tree - Im_g_tree
-    add(prec, Im_error, 1.0, Im_fout_tree, -1.0, Im_g_tree);
-    auto Im_integral = Im_error.integrate();
-    auto Im_sq_norm = Im_error.getSquareNorm();
-    mrcpp::print::value(0, "Integral of    Im(Exp(delta_t) f(x) - g(x)) =", Im_integral);
-    mrcpp::print::value(0, "Square norm of Im(Exp(delta_t) f(x) - g(x)) =", Im_sq_norm);
+    mrcpp::FunctionTree<1, ComplexDouble> error(MRA);
+    mrcpp::add<1, ComplexDouble>(prec, error, {1.0, 0.0}, fout_tree, {-1.0, 0.0}, g_tree, -1, false, false);
+    mrcpp::print::value(0, "Square norm of Exp(delta_t) f(x) - g(x) =", error.getSquareNorm());
 
     mrcpp::print::header(0, "Saving plots to files");
     mrcpp::print::footer(0, timer, 2);
@@ -131,12 +106,15 @@ int main(int argc, char **argv) {
     mrcpp::Plotter<1> plot(o);
     plot.setRange(a);
 
-    plot.linePlot({nPts}, Re_error, "Re_error");   // Write to file Re_error.line
-    plot.linePlot({nPts}, Im_error, "Im_error");   // Write to file Im_error.line
-    plot.linePlot({nPts}, Re_f_tree, "Re_f_tree"); // Write to file Re_f_tree.line
-    plot.linePlot({nPts}, Im_f_tree, "Im_f_tree"); // Write to file Im_f_tree.line
-    plot.linePlot({nPts}, Re_g_tree, "Re_g_tree"); // Write to file Re_g_tree.line
-    plot.linePlot({nPts}, Im_g_tree, "Im_g_tree"); // Write to file Im_g_tree.line
+    // The caller owns the trees returned by Real() and Imag()
+    std::unique_ptr<mrcpp::FunctionTree<1, double>> Re_error(error.Real());
+    std::unique_ptr<mrcpp::FunctionTree<1, double>> Im_error(error.Imag());
+    std::unique_ptr<mrcpp::FunctionTree<1, double>> Re_f_tree(f_tree.Real());
+    std::unique_ptr<mrcpp::FunctionTree<1, double>> Im_f_tree(f_tree.Imag());
+    plot.linePlot({nPts}, *Re_error, "Re_error");   // Write to file Re_error.line
+    plot.linePlot({nPts}, *Im_error, "Im_error");   // Write to file Im_error.line
+    plot.linePlot({nPts}, *Re_f_tree, "Re_f_tree"); // Write to file Re_f_tree.line
+    plot.linePlot({nPts}, *Im_f_tree, "Im_f_tree"); // Write to file Im_f_tree.line
 
     mrcpp::print::footer(0, timer, 2);
     return 0;

@@ -55,7 +55,7 @@ template <int D> void PHOperator<D>::initialize() {
     int max_scale = this->MRA.getMaxScale();
     BandWidthAdaptor adaptor(bw, max_scale);
 
-    auto o_tree = std::make_unique<OperatorTree>(o_mra, MachineZero);
+    auto o_tree = std::make_unique<OperatorTree<double>>(o_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;

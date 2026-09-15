@@ -99,7 +99,7 @@ TEST_CASE("Initialize Poisson operator", "[init_poisson], [poisson_operator], [m
                     FunctionTree<1> &kern_tree = get_func(kern_vec, i);
                     CrossCorrelationCalculator calculator(kern_tree);
 
-                    auto oper_tree = std::make_unique<OperatorTree>(oper_mra, ccc_prec);
+                    auto oper_tree = std::make_unique<OperatorTree<double>>(oper_mra, ccc_prec);
                     builder.build(*oper_tree, calculator, adaptor, -1);
                     oper_tree->setupOperNodeCache();
 

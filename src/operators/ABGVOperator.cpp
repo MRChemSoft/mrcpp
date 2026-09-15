@@ -60,7 +60,7 @@ template <int D> void ABGVOperator<D>::initialize(double a, double b) {
     ABGVCalculator calculator(oper_mra.getScalingBasis(), a, b);
     BandWidthAdaptor adaptor(bw, oper_mra.getMaxScale());
 
-    auto o_tree = std::make_unique<OperatorTree>(oper_mra, MachineZero);
+    auto o_tree = std::make_unique<OperatorTree<double>>(oper_mra, MachineZero);
     builder.build(*o_tree, calculator, adaptor, -1);
 
     Timer trans_t;

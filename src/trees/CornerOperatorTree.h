@@ -31,17 +31,17 @@ namespace mrcpp {
 
 /** @class CornerOperatorTree
  *
- * @brief Special case of OperatorTree class
+ * @brief Special case of the OperatorTree class
  *
  * @details Tree structure of operators having corner matrices
  * \f$ A, B, C \f$ in the non-standard form.
  *
  */
-class CornerOperatorTree final : public OperatorTree {
+template <typename T = double> class CornerOperatorTree final : public OperatorTree<T> {
 public:
-    using OperatorTree::OperatorTree; // Import the single valid constructor from OperatorTree
-    CornerOperatorTree(const CornerOperatorTree &tree) = delete;
-    CornerOperatorTree &operator=(const CornerOperatorTree &tree) = delete;
+    using OperatorTree<T>::OperatorTree; // Import the single valid constructor
+    CornerOperatorTree(const CornerOperatorTree<T> &tree) = delete;
+    CornerOperatorTree<T> &operator=(const CornerOperatorTree<T> &tree) = delete;
     ~CornerOperatorTree() override = default;
 
     void calcBandWidth(double prec = -1.0) override;

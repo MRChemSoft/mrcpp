@@ -36,14 +36,16 @@ namespace mrcpp {
  *
  * @param[in] prec: Precision used for thresholding
  *
- * @details It is starting from \f$ l = 2^n \f$ and updating the band width value each time we encounter
- * considerable value while keeping decreasing down to \f$ l = 0 \f$, that stands for the distance to the diagonal.
- * This procedure is repeated for each matrix \f$ A, B \f$ and \f$ C \f$.
+ * @details For each depth and each of \f$ T, A, B, C \f$ two distances to the diagonal are
+ * recorded. The largest one with a considerable value is stored as the band width, which
+ * ConvolutionCalculator takes as an upper bound on \f$ |l| \f$ as for any OperatorTree.
+ * The smallest one is the edge below which the corner matrices vanish.
  *
  */
 template <typename T> void CornerOperatorTree<T>::calcBandWidth(double prec) {
     this->clearBandWidth();
     this->bandWidth = new BandWidth(this->getDepth());
+    this->innerWidth = MatrixXi::Constant(this->getDepth(), 4, -1);
 
     VectorXi max_transl;
     this->getMaxTranslations(max_transl);
@@ -52,36 +54,36 @@ template <typename T> void CornerOperatorTree<T>::calcBandWidth(double prec) {
     double thrs = std::max(MachinePrec, prec / 10.0); // should be enough due to oscillating behaviour of corner matrix elements (it's affected by polynomial order)
 
     for (int depth = 0; depth < this->getDepth(); depth++) {
-        int l = (1 << depth) - 1;
-        this->bandWidth->setWidth(depth, 0, l);
-        bool done = false;
-
-        while (not done) {
-            done = true;
-            MWNode<2, T> *node = this->findNode(NodeIndex<2>(depth, {l, 0}));
-            for (int k = 1; k < 4; k++) {
-                if ((node != nullptr) && (node->getComponentNorm(k) > thrs)) {
+        for (int l = 0; l <= max_transl[depth]; l++) {
+            const MWNode<2, T> &node = this->getNode(depth, l);
+            for (int k = 0; k < 4; k++) {
+                if (node.getComponentNorm(k) > thrs) {
+                    if (this->innerWidth(depth, k) < 0) this->innerWidth(depth, k) = l;
                     this->bandWidth->setWidth(depth, k, l);
-                    done = false;
                 }
             }
-            if (--l < 0) break;
         }
     }
     println(100, "\nOperator BandWidth" << *this->bandWidth);
 }
 
-/** @brief Checks if the distance to diagonal is lesser than the operator band width.
+/** @brief Checks if the distance to diagonal lies outside the band of considerable values.
  *
  * @param[in] oTransl: distance to diagonal
  * @param[in] o_depth: scaling order
  * @param[in] idx: index corresponding to one of the matrices \f$ A, B, C \f$ or \f$ T \f$.
  *
- * @returns True if \b oTransl is outside of the corner band (close to diagonal) and False otherwise.
+ * @returns True if \b oTransl is beyond the band width, or, for \f$ A, B, C \f$, closer to the
+ * diagonal than their first considerable value; False otherwise.
  *
  */
 template <typename T> bool CornerOperatorTree<T>::isOutsideBand(int oTransl, int o_depth, int idx) {
-    return abs(oTransl) < this->bandWidth->getWidth(o_depth, idx);
+    int l = abs(oTransl);
+    if (l > this->bandWidth->getWidth(o_depth, idx)) return true;
+    // T is not screened near the diagonal: for D > 1 it is part of the mixed terms,
+    // and the pure T term is already restricted to the root in ConvolutionCalculator::calcNode.
+    if (idx == 0) return false;
+    return l < this->innerWidth(o_depth, idx);
 }
 
 template class CornerOperatorTree<double>;

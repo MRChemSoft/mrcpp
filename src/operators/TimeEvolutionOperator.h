@@ -40,11 +40,14 @@ namespace mrcpp {
  *      \exp \left( i t \partial_x^2 \right)
  *      .
  * \f$
- * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponent(0, 0).
+ * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponentCplx(0, 0).
+ * In \f$ D \f$ dimensions the same tree acts in every direction, giving
+ * \f$ \exp \left( i t \Delta \right) = \bigotimes_{d=1}^D \exp \left( i t \partial_{x_d}^2 \right) \f$.
  *
- * @note So far implementation is done for Legendre scaling functions in 1d.
+ * The world can be any non-periodic BoundingBox with the same scaling factor in every
+ * direction, for example \f$ [-L, L]^D \f$; the time is in the units of the box coordinates.
  *
- * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
+ * @note Implemented for Legendre scaling functions only.
  *
  */
 template <int D>

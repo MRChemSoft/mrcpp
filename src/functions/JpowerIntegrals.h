@@ -141,8 +141,11 @@ public:
     std::vector<std::vector<std::complex<double>>> integrals;
 
     std::vector<std::complex<double>> & operator[](int index);
+
+    /// @brief Power integrals \f$ \widetilde J_0, \ldots, \widetilde J_M \f$ for one translation \f$ l \f$
+    static std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold = 1.0e-15);
+
 private:
-    std::vector<std::complex<double>> calculate_J_power_integrals(int l, double a, int M, double threshold);
     void crop(std::vector<std::complex<double>> & J, double threshold);
 };
 

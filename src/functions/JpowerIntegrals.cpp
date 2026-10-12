@@ -48,7 +48,9 @@ std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(i
 
     (void)threshold;
 
-    std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
+    // l * l overflows int for |l| > 46340
+    const double l_sq = static_cast<double>(l) * static_cast<double>(l);
+    std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * l_sq / a);
     std::complex<double> beta(0, 0.5 / a);
     auto alpha = static_cast<double>(l) * beta;
 

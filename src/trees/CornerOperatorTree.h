@@ -46,6 +46,10 @@ public:
 
     void calcBandWidth(double prec = -1.0) override;
     bool isOutsideBand(int oTransl, int o_depth, int idx) override;
+
+protected:
+    /// Smallest distance to the diagonal with a considerable value, per depth and component
+    Eigen::MatrixXi innerWidth;
 };
 
 } // namespace mrcpp

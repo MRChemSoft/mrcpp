@@ -64,13 +64,19 @@ namespace mrcpp {
  *
  * @details Constructs the complete complex Schrodinger semigroup at a given time moment.
  *
- * @note For technical reasons the operator tree is constructed no deeper than to scale \f$ n = 18 \f$.
+ * @note For technical reasons the operator tree is constructed no deeper than \f$ N = 18 \f$ scales below the root scale.
  */
 template <int D>
 TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D> &mra, double prec, double time, int finest_scale, int max_Jpower)
         : ConvolutionOperator<D>(mra, mra.getRootScale(), -10) {
     if (max_Jpower <= 0) MSG_ABORT("max_Jpower must be positive");
     if (finest_scale != Adaptive and finest_scale < mra.getRootScale()) MSG_ABORT("finest_scale is above the root scale");
+
+    // One operator tree serves every direction, and its kernel is the free-space propagator.
+    const auto &box = mra.getWorldBox();
+    for (int d = 1; d < D; d++)
+        if (box.getScalingFactor(d) != box.getScalingFactor(0)) MSG_ABORT("Non-uniform scaling factors are not supported");
+    if (box.isPeriodic()) MSG_ABORT("Periodic boundary conditions are not supported");
 
     int oldlevel = Printer::setPrintLevel(0);
     this->setBuildPrec(prec);
@@ -94,11 +100,7 @@ TimeEvolutionOperator<D>::TimeEvolutionOperator(const MultiResolutionAnalysis<D>
 }
 /** @brief Creates the complex operator
  *
- * @details Adaptive down to scale \f$ N = 18 \f$.
- * This scale limit bounds the amount of JpowerIntegrals
- * to be calculated.
- * @note In future work we plan to optimize calculation of JpowerIntegrals so that we calculate
- * only needed ones, while building the tree (in progress).
+ * @details Adaptive down to \f$ N = 18 \f$ scales below the root scale.
  *
  */
 template <int D> void TimeEvolutionOperator<D>::initialize(double time, int max_Jpower) {
@@ -108,9 +110,7 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, int max_
     auto o_mra = this->getOperatorMRA();
     auto o_tree = std::make_unique<CornerOperatorTree<ComplexDouble>>(o_mra, o_prec);
 
-    std::map<int, JpowerIntegrals *> J;
-    for (int n = 0; n <= N + 1; n++) J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower);
-    TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation);
+    TimeEvolution_CrossCorrelationCalculator calculator(time, max_Jpower, this->cross_correlation);
 
     OperatorAdaptor<ComplexDouble> adaptor(o_prec, o_mra.getMaxScale(), true);
 
@@ -129,8 +129,6 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, int max_
     print::separator(10, ' ');
 
     this->raw_exp_cplx.push_back(std::move(o_tree));
-
-    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
 /** @brief Creates the complex operator
@@ -146,11 +144,9 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, int fine
     TreeBuilder<2, ComplexDouble> builder;
     SplitAdaptor<2, ComplexDouble> uniform(o_mra.getMaxScale(), true);
 
-    int N = finest_scale;
-    double threshold = o_prec / 1000.0;
-    std::map<int, JpowerIntegrals *> J;
-    for (int n = 0; n <= N + 1; n++) J[n] = new JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
-    TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation);
+    // TreeBuilder counts refinements from the root scale
+    int N = finest_scale - o_mra.getRootScale();
+    TimeEvolution_CrossCorrelationCalculator calculator(time, max_Jpower, this->cross_correlation);
 
     auto o_tree = std::make_unique<CornerOperatorTree<ComplexDouble>>(o_mra, o_prec);
     builder.build(*o_tree, calculator, uniform, N); // Expand 1D kernel into 2D operator
@@ -164,8 +160,6 @@ template <int D> void TimeEvolutionOperator<D>::initialize(double time, int fine
     print::separator(10, ' ');
 
     this->raw_exp_cplx.push_back(std::move(o_tree));
-
-    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
 /** @brief Creates the operator (in progress)
@@ -185,16 +179,11 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
     mrcpp::TreeBuilder<2, ComplexDouble> builder;
     mrcpp::SplitAdaptor<2, ComplexDouble> uniform(o_mra.getMaxScale(), true);
 
-    int N = 18;
-
     auto o_tree = std::make_unique<CornerOperatorTree<ComplexDouble>>(o_mra, o_prec);
     DefaultCalculator<2, ComplexDouble> intitial_calculator;
     for (auto n = 0; n < 4; n++) builder.build(*o_tree, intitial_calculator, uniform, 1);
 
-    double threshold = o_prec / 1000.0;
-    std::map<int, mrcpp::JpowerIntegrals *> J;
-    for (int n = 0; n <= N + 1; n++) J[n] = new mrcpp::JpowerIntegrals(time * std::pow(4, n), n, max_Jpower, threshold);
-    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(J, this->cross_correlation);
+    mrcpp::TimeEvolution_CrossCorrelationCalculator calculator(time, max_Jpower, this->cross_correlation);
 
     OperatorAdaptor<ComplexDouble> adaptor(o_prec, o_mra.getMaxScale());
     builder.build(*o_tree, calculator, adaptor, 13);
@@ -209,8 +198,6 @@ template <int D> void TimeEvolutionOperator<D>::initializeSemiUniformly(double t
     print::separator(10, ' ');
 
     this->raw_exp_cplx.push_back(std::move(o_tree));
-
-    for (int n = 0; n <= N + 1; n++) delete J[n];
 }
 
 template class TimeEvolutionOperator<1>;

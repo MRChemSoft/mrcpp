@@ -27,9 +27,12 @@
 
 #include "factory_functions.h"
 
+#include <array>
 #include <cmath>
+#include <complex>
 #include <memory>
 
+#include "functions/JpowerIntegrals.h"
 #include "functions/special_functions.h"
 #include "operators/MWOperator.h"
 #include "operators/TimeEvolutionOperator.h"
@@ -189,6 +192,73 @@ TEST_CASE("Apply Schrodinger's evolution operator in 2D", "[apply_schrodinger_2d
 
 TEST_CASE("Apply Schrodinger's evolution operator in 3D", "[apply_schrodinger_3d], [schrodinger_evolution_operator], [mw_operator]") {
     applySchrodinger<3>(1.0e-4);
+}
+
+// Evolves a Gaussian on [-30, 30]^D (root scale -4, two root boxes per direction,
+// scaling factor 1.875). The error is relative to the norm of the solution, which
+// is large for the wide Gaussians used here.
+template <int D> void applySchrodingerOnBox(double prec, double sigma, double delta_t, int finest_scale, double rel_tolerance) {
+    const auto order = 4;
+    const auto max_depth = 25;
+    const double x0 = 0.5;
+    const double t1 = 0.0; // a real Gaussian
+    const double t2 = t1 + delta_t;
+
+    auto basis = mrcpp::LegendreBasis(order);
+    auto world = mrcpp::BoundingBox<D>(std::array<int, 2>{-30, 30});
+    auto MRA = mrcpp::MultiResolutionAnalysis<D>(world, basis, max_depth);
+
+    mrcpp::TimeEvolutionOperator<D> Exp(MRA, prec, delta_t, finest_scale);
+
+    auto f = [sigma, x0, t = t1](const mrcpp::Coord<D> &r) -> ComplexDouble { return product_solution<D>(r, x0, t, sigma); };
+    auto g = [sigma, x0, t = t2](const mrcpp::Coord<D> &r) -> ComplexDouble { return product_solution<D>(r, x0, t, sigma); };
+
+    mrcpp::FunctionTree<D, ComplexDouble> f_tree(MRA);
+    mrcpp::project<D, ComplexDouble>(prec, f_tree, f);
+    mrcpp::FunctionTree<D, ComplexDouble> g_tree(MRA);
+    mrcpp::project<D, ComplexDouble>(prec, g_tree, g);
+
+    mrcpp::FunctionTree<D, ComplexDouble> fout_tree(MRA);
+    mrcpp::apply<D, ComplexDouble>(prec, fout_tree, Exp, f_tree, -1, false);
+
+    REQUIRE(fout_tree.getSquareNorm() == Catch::Approx(g_tree.getSquareNorm()).epsilon(prec));
+
+    mrcpp::FunctionTree<D, ComplexDouble> error(MRA);
+    mrcpp::add<D, ComplexDouble>(prec, error, {1.0, 0.0}, fout_tree, {-1.0, 0.0}, g_tree, -1, false, false);
+    REQUIRE(error.getSquareNorm() / g_tree.getSquareNorm() < rel_tolerance * rel_tolerance);
+}
+
+TEST_CASE("Apply Schrodinger's evolution operator on [-30, 30]", "[apply_schrodinger_box], [schrodinger_evolution_operator], [mw_operator]") {
+    const auto Adaptive = mrcpp::TimeEvolutionOperator<1>::Adaptive;
+
+    SECTION("1D, adaptive operator") {
+        double prec = 1.0e-6;
+        applySchrodingerOnBox<1>(prec, 5.0, 10.0, Adaptive, prec); // measured 2.5e-7
+    }
+    SECTION("1D, coarse uniform operator") {
+        // The far corner of this operator has (|l| + 1) / 2a up to 70, where the series diverges
+        double prec = 1.0e-6;
+        applySchrodingerOnBox<1>(prec, 50.0, 0.1, 2, prec / 4.0); // measured 6.0e-8
+    }
+    SECTION("2D") {
+        double prec = 1.0e-6;
+        applySchrodingerOnBox<2>(prec, 50.0, 100.0, Adaptive, prec); // measured 3.5e-7
+    }
+    SECTION("3D") {
+        double prec = 1.0e-5;
+        applySchrodingerOnBox<3>(prec, 50.0, 100.0, Adaptive, prec); // measured 2.0e-6
+    }
+}
+
+TEST_CASE("Power integrals at translations beyond the int range of l^2", "[jpower_integrals], [schrodinger_evolution_operator]") {
+    // l * l overflows int for |l| > 46340
+    const int l = 50000;
+    const double a = 1.0e5;
+    auto J = mrcpp::JpowerIntegrals::calculate_J_power_integrals(l, a, 4);
+
+    const double l_sq = static_cast<double>(l) * static_cast<double>(l);
+    const ComplexDouble J0 = std::polar(0.25 / std::sqrt(M_PI * a), l_sq / (4.0 * a) - M_PI / 4.0);
+    REQUIRE(std::abs(J[0] - J0) < 1.0e-10 * std::abs(J0));
 }
 
 } // namespace schrodinger_evolution_operator

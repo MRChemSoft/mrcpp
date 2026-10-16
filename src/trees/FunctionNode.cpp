@@ -253,7 +253,10 @@ template <int D, typename T> void FunctionNode<D, T>::getAbsCoefs(T *absCoefs) {
 }
 
 template <int D, typename T> void FunctionNode<D, T>::createChildren(bool coefs) {
-    if (this->isBranchNode()) MSG_ABORT("Node already has children");
+    if (this->isBranchNode()){
+        std::cout<<"current nb of omp threads running "<<mrcpp_get_current_num_threads()<<", coefs? "<<coefs<<std::endl;
+        MSG_ABORT("Node already has children");
+    }
     auto &allocator = this->getFuncTree().getNodeAllocator();
 
     int nChildren = this->getTDim();

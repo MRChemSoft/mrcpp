@@ -32,6 +32,7 @@
 #define mrcpp_get_max_threads() omp_get_max_threads()
 #define mrcpp_get_num_threads() mrcpp::max_threads
 #define mrcpp_get_thread_num() omp_get_thread_num()
+#define mrcpp_get_current_num_threads() omp_get_num_threads()
 #define MRCPP_INIT_OMP_LOCK() omp_init_lock(&this->omp_lock)
 #define MRCPP_DESTROY_OMP_LOCK() omp_destroy_lock(&this->omp_lock)
 #define MRCPP_SET_OMP_LOCK() omp_set_lock(&this->omp_lock)
@@ -40,6 +41,7 @@
 #else
 #define mrcpp_get_max_threads() 1
 #define mrcpp_get_num_threads() 1
+#define mrcpp_get_current_num_threads() 1
 #define mrcpp_get_thread_num() 0
 #define MRCPP_INIT_OMP_LOCK()
 #define MRCPP_DESTROY_OMP_LOCK()

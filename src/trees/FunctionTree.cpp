@@ -82,7 +82,7 @@ FunctionTree<D, T>::FunctionTree(FunctionTree<D, double> &realTree,
     this->add_inplace(ComplexDouble(1.0, 0.0), *real_p);
     this->add_inplace(ComplexDouble(0.0, 1.0), *imag_p);
 }
-    
+
 template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
@@ -462,7 +462,7 @@ template <int D, typename T> T FunctionTree<D, T>::integrateSide(int dim, bool p
         if (fNode.getUpperBounds()[dim] == this->rootBox.getUpperBound(dim) && positiveSide)
             result += fNode.integrate();
     }
-  
+
     // Handle potential scaling
     auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto jacobian = 1.0;

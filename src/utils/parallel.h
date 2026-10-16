@@ -60,6 +60,7 @@ template <typename T> void broadcast_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tre
 
 template <typename T> void allreduce_Tree_noCoeff(mrcpp::FunctionTree<3, T> &tree, std::vector<CompFunction<3>> &Phi, MPI_Comm comm);
 
+void allreduce_max_int(int *val, MPI_Comm comm);
 void allreduce_vector(IntVector &vec, MPI_Comm comm);
 void allreduce_vector(DoubleVector &vec, MPI_Comm comm);
 void allreduce_vector(ComplexVector &vec, MPI_Comm comm);

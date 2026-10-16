@@ -360,6 +360,7 @@ void print::memory(int level, const std::string &txt) {
     println(level, o.str());
 }
 
+
 template void print::tree<1>(int level, const std::string &txt, const MWTree<1> &tree, const Timer &timer);
 template void print::tree<2>(int level, const std::string &txt, const MWTree<2> &tree, const Timer &timer);
 template void print::tree<3>(int level, const std::string &txt, const MWTree<3> &tree, const Timer &timer);

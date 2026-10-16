@@ -301,6 +301,13 @@ void free_foreign(CompFunctionVector &Phi) {
     }
 }
 
+/** @brief Find max across all ranks and replace with the max for all */
+void allreduce_max_int(int *val, MPI_Comm comm) {
+#ifdef MRCPP_HAS_MPI
+    MPI_Allreduce(MPI_IN_PLACE, val, 1, MPI_INT, MPI_MAX, comm);
+#endif
+}
+
 /** @brief Add up each entry of the vector with contributions from all MPI ranks */
 void allreduce_vector(IntVector &vec, MPI_Comm comm) {
 #ifdef MRCPP_HAS_MPI
@@ -354,17 +361,19 @@ void send_function(const CompFunction<3> &func, int dst, int tag, MPI_Comm comm)
 #ifdef MRCPP_HAS_MPI
     for (int i = 0; i < func.Ncomp(); i++) {
         // make sure that Nchunks is up to date
-        if (func.isreal())
+        if (func.isreal() and func.CompD[i] != nullptr)
             func.Nchunks()[i] = func.CompD[i]->getNChunks();
-        else
+        else if (func.iscomplex() and func.CompC[i] != nullptr)
             func.Nchunks()[i] = func.CompC[i]->getNChunks();
     }
     MPI_Send(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, dst, 0, comm);
     for (int i = 0; i < func.Ncomp(); i++) {
-        if (func.isreal())
-            mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
-        else
-            mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
+        if(func.Nchunks()[i]>0){
+            if (func.isreal())
+                mrcpp::send_tree(*func.CompD[i], dst, tag, comm, func.Nchunks()[i]);
+            else
+                mrcpp::send_tree(*func.CompC[i], dst, tag, comm, func.Nchunks()[i]);
+        }
     }
 #endif
 }
@@ -377,10 +386,12 @@ void recv_function(CompFunction<3> &func, int src, int tag, MPI_Comm comm) {
     MPI_Recv(&func.func_ptr->data, sizeof(CompFunctionData<3>), MPI_BYTE, src, 0, comm, &status);
     for (int i = 0; i < func.Ncomp(); i++) {
         if (func_ncomp_in <= i) func.alloc(i + 1);
-        if (func.isreal())
-            mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
-        else
-            mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
+        if (func.Nchunks()[i] >0) {
+            if (func.isreal())
+                mrcpp::recv_tree(*func.CompD[i], src, tag, comm, func.Nchunks()[i]);
+            else
+                mrcpp::recv_tree(*func.CompC[i], src, tag, comm, func.Nchunks()[i]);
+        }
     }
 #endif
 }

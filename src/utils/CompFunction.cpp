@@ -463,7 +463,7 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
             }
         } else if (inp.isreal() and this->isreal() and abs(c.imag()) > MachineZero and func_ptr->data.c1[0].imag() == inp.func_ptr->data.c1[0].imag()) {
             MSG_ABORT("Not implemented");
-        } else if( this->iscomplex() and inp.iscomplex()) {
+        } else if (this->iscomplex()) {
             if (std::norm(1.0 - func_ptr->data.c1[0]) > MachineZero) {
                 rescale(func_ptr->data.c1[0]);
                 for (int i = 1; i < Ncomp(); i++) {
@@ -473,9 +473,16 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 }
                 func_ptr->data.c1[0] = {1.0, 0.0};
             }
-            for (int i = 0; i < inp.Ncomp(); i++) {
-                CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *inp.CompC[i]);
-            }
+            if (inp.iscomplex()) {
+                for (int i = 0; i < inp.Ncomp(); i++) {
+                    CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *inp.CompC[i]);
+                }
+            }  else {
+                 for (int i = 0; i < inp.Ncomp(); i++) {
+                    auto tmpCplxTree = inp.CompD[i]->CopyTreeToComplex();
+                    CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *tmpCplxTree);
+                }
+           }
         } else if( this->isreal()) {
             // we set as complex
             for (int i = 0; i < Ncomp(); i++) {
@@ -500,11 +507,12 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 }
             } else if (inp.isreal()){
                 for (int i = 0; i < inp.Ncomp(); i++) {
-                    auto tmpCplxTree = inp.CompD[i]->CopyTreeToComplex(); //NB: only temporary
+                    auto tmpCplxTree = inp.CompD[i]->CopyTreeToComplex();
                     CompC[i]->add_inplace(c*inp.func_ptr->data.c1[i], *tmpCplxTree);
                 }
             }
         } else {
+            std::cout<<isreal()<<" "<<iscomplex()<<" "<<inp.isreal()<<" "<<inp.iscomplex()<<" "<<func_ptr->data.c1[0]<<" "<<inp.func_ptr->data.c1[0]<<" "<<c<<std::endl;
             MSG_ABORT("Not implemented");
         }
     }
@@ -1473,6 +1481,9 @@ void rotate(CompFunctionVector &Phi_in, const ComplexMatrix &U, CompFunctionVect
         for (int i = 0; i < N; i++) {
             Phi[i] = CompFunction(Phi_in[i], comp);
         }
+        for (int i = 0; i < M; i++) {
+            Psi[i] = CompFunction(Psi_out[i], comp); //required for metadata
+        }
 
         if (iscomplex) {
             //Handling complex case
@@ -1759,6 +1770,7 @@ void rotate(CompFunctionVector &Phi_in, const ComplexMatrix &U, CompFunctionVect
     }
 
     copyComponent(Psi_out, Psi, comp, 0);
+
     Psi.free(false);
     Phi.free(false);
 
@@ -3065,12 +3077,10 @@ void initComp(CompFunctionVector &Phi, int Ncomp) {
         if (!mpi::my_func(i)) continue;
         for (int comp = 0; comp < Ncomp; comp++) {
             if(Phi[i].isreal() and Phi[i].CompD[comp] == nullptr) {
-                std::cout<<comp<<" reset real! "<<std::endl;
                 Phi[i].CompD[comp] = new FunctionTree<3, double>(*defaultCompMRA<3>);
                 Phi[i].CompD[comp]->setZero();
             }
             if(Phi[i].iscomplex() and Phi[i].CompC[comp] == nullptr) {
-                std::cout<<comp<<" reset complex! "<<std::endl;
                 Phi[i].CompC[comp] = new FunctionTree<3, ComplexDouble>(*defaultCompMRA<3>);
                 Phi[i].CompC[comp]->setZero();
             }

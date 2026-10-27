@@ -150,8 +150,10 @@ template <int D> CompFunction<D>::CompFunction(const CompFunction<D> &compfunc, 
     func_ptr = std::make_shared<TreePtr<D>>(false);
     CompD = func_ptr->real;
     CompC = func_ptr->cplx;
+    //TODO:: make more general if required
     this->func_ptr->data.n1[0] = compfunc.func_ptr->data.n1[comp];
     this->func_ptr->data.c1[0] = compfunc.func_ptr->data.c1[comp];
+    this->func_ptr->data.rank = compfunc.func_ptr->data.rank;
     this->func_ptr->data.Nchunks[0] = compfunc.func_ptr->data.Nchunks[comp];
     if (compfunc.iscomplex()) {
         this->setCplx(compfunc.CompC[comp], 0);
@@ -273,7 +275,10 @@ template <int D> void CompFunction<D>::calcSquareNorm() {
 //  deletes all old trees if found.
 template <int D> void CompFunction<D>::alloc(int nalloc, bool zero) {
     if (defaultCompMRA<D> == nullptr) MSG_ABORT("Default MRA not yet defined");
-    if (isreal() == 0 and iscomplex() == 0) MSG_ABORT("Function must be defined either real or complex");
+    if (isreal() == 0 and iscomplex() == 0) {
+        // we assume real
+        defreal();
+    }
     for (int i = 0; i < nalloc; i++) {
         delete CompD[i];
         delete CompC[i];
@@ -400,7 +405,7 @@ template <int D> const FunctionTree<D, ComplexDouble> &CompFunction<D>::complex(
 
 /* for backwards compatibility */
 template <int D> void CompFunction<D>::setReal(FunctionTree<D, double> *tree, int i) {
-    func_ptr->isreal = 1;
+    defreal();
     this->CompD[i] = tree;
     if (tree != nullptr) {
         func_ptr->Ncomp = std::max(Ncomp(), i + 1);
@@ -410,7 +415,7 @@ template <int D> void CompFunction<D>::setReal(FunctionTree<D, double> *tree, in
 }
 
 template <int D> void CompFunction<D>::setCplx(FunctionTree<D, ComplexDouble> *tree, int i) {
-    func_ptr->iscomplex = 1;
+    defcomplex();
     CompC[i] = tree;
     if (tree != nullptr) {
         func_ptr->Ncomp = std::max(Ncomp(), i + 1);
@@ -490,8 +495,7 @@ template <int D> void CompFunction<D>::add(ComplexDouble c, CompFunction<D> inp)
                 delete CompD[i];
                 CompD[i] = nullptr;
             }
-            func_ptr->iscomplex = 1;
-            func_ptr->isreal = 0;
+            defcomplex();
             if (std::norm(1.0-func_ptr->data.c1[0]) > MachineZero) {
                 rescale(func_ptr->data.c1[0]);
                 for (int i = 1; i < Ncomp(); i++) {
@@ -524,8 +528,7 @@ template <int D> void CompFunction<D>::upgradeToComplex(){
         delete CompD[i];
         CompD[i] = nullptr;
     }
-    func_ptr->iscomplex = 1;
-    func_ptr->isreal = 0;
+    defcomplex();
 }
 
 template <int D> int CompFunction<D>::crop(double prec, bool absPrec) {
@@ -555,8 +558,7 @@ template <int D> void CompFunction<D>::rescale(ComplexDouble c) {
                     CompC[i] = CompD[i]->CopyTreeToComplex();
                     delete CompD[i];
                     CompD[i] = nullptr;
-                    func_ptr->iscomplex = true;
-                    func_ptr->isreal = false;
+                    defcomplex();
                     CompC[i]->rescale(c);
                 } else {
                     CompD[i]->rescale(c.real());
@@ -581,7 +583,6 @@ template class CompFunction<3>;
 template <int D> void CopyToComplex(CompFunction<D> &out, const CompFunction<D> &inp) {
     out.func_ptr->data = inp.func_ptr->data;
     out.defcomplex();
-    out.func_ptr->data.isreal = 0;
     out.alloc(inp.Ncomp());
     if (inp.getNNodes() == 0) return;
     for (int i = 0; i < inp.Ncomp(); i++) {
@@ -665,8 +666,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
             //            if (inp[i].iscomplex() or std::abs((c[i]*inp[i].func_ptr->data.c1[comp]).imag()) > MachineZero) iscomplex = true;
             if (inp[i].iscomplex() or std::abs(c[i].imag()) > MachineZero or inp[i].func_ptr->data.c1[comp] != inp[0].func_ptr->data.c1[0] ) iscomplex = true;
     if (iscomplex) {
-        out.func_ptr->data.iscomplex = 1;
-        out.func_ptr->data.isreal = 0;
+        out.defcomplex();
         //we will include all precoeff (c1) in the tree coefficients
        for (int comp = 0; comp < inp[0].Ncomp(); comp++) out.func_ptr->data.c1[comp] = {1.0,0.0};
     } else {
@@ -704,8 +704,7 @@ template <int D> void linear_combination(CompFunction<D> &out, const std::vector
                         delete inp[i].CompD[kcomp];
                         inp[i].CompD[kcomp] = nullptr;
                     }
-                    inp[i].func_ptr->iscomplex = true;
-                    inp[i].func_ptr->isreal = false;
+                    inp[i].defcomplex();
                }
                 if (std::norm(c[i]*inp[i].func_ptr->data.c1[comp]) < thrs) continue;
                //if (std::norm(c[i]) < thrs) continue;
@@ -746,8 +745,7 @@ template <int D> void make_density(CompFunction<D> &out, CompFunction<D> inp, do
             delete Nout.CompC[i];
             Nout.CompC[i] = nullptr;
         }
-        Nout.func_ptr->isreal = 1;
-        Nout.func_ptr->iscomplex = 0;
+        Nout.defreal();
     }
     // we have now density of each component. Pick out according to contrib
     bool init = true;
@@ -850,20 +848,17 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             // Here, we keep the real trees of the inputs, as well as creating the complex ones, to avoid copying the trees back after multiplication. We restore the original state of the inputs after multiplication.
             if (inp_aisReal) {
                 inp_a.CompC[comp] = inp_a.CompD[comp]->CopyTreeToComplex();
-                inp_a.func_ptr->iscomplex = true;
-                inp_a.func_ptr->isreal = false;
+                inp_a.defcomplex();
             }
             if (inp_bisReal) {
                 inp_b.CompC[comp] = inp_b.CompD[comp]->CopyTreeToComplex();
-                inp_b.func_ptr->iscomplex = true;
-                inp_b.func_ptr->isreal = false;
+                inp_b.defcomplex();
             }
             ComplexDouble coef = 1.0;
             if (need_to_multiply) {
                 if (prec < 0.0) {
                     // Union grid
-                    out.func_ptr->iscomplex = 1;
-                    out.func_ptr->isreal = 0;
+                    out.defcomplex();
                     delete out.CompD[comp];
                     delete out.CompC[comp];
                     out.CompD[comp] = nullptr;
@@ -877,18 +872,15 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                     if (out.CompD[comp] != nullptr) { // NB: func_ptr has alreadybeen overwritten!
                         if (out.CompD[comp]->getNNodes() > 0) {
                             out.CompC[comp] = out.CompD[comp]->CopyTreeToComplex();
-                            out.func_ptr->iscomplex = 1;
-                            out.func_ptr->isreal = 0;
+                            out.defcomplex();
                             delete out.CompD[comp];
                             out.CompD[comp] = nullptr;
                         } else {
-                            out.func_ptr->iscomplex = 1;
-                            out.func_ptr->isreal = 0;
+                            out.defcomplex();
                             out.alloc(out.Ncomp());
                         }
                     } else {
-                        out.func_ptr->iscomplex = 1;
-                        out.func_ptr->isreal = 0;
+                        out.defcomplex();
                         if (!out_allocated) out.alloc(out.Ncomp());
                     }
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], maxIter, absPrec, useMaxNorms, conjugate);
@@ -898,14 +890,12 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             if (inp_aisReal) {
                 delete inp_a.CompC[comp];
                 inp_a.CompC[comp] = nullptr;
-                inp_a.func_ptr->iscomplex = false;
-                inp_a.func_ptr->isreal = true;
+                inp_a.defcomplex();
             }
             if (inp_bisReal) {
                 delete inp_b.CompC[comp];
                 inp_b.CompC[comp] = nullptr;
-                inp_b.func_ptr->iscomplex = false;
-                inp_b.func_ptr->isreal = true;
+                inp_b.defreal();
             }
         }
     }
@@ -962,8 +952,7 @@ template <int D> void multiply(CompFunction<D> &out, CompFunction<D> &inp_a, Rep
  */
 template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, double> &inp_a, RepresentableFunction<D, double> &f, double prec, int nrefine, bool conjugate) {
     CompFunction<D> func_a;
-    func_a.func_ptr->isreal = 1;
-    func_a.func_ptr->iscomplex = 0;
+    func_a.defreal();
     func_a.alloc(1);
     func_a.CompD[0] = &inp_a;
     multiply(out, func_a, f, prec, nrefine, conjugate);
@@ -971,8 +960,7 @@ template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, double> &in
 }
 template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDouble> &inp_a, RepresentableFunction<D, ComplexDouble> &f, double prec, int nrefine, bool conjugate) {
     CompFunction<D> func_a(1);
-    func_a.func_ptr->isreal = 0;
-    func_a.func_ptr->iscomplex = 1;
+    func_a.defcomplex();
     func_a.CompC[0] = &inp_a;
     multiply(out, func_a, f, prec, nrefine, conjugate);
     func_a.CompC[0] = nullptr;
@@ -987,21 +975,27 @@ template <int D> void multiply(CompFunction<D> &out, FunctionTree<D, ComplexDoub
 template <int D> ComplexDouble dot(CompFunction<D> bra, CompFunction<D> ket) {
     if (bra.func_ptr->conj or ket.func_ptr->conj) MSG_ABORT("Not implemented");
     ComplexDouble dotprodtot = 0.0;
+
     for (int comp = 0; comp < bra.Ncomp(); comp++) {
         ComplexDouble dotprod = 0.0;
-        if (bra.func_ptr->data.n1[0] != ket.func_ptr->data.n1[0] and bra.func_ptr->data.n1[0] != 0 and ket.func_ptr->data.n1[0] != 0) continue;
+        if (bra.func_ptr->data.n1[comp] != ket.func_ptr->data.n1[comp] and bra.func_ptr->data.n1[comp] != 0 and ket.func_ptr->data.n1[comp] != 0) continue;
         if (bra.isreal() and ket.isreal()) {
+            if (bra.CompD[comp] == nullptr or ket.CompD[comp] == nullptr) continue;
             dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompD[comp]);
         } else if (bra.isreal() and ket.iscomplex()) {
+            if (bra.CompD[comp] == nullptr or ket.CompC[comp] == nullptr) continue;
             dotprod += mrcpp::dot(*bra.CompD[comp], *ket.CompC[comp]);
         } else if (bra.iscomplex() and ket.isreal()) {
+            if (bra.CompC[comp] == nullptr or ket.CompD[comp] == nullptr) continue;
             dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompD[comp]);
         } else {
-            dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
+          if (bra.CompC[comp] == nullptr or ket.CompC[comp] == nullptr) continue;
+          dotprod += mrcpp::dot(*bra.CompC[comp], *ket.CompC[comp]);
         }
         dotprod *= std::conj(bra.func_ptr->data.c1[comp]) * ket.func_ptr->data.c1[comp];
         dotprodtot += dotprod;
     }
+
     return dotprodtot;
 }
 
@@ -1030,8 +1024,7 @@ template <int D> double node_norm_dot(CompFunction<D> bra, CompFunction<D> ket) 
 
 void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 1;
-    out.func_ptr->iscomplex = 0;
+    out.defreal();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
@@ -1039,8 +1032,7 @@ void project(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, d
 
 void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 1;
-    out.func_ptr->iscomplex = 0;
+    out.defreal();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompD[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
@@ -1048,8 +1040,7 @@ void project_real(CompFunction<3> &out, std::function<double(const Coord<3> &r)>
 
 void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 0;
-    out.func_ptr->iscomplex = 1;
+    out.defcomplex();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
@@ -1057,8 +1048,7 @@ void project(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r
 
 void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<3> &r)> f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 0;
-    out.func_ptr->iscomplex = 1;
+    out.defcomplex();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) mrcpp::project<3>(prec, *out.CompC[0], f);
     mpi::share_function(out, 0, 123123, mpi::comm_share);
@@ -1066,8 +1056,7 @@ void project_cplx(CompFunction<3> &out, std::function<ComplexDouble(const Coord<
 
 template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, double> &f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 1;
-    out.func_ptr->iscomplex = 0;
+    out.defreal();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) build_grid(*out.CompD[0], f);
     if (need_to_project) mrcpp::project<D, double>(prec, *out.CompD[0], f);
@@ -1075,8 +1064,7 @@ template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, dou
 }
 template <int D> void project(CompFunction<D> &out, RepresentableFunction<D, ComplexDouble> &f, double prec) {
     bool need_to_project = not(out.isShared()) or mpi::share_master();
-    out.func_ptr->isreal = 0;
-    out.func_ptr->iscomplex = 1;
+    out.defcomplex();
     if (out.Ncomp() < 1) out.alloc(1);
     if (need_to_project) build_grid(*out.CompC[0], f);
     if (need_to_project) mrcpp::project<D, ComplexDouble>(prec, *out.CompC[0], f);
@@ -1156,8 +1144,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
             delete Psi[i].CompD[j];
             Psi[i].CompD[j] = nullptr;
         }
-        Psi[i].func_ptr->isreal = 0;
-        Psi[i].func_ptr->iscomplex = 1;
+        Psi[i].defcomplex();
     }
     for (int i = 0; i < N; i++) {
         if (Phi[i].func_ptr->conj) MSG_ABORT("Conjugaison not implemneted for rotations");
@@ -1186,8 +1173,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
     }
 
     for (int i = 0; i < M; i++) {
-        Psi[i].func_ptr->data.isreal = 0;
-        Psi[i].func_ptr->data.iscomplex = 1;
+        Psi[i].defcomplex();
     }
 
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
@@ -1520,8 +1506,7 @@ void rotate(CompFunctionVector &Phi_in, const ComplexMatrix &U, CompFunctionVect
     refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree);
     int max_n = indexVec_ref.size();
     for (int i = 0; i < M; i++) {
-        Psi[i].func_ptr->data.isreal = 1;
-        Psi[i].func_ptr->data.iscomplex = 0;
+        Psi[i].defreal();
     }
 
     // 3) In the serial case we store the coeff pointers in coeffVec. In the mpi case the coeff are stored in the bank
@@ -2363,9 +2348,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet_in) {
     for (int comp = 0; comp < Ncomponents; comp++ ){
 
         CompFunctionVector BraKet(N);
-        //TODO make a copy component functionality
         for (int i = 0; i < N; i++) BraKet[i] = CompFunction(BraKet_in[i], comp);
-
         if (iscomplex) {
             Stot +=  calc_overlap_matrix_cplx(BraKet);
             BraKet.free(false);
@@ -2490,7 +2473,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet_in) {
             }
         }
     }
-
     for (int i = 0; i < N; i++) {
         for (int j = 0; j <= i; j++) {
             if (i != j) S(j, i) = std::conj(S(i, j)); // ensure exact symmetri
@@ -2524,25 +2506,26 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet_in) {
  */
 ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVector &Ket) {
     mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
-    bool braisreal = !Bra[0].iscomplex();
-    bool ketisreal = !Ket[0].iscomplex();
-    if (braisreal or ketisreal) {
-        // temporary solution: copy as complex trees
-        // Here, we keep the real trees of the inputs, as well as creating the complex ones, to avoid copying the trees back after computing the overlap matrix.
-        // We restore the original state of the inputs after multiplication.
-        if (braisreal) {
-            for (int i = 0; i < Bra.size(); i++) {
-                Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
-                Bra[i].func_ptr->iscomplex = 1;
-                Bra[i].func_ptr->isreal = 0;
-            }
+
+    bool braisreal = false, ketisreal = false;
+    for (int i = 0; i < Bra.size(); i++) {
+        if (!mrcpp::mpi::my_func(Bra[i])) continue;
+        if (!Bra[i].iscomplex()){
+            // copy as complex trees
+            // Here, we keep the real trees of the inputs, as well as creating the complex ones,
+            // to avoid copying the trees back after computing the overlap matrix.
+            // We restore the original state of the inputs after multiplication.
+            Bra[i].CompC[0] = Bra[i].CompD[0]->CopyTreeToComplex();
+            Bra[i].defcomplex();
+            braisreal = true;
         }
-        if (ketisreal) {
-            for (int i = 0; i < Ket.size(); i++) {
-                Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
-                Ket[i].func_ptr->iscomplex = 1;
-                Ket[i].func_ptr->isreal = 0;
-            }
+    }
+    for (int i = 0; i < Ket.size(); i++) {
+        if (!mrcpp::mpi::my_func(Ket[i])) continue;
+        if (!Ket[i].iscomplex()){
+            Ket[i].CompC[0] = Ket[i].CompD[0]->CopyTreeToComplex();
+            Ket[i].defcomplex();
+            ketisreal = true;
         }
     }
     MultiResolutionAnalysis<3> *mra = Bra.vecMRA;
@@ -2763,16 +2746,14 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
         for (int i = 0; i < Bra.size(); i++) {
             delete Bra[i].CompC[0];
             Bra[i].CompC[0] = nullptr;
-            Bra[i].func_ptr->iscomplex = 0;
-            Bra[i].func_ptr->isreal = 1;
+            Bra[i].defreal();
         }
     }
     if (ketisreal) {
         for (int i = 0; i < Ket.size(); i++) {
             delete Ket[i].CompC[0];
             Ket[i].CompC[0] = nullptr;
-            Ket[i].func_ptr->iscomplex = 0;
-            Ket[i].func_ptr->isreal = 1;
+            Ket[i].defreal();
         }
     }
     return S;
@@ -2800,39 +2781,15 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra_in, CompFunctionVector
 
        CompFunctionVector Bra(N);
        CompFunctionVector Ket(M);
-       for (int i = 0; i < N; i++) {
-            Bra[i].func_ptr->data.n1[0] = Bra_in[i].func_ptr->data.n1[comp];
-            Bra[i].func_ptr->data.c1[0] = Bra_in[i].func_ptr->data.c1[comp];
-            Bra[i].func_ptr->data.Nchunks[0] = Bra_in[i].func_ptr->data.Nchunks[comp];
-            if(mrcpp::mpi::my_func(Bra[i])){
-               if (Bra_in[i].iscomplex()) {
-                   Bra[i].setCplx(Bra_in[i].CompC[comp], 0);
-               } else if (Bra_in[i].isreal()){
-                   Bra[i].setReal(Bra_in[i].CompD[comp], 0);
-               }
-            }
-            Bra[i].setNcomp(1);
-        }
-        for (int i = 0; i < M; i++) {
-             Ket[i].func_ptr->data.n1[0] = Ket_in[i].func_ptr->data.n1[comp];
-             Ket[i].func_ptr->data.c1[0] = Ket_in[i].func_ptr->data.c1[comp];
-             Ket[i].func_ptr->data.Nchunks[0] = Ket_in[i].func_ptr->data.Nchunks[comp];
-             if(mrcpp::mpi::my_func(Ket[i])){
-                 if (Ket_in[i].iscomplex()) {
-                     Ket[i].setCplx(Ket_in[i].CompC[comp], 0);
-                 } else if (Ket_in[i].isreal()){
-                     Ket[i].setReal(Ket_in[i].CompD[comp], 0);
-                 }
-             }
-             Ket[i].setNcomp(1);
-        }
+       for (int i = 0; i < N; i++) Bra[i] = CompFunction(Bra_in[i], comp);
+       for (int i = 0; i < M; i++) Ket[i] = CompFunction(Ket_in[i], comp);
 
-     if (is_complex) {
-        Stot += calc_overlap_matrix_cplx(Bra, Ket);
-        Bra.free(false);
-        Ket.free(false);
-        continue;
-     }
+       if (is_complex) {
+           Stot += calc_overlap_matrix_cplx(Bra, Ket);
+           Bra.free(false);
+           Ket.free(false);
+           continue;
+       }
 
     mrcpp::mpi::barrier(mrcpp::mpi::comm_wrk); // for consistent timings
 
@@ -3217,13 +3174,11 @@ using namespace std::complex_literals;
             for (int i = 0; i < inp.Ncomp(); i++) {
                 inp.CompD[i]->rescale(1.0 / norm); //Rescaling each component in place
                 inp.func_ptr->data.c1[i] = 1.0; // Resetting the overall multiplicative factor to 1 after normalization, since the components have already been rescaled.
-                // std::cout << "normalize_spinor: Component " << i << " normalized." << std::endl;
             }
         } else {
             for (int i = 0; i < inp.Ncomp(); i++) {
                 inp.CompC[i]->rescale(1.0 / norm); //Rescaling each component in place
                 inp.func_ptr->data.c1[i] = ComplexDouble(1.0,0.0); // Resetting the overall multiplicative factor to 1 after normalization, since the components have already been rescaled.
-                // std::cout << "normalize_spinor: Component " << i << " normalized." << std::endl;
             }
         }
     }

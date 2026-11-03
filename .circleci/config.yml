@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 variables:
   ubuntu-2404: &ubuntu-2404

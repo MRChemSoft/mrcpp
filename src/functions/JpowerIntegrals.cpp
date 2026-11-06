@@ -29,10 +29,11 @@
 namespace mrcpp {
 
 JpowerIntegrals::JpowerIntegrals(double a, int scaling, int M, double threshold) {
+    (void)threshold;
     this->scaling = scaling;
     int N = 1 << scaling;
-    for (int l = 0; l < N; l++) integrals.push_back(calculate_J_power_integrals(l, a, M, threshold));
-    for (int l = 1 - N; l < 0; l++) integrals.push_back(calculate_J_power_integrals(l, a, M, threshold));
+    for (int l = 0; l < N; l++) integrals.push_back(calculate_J_power_integrals(l, a, M));
+    for (int l = 1 - N; l < 0; l++) integrals.push_back(calculate_J_power_integrals(l, a, M));
 }
 
 /// @brief in progress
@@ -43,12 +44,12 @@ std::vector<std::complex<double>> &JpowerIntegrals::operator[](int index) {
     return integrals[index];
 }
 
-std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M, double threshold) {
+std::vector<std::complex<double>> JpowerIntegrals::calculate_J_power_integrals(int l, double a, int M) {
     using namespace std::complex_literals;
 
-    (void)threshold;
-
-    std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * static_cast<double>(l * l) / a);
+    // l * l overflows int for |l| > 46340
+    const double l_sq = static_cast<double>(l) * static_cast<double>(l);
+    std::complex<double> J_0 = 0.25 * std::exp(-0.25i * M_PI) / std::sqrt(M_PI * a) * std::exp(0.25i * l_sq / a);
     std::complex<double> beta(0, 0.5 / a);
     auto alpha = static_cast<double>(l) * beta;
 

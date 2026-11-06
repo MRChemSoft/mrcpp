@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <limits>
+
 #include "ConvolutionOperator.h"
 #include "MWOperator.h"
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
@@ -40,11 +42,15 @@ namespace mrcpp {
  *      \exp \left( i t \partial_x^2 \right)
  *      .
  * \f$
- * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponent(0, 0).
+ * Matrix elements (actual operator tree) of the operator can be obtained by calling getComponentCplx(0, 0).
+ * In \f$ D \f$ dimensions the same tree acts in every direction, giving
+ * \f$ \exp \left( i t \Delta \right) = \bigotimes_{d=1}^D \exp \left( i t \partial_{x_d}^2 \right) \f$.
  *
- * @note So far implementation is done for Legendre scaling functions in 1d.
+ * The world can be any non-periodic BoundingBox with the same scaling factor in every
+ * direction, for example \f$ [-L, L]^D \f$. The time has units of length squared in the box
+ * coordinates: for \f$ H = -\frac 12 \Delta \f$ a step \f$ \Delta t \f$ is time \f$ \Delta t / 2 \f$.
  *
- * \todo: Extend to D dimensinal on a general interval [a, b] in the future.
+ * @note Implemented for Legendre scaling functions only.
  *
  */
 template <int D>
@@ -52,18 +58,17 @@ class TimeEvolutionOperator : public ConvolutionOperator<D> // One can use Convo
 {
 public:
     /// @brief Pass as `finest_scale` to refine adaptively instead of uniformly.
-    static constexpr int Adaptive = -1;
+    /// It lies below every scale, since scales are negative on large worlds.
+    static constexpr int Adaptive = std::numeric_limits<int>::min();
 
     /** @brief Semigroup \f$ \exp(i t \partial_x^2) \f$.
      *
      * @param[in] finest_scale: uniform refinement down to this scale;
      * `Adaptive` (the default) refines adaptively.
-     * @param[in] max_Jpower: number of power integrals used in the expansion.
-     * Construction cost is linear in this and there is no negligibility
-     * truncation, so the series is always computed in full. Convergence is
-     * slower for *small* time steps, since the recurrence coefficients scale
-     * as 1/(time*4^n): measured at order 4 and prec 1e-7, six powers suffice
-     * for time steps down to 1e-3, and the default leaves ample margin.
+     * @param[in] max_Jpower: number of power integrals used in the series expansion.
+     * The series is only used for blocks where the kernel's phase turns by at most
+     * one radian per box; faster blocks are integrated directly, so the default
+     * leaves ample margin.
      *
      * @note Applying this to a real `FunctionTree` aborts; project the input as
      * `ComplexDouble` first, or let the `CompFunction` overload promote it.

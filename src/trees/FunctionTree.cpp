@@ -82,7 +82,7 @@ FunctionTree<D, T>::FunctionTree(FunctionTree<D, double> &realTree,
     this->add_inplace(ComplexDouble(1.0, 0.0), *real_p);
     this->add_inplace(ComplexDouble(0.0, 1.0), *imag_p);
 }
-    
+
 template <int D, typename T> void FunctionTree<D, T>::allocRootNodes() {
     auto &allocator = this->getNodeAllocator();
     auto &rootbox = this->getRootBox();
@@ -462,7 +462,7 @@ template <int D, typename T> T FunctionTree<D, T>::integrateSide(int dim, bool p
         if (fNode.getUpperBounds()[dim] == this->rootBox.getUpperBound(dim) && positiveSide)
             result += fNode.integrate();
     }
-  
+
     // Handle potential scaling
     auto scaling_factor = this->getMRA().getWorldBox().getScalingFactors();
     auto jacobian = 1.0;
@@ -1005,23 +1005,35 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
                 this->endNodeTable.push_back(node);
                 this->squareNorm += node->getSquareNorm();
             } else {
-                node->createChildren(true);
-                for (int i = 0; i < refNode->getNChildren(); i++) {
-                    int ixc = ix2coef[refNode->children[i]->getSerialIx()];
-                    ix2node[ixc] = node->children[i];      // corresponding child node in this tree
-                    stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
+                if (node->isBranchNode()) {
+                    std::cout<<"Warning: attempting to create children on branch node (copy mode)"<<std::endl;
+                    std::cout<<"branch "<<node->isBranchNode()<<" NChildren "<<node->getNChildren()<<" index "<<ix<<std::endl;
+                    std::cout<<"NodeIndex "<<node->getNodeIndex()<<std::endl;
+                } else {
+                    node->createChildren(true);
+                    for (int i = 0; i < refNode->getNChildren(); i++) {
+                        int ixc = ix2coef[refNode->children[i]->getSerialIx()];
+                        ix2node[ixc] = node->children[i];      // corresponding child node in this tree
+                        stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
+                    }
                 }
             }
         } else if ((absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true)) and refNode->getNChildren() > 0) {
-            // include children in tree
-            node->createChildren(true);
-            T *inp = node->getCoefs();
-            T *out = node->getMWChild(0).getCoefs();
-            tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
-            for (int i = 0; i < refNode->getNChildren(); i++) {
-                stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
-                int ixc = ix2coef[refNode->children[i]->getSerialIx()];
-                ix2node[ixc] = node->children[i]; // corresponding child node in this tree
+            if (node->isBranchNode()) {
+                std::cout<<"Warning: attempting to create children on branch node"<<std::endl;
+                std::cout<<"branch "<<node->isBranchNode()<<" NChildren "<<node->getNChildren()<<" index "<<ix<<std::endl;
+                std::cout<<"NodeIndex "<<node->getNodeIndex()<<std::endl;
+            } else {
+                // include children in tree
+                node->createChildren(true);
+                T *inp = node->getCoefs();
+                T *out = node->getMWChild(0).getCoefs();
+                tree_utils::mw_transform(*this, inp, out, false, sizecoef, true); // make the scaling part
+                for (int i = 0; i < refNode->getNChildren(); i++) {
+                    stack.push_back(refNode->children[i]); // means we continue to traverse the reference tree
+                    int ixc = ix2coef[refNode->children[i]->getSerialIx()];
+                    ix2node[ixc] = node->children[i]; // corresponding child node in this tree
+                }
             }
         } else {
             this->endNodeTable.push_back(node);

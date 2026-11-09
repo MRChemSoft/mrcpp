@@ -1009,6 +1009,9 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
                     std::cout<<"Warning: attempting to create children on branch node (copy mode)"<<std::endl;
                     std::cout<<"branch "<<node->isBranchNode()<<" NChildren "<<node->getNChildren()<<" index "<<ix<<std::endl;
                     std::cout<<"NodeIndex "<<node->getNodeIndex()<<std::endl;
+                    for (auto it=ix2coef.begin();it!=ix2coef.end();it++){
+                        if(it->second == ix) std::cout<<"Node with serial ix "<<it->first<<" has ix "<< ix <<std::endl;
+                    }
                 } else {
                     node->createChildren(true);
                     for (int i = 0; i < refNode->getNChildren(); i++) {
@@ -1023,6 +1026,10 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
                 std::cout<<"Warning: attempting to create children on branch node"<<std::endl;
                 std::cout<<"branch "<<node->isBranchNode()<<" NChildren "<<node->getNChildren()<<" index "<<ix<<std::endl;
                 std::cout<<"NodeIndex "<<node->getNodeIndex()<<std::endl;
+                for (auto it=ix2coef.begin();it!=ix2coef.end();it++){
+                    if(it->second == ix) std::cout<<"Node with serial ix "<<it->first<<" has ix "<< ix <<std::endl;
+                }
+
             } else {
                 // include children in tree
                 node->createChildren(true);

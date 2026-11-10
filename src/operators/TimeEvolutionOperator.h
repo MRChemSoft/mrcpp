@@ -68,7 +68,7 @@ public:
      * @param[in] max_Jpower: number of power integrals used in the series expansion.
      * The series is only used for blocks where the kernel's phase turns by at most
      * one radian per box; faster blocks are integrated directly, so the default
-     * leaves ample margin.
+     * leaves big margin.
      *
      * @note Applying this to a real `FunctionTree` aborts; project the input as
      * `ComplexDouble` first, or let the `CompFunction` overload promote it.

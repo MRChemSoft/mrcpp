@@ -101,6 +101,7 @@ void SchrodingerEvolution_CrossCorrelation::readCCCBin()
     // Read the amount of matrices
     int K;
     input_file.read(reinterpret_cast<char*>(&K), sizeof(K));
+    if (this->amount > K) MSG_ABORT("Asked for " << this->amount << " cross correlation matrices, " << this->path << " holds " << K);
 
     // Read the size/order of each matrix
     int order;

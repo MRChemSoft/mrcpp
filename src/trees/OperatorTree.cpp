@@ -152,7 +152,8 @@ template <typename T> bool OperatorTree<T>::isOutsideBand(int oTransl, int o_dep
 
 /** @brief Cleans up end nodes.
  *
- * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building).
+ * @param[in] trust_scale: there is no cleaning down below \b trust_scale (it speeds up operator building),
+ * counted as a depth below the root scale.
  *
  * @details Traverses the tree and rewrites end nodes having branch node twins,
  * i. e. identical with respect to scale and translation.
@@ -166,17 +167,25 @@ template <typename T> bool OperatorTree<T>::isOutsideBand(int oTransl, int o_dep
 template <typename T> void OperatorTree<T>::removeRoughScaleNoise(int trust_scale) {
     MWNode<2, T> *p_rubbish;     // possibly inexact end node
     MWNode<2, T> *p_counterpart; // exact branch node
-    for (int n = (this->getDepth() - 2 < trust_scale) ? this->getDepth() - 2 : trust_scale; n > this->getRootScale(); n--) {
-        int N = 1 << n;
+    // Depths count from the root scale, which can be negative, and each depth holds
+    // as many translations as there are root boxes times 2^depth.
+    const int rootScale = this->getRootScale();
+    const int nRoots = this->getRootBox().size(0);
+    for (int depth = (this->getDepth() - 2 < trust_scale) ? this->getDepth() - 2 : trust_scale; depth > 0; depth--) {
+        int n = rootScale + depth;
+        int N = nRoots << depth;
         for (int m = 0; m < N; m++)
             for (int l = 0; l < N; l++) {
                 p_rubbish = this->findNode(NodeIndex<2>(n, {m, l}));
                 if (p_rubbish != nullptr && p_rubbish->isEndNode()) {
-                    for (int m1 = 0; m1 < N; m1++)
-                        for (int l1 = 0; l1 < N; l1++)
-                            if ((m1 - l1 == m - l) && (p_counterpart = this->findNode(NodeIndex<2>(n, {m1, l1}))) != nullptr && p_counterpart->isBranchNode()) {
-                                for (int i = 0; i < p_counterpart->n_coefs; i++) p_rubbish->coefs[i] = p_counterpart->coefs[i];
-                            }
+                    // Twins share the distance to the diagonal, m1 - l1 == m - l
+                    for (int m1 = 0; m1 < N; m1++) {
+                        int l1 = m1 - (m - l);
+                        if (l1 < 0 or l1 >= N) continue;
+                        if ((p_counterpart = this->findNode(NodeIndex<2>(n, {m1, l1}))) != nullptr && p_counterpart->isBranchNode()) {
+                            for (int i = 0; i < p_counterpart->n_coefs; i++) p_rubbish->coefs[i] = p_counterpart->coefs[i];
+                        }
+                    }
                 }
             }
         this->mwTransform(BottomUp);

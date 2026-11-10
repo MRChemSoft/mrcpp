@@ -30,6 +30,8 @@
 #include "core/SchrodingerEvolution_CrossCorrelation.h"
 #include "functions/JpowerIntegrals.h"
 
+#include <vector>
+
 namespace mrcpp {
 
 /** @class TimeEvolution_CrossCorrelationCalculator
@@ -44,17 +46,28 @@ namespace mrcpp {
  */
 class TimeEvolution_CrossCorrelationCalculator final : public TreeCalculator<2, ComplexDouble> {
 public:
-    TimeEvolution_CrossCorrelationCalculator(std::map<int, JpowerIntegrals *> &J, SchrodingerEvolution_CrossCorrelation *cross_correlation)
-            : J_power_inetgarls(J)
-            , cross_correlation(cross_correlation) {}
-    // private:
-    std::map<int, JpowerIntegrals *> J_power_inetgarls;
-    SchrodingerEvolution_CrossCorrelation *cross_correlation;
+    /// @param[in] time: the time step \f$ t \f$ of the semigroup \f$ \exp(i t \partial_x^2) \f$.
+    /// @param[in] max_Jpower: highest power integral \f$ \widetilde J_m \f$ kept in the expansion.
+    /// @details The power integrals are computed node by node, only for the translations
+    /// each node needs.
+    TimeEvolution_CrossCorrelationCalculator(double time, int max_Jpower, SchrodingerEvolution_CrossCorrelation *cross_correlation);
 
     void calcNode(MWNode<2, ComplexDouble> &node) override;
 
     // template <int T>
     void applyCcc(MWNode<2, ComplexDouble> &node);
+
+private:
+    double time;
+    int max_Jpower;
+    SchrodingerEvolution_CrossCorrelation *cross_correlation;
+
+    Eigen::MatrixXcd lMat;           ///< Left cross-correlation matrix of the scaling basis
+    Eigen::MatrixXcd rMat;           ///< Right cross-correlation matrix of the scaling basis
+    std::vector<double> quadRoots;   ///< Gauss-Legendre points on [0, 1] for calcKernelCoefs
+    std::vector<double> quadWeights; ///< Gauss-Legendre weights on [0, 1] for calcKernelCoefs
+
+    Eigen::VectorXcd calcKernelCoefs(int m, double a) const;
     // template <int T> void applyCcc(MWNode<2, ComplexDouble> &node, CrossCorrelationCache<T> &ccc);
 };
 

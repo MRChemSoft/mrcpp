@@ -1021,7 +1021,8 @@ template <int D, typename T> void FunctionTree<D, T>::makeTreefromCoeff(MWTree<D
                     }
                 }
             }
-        } else if ((absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true)) and refNode->getNChildren() > 0) {
+        } else if ((absPrec < 0 or tree_utils::split_check(*node, absPrec, 1.0, true)) and
+                   refNode->getNChildren() > 0 and ix2coef.count(refNode->children[0]->getSerialIx())>0) {
             if (node->isBranchNode()) {
                 std::cout<<"Warning: attempting to create children on branch node"<<std::endl;
                 std::cout<<"branch "<<node->isBranchNode()<<" NChildren "<<node->getNChildren()<<" index "<<ix<<std::endl;

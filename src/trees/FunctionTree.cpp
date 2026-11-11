@@ -1233,6 +1233,7 @@ template <int D, typename T> FunctionTree<D, double> *FunctionTree<D, T>::Imag()
             out_node.calcNorms();
         }
     }
+    out->resetEndNodeTable();
     out->mwTransform(BottomUp);
     out->calcSquareNorm();
     return out;

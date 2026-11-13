@@ -59,6 +59,9 @@ namespace function_tree_constructors {
     template <int D>
     void testComplexConstructor(bool useRealPart, bool useImagPart);
 
+    template <int D>
+    void testRealAndImagParts();
+
     SCENARIO("FunctionTree basic constructor", "[function_tree_constructors]") {
         GIVEN("a 1D real FunctionTree") { testBasicConstructor<1, double>(); }
         GIVEN("a 2D real FunctionTree") { testBasicConstructor<2, double>(); }
@@ -116,6 +119,12 @@ namespace function_tree_constructors {
             testComplexConstructor<2>(true,  true);
             testComplexConstructor<3>(true,  true);
         }
+    }
+
+    SCENARIO("Real and imaginary parts of a complex FunctionTree", "[function_tree_constructors]") {
+        GIVEN("a 1D complex FunctionTree") { testRealAndImagParts<1>(); }
+        GIVEN("a 2D complex FunctionTree") { testRealAndImagParts<2>(); }
+        GIVEN("a 3D complex FunctionTree") { testRealAndImagParts<3>(); }
     }
 
     template <int D, typename T>
@@ -296,6 +305,40 @@ namespace function_tree_constructors {
 
         checkComplexTreeMatchesParts(realTree, imagTree, ctree);
 
+        finalize(&mra);
+    }
+
+    template <int D>
+    void testRealAndImagParts() {
+        MultiResolutionAnalysis<D>* mra = nullptr;
+        initialize(&mra);
+
+        FunctionTree<D, double> realTree(*mra);
+        FunctionTree<D, double> imagTree(*mra);
+
+        const double posData[3] = {-0.2, 0.5, 1.0};
+        Coord<D> pos{};
+        std::array<int, static_cast<std::size_t>(D)> power{};
+        for (int i = 0; i < D; ++i) pos[i] = posData[i];
+
+        // Narrow enough to refine below the root nodes
+        makeNonZeroTree<D>(realTree, 100.0, 1.0, pos, power);
+        makeNonZeroTree<D>(imagTree, 200.0, 0.6, pos, power);
+
+        FunctionTree<D, ComplexDouble> ctree(realTree, imagTree, nullptr, "complex_from_two_real");
+        REQUIRE(ctree.getNEndNodes() > ctree.getRootBox().size());
+
+        std::unique_ptr<FunctionTree<D, double>> re(ctree.Real());
+        std::unique_ptr<FunctionTree<D, double>> im(ctree.Imag());
+
+        THEN("the parts have as many end nodes as the complex tree") {
+            REQUIRE(re->getNEndNodes() == ctree.getNEndNodes());
+            REQUIRE(im->getNEndNodes() == ctree.getNEndNodes());
+        }
+        THEN("the parts have the squared norms of the two real trees") {
+            REQUIRE(re->getSquareNorm() == Catch::Approx(realTree.getSquareNorm()));
+            REQUIRE(im->getSquareNorm() == Catch::Approx(imagTree.getSquareNorm()));
+        }
         finalize(&mra);
     }
 

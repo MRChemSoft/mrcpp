@@ -84,7 +84,6 @@ template <int D> CompFunction<D>::CompFunction() {
  * @param n1: for instance spin (1=alpha, -1=beta, 2=paired) or anything else
  */
 template <int D> CompFunction<D>::CompFunction(int n1, int nComponents) {
-    // std::cout << "CompFunction::CompFunction constructor with n1: start " << n1 << std::endl;
     func_ptr = std::make_shared<TreePtr<D>>(false);
     CompD = func_ptr->real;
     CompC = func_ptr->cplx;
@@ -97,7 +96,6 @@ template <int D> CompFunction<D>::CompFunction(int n1, int nComponents) {
     func_ptr->isreal = 1;
     func_ptr->iscomplex = 0;
     func_ptr->data.shared = false;
-    // std::cout << "CompFunction::CompFunction constructor with n1: " << n1 << std::endl;
     func_ptr->data.Ncomp = nComponents;
 }
 
@@ -685,27 +683,16 @@ template <int D> void add(CompFunction<D> &out, ComplexDouble a, CompFunction<D>
 
 
     std::vector<CompFunction<D>> funcs; // NB: not a CompFunctionVector, because not run in parallel!
-    // If one of the inputs also serves as the output, we need to deep copy it to avoid 
-    // uncontrolled behaviour in the linear_combination function
-    if (&out == &inp_a) { //useless as we have a shallow copy in this function, instead of the code standard passing by reference
-        CompFunction<D> out_a;
-        deep_copy(out_a, inp_a);
-        funcs.push_back(out_a);
-    } else {
-        CompFunction<D> out_a; //debug test
-        deep_copy(out_a, inp_a); //debug test
-        funcs.push_back(out_a); //debug test
-        // funcs.push_back(inp_a);
-    }
-    if (&out == &inp_b) {
-        CompFunction<D> out_b;
-        deep_copy(out_b, inp_b);
-        funcs.push_back(out_b);
-    } else {
-        CompFunction<D> out_b; //debug test
-        deep_copy(out_b, inp_b); //debug test
-        funcs.push_back(out_b); // debug test
-        // funcs.push_back(inp_b);
+    // inp_a, inp_b are shallow copies. If one shares its data with out (e.g. add(phi, a, phi, b, psi)),
+    // linear_combination would overwrite it while reading it: deep copy only in that case.
+    for (CompFunction<D> *inp : {&inp_a, &inp_b}) {
+        if (inp->func_ptr == out.func_ptr) {
+            CompFunction<D> tmp;
+            deep_copy(tmp, *inp);
+            funcs.push_back(tmp);
+        } else {
+            funcs.push_back(*inp);
+        }
     }
 
     linear_combination(out, coefs, funcs, prec, conjugate);
@@ -913,7 +900,6 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
             out.func_ptr->data.c1[comp] = inp_a.func_ptr->data.c1[comp] * inp_b.func_ptr->data.c1[comp]; // we could put this is coef if everything is real?
         }
         if (inp_aisReal and inp_bisReal) {
-            // if (!out_allocated) out.alloc(out.Ncomp()); //moved out of the loop
             if (need_to_multiply) {
                 if (prec < 0.0) {
                     // Union grid
@@ -954,7 +940,6 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                     // Union grid
                     out.func_ptr->iscomplex = 1;
                     out.func_ptr->isreal = 0;
-                    // if (!out_allocated) out.alloc(out.Ncomp()); //test debug moved out of loop
                     build_grid(*out.CompC[comp], *inp_a.CompC[comp]);
                     build_grid(*out.CompC[comp], *inp_b.CompC[comp]);
                     mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], *inp_b.CompC[comp], 0, false, false, conjugate);
@@ -970,7 +955,6 @@ template <int D> void multiply(double prec, CompFunction<D> &out, double coef, C
                         } else {
                             out.func_ptr->iscomplex = 1;
                             out.func_ptr->isreal = 0;
-                            // out.alloc(out.Ncomp()); //test debug
                         }
                     } else {
                         out.func_ptr->iscomplex = 1;
@@ -1085,7 +1069,6 @@ template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, Func
         }
         if (inp_a.isreal()) {
             if (need_to_multiply) {
-                // if (!out_allocated) out.alloc(inp_a.Ncomp());//moved outside the loop
                 if (prec < 0.0) {
                     // Union grid
                     build_grid(*out.CompD[comp], *inp_a.CompD[comp]);
@@ -1189,7 +1172,6 @@ template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, Func
                 // out.CompD[comp] = nullptr; //this should be added eventually but it makes the mrchem behave weirdly even if it never gets called
                 delete out.CompC[comp];  
                 // out.CompC[comp] = new FunctionTree<D, ComplexDouble>(*defaultCompMRA<D>);//this should be added eventually but it makes the mrchem behave weirdly even if it never gets called
-                // if (!out_allocated) out.alloc(inp_a.Ncomp());
                 build_grid(*out.CompC[comp], *inp_a.CompC[comp]);
                 // build_grid(*out.CompC[comp], inp_b);
                 mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], inp_b, 0, false, false, conjugate);
@@ -1210,7 +1192,6 @@ template <int D> void multiply(CompFunction<D> &out, CompFunction<D> inp_a, Func
                 } else {
                     out.func_ptr->iscomplex = 1;
                     out.func_ptr->isreal = 0;
-                    // if (!out_allocated) out.alloc(inp_a.Ncomp());
                 }
                 mrcpp::multiply(prec, *out.CompC[comp], coef, *inp_a.CompC[comp], inp_b, -1, absPrec, useMaxNorms, conjugate);
             }
@@ -1473,6 +1454,43 @@ void CompFunctionVector::distribute() {
 //     mpi::share_function(out, 0, 123123, mpi::comm_share);
 // }
 
+// descW(j, n): squared norm of the wavelets below refTree node n in input j (component q), used to bound
+// what is discarded when the descent of a rotated function stops at n. Allreduced over comm_wrk.
+template <typename T>
+static DoubleMatrix descendant_wnorms(CompFunctionVector &Phi, int q, FunctionTree<3> &refTree, const std::vector<int> &indexVec_ref, int max_n) {
+    int kp1_d = refTree.getKp1_d();
+    int sizecoeff = (1 << 3) * kp1_d;
+    DoubleMatrix descW = DoubleMatrix::Zero(Phi.size(), max_n);
+    std::map<int, int> ref_pos; // serialIx -> position n in the reference list
+    for (int n = 0; n < max_n; n++) ref_pos[indexVec_ref[n]] = n;
+    for (int j = 0; j < (int)Phi.size(); j++) {
+        if (!mpi::my_func(j)) continue;
+        FunctionTree<3, T> *tree = nullptr;
+        if constexpr (std::is_same<T, double>::value) tree = Phi[j].CompD[q];
+        else tree = Phi[j].CompC[q];
+        if (tree == nullptr) continue;
+        std::vector<T *> coefs;
+        std::vector<int> indices, parindices;
+        std::vector<double> scalefac;
+        int max_ix;
+        tree->makeCoeffVector(coefs, indices, parindices, scalefac, max_ix, refTree);
+        int nk = indices.size();
+        std::map<int, int> ix2k;
+        for (int k = 0; k < nk; k++) ix2k[indices[k]] = k;
+        std::vector<double> ownW(nk, 0.0), sub(nk, 0.0);
+        for (int k = 0; k < nk; k++) {
+            for (int m = kp1_d; m < sizecoeff; m++) ownW[k] += std::norm(coefs[k][m]);
+            sub[k] += ownW[k];
+        }
+        for (int k = nk - 1; k >= 0; k--) { // children come after parents
+            if (parindices[k] >= 0 and ix2k.count(parindices[k])) sub[ix2k[parindices[k]]] += sub[k];
+            if (indices[k] >= 0) descW(j, ref_pos.at(indices[k])) = sub[k] - ownW[k];
+        }
+    }
+    if (mpi::wrk_size > 1) mpi::allreduce_matrix(descW, mpi::comm_wrk);
+    return descW;
+}
+
 /** @brief Make a linear combination of functions
  *
  * Uses "local" representation: treats one node at a time.
@@ -1543,6 +1561,7 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
         // get a list of all nodes in union tree, identified by their serialIx indices
         refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree);
         int max_n = indexVec_ref.size();
+        DoubleMatrix descW = descendant_wnorms<ComplexDouble>(Phi, q, refTree, indexVec_ref, max_n);
 
         for (int j = 0; j < N; j++) {
             if (!mpi::my_func(j)) continue;
@@ -1612,8 +1631,8 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                 // 4a) make a dense contiguous matrix with the coefficient from all the orbitals using node n
                 std::vector<int> orbjVec; // to remember which orbital correspond to each orbVec.size();
                 // if (node2orbVec[node_ix].size() <= 0) continue;
-                auto it = node2orbVec.find(node_ix); //test debug test multithreading
-                if (it == node2orbVec.end() || it->second.empty()) continue; //test debug test multithreading
+                auto it = node2orbVec.find(node_ix);
+                if (it == node2orbVec.end() || it->second.empty()) continue;
                 csize = sizecoeffW;
                 if (parindexVec_ref[n] < 0) csize = sizecoeff; // for root nodes we include scaling coeff
 
@@ -1671,7 +1690,9 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                         int kstart = 0;
                         if (parindexVec_ref[n] < 0) kstart = sizecoeff - sizecoeffW; // do not include scaling, even for roots
                         for (int k = kstart; k < csize; k++) wnorm += std::real(rotatedCoeff(k, i) * std::conj(rotatedCoeff(k, i)));
-                        if (thres < wnorm or prec < 0)
+                    double bound = 0.0; // bound on the norm of what is discarded below this node
+                        for (int jj = 0; jj < (int)orbjVec.size(); jj++) bound += std::abs(Un(jj, i)) * std::sqrt(descW(orbjVec[jj], n));
+                        if (thres < wnorm or prec < 0 or thres < bound * bound)
                             split_serial(orbiVec[i], n) = 1;
                         else
                             split_serial(orbiVec[i], n) = 0;
@@ -1749,7 +1770,10 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                     double wnorm = 0.0;
                     int kwstart = csize - sizecoeffW; // do not include scaling
                     for (int k = kwstart; k < csize; k++) wnorm += std::real(rotatedCoeff.col(i)[k] * std::conj(rotatedCoeff.col(i)[k]));
-                    if (thres < wnorm or prec < 0) needsplit[orbiVec[i]] = 1.0;
+                    // TODO(MPI): this bound criterion (and descendant_wnorms' allreduce) is implemented but untested with MPI
+                    double bound = 0.0; // bound on the norm of what is discarded below this node
+                    for (int jj = 0; jj < (int)orbjVec.size(); jj++) bound += std::abs(Un(jj, i)) * std::sqrt(descW(orbjVec[jj], n));
+                    if (thres < wnorm or prec < 0 or thres < bound * bound) needsplit[orbiVec[i]] = 1.0;
                     nodesRotated.put_nodedata(orbiVec[i], indexVec_ref[n] + max_ix, csize, rotatedCoeff.col(i).data());
                 }
                 nodeSplits.put_data(indexVec_ref[n], M, needsplit.data());
@@ -1769,7 +1793,8 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                 // Psi[j].alloc(1); // All data is stored in coeffpVec[j]
                 Psi[j].alloc_comp(q);
                 Psi[j].complex(q).clear();
-                Psi[j].complex(q).makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
+                // descent already decided above: with prec < 0 the tree is built exactly on the nodes with stored coefficients
+                Psi[j].complex(q).makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0);
             }
         } else { // MPI case
             for (int j = 0; j < M; j++) {
@@ -1799,7 +1824,8 @@ void rotate_cplx(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVe
                 // Psi[j].alloc(1);
                 Psi[j].alloc_comp(q); //could be a problem to allocate in parallel, but it should be okay since there is no OMP here?
                 Psi[j].complex(q).clear();
-                Psi[j].complex(q).makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
+                // descent already decided above: with prec < 0 the tree is built exactly on the nodes with stored coefficients
+                Psi[j].complex(q).makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0);
 
                 for (ComplexDouble *p : pointerstodelete) delete[] p;
                 pointerstodelete.clear();
@@ -1848,9 +1874,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 }
                 //Now that the trees are converted, rescaling
                 Phi[i].CompC[q]->rescale(Phi[i].func_ptr->data.c1[q]);
-                //Resetting the prefactor to 1, as it is now held in the tree itself
-                Phi[i].func_ptr->data.c1[q] = {1.0,0.0};
             }
+            //Resetting the prefactor to 1, as it is now held in the tree itself (real and complex trees)
+            Phi[i].func_ptr->data.c1[q] = {1.0,0.0};
         }
     }
 
@@ -1879,7 +1905,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
     for (int q = 0; q < Ncomponents; q++) {
         // 1) make union tree without coefficients. Note that the ref tree is always real (in fact it has no coeff)
         FunctionTree<3> refTree(*Phi.vecMRA);
-        mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
+        mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk, q); // grid of component q, as in rotate_cplx
 
         int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
         int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -1891,6 +1917,7 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
         // get a list of all nodes in union tree, identified by their serialIx indices
         refTree.makeCoeffVector(coeffVec_ref, indexVec_ref, parindexVec_ref, scalefac_ref, max_ix, refTree);
         int max_n = indexVec_ref.size();
+        DoubleMatrix descW = descendant_wnorms<double>(Phi, q, refTree, indexVec_ref, max_n);
         for (int i = 0; i < M; i++) {
             if (!mrcpp::mpi::my_func(i)) continue;
             Psi[i].func_ptr->data.isreal = 1;
@@ -1960,10 +1987,8 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 // 4a) make a dense contiguous matrix with the coefficient from all the orbitals using node n
                 std::vector<int> orbjVec; // to remember which orbital correspond to each orbVec.size();
                 // if (node2orbVec[node_ix].size() <= 0) continue;
-                // test debug test start
                 auto it = node2orbVec.find(node_ix);
                 if (it == node2orbVec.end() || it->second.empty()) continue;
-                // test debug test end
                 csize = sizecoeffW;
                 if (parindexVec_ref[n] < 0) csize = sizecoeff; // for root nodes we include scaling coeff
 
@@ -1971,9 +1996,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 if (parindexVec_ref[n] < 0) shift = 0;
                 DoubleMatrix coeffBlock(csize, node2orbVec[node_ix].size());
                 // for (int j : node2orbVec[node_ix]) { // loop over indices of the orbitals using this node
-                for (int j : it->second) { // test debug test loop over indices of the orbitals using this node
+                for (int j : it->second) { // loop over indices of the orbitals using this node
                     // int orb_node_ix = orb2node[j][node_ix];
-                    int orb_node_ix = orb2node[j].at(node_ix); // test debug test
+                    int orb_node_ix = orb2node[j].at(node_ix);
                     for (int k = 0; k < csize; k++) coeffBlock(k, orbjVec.size()) = coeffVec[j][orb_node_ix][k + shift];
                     orbjVec.push_back(j);
                 }
@@ -2019,7 +2044,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                         int kstart = 0;
                         if (parindexVec_ref[n] < 0) kstart = sizecoeff - sizecoeffW; // do not include scaling, even for roots
                         for (int k = kstart; k < csize; k++) wnorm += rotatedCoeff(k, i) * rotatedCoeff(k, i);
-                        if (thres < wnorm or prec < 0)
+                    double bound = 0.0; // bound on the norm of what is discarded below this node
+                        for (int jj = 0; jj < (int)orbjVec.size(); jj++) bound += std::abs(Un(jj, i)) * std::sqrt(descW(orbjVec[jj], n));
+                        if (thres < wnorm or prec < 0 or thres < bound * bound)
                             split_serial(orbiVec[i], n) = 1;
                         else
                             split_serial(orbiVec[i], n) = 0;
@@ -2096,14 +2123,16 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                     double wnorm = 0.0;
                     int kwstart = csize - sizecoeffW; // do not include scaling
                     for (int k = kwstart; k < csize; k++) wnorm += rotatedCoeff.col(i)[k] * rotatedCoeff.col(i)[k];
-                    if (thres < wnorm or prec < 0) needsplit[orbiVec[i]] = 1.0;
+                    // TODO(MPI): this bound criterion (and descendant_wnorms' allreduce) is implemented but untested with MPI
+                    double bound = 0.0; // bound on the norm of what is discarded below this node
+                    for (int jj = 0; jj < (int)orbjVec.size(); jj++) bound += std::abs(Un(jj, i)) * std::sqrt(descW(orbjVec[jj], n));
+                    if (thres < wnorm or prec < 0 or thres < bound * bound) needsplit[orbiVec[i]] = 1.0;
                     nodesRotated.put_nodedata(orbiVec[i], indexVec_ref[n] + max_ix, csize, rotatedCoeff.col(i).data());
                 }
                 nodeSplits.put_data(indexVec_ref[n], M, needsplit.data());
             }
             mpi::barrier(mpi::comm_wrk); // wait until all rotated nodes are ready
         }
-        // std::cout << "mrcpp::CompFunction::rotate pre-reconstruction component " << q << " with Phi (1st argument) norm " << Phi[0].norm() << " with Psi norm " << Psi[0].norm() << std::endl;
 
 
         // 5) reconstruct trees using rotated nodes.
@@ -2113,19 +2142,14 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
             // OMP parallelized, but does not scale well, because the total memory bandwidth is a bottleneck. (the main
             // operation is writing the coefficient into the tree)
         
-            //debug
-            // CompFunction test(*defaultCompMRA<3>, 1); 
-            // test.defreal();
-            // test.real(0).makeTreefromCoeff(refTree, coeffpVec[0], ix2coef[0], prec);
-            // std::cout << "Test reconstruction norm " << test.norm() << std::endl;
         #pragma omp parallel for schedule(static)
-        // #pragma omp critical // test debug test
             for (int j = 0; j < M; j++) {
                 if (coeffpVec[j].size() == 0) continue;
                 // Psi[j].alloc(1);
                 Psi[j].alloc_comp(q, false); //possible issue (multithreading) but maybe safe since no MPI here? 
                 Psi[j].real(q).clear();
-                Psi[j].real(q).makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], prec);
+                // descent already decided above: with prec < 0 the tree is built exactly on the nodes with stored coefficients
+                Psi[j].real(q).makeTreefromCoeff(refTree, coeffpVec[j], ix2coef[j], -1.0);
             }
 
         } else { // MPI case
@@ -2154,7 +2178,8 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 }
                 // Psi[j].alloc(1);
                 Psi[j].alloc_comp(q, false);
-                Psi[j].real(q).makeTreefromCoeff(refTree, coeffpVec, ix2coef, prec);
+                // descent already decided above: with prec < 0 the tree is built exactly on the nodes with stored coefficients
+                Psi[j].real(q).makeTreefromCoeff(refTree, coeffpVec, ix2coef, -1.0);
 
                 for (double *p : pointerstodelete) delete[] p;
                 pointerstodelete.clear();
@@ -2260,7 +2285,6 @@ CompFunctionVector multiply(CompFunctionVector &Phi, RepresentableFunction<3> &f
 
     // 1b) make union tree without coefficients
     FunctionTree<D> refTree(*Phi.vecMRA);
-    // refine_grid(refTree, f); //to test
     mpi::allreduce_Tree_noCoeff(refTree, Phi, mpi::comm_wrk);
 
     int kp1_d = refTree.getKp1_d();
@@ -2666,7 +2690,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
 
     // 1) make union tree without coefficients
     mrcpp::FunctionTree<3> refTree(*mra);
-    mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk);
+    // union of the grids of all components: the l > 0 loops below drop nodes absent from refTree
+    for (int comp = 0; comp < 4; comp++) mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk, comp);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -2761,7 +2786,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -2778,7 +2803,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVec[i], orbVec[j]) += S_temp(i, j); //Partially filled with only this rank's contribution to the component overlap matrix
@@ -2841,7 +2866,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
 
     // 1) make union tree without coefficients
     mrcpp::FunctionTree<3> refTree(*mra);
-    mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk); 
+    // union of the grids of all components: the l > 0 loops below drop nodes absent from refTree
+    for (int comp = 0; comp < 4; comp++) mpi::allreduce_Tree_noCoeff(refTree, BraKet, mpi::comm_wrk, comp);
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
     int sizecoeffW = ((1 << refTree.getDim()) - 1) * refTree.getKp1_d();
@@ -2911,11 +2937,11 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                 int node_ix = indexVec_ref[n]; // SerialIx for this node in the reference tree
                 std::vector<int> orbVec;       // identifies which orbitals use this node
                 // if (serial and node2orbVec[node_ix].size() <= 0) continue;
-                std::map<int, std::vector<int>>::const_iterator it; // test debug test multithreading
-                if (serial){ //test debug test multithreading
-                    it = node2orbVec.find(node_ix); //test debug test multithreading
-                    if (it == node2orbVec.end() || it->second.empty()) continue; //test debug test multithreading
-                } // test debug test multithreading
+                std::map<int, std::vector<int>>::const_iterator it;
+                if (serial){
+                    it = node2orbVec.find(node_ix);
+                    if (it == node2orbVec.end() || it->second.empty()) continue;
+                }
                 if (parindexVec_ref[n] < 0)
                     csize = sizecoeff;
                 else
@@ -2931,13 +2957,12 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                         for (int k = 0; k < csize; k++) coeffBlock(k, orbVec.size()) = coeffVec[j][orb_node_ix][k + shift];
                         orbVec.push_back(j);
                     }
-    // #pragma omp critical //Debug test debug (multithreading) seems to be ok now? 
                     if (orbVec.size() > 0) {
                         ComplexMatrix S_temp(orbVec.size(), orbVec.size());
                         S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -2954,7 +2979,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -3060,7 +3085,8 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
     // 1) make union tree without coefficients for Bra (supposed smallest)
     mrcpp::FunctionTree<3> refTree(*mra);
-    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_wrk);
+    // union of the grids of all components: the l > 0 loops below drop nodes absent from refTree
+    for (int comp = 0; comp < 4; comp++) mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_wrk, comp);
     // note that Ket is not part of union grid: if a node is in ket but not in Bra, the dot product is zero.
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
@@ -3198,7 +3224,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                             MSG_ABORT("Unexpected case");
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3231,7 +3257,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3325,7 +3351,8 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
 
     // 1) make union tree without coefficients for Bra (supposed smallest)
     mrcpp::FunctionTree<3> refTree(*mra);
-    mrcpp::mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_wrk);
+    // union of the grids of all components: the l > 0 loops below drop nodes absent from refTree
+    for (int comp = 0; comp < 4; comp++) mpi::allreduce_Tree_noCoeff(refTree, Bra, mpi::comm_wrk, comp);
     // note that Ket is not part of union grid: if a node is in ket but not in Bra, the dot product is zero.
 
     int sizecoeff = (1 << refTree.getDim()) * refTree.getKp1_d();
@@ -3412,7 +3439,6 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
             // NB: dynamic does give strange errors?
     #pragma omp for schedule(static)
             for (int n = 0; n < max_n; n++) {
-                // std::cout << "Processing node " << n + 1 << "/" << max_n << S(0,0) << std::endl;
                 if (n % mrcpp::mpi::wrk_size != mrcpp::mpi::wrk_rank) continue;
                 int csize;
                 std::vector<int> orbVecBra; // identifies which Bra orbitals use this node
@@ -3447,14 +3473,13 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                         for (int k = 0; k < csize; k++) coeffBlockKet(k, orbVecKet.size()) = coeffVecKet[j][orb_node_ix][k + shift];
                         orbVecKet.push_back(j);
                     }
-    // #pragma omp critical //Debug test debug (multithreading) (copy fix from calc_overlap_matrix(braket), hope it works here as well)
                     if (orbVecBra.size() > 0 and orbVecKet.size() > 0) {
                         DoubleMatrix S_temp(orbVecBra.size(), orbVecKet.size());
                         S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
 
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3477,7 +3502,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                         S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3574,7 +3599,6 @@ template <int D> void orthogonalize(double prec, CompFunction<D> &Bra, CompFunct
 //  *  @param inp: CompFunctionVector to be added
 //  */
 // void add(CompFunctionVector &out, ComplexVector c, CompFunctionVector &inp){
-//     MSG_INFO("test install");
 //     if (out.size()!=inp.size() or c.size()!=inp.size()) MSG_ABORT("Mismatched vector sizes for addition!");
 //     for (int i=0; i < out.size(); i++){
 //         //in-place addition

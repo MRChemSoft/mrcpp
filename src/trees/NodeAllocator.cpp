@@ -79,7 +79,7 @@ template <int D, typename T> NodeAllocator<D, T>::NodeAllocator(OperatorTree *tr
 template <int D, typename T> NodeAllocator<D, T>::~NodeAllocator() {
     for (auto &chunk : this->nodeChunks) delete[](char *) chunk;
     if (not isShared()) // if the data is shared, it must be freed by MPI_Win_free
-        for (auto &chunk : this->coefChunks) delete[] chunk;
+        for (auto &chunk : this->coefChunks) delete[](char *) chunk; // chunks are raw char[] allocations, see appendChunk()
     this->stackStatus.clear();
     MRCPP_DESTROY_OMP_LOCK();
 }
@@ -164,7 +164,7 @@ template <int D, typename T> void NodeAllocator<D, T>::dealloc(int sIdx) {
 
 template <int D, typename T> void NodeAllocator<D, T>::deallocAllCoeff() {
     if (not this->isShared())
-        for (auto &chunk : this->coefChunks) delete[] chunk;
+        for (auto &chunk : this->coefChunks) delete[](char *) chunk; // chunks are raw char[] allocations, see appendChunk()
     else
         delete this->shmem_p;
     this->shmem_p = nullptr;
@@ -183,6 +183,21 @@ template <int D, typename T> void NodeAllocator<D, T>::init(int nChunks, bool co
     MRCPP_UNSET_OMP_LOCK();
 }
 
+/** @brief Append one chunk of nodes (and optionally one chunk of coefficients) to the allocator.
+ *
+ * @param[in] coefs: if true, a coefficient chunk is allocated together with the node chunk.
+ *
+ * @warning The (non-shared) coefficient chunk is allocated as RAW, UNINITIALISED memory
+ * (`new char[]` cast to `T *`), not with `new T[]`. Reason: for `T = std::complex<double>`,
+ * `new T[]` value-constructs (zero-fills) every element, which touches all pages and makes the
+ * whole chunk resident at once (e.g. 432 MB for a single complex tree at order 11), while
+ * `new double[]` leaves the pages untouched.
+ * Trap: coefficients of a freshly allocated node are NOT zero. Any code reading coefficients
+ * before writing them (or assuming zero-initialised complex coefficients) gets garbage.
+ * Use MWNode::zeroCoefs() explicitly where zeros are needed.
+ * The chunks must be freed with `delete[] (char *)`, see the destructor, deallocAllCoeff()
+ * and deleteUnusedChunks().
+ */
 template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
     // make coeff chunk
     if (coefs) {
@@ -194,7 +209,10 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
             // may increase size dynamically in the future
             if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
         } else {
-            c_chunk = new T[getCoefChunkSize() / sizeof(T)];
+            // WARNING: raw, uninitialised allocation (was: new T[getCoefChunkSize() / sizeof(T)]).
+            // new T[] zero-fills complex chunks and commits the full chunk; this does not.
+            // Trap: coefficients are NOT zero-initialised. Free with delete[] (char *).
+            c_chunk = (T *)new char[getCoefChunkSize()];
         }
         this->coefChunks.push_back(c_chunk);
     }
@@ -261,7 +279,7 @@ template <int D, typename T> int NodeAllocator<D, T>::deleteUnusedChunks() {
         // shared coefficients cannot be fully deallocated, only pointer is moved.
         getMemory().sh_end_ptr -= (nChunksTotal - nChunksUsed) * this->coefsPerNode * this->maxNodesPerChunk;
     } else {
-        for (int i = nChunksUsed; i < nChunksTotal; i++) delete[] this->coefChunks[i];
+        for (int i = nChunksUsed; i < nChunksTotal; i++) delete[](char *) this->coefChunks[i]; // chunks are raw char[] allocations, see appendChunk()
     }
 
     // shrink the stacks

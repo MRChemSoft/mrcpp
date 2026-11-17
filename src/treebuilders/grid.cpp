@@ -143,15 +143,10 @@ template <int D> void build_grid(FunctionTree<D> &out, const GaussExp<D> &inp, i
  *
  */
 template <int D, typename T> void build_grid(FunctionTree<D, T> &out, FunctionTree<D, T> &inp, int maxIter) {
-    // MSG_INFO("tut4 " << &(out.getMRA()));
     // auto tutb = inp.getMRA();
-    // MSG_INFO("tut4.2");
     // auto tuta = out.getMRA();
-    // MSG_INFO("tut4.3");
     if (out.getMRA() != inp.getMRA()) MSG_ABORT("Incompatible MRA");
-    // MSG_INFO("tut4.5");
     auto maxScale = out.getMRA().getMaxScale();
-    // MSG_INFO("tut5");
     TreeBuilder<D, T> builder;
     CopyAdaptor<D, T> adaptor(inp, maxScale, nullptr);
     DefaultCalculator<D, T> calculator;

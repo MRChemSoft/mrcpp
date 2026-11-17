@@ -121,6 +121,7 @@
      for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
          for (int ocomp = 0; ocomp < 4; ocomp++) {
              if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                 out.func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp]; // transfer the prefactor to the output tree
                  if (inp.isreal()) {
                      if (out.CompD[ocomp] == nullptr) out.alloc_comp(ocomp);
                      apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
@@ -256,6 +257,7 @@
      for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
          for (int ocomp = 0; ocomp < 4; ocomp++) {
              if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                 out.func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp]; // transfer the prefactor to the output tree
                  if (inp.isreal()) {
                      apply(prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], precTrees[icomp], maxIter, absPrec);
                      if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
@@ -301,6 +303,7 @@
          if (inp.Comp[icomp] != nullptr) {
              for (int ocomp = 0; ocomp < 4; ocomp++) {
                  if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                     out.func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp]; // transfer the prefactor to the output tree
                      if (inp.isreal()) {
                          apply_on_unit_cell<D>(false, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                          if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
@@ -346,6 +349,7 @@
          if (inp.Comp[icomp] != nullptr) {
              for (int ocomp = 0; ocomp < 4; ocomp++) {
                  if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                     out.func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp]; // transfer the prefactor to the output tree
                      if (inp.isreal()) {
                          apply_on_unit_cell<D>(true, prec, *out.CompD[ocomp], oper, *inp.CompD[icomp], maxIter, absPrec);
                          if (abs(metric[icomp][ocomp] - 1.0) > MachinePrec) { out.CompD[ocomp]->rescale(metric[icomp][ocomp]); }
@@ -417,10 +421,12 @@
      for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
          for (int ocomp = 0; ocomp < 4; ocomp++) {
              if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
-                 if (inp.isreal() and (std::imag(metric[icomp][ocomp]) < MachinePrec or inp.Ncomp() == 1)) {
+                 // the tree of output component ocomp comes from input component icomp, and so does its prefactor
+                 out.func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp];
+                 if (inp.isreal() and (std::abs(std::imag(metric[icomp][ocomp])) < MachinePrec or inp.Ncomp() == 1)) {
                      apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
                      if (std::norm(metric[icomp][ocomp] - 1.0) > MachinePrec) {
-                         if (std::imag(metric[icomp][ocomp]) < MachinePrec)
+                         if (std::abs(std::imag(metric[icomp][ocomp])) < MachinePrec)
                              out.CompD[ocomp]->rescale(std::real(metric[icomp][ocomp]));
                          else
                              out.func_ptr->data.c1[ocomp] *= metric[icomp][ocomp]; // To consider: multiply c1 in rescale?
@@ -429,7 +435,7 @@
                  } else {
                      if (inp.isreal()) {
                          apply(*out.CompD[ocomp], oper, *inp.CompD[icomp], dir);
-                         out.CompC[ocomp] = out.CompD[icomp]->CopyTreeToComplex();
+                         out.CompC[ocomp] = out.CompD[ocomp]->CopyTreeToComplex(); //Convert to complex
                          out.func_ptr->isreal = 0;
                          out.func_ptr->iscomplex = 1;
                      } else {
@@ -472,6 +478,7 @@
          for (int icomp = 0; icomp < inp.Ncomp(); icomp++) {
              for (int ocomp = 0; ocomp < 4; ocomp++) {
                  if (std::norm(metric[icomp][ocomp]) > MachinePrec) {
+                     grad_d->func_ptr->data.c1[ocomp] = inp.func_ptr->data.c1[icomp]; // transfer the prefactor to the output tree
                      grad_d->func_ptr->Ncomp = ocomp + 1;
                      if (inp.isreal()) {
                          grad_d->func_ptr->isreal = 1;

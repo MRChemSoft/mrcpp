@@ -232,13 +232,11 @@ namespace mrcpp {
             for (int i = 0; i < inp.Ncomp(); i++) {
                 inp.CompD[i]->rescale(1.0 / norm); //Rescaling each component in place
                 inp.func_ptr->data.c1[i] = 1.0; // Resetting the overall multiplicative factor to 1 after normalization, since the components have already been rescaled.
-                // std::cout << "normalize_spinor: Component " << i << " normalized." << std::endl;
             }
         } else {
             for (int i = 0; i < inp.Ncomp(); i++) {
                 inp.CompC[i]->rescale(1.0 / norm); //Rescaling each component in place
                 inp.func_ptr->data.c1[i] = ComplexDouble(1.0,0.0); // Resetting the overall multiplicative factor to 1 after normalization, since the components have already been rescaled.
-                // std::cout << "normalize_spinor: Component " << i << " normalized." << std::endl;
             }
         }
     }

@@ -675,18 +675,15 @@ template <int D, typename T> void MWNode<D, T>::reCompress() {
  * @param[in] absPrec: flag to switch from relative (false) to absolute (true) precision.
  */
 template <int D, typename T> bool MWNode<D, T>::crop(double prec, double splitFac, bool absPrec) {
-    if (this->isEndNode()) {
+    // Crop bottom-up: children first, then delete them only if all are end nodes and this node's detail is below threshold
+    if (this->isEndNode()) return true;
+    bool all_end = true;
+    for (int i = 0; i < this->getTDim(); i++) {
+        if (!this->children[i]->crop(prec, splitFac, absPrec)) all_end = false;
+    }
+    if (all_end and tree_utils::split_check(*this, prec, splitFac, absPrec) == false) {
+        this->deleteChildren();
         return true;
-    } else {
-        for (int i = 0; i < this->getTDim(); i++) {
-            MWNode<D, T> &child = *this->children[i];
-            if (child.crop(prec, splitFac, absPrec)) {
-                if (tree_utils::split_check(*this, prec, splitFac, absPrec) == false) {
-                    this->deleteChildren();
-                    return true;
-                }
-            }
-        }
     }
     return false;
 }

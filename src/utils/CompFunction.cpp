@@ -1848,9 +1848,9 @@ void rotate(CompFunctionVector &Phi, const ComplexMatrix &U, CompFunctionVector 
                 }
                 //Now that the trees are converted, rescaling
                 Phi[i].CompC[q]->rescale(Phi[i].func_ptr->data.c1[q]);
-                //Resetting the prefactor to 1, as it is now held in the tree itself
-                Phi[i].func_ptr->data.c1[q] = {1.0,0.0};
             }
+            //Resetting the prefactor to 1, as it is now held in the tree itself
+            Phi[i].func_ptr->data.c1[q] = {1.0,0.0};
         }
     }
 

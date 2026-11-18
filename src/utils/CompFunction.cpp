@@ -2786,7 +2786,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -2803,7 +2803,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose().conjugate() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVec[i], orbVec[j]) += S_temp(i, j); //Partially filled with only this rank's contribution to the component overlap matrix
@@ -2962,7 +2962,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -2979,7 +2979,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &BraKet) {
                         S_temp.noalias() = coeffBlock.transpose() * coeffBlock;
                         for (int i = 0; i < orbVec.size(); i++) {
                             for (int j = 0; j < orbVec.size(); j++) {
-                                if (BraKet[orbVec[i]].Ncomp() == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and BraKet[orbVec[i]].func_ptr->data.n1[0] != BraKet[orbVec[j]].func_ptr->data.n1[0] and BraKet[orbVec[i]].func_ptr->data.n1[0] != 0 and
                                     BraKet[orbVec[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVec[i], orbVec[j]) += S_temp(i, j);
@@ -3224,7 +3224,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
                             MSG_ABORT("Unexpected case");
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3257,7 +3257,7 @@ ComplexMatrix calc_overlap_matrix_cplx(CompFunctionVector &Bra, CompFunctionVect
 
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3479,7 +3479,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
 
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S_omp(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);
@@ -3502,7 +3502,7 @@ ComplexMatrix calc_overlap_matrix(CompFunctionVector &Bra, CompFunctionVector &K
                         S_temp.noalias() = coeffBlockBra.transpose() * coeffBlockKet;
                         for (int i = 0; i < orbVecBra.size(); i++) {
                             for (int j = 0; j < orbVecKet.size(); j++) {
-                                if (Bra[orbVecBra[i]].Ncomp() == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
+                                if (Ncomponents == 1 and Bra[orbVecBra[i]].func_ptr->data.n1[0] != Ket[orbVecKet[j]].func_ptr->data.n1[0] and Bra[orbVecBra[i]].func_ptr->data.n1[0] != 0 and
                                     Ket[orbVecKet[j]].func_ptr->data.n1[0] != 0)
                                     continue;
                                 S(orbVecBra[i], orbVecKet[j]) += S_temp(i, j);

@@ -99,7 +99,7 @@ NodeAllocator<2, ComplexDouble>::NodeAllocator(OperatorTree<ComplexDouble> *tree
 template <int D, typename T> NodeAllocator<D, T>::~NodeAllocator() {
     for (auto &chunk : this->nodeChunks) delete[](char *) chunk;
     if (not isShared()) // if the data is shared, it must be freed by MPI_Win_free
-        for (auto &chunk : this->coefChunks) delete[] chunk;
+        for (auto &chunk : this->coefChunks) delete[](char *) chunk;
     this->stackStatus.clear();
     MRCPP_DESTROY_OMP_LOCK();
 }
@@ -184,7 +184,7 @@ template <int D, typename T> void NodeAllocator<D, T>::dealloc(int sIdx) {
 
 template <int D, typename T> void NodeAllocator<D, T>::deallocAllCoeff() {
     if (not this->isShared())
-        for (auto &chunk : this->coefChunks) delete[] chunk;
+        for (auto &chunk : this->coefChunks) delete[](char *) chunk;
     else
         delete this->shmem_p;
     this->shmem_p = nullptr;
@@ -214,7 +214,8 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
             // may increase size dynamically in the future
             if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
         } else {
-            c_chunk = new T[getCoefChunkSize() / sizeof(T)];
+            // raw memory like the node chunks: new T[] would zero every std::complex and touch the whole chunk
+            c_chunk = (T *)new char[getCoefChunkSize()];
         }
         this->coefChunks.push_back(c_chunk);
     }
@@ -281,7 +282,7 @@ template <int D, typename T> int NodeAllocator<D, T>::deleteUnusedChunks() {
         // shared coefficients cannot be fully deallocated, only pointer is moved.
         getMemory().sh_end_ptr -= (nChunksTotal - nChunksUsed) * this->coefsPerNode * this->maxNodesPerChunk;
     } else {
-        for (int i = nChunksUsed; i < nChunksTotal; i++) delete[] this->coefChunks[i];
+        for (int i = nChunksUsed; i < nChunksTotal; i++) delete[](char *) this->coefChunks[i];
     }
 
     // shrink the stacks

@@ -214,7 +214,6 @@ template <int D, typename T> void NodeAllocator<D, T>::appendChunk(bool coefs) {
             // may increase size dynamically in the future
             if (this->shmem_p->sh_max_ptr < this->shmem_p->sh_end_ptr) MSG_ABORT("Shared block too small");
         } else {
-            // raw memory like the node chunks: new T[] would zero every std::complex and touch the whole chunk
             c_chunk = (T *)new char[getCoefChunkSize()];
         }
         this->coefChunks.push_back(c_chunk);
